@@ -20,8 +20,8 @@ $ cd xiaomi-zb2mqtt
 /xiaomi-zb2mqtt$ DEBUG=* node index.js  
 ```
 ### Supports
-* WXKG01LM
-* WXKG02LM
+* WXKG01LM - Single, double, triple, quad and "more than five" click. Push and hold long click. 
+* WXKG02LM - Left, right and both click
 
 
 ### Notes
