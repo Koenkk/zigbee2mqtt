@@ -11,62 +11,83 @@ var shepherd = new ZShepherd('/dev/ttyACM3', {
     }
 });
 
-shepherd.on('ready', function () {
+shepherd.on('ready', function() {
     console.log('Server is ready.');
-
     // allow devices to join the network within 60 secs
-    shepherd.permitJoin(60, function (err) {
+    shepherd.permitJoin(60, function(err) {
         if (err)
             console.log(err);
-    }); 
+    });
 });
-
-shepherd.on('permitJoining', function (joinTimeLeft) {
+shepherd.on('permitJoining', function(joinTimeLeft) {
     console.log(joinTimeLeft);
 });
+shepherd.on('ind', function(msg) {
+    var pl = null;
+    topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2);
 
-shepherd.on('ind', function (msg) {
     switch (msg.type) {
         case 'devIncoming':
             console.log('Device: ' + msg.data + ' joining the network!');
             break;
         case 'attReport':
-	    console.log('attreport: ' + msg.endpoints[0].device.ieeeAddr +' '+ msg.endpoints[0].devId +' '+ msg.endpoints[0].epId +' '+util.inspect(msg.data, false, null));
-	    var topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/' + msg.endpoints[0].epId;
-	    var pl = '1';
-	    switch (msg.endpoints[0].devId) {
-		case 260: // WXKG01LM
-		    if (msg.data.data['onOff'] == 0) { // click down
-			perfy.start(msg.endpoints[0].device.ieeeAddr); // start timer
-			pl = ''; // do not send mqtt message
-		    } else if (msg.data.data['onOff'] == 1) { // click release
-			var clicktime = perfy.end(msg.endpoints[0].device.ieeeAddr); // end timer
-			if (clicktime.seconds > 0 || clicktime.milliseconds > 240) { // seems like a long press so ..
-			    topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/2'; //change topic to 2
-			    pl = clicktime.seconds+Math.floor(clicktime.milliseconds)+''; // and payload to elapsed seconds
-			}
-		    } else if (msg.data.data['32768']) { // multiple clicks
-			pl = ''+msg.data.data['32768'];
-		    }
-	    }
-	    if (pl.length > 0) {  // only publish message if we have not set payload to null
-		client.publish(topic, pl);
-	    } 
-	    break; 
+            console.log('attreport: ' + msg.endpoints[0].device.ieeeAddr + ' ' + msg.endpoints[0].devId + ' ' + msg.endpoints[0].epId + ' ' + util.inspect(msg.data, false, null));
+            var topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/' + msg.endpoints[0].epId;
+
+            switch (msg.endpoints[0].devId) {
+
+                case 24321: // Aqara Temperature/Humidity
+                    switch (msg.data.cid) {
+
+                        case 'msTemperatureMeasurement':
+                            topic += "/temperature";
+                            pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
+                            break;
+                        case 'msRelativeHumidity':
+                            topic += "/relative_humidity";
+                            pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
+                            break;
+
+                        case 'msPressureMeasurement':
+                            topic += "/pressure";
+                            pl = parseFloat(msg.data.data['16']) / 10.0;
+                            break;
+                    }
+
+                    break;
+                case 260: // WXKG01LM
+                    if (msg.data.data['onOff'] == 0) { // click down
+                        perfy.start(msg.endpoints[0].device.ieeeAddr); // start timer
+                        pl = null; // do not send mqtt message
+                    } else if (msg.data.data['onOff'] == 1) { // click release
+                        var clicktime = perfy.end(msg.endpoints[0].device.ieeeAddr); // end timer
+                        if (clicktime.seconds > 0 || clicktime.milliseconds > 240) { // seems like a long press so ..
+
+                            topic += '/2'; //change topic to 2
+                            pl = clicktime.seconds + Math.floor(clicktime.milliseconds) + ''; // and payload to elapsed seconds
+                        }
+                    } else if (msg.data.data['32768']) { // multiple clicks
+                        pl = msg.data.data['32768'];
+                    }
+            }
+
+            break;
         default:
-	    // console.log(util.inspect(msg, false, null));
+            // console.log(util.inspect(msg, false, null));
             // Not deal with other msg.type in this example
             break;
     }
+
+    if (pl != null) { // only publish message if we have not set payload to null
+        console.log("MQTT Reporting to ", topic, " value ", pl)
+        client.publish(topic, pl.toString());
+    }
 });
-
-client.on('connect', function () {
-  client.publish('xiaomiZb', 'Bridge online')
+client.on('connect', function() {
+    client.publish('xiaomiZb', 'Bridge online')
 })
- 
 
-shepherd.start(function (err) {                // start the server
+shepherd.start(function(err) { // start the server
     if (err)
         console.log(err);
 });
-
