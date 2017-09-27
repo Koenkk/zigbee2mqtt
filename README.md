@@ -9,8 +9,7 @@ $ git clone https://github.com/AndrewLinden/xiaomi-zb2mqtt.git
 $ cd xiaomi-zb2mqtt  
 /xiaomi-zb2mqtt$ npm install  
 ```
-* Configure
-For the moment you have to edit index.js and set your serial port and mqtt broker
+* Configuration: for the moment you have to edit index.js and set your serial port and mqtt broker.
 
 * Run it
 ```sh  
