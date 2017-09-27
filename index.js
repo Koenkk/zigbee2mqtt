@@ -24,8 +24,11 @@ shepherd.on('permitJoining', function(joinTimeLeft) {
 });
 shepherd.on('ind', function(msg) {
     var pl = null;
-    topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2);
-
+    var topic = 'xiaomiZb/';
+    
+    if(msg.endpoints.length > 0 && typeof msg.endpoints[0].device !== "undefined")
+            topic += msg.endpoints[0].device.ieeeAddr.substr(2);
+        
     switch (msg.type) {
         case 'devIncoming':
             console.log('Device: ' + msg.data + ' joining the network!');
