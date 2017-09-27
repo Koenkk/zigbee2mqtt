@@ -1,0 +1,30 @@
+{
+  "name": "xiaomi-zb2mqtt",
+  "version": "1.0.0",
+  "description": "Xiaomi Zigbee to MQTT bridge using zigbee-shepherd",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndrewLinden/xiaomi-zb2mqtt.git"
+  },
+  "keywords": [
+    "xiaomi",
+    "zigbee",
+    "mqtt",
+    "cc2531"
+  ],
+  "author": "Andrew Linden",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/AndrewLinden/xiaomi-zb2mqtt/issues"
+  },
+  "homepage": "https://github.com/AndrewLinden/xiaomi-zb2mqtt#readme",
+  "dependencies": {
+    "mqtt": "^2.13.0",
+    "perfy": "^1.1.2",
+    "zigbee-shepherd": "git+https://github.com/AndrewLinden/zigbee-shepherd.git"
+  }
+}
