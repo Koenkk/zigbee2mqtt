@@ -23,7 +23,7 @@ $ cd xiaomi-zb2mqtt
 ### Supports
 * WXKG01LM - Single, double, triple, quad and "more than five" click. Push and hold long click. 
 * WXKG02LM - Left, right and both click
-
+* WSDCGQ11LM - Aqara Temperature Hudimity sensor with Temperature, Humidity and Pressure
 
 ### Notes
 * You need to flash your CC2531 with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531
