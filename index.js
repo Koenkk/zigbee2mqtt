@@ -5,9 +5,9 @@ var mqtt = require('mqtt')
 
 var client  = mqtt.connect('mqtt://192.168.1.10')
 
-var shepherd = new ZShepherd('/dev/ttyACM3', {
+var shepherd = new ZShepherd('/dev/ttyACM0', {
     net: {
-        panId: 0x1a61
+        panId: 0x1a62
     }
 });
 
@@ -35,29 +35,28 @@ shepherd.on('ind', function(msg) {
             break;
         case 'attReport':
             console.log('attreport: ' + msg.endpoints[0].device.ieeeAddr + ' ' + msg.endpoints[0].devId + ' ' + msg.endpoints[0].epId + ' ' + util.inspect(msg.data, false, null));
-            var topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/' + msg.endpoints[0].epId;
+
+            // defaults. Some devices like switches do not need anything else.
+            topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/' + msg.endpoints[0].epId;
+            pl=1;
+
+            // Aqara Temperature/Humidity
+            switch (msg.data.cid) { 
+                case 'msTemperatureMeasurement':
+                    topic += "/temperature";
+                    pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
+                    break;
+                case 'msRelativeHumidity':
+                    topic += "/relative_humidity";
+                    pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
+                    break;
+                case 'msPressureMeasurement':
+                    topic += "/pressure";
+                    pl = parseFloat(msg.data.data['16']) / 10.0;
+                    break;
+            }
 
             switch (msg.endpoints[0].devId) {
-
-                case 24321: // Aqara Temperature/Humidity
-                    switch (msg.data.cid) {
-
-                        case 'msTemperatureMeasurement':
-                            topic += "/temperature";
-                            pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
-                            break;
-                        case 'msRelativeHumidity':
-                            topic += "/relative_humidity";
-                            pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
-                            break;
-
-                        case 'msPressureMeasurement':
-                            topic += "/pressure";
-                            pl = parseFloat(msg.data.data['16']) / 10.0;
-                            break;
-                    }
-
-                    break;
                 case 260: // WXKG01LM
                     if (msg.data.data['onOff'] == 0) { // click down
                         perfy.start(msg.endpoints[0].device.ieeeAddr); // start timer
