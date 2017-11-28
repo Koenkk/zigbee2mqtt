@@ -1,3 +1,4 @@
+var debug = require('debug')('xiaomi-zb2mqtt')
 var util = require("util");
 var perfy = require('perfy');
 var ZShepherd = require('zigbee-shepherd');
@@ -23,12 +24,10 @@ shepherd.on('permitJoining', function(joinTimeLeft) {
     console.log(joinTimeLeft);
 });
 shepherd.on('ind', function(msg) {
+    // debug('msg: ' + util.inspect(msg, false, null));
     var pl = null;
     var topic = 'xiaomiZb/';
-    
-    if(msg.endpoints.length > 0 && typeof msg.endpoints[0].device !== "undefined")
-            topic += msg.endpoints[0].device.ieeeAddr.substr(2);
-        
+
     switch (msg.type) {
         case 'devIncoming':
             console.log('Device: ' + msg.data + ' joining the network!');
@@ -36,13 +35,15 @@ shepherd.on('ind', function(msg) {
         case 'attReport':
             console.log('attreport: ' + msg.endpoints[0].device.ieeeAddr + ' ' + msg.endpoints[0].devId + ' ' + msg.endpoints[0].epId + ' ' + util.inspect(msg.data, false, null));
 
-            // defaults. Some devices like switches do not need anything else.
-            topic = 'xiaomiZb/' + msg.endpoints[0].device.ieeeAddr.substr(2) + '/' + msg.endpoints[0].epId;
+            // defaults, will be extended or overridden based on device and message
+            topic += msg.endpoints[0].device.ieeeAddr.substr(2);
             pl=1;
 
-            // Aqara Temperature/Humidity
-            switch (msg.data.cid) { 
-                case 'msTemperatureMeasurement':
+            switch (msg.data.cid) {
+                case 'genOnOff':  // various switches
+                    topic += '/' + msg.endpoints[0].epId;
+                    break;
+                case 'msTemperatureMeasurement':  // Aqara Temperature/Humidity
                     topic += "/temperature";
                     pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
                     break;
@@ -57,16 +58,17 @@ shepherd.on('ind', function(msg) {
             }
 
             switch (msg.endpoints[0].devId) {
-                case 260: // WXKG01LM
+                case 260: // WXKG01LM switch
                     if (msg.data.data['onOff'] == 0) { // click down
                         perfy.start(msg.endpoints[0].device.ieeeAddr); // start timer
                         pl = null; // do not send mqtt message
                     } else if (msg.data.data['onOff'] == 1) { // click release
-                        var clicktime = perfy.end(msg.endpoints[0].device.ieeeAddr); // end timer
-                        if (clicktime.seconds > 0 || clicktime.milliseconds > 240) { // seems like a long press so ..
-
-                            topic += '/2'; //change topic to 2
-                            pl = clicktime.seconds + Math.floor(clicktime.milliseconds) + ''; // and payload to elapsed seconds
+                        if (perfy.exists(msg.endpoints[0].device.ieeeAddr)) { // do we have timer running
+                            var clicktime = perfy.end(msg.endpoints[0].device.ieeeAddr); // end timer
+                            if (clicktime.seconds > 0 || clicktime.milliseconds > 240) { // seems like a long press so ..
+                                topic = topic.slice(0,-1) + '2'; //change topic to 2
+                                pl = clicktime.seconds + Math.floor(clicktime.milliseconds) + ''; // and payload to elapsed seconds
+                            }
                         }
                     } else if (msg.data.data['32768']) { // multiple clicks
                         pl = msg.data.data['32768'];
