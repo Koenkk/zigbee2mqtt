@@ -24,6 +24,8 @@ $ cd xiaomi-zb2mqtt
 * WXKG01LM - Single, double, triple, quad and "more than five" click. Push and hold long click. 
 * WXKG02LM - Left, right and both click
 * WSDCGQ11LM - Aqara Temperature Hudimity sensor with Temperature, Humidity and Pressure
+* RTCGQ11LM - Xiaomi Smart Home Aqara Human Body Sensor
+* MCCGQ11LM - Xiaomi Aqara Window Door Sensor
 
 ### Notes
 * You need to flash your CC2531 with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531

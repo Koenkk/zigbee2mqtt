@@ -42,18 +42,27 @@ shepherd.on('ind', function(msg) {
             switch (msg.data.cid) {
                 case 'genOnOff':  // various switches
                     topic += '/' + msg.endpoints[0].epId;
+                    pl = msg.data.data['onOff'];
                     break;
                 case 'msTemperatureMeasurement':  // Aqara Temperature/Humidity
                     topic += "/temperature";
                     pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
                     break;
                 case 'msRelativeHumidity':
-                    topic += "/relative_humidity";
+                    topic += "/humidity";
                     pl = parseFloat(msg.data.data['measuredValue']) / 100.0;
                     break;
                 case 'msPressureMeasurement':
                     topic += "/pressure";
                     pl = parseFloat(msg.data.data['16']) / 10.0;
+                    break;
+                case 'msOccupancySensing': // motion sensor
+                    topic += "/occupancy";
+                    pl = msg.data.data['occupancy'];
+                    break;
+                case 'msIlluminanceMeasurement':
+                    topic += "/illuminance";
+                    pl = msg.data.data['measuredValue'];
                     break;
             }
 
