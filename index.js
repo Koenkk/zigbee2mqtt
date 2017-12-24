@@ -13,7 +13,13 @@ var shepherd = new ZShepherd('/dev/ttyACM0', {
 });
 
 shepherd.on('ready', function() {
-    console.log('Server is ready.');
+    console.log('Server is ready. Current devices:');
+    shepherd.list().forEach(function(dev){
+        if (dev.type === 'EndDevice')
+            console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
+        if (dev.manufId === 4151) // set all xiaomi devices to be online, so shepherd won't try to query info from devices (which would fail because they go tosleep)
+            shepherd.find(dev.ieeeAddr,1).getDevice().update({ status: 'online', joinTime: Math.floor(Date.now()/1000) });
+    });
     // allow devices to join the network within 60 secs
     shepherd.permitJoin(60, function(err) {
         if (err)
