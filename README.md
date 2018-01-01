@@ -1,5 +1,8 @@
 # xiaomi-zb2mqtt
-Xiaomi Zigbee to MQTT bridge using zigbee-shepherd
+Xiaomi Zigbee to MQTT bridge using zigbee-shepherd.
+
+This little script allows you to use Xiaomi Zigbee sensors and switches **without** Xiaomi's gateway. It bridges the events sent from the sensors to MQTT. You can 
+integrate the cheap and nice Zigbee sensors and switches with whatever smart home infrastructure you are using.
 
 ### To run the bridge
 
@@ -28,6 +31,6 @@ $ cd xiaomi-zb2mqtt
 * MCCGQ11LM - Xiaomi Aqara Window Door Sensor
 
 ### Notes
-* You need to flash your CC2531 with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531
+* You need CC2531 USB stick flashed with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531
 * Zigbee shepherd's pairing process can take quite a while (more than a minute).
 * When pairing WXKG01LM, after reset you need to toggle (short keypress) the reset button every couple of seconds to keep the switch from going to sleep until the pairing is complete.
