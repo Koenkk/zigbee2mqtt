@@ -53,7 +53,6 @@ shepherd.on('ind', function(msg) {
             pl=null;
 
             var modelId = msg.endpoints[0].device.modelId;
-            //console.log(msg.endpoints[0].device.endpoints);
 
             switch (msg.data.cid) {
 	            case 'genBasic':
@@ -67,7 +66,10 @@ shepherd.on('ind', function(msg) {
 							reportConnectedDevices();
 						}
 					}
-					console.log(msg);
+
+					if(msg.data.data['65281'] && Array.isArray(msg.data.data['65281']) && msg.data.data['65281'].length > 1) {
+						client.publish('xiaomi/'+ msg.endpoints[0].device.ieeeAddr + '/battery_level', msg.data.data['65281'][0]['data'].toString());
+					}
 	            break;
 
                 case 'genOnOff':  // various switches
@@ -89,41 +91,38 @@ shepherd.on('ind', function(msg) {
                     break;
                 case 'msOccupancySensing': // motion sensor
                     topic += "/state";
-                    pl = 'motion';
+                    pl = msg.data.data['occupancy'] ? 'motion' : 'no_motion';
                     break;
                 case 'msIlluminanceMeasurement':
                     topic += "/lux";
                     pl = msg.data.data['measuredValue'];
                     break;
-
-                default:
-                	console.log(msg.data);
-                	break;
             }
 
-            /*switch (msg.endpoints[0].devId) {
-                case 260: // WXKG01LM switch
+            if(modelId == 'lumi.sensor_switch') {
                     if (msg.data.data['onOff'] == 0) { // click down
                         perfy.start(msg.endpoints[0].device.ieeeAddr); // start timer
-                        //pl = null; // do not send mqtt message
+                        pl = null;
+                        setTimeout(function() {
+	                        if (perfy.exists(msg.endpoints[0].device.ieeeAddr)) {
+		                        client.publish(topic, 'long_click_press');
+		                    }
+                        }, 300);
                     } else if (msg.data.data['onOff'] == 1) { // click release
                         if (perfy.exists(msg.endpoints[0].device.ieeeAddr)) { // do we have timer running
                             var clicktime = perfy.end(msg.endpoints[0].device.ieeeAddr); // end timer
                             if (clicktime.seconds > 0 || clicktime.milliseconds > 240) { // seems like a long press so ..
-                                topic = topic.slice(0,-1) + '2'; //change topic to 2
-                                pl = clicktime.seconds + Math.floor(clicktime.milliseconds) + ''; // and payload to elapsed seconds
+                                pl = 'long_click_release';
+                            } else {
+	                            pl = 'click_release';
                             }
                         }
                     } else if (msg.data.data['32768']) { // multiple clicks
-                        pl = msg.data.data['32768'];
+	                    var count = msg.data.data['32768'];
+	                    if(count == 2) pl = 'double_click';
+                        else pl = 'multiple_'+ msg.data.data['32768'];
                     }
-            }*/
-
-            break;
-        default:
-            // console.log(util.inspect(msg, false, null));
-            // Not deal with other msg.type in this example
-            break;
+            }
     }
 
     if (pl != null) { // only publish message if we have not set payload to null
@@ -203,6 +202,6 @@ function reportConnectedDevices() {
 }
 
 function shortModel(model) {
-	if(model) model = model.replace(/^lumi\.(sensor_)?/, '');
+	if(model && typeof model === 'string') model = model.replace(/^lumi\.(sensor_)?/, '');
 	return model;
 }
