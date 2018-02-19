@@ -75,7 +75,7 @@ shepherd.on('ind', function(msg) {
                 case 'genOnOff':  // various switches
                     topic += '/state'; // + msg.endpoints[0].epId;
                     pl = msg.data.data['onOff'];
-                    if(modelId == 'lumi.sensor_magnet') pl = pl ? 'open' : 'close'
+                    if(modelId.match(/magnet/)) pl = pl ? 'open' : 'close'
                     break;
                 case 'msTemperatureMeasurement':  // Aqara Temperature/Humidity
                     topic += "/temperature";
