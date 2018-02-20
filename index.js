@@ -53,6 +53,7 @@ shepherd.on('ind', function(msg) {
             pl=null;
 
             var modelId = msg.endpoints[0].device.modelId;
+            if(modelId) modelId = modelId.replace("\u0000", "");
 
             switch (msg.data.cid) {
 	            case 'genBasic':
@@ -73,9 +74,12 @@ shepherd.on('ind', function(msg) {
 	            break;
 
                 case 'genOnOff':  // various switches
-                    topic += '/state'; // + msg.endpoints[0].epId;
                     pl = msg.data.data['onOff'];
                     if(modelId.match(/magnet/)) pl = pl ? 'open' : 'close'
+                    if(modelId.match(/(86sw1lu|86sw2Un)/)) { //one or two channel wall switch
+	                    topic += '/channel_' + (msg.endpoints[0].epId-1);
+	                    pl = 'click';
+                    } else topic += '/state';
                     break;
                 case 'msTemperatureMeasurement':  // Aqara Temperature/Humidity
                     topic += "/temperature";
