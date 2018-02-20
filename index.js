@@ -76,7 +76,7 @@ shepherd.on('ind', function(msg) {
                 case 'genOnOff':  // various switches
                     pl = msg.data.data['onOff'];
                     if(modelId.match(/magnet/)) pl = pl ? 'open' : 'close'
-                    if(modelId.match(/(86sw1lu|86sw2Un)/)) { //one or two channel wall switch
+                    if(modelId.match(/86sw(1|2)/)) { //one or two channel wall switch
 	                    topic += '/channel_' + (msg.endpoints[0].epId-1);
 	                    pl = 'click';
                     } else topic += '/state';
