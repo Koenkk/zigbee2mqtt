@@ -8,7 +8,7 @@ integrate the cheap and nice Zigbee sensors and switches with whatever smart hom
 
 * Install
 ```sh  
-$ git clone https://github.com/AndrewLinden/xiaomi-zb2mqtt.git  
+$ git clone https://github.com/oskarn97/xiaomi-zb2mqtt.git  
 $ cd xiaomi-zb2mqtt  
 /xiaomi-zb2mqtt$ npm install  
 ```
@@ -24,13 +24,17 @@ $ cd xiaomi-zb2mqtt
 /xiaomi-zb2mqtt$ DEBUG=* node index.js  
 ```
 ### Supports
-* WXKG01LM - Single, double, triple, quad and "more than five" click. Push and hold long click. 
-* WXKG02LM - Left, right and both click
-* WSDCGQ11LM - Aqara Temperature Hudimity sensor with Temperature, Humidity and Pressure
-* RTCGQ11LM - Xiaomi Smart Home Aqara Human Body Sensor
-* MCCGQ11LM - Xiaomi Aqara Window Door Sensor
+* Buttons - Single, double, triple, quad and "more than five" click. Push and hold long click. 
+* Aqara Smart Wireless Wall Switch (both Single and Double Key)
+* Temperature Hudimity sensor with Temperature, Humidity and Pressure (Aqara definitely works, Classic not tested but most likely also)
+* Xiaomi Smart Home Human Body Sensor (Aqara definitely works, Classic not tested but most likely also)
+* Xiaomi Window Door Sensor (both Aqara and Classic)
+
 
 ### Notes
-* You need CC2531 USB stick flashed with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531
-* Zigbee shepherd's pairing process can take quite a while (more than a minute).
-* When pairing WXKG01LM, after reset you need to toggle (short keypress) the reset button every couple of seconds to keep the switch from going to sleep until the pairing is complete.
+* You need CC2531 USB stick flashed with the firmware from this repo
+* The stick needs a few seconds to work after the system has booted. Please make sure to wait about 60 seconds after boot before starting this service.
+
+### Pairing
+* Unlike the gateway, the stick does not know the exact characteristics of each Xiaomi device. That is why pairing takes up to 60 seconds to finish. It is important that during this time, the device stays awake. Otherwise, pairing fails.
+Except the Wireless Wall Switches, you need to tap (not hold!) the reset button of the device every 3-4 seconds to keep it awake while paring until the confirmation appears. If you see the "cannot get Node descriptior" exception in the log, the device went to sleep and you need to try it again. Once successfully paired, the device works perfectly reliable.
