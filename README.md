@@ -33,7 +33,6 @@ $ cd xiaomi-zb2mqtt
 
 ### Notes
 * You need CC2531 USB stick flashed with the firmware from this repo
-* The stick needs a few seconds to work after the system has booted. Please make sure to wait about 60 seconds after boot before starting this service.
 
 ### Pairing
 * Unlike the gateway, the stick does not know the exact characteristics of each Xiaomi device. That is why pairing takes up to 60 seconds to finish. It is important that during this time, the device stays awake. Otherwise, pairing fails.
