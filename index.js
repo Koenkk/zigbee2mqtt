@@ -132,6 +132,8 @@ function startShepherd() {
         if (err) {
             if (err.message.match(/timeout/)) {
                 console.error("Error: Could not connect to the chip, trying again...");
+                shepherd.controller._znp.close(function(err){});
+                shepherd.stop();
                 setTimeout(startShepherd, 10 * 1000);
             } else {
                 bridgeError(err.message);
