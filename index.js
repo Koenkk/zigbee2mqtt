@@ -222,7 +222,8 @@ function initShepherd() {
                         else if (modelId.match(/86sw(1|2)/)) { //one or two channel wall switch
                             topic += '/channel_' + (msg.endpoints[0].epId - 1);
                             pl = 'click';
-                        } else topic += '/state';
+                        }
+                        topic += '/state';
                         break;
                     case 'msTemperatureMeasurement': // Aqara Temperature/Humidity
                         topic += "/temperature";
