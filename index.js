@@ -219,11 +219,10 @@ function initShepherd() {
                     case 'genOnOff': // various switches
                         pl = msg.data.data['onOff'];
                         if (modelId.match(/magnet/)) pl = pl ? 'open' : 'close'
-                        else if (modelId.match(/86sw(1|2)/)) { //one or two channel wall switch
+                        if (modelId.match(/86sw(1|2)/)) { //one or two channel wall switch
                             topic += '/channel_' + (msg.endpoints[0].epId - 1);
                             pl = 'click';
-                        }
-                        topic += '/state';
+                        } else topic += '/state';
                         break;
                     case 'msTemperatureMeasurement': // Aqara Temperature/Humidity
                         topic += "/temperature";
