@@ -267,6 +267,8 @@ function initShepherd() {
                             } else {
                                 pl = 'click_release';
                             }
+                        } else {
+	                        pl = 'click_release';
                         }
                     } else if (msg.data.data['32768']) { // multiple clicks
                         var count = msg.data.data['32768'];
