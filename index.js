@@ -31,6 +31,7 @@ parser.addArgument(
 const args = parser.parseArgs();
 
 // Setup client
+console.log(`Connecting to MQTT server at ${args.mqtt}`)
 const client  = mqtt.connect(args.mqtt)
 const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
 
@@ -41,15 +42,21 @@ client.on('connect', handleConnect);
 shepherd.on('ind', handleInd);
 
 // Start server
+console.log(`Starting zigbee-shepherd with device ${args.device}`)
 shepherd.start((err) => {
     if (err) {
+        console.error('Error while starting zigbee-shepherd');
         console.error(err);
+    } else {
+        console.error('zigbee-shepherd started');
     }
 });
 
 // Callbacks
 function handleReady() {
-    console.log('Server is ready. Current devices:');
+    console.log('Server started');
+    
+
     shepherd.list().forEach(function(dev){
         if (dev.type === 'EndDevice')
             console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
