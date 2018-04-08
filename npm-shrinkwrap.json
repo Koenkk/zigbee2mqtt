@@ -1752,7 +1752,9 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/zigbeer/zigbee-shepherd.git#b536bcdc4fe89b6433c58a8ba09672c88b0002c6",
+      "version": "0.3.0",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd/-/zigbee-shepherd-0.3.0.tgz",
+      "integrity": "sha1-RuuAnjOUEYZN9421OwHUkc9XOZ0=",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
