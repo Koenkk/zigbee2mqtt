@@ -9,6 +9,14 @@
       "resolved": "https://registry.npmjs.org/areq/-/areq-0.2.0.tgz",
       "integrity": "sha1-ad0ojIF8hy3HLDfp0eciayayMcU="
     },
+    "argparse": {
+      "version": "1.0.10",
+      "resolved": "https://registry.npmjs.org/argparse/-/argparse-1.0.10.tgz",
+      "integrity": "sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==",
+      "requires": {
+        "sprintf-js": "1.0.3"
+      }
+    },
     "async": {
       "version": "0.2.10",
       "resolved": "https://registry.npmjs.org/async/-/async-0.2.10.tgz",
@@ -1574,6 +1582,11 @@
       "requires": {
         "through2": "2.0.3"
       }
+    },
+    "sprintf-js": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz",
+      "integrity": "sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw="
     },
     "stream-browserify": {
       "version": "2.0.1",

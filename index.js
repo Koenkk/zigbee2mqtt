@@ -1,16 +1,38 @@
-var debug = require('debug')('xiaomi-zb2mqtt')
-var util = require("util");
-var perfy = require('perfy');
-var ZShepherd = require('zigbee-shepherd');
-var mqtt = require('mqtt')
+const debug = require('debug')('xiaomi-zb2mqtt')
+const util = require("util");
+const perfy = require('perfy');
+const ZShepherd = require('zigbee-shepherd');
+const mqtt = require('mqtt')
+const ArgumentParser = require('argparse').ArgumentParser;
 
-var client  = mqtt.connect('mqtt://192.168.1.10')
-
-var shepherd = new ZShepherd('/dev/ttyACM0', {
-    net: {
-        panId: 0x1a62
-    }
+// Parse arguments
+const parser = new ArgumentParser({
+    version: '1.0.0',
+    addHelp:true,
+    description: 'Xiaomi Zigbee to MQTT bridge using zigbee-shepherd'
 });
+
+parser.addArgument(
+    ['-d', '--device'],
+    {
+        help: 'CC2531 USB stick location, E.G. /dev/ttyACM0',
+        required: true,
+    }
+);
+
+parser.addArgument(
+    ['-m', '--mqtt'],
+    {
+        help: 'MQTT server URL, E.G. mqtt://192.168.1.10',
+        required: true,
+    }
+);
+
+const args = parser.parseArgs();
+
+// Setup client
+const client  = mqtt.connect(args.mqtt)
+const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
 
 shepherd.on('ready', function() {
     console.log('Server is ready. Current devices:');

@@ -25,6 +25,7 @@
   "dependencies": {
     "mqtt": "*",
     "perfy": "*",
-    "zigbee-shepherd": "*"
+    "zigbee-shepherd": "*",
+    "argparse": "*"
   }
 }
