@@ -24,10 +24,12 @@
   "homepage": "https://github.com/AndrewLinden/xiaomi-zb2mqtt#readme",
   "dependencies": {
     "mqtt": "^2.13.0",
+    "npm": "^5.8.0",
     "perfy": "^1.1.2",
-    "zigbee-shepherd": "git+https://github.com/zigbeer/zigbee-shepherd.git",
+    "readline": "latest",
+    "serialport": "latest",
+    "yaml-config": "^0.3.0",
     "zcl-packet": "git+https://github.com/oskarn97/zcl-packet.git",
-    "serialport" : "latest",
-    "readline" : "latest"
+    "zigbee-shepherd": "git+https://github.com/zigbeer/zigbee-shepherd.git"
   }
 }

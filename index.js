@@ -5,13 +5,23 @@ var ZShepherd = require('zigbee-shepherd');
 var mqtt = require('mqtt')
 var Q = require('q')
 var serialport = require('serialport');
+var config = require('yaml-config');
 
 var bridgeID = 'bridge';
 
-var client = mqtt.connect('mqtt://localhost');
-
 var shepherd;
-var chipId;
+var serial_port;
+
+var settings = config.readConfig(__dirname + '/configuration.yaml');
+
+var client = mqtt.connect('mqtt://'+settings.mqtt.server, {
+    will: {
+        topic: settings.mqtt.base_topic + '/' + bridgeID + '/state',
+        payload: 'offline',
+        retain: true
+    }
+});
+
 
 var fs = require('fs');
 const readline = require('readline');
@@ -26,7 +36,7 @@ try {
 } catch (e){}
 
 client.on('connect', function() {
-    client.subscribe('xiaomi/cmnd/#')
+    client.subscribe(settings.mqtt.base_topic+'/cmnd/#');
 })
 
 client.on('message', function(topic, message) {
@@ -49,10 +59,6 @@ client.on('message', function(topic, message) {
                         console.log("Pairing enabled for " + duration + " seconds");
 
                     }
-
-                    if (path == 'getDevices') {
-                        reportConnectedDevices();
-                    }
                 } else {
                     if (path == 'unpair') {
                         try {
@@ -61,7 +67,7 @@ client.on('message', function(topic, message) {
                             Q.ninvoke(shepherd._devbox, 'sync', dev._getId());
 
                         } catch (e) {}
-                        client.publish('xiaomi/' + device + '/unpair', '');
+                        client.publish(settings.mqtt.base_topic+'/' + device + '/unpair', '');
                     }
                 }
             }
@@ -71,14 +77,16 @@ client.on('message', function(topic, message) {
 })
 
 function selectChip() {
-    fs.readFile(__dirname + '/selectedchip.txt', (err, data) => {
-        if (err) {
+        if (settings.serial && settings.serial.port) { 
+            serial_port = settings.serial.port;
+            initShepherd();
+		} else {
             var found = [];
             serialport.list(function(err, ports) {
                 ports.forEach(function(port) {
-                    if (port.pnpId && port.pnpId.match(/TI_CC253/i)) {
-                        found.push(port.pnpId);
-                    }
+                    if ((port.pnpId && port.pnpId.match(/TI_CC253/i)) || (port.vendorId && port.vendorId.match('0451'))) {
+                        found.push(port.comName);
+					}
                 });
 
                 if (found.length > 1) {
@@ -91,7 +99,7 @@ function selectChip() {
                     rl.question('Please enter the number of the Chip you would like to use: ', (answer) => {
                         // TODO: Log the answer in a database
                         if (answer >= 0 && answer < found.length) {
-                            chipId = found[answer];
+                            serial_port = found[answer];
                             saveChipSelection();
                             initShepherd();
                         } else {
@@ -109,22 +117,22 @@ function selectChip() {
                 }
 
                 //only one chip
-                chipId = found[0];
+				try {
+                serial_port = found[0];
                 saveChipSelection();
                 initShepherd();
+				} catch(err) {
+					console.log(err)
+				}
             });
-
-        } else {
-            chipId = data;
-            initShepherd();
-        }
-    });
+		}
 }
 
 function saveChipSelection() {
-    fs.writeFile(__dirname + '/selectedchip.txt', chipId, function(err) {
-
-    });
+	if (!settings.serial) 
+		settings.serial = Object();
+	settings.serial.port = serial_port;
+	config.updateConfig(settings, __dirname + "/configuration.yaml", "default");
 }
 
 function startShepherd() {
@@ -143,8 +151,8 @@ function startShepherd() {
 }
 
 function initShepherd() {
-    console.log("Starting bridge using Chip " + chipId);
-    shepherd = new ZShepherd("/dev/serial/by-id/" + chipId, {
+    console.log("Starting bridge using serial port " + serial_port);
+    shepherd = new ZShepherd(serial_port.toString(), {
         net: {
             panId: 0x1a62
         }
@@ -170,7 +178,7 @@ function initShepherd() {
 
     shepherd.on('permitJoining', function(joinTimeLeft) {
         if (joinTimeLeft % 5 == 0) {
-            client.publish('xiaomi/' + bridgeID + '/joinTimeLeft', joinTimeLeft.toString())
+            client.publish(settings.mqtt.base_topic+'/' + bridgeID + '/joinTimeLeft', joinTimeLeft.toString())
         }
         if (joinTimeLeft == 0) console.log("Pairing ended.");
     });
@@ -178,7 +186,7 @@ function initShepherd() {
     shepherd.on('ind', function(msg) {
         // debug('msg: ' + util.inspect(msg, false, null));
         var pl = null;
-        var topic = 'xiaomi/';
+        var topic = settings.mqtt.base_topic+'/';
 
         switch (msg.type) {
             case 'devIncoming':
@@ -206,13 +214,13 @@ function initShepherd() {
                                 });
                                 Q.ninvoke(shepherd._devbox, 'set', device._getId(), device);
                                 Q.ninvoke(shepherd._devbox, 'sync', device._getId());
-                                client.publish('xiaomi/' + msg.endpoints[0].device.ieeeAddr + '/model', shortModel(msg.data.data['modelId']));
+                                client.publish(settings.mqtt.base_topic+'/' + msg.endpoints[0].device.ieeeAddr + '/model', shortModel(msg.data.data['modelId']));
                                 reportConnectedDevices();
                             }
                         }
 
                         if (msg.data.data['65281'] && Array.isArray(msg.data.data['65281']) && msg.data.data['65281'].length > 1) {
-                            client.publish('xiaomi/' + msg.endpoints[0].device.ieeeAddr + '/battery_level', msg.data.data['65281'][0]['data'].toString());
+                            client.publish(settings.mqtt.base_topic+'/' + msg.endpoints[0].device.ieeeAddr + '/battery_level', msg.data.data['65281'][0]['data'].toString());
                         }
                         break;
 
@@ -315,12 +323,12 @@ process.on('uncaughtException', function(err) {
 });
 
 function reportBridgeStatus() {
-    client.publish('xiaomi/' + bridgeID + '/state', shepherd.info().enabled ? 'online' : 'offline')
+    client.publish(settings.mqtt.base_topic+'/' + bridgeID + '/state', shepherd.info().enabled ? 'online' : 'offline', {retain: true});
 }
 
 function bridgeError(message) {
     console.error("Error: " + message);
-    client.publish('xiaomi/' + bridgeID + '/error', message);
+    client.publish(settings.mqtt.base_topic+'/' + bridgeID + '/error', message);
 }
 
 setInterval(reportBridgeStatus, 60 * 1000);
@@ -336,7 +344,7 @@ function reportConnectedDevices() {
             model: modelId
         }
     });
-    client.publish('xiaomi/' + bridgeID + '/devices', JSON.stringify(devices))
+    client.publish(settings.mqtt.base_topic+'/' + bridgeID + '/devices', JSON.stringify(devices), {retain: true})
 }
 
 function shortModel(model) {

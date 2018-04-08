@@ -1,0 +1,6 @@
+default: 
+  mqtt: 
+    server: 192.168.1.100
+    base_topic: cc2531
+  serial: 
+    port: /dev/tty.usbmodem1411
