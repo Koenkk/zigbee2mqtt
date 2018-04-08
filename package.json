@@ -25,6 +25,6 @@
   "dependencies": {
     "mqtt": "^2.13.0",
     "perfy": "^1.1.2",
-    "zigbee-shepherd": "git+https://github.com/zigbeer/zigbee-shepherd.git",
+    "zigbee-shepherd": "git+https://github.com/zigbeer/zigbee-shepherd.git"
   }
 }
