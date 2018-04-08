@@ -40,6 +40,7 @@ shepherd.on('ready', handleReady);
 shepherd.on('permitJoining', handlePermitJoining);
 client.on('connect', handleConnect);
 shepherd.on('ind', handleInd);
+process.on('SIGINT', handleQuit);
 
 // Start server
 console.log(`Starting zigbee-shepherd with device ${args.device}`)
@@ -150,4 +151,17 @@ function handleInd(msg) {
         console.log("MQTT Reporting to ", topic, " value ", pl)
         client.publish(topic, pl.toString());
     }
+}
+
+function handleQuit() {
+    console.log("Stopping zigbee-shepherd...");
+    shepherd.stop((err) => {
+        if (err) {
+            console.error('Error while stopping zigbee-shepherd');
+        } else {
+            console.error('zigbee-shepherd stopped')
+        }
+
+        process.exit();
+    });
 }
