@@ -59,3 +59,4 @@ typings/
 
 # data
 data/database.db
+data/config.json

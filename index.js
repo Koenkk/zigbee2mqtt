@@ -4,6 +4,31 @@ const perfy = require('perfy');
 const ZShepherd = require('zigbee-shepherd');
 const mqtt = require('mqtt')
 const ArgumentParser = require('argparse').ArgumentParser;
+const fs = require('fs');
+
+const configFile = `${__dirname}/data/config.json`
+
+// Create configFile if does not exsist.
+if (!fs.existsSync(configFile)) {
+    console.log(`Created config file at ${configFile}`);
+    console.log('Modify this config file according to your situation.');
+    console.log('"mqtt": the MQTT host, E.G. mqtt://192.168.1.10')
+    console.log('"device": location of CC2531 usb stick, E.G. /dev/ttyACM0')
+    console.log("")
+    console.log('Once finished, restart the application.');
+    console.log('Exiting...');
+
+    const template = {
+        'mqtt': 'mqtt://192.168.1.10',
+        'device': '/dev/ttyACM0',
+        'friendlyNames': {}
+    }
+
+    writeConfig(template);
+    process.exit();
+}
+
+const config = readConfig();
 
 // Parse arguments
 const parser = new ArgumentParser({
@@ -11,22 +36,6 @@ const parser = new ArgumentParser({
     addHelp:true,
     description: 'Xiaomi Zigbee to MQTT bridge using zigbee-shepherd'
 });
-
-parser.addArgument(
-    ['-d', '--device'],
-    {
-        help: 'CC2531 USB stick location, E.G. /dev/ttyACM0',
-        required: true,
-    }
-);
-
-parser.addArgument(
-    ['-m', '--mqtt'],
-    {
-        help: 'MQTT server URL, E.G. mqtt://192.168.1.10',
-        required: true,
-    }
-);
 
 parser.addArgument(
     ['--join'],
@@ -39,10 +48,10 @@ parser.addArgument(
 const args = parser.parseArgs();
 
 // Setup client
-console.log(`Connecting to MQTT server at ${args.mqtt}`)
-const client  = mqtt.connect(args.mqtt)
+console.log(`Connecting to MQTT server at ${config.mqtt}`)
+const client  = mqtt.connect(config.mqtt)
 const shepherd = new ZShepherd(
-    args.device, 
+    config.device, 
     {
         net: {panId: 0x1a62},
         dbPath: `${__dirname}/data/database.db`
@@ -56,7 +65,7 @@ shepherd.on('ind', handleMessage);
 process.on('SIGINT', handleQuit);
 
 // Start server
-console.log(`Starting zigbee-shepherd with device ${args.device}`)
+console.log(`Starting zigbee-shepherd with device ${config.device}`)
 shepherd.start((err) => {
     if (err) {
         console.error('Error while starting zigbee-shepherd');
@@ -188,4 +197,13 @@ function handleQuit() {
 
         process.exit();
     });
+}
+
+function readConfig() {
+    return JSON.parse(fs.readFileSync(configFile, 'utf8'));
+}
+
+function writeConfig(content) {
+    const pretty = JSON.stringify(content, null, 2);
+    fs.writeFileSync(configFile, pretty);
 }
