@@ -8,11 +8,14 @@ var serialport = require('serialport');
 var config = require('yaml-config');
 
 var bridgeID = 'bridge';
-
 var shepherd;
 var serial_port;
 
 var settings = config.readConfig(__dirname + '/configuration.yaml');
+
+if (settings.zigbee && settings.zigbee.bridge) {
+    bridgeID = settings.zigbee.bridge;
+} 
 
 var client = mqtt.connect('mqtt://'+settings.mqtt.server, {
     will: {
@@ -30,10 +33,6 @@ const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
-
-try {
-	bridgeID = fs.readFileSync(__dirname + '/bridgeid.txt');
-} catch (e){}
 
 client.on('connect', function() {
     client.subscribe(settings.mqtt.base_topic+'/cmnd/#');
@@ -97,10 +96,9 @@ function selectChip() {
                     });
 
                     rl.question('Please enter the number of the Chip you would like to use: ', (answer) => {
-                        // TODO: Log the answer in a database
                         if (answer >= 0 && answer < found.length) {
                             serial_port = found[answer];
-                            saveChipSelection();
+                            saveSettings();
                             initShepherd();
                         } else {
                             console.error("Invalid input.");
@@ -119,7 +117,7 @@ function selectChip() {
                 //only one chip
 				try {
                 serial_port = found[0];
-                saveChipSelection();
+                saveSettings();
                 initShepherd();
 				} catch(err) {
 					console.log(err)
@@ -128,10 +126,13 @@ function selectChip() {
 		}
 }
 
-function saveChipSelection() {
+function saveSettings() {
 	if (!settings.serial) 
 		settings.serial = Object();
+	if (!settings.zigbee) 
+		settings.zigbee = Object();
 	settings.serial.port = serial_port;
+	settings.zigbee.bridge = bridgeID;
 	config.updateConfig(settings, __dirname + "/configuration.yaml", "default");
 }
 
@@ -163,7 +164,10 @@ function initShepherd() {
         shepherd.list().forEach(function(dev) {
             if (dev.type === 'EndDevice') {
                 console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
-            }
+            } else if (dev.type === 'Coordinator') {
+				bridgeID = dev.ieeeAddr;
+				saveSettings()
+			}
 
             if (dev.manufId === 4151) // set all xiaomi devices to be online, so shepherd won't try to query info from devices (which would fail because they go to sleep)
                 shepherd.find(dev.ieeeAddr, 1).getDevice().update({
