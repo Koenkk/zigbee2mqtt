@@ -41,7 +41,13 @@ const args = parser.parseArgs();
 // Setup client
 console.log(`Connecting to MQTT server at ${args.mqtt}`)
 const client  = mqtt.connect(args.mqtt)
-const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
+const shepherd = new ZShepherd(
+    args.device, 
+    {
+        net: {panId: 0x1a62},
+        dbPath: `${__dirname}/data/database.db`
+    }
+);
 
 // Register callbacks
 client.on('connect', handleConnect);
