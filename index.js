@@ -164,7 +164,7 @@ function initShepherd() {
         shepherd.list().forEach(function(dev) {
             if (dev.type === 'EndDevice') {
                 console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
-            } else if (dev.type === 'Coordinator') {
+            } else if ((!settings.zigbee || !settings.zigbee.bridge) && dev.type === 'Coordinator') {
 				bridgeID = dev.ieeeAddr;
 				saveSettings()
 			}

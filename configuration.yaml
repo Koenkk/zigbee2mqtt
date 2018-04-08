@@ -4,3 +4,5 @@ default:
     base_topic: xiaomi 
   serial: 
     port: /dev/ttyACM0
+  zigbee:
+    bridge: "bridge"
