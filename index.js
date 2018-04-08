@@ -44,9 +44,9 @@ const client  = mqtt.connect(args.mqtt)
 const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
 
 // Register callbacks
-shepherd.on('ready', handleReady);
 client.on('connect', handleConnect);
-shepherd.on('ind', handleInd);
+shepherd.on('ready', handleReady);
+shepherd.on('ind', handleMessage);
 process.on('SIGINT', handleQuit);
 
 // Start server
@@ -63,19 +63,30 @@ shepherd.start((err) => {
 // Callbacks
 function handleReady() {
     console.log('zigbee-shepherd ready');
-    
-    shepherd.list().forEach(function(dev){
-        if (dev.type === 'EndDevice')
-            console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
-        if (dev.manufId === 4151) // set all xiaomi devices to be online, so shepherd won't try to query info from devices (which would fail because they go tosleep)
-            shepherd.find(dev.ieeeAddr,1).getDevice().update({ status: 'online', joinTime: Math.floor(Date.now()/1000) });
+
+    const devices = shepherd.list().filter((device) => {
+        return device.manufId === 4151 && device.type === 'EndDevice'
+    });
+
+    console.log(`Currently ${devices.length} devices are joined:`);
+    devices.forEach((device) => {
+        console.log(device.ieeeAddr + ' ' + device.nwkAddr + ' ' + device.modelId);
+    });
+
+    // Set all Xiaomi devices to be online, so shepherd won't try 
+    // to query info from devices (which would fail because they go tosleep).
+    devices.forEach((device) => {
+        shepherd.find(device.ieeeAddr, 1).getDevice().update({ 
+            status: 'online', 
+            joinTime: Math.floor(Date.now()/1000) 
+        });
     });
 
     // Allow or disallow new devices to join the network.
     if (args.join) {
         console.log('WARNING: --join parameter detected, allowing new devices to join. Remove this parameter once you added all devices.')
     }
-    
+
     shepherd.permitJoin(args.join ? 255 : 0, (err) => {
         if (err) {
             console.log(err);
@@ -87,7 +98,7 @@ function handleConnect() {
     client.publish('xiaomiZb', 'Bridge online');
 }
 
-function handleInd(msg) {
+function handleMessage(msg) {
     // debug('msg: ' + util.inspect(msg, false, null));
     var pl = null;
     var topic = 'xiaomiZb/';
@@ -162,7 +173,6 @@ function handleInd(msg) {
 }
 
 function handleQuit() {
-    console.log("Stopping zigbee-shepherd...");
     shepherd.stop((err) => {
         if (err) {
             console.error('Error while stopping zigbee-shepherd');
