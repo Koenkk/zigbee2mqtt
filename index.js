@@ -34,7 +34,21 @@ const args = parser.parseArgs();
 const client  = mqtt.connect(args.mqtt)
 const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
 
-shepherd.on('ready', function() {
+// Register callbacks
+shepherd.on('ready', handleReady);
+shepherd.on('permitJoining', handlePermitJoining);
+client.on('connect', handleConnect);
+shepherd.on('ind', handleInd);
+
+// Start server
+shepherd.start((err) => {
+    if (err) {
+        console.error(err);
+    }
+});
+
+// Callbacks
+function handleReady() {
     console.log('Server is ready. Current devices:');
     shepherd.list().forEach(function(dev){
         if (dev.type === 'EndDevice')
@@ -47,11 +61,17 @@ shepherd.on('ready', function() {
         if (err)
             console.log(err);
     });
-});
-shepherd.on('permitJoining', function(joinTimeLeft) {
+}
+
+function handlePermitJoining(joinTimeLeft) {
     console.log(joinTimeLeft);
-});
-shepherd.on('ind', function(msg) {
+}
+
+function handleConnect() {
+    client.publish('xiaomiZb', 'Bridge online');
+}
+
+function handleInd(msg) {
     // debug('msg: ' + util.inspect(msg, false, null));
     var pl = null;
     var topic = 'xiaomiZb/';
@@ -123,12 +143,4 @@ shepherd.on('ind', function(msg) {
         console.log("MQTT Reporting to ", topic, " value ", pl)
         client.publish(topic, pl.toString());
     }
-});
-client.on('connect', function() {
-    client.publish('xiaomiZb', 'Bridge online')
-})
-
-shepherd.start(function(err) { // start the server
-    if (err)
-        console.log(err);
-});
+}
