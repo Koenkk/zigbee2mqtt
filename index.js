@@ -28,6 +28,14 @@ parser.addArgument(
     }
 );
 
+parser.addArgument(
+    ['--join'],
+    {
+        help: 'Allow new devices to join the network',
+        action: 'storeTrue',
+    }
+);
+
 const args = parser.parseArgs();
 
 // Setup client
@@ -37,7 +45,6 @@ const shepherd = new ZShepherd(args.device, {net: {panId: 0x1a62}});
 
 // Register callbacks
 shepherd.on('ready', handleReady);
-shepherd.on('permitJoining', handlePermitJoining);
 client.on('connect', handleConnect);
 shepherd.on('ind', handleInd);
 process.on('SIGINT', handleQuit);
@@ -55,24 +62,25 @@ shepherd.start((err) => {
 
 // Callbacks
 function handleReady() {
-    console.log('Server started');
+    console.log('zigbee-shepherd ready');
     
-
     shepherd.list().forEach(function(dev){
         if (dev.type === 'EndDevice')
             console.log(dev.ieeeAddr + ' ' + dev.nwkAddr + ' ' + dev.modelId);
         if (dev.manufId === 4151) // set all xiaomi devices to be online, so shepherd won't try to query info from devices (which would fail because they go tosleep)
             shepherd.find(dev.ieeeAddr,1).getDevice().update({ status: 'online', joinTime: Math.floor(Date.now()/1000) });
     });
-    // allow devices to join the network within 60 secs
-    shepherd.permitJoin(60, function(err) {
-        if (err)
-            console.log(err);
-    });
-}
 
-function handlePermitJoining(joinTimeLeft) {
-    console.log(joinTimeLeft);
+    // Allow or disallow new devices to join the network.
+    if (args.join) {
+        console.log('WARNING: --join parameter detected, allowing new devices to join. Remove this parameter once you added all devices.')
+    }
+    
+    shepherd.permitJoin(args.join ? 255 : 0, (err) => {
+        if (err) {
+            console.log(err);
+        }
+    });
 }
 
 function handleConnect() {
