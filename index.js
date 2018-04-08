@@ -17,7 +17,15 @@ if (settings.zigbee && settings.zigbee.bridge) {
     bridgeID = settings.zigbee.bridge;
 } 
 
-var client = mqtt.connect('mqtt://'+settings.mqtt.server, {
+var options;
+if (settings.mqtt.user && settings.mqtt.password) {
+    options = {
+        username: settings.mqtt.user,
+        password: settings.mqtt.password,
+    };
+}
+
+var client = mqtt.connect('mqtt://'+settings.mqtt.server,options, {
     will: {
         topic: settings.mqtt.base_topic + '/' + bridgeID + '/state',
         payload: 'offline',

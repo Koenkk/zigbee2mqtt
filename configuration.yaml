@@ -1,6 +1,8 @@
 default: 
   mqtt: 
-    server: localhost 
+    server: localhost
+    #user: username
+    #password: password
     base_topic: xiaomi 
   serial: 
     port: /dev/ttyACM0
