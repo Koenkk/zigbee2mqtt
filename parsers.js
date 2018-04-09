@@ -1,5 +1,3 @@
-const perfy = require('perfy');
-
 const clickLookup = {
     2: 'double',
     3: 'triple',
@@ -28,16 +26,14 @@ const parsers = [
 
              // 0 = click down, 1 = click up, else = multiple clicks
             if (state === 0) {
-                perfy.start(deviceID);
-                setTimeout(() => {
-                    if (perfy.exists(deviceID)) {
-                        publish('long');
-                        perfy.end(deviceID);
-                    }
-                }, 300); // After 300 seconds of not releasing we assume long click.
+                store[deviceID] = setTimeout(() => {
+                    publish('long');
+                    store[deviceID] = null;
+                }, 300); // After 300 milliseconds of not releasing we assume long click.
             } else if (state === 1) {
-                if (perfy.exists(deviceID)) {
-                    perfy.end(deviceID);
+                if (store[deviceID]) {
+                    clearTimeout(store[deviceID]);
+                    store[deviceID] = null;
                     publish('single');
                 }
             } else {

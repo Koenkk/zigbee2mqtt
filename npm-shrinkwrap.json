@@ -601,11 +601,6 @@
       "resolved": "https://registry.npmjs.org/path-is-absolute/-/path-is-absolute-1.0.1.tgz",
       "integrity": "sha1-F0uSaHNVNP+8es5r9TpanhtcX18="
     },
-    "perfy": {
-      "version": "1.1.2",
-      "resolved": "https://registry.npmjs.org/perfy/-/perfy-1.1.2.tgz",
-      "integrity": "sha1-5KASR7xab8mfPfHaD9Oi0lU7QyM="
-    },
     "process-nextick-args": {
       "version": "2.0.0",
       "resolved": "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.0.tgz",

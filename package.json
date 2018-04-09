@@ -24,7 +24,6 @@
   "homepage": "https://github.com/AndrewLinden/xiaomi-zb2mqtt#readme",
   "dependencies": {
     "mqtt": "*",
-    "perfy": "*",
     "zigbee-shepherd": "*",
     "yaml-config": "*"
   }
