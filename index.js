@@ -116,7 +116,7 @@ function handleMessage(msg) {
     // Parse the message.
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
     const payload = parser.parse(msg).toString();
-    const topic = `xiaomi/${friendlyName}/${parser.topic}`;
+    const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
 
     // Send the message.
     console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
