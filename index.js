@@ -102,11 +102,13 @@ function handleMessage(msg) {
     }
 
     // Check if we have a parser for this type of message.
+    const modelID = msg.endpoints[0].device.modelId;
     const deviceID = msg.endpoints[0].devId;
-    const parser = parsers.find((p) => p.supportedDevices.includes(deviceID));
+    const cid = msg.data.cid;
+    const parser = parsers.find((p) => p.supportedDevices.includes((deviceID, modelID)) && p.cid === cid);
     if (!parser) {
         console.log(`
-            WARNING: No parser available for deviceID: ${deviceID}
+            WARNING: No parser available for (${deviceID}, '${modelID}') for cid: ${cid}
             Please report on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
             to add support for your device`);
         return;

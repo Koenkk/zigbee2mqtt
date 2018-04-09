@@ -6,10 +6,21 @@ const clickLookup = {
     4: 'quadruple',
 }
 
+// Used as reference: (DeviceID, ModelID, Description)
+const sensorMapping = [
+    (260, 'lumi.sensor_switch', 'WXKG01LM - button switch'),
+    (24321, 'lumi.sens', 'WSDCGQ01LM - temprature/humidity sensor'),
+    (260, 'lumi.sensor_motion', 'RTCGQ11LM - Human body sensor'),
+    (260, 'lumi.sensor_magnet', 'YTC4005CN - Magnet door/window sensor'),
+]
+
+// Global variable store that can be used by devices.
+const store = {}
+
 module.exports = [
     {
-        supportedDevices: [260],
-        description: 'WXKG01LM switch (260)',
+        supportedDevices: [(260, 'lumi.sensor_switch')],
+        cid: 'genOnOff',
         topic: 'switch',
         parse: (msg, publish) => {
             const deviceID = msg.endpoints[0].device.ieeeAddr;
@@ -37,32 +48,50 @@ module.exports = [
                     publish('many');
                 }
             }
+
+            return null;
         }
     },
-]
+    {
+        supportedDevices: [(24321, 'lumi.sens')],
+        cid: 'msTemperatureMeasurement',
+        topic: 'temperature',
+        parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
+    },
+    {
+        supportedDevices: [(24321, 'lumi.sens')],
+        cid: 'msRelativeHumidity',
+        topic: 'humidity',
+        parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
+    },
+    {
+        supportedDevices: [(260, 'lumi.sensor_motion')],
+        cid: 'msOccupancySensing',
+        topic: 'occupancy',
+        parse: (msg, publish) => {
+            // The occupancy sensor only sends a message when motion detected.
+            // Therefore we need to publish the no_motion detected by ourselves.
+            // no_motion is triggered after 3 minutes of no motion.
+            const noMotionTimeout = 3; // in minutes
+            const deviceID = msg.endpoints[0].device.ieeeAddr;
 
-// // TODO
-// 1001: {
-//     topic: 'temperature',
-//     payload: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0,
-// },
-// // TODO
-// 1002: {
-//     topic: 'humidity',
-//     payload: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0,
-// },
-// // TODO
-// 1003: {
-//     topic: 'pressure',
-//     payload: (msg) => parseFloat(msg.data.data['16']) / 10.0,
-// },
-// // TODO
-// 1004: {
-//     topic: 'occupancy',
-//     payload: (msg) => msg.data.data['occupancy'],      
-// },
-// // TODO
-// 1005: {
-//     topic: 'illuminance',
-//     payload: (msg) => msg.data.data['measuredValue'],       
-// },
+            // Stop existing timer because motion is detected and set a new one.
+            if (store[deviceID]) {
+                clearTimeout(store[deviceID]);
+                store[deviceID] = null;
+            }
+
+            store[deviceID] = setTimeout(() => {
+                publish('no_motion')
+                store[deviceID] = null;
+            }, noMotionTimeout * 60 * 1000); 
+            return 'motion';
+        }
+    },
+    {
+        supportedDevices: [(260, 'lumi.sensor_magnet')],
+        cid: 'genOnOff',
+        topic: 'state',
+        parse: (msg) => msg.data.data['onOff'] ? 'open' : 'closed'
+    }
+];
