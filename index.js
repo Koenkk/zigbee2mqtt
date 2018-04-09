@@ -105,7 +105,11 @@ function handleMessage(msg) {
     const modelID = msg.endpoints[0].device.modelId;
     const deviceID = msg.endpoints[0].devId;
     const cid = msg.data.cid;
-    const parser = parsers.find((p) => p.supportedDevices.includes((deviceID, modelID)) && p.cid === cid);
+    const parser = parsers.find((p) => {
+        const device = p.supportedDevices.find((device) => device[0] === deviceID && device[1] === modelID);
+        return device && p.cid === cid;
+    });
+
     if (!parser) {
         console.log(`
             WARNING: No parser available for (${deviceID}, '${modelID}') for cid: ${cid}
