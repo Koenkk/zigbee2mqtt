@@ -1,36 +1,14 @@
-# xiaomi-zb2mqtt
-Xiaomi Zigbee to MQTT bridge using zigbee-shepherd.
+# WORK IN PROGRESS: xiaomi-zb2mqtt
+![Some Xiaomi sensors](xiaomi.png)
 
-This little script allows you to use Xiaomi Zigbee sensors and switches **without** Xiaomi's gateway. It bridges the events sent from the sensors to MQTT. You can 
-integrate the cheap and nice Zigbee sensors and switches with whatever smart home infrastructure you are using.
+Allows you to use your Xiaomi Zigbee sensors and switches **without** Xiaomi's gateway.
 
-### To run the bridge
+It bridges the events sent from the sensors and switches to MQTT. You can integrate the cheap and nice Zigbee sensors and switches with whatever smart home infrastructure you are using.
 
-* Install
-```sh  
-$ git clone https://github.com/AndrewLinden/xiaomi-zb2mqtt.git  
-$ cd xiaomi-zb2mqtt  
-/xiaomi-zb2mqtt$ npm install  
-```
-* Configuration: for the moment you have to edit index.js and set your serial port and mqtt broker.
+The [wiki](https://github.com/Koenkk/xiaomi-zb2mqtt/wiki) provides you all the information needed to get up and running!
 
-* Run it
-```sh  
-/xiaomi-zb2mqtt$ node index.js  
-```
-
-* To see whats happening behind the scenes run it with debug enabled:
-```sh  
-/xiaomi-zb2mqtt$ DEBUG=* node index.js  
-```
-### Supports
-* WXKG01LM - Single, double, triple, quad and "more than five" click. Push and hold long click. 
-* WXKG02LM - Left, right and both click
-* WSDCGQ11LM - Aqara Temperature Hudimity sensor with Temperature, Humidity and Pressure
-* RTCGQ11LM - Xiaomi Smart Home Aqara Human Body Sensor
-* MCCGQ11LM - Xiaomi Aqara Window Door Sensor
-
-### Notes
-* You need CC2531 USB stick flashed with CC2531ZNP-Pro-Secure_LinkKeyJoin.hex from here: https://github.com/mtornblad/zstack-1.2.2a.44539/tree/master/CC2531
-* Zigbee shepherd's pairing process can take quite a while (more than a minute).
-* When pairing WXKG01LM, after reset you need to toggle (short keypress) the reset button every couple of seconds to keep the switch from going to sleep until the pairing is complete.
+### Contributors
+* [AndrewLinden](https://github.com/AndrewLinden)
+* [oskarn97](https://github.com/oskarn97)
+* [dgomes](https://github.com/dgomes)
+* [Koenkk](https://github.com/Koenk)
