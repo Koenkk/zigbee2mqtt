@@ -10,11 +10,12 @@
       "integrity": "sha1-ad0ojIF8hy3HLDfp0eciayayMcU="
     },
     "argparse": {
-      "version": "1.0.10",
-      "resolved": "https://registry.npmjs.org/argparse/-/argparse-1.0.10.tgz",
-      "integrity": "sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==",
+      "version": "0.1.16",
+      "resolved": "https://registry.npmjs.org/argparse/-/argparse-0.1.16.tgz",
+      "integrity": "sha1-z9AeD7uj1srtBJ+9dY1A9lGW9Xw=",
       "requires": {
-        "sprintf-js": "1.0.3"
+        "underscore": "1.7.0",
+        "underscore.string": "2.4.0"
       }
     },
     "async": {
@@ -410,17 +411,6 @@
       "requires": {
         "argparse": "0.1.16",
         "esprima": "1.0.4"
-      },
-      "dependencies": {
-        "argparse": {
-          "version": "0.1.16",
-          "resolved": "https://registry.npmjs.org/argparse/-/argparse-0.1.16.tgz",
-          "integrity": "sha1-z9AeD7uj1srtBJ+9dY1A9lGW9Xw=",
-          "requires": {
-            "underscore": "1.7.0",
-            "underscore.string": "2.4.0"
-          }
-        }
       }
     },
     "json-stable-stringify": {
@@ -1626,11 +1616,6 @@
       "requires": {
         "through2": "2.0.3"
       }
-    },
-    "sprintf-js": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/sprintf-js/-/sprintf-js-1.0.3.tgz",
-      "integrity": "sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw="
     },
     "stream-browserify": {
       "version": "2.0.1",

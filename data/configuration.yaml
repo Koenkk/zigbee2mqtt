@@ -4,5 +4,6 @@ default:
     base_topic: xiaomi
   serial: 
     port: /dev/ttyACM0
+  allowJoin: true
 
 user:

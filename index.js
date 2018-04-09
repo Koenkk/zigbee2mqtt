@@ -3,7 +3,6 @@ const util = require("util");
 const perfy = require('perfy');
 const ZShepherd = require('zigbee-shepherd');
 const mqtt = require('mqtt')
-const ArgumentParser = require('argparse').ArgumentParser;
 const fs = require('fs');
 const parsers = require('./parsers');
 const config = require('yaml-config');
@@ -15,23 +14,6 @@ if (!settings.devices) {
     settings.devices = {};
     writeConfig();
 }
-
-// Parse arguments
-const parser = new ArgumentParser({
-    version: '1.0.0',
-    addHelp:true,
-    description: 'Xiaomi Zigbee to MQTT bridge using zigbee-shepherd'
-});
-
-parser.addArgument(
-    ['--join'],
-    {
-        help: 'Allow new devices to join the network',
-        action: 'storeTrue',
-    }
-);
-
-const args = parser.parseArgs();
 
 // Setup client
 console.log(`Connecting to MQTT server at ${settings.mqtt.server}`)
@@ -84,11 +66,15 @@ function handleReady() {
     });
 
     // Allow or disallow new devices to join the network.
-    if (args.join) {
-        console.log('WARNING: --join parameter detected, allowing new devices to join. Remove this parameter once you added all devices.')
+    if (settings.allowJoin) {
+        console.log(`
+            WARNING: allowJoin set to  true in configuration.yaml.
+            Allowing new devices to join. 
+            Remove this parameter once you joined all devices.
+        `);
     }
 
-    shepherd.permitJoin(args.join ? 255 : 0, (err) => {
+    shepherd.permitJoin(settings.allowJoin ? 255 : 0, (err) => {
         if (err) {
             console.log(err);
         }
