@@ -6,30 +6,15 @@ const mqtt = require('mqtt')
 const ArgumentParser = require('argparse').ArgumentParser;
 const fs = require('fs');
 const parsers = require('./parsers');
+const config = require('yaml-config');
+const configFile = `${__dirname}/data/configuration.yaml`
+const settings = config.readConfig(configFile, 'user');
 
-const configFile = `${__dirname}/data/config.json`
-
-// Create configFile if does not exsist.
-if (!fs.existsSync(configFile)) {
-    console.log(`Created config file at ${configFile}`);
-    console.log('Modify this config file according to your situation.');
-    console.log('"mqtt": the MQTT host, E.G. mqtt://192.168.1.10')
-    console.log('"device": location of CC2531 usb stick, E.G. /dev/ttyACM0')
-    console.log("")
-    console.log('Once finished, restart the application.');
-    console.log('Exiting...');
-
-    const template = {
-        'mqtt': 'mqtt://192.168.1.10',
-        'device': '/dev/ttyACM0',
-        'friendlyNames': {}
-    }
-
-    writeConfig(template);
-    process.exit();
+// Create empty device array if not set yet.
+if (!settings.devices) {
+    settings.devices = {};
+    writeConfig();
 }
-
-const config = readConfig();
 
 // Parse arguments
 const parser = new ArgumentParser({
@@ -49,10 +34,10 @@ parser.addArgument(
 const args = parser.parseArgs();
 
 // Setup client
-console.log(`Connecting to MQTT server at ${config.mqtt}`)
-const client  = mqtt.connect(config.mqtt)
+console.log(`Connecting to MQTT server at ${settings.mqtt.server}`)
+const client  = mqtt.connect(settings.mqtt.server)
 const shepherd = new ZShepherd(
-    config.device, 
+    settings.serial.port, 
     {
         net: {panId: 0x1a62},
         dbPath: `${__dirname}/data/database.db`
@@ -66,7 +51,7 @@ shepherd.on('ind', handleMessage);
 process.on('SIGINT', handleQuit);
 
 // Start server
-console.log(`Starting zigbee-shepherd with device ${config.device}`)
+console.log(`Starting zigbee-shepherd with device ${settings.serial.port}`)
 shepherd.start((err) => {
     if (err) {
         console.error('Error while starting zigbee-shepherd');
@@ -122,10 +107,13 @@ function handleMessage(msg) {
     const device = msg.endpoints[0].device;
     
     // Check if new device, add to config if new.
-    if (!config.devices[device.ieeeAddr]) {
+    if (!settings.devices[device.ieeeAddr]) {
         console.log(`Detected new device: ${device.ieeeAddr} ${device.nwkAddr} ${device.modelId}`);
-        config.devices[device.ieeeAddr] = device.ieeeAddr;
-        writeConfig(config);
+
+        settings.devices[device.ieeeAddr] = {
+            friendly_name: device.ieeeAddr
+        };
+        writeConfig();
     }
 
     // Check if we have a parser for this type of message.
@@ -140,7 +128,7 @@ function handleMessage(msg) {
     }
 
     // Parse the message.
-    const friendlyName = config.devices[device.ieeeAddr];
+    const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
     const payload = parser.parse(msg).toString();
     const topic = `xiaomi/${friendlyName}/${parser.topic}`;
 
@@ -161,11 +149,7 @@ function handleQuit() {
     });
 }
 
-function readConfig() {
-    return JSON.parse(fs.readFileSync(configFile, 'utf8'));
-}
 
-function writeConfig(content) {
-    const pretty = JSON.stringify(content, null, 2);
-    fs.writeFileSync(configFile, pretty);
+function writeConfig() {
+    config.updateConfig(settings, configFile, 'user');
 }

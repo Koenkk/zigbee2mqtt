@@ -38,6 +38,13 @@
       "integrity": "sha1-fbs7IQ/coIJFDa0jNMMErzm9x4Q=",
       "requires": {
         "underscore": "1.4.4"
+      },
+      "dependencies": {
+        "underscore": {
+          "version": "1.4.4",
+          "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.4.4.tgz",
+          "integrity": "sha1-YaajIBBiKvoHljvzJSA88SI51gQ="
+        }
       }
     },
     "bindings": {
@@ -239,6 +246,11 @@
         "is-buffer": "1.1.6"
       }
     },
+    "esprima": {
+      "version": "1.0.4",
+      "resolved": "https://registry.npmjs.org/esprima/-/esprima-1.0.4.tgz",
+      "integrity": "sha1-n1V+CPw7TSbs6d00+Pv0drYlha0="
+    },
     "extend": {
       "version": "3.0.1",
       "resolved": "https://registry.npmjs.org/extend/-/extend-3.0.1.tgz",
@@ -391,6 +403,26 @@
       "resolved": "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz",
       "integrity": "sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE="
     },
+    "js-yaml": {
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-2.1.3.tgz",
+      "integrity": "sha1-D/tWF75VUlh4Bj16Fq7n/dKC6Ew=",
+      "requires": {
+        "argparse": "0.1.16",
+        "esprima": "1.0.4"
+      },
+      "dependencies": {
+        "argparse": {
+          "version": "0.1.16",
+          "resolved": "https://registry.npmjs.org/argparse/-/argparse-0.1.16.tgz",
+          "integrity": "sha1-z9AeD7uj1srtBJ+9dY1A9lGW9Xw=",
+          "requires": {
+            "underscore": "1.7.0",
+            "underscore.string": "2.4.0"
+          }
+        }
+      }
+    },
     "json-stable-stringify": {
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/json-stable-stringify/-/json-stable-stringify-1.0.1.tgz",
@@ -434,6 +466,11 @@
           }
         }
       }
+    },
+    "log": {
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/log/-/log-1.4.0.tgz",
+      "integrity": "sha1-S6HYkP3iSbAx3KA7w36q8yVlbxw="
     },
     "minimatch": {
       "version": "3.0.4",
@@ -514,6 +551,13 @@
         "localforage": "1.7.1",
         "mkdirp": "0.5.1",
         "underscore": "1.4.4"
+      },
+      "dependencies": {
+        "underscore": {
+          "version": "1.4.4",
+          "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.4.4.tgz",
+          "integrity": "sha1-YaajIBBiKvoHljvzJSA88SI51gQ="
+        }
       }
     },
     "object-keys": {
@@ -1653,9 +1697,14 @@
       "integrity": "sha1-5z3T17DXxe2G+6xrCufYxqadUPo="
     },
     "underscore": {
-      "version": "1.4.4",
-      "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.4.4.tgz",
-      "integrity": "sha1-YaajIBBiKvoHljvzJSA88SI51gQ="
+      "version": "1.7.0",
+      "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.7.0.tgz",
+      "integrity": "sha1-a7rwh3UA02vjTsqlhODbn+8DUgk="
+    },
+    "underscore.string": {
+      "version": "2.4.0",
+      "resolved": "https://registry.npmjs.org/underscore.string/-/underscore.string-2.4.0.tgz",
+      "integrity": "sha1-jN2PusTi0uoefi6Al8QvRCKA+Fs="
     },
     "unique-stream": {
       "version": "2.2.1",
@@ -1712,6 +1761,15 @@
       "version": "4.0.1",
       "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz",
       "integrity": "sha1-pcbVMr5lbiPbgg77lDofBJmNY68="
+    },
+    "yaml-config": {
+      "version": "0.3.0",
+      "resolved": "https://registry.npmjs.org/yaml-config/-/yaml-config-0.3.0.tgz",
+      "integrity": "sha1-vfOpBOaBWMgw+g/lE/7IfZVeN6I=",
+      "requires": {
+        "js-yaml": "2.1.3",
+        "log": "1.4.0"
+      }
     },
     "zcl-id": {
       "version": "0.3.2",

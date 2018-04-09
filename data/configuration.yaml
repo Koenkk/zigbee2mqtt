@@ -1,0 +1,8 @@
+default: 
+  mqtt: 
+    server: "mqtt://localhost"
+    base_topic: xiaomi
+  serial: 
+    port: /dev/ttyACM0
+
+user:

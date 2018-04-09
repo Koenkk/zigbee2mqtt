@@ -26,6 +26,7 @@
     "mqtt": "*",
     "perfy": "*",
     "zigbee-shepherd": "*",
-    "argparse": "*"
+    "argparse": "*",
+    "yaml-config": "*"
   }
 }
