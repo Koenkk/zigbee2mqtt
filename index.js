@@ -1,6 +1,5 @@
 const debug = require('debug')('xiaomi-zb2mqtt')
 const util = require("util");
-const perfy = require('perfy');
 const ZShepherd = require('zigbee-shepherd');
 const mqtt = require('mqtt')
 const fs = require('fs');
@@ -113,14 +112,24 @@ function handleMessage(msg) {
         return;
     }
 
-    // Parse the message.
+    // Parse generic information from message.
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
-    const payload = parser.parse(msg).toString();
     const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
 
-    // Send the message.
-    console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
-    client.publish(topic, payload);
+    // Define publih function.
+    const publish = (payload) => {
+        console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
+        client.publish(topic, payload.toString());
+    }
+
+    // Get payload for the message.
+    // - If a payload is returned publish it to the MQTT broker
+    // - If NO payload is returned do nothing. This is for non-standard behaviour
+    //   for e.g. click switches where we need to count number of clicks and detect long presses.
+    const payload = parser.parse(msg, publish);
+    if (payload) {
+        publish(payload);
+    }
 }
 
 function handleQuit() {
