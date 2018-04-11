@@ -14,6 +14,7 @@
     "cc2531"
   ],
   "scripts": {
+    "start": "node index.js",
     "docs": "node doc.js"
   },
   "author": "Koen Kanters",
