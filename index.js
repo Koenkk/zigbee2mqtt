@@ -32,6 +32,15 @@ shepherd.on('ready', handleReady);
 shepherd.on('ind', handleMessage);
 process.on('SIGINT', handleQuit);
 
+// Check every interval if connected to MQTT server.
+setInterval(() => {
+    if (client.reconnecting) {
+        console.error(`
+            ERROR: Not connected to MQTT server!`
+        );
+    }
+}, 10 * 1000); // seconds * 1000.
+
 // Start server
 console.log(`Starting zigbee-shepherd with device ${settings.serial.port}`)
 shepherd.start((err) => {
@@ -43,7 +52,6 @@ shepherd.start((err) => {
     }
 });
 
-// Callbacks
 function handleReady() {
     console.log('zigbee-shepherd ready');
 
@@ -80,7 +88,7 @@ function handleReady() {
 }
 
 function handleConnect() {
-    client.publish(`${settings.mqtt.base_topic}/bridge/state`, 'online');
+    mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'online');
 }
 
 function handleMessage(msg) {
@@ -133,11 +141,8 @@ function handleMessage(msg) {
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
     const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
 
-    // Define publih function.
-    const publish = (payload) => {
-        console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
-        client.publish(topic, payload.toString());
-    }
+    // Define publish function.
+    const publish = (payload) => mqttPublish(topic, payload.toString());
 
     // Get payload for the message.
     // - If a payload is returned publish it to the MQTT broker
@@ -157,11 +162,24 @@ function handleQuit() {
             console.error('zigbee-shepherd stopped')
         }
 
-        client.publish(`${settings.mqtt.base_topic}/bridge/state`, 'offline');
+        mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline');
         process.exit();
     });
 }
 
+function mqttPublish(topic, payload) {
+    if (client.reconnecting) {
+        console.log(`
+            ERROR: Not connected to MQTT server!
+            Cannot send message: topic: '${topic}', payload: '${payload}'
+        `);
+
+        return;
+    }
+
+    console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
+    client.publish(topic, payload);
+}
 
 function writeConfig() {
     config.updateConfig(settings, configFile, 'user');
