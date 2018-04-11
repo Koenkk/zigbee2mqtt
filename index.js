@@ -7,7 +7,7 @@ const parsers = require('./parsers');
 const deviceMapping = require('./devices');
 const config = require('yaml-config');
 const configFile = `${__dirname}/data/configuration.yaml`
-const settings = config.readConfig(configFile, 'user');
+let settings = config.readConfig(configFile, 'user');
 
 // Create empty device array if not set yet.
 if (!settings.devices) {
@@ -165,6 +165,7 @@ function handleQuit() {
 
 function writeConfig() {
     config.updateConfig(settings, configFile, 'user');
+    settings = config.readConfig(configFile, 'user');
 }
 
 function getDeviceLogMessage(device) {
