@@ -13,6 +13,9 @@
     "mqtt",
     "cc2531"
   ],
+  "scripts": {
+    "start": "node index.js"
+  },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
   "bugs": {
