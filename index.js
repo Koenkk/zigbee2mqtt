@@ -4,6 +4,7 @@ const ZShepherd = require('zigbee-shepherd');
 const mqtt = require('mqtt')
 const fs = require('fs');
 const parsers = require('./parsers');
+const deviceMapping = require('./devices');
 const config = require('yaml-config');
 const configFile = `${__dirname}/data/configuration.yaml`
 const settings = config.readConfig(configFile, 'user');
@@ -51,9 +52,7 @@ function handleReady() {
     });
 
     console.log(`Currently ${devices.length} devices are joined:`);
-    devices.forEach((device) => {
-        console.log(`${device.ieeeAddr} ${device.nwkAddr} ${device.modelId}`);
-    });
+    devices.forEach((device) => console.log(getDeviceLogMessage(device)));
 
     // Set all Xiaomi devices to be online, so shepherd won't try 
     // to query info from devices (which would fail because they go tosleep).
@@ -81,7 +80,7 @@ function handleReady() {
 }
 
 function handleConnect() {
-    client.publish('xiaomiZb', 'Bridge online');
+    client.publish(`${settings.mqtt.base_topic}/bridge/state`, 'online');
 }
 
 function handleMessage(msg) {
@@ -90,31 +89,43 @@ function handleMessage(msg) {
     }
 
     const device = msg.endpoints[0].device;
-    
-    // Check if new device, add to config if new.
+
+    // New device!
     if (!settings.devices[device.ieeeAddr]) {
-        console.log(`Detected new device: ${device.ieeeAddr} ${device.nwkAddr} ${device.modelId}`);
+        console.log(`New device with address ${device.ieeeAddr} connected!`);
 
         settings.devices[device.ieeeAddr] = {
             friendly_name: device.ieeeAddr
         };
+        
         writeConfig();
     }
 
-    // Check if we have a parser for this type of message.
+    // We can't handle devices without modelId.
+    if (!device.modelId) {
+        return;
+    }
+
+    // Map modelID to Xiaomi model. 
     const modelID = msg.endpoints[0].device.modelId;
-    const deviceID = msg.endpoints[0].devId;
+    const mappedModel = deviceMapping[modelID];
+
+    if (!mappedModel) {
+        console.log(`
+            WARNING: Device with modelID '${modelID}' is not supported.
+            Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
+            to add support for your device`);
+    }
+
+    // Find a parser for this modelID and cid.
     const cid = msg.data.cid;
-    const parser = parsers.find((p) => {
-        const device = p.supportedDevices.find((device) => device[0] === deviceID && device[1] === modelID);
-        return device && p.cid === cid;
-    });
+    const parser = parsers.find((p) => p.devices.includes(mappedModel.model) && p.cid === cid);
 
     if (!parser) {
         console.log(`
-            WARNING: No parser available for (${deviceID}, '${modelID}') for cid: ${cid}
-            Please report on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
-            to add support for your device`);
+            WARNING: No parser available for '${mappedModel.model}' with cid '${cid}'
+            Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
+            with this message.`);
         return;
     }
 
@@ -146,6 +157,7 @@ function handleQuit() {
             console.error('zigbee-shepherd stopped')
         }
 
+        client.publish(`${settings.mqtt.base_topic}/bridge/state`, 'offline');
         process.exit();
     });
 }
@@ -153,4 +165,19 @@ function handleQuit() {
 
 function writeConfig() {
     config.updateConfig(settings, configFile, 'user');
+}
+
+function getDeviceLogMessage(device) {
+    let friendlyName = 'unknown';
+    let friendlyDevice = {model: 'unkown', description: 'unknown'};
+
+    if (deviceMapping[device.modelId]) {
+        friendlyDevice = deviceMapping[device.modelId];
+    }
+    
+    if (settings.devices[device.ieeeAddr]) {
+        friendlyName = settings.devices[device.ieeeAddr].friendly_name
+    }
+
+    return `${friendlyName} (${device.ieeeAddr}): ${friendlyDevice.model} - ${friendlyDevice.description}`;
 }

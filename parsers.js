@@ -4,20 +4,12 @@ const clickLookup = {
     4: 'quadruple',
 }
 
-// Used as reference: (DeviceID, ModelID, Description)
-const documentation = [
-    [260, 'lumi.sensor_switch', 'WXKG01LM - button switch'],
-    [24321, 'lumi.sens', 'WSDCGQ01LM - temprature/humidity sensor'],
-    [260, 'lumi.sensor_motion', 'RTCGQ11LM - Human body sensor'],
-    [260, 'lumi.sensor_magnet', 'YTC4005CN - Magnet door/window sensor'],
-]
-
 // Global variable store that can be used by devices.
 const store = {}
 
 const parsers = [
     {
-        supportedDevices: [[260, 'lumi.sensor_switch']],
+        devices: ['WXKG01LM'],
         cid: 'genOnOff',
         topic: 'switch',
         parse: (msg, publish) => {
@@ -49,19 +41,19 @@ const parsers = [
         }
     },
     {
-        supportedDevices: [[24321, 'lumi.sens']],
+        devices: ['WSDCGQ01LM'],
         cid: 'msTemperatureMeasurement',
         topic: 'temperature',
         parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
     },
     {
-        supportedDevices: [[24321, 'lumi.sens']],
+        devices: ['WSDCGQ01LM'],
         cid: 'msRelativeHumidity',
         topic: 'humidity',
         parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
     },
     {
-        supportedDevices: [[260, 'lumi.sensor_motion']],
+        devices: ['RTCGQ01LM'],
         cid: 'msOccupancySensing',
         topic: 'occupancy',
         parse: (msg, publish) => {
@@ -85,26 +77,11 @@ const parsers = [
         }
     },
     {
-        supportedDevices: [[260, 'lumi.sensor_magnet']],
+        devices: ['MCCGQ01LM'],
         cid: 'genOnOff',
         topic: 'state',
         parse: (msg) => msg.data.data['onOff'] ? 'open' : 'closed'
     }
 ];
-
-// Ensure consistency of documentation.
-parsers.forEach((parser) => {
-    parser.supportedDevices.forEach(device => {
-        const docs = documentation.filter(doc => {
-            return device[0] === doc[0] && device[1] === doc[1];
-        });
-
-        if (docs.length === 0) {
-            console.log("ERROR: Incosistent documentation");
-            console.log(`Please add [${device[0]}, '${device[1]}', 'Add description here'], to documentation`);
-            process.exit()
-        }
-    });
-});
 
 module.exports = parsers;
