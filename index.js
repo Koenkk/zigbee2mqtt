@@ -17,7 +17,14 @@ if (!settings.devices) {
 
 // Setup client
 console.log(`Connecting to MQTT server at ${settings.mqtt.server}`)
-const client  = mqtt.connect(settings.mqtt.server)
+
+const options = {};
+if (settings.mqtt.user && settings.mqtt.password) {
+    options.username = settings.mqtt.user;
+    options.password = settings.mqtt.password;
+}
+
+const client  = mqtt.connect(settings.mqtt.server, options)
 const shepherd = new ZShepherd(
     settings.serial.port, 
     {
