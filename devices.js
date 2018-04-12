@@ -2,7 +2,7 @@ const devices = {
     'lumi.sensor_switch': {
         model: 'WXKG01LM',
         description: 'MiJia wireless switch',
-        supports: 'single, double, triple, quadruple and long click',
+        supports: 'single, double, triple, quadruple, many and long click',
     },
     'lumi.sens': {
         model: 'WSDCGQ01LM',
