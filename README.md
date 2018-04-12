@@ -1,4 +1,4 @@
-# WORK IN PROGRESS: xiaomi-zb2mqtt
+# xiaomi-zb2mqtt
 ![Some Xiaomi sensors](xiaomi.png)
 
 Allows you to use your Xiaomi Zigbee sensors and switches **without** Xiaomi's gateway.
