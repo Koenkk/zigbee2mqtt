@@ -55,11 +55,6 @@ const plannedToSupport = [
         supports: '-',
     },
     {
-        model: 'QBKG03LM',
-        description: 'Aqara double key wired wall switch',
-        supports: '-',
-    },
-    {
         model: 'ZNCZ02LM',
         description: 'Mi power plug ZigBee',
         supports: '-',
@@ -104,7 +99,7 @@ const logDevices = (devices) => {
     console.log('| Model | Description | Picture |')
     console.log('| ------------- | ------------- | -------------------------- |')
     devices.forEach((device) => {
-        console.log(`| ${device.model} | ${device.description} (${device.supports}) | ![${device.model}](images/devices/${device.model}.jpg) |`);
+        console.log(`| ${device.model} | ${device.description} (${device.supports}) | ![${device.model}](images/devices/${device.model.replace('/', '-')}.jpg) |`);
     });
 }
 
