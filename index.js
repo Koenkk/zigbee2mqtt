@@ -107,7 +107,7 @@ function handleReady() {
 }
 
 function handleConnect() {
-    mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'online');
+    mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'online', true);
 }
 
 function handleMessage(msg) {
@@ -122,7 +122,8 @@ function handleMessage(msg) {
         logger.info(`New device with address ${device.ieeeAddr} connected!`);
 
         settings.devices[device.ieeeAddr] = {
-            friendly_name: device.ieeeAddr
+            friendly_name: device.ieeeAddr,
+            retain: false,
         };
         
         writeConfig();
@@ -154,13 +155,14 @@ function handleMessage(msg) {
 
     // Parse generic information from message.
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
+    const retain = settings.devices[device.ieeeAddr].retain;
     const topic = `${settings.mqtt.base_topic}/${friendlyName}`;
     const publish = (payload) => {
         if (attributeStore[device.ieeeAddr]) {
             payload = {...attributeStore[device.ieeeAddr], ...payload};
         }
 
-        mqttPublish(topic, JSON.stringify(payload));
+        mqttPublish(topic, JSON.stringify(payload), retain);
     }
 
     // Get payload for the message.
@@ -186,12 +188,12 @@ function handleQuit() {
             logger.error('zigbee-shepherd stopped')
         }
 
-        mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline');
+        mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline', true);
         process.exit();
     });
 }
 
-function mqttPublish(topic, payload) {
+function mqttPublish(topic, payload, retain) {
     if (client.reconnecting) {
         logger.error(`Not connected to MQTT server!`);
         logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
@@ -199,7 +201,7 @@ function mqttPublish(topic, payload) {
     }
 
     logger.info(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
-    client.publish(topic, payload, {retain: settings.mqtt.retain});
+    client.publish(topic, payload, {retain: retain});
 }
 
 function writeConfig() {
