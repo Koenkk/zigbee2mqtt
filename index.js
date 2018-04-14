@@ -6,9 +6,10 @@ const fs = require('fs');
 const parsers = require('./parsers');
 const deviceMapping = require('./devices');
 const config = require('yaml-config');
-const configFile = `${__dirname}/data/configuration.yaml`
+const configFile = `${__dirname}/data/configuration.yaml`;
 const winston = require('winston');
 let settings = config.readConfig(configFile, 'user');
+const attributeStore = {};
 
 const logger = new (winston.Logger)({
     transports: [
@@ -153,17 +154,25 @@ function handleMessage(msg) {
 
     // Parse generic information from message.
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
+    const topic = `${settings.mqtt.base_topic}/${friendlyName}`;
+    const publish = (payload) => {
+        if (attributeStore[device.ieeeAddr]) {
+            payload = {...attributeStore[device.ieeeAddr], ...payload};
+        }
+
+        mqttPublish(topic, JSON.stringify(payload));
+    }
 
     // Get payload for the message.
     // - If a payload is returned publish it to the MQTT broker
     // - If NO payload is returned do nothing. This is for non-standard behaviour
     //   for e.g. click switches where we need to count number of clicks and detect long presses.
     _parsers.forEach((parser) => {
-        const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
-        const publish = (payload) => mqttPublish(topic, payload.toString());
         const payload = parser.parse(msg, publish);
 
-        if (payload) {
+        if (parser.attribute && payload) {
+            attributeStore[device.ieeeAddr] = {...attributeStore[device.ieeeAddr], ...payload};
+        } else if (payload) {
             publish(payload);
         }
     });

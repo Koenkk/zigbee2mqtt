@@ -25,20 +25,21 @@ const store = {}
 
 const parsers = [
     {
-        devices: ['WXKG01LM'],
+        devices: ['WXKG01LM', 'RTCGQ01LM', 'WSDCGQ01LM', 'MCCGQ01LM'],
         cid: 'genBasic',
-        topic: 'battery',
+        attribute: true,
         parse: (msg, publish) => {
             if (msg.data.data['65282']) {
                 const voltage = msg.data.data['65282']['1'].elmVal;
-                return voltage ? toPercentage(voltage, battery.min, battery.max) : null;
+                if (voltage) {
+                    return {battery: toPercentage(voltage, battery.min, battery.max)}
+                }
             }
         }
     },
     {
         devices: ['WXKG01LM'],
         cid: 'genOnOff',
-        topic: 'switch',
         parse: (msg, publish) => {
             const deviceID = msg.endpoints[0].device.ieeeAddr;
             const state = msg.data.data['onOff'];
@@ -46,41 +47,35 @@ const parsers = [
              // 0 = click down, 1 = click up, else = multiple clicks
             if (state === 0) {
                 store[deviceID] = setTimeout(() => {
-                    publish('long');
+                    publish({click: 'long'});
                     store[deviceID] = null;
                 }, 300); // After 300 milliseconds of not releasing we assume long click.
             } else if (state === 1) {
                 if (store[deviceID]) {
                     clearTimeout(store[deviceID]);
                     store[deviceID] = null;
-                    publish('single');
+                    publish({click: 'single'});
                 }
             } else {
                 const clicks = msg.data.data['32768'];
-                if (clickLookup[clicks]) {
-                    publish(clickLookup[clicks]);
-                } else {
-                    publish('many');
-                }
+                const payload = clickLookup[clicks] ? clickLookup[clicks] : 'many';
+                publish({click: payload});
             }
         }
     },
     {
         devices: ['WSDCGQ01LM'],
         cid: 'msTemperatureMeasurement',
-        topic: 'temperature',
-        parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
+        parse: (msg) => {return {temperature: parseFloat(msg.data.data['measuredValue']) / 100.0}}
     },
     {
         devices: ['WSDCGQ01LM'],
         cid: 'msRelativeHumidity',
-        topic: 'humidity',
-        parse: (msg) => parseFloat(msg.data.data['measuredValue']) / 100.0
+        parse: (msg) => {return {humidity: parseFloat(msg.data.data['measuredValue']) / 100.0}}
     },
     {
         devices: ['RTCGQ01LM'],
         cid: 'msOccupancySensing',
-        topic: 'occupancy',
         parse: (msg, publish) => {
             // The occupancy sensor only sends a message when motion detected.
             // Therefore we need to publish the no_motion detected by ourselves.
@@ -95,17 +90,16 @@ const parsers = [
             }
 
             store[deviceID] = setTimeout(() => {
-                publish('no_motion')
+                publish({occupancy: 'no_motion'})
                 store[deviceID] = null;
             }, noMotionTimeout * 60 * 1000); 
-            return 'motion';
+            return {occupancy: 'motion'};
         }
     },
     {
         devices: ['MCCGQ01LM'],
         cid: 'genOnOff',
-        topic: 'state',
-        parse: (msg) => msg.data.data['onOff'] ? 'open' : 'closed'
+        parse: (msg) => {return {state: msg.data.data['onOff'] ? 'open' : 'closed'}}
     }
 ];
 
