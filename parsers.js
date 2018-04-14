@@ -4,10 +4,37 @@ const clickLookup = {
     4: 'quadruple',
 }
 
+const battery = {
+    min: 2500,
+    max: 3000,
+}
+
+const toPercentage = (value, min, max) => {
+    if (value > max) {
+        value = max;
+    } else if (value < min) {
+        value = min;
+    }
+
+    const normalised = (value - min) / (max - min);
+    return (normalised * 100).toFixed(2);
+}
+
 // Global variable store that can be used by devices.
 const store = {}
 
 const parsers = [
+    {
+        devices: ['WXKG01LM'],
+        cid: 'genBasic',
+        topic: 'battery',
+        parse: (msg, publish) => {
+            if (msg.data.data['65282']) {
+                const voltage = msg.data.data['65282']['1'].elmVal;
+                return voltage ? toPercentage(voltage, battery.min, battery.max) : null;
+            }
+        }
+    },
     {
         devices: ['WXKG01LM'],
         cid: 'genOnOff',
@@ -36,8 +63,6 @@ const parsers = [
                     publish('many');
                 }
             }
-
-            return null;
         }
     },
     {

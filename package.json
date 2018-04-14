@@ -26,6 +26,7 @@
   "dependencies": {
     "mqtt": "*",
     "zigbee-shepherd": "*",
+    "zcl-packet": "git+https://github.com/koenkk/zcl-packet.git",
     "yaml-config": "*"
   }
 }
