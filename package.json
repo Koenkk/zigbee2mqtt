@@ -25,6 +25,7 @@
   "homepage": "https://github.com/Koenkk/xiaomi-zb2mqtt/wiki",
   "dependencies": {
     "mqtt": "*",
+    "winston": "*",
     "zigbee-shepherd": "*",
     "zcl-packet": "git+https://github.com/koenkk/zcl-packet.git",
     "yaml-config": "*"

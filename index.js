@@ -7,7 +7,22 @@ const parsers = require('./parsers');
 const deviceMapping = require('./devices');
 const config = require('yaml-config');
 const configFile = `${__dirname}/data/configuration.yaml`
+const winston = require('winston');
 let settings = config.readConfig(configFile, 'user');
+
+const logger = new (winston.Logger)({
+    transports: [
+        new (winston.transports.Console)({
+            timestamp: () => new Date().toLocaleString(),
+            formatter: function(options) {
+                return options.timestamp() + ' ' +
+                        winston.config.colorize(options.level, options.level.toUpperCase()) + ' ' +
+                        (options.message ? options.message : '') +
+                        (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+            }
+        })
+    ]
+});
 
 // Create empty device array if not set yet.
 if (!settings.devices) {
@@ -16,7 +31,7 @@ if (!settings.devices) {
 }
 
 // Setup client
-console.log(`Connecting to MQTT server at ${settings.mqtt.server}`)
+logger.info(`Connecting to MQTT server at ${settings.mqtt.server}`)
 
 const options = {};
 if (settings.mqtt.user && settings.mqtt.password) {
@@ -42,32 +57,30 @@ process.on('SIGINT', handleQuit);
 // Check every interval if connected to MQTT server.
 setInterval(() => {
     if (client.reconnecting) {
-        console.error(`
-            ERROR: Not connected to MQTT server!`
-        );
+        logger.error('Not connected to MQTT server!');
     }
 }, 10 * 1000); // seconds * 1000.
 
 // Start server
-console.log(`Starting zigbee-shepherd with device ${settings.serial.port}`)
+logger.info(`Starting zigbee-shepherd with device ${settings.serial.port}`)
 shepherd.start((err) => {
     if (err) {
-        console.error('Error while starting zigbee-shepherd');
-        console.error(err);
+        logger.error('Error while starting zigbee-shepherd');
+        logger.error(err);
     } else {
-        console.error('zigbee-shepherd started');
+        logger.info('zigbee-shepherd started');
     }
 });
 
 function handleReady() {
-    console.log('zigbee-shepherd ready');
+    logger.info('zigbee-shepherd ready');
 
     const devices = shepherd.list().filter((device) => {
         return device.manufId === 4151 && device.type === 'EndDevice'
     });
 
-    console.log(`Currently ${devices.length} devices are joined:`);
-    devices.forEach((device) => console.log(getDeviceLogMessage(device)));
+    logger.info(`Currently ${devices.length} devices are joined:`);
+    devices.forEach((device) => logger.info(getDeviceLogMessage(device)));
 
     // Set all Xiaomi devices to be online, so shepherd won't try 
     // to query info from devices (which would fail because they go tosleep).
@@ -80,16 +93,14 @@ function handleReady() {
 
     // Allow or disallow new devices to join the network.
     if (settings.allowJoin) {
-        console.log(`
-            WARNING: allowJoin set to  true in configuration.yaml.
-            Allowing new devices to join. 
-            Remove this parameter once you joined all devices.
-        `);
+        logger.warn('allowJoin set to  true in configuration.yaml.')
+        logger.warn('Allowing new devices to join.');
+        logger.warn('Remove this parameter once you joined all devices.');
     }
 
     shepherd.permitJoin(settings.allowJoin ? 255 : 0, (err) => {
         if (err) {
-            console.log(err);
+            logger.info(err);
         }
     });
 }
@@ -107,7 +118,7 @@ function handleMessage(msg) {
 
     // New device!
     if (!settings.devices[device.ieeeAddr]) {
-        console.log(`New device with address ${device.ieeeAddr} connected!`);
+        logger.info(`New device with address ${device.ieeeAddr} connected!`);
 
         settings.devices[device.ieeeAddr] = {
             friendly_name: device.ieeeAddr
@@ -126,10 +137,8 @@ function handleMessage(msg) {
     const mappedModel = deviceMapping[modelID];
 
     if (!mappedModel) {
-        console.log(`
-            WARNING: Device with modelID '${modelID}' is not supported.
-            Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
-            to add support for your device`);
+        logger.error(`Device with modelID '${modelID}' is not supported.`);
+        logger.error('Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues to add support for your device');
     }
 
     // Find a parser for this modelID and cid.
@@ -137,10 +146,8 @@ function handleMessage(msg) {
     const _parsers = parsers.filter((p) => p.devices.includes(mappedModel.model) && p.cid === cid);
 
     if (!_parsers.length) {
-        console.log(`
-            WARNING: No parser available for '${mappedModel.model}' with cid '${cid}'
-            Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
-            with this message.`);
+        logger.error(`No parser available for '${mappedModel.model}' with cid '${cid}'`);
+        logger.error('Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues with this message.');
         return;
     }
 
@@ -155,7 +162,7 @@ function handleMessage(msg) {
         const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
         const publish = (payload) => mqttPublish(topic, payload.toString());
         const payload = parser.parse(msg, publish);
-        
+
         if (payload) {
             publish(payload);
         }
@@ -165,9 +172,9 @@ function handleMessage(msg) {
 function handleQuit() {
     shepherd.stop((err) => {
         if (err) {
-            console.error('Error while stopping zigbee-shepherd');
+            logger.error('Error while stopping zigbee-shepherd');
         } else {
-            console.error('zigbee-shepherd stopped')
+            logger.error('zigbee-shepherd stopped')
         }
 
         mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline');
@@ -177,15 +184,12 @@ function handleQuit() {
 
 function mqttPublish(topic, payload) {
     if (client.reconnecting) {
-        console.log(`
-            ERROR: Not connected to MQTT server!
-            Cannot send message: topic: '${topic}', payload: '${payload}'
-        `);
-
+        logger.error(`Not connected to MQTT server!`);
+        logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
         return;
     }
 
-    console.log(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
+    logger.info(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
     client.publish(topic, payload);
 }
 
