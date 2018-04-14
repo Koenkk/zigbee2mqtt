@@ -29,11 +29,16 @@ const parsers = [
         cid: 'genBasic',
         attribute: true,
         parse: (msg, publish) => {
-            if (msg.data.data['65282']) {
-                const voltage = msg.data.data['65282']['1'].elmVal;
-                if (voltage) {
-                    return {battery: toPercentage(voltage, battery.min, battery.max)}
-                }
+            let voltage = null;
+
+            if (msg.data.data['65281']) {
+                voltage = msg.data.data['65281']['1'];
+            } else if (msg.data.data['65282']) {
+                voltage = msg.data.data['65282']['1'].elmVal;
+            }
+
+            if (voltage) {
+                return {battery: toPercentage(voltage, battery.min, battery.max)}
             }
         }
     },
