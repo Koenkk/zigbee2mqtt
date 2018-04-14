@@ -134,9 +134,9 @@ function handleMessage(msg) {
 
     // Find a parser for this modelID and cid.
     const cid = msg.data.cid;
-    const parser = parsers.find((p) => p.devices.includes(mappedModel.model) && p.cid === cid);
+    const _parsers = parsers.filter((p) => p.devices.includes(mappedModel.model) && p.cid === cid);
 
-    if (!parser) {
+    if (!_parsers.length) {
         console.log(`
             WARNING: No parser available for '${mappedModel.model}' with cid '${cid}'
             Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues
@@ -146,19 +146,20 @@ function handleMessage(msg) {
 
     // Parse generic information from message.
     const friendlyName = settings.devices[device.ieeeAddr].friendly_name;
-    const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
-
-    // Define publish function.
-    const publish = (payload) => mqttPublish(topic, payload.toString());
 
     // Get payload for the message.
     // - If a payload is returned publish it to the MQTT broker
     // - If NO payload is returned do nothing. This is for non-standard behaviour
     //   for e.g. click switches where we need to count number of clicks and detect long presses.
-    const payload = parser.parse(msg, publish);
-    if (payload) {
-        publish(payload);
-    }
+    _parsers.forEach((parser) => {
+        const topic = `${settings.mqtt.base_topic}/${friendlyName}/${parser.topic}`;
+        const publish = (payload) => mqttPublish(topic, payload.toString());
+        const payload = parser.parse(msg, publish);
+        
+        if (payload) {
+            publish(payload);
+        }
+    });
 }
 
 function handleQuit() {
