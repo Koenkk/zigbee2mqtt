@@ -2,6 +2,7 @@ default:
   mqtt: 
     server: "mqtt://localhost"
     base_topic: xiaomi
+    retain: false
   serial: 
     port: /dev/ttyACM0
   allowJoin: true

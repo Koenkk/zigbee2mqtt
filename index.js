@@ -190,7 +190,7 @@ function mqttPublish(topic, payload) {
     }
 
     logger.info(`MQTT publish, topic: '${topic}', payload: '${payload}'`);
-    client.publish(topic, payload);
+    client.publish(topic, payload, {retain: settings.mqtt.retain});
 }
 
 function writeConfig() {
