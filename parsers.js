@@ -27,7 +27,7 @@ const parsers = [
     {
         devices: ['WXKG01LM', 'RTCGQ01LM', 'WSDCGQ01LM', 'MCCGQ01LM'],
         cid: 'genBasic',
-        attribute: true,
+        disablePublish: true,
         parse: (msg, publish) => {
             let voltage = null;
 

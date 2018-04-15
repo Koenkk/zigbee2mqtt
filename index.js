@@ -9,7 +9,7 @@ const config = require('yaml-config');
 const configFile = `${__dirname}/data/configuration.yaml`;
 const winston = require('winston');
 let settings = config.readConfig(configFile, 'user');
-const attributeStore = {};
+const stateCache = {};
 
 const logger = new (winston.Logger)({
     transports: [
@@ -158,8 +158,8 @@ function handleMessage(msg) {
     const retain = settings.devices[device.ieeeAddr].retain;
     const topic = `${settings.mqtt.base_topic}/${friendlyName}`;
     const publish = (payload) => {
-        if (attributeStore[device.ieeeAddr]) {
-            payload = {...attributeStore[device.ieeeAddr], ...payload};
+        if (stateCache[device.ieeeAddr]) {
+            payload = {...stateCache[device.ieeeAddr], ...payload};
         }
 
         mqttPublish(topic, JSON.stringify(payload), retain);
@@ -172,10 +172,12 @@ function handleMessage(msg) {
     _parsers.forEach((parser) => {
         const payload = parser.parse(msg, publish);
 
-        if (parser.attribute && payload) {
-            attributeStore[device.ieeeAddr] = {...attributeStore[device.ieeeAddr], ...payload};
-        } else if (payload) {
-            publish(payload);
+        if (payload) {
+            stateCache[device.ieeeAddr] = {...stateCache[device.ieeeAddr], ...payload};
+
+            if (!parser.disablePublish) {
+                publish(payload);
+            }
         }
     });
 }
