@@ -181,6 +181,8 @@ function handleMessage(msg) {
 }
 
 function handleQuit() {
+    mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline', true);
+
     shepherd.stop((err) => {
         if (err) {
             logger.error('Error while stopping zigbee-shepherd');
@@ -188,7 +190,6 @@ function handleQuit() {
             logger.error('zigbee-shepherd stopped')
         }
 
-        mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'offline', true);
         process.exit();
     });
 }
