@@ -1,9 +1,9 @@
-const debug = require('debug')('xiaomi-zb2mqtt')
 const util = require("util");
 const ZShepherd = require('zigbee-shepherd');
 const mqtt = require('mqtt')
 const fs = require('fs');
 const parsers = require('./parsers');
+const commands = require('./commands');
 const deviceMapping = require('./devices');
 const config = require('yaml-config');
 const configFile = `${__dirname}/data/configuration.yaml`;
@@ -51,6 +51,7 @@ const shepherd = new ZShepherd(
 
 // Register callbacks
 client.on('connect', handleConnect);
+client.on('message', handleMqttMessage);
 shepherd.on('ready', handleReady);
 shepherd.on('ind', handleMessage);
 process.on('SIGINT', handleQuit);
@@ -76,9 +77,7 @@ shepherd.start((err) => {
 function handleReady() {
     logger.info('zigbee-shepherd ready');
 
-    const devices = shepherd.list().filter((device) => {
-        return device.manufId === 4151 && device.type === 'EndDevice'
-    });
+    const devices = shepherd.list().filter((device) => device.type !== 'Coordinator');
 
     logger.info(`Currently ${devices.length} devices are joined:`);
     devices.forEach((device) => logger.info(getDeviceLogMessage(device)));
@@ -108,10 +107,11 @@ function handleReady() {
 
 function handleConnect() {
     mqttPublish(`${settings.mqtt.base_topic}/bridge/state`, 'online', true);
+    client.subscribe(`${settings.mqtt.base_topic}/+/set`)
 }
 
 function handleMessage(msg) {
-    if (msg.type !== 'attReport') {
+    if (!msg.endpoints) {
         return;
     }
 
@@ -226,4 +226,48 @@ function getDeviceLogMessage(device) {
     }
 
     return `${friendlyName} (${device.ieeeAddr}): ${friendlyDevice.model} - ${friendlyDevice.description}`;
+}
+
+function handleMqttMessage(topic, message) {
+    const friendlyName = topic.split('/')[1];
+
+    // Find device id of this friendlyName
+    const deviceID = Object.keys(settings.devices).find((id) => settings.devices[id].friendly_name === friendlyName);
+    if (!deviceID) {
+        logger.error(`Cannot handle '${topic}' because ID of '${friendlyName}' cannot be found`);
+    }
+
+    // Find device in zigbee-shepherd
+    const device = shepherd.find(deviceID, 1);
+    if (!device) {
+        logger.error(`Cannot handle '${topic}' because '${deviceID}' is not known by zigbee-shepherd`);
+    }
+
+    logger.info(`Executing '${topic}' '${message.toString()}' `)
+
+    const json = JSON.parse(message);
+
+    // Iterate over all keys in the json.
+    Object.keys(json).forEach((key) => {
+        // Find parser for this key
+        const parser = commands[key];
+        if (!parser) {
+            logger.error(`No parser available for '${key}' (${json[key]})`);
+            return;
+        }
+
+        const parsed = parser(json[key]);
+        const callback = (err, rsp) => {
+            // Devices do not report when they go off.
+            // Ensure state (on/off) is always in sync.
+            if (!err && key === 'state') {
+                mqttPublish(
+                    `${settings.mqtt.base_topic}/${friendlyName}`, 
+                    JSON.stringify({state: json[key]}), 
+                    true
+                );
+            }
+        };
+        device.functional(parsed.cId, parsed.cmd, parsed.zclData, callback);
+    });
 }

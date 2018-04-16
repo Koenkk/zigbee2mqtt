@@ -105,6 +105,21 @@ const parsers = [
         devices: ['MCCGQ01LM'],
         cid: 'genOnOff',
         parse: (msg) => {return {state: msg.data.data['onOff'] ? 'open' : 'closed'}}
+    },
+    {
+        devices: ['LED1545G12'],
+        cid: 'genOnOff',
+        parse: (msg) => null
+    },
+    {
+        devices: ['LED1545G12'],
+        cid: 'genLevelCtrl',
+        parse: (msg) => {return {brightness: msg.data.data['currentLevel']}},
+    },
+    {
+        devices: ['LED1545G12'],
+        cid: 'lightingColorCtrl',
+        parse: (msg) => {return {color_temp: msg.data.data['colorTemperature']}},
     }
 ];
 
