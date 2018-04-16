@@ -27,7 +27,7 @@ const devices = {
         model: 'LED1545G12',
         vendor: 'IKEA',
         description: 'TRADFRI LED bulb E27 980 lumen, dimmable, white spectrum, opal white',
-        supports: 'on/off, dimming, color temperature',
+        supports: 'on/off, brightness, color temperature',
     },
 }
 
