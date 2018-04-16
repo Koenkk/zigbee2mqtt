@@ -141,6 +141,7 @@ function handleMessage(msg) {
     if (!mappedModel) {
         logger.error(`Device with modelID '${modelID}' is not supported.`);
         logger.error('Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues to add support for your device');
+        return;
     }
 
     // Find a parser for this modelID and cid.
