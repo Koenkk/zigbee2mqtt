@@ -27,6 +27,7 @@ const parsers = [
     {
         devices: ['WXKG01LM', 'RTCGQ01LM', 'WSDCGQ01LM', 'MCCGQ01LM'],
         cid: 'genBasic',
+        type: 'attReport',
         disablePublish: true,
         parse: (msg, publish) => {
             let voltage = null;
@@ -45,6 +46,7 @@ const parsers = [
     {
         devices: ['WXKG01LM'],
         cid: 'genOnOff',
+        type: 'attReport',
         parse: (msg, publish) => {
             const deviceID = msg.endpoints[0].device.ieeeAddr;
             const state = msg.data.data['onOff'];
@@ -71,16 +73,19 @@ const parsers = [
     {
         devices: ['WSDCGQ01LM'],
         cid: 'msTemperatureMeasurement',
+        type: 'attReport',
         parse: (msg) => {return {temperature: parseFloat(msg.data.data['measuredValue']) / 100.0}}
     },
     {
         devices: ['WSDCGQ01LM'],
         cid: 'msRelativeHumidity',
+        type: 'attReport',
         parse: (msg) => {return {humidity: parseFloat(msg.data.data['measuredValue']) / 100.0}}
     },
     {
         devices: ['RTCGQ01LM'],
         cid: 'msOccupancySensing',
+        type: 'attReport',
         parse: (msg, publish) => {
             // The occupancy sensor only sends a message when motion detected.
             // Therefore we need to publish the no_motion detected by ourselves.
@@ -104,23 +109,35 @@ const parsers = [
     {
         devices: ['MCCGQ01LM'],
         cid: 'genOnOff',
+        type: 'attReport',
         parse: (msg) => {return {state: msg.data.data['onOff'] ? 'open' : 'closed'}}
     },
     {
         devices: ['LED1545G12'],
-        cid: 'genOnOff',
-        parse: (msg) => null
-    },
-    {
-        devices: ['LED1545G12'],
         cid: 'genLevelCtrl',
+        type: 'devChange',
         parse: (msg) => {return {brightness: msg.data.data['currentLevel']}},
     },
     {
         devices: ['LED1545G12'],
         cid: 'lightingColorCtrl',
+        type: 'devChange',
         parse: (msg) => {return {color_temp: msg.data.data['colorTemperature']}},
-    }
+    },
+
+    // Ignore the following messages:
+    {
+        devices: ['LED1545G12'],
+        cid: 'genOnOff',
+        type: 'devChange',
+        parse: (msg) => null
+    },
+    {
+        devices: ['WXKG01LM'],
+        cid: 'genOnOff',
+        type: 'devChange',
+        parse: (msg) => null
+    },
 ];
 
 module.exports = parsers;

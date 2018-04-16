@@ -146,10 +146,10 @@ function handleMessage(msg) {
 
     // Find a parser for this modelID and cid.
     const cid = msg.data.cid;
-    const _parsers = parsers.filter((p) => p.devices.includes(mappedModel.model) && p.cid === cid);
+    const _parsers = parsers.filter((p) => p.devices.includes(mappedModel.model) && p.cid === cid && p.type === msg.type);
 
     if (!_parsers.length) {
-        logger.error(`No parser available for '${mappedModel.model}' with cid '${cid}'`);
+        logger.error(`No parser available for '${mappedModel.model}' with cid '${cid}' and type '${msg.type}'`);
         logger.error('Please create an issue on https://github.com/Koenkk/xiaomi-zb2mqtt/issues with this message.');
         return;
     }
