@@ -1,6 +1,6 @@
 {
-  "name": "xiaomi-zb2mqtt",
-  "version": "1.0.0",
+  "name": "zigbee2mqtt",
+  "version": "0.1.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {

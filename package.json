@@ -1,21 +1,24 @@
 {
-  "name": "xiaomi-zb2mqtt",
-  "version": "1.0.0",
-  "description": "Xiaomi Zigbee to MQTT bridge using zigbee-shepherd",
+  "name": "zigbee2mqtt",
+  "version": "0.1.0",
+  "description": "Zigbee to MQTT bridge using zigbee-shepherd",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Koenkk/xiaomi-zb2mqtt.git"
+    "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "keywords": [
     "xiaomi",
+    "tradfri",
+    "hue",
+    "bridge",
     "zigbee",
     "mqtt",
     "cc2531"
   ],
   "scripts": {
     "start": "node index.js",
-    "docs": "node doc.js"
+    "docgen": "node support/docgen.js"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",

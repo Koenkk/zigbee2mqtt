@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -t koenkk/xiaomi-zb2mqtt:arm32v7 -f Dockerfile ../../
-docker push koenkk/xiaomi-zb2mqtt:arm32v7
+docker build -t koenkk/zigbee2mqtt:arm32v7 -f Dockerfile ../../
+docker push koenkk/zigbee2mqtt:arm32v7
