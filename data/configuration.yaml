@@ -1,9 +1,9 @@
-default: 
-  mqtt: 
+default:
+  mqtt:
     server: "mqtt://localhost"
-    base_topic: xiaomi
-  serial: 
+    base_topic: zigbee2mqtt
+  serial:
     port: /dev/ttyACM0
   allowJoin: true
-
 user:
+  devices: {}

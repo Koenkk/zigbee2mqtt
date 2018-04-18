@@ -23,9 +23,9 @@
   "author": "Koen Kanters",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/Koenkk/xiaomi-zb2mqtt/issues"
+    "url": "https://github.com/Koenkk/zigbee2mqtt/issues"
   },
-  "homepage": "https://github.com/Koenkk/xiaomi-zb2mqtt/wiki",
+  "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
   "dependencies": {
     "mqtt": "*",
     "winston": "*",
