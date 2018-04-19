@@ -11,12 +11,6 @@ const plannedToSupport = [
         vendor: 'Xiaomi',
     },
     {
-        model: 'MCCGQ11LM',
-        description: 'Aqara door & window contact sensor',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'RTCGQ11LM',
         description: 'Aqara human body movement and illuminance sensor',
         supports: '-',
