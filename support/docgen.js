@@ -5,12 +5,6 @@
 
 const plannedToSupport = [
     {
-        model: 'WXKG11LM',
-        description: 'Aqara wireless switch',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'WSDCGQ11LM',
         description: 'Aqara temperature & humidity sensor',
         supports: '-',
