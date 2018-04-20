@@ -1,5 +1,5 @@
 # zigbee2mqtt
-![Some Xiaomi sensors](xiaomi.png)
+![Thumbs up or down?](header.png)
 
 Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.
 
