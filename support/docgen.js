@@ -130,16 +130,18 @@ text += '\n\n'
 text += 'In case you **dont** want to use home assistants MQTT discovery you can use the configuration below.\n\n'
 
 const homeassistantConfig = (device) => {
-    let command = device.command_topic ? {command_topic: `zigbee2mqtt/<FRIENDLY_NAME>/set`} : {}
-
-    let yml = YAML.stringify([{
+    const payload = {
         platform: 'mqtt',
         state_topic: "zigbee2mqtt/<FRIENDLY_NAME>",
         availability_topic: "zigbee2mqtt/bridge/state",
-        ...command,
         ...device.discovery_payload,
-    }]);
+    };
 
+    if (payload.command_topic) {
+        payload.command_topic = `zigbee2mqtt/<FRIENDLY_NAME>/set`;
+    }
+
+    let yml = YAML.stringify([payload]);
     yml = yml.replace(/(-) \n    /g, '- ');
     yml = yml.replace('---', `${device.type}:`)
     return yml;
