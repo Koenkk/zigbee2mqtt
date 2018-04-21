@@ -31,7 +31,8 @@
     "winston": "*",
     "zigbee-shepherd": "*",
     "zcl-packet": "git+https://github.com/koenkk/zcl-packet.git",
-    "yaml-config": "*"
+    "yaml-config": "*",
+    "json2yaml": "*"
   },
   "devDependencies": {
     "eslint": "*"
