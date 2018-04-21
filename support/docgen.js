@@ -23,12 +23,6 @@ const plannedToSupport = [
         vendor: 'Xiaomi',
     },
     {
-        model: 'WXKG02LM',
-        description: 'Aqara double key wireless wall switch',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'QBKG11LM',
         description: 'Aqara single key wired wall switch',
         supports: '-',
