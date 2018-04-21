@@ -11,12 +11,6 @@ const plannedToSupport = [
         vendor: 'Xiaomi',
     },
     {
-        model: 'RTCGQ11LM',
-        description: 'Aqara human body movement and illuminance sensor',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'SJCGQ11LM',
         description: 'Aqara water leak sensor',
         supports: '-',
