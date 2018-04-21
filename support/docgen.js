@@ -127,6 +127,24 @@ text += '  discovery: true\n'
 text += '```\n'
 
 text += '\n\n'
+
+text += 'To respond to button clicks you can use the following home assistant configuration:\n'
+text += '```yaml'
+text += `
+automation:
+  - alias: Respond to button clicks
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/<FRIENDLY_NAME'
+    condition:
+      condition: template
+      value_template: "{{ 'single' == trigger.payload_json.click }}"
+    action:
+      entity_id: light.bedroom
+      service: light.toggle
+`
+text += '```\n'
+
 text += 'In case you **dont** want to use home assistants MQTT discovery you can use the configuration below.\n\n'
 
 const homeassistantConfig = (device) => {
