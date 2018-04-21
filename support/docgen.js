@@ -166,20 +166,17 @@ const homeassistantConfig = (device) => {
 }
 
 Object.values(deviceMapping).forEach((device) => {
-    if (device.homeassistant) {
-        //console.log(device);
-        text += `### ${device.model}\n`;
-        text += '```yaml\n'
-    
-        device.homeassistant.forEach((d, i) => {
-            text += homeassistantConfig(d);
-            if (device.homeassistant.length > 1 && i < device.homeassistant.length - 1) {
-                text += '\n';
-            }
-        })
-    
-        text += '```\n\n';
-    }
+    text += `### ${device.model}\n`;
+    text += '```yaml\n'
+
+    device.homeassistant.forEach((d, i) => {
+        text += homeassistantConfig(d);
+        if (device.homeassistant.length > 1 && i < device.homeassistant.length - 1) {
+            text += '\n';
+        }
+    })
+
+    text += '```\n\n';
 });
 
 fs.writeFileSync(outputdir + '/' + file, text);
