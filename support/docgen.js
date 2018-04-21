@@ -5,12 +5,6 @@
 
 const plannedToSupport = [
     {
-        model: 'WSDCGQ11LM',
-        description: 'Aqara temperature & humidity sensor',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'SJCGQ11LM',
         description: 'Aqara water leak sensor',
         supports: '-',
