@@ -5,20 +5,8 @@
 
 const plannedToSupport = [
     {
-        model: 'SJCGQ11LM',
-        description: 'Aqara water leak sensor',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'MFKZQ01LM',
         description: 'Mi magic cube controller',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'WXKG03LM',
-        description: 'Aqara single key wireless wall switch',
         supports: '-',
         vendor: 'Xiaomi',
     },
