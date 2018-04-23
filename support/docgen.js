@@ -23,12 +23,6 @@ const plannedToSupport = [
         vendor: 'Xiaomi',
     },
     {
-        model: 'ZNCZ02LM',
-        description: 'Mi power plug ZigBee',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
         model: 'QBCZ11LM',
         description: 'Aqara wall socket',
         supports: '-',
