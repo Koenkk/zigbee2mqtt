@@ -1,4 +1,4 @@
-# zigbee2mqtt
+# zigbee2mqtt :bridge_at_night: :honeybee:
 ![Thumbs up or down?](header.png)
 
 Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.
