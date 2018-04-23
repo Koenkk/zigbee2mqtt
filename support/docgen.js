@@ -3,51 +3,6 @@
  * Run by executing: npm run docs
  */
 
-const plannedToSupport = [
-    {
-        model: 'MFKZQ01LM',
-        description: 'Mi magic cube controller',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'QBKG11LM',
-        description: 'Aqara single key wired wall switch',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'QBKG03LM',
-        description: 'Aqara double key wired wall switch',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'QBCZ11LM',
-        description: 'Aqara wall socket',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'JTYJ-GD-01LM/BW',
-        description: 'MiJia Honeywell smoke detector',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'KTBL01LM',
-        description: 'Aqara air conditioning companion',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-    {
-        model: 'KTBL02LM',
-        description: 'Aqara air conditioning companion 2',
-        supports: '-',
-        vendor: 'Xiaomi',
-    },
-];
-
 const zigbee2mqtt = require('../lib/converters/zigbee2mqtt');
 const deviceMapping = require('../lib/devices');
 const fs = require('fs');
