@@ -1,10 +1,11 @@
 default:
-  allowJoin: true  
-  homeassistant_discovery: false
+  permit_join: true  
+  homeassistant: false
   mqtt:
     server: "mqtt://localhost"
     base_topic: zigbee2mqtt
   serial:
     port: /dev/ttyACM0
+
 user:
   devices: {}
