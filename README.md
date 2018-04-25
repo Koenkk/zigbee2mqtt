@@ -3,7 +3,7 @@
 
 Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.
 
-It bridges the events sent from the sensors and switches to MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. Integrates especially well with [home-assistant.io](https://www.home-assistant.io/).
+It bridges the events sent from the sensors and switches to MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. Integrates especially well with [Home Assistant](https://www.home-assistant.io/).
 
 ![Architecture](architecture.png)
 
