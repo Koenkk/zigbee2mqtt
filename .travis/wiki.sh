@@ -13,11 +13,14 @@ update_wiki() {
   git add -A
   git commit -m "Travis CI: update wiki"
   git push origin
+  cd ..
+  rm -rf zigbee2mqtt.wiki
 }
 
 # Only update wiki if on master branch and not pull request
 if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
+  echo "Updating wiki!"
   setup_git
   update_wiki
 else
