@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 setup_git() {
   git config --global user.email "travis@travis-ci.org"
