@@ -6,7 +6,7 @@ install:
   - npm install
 
 script:
-  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; .travis/update-wiki.sh; fi
+  - .travis/update-wiki.sh
 
 env:
   global:
