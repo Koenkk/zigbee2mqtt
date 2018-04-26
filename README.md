@@ -1,4 +1,6 @@
 # zigbee2mqtt :bridge_at_night: :honeybee:
+[![Travis](https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg)](https://api.travis-ci.org/Koenkk/zigbee2mqtt.svg)
+
 ![Thumbs up or down?](header.png)
 
 Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.

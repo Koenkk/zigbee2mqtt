@@ -11,7 +11,7 @@ update_wiki() {
   npm run docgen zigbee2mqtt.wiki
   cd zigbee2mqtt.wiki
   git add -A
-  git commit -m "Travis CI: update wiki"
+  git diff-index --quiet HEAD || git commit -m "Travis CI: update wiki"
   git push origin
   cd ..
   rm -rf zigbee2mqtt.wiki
