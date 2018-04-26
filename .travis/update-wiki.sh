@@ -10,6 +10,8 @@ update_wiki() {
   git clone https://${GH_TOKEN}@github.com/Koenkk/zigbee2mqtt.wiki.git
   npm run docgen zigbee2mqtt.wiki
   cd zigbee2mqtt.wiki
+  git add -A
+  git commit -m "Travis CI: update wiki"
   git push origin
 }
 
