@@ -2,16 +2,11 @@ language: node_js
 node_js:
   - "9"
 
-addons:
-  apt:
-    packages:
-    - git
-
 install:
   - npm install
 
 script:
-  - .travis/update-wiki.sh
+  - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; .travis/update-wiki.sh; fi
 
 env:
   global:
