@@ -5,12 +5,8 @@ login() {
 }
 
 build_and_push() {
-  docker build -t koenkk/zigbee2mqtt:$1 -f $2 .
-  docker push koenkk/zigbee2mqtt:$1
-}
-
-push() {
-  docker build -t koenkk/zigbee2mqtt:$1
+  docker build -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
+  docker push $DOCKER_USERNAME/zigbee2mqtt:$1
 }
 
 # Only update docker images if on master branch and not pull request
