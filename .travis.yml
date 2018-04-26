@@ -1,0 +1,16 @@
+language: node_js
+
+addons:
+  apt:
+    packages:
+    - git
+
+install:
+  - npm install
+
+script:
+  - .travis/update-wiki.sh
+
+env:
+  global:
+    secure: q5W9+mHz13PslLkTxuYNXivOau+N5OyB53sqgb+krOCPlbN9+gvi2Av9SribVd5jp2yx2O9rV/mr8eS0M2ykvBJ3UsIsCXiFL1dEPmsz1wlFAnW3kbD2EGhGFEV0dWRflSlA+5iQtcMPvbYu2PAOChUUoY7NNlhcz2EC+XXUapvvvaDwA1oSdtX+m61qyREshZb8B57DyXhziy6i/xjhFa84C0mR/iGFRWpZgcxmrNFH+/XDhSIpdq2KshhDWhjyag3ukAsTxTpqzLh1rFRlczjJEn0CcHG4WHsWHUFn9KK2lvT/YCDP8w0URnR1bCr8nyxGZJ2DLW6AzxZtJfWjvbeZYjO2R3WeHpzp6Jw6Qz5pG3gmu2FgeFpZ3FTEGtJ/Ev0/pjkY2Msx9mItzUJ7D8hY2noQZMPASar6oXEDYlkomx7gHHla0MPv3PKSJg5LX6Ybl137GIa6MLYYyz6SEKfyRUQhy3Itqrb/ID/ZP0UuLgyyDfShb8A6XOnsVqwZAsOPtU2UPnD1vsVXhjkpflK9+7QjL5m9MSqfAhg6qtwNsswl1KSiyhmdldGhZW5OfUasDxZKHyx7bsS1BhNnLi/iy4ifDh6KSr64aUW4iM0X99gkU+662Hgf73QpIG+oP41r30iEN0unTcRrFQDIbTSSapbA95bwUCBF1CgQC20=
