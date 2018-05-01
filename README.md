@@ -9,7 +9,7 @@ It bridges the events sent from the sensors and switches to MQTT. In this way yo
 
 ![Architecture](architecture.png)
 
-See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check wether your device is supported. If it's not listed there support can be added (fairly) easy. Feel free to create an [issue](https://github.com/Koenkk/zigbee2mqtt/issues) in this case.
+See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check wether your device is supported. If it's not listed there support can be added (fairly) easy, see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
 
 The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running!
 
