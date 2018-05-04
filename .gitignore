@@ -60,3 +60,4 @@ typings/
 # data
 data/database.db
 data/config.json
+data/log*.txt
