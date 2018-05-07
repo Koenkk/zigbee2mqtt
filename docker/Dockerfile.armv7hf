@@ -3,7 +3,7 @@ FROM resin/armv7hf-debian
 RUN [ "cross-build-start" ]
 
 # Install nodejs and git
-RUN curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 RUN apt-get update && apt-get install -y git nodejs make g++ && rm -rf /var/lib/apt/lists/*
 
 # Copy files
