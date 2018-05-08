@@ -30,8 +30,7 @@
     "debug": "*",
     "mqtt": "*",
     "winston": "*",
-    "zigbee-shepherd": "*",
-    "zcl-packet": "git+https://github.com/koenkk/zcl-packet.git",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git",
     "json2yaml": "*",
     "yawn-yaml": "*"
   },
