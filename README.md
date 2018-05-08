@@ -18,3 +18,4 @@ The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the info
 * [oskarn97](https://github.com/oskarn97)
 * [dgomes](https://github.com/dgomes)
 * [Koenkk](https://github.com/Koenk)
+* [kirovilya](https://github.com/kirovilya)
