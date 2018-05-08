@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
   "dependencies": {
+    "debug": "*",
     "mqtt": "*",
     "winston": "*",
     "zigbee-shepherd": "*",
