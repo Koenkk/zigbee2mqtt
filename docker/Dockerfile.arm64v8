@@ -1,0 +1,18 @@
+FROM arm64v8/alpine:3.7
+
+# Setup cross-build
+ENV QEMU_EXECVE 1
+COPY docker/qemu-aarch64-static /usr/bin
+WORKDIR /app
+
+# Copy files & install dependencies
+ADD . /app
+RUN [ "qemu-aarch64-static", "/bin/sh", "-c", \
+      "cp /app/data/configuration.yaml /app && \
+       cp /app/docker/run.sh /app && chmod +x /app/run.sh && \
+       apk add --update --no-cache make gcc g++ python linux-headers udev nodejs git && \
+       npm install --unsafe-perm && \
+       apk del make gcc g++ python linux-headers udev git"]
+
+# Entrypoint
+ENTRYPOINT ["./run.sh"]
