@@ -9,6 +9,11 @@ build_and_push() {
   docker push $DOCKER_USERNAME/zigbee2mqtt:$1
 }
 
+push_hassio_addon() {
+  docker tag $DOCKER_USERNAME/zigbee2mqtt:$1 $DOCKER_USERNAME/zigbee2mqtt-hassioaddon-$2
+  docker push $DOCKER_USERNAME/zigbee2mqtt-hassioaddon-$2
+}
+
 # Only update docker images if on master branch and not pull request
 if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
@@ -24,6 +29,11 @@ then
   build_and_push latest-dev docker/Dockerfile.amd64
   build_and_push arm32v6-dev docker/Dockerfile.arm32v6
   build_and_push arm64v8-dev docker/Dockerfile.arm64v8
+
+  echo "Pushing hass.io addon images"
+  push_hassio_addon latest-dev amd64
+  push_hassio_addon arm32v6-dev armhf
+  push_hassio_addon arm64v8-dev aarch64
 else
   echo "Not updating docker images, triggered by pull request or not on master/dev branch"
 fi
