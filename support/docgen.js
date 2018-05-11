@@ -81,7 +81,7 @@ automation:
       service: light.toggle
 `
 text += '```\n'
-text = '**When changing a `friendly_name` for a device you first have to start zigbee2mqtt and after that restart Home Assistant in order to discover the new device ID.**\n';
+text += '**When changing a `friendly_name` for a device you first have to start zigbee2mqtt and after that restart Home Assistant in order to discover the new device ID.**\n\n';
 text += 'In case you **dont** want to use Home Assistant MQTT discovery you can use the configuration below.\n\n'
 
 const homeassistantConfig = (device) => {
