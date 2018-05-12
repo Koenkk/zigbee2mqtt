@@ -35,7 +35,7 @@ const logDevices = (devices) => {
     let result = '';
     result += '| Model | Description | Picture |\n';
     result += '| ------------- | ------------- | -------------------------- |\n';
-
+    devices = new Map(devices.map((d) => [d.model, d]));
     devices.forEach((device) => {
         result += `| ${device.model} | ${device.vendor} ${device.description} (${device.supports}) | ![${device.model}](images/devices/${device.model.replace('/', '-')}.jpg) |\n`;
     });
