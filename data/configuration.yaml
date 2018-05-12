@@ -18,3 +18,8 @@ mqtt:
 serial:
   # Location of CC2531 USB sniffer
   port: /dev/ttyACM0
+
+# Advanced configuration
+advanced:
+  version: 1
+  pan_id: 0x1a62
