@@ -18,7 +18,8 @@
   ],
   "scripts": {
     "start": "node index.js",
-    "docgen": "node support/docgen.js"
+    "docgen": "node support/docgen.js",
+    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",

@@ -12,6 +12,9 @@ install:
   - npm install
 
 script:
+  - npm run verify-homeassistant-mapping
+
+after_script:
   - ".travis/docker.sh"
   - ".travis/wiki.sh"
 

@@ -7,6 +7,7 @@ const zigbee2mqtt = require('../lib/converters/zigbee2mqtt');
 const deviceMapping = require('../lib/devices');
 const fs = require('fs');
 const YAML = require('json2yaml');
+const homeassistant = require('../lib/homeassistant');
 
 // Sanity check if all supported devices are in deviceMapping
 const supportedDevices = new Set();
@@ -106,9 +107,10 @@ Object.values(deviceMapping).forEach((device) => {
     text += `### ${device.model}\n`;
     text += '```yaml\n'
 
-    device.homeassistant.forEach((d, i) => {
+    const configurations = homeassistant.mapping[device.model]
+    configurations.forEach((d, i) => {
         text += homeassistantConfig(d);
-        if (device.homeassistant.length > 1 && i < device.homeassistant.length - 1) {
+        if (configurations.length > 1 && i < configurations.length - 1) {
             text += '\n';
         }
     })
