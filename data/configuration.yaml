@@ -2,7 +2,7 @@
 homeassistant: true
 
 # allow new devices to join
-permit_join: true
+permit_join: false 
 
 # MQTT settings
 mqtt:
@@ -18,6 +18,11 @@ mqtt:
 serial:
   # Location of CC2531 USB sniffer
   port: /dev/ttyACM0
+
+# Advanced configuration
+advanced:
+  version: 1
+  pan_id: 0x1a62
 
 # List of devices, automatically updates when new devices join, E.G.:
 # '0x00158d0001d8e1d2':
