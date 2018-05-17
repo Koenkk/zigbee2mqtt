@@ -13,6 +13,7 @@ install:
 
 script:
   - npm run verify-homeassistant-mapping
+  - npm run eslint
 
 after_success:
   - ".travis/docker.sh"

@@ -19,7 +19,8 @@
   "scripts": {
     "start": "node index.js",
     "docgen": "node support/docgen.js",
-    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js"
+    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js",
+    "eslint": "node_modules/.bin/eslint ."
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -36,6 +37,7 @@
     "yawn-yaml": "*"
   },
   "devDependencies": {
-    "eslint": "*"
+    "eslint": "*",
+    "eslint-config-google": "*"
   }
 }
