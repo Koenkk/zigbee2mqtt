@@ -1,15 +1,15 @@
 # Home Assistant integration (MQTT discovery)
-homeassistant: false
+homeassistant: true
 
 # allow new devices to join
-permit_join: true
+permit_join: false 
 
 # MQTT settings
 mqtt:
   # MQTT base topic for zigbee2mqtt MQTT messages
   base_topic: zigbee2mqtt
   # MQTT server URL
-  server: 'mqtt://localhost'
+  server: 'mqtt://192.168.1.100'
   # MQTT server authentication, uncomment if required:
   # user: my_user
   # password: my_password
@@ -23,3 +23,22 @@ serial:
 advanced:
   version: 1
   pan_id: 0x1a62
+
+# List of devices, automatically updates when new devices join, E.G.:
+# '0x00158d0001d8e1d2':
+#    friendly_name: bedroom_switch  # Friendly name to be used in MQTT topic
+#    retain: true                   # Retain MQTT messages
+devices:
+  '0x00158d0002010d52':
+    friendly_name: 'xiaomi_button'
+    retain: false
+  '0x00158d0001fa6f5e':
+    friendly_name: 'suite_environment'
+    retain: true
+  '0x00158d0001e56b3d':
+    friendly_name: 'kitchen_motion'
+    retain: false
+  '0x00124b000c034c83':
+    friendly_name: '0x00124b000c034c83'
+    retain: false
+
