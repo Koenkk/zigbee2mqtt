@@ -1,0 +1,7 @@
+node_modules
+.travis*
+.git
+.gitignore
+*.png
+firmware
+docker/Dockerfile*

@@ -1,0 +1,17 @@
+{
+    "env": {
+        "node": true
+    },
+    "extends": ["eslint:recommended", "google"],
+    "parserOptions": {
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        },
+        "sourceType": "module"
+    },
+    "rules": {
+        "require-jsdoc": "off",
+        "indent": ["error", 4],
+        "max-len": ["error", { "code": 120 }]
+    }
+}

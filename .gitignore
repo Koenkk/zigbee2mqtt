@@ -57,4 +57,7 @@ typings/
 # dotenv environment variables file
 .env
 
-package-lock.json
+# data
+data/database.db
+data/config.json
+data/log*.txt

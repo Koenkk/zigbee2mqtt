@@ -1,39 +1,21 @@
-# xiaomi-zb2mqtt
-Xiaomi Zigbee to MQTT bridge using zigbee-shepherd.
+[![Travis](https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg)](https://api.travis-ci.org/Koenkk/zigbee2mqtt.svg)
 
-This little script allows you to use Xiaomi Zigbee sensors and switches **without** Xiaomi's gateway. It bridges the events sent from the sensors to MQTT. You can 
-integrate the cheap and nice Zigbee sensors and switches with whatever smart home infrastructure you are using.
+# zigbee2mqtt :bridge_at_night: :honeybee:
+![Thumbs up or down?](header.png)
 
-### To run the bridge
+Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.
 
-* Install
-```sh  
-$ git clone https://github.com/oskarn97/xiaomi-zb2mqtt.git  
-$ cd xiaomi-zb2mqtt  
-/xiaomi-zb2mqtt$ npm install  
-```
-* Configuration: for the moment you have to edit index.js and set your serial port and mqtt broker.
+It bridges events and allows you to control your Zigbee devices via MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. Integrates especially well with [Home Assistant](https://www.home-assistant.io/).
 
-* Run it
-```sh  
-/xiaomi-zb2mqtt$ node index.js  
-```
+![Architecture](architecture.png)
 
-* To see whats happening behind the scenes run it with debug enabled:
-```sh  
-/xiaomi-zb2mqtt$ DEBUG=* node index.js  
-```
-### Supports
-* Buttons - Single, double, triple, quad and "more than five" click. Push and hold long click. 
-* Aqara Smart Wireless Wall Switch (both Single and Double Key)
-* Temperature Hudimity sensor with Temperature, Humidity and Pressure (Aqara definitely works, Classic not tested but most likely also)
-* Xiaomi Smart Home Human Body Sensor (Aqara definitely works, Classic not tested but most likely also)
-* Xiaomi Window Door Sensor (both Aqara and Classic)
+See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check wether your device is supported. If it's not listed there support can be added (fairly) easy, see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
 
+The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running!
 
-### Notes
-* You need CC2531 USB stick flashed with the firmware from this repo
-
-### Pairing
-* Unlike the gateway, the stick does not know the exact characteristics of each Xiaomi device. That is why pairing takes up to 60 seconds to finish. It is important that during this time, the device stays awake. Otherwise, pairing fails.
-Except the Wireless Wall Switches, you need to tap (not hold!) the reset button of the device every 3-4 seconds to keep it awake while paring until the confirmation appears. If you see the "cannot get Node descriptior" exception in the log, the device went to sleep and you need to try it again. Once successfully paired, the device works perfectly reliable.
+### Contributors
+* [AndrewLinden](https://github.com/AndrewLinden)
+* [oskarn97](https://github.com/oskarn97)
+* [dgomes](https://github.com/dgomes)
+* [Koenkk](https://github.com/Koenk)
+* [kirovilya](https://github.com/kirovilya)
