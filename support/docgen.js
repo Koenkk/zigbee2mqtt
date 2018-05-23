@@ -3,22 +3,10 @@
  * Run by executing: npm run docs
  */
 
-const zigbee2mqtt = require('../lib/converters/zigbee2mqtt');
 const deviceMapping = require('../lib/devices');
 const fs = require('fs');
 const YAML = require('json2yaml');
 const homeassistant = require('../lib/homeassistant');
-
-// Sanity check if all supported devices are in deviceMapping
-const supportedDevices = new Set();
-zigbee2mqtt.forEach((p) => supportedDevices.add(...p.devices));
-
-// Check if in deviceMapping.
-supportedDevices.forEach((s) => {
-    if (!Object.values(deviceMapping).find((d) => d.model === s)) {
-        console.log(`ERROR: ${s} not in deviceMapping`);
-    }
-});
 
 const outputdir = process.argv[2];
 
