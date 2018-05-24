@@ -26,7 +26,7 @@ const logDevices = (devices) => {
     result += '| ------------- | ------------- | -------------------------- |\n';
     devices = new Map(devices.map((d) => [d.model, d]));
     devices.forEach((device) => {
-        const pathFriendly = device.model.replace('/', '-').replace(':', '-');
+        const pathFriendly = device.model.replace('/', '-').replace(':', '-').replace(' ', '-');
         result += `| ${device.model} | ${device.vendor} ${device.description} (${device.supports}) | ![${pathFriendly}](images/devices/${pathFriendly}.jpg) |\n`;
     });
 
