@@ -3,7 +3,7 @@
  * Run by executing: npm run docs
  */
 
-const deviceMapping = require('../lib/devices');
+const deviceMapping = require('zigbee-shepherd-converters').devices;
 const fs = require('fs');
 const YAML = require('json2yaml');
 const homeassistant = require('../lib/homeassistant');

@@ -1,5 +1,5 @@
 // Verify that there are homeassistant mappings for every device.
-const devices = require('../lib/devices');
+const devices = require('zigbee-shepherd-converters').devices;
 const homeassistant = require('../lib/homeassistant');
 
 let failed = false;
