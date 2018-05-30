@@ -179,9 +179,9 @@
       }
     },
     "buffer-from": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.0.0.tgz",
-      "integrity": "sha512-83apNb8KK0Se60UE1+4Ukbe3HbfELJ6UlI4ldtOGs7So4KD26orJM8hIY9lxdzP+UpItH1Yh/Y8GUvNFWFFRxA=="
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.0.tgz",
+      "integrity": "sha512-c5mRlguI/Pe2dSZmpER62rSCu0ryKmWddzRYsuXc50U2/g8jMOulc31VZMa4mYx31U5xsmSOpDCgH88Vl9cDGQ=="
     },
     "busyman": {
       "version": "0.3.0",
@@ -342,7 +342,7 @@
       "resolved": "https://registry.npmjs.org/concat-stream/-/concat-stream-1.6.2.tgz",
       "integrity": "sha512-27HBghJxjiZtIk3Ycvn/4kbJk/1uZuJFfuPEns6LaEvpvG1f0hTea8lilrouyo9mVc2GWdcEZ8OLoGmSADlrCw==",
       "requires": {
-        "buffer-from": "1.0.0",
+        "buffer-from": "1.1.0",
         "inherits": "2.0.3",
         "readable-stream": "2.3.6",
         "typedarray": "0.0.6"
@@ -1204,6 +1204,11 @@
       "resolved": "https://registry.npmjs.org/object-assign/-/object-assign-4.1.1.tgz",
       "integrity": "sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=",
       "dev": true
+    },
+    "object-assign-deep": {
+      "version": "0.4.0",
+      "resolved": "https://registry.npmjs.org/object-assign-deep/-/object-assign-deep-0.4.0.tgz",
+      "integrity": "sha512-54Uvn3s+4A/cMWx9tlRez1qtc7pN7pbQ+Yi7mjLjcBpWLlP+XbSHiHbQW6CElDiV4OvuzqnMrBdkgxI1mT8V/Q=="
     },
     "object-keys": {
       "version": "1.0.11",
@@ -2805,9 +2810,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "0.1.7",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-0.1.7.tgz",
-      "integrity": "sha512-3nRquJ6gB4t30Mowj4bogBNxDLZ13qavks2bMFi8RbZjaKWLgy4xKX+c0SygqpDDZyElk/N1ZOXAMqP9BY4KOQ==",
+      "version": "0.1.9",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-0.1.9.tgz",
+      "integrity": "sha512-tv/rra+gTW3OfrE5ZeRqITU45QtC+CrP65zXDzZ6SXCydMjAUjTGMh3zbkOgCCCFfvM3pG2Xy1Qr8qEvPz2J1A==",
       "dependencies": {
         "acorn": {
           "version": "5.5.3",

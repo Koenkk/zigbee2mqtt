@@ -30,6 +30,7 @@
   "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
   "dependencies": {
     "debug": "*",
+    "object-assign-deep": "*",
     "mqtt": "*",
     "winston": "*",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git",
