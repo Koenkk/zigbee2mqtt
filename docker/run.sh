@@ -13,4 +13,8 @@ if [ ! -f "$DATA/configuration.yaml" ]; then
     cp /app/configuration.yaml "$DATA/configuration.yaml"
 fi
 
-npm start
+if [ ! -z "$DEBUG" ]; then
+    npm start
+else
+    DEBUG="$DEBUG" npm start
+fi
