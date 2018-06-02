@@ -541,7 +541,7 @@
         "imurmurhash": "0.1.4",
         "inquirer": "3.3.0",
         "is-resolvable": "1.1.0",
-        "js-yaml": "3.11.0",
+        "js-yaml": "3.12.0",
         "json-stable-stringify-without-jsonify": "1.0.1",
         "levn": "0.3.0",
         "lodash": "4.17.10",
@@ -995,9 +995,9 @@
       "dev": true
     },
     "js-yaml": {
-      "version": "3.11.0",
-      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.11.0.tgz",
-      "integrity": "sha512-saJstZWv7oNeOyBh3+Dx1qWzhW0+e6/8eDzo7p5rDFqxntSztloLtuKu+Ejhtq82jsilwOIZYsCz+lIjthg1Hw==",
+      "version": "3.12.0",
+      "resolved": "https://registry.npmjs.org/js-yaml/-/js-yaml-3.12.0.tgz",
+      "integrity": "sha512-PIt2cnwmPfL4hKNwqeiuz4bKfnzHTBv6HyVgjahA6mPLwPDzjDWrplJBMjHUFxku/N3FlmrbyPclad+I+4mJ3A==",
       "requires": {
         "argparse": "1.0.10",
         "esprima": "4.0.0"
@@ -2810,9 +2810,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "0.1.11",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-0.1.11.tgz",
-      "integrity": "sha512-+2MXpdFL/jDDeIsK4lQwzMcPK11DEmCmqIH3pODNL1ojhEBQeIn+pjmHUa8ghcYnL8LqiG8oT/+GD0KBpIF1PA==",
+      "version": "0.1.12",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-0.1.12.tgz",
+      "integrity": "sha512-7YgHnEyrRpYtVMK0QHKwWMw+z3+E3Rw8um2MA7uU2jcFjt0Y8kxwNiwITGCvJQP78+cmlwSNqqtedJyJCaQVhg==",
       "dependencies": {
         "acorn": {
           "version": "5.5.3",
