@@ -11,15 +11,13 @@ It bridges events and allows you to control your Zigbee devices via MQTT. In thi
 The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running!
 
 ## Integrations
-Below you will find the most popular home automation integrations available for **zigbee2mqtt**.
+Zigbee2mqtt integrates well with (almost) every home automation solution because it uses MQTT. However the following integrations are woth mentioning:
 
 <img align="left" height="100px" width="100px" src="https://user-images.githubusercontent.com/7738048/40914297-49e6e560-6800-11e8-8904-36cce896e5a8.png">
 
 ### [Home Assistant](https://www.home-assistant.io/)
 - [Hassio](https://www.home-assistant.io/hassio/): Using [the official addon](https://github.com/danielwelch/hassio-zigbee2mqtt) from [danielwelch](https://github.com/danielwelch)
-- Generic install or Hassbian: Using instructions [here](https://github.com/Koenkk/zigbee2mqtt/wiki/Running-the-bridge#2-installing)
-
----
+- Generic install or Hassbian: Using instructions [here](https://github.com/Koenkk/zigbee2mqtt/wiki/Integrating-with-Home-Assistant)
 
 ## Architecture 
 ![Architecture](architecture.png)
