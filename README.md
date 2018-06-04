@@ -8,7 +8,12 @@ Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hu
 
 It bridges events and allows you to control your Zigbee devices via MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. 
 
-The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running!
+## [Getting started](https://github.com/Koenkk/zigbee2mqtt/wiki/Getting-started)
+The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running! Make sure you don't skip sections if this is your first visit, as there might be imporant details in there for you. 
+
+[The documentation](https://github.com/Koenkk/zigbee2mqtt/wiki) will provide information on how to prepare, configure and start **zigbee2mqtt**, but also on how to customize the setup to fit your needs. 
+
+If you aren't familiar with **zigbee** terminology make sure you [read this](https://github.com/Koenkk/zigbee2mqtt/wiki/ZigBee-network) to help you out.  
 
 ## Integrations
 Zigbee2mqtt integrates well with (almost) every home automation solution because it uses MQTT. However the following integrations are woth mentioning:
