@@ -2,18 +2,35 @@
 
 # zigbee2mqtt :bridge_at_night: :honeybee:
 ![Thumbs up or down?](header.png)
+<img align="right" height="40px" src="https://user-images.githubusercontent.com/7738048/40915536-1993dd32-6805-11e8-9f22-4dfca52133c0.png">
 
-Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge/gateway.
+Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge or gateway.
 
-It bridges events and allows you to control your Zigbee devices via MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. Integrates especially well with [Home Assistant](https://www.home-assistant.io/).
-
-![Architecture](architecture.png)
-
-See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check wether your device is supported. If it's not listed there support can be added (fairly) easy, see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
+It bridges events and allows you to control your Zigbee devices via MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using. 
 
 The [wiki](https://github.com/Koenkk/zigbee2mqtt/wiki) provides you all the information needed to get up and running!
 
-### Contributors
+## Integrations
+Zigbee2mqtt integrates well with (almost) every home automation solution because it uses MQTT. However the following integrations are woth mentioning:
+
+<img align="left" height="100px" width="100px" src="https://user-images.githubusercontent.com/7738048/40914297-49e6e560-6800-11e8-8904-36cce896e5a8.png">
+
+### [Home Assistant](https://www.home-assistant.io/)
+- [Hassio](https://www.home-assistant.io/hassio/): Using [the official addon](https://github.com/danielwelch/hassio-zigbee2mqtt) from [danielwelch](https://github.com/danielwelch)
+- Generic install or Hassbian: Using instructions [here](https://github.com/Koenkk/zigbee2mqtt/wiki/Integrating-with-Home-Assistant)
+
+## Architecture 
+![Architecture](architecture.png)
+
+## Supported devices
+See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check wether your device is supported. There is quite an extensive list including devices from vendors like Xiaomi, Ikea, Philips, OSRAM and more. 
+
+If it's not listed in [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices), support can be added (fairly) easy, see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
+
+## Support & help
+If you need assistance you can check [opened issues](https://github.com/Koenkk/zigbee2mqtt/issues). Feel free to help with Pull Requests when you were able to fix things or add new devices or just share the love on social media. 
+
+## Contributors
 * [AndrewLinden](https://github.com/AndrewLinden)
 * [oskarn97](https://github.com/oskarn97)
 * [dgomes](https://github.com/dgomes)
