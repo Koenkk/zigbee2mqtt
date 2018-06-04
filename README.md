@@ -28,7 +28,7 @@ See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-dev
 If it's not listed in [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices), support can be added (fairly) easy, see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
 
 ## Support & help
-If you need assistantce you can check [opened issues](https://github.com/Koenkk/zigbee2mqtt/issues). Feel free to help with Pull Requests when you were able to fix things or add new devices or just share the love on social media. 
+If you need assistance you can check [opened issues](https://github.com/Koenkk/zigbee2mqtt/issues). Feel free to help with Pull Requests when you were able to fix things or add new devices or just share the love on social media. 
 
 ## Contributors
 * [AndrewLinden](https://github.com/AndrewLinden)
