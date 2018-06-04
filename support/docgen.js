@@ -33,11 +33,11 @@ const logDevices = (devices) => {
     return result;
 }
 
-const vendors = Array.from(new Set(Object.values(deviceMapping).map((d) => d.vendor)));
+const vendors = Array.from(new Set(deviceMapping.map((d) => d.vendor)));
 vendors.sort();
 vendors.forEach((vendor) => {
     text += `### ${vendor}\n`;
-    text += logDevices(Object.values(deviceMapping).filter((d) => d.vendor === vendor));
+    text += logDevices(deviceMapping.filter((d) => d.vendor === vendor));
     text += '\n';
 })
 
@@ -93,7 +93,7 @@ const homeassistantConfig = (device) => {
     return yml;
 }
 
-Object.values(deviceMapping).forEach((device) => {
+deviceMapping.forEach((device) => {
     text += `### ${device.model}\n`;
     text += '```yaml\n'
 
