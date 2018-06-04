@@ -2810,9 +2810,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-1.0.0.tgz",
-      "integrity": "sha512-+n2XO7l/4AEQbmHsipqY+Epu7B3UdneMxcYBN1lb5mzFtnIBUMBKr5ANw+HOEEBLFIXz82/6L5KU5RGorSZatg==",
+      "version": "1.0.1",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-1.0.1.tgz",
+      "integrity": "sha512-o9z3xqThXSOddIHtInMnzj3lPiUh8259UVlHRFmUg4eKgSgRRip8LekI33t05fi+XysuBnd9LTEu1hBnnPjT9w==",
       "dependencies": {
         "acorn": {
           "version": "5.5.3",
