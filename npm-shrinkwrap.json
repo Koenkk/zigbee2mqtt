@@ -5,9 +5,9 @@
   "requires": true,
   "dependencies": {
     "acorn": {
-      "version": "5.6.1",
-      "resolved": "https://registry.npmjs.org/acorn/-/acorn-5.6.1.tgz",
-      "integrity": "sha512-XH4o5BK5jmw9PzSGK7mNf+/xV+mPxQxGZoeC36OVsJZYV77JAG9NnI7T90hoUpI/C1TOfXWTvugRdZ9ZR3iE2Q==",
+      "version": "5.6.2",
+      "resolved": "https://registry.npmjs.org/acorn/-/acorn-5.6.2.tgz",
+      "integrity": "sha512-zUzo1E5dI2Ey8+82egfnttyMlMZ2y0D8xOCO3PNPPlYXpl8NZvF6Qk9L9BEtJs+43FqEmfBViDqc5d1ckRDguw==",
       "dev": true
     },
     "acorn-jsx": {
@@ -589,7 +589,7 @@
       "integrity": "sha512-yAcIQxtmMiB/jL32dzEp2enBeidsB7xWPLNiw3IIkpVds1P+h7qF9YwJq1yUNzp2OKXgAprs4F61ih66UsoD1A==",
       "dev": true,
       "requires": {
-        "acorn": "5.6.1",
+        "acorn": "5.6.2",
         "acorn-jsx": "3.0.1"
       }
     },
@@ -2810,9 +2810,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "1.0.1",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-1.0.1.tgz",
-      "integrity": "sha512-o9z3xqThXSOddIHtInMnzj3lPiUh8259UVlHRFmUg4eKgSgRRip8LekI33t05fi+XysuBnd9LTEu1hBnnPjT9w==",
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-1.0.3.tgz",
+      "integrity": "sha512-/VMKNW4h1c8VhjRpoQ4F2yjdd5Wj5eWt6bFqNIuwgFQwynfeZOYdgHRytLyaIRMQfJaVX9uGsthY4zpF+PG07A==",
       "dependencies": {
         "acorn": {
           "version": "5.5.3",
