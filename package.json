@@ -36,6 +36,7 @@
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git",
     "zigbee-shepherd-converters": "*",
     "json2yaml": "*",
+    "zcl-packet": "*",
     "js-yaml": "*"
   },
   "devDependencies": {

@@ -2734,32 +2734,23 @@
       "dev": true
     },
     "zcl-id": {
-      "version": "0.3.2",
-      "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.3.2.tgz",
-      "integrity": "sha1-O6v7HsvMgpujuy6/gyf2iQIxDsI=",
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
+      "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
       "requires": {
         "busyman": "0.3.0",
         "enum": "2.5.0"
       }
     },
     "zcl-packet": {
-      "version": "git+https://github.com/Koenkk/zcl-packet.git#360b9d2f02dc1bb40def40d03ac10175b93300e5",
+      "version": "0.2.4",
+      "resolved": "https://registry.npmjs.org/zcl-packet/-/zcl-packet-0.2.4.tgz",
+      "integrity": "sha1-QT9hVgIF0hIETruOeRWXioXBt10=",
       "requires": {
         "concentrate": "0.2.3",
         "dissolve-chunks": "1.3.0",
         "enum": "2.5.0",
         "zcl-id": "0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "0.3.0",
-            "enum": "2.5.0"
-          }
-        }
       }
     },
     "ziee": {
@@ -2769,17 +2760,6 @@
       "requires": {
         "busyman": "0.3.0",
         "zcl-id": "0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "0.3.0",
-            "enum": "2.5.0"
-          }
-        }
       }
     },
     "zigbee-shepherd": {
@@ -2805,6 +2785,35 @@
           "integrity": "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==",
           "requires": {
             "ms": "2.0.0"
+          }
+        },
+        "zcl-id": {
+          "version": "0.3.2",
+          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.3.2.tgz",
+          "integrity": "sha1-O6v7HsvMgpujuy6/gyf2iQIxDsI=",
+          "requires": {
+            "busyman": "0.3.0",
+            "enum": "2.5.0"
+          }
+        },
+        "zcl-packet": {
+          "version": "git+https://github.com/Koenkk/zcl-packet.git#360b9d2f02dc1bb40def40d03ac10175b93300e5",
+          "requires": {
+            "concentrate": "0.2.3",
+            "dissolve-chunks": "1.3.0",
+            "enum": "2.5.0",
+            "zcl-id": "0.2.0"
+          },
+          "dependencies": {
+            "zcl-id": {
+              "version": "0.2.0",
+              "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
+              "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
+              "requires": {
+                "busyman": "0.3.0",
+                "enum": "2.5.0"
+              }
+            }
           }
         }
       }
@@ -3846,17 +3855,6 @@
       "requires": {
         "busyman": "0.3.0",
         "zcl-id": "0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "0.3.0",
-            "enum": "2.5.0"
-          }
-        }
       }
     },
     "zstack-constants": {
