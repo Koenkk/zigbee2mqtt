@@ -41,3 +41,4 @@ If you need assistance you can check [opened issues](https://github.com/Koenkk/z
 * [dgomes](https://github.com/dgomes)
 * [Koenkk](https://github.com/Koenk)
 * [kirovilya](https://github.com/kirovilya)
+* [ciotlosm](https://github.com/ciotlosm)
