@@ -32,7 +32,7 @@
     "debug": "*",
     "object-assign-deep": "*",
     "mqtt": "*",
-    "winston": "*",
+    "winston": "2.4.2",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git",
     "zigbee-shepherd-converters": "*",
     "json2yaml": "*",
