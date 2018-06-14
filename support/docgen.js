@@ -52,16 +52,16 @@ text += 'To achieve the best possible integration (including MQTT discovery):\n'
 text += '- In your **zigbee2mqtt** `configuration.yaml` set `homeassistant: true`\n'
 text += '- In your **Home Assistant** `configuration.yaml`:\n';
 
-text += '```yaml';
-text += 'mqtt:';
-text += '  discovery: true';
-text += '  broker: [YOUR MQTT BROKER]';
-text += '  birth_message:';
-text += `    topic: 'hass/status'`;
-text += `    payload: 'online'`;
-text += '  will_message:';
-text += `    topic: 'hass/status'`;
-text += `    payload: 'offline'`;
+text += '```yaml\n';
+text += 'mqtt:\n';
+text += '  discovery: true\n';
+text += '  broker: [YOUR MQTT BROKER]  # Remove if you want to use builtin-in MQTT broker\n';
+text += '  birth_message:\n';
+text += `    topic: 'hass/status'\n`;
+text += `    payload: 'online'\n`;
+text += '  will_message:\n';
+text += `    topic: 'hass/status'\n`;
+text += `    payload: 'offline'\n`;
 text += '```';
 
 text += '\n\n'
