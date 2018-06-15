@@ -36,7 +36,8 @@
     "zigbee-shepherd-converters": "*",
     "json2yaml": "*",
     "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git",
-    "js-yaml": "*"
+    "js-yaml": "*",
+    "git-last-commit": "*"
   },
   "devDependencies": {
     "eslint": "*",

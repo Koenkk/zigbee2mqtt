@@ -10,7 +10,7 @@ WORKDIR /app
 # Install dependencies
 RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs git && \
     npm install --unsafe-perm && \
-    apk del make gcc g++ python linux-headers udev git
+    apk del make gcc g++ python linux-headers udev
 
 # Entrypoint
 ENTRYPOINT ["./run.sh"]
