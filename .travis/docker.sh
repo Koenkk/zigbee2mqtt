@@ -5,7 +5,7 @@ login() {
 }
 
 build_and_push() {
-  docker build -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
+  docker build --build-arg COMMIT=$(git rev-parse --short HEAD) -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
   docker push $DOCKER_USERNAME/zigbee2mqtt:$1
 }
 

@@ -1,13 +1,13 @@
 {
   "name": "zigbee2mqtt",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
     "acorn": {
-      "version": "5.6.2",
-      "resolved": "https://registry.npmjs.org/acorn/-/acorn-5.6.2.tgz",
-      "integrity": "sha512-zUzo1E5dI2Ey8+82egfnttyMlMZ2y0D8xOCO3PNPPlYXpl8NZvF6Qk9L9BEtJs+43FqEmfBViDqc5d1ckRDguw==",
+      "version": "5.7.1",
+      "resolved": "https://registry.npmjs.org/acorn/-/acorn-5.7.1.tgz",
+      "integrity": "sha512-d+nbxBUGKg7Arpsvbnlq61mc12ek3EY8EQldM3GPAhWJ1UVxC6TDGbIvUMNU6obBX3i1+ptCIzV4vq0gFPEGVQ==",
       "dev": true
     },
     "acorn-jsx": {
@@ -590,7 +590,7 @@
       "integrity": "sha512-yAcIQxtmMiB/jL32dzEp2enBeidsB7xWPLNiw3IIkpVds1P+h7qF9YwJq1yUNzp2OKXgAprs4F61ih66UsoD1A==",
       "dev": true,
       "requires": {
-        "acorn": "5.6.2",
+        "acorn": "5.7.1",
         "acorn-jsx": "3.0.1"
       }
     },
@@ -719,6 +719,11 @@
       "resolved": "https://registry.npmjs.org/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz",
       "integrity": "sha1-GwqzvVU7Kg1jmdKcDj6gslIHgyc=",
       "dev": true
+    },
+    "git-last-commit": {
+      "version": "0.3.0",
+      "resolved": "https://registry.npmjs.org/git-last-commit/-/git-last-commit-0.3.0.tgz",
+      "integrity": "sha1-zHcBrcYpt0f9OzOuXddTp0as6d8="
     },
     "glob": {
       "version": "7.1.2",
@@ -2782,9 +2787,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.7",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.7.tgz",
-      "integrity": "sha512-yBLpHohmjw192Sp5rjX8pozLcjcnhy5AmVIob+CI0+AgGCHEpzGBjc9JvxLyH/N/XVOjMiyVK6wOb5B/Ua1xaw==",
+      "version": "2.0.8",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.8.tgz",
+      "integrity": "sha512-UAtzGF5HZpcfvclmD1fxFkNke0EEOlXMO1VZB8z+FzkuexW6ILVG+7sbys4XIxcrmPuD6/yRGAPsWDqmLITrOg==",
       "requires": {
         "debounce": "1.1.0"
       },

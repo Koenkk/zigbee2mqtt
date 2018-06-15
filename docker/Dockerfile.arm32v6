@@ -5,6 +5,10 @@ ENV QEMU_EXECVE 1
 COPY docker/qemu-arm-static /usr/bin
 WORKDIR /app
 
+# Write .hash.json
+ARG COMMIT
+RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
+
 # Copy files & install dependencies
 ADD . /app
 RUN [ "qemu-arm-static", "/bin/sh", "-c", \
