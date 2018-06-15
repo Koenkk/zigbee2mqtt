@@ -13,7 +13,7 @@ RUN [ "qemu-aarch64-static", "/bin/sh", "-c", \
        cp /app/docker/run.sh /app && chmod +x /app/run.sh && \
        apk add --update --no-cache make gcc g++ python linux-headers udev nodejs git && \
        npm install --unsafe-perm && \
-       echo "{\"hash\": \"$COMMIT\"}" > .hash.json && \
+       echo '{\"hash\": \"$COMMIT\"}' > .hash.json && \
        apk del make gcc g++ python linux-headers udev git"]
 
 # Entrypoint
