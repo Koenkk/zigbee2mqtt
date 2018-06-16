@@ -1066,9 +1066,9 @@
       }
     },
     "localforage": {
-      "version": "1.7.1",
-      "resolved": "https://registry.npmjs.org/localforage/-/localforage-1.7.1.tgz",
-      "integrity": "sha1-5JJ+BCMCuGTbMPMhHxO1xvDell0=",
+      "version": "1.7.2",
+      "resolved": "https://registry.npmjs.org/localforage/-/localforage-1.7.2.tgz",
+      "integrity": "sha1-+kRCYC+Abt0rympUq05lbwMfEhw=",
       "requires": {
         "lie": "3.1.1"
       },
@@ -1193,7 +1193,7 @@
       "requires": {
         "async": "0.2.10",
         "binary-search-tree": "0.2.5",
-        "localforage": "1.7.1",
+        "localforage": "1.7.2",
         "mkdirp": "0.5.1",
         "underscore": "1.4.4"
       },
@@ -2787,9 +2787,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.9",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.9.tgz",
-      "integrity": "sha512-uAIt01bRxpbRh50Ck4rmGHK6nKyrpFHag+Km4F+OJ7gqgExvBy/FEY9q/vBWcrKs9dmDJgtgIQ0ShM8us29U9A==",
+      "version": "2.0.10",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.10.tgz",
+      "integrity": "sha512-7ud41U2SJJQxdFO5kyC9DwJUOf37uLWHthwqLLxUG9krw1lUGUXzgcYWX02QjYAf6/AAPVfPWvZCHYKD8v/6YQ==",
       "requires": {
         "debounce": "1.1.0"
       },
