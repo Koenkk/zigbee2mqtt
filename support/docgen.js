@@ -94,8 +94,14 @@ const homeassistantConfig = (device) => {
     };
 
     if (payload.command_topic) {
-        payload.command_topic = `zigbee2mqtt/<FRIENDLY_NAME>/set`;
+        if (payload.command_topic_prefix) {
+            payload.command_topic = `zigbee2mqtt/<FRIENDLY_NAME>/${payload.command_topic_prefix}/set`;
+        } else {
+            payload.command_topic = `zigbee2mqtt/<FRIENDLY_NAME>/set`;
+        }
     }
+
+    delete payload.command_topic_prefix;
 
     let yml = YAML.stringify([payload]);
     yml = yml.replace(/(-) \n    /g, '- ');
