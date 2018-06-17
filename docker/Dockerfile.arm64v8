@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Write .hash.json
 ARG COMMIT
-RUN [ "qemu-aarch64-static", "/bin/sh", "-c", "echo {\\\"hash\\\": \\\"$COMMIT\\\"} > .b.json" ]
+RUN [ "qemu-aarch64-static", "/bin/sh", "-c", "echo {\\\"hash\\\": \\\"$COMMIT\\\"} > .hash.json" ]
 
 # Copy files & install dependencies
 ADD . /app
