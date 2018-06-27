@@ -518,9 +518,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "5.0.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.0.0.tgz",
-      "integrity": "sha512-MA0YWJLeK7BPEBxJCINvKnQdKpeTwbac3Xonh0PPFjWYZkowZf+Xl30lJWJ/BWOqFQdAdPcyOh0aBqlbH6ojAg==",
+      "version": "5.0.1",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.0.1.tgz",
+      "integrity": "sha512-D5nG2rErquLUstgUaxJlWB5+gu+U/3VDY0fk/Iuq8y9CUFy/7Y6oF4N2cR1tV8knzQvciIbfqfohd359xTLIKQ==",
       "dev": true,
       "requires": {
         "ajv": "6.5.1",
@@ -2861,9 +2861,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.17",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.17.tgz",
-      "integrity": "sha512-LqntuRO4UCFk+PKjrMNXON5QFp9zNxfQGFAaDIYyhhOjD7BwxrHVeW6SxCF5Hrug9CnuhLAoF1P9Qs2KyAeKsg==",
+      "version": "2.0.18",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.18.tgz",
+      "integrity": "sha512-E9Uq6q2jAZOt7oTi4uBa6yzNOD45K/wJs8RUnIAYXPXF4gx3PWKXUqHzJLgkUIsy1XQpIiwtSSu49et9hpC1nQ==",
       "requires": {
         "debounce": "1.1.0"
       },
