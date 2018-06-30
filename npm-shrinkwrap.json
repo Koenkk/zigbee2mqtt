@@ -295,9 +295,9 @@
       "integrity": "sha1-BDP0TYCWgP3rYO0mDxsMJi6CpAs="
     },
     "commander": {
-      "version": "2.15.1",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-2.15.1.tgz",
-      "integrity": "sha512-VlfT9F3V0v+jr4yxPc5gg9s62/fIVWsd2Bk2iD435um1NlGMYdVCq+MjcXnhYq2icNOizHr1kK+5TI6H0Hy0ag=="
+      "version": "2.16.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-2.16.0.tgz",
+      "integrity": "sha512-sVXqklSaotK9at437sFlFpyOcJonxe0yST/AG9DkQKUdIE6IqGIMv4SfAQSKaJbSdVEJYItASCrBiVQHq1HQew=="
     },
     "commist": {
       "version": "1.0.0",
@@ -1171,9 +1171,9 @@
       }
     },
     "mqtt": {
-      "version": "2.18.1",
-      "resolved": "https://registry.npmjs.org/mqtt/-/mqtt-2.18.1.tgz",
-      "integrity": "sha512-p+RIMFsNb5z65/dy5beKgTnycd3+N8gQ+E2Jnx+0g0OoRza/LCXtUp/vEb3mgWJdljTU+5n4Lc3h0ya994zmVg==",
+      "version": "2.18.2",
+      "resolved": "https://registry.npmjs.org/mqtt/-/mqtt-2.18.2.tgz",
+      "integrity": "sha512-egP6gbLES2aELu6LNtwOtpC779Hu7LVTYm6HKE5wJdTuX2jZ4JOOtK7HS2JWyW6IfKN5U99u/VU155tLwFAKbQ==",
       "requires": {
         "commist": "1.0.0",
         "concat-stream": "1.6.2",
@@ -1561,7 +1561,7 @@
       "integrity": "sha1-QhxhiophK9QM+kYbSkYVTa8iKaU=",
       "requires": {
         "bindings": "1.2.1",
-        "commander": "2.15.1",
+        "commander": "2.16.0",
         "debug": "2.6.9",
         "lie": "3.3.0",
         "nan": "2.10.0",
@@ -1879,7 +1879,7 @@
                   "bundled": true,
                   "requires": {
                     "chalk": "1.1.3",
-                    "commander": "2.15.1",
+                    "commander": "2.16.0",
                     "is-my-json-valid": "2.15.0",
                     "pinkie-promise": "2.0.1"
                   },
@@ -2861,9 +2861,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.18",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.18.tgz",
-      "integrity": "sha512-E9Uq6q2jAZOt7oTi4uBa6yzNOD45K/wJs8RUnIAYXPXF4gx3PWKXUqHzJLgkUIsy1XQpIiwtSSu49et9hpC1nQ==",
+      "version": "2.0.19",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.19.tgz",
+      "integrity": "sha512-h+TdTaMEnq9lMc82g3tYxVRASL8P75gKJxoVm2noK1zzLdvfWy5y1gnR9lOdimY9X1aTx8dCKVGNJ8nj2U2fqQ==",
       "requires": {
         "debounce": "1.1.0"
       },
