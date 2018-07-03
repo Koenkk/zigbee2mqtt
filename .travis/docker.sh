@@ -15,6 +15,11 @@ build_and_push() {
 }
 
 # Only update docker images if on master branch and not pull request
+echo "==="
+echo $TRAVIS_BRANCH
+echo $TRAVIS_PULL_REQUEST
+echo $TRAVIS_TAG
+echo "==="
 if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ]
 then
   echo "Updating docker images for master branch!"
