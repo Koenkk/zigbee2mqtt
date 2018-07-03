@@ -14,13 +14,10 @@ build_and_push() {
   docker push $DOCKER_USERNAME/zigbee2mqtt:$1
 }
 
-# Only update docker images if on master branch and not pull request
-echo "==="
-echo $TRAVIS_BRANCH
-echo $TRAVIS_PULL_REQUEST
-echo $TRAVIS_TAG
-echo "==="
-if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ]
+# Only update Docker images for:
+# - dev branch
+# - version release
+if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ]
 then
   echo "Updating docker images for master branch!"
   login
