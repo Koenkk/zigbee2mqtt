@@ -205,9 +205,7 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "0.4.2",
-      "resolved": "https://registry.npmjs.org/cc-znp/-/cc-znp-0.4.2.tgz",
-      "integrity": "sha1-nKN8Zm0q5U56FFsWvFbV6t1VVIw=",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#0445c554344421498c1721b4a7fc84531b222cbf",
       "requires": {
         "debug": "2.6.9",
         "enum": "2.5.0",
@@ -2833,11 +2831,11 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#65101146c480aa8f1ddb58046327e2a9a495cf04",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#a2f4564cfd1d09a233c8dc46db579c5fa07f02f0",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
-        "cc-znp": "0.4.2",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#0445c554344421498c1721b4a7fc84531b222cbf",
         "debug": "2.6.9",
         "objectbox": "0.3.0",
         "proving": "0.1.0",
