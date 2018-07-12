@@ -205,9 +205,7 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "0.4.2",
-      "resolved": "https://registry.npmjs.org/cc-znp/-/cc-znp-0.4.2.tgz",
-      "integrity": "sha1-nKN8Zm0q5U56FFsWvFbV6t1VVIw=",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#0445c554344421498c1721b4a7fc84531b222cbf",
       "requires": {
         "debug": "2.6.9",
         "enum": "2.5.0",
@@ -496,7 +494,7 @@
         "es-to-primitive": "1.1.1",
         "function-bind": "1.1.1",
         "has": "1.0.3",
-        "is-callable": "1.1.3",
+        "is-callable": "1.1.4",
         "is-regex": "1.0.4"
       }
     },
@@ -506,7 +504,7 @@
       "integrity": "sha1-RTVSSKiJeQNLZ5Lhm7gfK3l13Q0=",
       "dev": true,
       "requires": {
-        "is-callable": "1.1.3",
+        "is-callable": "1.1.4",
         "is-date-object": "1.0.1",
         "is-symbol": "1.0.1"
       }
@@ -518,9 +516,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "5.0.1",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.0.1.tgz",
-      "integrity": "sha512-D5nG2rErquLUstgUaxJlWB5+gu+U/3VDY0fk/Iuq8y9CUFy/7Y6oF4N2cR1tV8knzQvciIbfqfohd359xTLIKQ==",
+      "version": "5.1.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.1.0.tgz",
+      "integrity": "sha512-DyH6JsoA1KzA5+OSWFjg56DFJT+sDLO0yokaPZ9qY0UEmYrPA1gEX/G1MnVkmRDsksG4H1foIVz2ZXXM3hHYvw==",
       "dev": true,
       "requires": {
         "ajv": "6.5.2",
@@ -530,6 +528,7 @@
         "debug": "3.1.0",
         "doctrine": "2.1.0",
         "eslint-scope": "4.0.0",
+        "eslint-utils": "1.3.1",
         "eslint-visitor-keys": "1.0.0",
         "espree": "4.0.0",
         "esquery": "1.0.1",
@@ -589,6 +588,12 @@
         "esrecurse": "4.2.1",
         "estraverse": "4.2.0"
       }
+    },
+    "eslint-utils": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/eslint-utils/-/eslint-utils-1.3.1.tgz",
+      "integrity": "sha512-Z7YjnIldX+2XMcjr7ZkgEsOj/bREONV60qYeB/bjMAqqqZ4zxKyWX+BOUkdmRmA9riiIPVvo5x86m5elviOk0Q==",
+      "dev": true
     },
     "eslint-visitor-keys": {
       "version": "1.0.0",
@@ -918,9 +923,9 @@
       "integrity": "sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w=="
     },
     "is-callable": {
-      "version": "1.1.3",
-      "resolved": "https://registry.npmjs.org/is-callable/-/is-callable-1.1.3.tgz",
-      "integrity": "sha1-hut1OSgF3cM69xySoO7fdO52BLI=",
+      "version": "1.1.4",
+      "resolved": "https://registry.npmjs.org/is-callable/-/is-callable-1.1.4.tgz",
+      "integrity": "sha512-r5p9sxJjYnArLjObpjA4xu5EKI3CuKHkJXMhT7kwbpUyIFD1n5PMAsoPvWnvtZiNz7LjkYDRZhd7FlI0eMijEA==",
       "dev": true
     },
     "is-date-object": {
@@ -2815,7 +2820,7 @@
       }
     },
     "zcl-packet": {
-      "version": "git+https://github.com/Koenkk/zcl-packet.git#360b9d2f02dc1bb40def40d03ac10175b93300e5",
+      "version": "git+https://github.com/Koenkk/zcl-packet.git#020f16b872292e8b5a0cfc9a2ff9b525a7cbea7b",
       "requires": {
         "concentrate": "0.2.3",
         "dissolve-chunks": "1.3.0",
@@ -2833,17 +2838,17 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#65101146c480aa8f1ddb58046327e2a9a495cf04",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#22f6a3b46a948e46b0ad6bab8c6b528fc4acbaea",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
-        "cc-znp": "0.4.2",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#0445c554344421498c1721b4a7fc84531b222cbf",
         "debug": "2.6.9",
         "objectbox": "0.3.0",
         "proving": "0.1.0",
         "q": "1.5.1",
         "zcl-id": "0.3.2",
-        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#360b9d2f02dc1bb40def40d03ac10175b93300e5",
+        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#020f16b872292e8b5a0cfc9a2ff9b525a7cbea7b",
         "ziee": "0.3.0",
         "zive": "0.2.2",
         "zstack-constants": "0.2.0"
@@ -2861,9 +2866,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.20",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.20.tgz",
-      "integrity": "sha512-L8q7FkLlJluNDfcrmjvdf/CuQTo+2T75uQsznV1v1laDf5dh9x11iSGYSpzh4ou9iHIpTNkk+FQHDuIX/c17mw==",
+      "version": "2.0.23",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.23.tgz",
+      "integrity": "sha512-wiBPcrOmnB4mH1UsbeF66D8tOqsLRt8W6xcXU79KC8qeLSkla2nfyK96onSVn0UEe4VrUkG/NCmbfYoIgpVwCg==",
       "requires": {
         "debounce": "1.1.0"
       },
