@@ -612,9 +612,9 @@
       }
     },
     "esprima": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/esprima/-/esprima-4.0.0.tgz",
-      "integrity": "sha512-oftTcaMu/EGrEIu904mWteKIv8vMuOgGYo7EhVJJN00R/EED9DCua/xxHRdYnKtcECzVg7xOWhflvJMnqcFZjw=="
+      "version": "4.0.1",
+      "resolved": "https://registry.npmjs.org/esprima/-/esprima-4.0.1.tgz",
+      "integrity": "sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A=="
     },
     "esquery": {
       "version": "1.0.1",
@@ -1058,7 +1058,7 @@
       "integrity": "sha512-PIt2cnwmPfL4hKNwqeiuz4bKfnzHTBv6HyVgjahA6mPLwPDzjDWrplJBMjHUFxku/N3FlmrbyPclad+I+4mJ3A==",
       "requires": {
         "argparse": "1.0.10",
-        "esprima": "4.0.0"
+        "esprima": "4.0.1"
       }
     },
     "json-schema-traverse": {
@@ -2866,9 +2866,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.23",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.23.tgz",
-      "integrity": "sha512-wiBPcrOmnB4mH1UsbeF66D8tOqsLRt8W6xcXU79KC8qeLSkla2nfyK96onSVn0UEe4VrUkG/NCmbfYoIgpVwCg==",
+      "version": "2.0.28",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.28.tgz",
+      "integrity": "sha512-Ta/Iy1FttfyyB+vQI3WuieQhwPTT5Urkm+AgeR8E4mjTfe39Jk9dTQVDLgwPfxj1UtejIgWf7KyJ+Wyfa7ZvKw==",
       "requires": {
         "debounce": "1.1.0"
       },
