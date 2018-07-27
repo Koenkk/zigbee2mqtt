@@ -17,7 +17,7 @@ build_and_push() {
 # Only update Docker images for:
 # - dev branch
 # - version release
-if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ]
+if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ] && [ ! "$TRAVIS_TAG" = "" ]
 then
   echo "Updating docker images for master branch!"
   login
