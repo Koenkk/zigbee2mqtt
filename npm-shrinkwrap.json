@@ -2838,7 +2838,7 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#2078557a485466c032cc26b2cd2b8ac29edeceac",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#0cc6c18190ca2b4cf979e5b877961a7727799af2",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
@@ -2866,9 +2866,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "2.0.34",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.34.tgz",
-      "integrity": "sha512-8q2Lh2kAJG3Lg+Hp+PH/tCSbzDndn3f6XkI+7t0W5zynIHcGvViNNubx9UbGduBCJK7tv0rjEJU4/DCUoH7UPw==",
+      "version": "2.0.35",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-2.0.35.tgz",
+      "integrity": "sha512-vTgTGXEIIUAQox6WAtkYjTgmCs8jsrtgWGbTRy9PKBue13Jf+1U5K+HZlaqyILE6ye3omWG2Wqr0WlUjA11svw==",
       "requires": {
         "debounce": "1.1.0"
       },
