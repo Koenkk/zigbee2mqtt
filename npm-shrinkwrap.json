@@ -2820,7 +2820,7 @@
       }
     },
     "zcl-packet": {
-      "version": "git+https://github.com/Koenkk/zcl-packet.git#3ea8912f9d228b59fad554064d15ed9be7897a7f",
+      "version": "git+https://github.com/Koenkk/zcl-packet.git#1513d8087b8ccd52f73a90dd15112d7e3468f861",
       "requires": {
         "concentrate": "0.2.3",
         "dissolve-chunks": "1.3.0",
@@ -2838,7 +2838,7 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#0cc6c18190ca2b4cf979e5b877961a7727799af2",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#f22646eda3e57124ecc4e0e07831673329ee56a8",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
@@ -2848,7 +2848,7 @@
         "proving": "0.1.0",
         "q": "1.5.1",
         "zcl-id": "0.3.2",
-        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#3ea8912f9d228b59fad554064d15ed9be7897a7f",
+        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#1513d8087b8ccd52f73a90dd15112d7e3468f861",
         "ziee": "0.3.0",
         "zive": "0.2.2",
         "zstack-constants": "0.2.0"
