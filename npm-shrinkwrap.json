@@ -2838,7 +2838,7 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#f22646eda3e57124ecc4e0e07831673329ee56a8",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#b0287f99f28d21bbfc2a7d773b86d8eaf7a10075",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
