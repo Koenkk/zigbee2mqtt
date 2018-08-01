@@ -32,10 +32,10 @@
     "object-assign-deep": "*",
     "mqtt": "*",
     "winston": "2.4.2",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#de6e6f746fcb71987849a4146a90a5715cd718f8",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#b7b1fd48504b969e8f48e94d2761e59939ae9de3",
     "zigbee-shepherd-converters": "*",
     "json2yaml": "*",
-    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#1513d8087b8ccd52f73a90dd15112d7e3468f861",
+    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#b7d5b4478a88cd3fc65328c6dc94572c277c7d3e",
     "js-yaml": "*",
     "git-last-commit": "*"
   },
