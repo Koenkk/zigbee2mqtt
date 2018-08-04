@@ -4,9 +4,7 @@
     },
     "extends": ["eslint:recommended", "google"],
     "parserOptions": {
-        "ecmaFeatures": {
-            "experimentalObjectRestSpread": true
-        },
+        "ecmaVersion": 6,
         "sourceType": "module"
     },
     "rules": {
