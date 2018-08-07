@@ -547,7 +547,7 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "git+https://github.com/Koenkk/cc-znp.git#e8a8242d80753cbfeb81744102c1e5501371aaa8",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#94646da556bc273f9476266a888ecc55c4f167e3",
       "requires": {
         "debug": "2.6.9",
         "enum": "2.5.0",
@@ -682,9 +682,9 @@
       "integrity": "sha1-BDP0TYCWgP3rYO0mDxsMJi6CpAs="
     },
     "commander": {
-      "version": "2.17.0",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-2.17.0.tgz",
-      "integrity": "sha512-477o1hdVORiFlZxw8wgsXYCef3lh0zl/OV0FTftqiDxJSWw6dPQ2ipS4k20J2qBcsmsmLKSyr2iFrf9e3JGi4w=="
+      "version": "2.17.1",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-2.17.1.tgz",
+      "integrity": "sha512-wPMUt6FnH2yzG95SA6mzjQOEKUU3aLaDEmzs1ti+1E9h+CsrZghRlqEM/EJ4KscsQVG8uNN4uVreUeT8+drlgg=="
     },
     "commist": {
       "version": "1.0.0",
@@ -2625,7 +2625,7 @@
         "@serialport/parser-ready": "1.0.5",
         "@serialport/parser-regex": "1.0.5",
         "bindings": "1.3.0",
-        "commander": "2.17.0",
+        "commander": "2.17.1",
         "debug": "3.1.0",
         "nan": "2.10.0",
         "prebuild-install": "4.0.0",
@@ -3273,11 +3273,11 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#398f2db8382008d73f68c92ffab418b557d2808d",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#de19fd1f77522e047b69d5e8877bb57c0882cc28",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
-        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#e8a8242d80753cbfeb81744102c1e5501371aaa8",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#94646da556bc273f9476266a888ecc55c4f167e3",
         "debug": "2.6.9",
         "objectbox": "0.3.0",
         "proving": "0.1.0",
