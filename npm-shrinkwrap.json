@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -171,9 +171,9 @@
       }
     },
     "buffer-from": {
-      "version": "1.1.0",
-      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.0.tgz",
-      "integrity": "sha512-c5mRlguI/Pe2dSZmpER62rSCu0ryKmWddzRYsuXc50U2/g8jMOulc31VZMa4mYx31U5xsmSOpDCgH88Vl9cDGQ=="
+      "version": "1.1.1",
+      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.1.tgz",
+      "integrity": "sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A=="
     },
     "busyman": {
       "version": "0.3.0",
@@ -316,7 +316,7 @@
       "resolved": "https://registry.npmjs.org/concat-stream/-/concat-stream-1.6.2.tgz",
       "integrity": "sha512-27HBghJxjiZtIk3Ycvn/4kbJk/1uZuJFfuPEns6LaEvpvG1f0hTea8lilrouyo9mVc2GWdcEZ8OLoGmSADlrCw==",
       "requires": {
-        "buffer-from": "1.1.0",
+        "buffer-from": "1.1.1",
         "inherits": "2.0.3",
         "readable-stream": "2.3.6",
         "typedarray": "0.0.6"
@@ -537,7 +537,7 @@
         "functional-red-black-tree": "1.0.1",
         "glob": "7.1.2",
         "globals": "11.7.0",
-        "ignore": "4.0.2",
+        "ignore": "4.0.3",
         "imurmurhash": "0.1.4",
         "inquirer": "5.2.0",
         "is-resolvable": "1.1.0",
@@ -857,9 +857,9 @@
       }
     },
     "ignore": {
-      "version": "4.0.2",
-      "resolved": "https://registry.npmjs.org/ignore/-/ignore-4.0.2.tgz",
-      "integrity": "sha512-uoxnT7PYpyEnsja+yX+7v49B7LXxmzDJ2JALqHH3oEGzpM2U1IGcbfnOr8Dt57z3B/UWs7/iAgPFbmye8m4I0g==",
+      "version": "4.0.3",
+      "resolved": "https://registry.npmjs.org/ignore/-/ignore-4.0.3.tgz",
+      "integrity": "sha512-Z/vAH2GGIEATQnBVXMclE2IGV6i0GyVngKThcGZ5kHgHMxLo9Ow2+XHRq1aEKEej5vOF1TPJNbvX6J/anT0M7A==",
       "dev": true
     },
     "immediate": {
