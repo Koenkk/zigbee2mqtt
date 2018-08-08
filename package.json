@@ -34,6 +34,7 @@
     "git-last-commit": "*",
     "js-yaml": "*",
     "json2yaml": "*",
+    "moment": "*",
     "mqtt": "*",
     "object-assign-deep": "*",
     "winston": "2.4.2",
