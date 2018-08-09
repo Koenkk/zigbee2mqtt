@@ -978,7 +978,7 @@
         "functional-red-black-tree": "1.0.1",
         "glob": "7.1.2",
         "globals": "11.7.0",
-        "ignore": "4.0.3",
+        "ignore": "4.0.5",
         "imurmurhash": "0.1.4",
         "inquirer": "5.2.0",
         "is-resolvable": "1.1.0",
@@ -1372,9 +1372,9 @@
       }
     },
     "ignore": {
-      "version": "4.0.3",
-      "resolved": "https://registry.npmjs.org/ignore/-/ignore-4.0.3.tgz",
-      "integrity": "sha512-Z/vAH2GGIEATQnBVXMclE2IGV6i0GyVngKThcGZ5kHgHMxLo9Ow2+XHRq1aEKEej5vOF1TPJNbvX6J/anT0M7A==",
+      "version": "4.0.5",
+      "resolved": "https://registry.npmjs.org/ignore/-/ignore-4.0.5.tgz",
+      "integrity": "sha512-Q2daVnMtQJPacGrcCRyOEiI+syPCt+mR4YotoC0KEYeinV/6HztT5mUuVEj7UYyoNZ1jGYiu2XEem7I8oM44bg==",
       "dev": true
     },
     "immediate": {
@@ -3273,7 +3273,7 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#de19fd1f77522e047b69d5e8877bb57c0882cc28",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#f91c09226e64df50e193e3ddf17d5515fa4a15fc",
       "requires": {
         "areq": "0.2.0",
         "busyman": "0.3.0",
