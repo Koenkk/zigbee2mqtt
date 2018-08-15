@@ -17,10 +17,12 @@
     "cc2531"
   ],
   "scripts": {
-    "start": "node index.js",
+    "coverage": "nyc --all report --reporter=text mocha --recursive --timeout=3000",
     "docgen": "node support/docgen.js",
-    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js",
-    "eslint": "node_modules/.bin/eslint ."
+    "eslint": "node_modules/.bin/eslint .",
+    "start": "node index.js",
+    "test": "mocha --recursive",
+    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -40,7 +42,13 @@
     "zigbee-shepherd-converters": "*"
   },
   "devDependencies": {
+    "chai": "*",
+    "chai-spies": "*",
     "eslint": "*",
-    "eslint-config-google": "*"
+    "eslint-config-google": "*",
+    "eslint-plugin-mocha": "*",
+    "mocha": "*",
+    "nyc": "*",
+    "proxyquire": "*"
   }
 }
