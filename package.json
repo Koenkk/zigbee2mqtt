@@ -29,15 +29,15 @@
   },
   "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
   "dependencies": {
-    "object-assign-deep": "*",
-    "mqtt": "*",
-    "winston": "2.4.2",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#7673fc5a285dc93d2e466bc2aa7134220e1fb134",
-    "zigbee-shepherd-converters": "*",
-    "json2yaml": "*",
-    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#b7d5b4478a88cd3fc65328c6dc94572c277c7d3e",
+    "git-last-commit": "*",
     "js-yaml": "*",
-    "git-last-commit": "*"
+    "json2yaml": "*",
+    "mqtt": "*",
+    "object-assign-deep": "*",
+    "winston": "2.4.2",
+    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#b7d5b4478a88cd3fc65328c6dc94572c277c7d3e",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#7673fc5a285dc93d2e466bc2aa7134220e1fb134",
+    "zigbee-shepherd-converters": "*"
   },
   "devDependencies": {
     "eslint": "*",
