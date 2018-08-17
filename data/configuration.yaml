@@ -13,7 +13,6 @@ mqtt:
   # MQTT server authentication, uncomment if required:
   # user: my_user
   # password: my_password
-  # selfsigned: true 
 
 # Serial settings
 serial:
