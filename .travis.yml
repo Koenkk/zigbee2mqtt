@@ -11,11 +11,12 @@ node_js:
 install:
   - npm install
 
-script:
+before_script:
+  - npm test
   - npm run verify-homeassistant-mapping
   - npm run eslint
 
-after_success:
+script:
   - ".travis/docker.sh"
   - ".travis/wiki.sh"
   - ".travis/trigger-downstream.sh"

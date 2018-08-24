@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Zigbee to MQTT bridge using zigbee-shepherd",
   "main": "index.js",
   "repository": {
@@ -17,10 +17,12 @@
     "cc2531"
   ],
   "scripts": {
-    "start": "node index.js",
+    "coverage": "nyc --all report --reporter=text mocha --recursive --timeout=3000",
     "docgen": "node support/docgen.js",
-    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js",
-    "eslint": "node_modules/.bin/eslint ."
+    "eslint": "node_modules/.bin/eslint .",
+    "start": "node index.js",
+    "test": "mocha --recursive",
+    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -29,18 +31,27 @@
   },
   "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
   "dependencies": {
-    "object-assign-deep": "*",
-    "mqtt": "*",
-    "winston": "2.4.2",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git",
-    "zigbee-shepherd-converters": "*",
-    "json2yaml": "*",
-    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git",
+    "git-last-commit": "*",
     "js-yaml": "*",
-    "git-last-commit": "*"
+    "json2yaml": "*",
+    "mkdir-recursive": "*",
+    "moment": "*",
+    "mqtt": "*",
+    "object-assign-deep": "*",
+    "rimraf": "*",
+    "winston": "2.4.2",
+    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#b7d5b4478a88cd3fc65328c6dc94572c277c7d3e",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#7673fc5a285dc93d2e466bc2aa7134220e1fb134",
+    "zigbee-shepherd-converters": "*"
   },
   "devDependencies": {
+    "chai": "*",
+    "chai-spies": "*",
     "eslint": "*",
-    "eslint-config-google": "*"
+    "eslint-config-google": "*",
+    "eslint-plugin-mocha": "*",
+    "mocha": "*",
+    "nyc": "*",
+    "proxyquire": "*"
   }
 }
