@@ -4,16 +4,14 @@
     },
     "extends": ["eslint:recommended", "google"],
     "parserOptions": {
-        "ecmaVersion": 6,
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        },
         "sourceType": "module"
     },
     "rules": {
         "require-jsdoc": "off",
         "indent": ["error", 4],
-        "max-len": ["error", { "code": 120 }],
-        "mocha/no-exclusive-tests": "error"
-    },
-    "plugins": [
-        "mocha"
-    ]
+        "max-len": ["error", { "code": 120 }]
+    }
 }
