@@ -49,7 +49,7 @@
     "chai-spies": "*",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-mocha": "*",
+    "eslint-plugin-mocha": "^5.2.0",
     "mocha": "*",
     "nyc": "*",
     "proxyquire": "*"
