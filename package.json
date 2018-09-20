@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Zigbee to MQTT bridge using zigbee-shepherd",
   "main": "index.js",
   "repository": {
@@ -41,7 +41,7 @@
     "rimraf": "*",
     "winston": "2.4.2",
     "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#8f17e5540946f9be198d737a879e334c24dbf20d",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#c096ed6719a6c941217c560b4cdcc04e4dd34c3b",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#bf990abe65eac98a343637826b21b75f47558506",
     "zigbee-shepherd-converters": "*"
   },
   "devDependencies": {
