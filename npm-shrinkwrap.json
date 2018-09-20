@@ -356,7 +356,7 @@
     },
     "ansi-colors": {
       "version": "0.2.0",
-      "resolved": "https://registry.npmjs.org/ansi-colors/-/ansi-colors-0.2.0.tgz",
+      "resolved": "http://registry.npmjs.org/ansi-colors/-/ansi-colors-0.2.0.tgz",
       "integrity": "sha1-csMd4qDZoszQysMMyYI+6y9kNLU=",
       "requires": {
         "ansi-bgblack": "^0.1.1",
@@ -4830,9 +4830,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "3.0.5",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-3.0.5.tgz",
-      "integrity": "sha512-4jzcufFZKueuKEfRk5aGhKj1st8vbeY8098ciOS9IbAvTwF57XZ3lB1UDC4cd1mcuYmY2Zve3PggxSJAyYHOnQ==",
+      "version": "4.0.0",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-4.0.0.tgz",
+      "integrity": "sha512-r2mW+qnuyFp5FIwqkxEQlz8A3YoZ2FX3dk/TStOJtCLkuSnnB5IoAOCEXsasuli79YjbLQtZbhGL2qbrfjYDGA==",
       "requires": {
         "debounce": "*"
       },
