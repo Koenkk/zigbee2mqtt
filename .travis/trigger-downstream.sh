@@ -20,11 +20,11 @@ function travis_trigger() {
           "https://api.travis-ci.org/repo/${org}%2F${repo}/requests"
 }
 
-# Only trigger downstream if on master branch and not pull request
-if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]
+# Only trigger downstream if on dev branch and not pull request
+if [ "$TRAVIS_BRANCH" = "dev" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
   echo "Triggering build of downstream projects!"
   travis_trigger "danielwelch" "hassio-zigbee2mqtt" "master"
 else
-  echo "Not triggering build of downstream projects, triggered by pull request or not on master branch"
+  echo "Not triggering build of downstream projects, triggered by pull request or not on dev branch"
 fi

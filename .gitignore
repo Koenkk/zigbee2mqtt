@@ -61,3 +61,5 @@ typings/
 data/database.db
 data/config.json
 data/log*.txt
+data/state.json
+data/log
