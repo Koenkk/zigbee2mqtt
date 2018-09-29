@@ -40,9 +40,9 @@
     "object-assign-deep": "*",
     "rimraf": "*",
     "winston": "2.4.2",
-    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#8f17e5540946f9be198d737a879e334c24dbf20d",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#bf990abe65eac98a343637826b21b75f47558506",
-    "zigbee-shepherd-converters": "*"
+    "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#97d5fdbc808e315bda2aed9f96612131e1193254",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#cbf214a13ae002f999e588b109181a0abbdb6226",
+    "zigbee-shepherd-converters": "4.0.1"
   },
   "devDependencies": {
     "chai": "*",
