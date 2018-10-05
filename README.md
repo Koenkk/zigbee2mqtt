@@ -39,6 +39,6 @@ If you need assistance you can check [opened issues](https://github.com/Koenkk/z
 * [AndrewLinden](https://github.com/AndrewLinden)
 * [oskarn97](https://github.com/oskarn97)
 * [dgomes](https://github.com/dgomes)
-* [Koenkk](https://github.com/Koenk)
+* [Koenkk](https://github.com/Koenkk)
 * [kirovilya](https://github.com/kirovilya)
 * [ciotlosm](https://github.com/ciotlosm)
