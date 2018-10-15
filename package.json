@@ -42,7 +42,7 @@
     "winston": "2.4.2",
     "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#fbd8c936bbd4be0597ad3e934be0ca722b0128a6",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#c3fdef2c30267573aa5821a0f2c51f21a700eff2",
-    "zigbee-shepherd-converters": "4.0.3"
+    "zigbee-shepherd-converters": "4.0.5"
   },
   "devDependencies": {
     "chai": "*",
