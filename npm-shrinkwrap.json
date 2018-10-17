@@ -3619,9 +3619,9 @@
       "integrity": "sha512-MtEC1TqN0EU5nephaJ4rAtThHtC86dNN9qCuEhtshvpVBkAW5ZO7BASN9REnF9eoXGcRub+pFuKEpOHE+HbEMw=="
     },
     "progress": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/progress/-/progress-2.0.0.tgz",
-      "integrity": "sha1-ihvjZr+Pwj2yvSPxDG/pILQ4nR8=",
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/progress/-/progress-2.0.1.tgz",
+      "integrity": "sha512-OE+a6vzqazc+K6LxJrX5UPyKFvGnL5CYmq2jFGNIBWHpc4QyE49/YOumcrpQFJpfejmvRtbJzgO1zPmMCqlbBg==",
       "dev": true
     },
     "promirepl": {
@@ -4756,9 +4756,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "4.0.5",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-4.0.5.tgz",
-      "integrity": "sha512-B68280h4o6ACI09vVPhzgx9q9XSYh8mxLQUEPyQnQvfsZDqjJxc0ntdQR/m+KicBrsSkj4wqC2a8caSCSAo8mA==",
+      "version": "4.0.6",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-4.0.6.tgz",
+      "integrity": "sha512-bcrAuokQzml9sLJe64V5fz9Uq+S31Kc5dYmlbV9Xanm9b6AL1F5hke3isNGl8eLAaneUZZn/d50GFmxczxiHyQ==",
       "requires": {
         "debounce": "*"
       },
