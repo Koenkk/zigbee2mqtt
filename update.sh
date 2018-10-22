@@ -1,22 +1,24 @@
-#!/bin/bash
-# Source: https://github.com/Koenkk/zigbee2mqtt/wiki/Running-the-bridge#6-for-later-update-zigbee2mqtt-to-the-latest-version
+#!/bin/bash -e
 
-# Stop zigbee2mqtt and go to directory
+echo "Stopping zigbee2mqtt..."
 sudo systemctl stop zigbee2mqtt
-cd /opt/zigbee2mqtt
 
-# Backup configuration
+echo "Creating backup of configuration..."
 cp -R data data-backup
 
-# Update
+echo "Updating..."
 git checkout HEAD -- npm-shrinkwrap.json
 git pull
+
+echo "Installing dependencies..."
 rm -rf node_modules
 npm install
 
-# Restore configuration
+echo "Restore configuration..."
 cp -R data-backup/* data
 rm -rf data-backup
 
-# Start zigbee2mqtt
+echo "Starting zigbee2mqtt..."
 sudo systemctl start zigbee2mqtt
+
+echo "Done!"
