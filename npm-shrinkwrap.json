@@ -3544,7 +3544,7 @@
     },
     "pify": {
       "version": "2.3.0",
-      "resolved": "https://registry.npmjs.org/pify/-/pify-2.3.0.tgz",
+      "resolved": "http://registry.npmjs.org/pify/-/pify-2.3.0.tgz",
       "integrity": "sha1-7RQaasBDqEnqWISY59yosVMw6Qw=",
       "dev": true
     },
@@ -3843,6 +3843,14 @@
       "version": "1.5.1",
       "resolved": "https://registry.npmjs.org/q/-/q-1.5.1.tgz",
       "integrity": "sha1-fjL3W0E4EpHQRhHxvxQQmsAGUdc="
+    },
+    "queue": {
+      "version": "4.5.0",
+      "resolved": "https://registry.npmjs.org/queue/-/queue-4.5.0.tgz",
+      "integrity": "sha512-DwxpAnqJuoQa+wyDgQuwkSshkhlqIlWEvwvdAY27fDPunZ2cVJzXU4JyjY+5l7zs7oGLaYAQm4MbLOVFAHFBzA==",
+      "requires": {
+        "inherits": "~2.0.0"
+      }
     },
     "radio-symbol": {
       "version": "2.0.0",

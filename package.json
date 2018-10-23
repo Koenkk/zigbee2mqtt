@@ -38,6 +38,7 @@
     "moment": "*",
     "mqtt": "*",
     "object-assign-deep": "*",
+    "queue": "*",
     "rimraf": "*",
     "winston": "2.4.2",
     "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#fbd8c936bbd4be0597ad3e934be0ca722b0128a6",
