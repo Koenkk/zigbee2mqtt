@@ -1,4 +1,4 @@
-FROM arm32v6/alpine:3.7
+FROM arm32v6/alpine:3.8
 
 # Setup cross-build
 ENV QEMU_EXECVE 1
@@ -14,7 +14,7 @@ ADD . /app
 RUN [ "qemu-arm-static", "/bin/sh", "-c", \
       "cp /app/data/configuration.yaml /app && \
        cp /app/docker/run.sh /app && chmod +x /app/run.sh && \
-       apk add --update --no-cache make gcc g++ python linux-headers udev nodejs git && \
+       apk add --update --no-cache make gcc g++ python linux-headers udev nodejs=8.11.4-r0 git && \
        npm install --unsafe-perm && \
        apk del make gcc g++ python linux-headers udev git"]
 

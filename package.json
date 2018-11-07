@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
+  "engines": {
+    "node": ">=8.11 10"
+  },
   "keywords": [
     "xiaomi",
     "tradfri",

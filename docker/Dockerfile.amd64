@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.8
 
 # Copy files
 ADD . /app
@@ -12,7 +12,7 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 # Install dependencies
-RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs git && \
+RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs=8.11.4-r0 git && \
     npm install --unsafe-perm && \
     apk del make gcc g++ python linux-headers udev git
 

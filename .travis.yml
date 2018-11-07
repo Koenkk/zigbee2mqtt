@@ -6,7 +6,7 @@ services:
   - docker
 
 node_js:
-  - "8"
+  - "10"
 
 install:
   - npm install
