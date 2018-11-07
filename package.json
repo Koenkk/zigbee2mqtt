@@ -53,6 +53,7 @@
     "eslint-plugin-mocha": "*",
     "mocha": "*",
     "nyc": "*",
-    "proxyquire": "*"
+    "proxyquire": "*",
+    "sinon": "*"
   }
 }
