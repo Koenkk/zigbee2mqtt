@@ -63,7 +63,10 @@ text += '  will_message:\n';
 text += `    topic: 'hass/status'\n`;
 text += `    payload: 'offline'\n`;
 text += '```';
+text += '\n\n'
 
+text += 'Zigbee2mqtt is expecting Home Assistant to send it\'s birth/will messages to `hass/status`.'
+text += 'Be sure to add this to your `configuration.yaml` if you want zigbee2mqtt to resend the cached values when Home Assistant restarts'
 text += '\n\n'
 
 text += 'To respond to button clicks (e.g. WXKG01LM) you can use the following Home Assistant configuration:\n'
