@@ -1,5 +1,3 @@
-/* global describe, it */
-
 const chai = require('chai');
 const proxyquire = require('proxyquire').noPreserveCache();
 const data = () => proxyquire('../lib/util/data.js', {});

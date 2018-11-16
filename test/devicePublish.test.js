@@ -1,5 +1,3 @@
-/* global describe, it */
-
 const chai = require('chai');
 const sinon = require('sinon');
 const DevicePublish = require('../lib/extension/devicePublish');
