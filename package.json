@@ -53,6 +53,7 @@
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-mocha": "*",
+    "image-size": "*",
     "mocha": "*",
     "nyc": "*",
     "proxyquire": "*",
