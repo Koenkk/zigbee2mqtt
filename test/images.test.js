@@ -28,6 +28,10 @@ describe('Device images', () => {
         const invalid = [];
 
         fs.readdirSync(imageBase).forEach((file) => {
+            if (!file.toLowerCase().endsWith('.jpg')) {
+                return;
+            }
+
             const dimensions = sizeOf(path.join(imageBase, file));
 
             if (dimensions.width != 150 || dimensions.height != 150) {
