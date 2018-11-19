@@ -1538,6 +1538,12 @@
       "integrity": "sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==",
       "dev": true
     },
+    "image-size": {
+      "version": "0.6.3",
+      "resolved": "https://registry.npmjs.org/image-size/-/image-size-0.6.3.tgz",
+      "integrity": "sha512-47xSUiQioGaB96nqtp5/q55m0aBQSQdyIloMOc/x+QVTDZLNmXE892IIDrJ0hM1A5vcNUDD5tDffkSP5lCaIIA==",
+      "dev": true
+    },
     "immediate": {
       "version": "3.0.6",
       "resolved": "https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz",
@@ -1948,7 +1954,7 @@
     },
     "log-utils": {
       "version": "0.2.1",
-      "resolved": "https://registry.npmjs.org/log-utils/-/log-utils-0.2.1.tgz",
+      "resolved": "http://registry.npmjs.org/log-utils/-/log-utils-0.2.1.tgz",
       "integrity": "sha1-pMIXoN2aUFFdm5ICBgkas9TgMc8=",
       "requires": {
         "ansi-colors": "^0.2.0",

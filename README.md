@@ -1,7 +1,7 @@
 [![Travis](https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg)](https://api.travis-ci.org/Koenkk/zigbee2mqtt.svg)
 
 # zigbee2mqtt :bridge_at_night: :honeybee:
-![Thumbs up or down?](header.png)
+![Thumbs up or down?](images/header.png)
 <img align="right" height="40px" src="https://user-images.githubusercontent.com/7738048/40915536-1993dd32-6805-11e8-9f22-4dfca52133c0.png">
 
 Allows you to use your Zigbee devices **without** the vendors (Xiaomi/TRADFRI/Hue) bridge or gateway.
@@ -30,7 +30,7 @@ Zigbee2mqtt integrates well with (almost) every home automation solution because
 - Integration implemented in [domoticz-zigbee2mqtt-plugin](https://github.com/stas-demydiuk/domoticz-zigbee2mqtt-plugin)
 
 ## Architecture 
-![Architecture](architecture.png)
+![Architecture](images/architecture.png)
 
 ## Supported devices
 See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to check whether your device is supported. There is quite an extensive list, including devices from vendors like Xiaomi, Ikea, Philips, OSRAM and more. 
