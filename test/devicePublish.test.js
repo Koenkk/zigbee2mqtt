@@ -50,7 +50,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, 'my_device_id');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse get topic', () => {
@@ -58,7 +58,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.deviceID, 'my_device_id2');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse topic with when base topic has multiple slashes', () => {
@@ -74,7 +74,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.deviceID, 'my_device_id2');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
             stub.restore();
         });
 
@@ -83,7 +83,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, 'floor0/basement/my_device_id2');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse topic with when base and deviceID have multiple slashes', () => {
@@ -99,7 +99,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, 'floor0/basement/my_device_id2');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
             stub.restore();
         });
 
@@ -108,7 +108,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, '0x12345689');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse set with postfix topic', () => {
@@ -140,7 +140,7 @@ describe('DevicePublish', () => {
             const parsed = devicePublish.parseTopic(topic);
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, '0x12345689/invalid');
-            chai.assert.strictEqual(parsed.postfix, null);
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse set with and slashes in base and deviceID postfix topic', () => {
