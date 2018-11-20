@@ -21,11 +21,10 @@
   ],
   "scripts": {
     "coverage": "nyc --all report --reporter=text mocha --recursive --timeout=3000",
-    "docgen": "node support/docgen.js",
+    "docgen": "node docgen/docgen.js",
     "eslint": "node_modules/.bin/eslint .",
     "start": "node index.js",
-    "test": "mocha --recursive",
-    "verify-homeassistant-mapping": "node support/verify-homeassistant-mapping.js"
+    "test": "mocha --recursive"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
