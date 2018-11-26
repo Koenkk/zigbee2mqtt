@@ -7,11 +7,70 @@ const mqtt = {
     subscribe: (topic) => {},
 };
 
+const zigbee = {
+    getDevice: null,
+    publish: sinon.spy(),
+};
+
+const cfg = {
+    default: {
+        manufSpec: 0,
+        disDefaultRsp: 0,
+    },
+};
+
 describe('DevicePublish', () => {
     let devicePublish;
 
     beforeEach(() => {
-        devicePublish = new DevicePublish(null, mqtt, null, null);
+        devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+    });
+
+    describe('Parse topic', () => {
+        it('Should publish messages to zigbee devices', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({brightness: '200'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genLevelCtrl');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'moveToLevelWithOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {level: '200', transtime: 0});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], null);
+        });
+
+        it('Should publish messages to zigbee devices with non-default ep', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral1'});
+            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'off');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[6], 2);
+        });
+
+        it('Should publish messages to zigbee devices with non-default ep and postfix', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral2'});
+            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/right/set', JSON.stringify({state: 'OFF'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'off');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[6], 3);
+        });
     });
 
     describe('Parse topic', () => {
