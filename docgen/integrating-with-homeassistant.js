@@ -92,14 +92,17 @@ devices.forEach((device) => {
     configuration += '```yaml\n';
 
     const configurations = homeassistant._getMapping()[device.model];
-    configurations.forEach((d, i) => {
-        configuration += homeassistantConfig(d);
-        if (configurations.length > 1 && i < configurations.length - 1) {
-            configuration += '\n';
-        }
-    });
 
-    configuration += '```\n\n';
+    if (configurations) {
+        configurations.forEach((d, i) => {
+            configuration += homeassistantConfig(d);
+            if (configurations.length > 1 && i < configurations.length - 1) {
+                configuration += '\n';
+            }
+        });
+
+        configuration += '```\n\n';
+    }
 });
 
 
