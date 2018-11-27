@@ -1988,6 +1988,28 @@ light:
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 
+### 900008-WW
+```yaml
+light:
+  - platform: "mqtt_json"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+
+### Mega23M12
+```yaml
+light:
+  - platform: "mqtt_json"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+
 ### 4256251-RZHAC
 ```yaml
 switch:
