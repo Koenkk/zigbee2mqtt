@@ -116,6 +116,36 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[6], 3);
         });
+
+        it('Should publish messages to zigbee gledopto with [11,13]', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'GLEDOPTO', epList: [11, 13]});
+            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'off');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[6], null);
+        });
+
+        it('Should publish messages to zigbee gledopto with [11,12,13]', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'GLEDOPTO', epList: [11, 12, 13]});
+            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'off');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[6], 12);
+        });
     });
 
     describe('Parse topic', () => {
