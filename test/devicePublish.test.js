@@ -2,6 +2,8 @@ const chai = require('chai');
 const sinon = require('sinon');
 const DevicePublish = require('../lib/extension/devicePublish');
 const settings = require('../lib/util/settings');
+const utils = require('./utils');
+const sandbox = sinon.createSandbox();
 
 const mqtt = {
     subscribe: (topic) => {},
@@ -23,7 +25,12 @@ describe('DevicePublish', () => {
     let devicePublish;
 
     beforeEach(() => {
+        utils.stubLogger(sandbox);
         devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+    });
+
+    afterEach(() => {
+        sandbox.restore();
     });
 
     describe('Parse topic', () => {
@@ -196,7 +203,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base topic has multiple slashes', () => {
-            const stub = sinon.stub(settings, 'get').callsFake(() => {
+            sandbox.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/home',
@@ -209,7 +216,6 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.deviceID, 'my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
-            stub.restore();
         });
 
         it('Should parse topic with when deviceID has multiple slashes', () => {
@@ -221,7 +227,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base and deviceID have multiple slashes', () => {
-            const stub = sinon.stub(settings, 'get').callsFake(() => {
+            sandbox.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/basement',
@@ -234,7 +240,6 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.deviceID, 'floor0/basement/my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
-            stub.restore();
         });
 
         it('Should parse set with ieeAddr topic', () => {
@@ -278,7 +283,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse set with and slashes in base and deviceID postfix topic', () => {
-            const stub = sinon.stub(settings, 'get').callsFake(() => {
+            sandbox.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/home',
@@ -291,7 +296,6 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.deviceID, 'my/device/in/basement/sensor');
             chai.assert.strictEqual(parsed.postfix, 'bottom_left');
-            stub.restore();
         });
     });
 });
