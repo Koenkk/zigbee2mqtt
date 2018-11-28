@@ -7,7 +7,7 @@ module.exports = {
         sandbox.stub(logger, 'debug').callsFake(() => {});
         sandbox.stub(logger, 'error').callsFake(() => {});
     },
-    zigbeeMessage: (device, cid, type, data) => {
-        return {data: {cid: cid, data: data}, type: type, endpoints: [{device: device}]};
+    zigbeeMessage: (device, cid, type, data, epId) => {
+        return {data: {cid: cid, data: data}, type: type, endpoints: [{device: device, epId: epId}]};
     },
 };
