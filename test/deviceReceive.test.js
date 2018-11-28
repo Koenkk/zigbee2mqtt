@@ -32,23 +32,23 @@ describe('DeviceReceive', () => {
     describe('Handling zigbee messages', () => {
         it('Should handle a zigbee message', () => {
             const device = {ieeeAddr: '0x12345678'};
-            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1});
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
             chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'single'});
         });
 
         it('Should handle a zigbee message which uses ep (left)', () => {
-            const device = {ieeeAddr: '0x12345678', epId: 1};
-            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1});
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
             chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'left'});
         });
 
         it('Should handle a zigbee message which uses ep (right)', () => {
-            const device = {ieeeAddr: '0x12345678', epId: 2};
-            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1});
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 2);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
             chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'right'});

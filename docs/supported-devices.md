@@ -54,7 +54,7 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 ### Gledopto
 | Model | Description | Picture |
 | ------------- | ------------- | -------------------------- |
-| GL-C-008 | Gledopto Zigbee LED controller RGB + CCT (on/off, brightness, color temperature, color xy) | ![https://github.com/Koenkk/zigbee2mqtt/raw/dev/images/devices/GL-C-008.jpg](https://github.com/Koenkk/zigbee2mqtt/raw/dev/images/devices/GL-C-008.jpg) |
+| GL-C-008 | Gledopto Zigbee LED controller RGB + CCT / RGBW / WWCW / Dimmer (on/off, brightness, color temperature, color xy) | ![https://github.com/Koenkk/zigbee2mqtt/raw/dev/images/devices/GL-C-008.jpg](https://github.com/Koenkk/zigbee2mqtt/raw/dev/images/devices/GL-C-008.jpg) |
 
 ### Hive
 | Model | Description | Picture |

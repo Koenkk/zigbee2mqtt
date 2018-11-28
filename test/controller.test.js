@@ -26,7 +26,7 @@ describe('Controller', () => {
     describe('Handling zigbee messages', () => {
         it('Should handle a zigbee message', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
-            const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1});
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
             chai.assert.strictEqual(mqttPublish.getCall(0).args[1], JSON.stringify({state: 'ON'}));
@@ -45,7 +45,7 @@ describe('Controller', () => {
             });
 
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
-            const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1});
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
             chai.assert.strictEqual(
