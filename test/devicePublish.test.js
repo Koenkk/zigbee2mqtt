@@ -11,7 +11,9 @@ const mqtt = {
 
 const zigbee = {
     getDevice: null,
-    publish: sinon.spy(),
+    publish: sandbox.stub().callsFake((ieeAddr, cid, cmd, cmdType, zclData, cfg, ep, callback) => {
+        callback(false, null);
+    }),
 };
 
 const cfg = {
@@ -26,7 +28,7 @@ describe('DevicePublish', () => {
 
     beforeEach(() => {
         utils.stubLogger(sandbox);
-        devicePublish = new DevicePublish(zigbee, mqtt, null, null);
+        devicePublish = new DevicePublish(zigbee, mqtt, null, () => {});
     });
 
     afterEach(() => {
@@ -37,7 +39,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({brightness: '200'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -52,7 +53,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices when brightness is in %', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({brightness: '92%'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -67,7 +67,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices when brightness is in number', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({brightness: 230}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -82,7 +81,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices with color_temp', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({color_temp: '222'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -97,7 +95,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices with color_temp in %', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({color_temp: '100%'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -112,7 +109,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices with non-default ep', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral1'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -127,7 +123,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices with non-default ep and postfix', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral2'});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/right/set', JSON.stringify({state: 'OFF'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -142,7 +137,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee gledopto with [11,13]', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'GLEDOPTO', epList: [11, 13]});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -157,7 +151,6 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee gledopto with [11,12,13]', () => {
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'GLEDOPTO', epList: [11, 12, 13]});
-            devicePublish = new DevicePublish(zigbee, mqtt, null, null);
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'OFF'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -207,6 +200,20 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'moveToColor');
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {colorx: 17085, colory: 44000, transtime: 0});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], null);
+        });
+
+        it('Should publish 1 message when brightness with state is send', () => {
+            zigbee.publish.resetHistory();
+            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+            devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 'ON', brightness: '50'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'genLevelCtrl');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'moveToLevelWithOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[4], {level: '50', transtime: 0});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], cfg.default);
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], null);
         });
