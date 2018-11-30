@@ -4744,6 +4744,17 @@
       "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz",
       "integrity": "sha1-pcbVMr5lbiPbgg77lDofBJmNY68="
     },
+    "zapp-cie": {
+      "version": "0.0.1",
+      "resolved": "https://registry.npmjs.org/zapp-cie/-/zapp-cie-0.0.1.tgz",
+      "integrity": "sha1-weIm5E7DPCN4jCFtQ5L0ZmW8BVQ=",
+      "requires": {
+        "objectbox": "^0.3.0",
+        "zcl-id": "^0.3.2",
+        "ziee": "^0.3.0",
+        "zive": "^0.2.2"
+      }
+    },
     "zcl-id": {
       "version": "0.3.2",
       "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.3.2.tgz",
