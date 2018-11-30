@@ -1738,6 +1738,17 @@ light:
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 
+### Z01-A19NAE26
+```yaml
+light:
+  - platform: "mqtt_json"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+
 ### E11-N1EA
 ```yaml
 light:
@@ -2035,6 +2046,30 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+```
+
+### PSS-23ZBS
+```yaml
+switch:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_off: "OFF"
+    payload_on: "ON"
+    value_template: "{{ value_json.state }}"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+
+### HS1SA
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: true
+    payload_off: false
+    value_template: "{{ value_json.smoke }}"
+    device_class: "smoke"
 ```
 
 
