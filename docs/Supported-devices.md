@@ -3,6 +3,7 @@
 In case you own a Zigbee device which is **NOT** listed here, please see [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
 
 ### Belkin
+
 | Model | Description | Picture |
 | ------------- | ------------- | -------------------------- |
 | F7C033 | Belkin WeMo smart LED bulb (on/off, brightness) | ![F7C033](images/devices/F7C033.jpg) |
