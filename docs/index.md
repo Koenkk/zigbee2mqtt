@@ -1,28 +1,28 @@
-Welcome to the zigbee2mqtt :bridge_at_night: :honeybee: wiki!
+Welcome to the zigbee2mqtt documentation!
 
 ### Basic usage
-* [Getting started](https://github.com/Koenkk/zigbee2mqtt/wiki/Getting-started)
-* [Running the bridge](https://github.com/Koenkk/zigbee2mqtt/wiki/Running-the-bridge)
-* [Pairing devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Pairing-devices)
-* [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices)
+* [Getting started](Getting-started.md)
+* [Running the bridge](Running-the-bridge.md)
+* [Pairing devices](Pairing-devices.md)
+* [Supported devices](Supported-devices.md)
 
 ### Customization
-* [Integrating with Home Assistant](https://github.com/Koenkk/zigbee2mqtt/wiki/Integrating-with-Home-Assistant)
-* [Admin Panel for Node-Red](https://github.com/ben423423n32j14e/zigbee2mqttadminpanel)
-* [Configuration](https://github.com/Koenkk/zigbee2mqtt/wiki/Configuration)
-* [Device specific configuration](https://github.com/Koenkk/zigbee2mqtt/wiki/Device-specific-configuration)
+* [Integrating with Home Assistant](Integrating-with-Home-Assistant.md)
+* [Admin Panel for Node-Red](https://github.com/ben423423n32j14e/zigbee2mqttadminpanel.md)
+* [Configuration](Configuration.md)
+* [Device specific configuration](Device-specific-configuration.md)
 
 ### Useful information
-* [MQTT topics and message structure](https://github.com/Koenkk/zigbee2mqtt/wiki/MQTT-topics-and-message-structure)
-* [Supported CC sniffer devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-sniffer-devices)
-* [Alternative firmware flashing methods](https://github.com/Koenkk/zigbee2mqtt/wiki/Alternative-firmware-flashing-methods)
-* [Docker](https://github.com/Koenkk/zigbee2mqtt/wiki/Docker)
-* [ZigBee network](https://github.com/Koenkk/zigbee2mqtt/wiki/ZigBee-network)
-* [3D Case Options](https://github.com/Koenkk/zigbee2mqtt/wiki/3D-case-options)
+* [MQTT topics and message structure](MQTT-topics-and-message-structure.md)
+* [Supported CC sniffer devices](Supported-sniffer-devices.md)
+* [Alternative firmware flashing methods](Alternative-firmware-flashing-methods.md)
+* [Docker](Docker.md)
+* [ZigBee network](ZigBee-network.md)
+* [3D Case Options](3D-case-options.md)
 
 ### Developing & debugging
-* [How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices)
-* [How to support new devices using Hass.io](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices-on-Hass.io)
-* [How to debug](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-debug)
-* [Devices that are not supported (yet)](https://github.com/Koenkk/zigbee2mqtt/wiki/Unsupported-devices)
-* [zigbeer/zigbee-shepherd WIKI](https://github.com/zigbeer/zigbee-shepherd/wiki)
+* [How to support new devices](How-to-support-new-devices.md)
+* [How to support new devices using Hass.io](How-to-support-new-devices-on-Hass.io.md)
+* [How to debug](How-to-debug.md)
+* [Devices that are not supported (yet.md)](Unsupported-devices.md)
+* [zigbeer/zigbee-shepherd WIKI](https://github.com/zigbeer/zigbee-shepherd/wiki.md)
