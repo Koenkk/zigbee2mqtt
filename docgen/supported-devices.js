@@ -42,7 +42,7 @@ let devicesText = '';
 const vendors = Array.from(new Set(devices.map((d) => d.vendor)));
 vendors.sort();
 vendors.forEach((vendor) => {
-    devicesText += `### ${vendor}\n`;
+    devicesText += `### ${vendor}\n\n`;
     devicesText += generateTable(devices.filter((d) => d.vendor === vendor));
     devicesText += '\n';
 });
