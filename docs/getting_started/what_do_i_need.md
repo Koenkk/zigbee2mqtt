@@ -1,11 +1,11 @@
 # What do I need?
-In order to run the zigbee2mqtt bridge we need the following hardware:
+In order to run zigbee2mqtt we need the following hardware:
 
 | Name | Price | Picture |
 | ------------- | ------------- | ------------- |
 | CC debugger | +-10$ on AliExpress | ![CC debugger](../images/cc_debugger.jpg) |
-| CC2531 USB sniffer | +-10$ on AliExpress | ![CC2531 USB sniffer](../images/cc2531.jpg) |
-| Downloader cable CC2531 | +-3.50$ on AliExpress | ![Downloader cable CC2531](../images/downloader_cable.png) |
+| CC2531 USB sniffer | +-8.50$ on AliExpress | ![CC2531 USB sniffer](../images/cc2531.jpg) |
+| Downloader cable CC2531 | +-2$ on AliExpress | ![Downloader cable CC2531](../images/downloader_cable.png) |
 | [Supported Zigbee device(s)](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) | - | ![Zigbee devices](../images/xiaomi_sensors.jpg) |
 | PC or Raspberry Pi to run bridge | - | ![Raspberry Pi](../images/pi.jpg) |
 

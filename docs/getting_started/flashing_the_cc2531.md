@@ -1,7 +1,7 @@
-# Flashing the firmwre on the CC2531 USB stick
+# Flashing the firmware on the CC2531 USB stick
 The CC2531 USB stick needs to be flashed with a custom firmware.
 
-*NOTE: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](alternative-firmware-flashing-methods.md).*
+*NOTE: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](../useful_information/alternative-firmware-flashing-methods.md).*
 
 ## Windows
 1. Install [SmartRF Flash programmer](http://www.ti.com/tool/FLASH-PROGRAMMER) (**NOT V2**). This software is free but requires a Texas Instruments account in order to download.
@@ -10,10 +10,10 @@ The CC2531 USB stick needs to be flashed with a custom firmware.
 3. Connect **BOTH** the `CC2531 USB sniffer` and the `CC debugger` to your PC using USB.
 3. If the light on the CC debugger is RED press set reset button on the CC debugger. The light on the CC debugger should now turn GREEN. If not use [CC debugger user guide](http://www.ti.com/lit/ug/swru197h/swru197h.pdf) to troubleshoot your problem.
 
-![How to connect](images/connected.jpg)
+![How to connect](../images/connected.jpg)
 4. Download the firmware [CC2531ZNP-Prod.hex](https://raw.githubusercontent.com/Koenkk/Z-Stack-firmware/master/coordinator/CC2531/bin/CC2531ZNP-Prod.hex)
 5. Start SmartRF Flash Programmer, setup as shown below and press `Perform actions`.
-![SmartRF Flash Programmer](images/smartrf.png)
+![SmartRF Flash Programmer](../images/smartrf.png)
 
 ## Linux or MacOS
 Credits to [@Frans-Willem](https://github.com/frans-Willem) for majority of instructions.
@@ -35,7 +35,7 @@ make
 3. Connect `CC debugger --> Downloader cable CC2531 --> CC2531 USB sniffer`.
 4. Connect **BOTH** the `CC2531 USB sniffer` and the `CC debugger` to your PC using USB.
 5. If the light on the CC debugger is RED, press the Reset button on the CC debugger. The light on the CC debugger should now turn GREEN. If not, follow the [CC debugger user guide](http://www.ti.com/lit/ug/swru197h/swru197h.pdf) to troubleshoot your problem.
-![How to connect](images/connected.jpg)
+![How to connect](../images/connected.jpg)
 6. Download the firmware [CC2531ZNP-Prod.hex](https://raw.githubusercontent.com/Koenkk/Z-Stack-firmware/master/coordinator/CC2531/bin/CC2531ZNP-Prod.hex).
 7. Flash your firmware:
 ```
