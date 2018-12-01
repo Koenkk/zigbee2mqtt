@@ -1,0 +1,53 @@
+The following configuration options are available in `data/configuration.yaml`.
+
+```yaml
+# Required: Home Assistant integration (MQTT discovery)
+homeassistant: false
+
+# Required: allow new devices to join
+permit_join: true
+
+# Required: MQTT settings
+mqtt:
+  # Required: MQTT base topic for zigbee2mqtt MQTT messages
+  base_topic: zigbee2mqtt
+  # Required: MQTT server URL
+  server: 'mqtt://localhost:1883'
+  # Optional: MQTT server authentication user
+  user: my_user
+  # Optional: MQTT server authentication password
+  password: my_password
+  # Optional: MQTT client ID
+  client_id: 'MY_CLIENT_ID'
+  # Disable self-signed SSL certificates
+  reject_unauthorized: true
+  # Optional: Include device information to mqtt messages (default: false)
+  include_device_information: true
+ 
+# Required: serial settings
+serial:
+  # Required: location of CC2531 USB sniffer
+  port: /dev/tty.usbmodem1411
+  # Optional: disable LED of CC2531 USB sniffer
+  disable_led: false
+
+# Optional: advanced settings
+advanced:
+  # Optional: ZigBee pan ID
+  pan_id: 0x1a62
+  # Optional: ZigBee channel
+  channel: 11
+  # Optional: state caching 
+  # https://github.com/Koenkk/zigbee2mqtt/commit/9396bde1f3b022e0f634487d1a37d2a5127c8cb3#diff-f68567477d803b49930337bf7fe1556bR16
+  cache_state: true
+  # Optional: Logging level, options: debug, info, warn, error
+  log_level: info
+  # Optional: Location of log directory
+  log_directory: data/log/%TIMESTAMP%
+  # Optional: Baudrate for serial port
+  baudrate: 115200
+  # Optional: RTS / CTS Hardware Flow Control for serial port
+  rtscts: true
+  # Optional: soft reset ZNP after timeout (in seconds); 0 is disabled
+  soft_reset_timeout: 0
+```
