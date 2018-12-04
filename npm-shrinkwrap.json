@@ -207,9 +207,9 @@
       }
     },
     "@sinonjs/samsam": {
-      "version": "2.1.2",
-      "resolved": "https://registry.npmjs.org/@sinonjs/samsam/-/samsam-2.1.2.tgz",
-      "integrity": "sha512-ZwTHAlC9akprWDinwEPD4kOuwaYZlyMwVJIANsKNC3QVp0AHB04m7RnB4eqeWfgmxw8MGTzS9uMaw93Z3QcZbw==",
+      "version": "2.1.3",
+      "resolved": "https://registry.npmjs.org/@sinonjs/samsam/-/samsam-2.1.3.tgz",
+      "integrity": "sha512-8zNeBkSKhU9a5cRNbpCKau2WWPfan+Q2zDlcXvXyhn9EsMqgYs4qzo0XHNVlXC6ABQL8fT6nV+zzo5RTHJzyXw==",
       "dev": true
     },
     "acorn": {
@@ -1586,9 +1586,9 @@
       "integrity": "sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw=="
     },
     "inquirer": {
-      "version": "6.2.0",
-      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-6.2.0.tgz",
-      "integrity": "sha512-QIEQG4YyQ2UYZGDC4srMZ7BjHOmNk1lR2JQj5UknBapklm6WHA+VVH7N+sUdX3A7NeCfGF8o4X1S3Ao7nAcIeg==",
+      "version": "6.2.1",
+      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-6.2.1.tgz",
+      "integrity": "sha512-088kl3DRT2dLU5riVMKKr1DlImd6X7smDhpXUCkJDCKvTEJeRiXh0G132HG9u5a+6Ylw9plFRY7RuTnwohYSpg==",
       "dev": true,
       "requires": {
         "ansi-escapes": "^3.0.0",
@@ -1602,7 +1602,7 @@
         "run-async": "^2.2.0",
         "rxjs": "^6.1.0",
         "string-width": "^2.1.0",
-        "strip-ansi": "^4.0.0",
+        "strip-ansi": "^5.0.0",
         "through": "^2.3.6"
       },
       "dependencies": {
@@ -1626,15 +1626,34 @@
           "requires": {
             "is-fullwidth-code-point": "^2.0.0",
             "strip-ansi": "^4.0.0"
+          },
+          "dependencies": {
+            "strip-ansi": {
+              "version": "4.0.0",
+              "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-4.0.0.tgz",
+              "integrity": "sha1-qEeQIusaw2iocTibY1JixQXuNo8=",
+              "dev": true,
+              "requires": {
+                "ansi-regex": "^3.0.0"
+              }
+            }
           }
         },
         "strip-ansi": {
-          "version": "4.0.0",
-          "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-4.0.0.tgz",
-          "integrity": "sha1-qEeQIusaw2iocTibY1JixQXuNo8=",
+          "version": "5.0.0",
+          "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-5.0.0.tgz",
+          "integrity": "sha512-Uu7gQyZI7J7gn5qLn1Np3G9vcYGTVqB+lFTytnDJv83dd8T22aGH451P3jueT2/QemInJDfxHB5Tde5OzgG1Ow==",
           "dev": true,
           "requires": {
-            "ansi-regex": "^3.0.0"
+            "ansi-regex": "^4.0.0"
+          },
+          "dependencies": {
+            "ansi-regex": {
+              "version": "4.0.0",
+              "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-4.0.0.tgz",
+              "integrity": "sha512-iB5Dda8t/UqpPI/IjsejXu5jOGDrzn41wJyljwPH65VCIbk6+1BzFIMJGFwTNrYXT1CrD+B4l19U7awiQ8rk7w==",
+              "dev": true
+            }
           }
         }
       }
@@ -4745,9 +4764,9 @@
       "integrity": "sha1-pcbVMr5lbiPbgg77lDofBJmNY68="
     },
     "zcl-id": {
-      "version": "0.3.2",
-      "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.3.2.tgz",
-      "integrity": "sha1-O6v7HsvMgpujuy6/gyf2iQIxDsI=",
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
+      "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
       "requires": {
         "busyman": "^0.3.0",
         "enum": "^2.3.0"
@@ -4761,17 +4780,6 @@
         "dissolve-chunks": "^1.3.0",
         "enum": "^2.3.0",
         "zcl-id": "^0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "^0.3.0",
-            "enum": "^2.3.0"
-          }
-        }
       }
     },
     "ziee": {
@@ -4781,17 +4789,6 @@
       "requires": {
         "busyman": "^0.3.0",
         "zcl-id": "^0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "^0.3.0",
-            "enum": "^2.3.0"
-          }
-        }
       }
     },
     "zigbee-shepherd": {
@@ -4810,6 +4807,17 @@
         "ziee": "^0.3.0",
         "zive": "^0.2.2",
         "zstack-constants": "^0.2.0"
+      },
+      "dependencies": {
+        "zcl-id": {
+          "version": "0.3.2",
+          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.3.2.tgz",
+          "integrity": "sha1-O6v7HsvMgpujuy6/gyf2iQIxDsI=",
+          "requires": {
+            "busyman": "^0.3.0",
+            "enum": "^2.3.0"
+          }
+        }
       }
     },
     "zigbee-shepherd-converters": {
@@ -5684,17 +5692,6 @@
       "requires": {
         "busyman": "^0.3.0",
         "zcl-id": "^0.2.0"
-      },
-      "dependencies": {
-        "zcl-id": {
-          "version": "0.2.0",
-          "resolved": "https://registry.npmjs.org/zcl-id/-/zcl-id-0.2.0.tgz",
-          "integrity": "sha1-E5nV5ba6SbZtDVpQYgCGXTcRfo0=",
-          "requires": {
-            "busyman": "^0.3.0",
-            "enum": "^2.3.0"
-          }
-        }
       }
     },
     "zstack-constants": {
