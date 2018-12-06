@@ -44,7 +44,7 @@
     "rimraf": "*",
     "winston": "2.4.2",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#ce52ac4131e2a505af6197b4a26d2b5360e4eb80",
-    "zigbee-shepherd-converters": "6.0.7",
+    "zigbee-shepherd-converters": "7.0.1",
     "ziee": "*",
     "zive": "*"
   },

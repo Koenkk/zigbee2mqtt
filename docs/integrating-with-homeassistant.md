@@ -1426,6 +1426,8 @@ light:
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 
+### AC01353010G
+```yaml
 ### HALIGHTDIMWWE27
 ```yaml
 light:
@@ -1974,6 +1976,42 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+
+### 3326-L
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: true
+    payload_off: false
+    value_template: "{{ value_json.occupancy }}"
+    device_class: "motion"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    value_template: "{{ value_json.temperature }}"
+    json_attributes: 
+      - "linkquality"
+      - "battery"
+      - "voltage"
+```
+
+### 3320-L
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: false
+    payload_off: true
+    value_template: "{{ value_json.contact }}"
+    device_class: "door"
 ```
 
 ### KS-SM001
