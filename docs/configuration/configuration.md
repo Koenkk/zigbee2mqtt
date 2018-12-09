@@ -1,4 +1,7 @@
+# Configuration
 The following configuration options are available in `data/configuration.yaml`.
+
+The values shown are the default ones.
 
 ```yaml
 # Required: Home Assistant integration (MQTT discovery)
@@ -23,7 +26,7 @@ mqtt:
   reject_unauthorized: true
   # Optional: Include device information to mqtt messages (default: false)
   include_device_information: true
- 
+
 # Required: serial settings
 serial:
   # Required: location of CC2531 USB sniffer
@@ -37,7 +40,7 @@ advanced:
   pan_id: 0x1a62
   # Optional: ZigBee channel
   channel: 11
-  # Optional: state caching 
+  # Optional: state caching
   # https://github.com/Koenkk/zigbee2mqtt/commit/9396bde1f3b022e0f634487d1a37d2a5127c8cb3#diff-f68567477d803b49930337bf7fe1556bR16
   cache_state: true
   # Optional: Logging level, options: debug, info, warn, error

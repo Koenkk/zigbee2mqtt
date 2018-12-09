@@ -43,4 +43,4 @@ sudo ./cc-tool -e -w CC2531ZNP-Prod.hex
 ```
 
 # What's next?
-[Running zigbee2mqtt](running_zigbee2mqtt.md)
+[Running Zigbee2mqtt](running_zigbee2mqtt.md)

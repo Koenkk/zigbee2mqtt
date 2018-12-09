@@ -6,11 +6,14 @@ Welcome to the Zigbee2mqtt documentation!
 * [Running Zigbee2mqtt](getting_started/running_zigbee2mqtt.md)
 * [Pairing devices](getting_started/pairing_devices.md)
 
+### Configuration
+* [Configuration](configuration/configuration.md)
+* [Device specific configuration](configuration/device_specific_configuration.md)
 
+### Information
+* [Supported devices](information/supported_devices.md)
 
 TODO:
-
-* [Supported devices](Supported-devices.md)
 
 ### Customization
 * [Integrating with Home Assistant](Integrating-with-Home-Assistant.md)
