@@ -1,12 +1,15 @@
-Welcome to the zigbee2mqtt documentation!
+Welcome to the Zigbee2mqtt documentation!
 
 ### Getting started
 * [What do I need?](getting_started/what_do_i_need.md)
 * [Flashing the CC2531 USB stick](getting_started/flashing_the_cc2531.md)
+* [Running Zigbee2mqtt](getting_started/running_zigbee2mqtt.md)
+* [Pairing devices](getting_started/pairing_devices.md)
+
+
 
 TODO:
-* [Running the bridge](Running-the-bridge.md)
-* [Pairing devices](Pairing-devices.md)
+
 * [Supported devices](Supported-devices.md)
 
 ### Customization

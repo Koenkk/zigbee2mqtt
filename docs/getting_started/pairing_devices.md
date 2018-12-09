@@ -1,13 +1,11 @@
 **IMPORTANT:** Before you start, make sure that `permit_join: true` is set in your `configuration.yaml`. Otherwise new devices cannot join the network!
 
-Start by checking if your Zigbee device is supported, see  [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices).
-
-Make sure that you have [zigbee2mqtt started](https://github.com/Koenkk/zigbee2mqtt/wiki/Running-the-bridge#4-starting-zigbee2mqtt).
+Start by checking if your Zigbee device is supported, see  [Supported devices](../information/supported_devices.md).
 
 Once you see something similar to `New device with address 0x00159d00016da0c8 connected!` in the log your device is paired.
 
 ## Xiaomi
-Different devices require different pairing methods. In case you get an `Error [ERR_UNHANDLED_ERROR]: Unhandled error. (Cannot get the Node Descriptor of the Device: 0x00158d0001720111)` you should try a different pairing method. See [Supported devices](https://github.com/Koenkk/zigbee2mqtt/wiki/Supported-devices) to figure out if your device is MiJia or Aqara.
+Different devices require different pairing methods. In case you get an `Error [ERR_UNHANDLED_ERROR]: Unhandled error. (Cannot get the Node Descriptor of the Device: 0x00158d0001720111)` you should try a different pairing method. See [Supported devices](../information/supported_devices.md) to figure out if your device is MiJia or Aqara.
 * Most MiJia devices: press and hold the reset button on the device for +- 5 seconds (until the blue light starts blinking). **IMPORTANT**: Release and start pressing the reset button every second. This keeps the device awake, otherwise pairing will **fail!**.
 * Most Aqara devices: press and hold reset button on the device for +- 5 seconds until the blue light blinks three times, release the reset button (the blue light will blink once more) and wait.
 * Most Aqara wall switches: press and hold the button on the device for +- 10 seconds (until the blue light starts blinking and stops blinking), release and wait.
@@ -29,10 +27,10 @@ I start with bulb on, then off, and then 6 “on’s”, where I kill the light 
 
 * To factory reset the TRADFRI control outlet, press and hold the reset button (pinhole underneath the light, located at the top of the outlet) with a paperclip until the white light starts fading. Hold onto the button for a few more seconds, then release. After this, the outlet will automatically connect.
 
-* To factory reset the TRADFRI drivers (ICPSHC24-10EU-IL-1 and ICPSHC24-30EU-IL-1) use a small pin or paperclip to push the reset button once. 
+* To factory reset the TRADFRI drivers (ICPSHC24-10EU-IL-1 and ICPSHC24-30EU-IL-1) use a small pin or paperclip to push the reset button once.
 
 ## Philips Hue
-Factory reset the light bulb see [HOWTO: Factory reset a Hue bulb](https://www.youtube.com/watch?v=qvlEAELiJKs). After resetting the bulb will automatically connect. 
+Factory reset the light bulb see [HOWTO: Factory reset a Hue bulb](https://www.youtube.com/watch?v=qvlEAELiJKs). After resetting the bulb will automatically connect.
 
 * This is also possible with the [Tradfri Remote Control](https://www.ikea.com/us/en/images/products/tradfri-remote-control__0489469_PE623665_S4.JPG) by pressing and holding the reset button on the bottom of the remote (next to the battery). [This may not always work](https://github.com/Koenkk/zigbee2mqtt/issues/296#issuecomment-416923751).
 * Philips Hue Lightstrip Plus V2 have been successfully reset using the [Hue Dimmer Switch](https://www2.meethue.com/en-us/support/dimmer-switch) by holding the On and Off buttons at the same time for 10 seconds while holding next to the Lightstrip controller, afterwards the Lightstrips can join Zigbee2MQTT.
@@ -62,9 +60,9 @@ For the OSRAM Switch 4x-LIGHTIFY (AB371860055) hold the Bottom Left and Top Righ
 Factory reset the plug (hold the switch button for >10sec). After resetting the switch will automatically connect.
 
 ## Netvox power socket
-Factory reset by: 
+Factory reset by:
 - Press and hold the Binding Key for 15 seconds. The network indicator will flash green 3 times
 (at the 3rd, the 10th, and the 15th second).
 - After releasing the Binding Key, press the Switch Key within 2 seconds. The network indicator
-will rapidly flash green. 
+will rapidly flash green.
 - After fast flashes, Z809A will reboot, and the restore is completed. The socket will automatically connect now.
