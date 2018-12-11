@@ -3,7 +3,7 @@
 
 ``` yaml
 ####################################################################
-##group
+## group
 ####################################################################
 group:
   zigbee_group:
@@ -21,7 +21,7 @@ group:
       - input_select.zigbee2mqtt_log_level
       - automation.zigbee2mqtt_log_level
 ###########################################################
-##input_select
+## input_select
 ###########################################################
 #input_select.zigbee2mqtt_debug_level
 input_select:
@@ -35,7 +35,7 @@ input_select:
     initial: info
     icon: mdi:format-list-bulleted
 #####################################################################
-##input_boolean:
+## input_boolean:
 #####################################################################
 input_boolean:
   zigbee_permit_join:
@@ -43,17 +43,17 @@ input_boolean:
     initial: off
     icon: mdi:cellphone-wireless
 #####################################################################
-##timer
+## timer
 #####################################################################
 timer:
   zigbee_permit_join:
     name: Time remaining
     duration: 120
 #
-#120 sec=2min
-#Updated this to the number of seconds you wish
+# 120 sec=2min
+# Updated this to the number of seconds you wish
 #####################################################################
-##sensor
+## sensor
 #####################################################################
 sensor:
   - platform: mqtt
@@ -61,10 +61,9 @@ sensor:
     state_topic: "zigbee2mqtt/bridge/state"
     icon: mdi:router-wireless
 ####################################################################
-##switch
+## switch
 #####################################################################
 switch:
-
   - platform: mqtt
     name: "Zigbee2mqtt Main join"
     state_topic: "zigbee2mqtt/bridge/config/permit_join"
@@ -73,12 +72,10 @@ switch:
     payload_off: "false"
 #
 #################################################################
-##automation                                                    
+## automation                                                    
 #################################################################
-
 automation:
-
-# Change log without restast zigbee2mqtt
+# Change log level without restart zigbee2mqtt
 #automation.zigbee2mqtt_log_level
   - alias: Zigbee2mqtt Log Level
     initial_state: 'on'
