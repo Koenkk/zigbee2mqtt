@@ -17,7 +17,6 @@ before_script:
 
 script:
   - ".travis/docker.sh"
-  - ".travis/wiki.sh"
   - ".travis/trigger-downstream.sh"
 
 env:

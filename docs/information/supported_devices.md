@@ -5,7 +5,7 @@
 Currently **137** devices are supported from **29** different vendors.
 
 In case you own a Zigbee device which is **NOT** listed here, please see
-[How to support new devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices).
+[How to support new devices](https://koenkk.github.io/zigbee2mqtt/how_tos/how_to_support_new_devices.html).
 
 ### Belkin
 

@@ -16,7 +16,7 @@ example:**622baa375aa1**
 `docker exec -it 622baa375aa1 bash`
 
 5. You are now inside the zigbee2mqtt container and can follow the standard guide:\
-[https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices](https://github.com/Koenkk/zigbee2mqtt/wiki/How-to-support-new-devices)
+[https://koenkk.github.io/zigbee2mqtt/how_tos/how_to_support_new_devices.html](https://koenkk.github.io/zigbee2mqtt/how_tos/how_to_support_new_devices.html)
 
 6.  The VI editor is installed on the image, if you are not familiar with VI you may want take a look here:
  [https://www.guru99.com/the-vi-editor.html](https://www.guru99.com/the-vi-editor.html)

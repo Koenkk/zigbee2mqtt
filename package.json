@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/Koenkk/zigbee2mqtt/issues"
   },
-  "homepage": "https://github.com/Koenkk/zigbee2mqtt/wiki",
+  "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
     "git-last-commit": "*",
     "js-yaml": "*",
