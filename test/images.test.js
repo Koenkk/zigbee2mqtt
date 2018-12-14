@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const sizeOf = require('image-size');
 
-const imageBase = path.join(__dirname, '..', 'images', 'devices');
+const imageBase = path.join(__dirname, '..', 'docs', 'images', 'devices');
 const replaceByDash = [new RegExp('/', 'g'), new RegExp(':', 'g'), new RegExp(' ', 'g')];
 
 describe('Device images', () => {
