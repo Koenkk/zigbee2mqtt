@@ -1,3 +1,9 @@
+<div align="center">
+    <a href="https://github.com/koenkk/zigbee2mqtt">
+        <img width="150" height="150" src="images/logo.png">
+    </a>
+</div>
+
 Welcome to the Zigbee2mqtt documentation!
 
 ### Getting started
