@@ -88,7 +88,7 @@ The following Home Assistant configuration allows you to control Zigbee2mqtt fro
 # Group
 group:
   zigbee_group:
-    view: no
+    view: false
     control: hidden
     name: Zigbee2mqtt
     entities:
@@ -184,6 +184,7 @@ automation:
 
   - id: disable_zigbee_join
     alias: Disable Zigbee joining
+    hide_entity: true
     trigger:
     - entity_id: input_boolean.zigbee_permit_join
       platform: state
