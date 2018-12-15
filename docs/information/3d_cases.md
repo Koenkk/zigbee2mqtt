@@ -9,6 +9,9 @@
 ## CC2531 Zigbee dongle
  - Case design for a [CC2531 Zigbee dongle][thingiverse-rpi-cc2531-dongle]
 
+## CC2530 Zigbee dongle
+ - Case design for a [CC2530 Zigbee minimal case][thingiverse-cc2530-case]
+
 ## Alternatives
 A lot of different case designs can be found via the [Thingiverse search][thingiverse-search-rpi]
 
@@ -17,3 +20,4 @@ A lot of different case designs can be found via the [Thingiverse search][thingi
 [thingiverse-search-rpi]: https://www.thingiverse.com/search?q=raspberry+pi+case
 [thingiverse-rpi-owncloud-design]: https://www.thingiverse.com/thing:1357022
 [thingiverse-rpi-cc2531-dongle]: https://www.thingiverse.com/thing:2803664
+[thingiverse-cc2530-case]: https://www.thingiverse.com/thing:3257462
