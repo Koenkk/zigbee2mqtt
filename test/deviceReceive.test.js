@@ -9,6 +9,7 @@ const sandbox = sinon.createSandbox();
 // Devices
 const WXKG11LM = devices.find((d) => d.model === 'WXKG11LM');
 const WXKG02LM = devices.find((d) => d.model === 'WXKG02LM');
+const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
 
 const mqtt = {
     log: () => {},
@@ -52,6 +53,42 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
             chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'right'});
+        });
+
+        it('Should handle a zigbee message with default precision', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
+            );
+            deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.85});
+        });
+
+        it('Should handle a zigbee message with 1 precision', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            sandbox.stub(settings, 'getDevice').callsFake(() => {
+                return {temperature_precision: 1};
+            });
+            const message = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
+            );
+            deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.8});
+        });
+
+        it('Should handle a zigbee message with 0 precision', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            sandbox.stub(settings, 'getDevice').callsFake(() => {
+                return {temperature_precision: 0};
+            });
+            const message = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
+            );
+            deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -1});
         });
     });
 });
