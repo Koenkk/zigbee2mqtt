@@ -205,6 +205,66 @@ automation:
     - service: input_boolean.turn_off
       data:
         entity_id: input_boolean.zigbee_permit_join
+######################################################
+# How Generate zigbee2mqtt graphviz map in .png format
+#######################################################
+#1. sudo apt-get install graphviz
+#2. mosquitto_sub -V mqttv311 -C 1 -u 'USERNAME' -P 'PASSWORD' -h 127.0.0.1 -t zigbee2mqtt/bridge/networkmap/graphviz | sed -e 's/|EndDevice//' -e 's/|[^|]\+(.*)|/|/' -e 's/No [^|]\+|//' | sfdp -Tpng > /tmp/map.$(date +%Y%m%d%H%M%S).png
+#3. open new ssh session
+#   mosquitto_pub -V mqttv311 -u 'USERNAME' -P 'PASSWORD' -h 127.0.0.1 -m "graphviz" -t zigbee2mqtt/bridge/networkmap
+#   File is created in /tmp/
+#
+###########################################################
+# Add this to Secrets
+# cmd_ready_to_get_create_zigbee2mqt_map: mosquitto_sub -V mqttv311 -C 1 -u 'USERNAME' -P 'PASSWORD' -h 127.0.0.1 -t zigbee2mqtt/bridge/networkmap/graphviz | sed -e 's/|EndDevice//' -e 's/|[^|]\+(.*)|/|/' -e 's/No [^|]\+|//' | sfdp -Tpng > /tmp/map.$(date +%Y%m%d%H%M%S).png
+# cmd_generate_zigbee2mqtt_map: mosquitto_pub -V mqttv311 -u 'USERNAME' -P 'PASSWORD' -h 127.0.0.1 -m "graphviz" -t zigbee2mqtt/bridge/networkmap
+######################
+# zigbee2mqt_camera
+######################
+# sudo apt-get install imagemagic
+#cmd_ready_to_get_zigbee2mqt_camera: mosquitto_sub -V mqttv311 -C 1 -u 'USERNAME' -P 'PASSWORD' -h 127.0.0.1 -t zigbee2mqtt/bridge/networkmap/graphviz | sed -e 's/|EndDevice//' -e 's/|[^|]\+(.*)|/|/' -e 's/No [^|]\+|//' | sfdp -Tpng > /tmp/zigbee2mqtt_map.png
+#
+#######################################################
+#script                                               #
+#######################################################
+script:
+#
+  zigbee2mqtt_generate_map:
+    sequence:
+      - service: shell_command.ready_to_get_create_zigbee2mqtt_map
+      - delay:
+            seconds: 2
+      - service: shell_command.generate_zigbee2mqtt_map
+#
+  zigbee2mqtt_generate_camera:
+    sequence:
+      - service: shell_command.ready_to_get_create_zigbee2mqtt_map_camera
+      - delay:
+            seconds: 2
+      - service: shell_command.generate_zigbee2mqtt_map
+      - delay:
+            seconds: 10
+      - service: shell_command.convertimage_to_jpeg
+##########################################################
+#shell_command                                           #
+##########################################################
+shell_command:
+  ready_to_get_create_zigbee2mqt_map: !secret cmd_ready_to_get_zigbee2mqtt
+#
+  generate_zigbee2mqtt_map: !secret cmd_generate_zigbee2mqtt_map
+###################
+## Camera version
+####################
+  ready_to_get_create_zigbee2mqtt_map_camera: !secret cmd_ready_to_get_zigbee2mqtt_camera
+#
+  convertimage_to_jpeg: convert /tmp/zigbee2mqtt_map.png /tmp/zigbee2mqtt_map.jpg
+##################################################################
+# Camera
+##################################################################
+camera:
+  - platform: local_file
+    name: Zigbee bridge main
+    file_path: /tmp/zigbee2mqtt_map.jpg
 ```
 {% endraw %}
 
