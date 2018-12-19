@@ -90,5 +90,47 @@ describe('DeviceReceive', () => {
             chai.assert.isTrue(publishDeviceState.calledOnce);
             chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -1});
         });
+
+        it('Should handle a zigbee message with 1 precision when set via device_options', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            sandbox.stub(settings, 'get').callsFake(() => {
+                return {
+                    device_options: {
+                        temperature_precision: 1,
+                    },
+                };
+            });
+            sandbox.stub(settings, 'getDevice').callsFake(() => {
+                return {};
+            });
+            const message = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
+            );
+            deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.8});
+        });
+
+        it('Should handle a zigbee message with 2 precision when overrides device_options', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            sandbox.stub(settings, 'get').callsFake(() => {
+                return {
+                    device_options: {
+                        temperature_precision: 1,
+                    },
+                };
+            });
+            sandbox.stub(settings, 'getDevice').callsFake(() => {
+                return {
+                    temperature_precision: 2,
+                };
+            });
+            const message = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
+            );
+            deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.85});
+        });
     });
 });

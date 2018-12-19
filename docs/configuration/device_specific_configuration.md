@@ -22,11 +22,11 @@ devices:
     qos: 1
 ```
 
-Once finished, restart Zigbee2mqtt.
+### Changing device type specific defaults
+The default values used for the device specific configuration can be overriden via e.g.:
 
-The bridge will log the `friendly_name` on startup, e.g.:
-```
-Currently 2 devices are joined:
-switch_bedroom (0x00158d0001d8e1d2): WXKG01LM - Xiaomi MiJia wireless switch (EndDevice)
-sensor_bedroom (0x00158d0001b79111): WSDCGQ01LM - Xiaomi MiJia temperature & humidity sensor (EndDevice)
+```yaml
+device_options:
+  occupancy_timeout: 30
+  temperature_precision: 1
 ```
