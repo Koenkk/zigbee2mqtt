@@ -238,12 +238,8 @@ describe('DevicePublish', () => {
                         base_topic: 'zigbee2mqtt',
                     },
                     groups: {
-                        group_1: {
-                            ID: 1,
-                            devices: [
-                                '0x12345678',
-                                '0x12345678',
-                            ],
+                        1: {
+                            friendly_name: 'group_1',
                         },
                     },
                 };
@@ -253,6 +249,20 @@ describe('DevicePublish', () => {
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], 1);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'group');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'on');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[4], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+        });
+
+        it('Should publish messages to groups by ID', () => {
+            zigbee.publish.resetHistory();
+            devicePublish.onMQTTMessage('zigbee2mqtt/group/2/set', JSON.stringify({state: 'ON'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], 2);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'group');
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'genOnOff');
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'on');
