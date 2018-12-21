@@ -232,19 +232,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
-                return {
-                    mqtt: {
-                        base_topic: 'zigbee2mqtt',
-                    },
-                    groups: {
-                        1: {
-                            friendly_name: 'group_1',
-                        },
-                    },
-                };
-            });
-
+            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
