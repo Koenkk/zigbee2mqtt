@@ -212,7 +212,7 @@ automation:
 In the environment where Home Assistant is running, execute:
 
 ```bash
-sudo apt-get install -y graphviz imagemagic
+sudo apt-get install -y graphviz imagemagick
 ```
 
 Add to `secrets.yaml` (fill in the corresponding MQTT settings: `USERNAME`, `PASSWORD` and `HOST`)
