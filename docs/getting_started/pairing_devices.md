@@ -16,6 +16,28 @@ Different devices require different pairing methods. In case you get an `Error [
 ## Belkin WeMo smart LED bulb
 [Resetting or Restoring the Wemo® Smart LED Bulb, F7C033](http://www.belkin.com/us/support-article?articleNum=116178)
 
+
+## Centralite / Smartthings Motion (3325-S)
+
+Hold the `sync` button while inserting the battery. Release the button when you see the LED flash blue. You may need to press and hold the `sync` button while inserting the battery untilyou see an orange light. The detector is now reset; remove the battery and prepair to begin pairing. Details:[https://support.smartthings.com/hc/en-us/article_attachments/205793183/Motion_Booklet_2015_US.pdf](here)
+
+
+## Centralite / Smartthings "lamp" module (4257050-RZHAC)
+
+If it becomes necessary to remove the Lamp Module from
+a Zigbee HA network then you must factory default the
+Lamp Module. To factory default the Lamp Module:
+
+1. Remove the Lamp Module from the wall receptacle
+2. Press and hold the Lamp Module’s button
+3. Reinstall the Lamp Module into the wall receptacle while holding the button
+4. After 2 seconds the status LED will turn ON
+5. Once the LED is ON let go of the button
+6. The Lamp Module will now be reset to factory defaults and begin scanning for a ZigBee HA network to join.
+
+Details:[https://support.smartthings.com/hc/en-us/article_attachments/202779234/InstallationGuide-3SeriesLampModule.pdf](here)
+
+
 ## IKEA TRADFRI
 The factory reset procedure differs between TRADFRI components:
 
