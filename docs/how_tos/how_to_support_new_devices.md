@@ -92,11 +92,11 @@ Repeat until your device does not produce any more log messages like:
 2018-5-1 18:19:41 WARN Please create an issue on https://github.com/Koenkk/zigbee2mqtt/issues with this message.
 ```
 ## 4. modelID 'undefined'
-Some of devices don't provide modelID. You need try to re-paire several times with minimum distanse from coordinator (les then 1 mitter). In all attempts fail and modelID is 'undefined' you can try manualy put modelId to `/opt/zigbee2mqtt/data/database.db`
+Some of devices don't provide modelID. You need try to re-paire several times with minimum distanse from coordinator (les then 1 mitter). In all attempts fail and modelID is 'undefined' you can try manualy put modelId to
+`/opt/zigbee2mqtt/data/database.db`
 
-`
 {"id":50,"type":"Router","ieeeAddr":"0x00124b0019c606cd","nwkAddr":10828,"manufId":0,**"manufName":"GLEDOPTO","powerSource":"Mains (single phase)","modelId":"GLEDOPTO",**"epList":[11,13],"status":"offline","joinTime":null,"endpoints":{"11":{"profId":49246,"epId":11,"devId":528,"inClusterList":[0,3,4,5,6,8,768],"outClusterList":[],"clusters":{"genBasic":{"dir":{"value":1},"attrs":{}},"genIdentify":{"dir":{"value":1},"attrs":{}},"genGroups":{"dir":{"value":1},"attrs":{}},"genScenes":{"dir":{"value":1},"attrs":{}},"genOnOff":{"dir":{"value":1},"attrs":{}},"genLevelCtrl":{"dir":{"value":1},"attrs":{}},"lightingColorCtrl":{"dir":{"value":1},"attrs":{}}}},"13":{"profId":49246,"epId":13,"devId":57694,"inClusterList":[4096],"outClusterList":[4096],"clusters":{"lightLink":{"dir":{"value":3},"attrs":{}}}}},"_id":"geCEMkRqlaMe6muE"}
-`
+
 
 ## 5. (Optional) Add home assistant configuration for your device
 In order to automatically discover this device in home assistant your device needs to be added to `mapping` in `lib/extension/homeassistant.js`.
