@@ -53,4 +53,6 @@ advanced:
   rtscts: true
   # Optional: soft reset ZNP after timeout (in seconds); 0 is disabled
   soft_reset_timeout: 0
+  # Optional: network encryption key, changing requires repairing of all devices.
+  network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
 ```
