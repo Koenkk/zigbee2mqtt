@@ -51,7 +51,6 @@ describe('Controller', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
-            console.log(utils.withoutLastSeen(mqttPublish.getCall(0).args[1]));
             chai.assert.strictEqual(
                 utils.withoutLastSeen(mqttPublish.getCall(0).args[1]),
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
