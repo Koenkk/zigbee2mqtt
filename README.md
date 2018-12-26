@@ -4,7 +4,10 @@
     </a>
     <br>
     <br>
-    <img src="https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg">
+    <div style="display: flex;">
+        <img src="https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg">
+        <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
+    </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
     <p>
         Allows you to use your Zigbee devices <b>without</b> the vendors bridge or gateway.
