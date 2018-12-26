@@ -57,6 +57,15 @@ Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topi
 }
 ```
 
+### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
+Set the state of the curtain. 
+```json
+{
+  "position": 60, // Value between 0 and 100, (0 - closed / 100 - open)
+  "running": true, // Curtain is moving
+}
+```
+
 **IKEA TRADFRI LED bulb E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)**
 ```json
 {
@@ -128,6 +137,21 @@ Execute selftest
 ```json
 {
   "selftest": ""
+}
+```
+
+### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
+Set the state of the curtain. 
+```json
+{
+  "state": "open" // Possible values to set: 'open', 'close', 'stop'
+}
+```
+
+Set the position of the curtain.
+```json
+{
+  "position": 50 // Possible values to set: 0 - 100 (0 - closed / 100 - open)
 }
 ```
 
