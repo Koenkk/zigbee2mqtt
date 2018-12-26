@@ -29,7 +29,10 @@ describe('Controller', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
-            chai.assert.strictEqual(mqttPublish.getCall(0).args[1], JSON.stringify({state: 'ON'}));
+            chai.assert.strictEqual(
+                utils.withoutLastSeen(mqttPublish.getCall(0).args[1]),
+                JSON.stringify({state: 'ON'})
+            );
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
@@ -49,7 +52,7 @@ describe('Controller', () => {
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
             chai.assert.strictEqual(
-                mqttPublish.getCall(0).args[1],
+                utils.withoutLastSeen(mqttPublish.getCall(0).args[1]),
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
                 `"modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
             );
