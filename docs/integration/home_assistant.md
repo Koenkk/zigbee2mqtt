@@ -225,6 +225,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -244,6 +245,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -263,6 +265,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -282,6 +285,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -301,6 +305,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -345,6 +350,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -418,6 +424,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -435,6 +442,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -447,6 +455,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -464,6 +473,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -476,6 +486,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -488,6 +499,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -514,6 +526,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -540,6 +553,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -552,6 +566,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -578,6 +593,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -604,6 +620,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -630,6 +647,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -657,6 +675,7 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -687,6 +706,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -716,6 +736,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -742,6 +763,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -768,6 +790,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -784,6 +807,7 @@ sensor:
       - "linkquality"
       - "forgotten"
       - "keyerror"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -811,6 +835,7 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -949,6 +974,7 @@ sensor:
     value_template: "{{ value_json.brightness }}"
     json_attributes: 
       - "linkquality"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1299,6 +1325,7 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -1326,6 +1353,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1338,6 +1366,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1350,6 +1379,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1392,6 +1422,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1416,6 +1447,7 @@ sensor:
       - "description"
       - "type"
       - "rssi"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1821,6 +1853,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2105,6 +2138,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2353,6 +2387,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2450,6 +2485,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2476,6 +2512,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2542,6 +2579,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2582,6 +2620,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2681,6 +2720,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 

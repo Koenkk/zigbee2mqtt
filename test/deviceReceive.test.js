@@ -35,7 +35,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'single'});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {click: 'single'});
         });
 
         it('Should handle a zigbee message which uses ep (left)', () => {
@@ -43,7 +43,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'left'});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {click: 'left'});
         });
 
         it('Should handle a zigbee message which uses ep (right)', () => {
@@ -51,7 +51,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 2);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {click: 'right'});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {click: 'right'});
         });
     });
 });
