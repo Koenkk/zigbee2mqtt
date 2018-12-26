@@ -5,8 +5,18 @@
     <br>
     <br>
     <div style="display: flex;">
-        <img src="https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg">
-        <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
+        <a href="https://travis-ci.org/Koenkk/zigbee2mqtt/">
+            <img src="https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg">
+        </a>
+        <a href="https://github.com/Koenkk/zigbee2mqtt/releases">
+            <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
+        </a>
+        <a href="https://github.com/Koenkk/zigbee2mqtt/stargazers">
+            <img src="https://img.shields.io/github/stars/koenkk/zigbee2mqtt.svg">
+        </a>
+        <a href="https://www.paypal.me/koenkk">
+            <img src="https://img.shields.io/badge/donate-PayPal-blue.svg">
+        </a>
     </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
     <p>
