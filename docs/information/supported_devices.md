@@ -78,7 +78,6 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | Model | Description | Picture |
 | ------------- | ------------- | -------------------------- |
 | GL-C-008 | Gledopto Zigbee LED controller RGB + CCT / RGBW / WWCW / Dimmer (on/off, brightness, color temperature, color xy) | ![../images/devices/GL-C-008.jpg](../images/devices/GL-C-008.jpg) |
-| GL-S-007Z | Gledopto Zigbee RGBW WW/CW spotlight LED GU10 bulb (on/off, brightness, color temperature, color xy) | ![../images/devices/GL-S-007Z.jpg](../images/devices/GL-S-007Z.jpg) |
 
 ### HEIMAN
 
