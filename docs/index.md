@@ -29,6 +29,7 @@ Welcome to the Zigbee2mqtt documentation!
 ### Information
 * [Supported devices](information/supported_devices.md)
 * [MQTT topics and message structure](information/mqtt_topics_and_message_structure.md)
+* [Groups](information/groups.md)
 * [Docker](information/docker.md)
 * [Zigbee network](information/zigbee_network.md)
 * [3D cases](information/3d_cases.md)
