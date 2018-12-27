@@ -245,20 +245,6 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
         });
-
-        it('Should publish messages to groups by ID', () => {
-            zigbee.publish.resetHistory();
-            devicePublish.onMQTTMessage('zigbee2mqtt/group/2/set', JSON.stringify({state: 'ON'}));
-            chai.assert.isTrue(zigbee.publish.calledOnce);
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], 2);
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'group');
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'genOnOff');
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'on');
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[4], 'functional');
-            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
-            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
-            chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
-        });
     });
 
     describe('Parse topic', () => {
@@ -295,8 +281,7 @@ describe('DevicePublish', () => {
         it('Should parse set topic', () => {
             const topic = 'zigbee2mqtt/my_device_id/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, 'my_device_id');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -304,8 +289,7 @@ describe('DevicePublish', () => {
         it('Should parse get topic', () => {
             const topic = 'zigbee2mqtt/my_device_id2/get';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'get');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.ID, 'my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -321,8 +305,7 @@ describe('DevicePublish', () => {
 
             const topic = 'zigbee2mqtt/at/my/home/my_device_id2/get';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'get');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.ID, 'my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -330,8 +313,7 @@ describe('DevicePublish', () => {
         it('Should parse topic with when deviceID has multiple slashes', () => {
             const topic = 'zigbee2mqtt/floor0/basement/my_device_id2/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, 'floor0/basement/my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -347,8 +329,7 @@ describe('DevicePublish', () => {
 
             const topic = 'zigbee2mqtt/at/my/basement/floor0/basement/my_device_id2/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, 'floor0/basement/my_device_id2');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -356,8 +337,7 @@ describe('DevicePublish', () => {
         it('Should parse set with ieeAddr topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -365,8 +345,7 @@ describe('DevicePublish', () => {
         it('Should parse set with postfix topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/left/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689');
             chai.assert.strictEqual(parsed.postfix, 'left');
         });
@@ -374,8 +353,7 @@ describe('DevicePublish', () => {
         it('Should parse set with postfix topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/right/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689');
             chai.assert.strictEqual(parsed.postfix, 'right');
         });
@@ -383,8 +361,7 @@ describe('DevicePublish', () => {
         it('Should parse set with postfix topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/bottom_left/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689');
             chai.assert.strictEqual(parsed.postfix, 'bottom_left');
         });
@@ -392,8 +369,7 @@ describe('DevicePublish', () => {
         it('Shouldnt parse set with invalid postfix topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/invalid/set';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689/invalid');
             chai.assert.strictEqual(parsed.postfix, '');
         });
@@ -409,28 +385,9 @@ describe('DevicePublish', () => {
 
             const topic = 'zigbee2mqtt/at/my/home/my/device/in/basement/sensor/bottom_left/get';
             const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'get');
-            chai.assert.strictEqual(parsed.entityType, 'device');
+            chai.assert.strictEqual(parsed.type, 'get');
             chai.assert.strictEqual(parsed.ID, 'my/device/in/basement/sensor');
             chai.assert.strictEqual(parsed.postfix, 'bottom_left');
-        });
-
-        it('Should parse group topics', () => {
-            const topic = 'zigbee2mqtt/group/group_1/set';
-            const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'group');
-            chai.assert.strictEqual(parsed.ID, 'group_1');
-            chai.assert.strictEqual(parsed.postfix, '');
-        });
-
-        it('Should parse group topics with mutiple slashes', () => {
-            const topic = 'zigbee2mqtt/group/master/child/set';
-            const parsed = devicePublish.parseTopic(topic);
-            chai.assert.strictEqual(parsed.cmdType, 'set');
-            chai.assert.strictEqual(parsed.entityType, 'group');
-            chai.assert.strictEqual(parsed.ID, 'master/child');
-            chai.assert.strictEqual(parsed.postfix, '');
         });
     });
 });

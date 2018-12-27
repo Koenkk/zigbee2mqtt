@@ -1,5 +1,7 @@
 # Groups
-Zigbee2mqtt has support for Zigbee groups. By using Zigbee groups you can control multiple devices simultaneously.
+Zigbee2mqtt has support for Zigbee groups. By using Zigbee groups you can control multiple devices simultaneously with one command.
+
+**NOTE:** to use groups, at least firmware version `20181224` is required!
 
 ## Configuration
 Add the following to your `configuration.yaml`.
@@ -12,16 +14,24 @@ groups:
     friendly_name: group_1
 ```
 
-## Adding a device to a group
-Send an MQTT message to `zigbee2mqtt/bridge/groups/[GROUP_FRIENDLY_NAME]/add` with payload `DEVICE_FRIENDLY_NAME`
+## Commands
+The group of a node can be configured using the following commands:
 
-## Remove a device from a group
-Send an MQTT message to `zigbee2mqtt/bridge/groups/[GROUP_FRIENDLY_NAME]/remove` with payload `DEVICE_FRIENDLY_NAME`
+- `zigbee2mqtt/bridge/groups/[GROUP_FRIENDLY_NAME]/add` with payload `DEVICE_FRIENDLY_NAME` will add a device to a group.
+- `zigbee2mqtt/bridge/groups/[GROUP_FRIENDLY_NAME]/remove` with payload `DEVICE_FRIENDLY_NAME` will remove a device from a group.
+- `zigbee2mqtt/bridge/groups/[GROUP_FRIENDLY_NAME]/remove_all` with payload `DEVICE_FRIENDLY_NAME` will remove a device from **all** groups.
 
 ## Controlling
-To control a group the following topic should be used. The payload is the same as is used for controlling devices.
+Controlling a group is similar to controlling a single device. For example to turn on all devices that are part of group send a MQTT message to `zigbee2mqtt/[GROUP_FRIENDLY_NAME]/set` with payload:
 
+```json
+{
+  "state": "ON",
+}
 ```
-zigbee2mqtt/group/[GROUP_FRIENDLY_NAME]/set
-```
+
+## How do groups work?
+By using the above `add` command above, a device will be added to a group. The device itself is responsible for storing to which groups it belongs. Others, e.g. the coordinator, do not have knowledge to which device a groups belongs.
+
+When using the `set` command, e.g. to turn on all devices in a group, a broadcast request is send to **all* devices in the network. The device itself then determines if it belongs to that group and if it should execute the command.
 

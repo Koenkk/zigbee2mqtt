@@ -32,6 +32,9 @@ Format should be: `{"old": "OLD_FRIENDLY_NAME", "new": "NEW_FRIENDLY_NAME"}`.
 ## zigbee2mqtt/bridge/networkmap
 Allows you to retrieve a map of your zigbee network. Possible payloads are `raw`, `graphviz`. Zigbee2mqtt will send the networkmap to `zigbee2mqtt/bridge/networkmap/[graphviz OR raw]`.
 
+## zigbee2mqtt/bridge/groups/[friendly_name]/(add|remove|remove_all)
+See [Groups](../groups.md)
+
 ## zigbee2mqtt/[DEVICE_ID]
 Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topic are **always** in a JSON format. Each device produces a different JSON message, **some** examples:
 
