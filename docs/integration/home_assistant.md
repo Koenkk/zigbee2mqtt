@@ -827,6 +827,13 @@ sensor:
       - "action"
       - "sensitivity"
       - "last_seen"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    value_template: "{{ value_json.gas_density }}"
+    icon: "mdi:google-circles-communities"
 ```
 {% endraw %}
 
@@ -873,6 +880,29 @@ sensor:
       - "unknown_data"
       - "last_seen"
     force_update: true
+```
+{% endraw %}
+
+### ZNCLDJ11LM
+{% raw %}
+```yaml
+cover:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+    optimistic: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    value_template: "{{ value_json.position }}"
+    icon: "mdi:view-array"
+    json_attributes: 
+      - "linkquality"
+      - "running"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1893,6 +1923,20 @@ sensor:
 ```
 {% endraw %}
 
+### AC03648
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### HALIGHTDIMWWE27
 {% raw %}
 ```yaml
@@ -2275,6 +2319,20 @@ light:
 ```
 {% endraw %}
 
+### LTFY004
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 22670
 {% raw %}
 ```yaml
@@ -2498,6 +2556,21 @@ light:
 ```
 {% endraw %}
 
+### GL-S-007Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### STSS-MULT-001
 {% raw %}
 ```yaml
@@ -2549,6 +2622,33 @@ sensor:
       - "action"
       - "sensitivity"
       - "last_seen"
+```
+{% endraw %}
+
+### 3325-S
+{% raw %}
+```yaml
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    value_template: "{{ value_json.temperature }}"
+    json_attributes: 
+      - "linkquality"
+      - "battery"
+      - "voltage"
+      - "last_seen"
+
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: true
+    payload_off: false
+    value_template: "{{ value_json.occupancy }}"
+    device_class: "motion"
 ```
 {% endraw %}
 
@@ -2881,6 +2981,19 @@ light:
     brightness: true
     color_temp: true
     xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### 4713407
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
     schema: "json"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```

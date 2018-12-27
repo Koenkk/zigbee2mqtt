@@ -153,7 +153,7 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[4], 'functional');
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
-            chai.assert.strictEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[7], 11);
         });
 
         it('Should publish messages to zigbee gledopto with [11,12,13]', () => {
