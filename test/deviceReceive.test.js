@@ -62,7 +62,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.85});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {temperature: -0.85});
         });
 
         it('Should handle a zigbee message with 1 precision', () => {
@@ -75,7 +75,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.8});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {temperature: -0.8});
         });
 
         it('Should handle a zigbee message with 0 precision', () => {
@@ -88,7 +88,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -1});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {temperature: -1});
         });
 
         it('Should handle a zigbee message with 1 precision when set via device_options', () => {
@@ -108,7 +108,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.8});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {temperature: -0.8});
         });
 
         it('Should handle a zigbee message with 2 precision when overrides device_options', () => {
@@ -130,7 +130,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            chai.assert.deepEqual(publishDeviceState.getCall(0).args[1], {temperature: -0.85});
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), {temperature: -0.85});
         });
     });
 });
