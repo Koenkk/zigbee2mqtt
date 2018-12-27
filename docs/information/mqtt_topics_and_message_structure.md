@@ -1,4 +1,4 @@
-# MQT topics and message structure
+# MQTT topics and message structure
 
 This page describes which MQTT topics are used by Zigbee2mqtt. Note that the base topic (by default `zigbee2mqtt`) is configurable in the [Zigbee2mqtt `configuration.yaml`](../configuration/configuration.md).
 
@@ -57,21 +57,20 @@ Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topi
 }
 ```
 
-### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
-Set the state of the curtain. 
-```json
-{
-  "position": 60, // Value between 0 and 100, (0 - closed / 100 - open)
-  "running": true, // Curtain is moving
-}
-```
-
 **IKEA TRADFRI LED bulb E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)**
 ```json
 {
   "state": "ON",
   "brightness": 215,
   "color_temp": 325
+}
+```
+
+**Xiaomi Aqara curtain motor (ZNCLDJ11LM)**
+```json
+{
+  "position": 60, // Value between 0 and 100, (0 - closed / 100 - open)
+  "running": true, // Curtain is moving
 }
 ```
 
