@@ -1,8 +1,13 @@
-Unsupported device
-First check: https://koenkk.github.io/zigbee2mqtt/how_tos/how_to_support_new_devices.html
+Did you read the FAQ?
+https://koenkk.github.io/zigbee2mqtt/information/FAQ.md
 
+Unsupported device?
+https://koenkk.github.io/zigbee2mqtt/how_tos/how_to_support_new_devices.html
 
-Bug report
+A question?
+Read the documentation: https://koenkk.github.io/zigbee2mqtt/
+
+Bug report:
 - First make sure your on the latest version of zigbee2mqtt.
 - Make sure you are running the latest CC253X firmware from https://github.com/koenkk/z-stack-firmware.
 - Provide a clear description of the problem.
