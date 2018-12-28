@@ -138,3 +138,45 @@ Let the device beep.
   "beep": 5
 }
 ```
+
+### ecozy Thermostat
+Get local temperature in degrees celsius:
+```json
+{
+  "localTemp": ""
+}
+```
+Get or set occupiedHeatingSetpoint to Number degrees celsius
+```json
+{
+  "occupiedHeatingSetpoint": "Number" // Possible values: ; leave empty to read
+}
+```
+
+Increase or decrease setpoint by Number degrees celsius
+```json
+{
+  "setpointRaiseLower": "Number" // Possible values:
+}
+```
+
+Get or set weekly schdule
+```json
+{
+  "weeklySchedule": "Number" // Possible values: ; leave empty to read
+}
+```
+
+Clear weekly schedule
+```json
+{
+  "clearWeeklySchedule": ""
+}
+```
+
+<!--
+Coming soon:
+Get weekly schedule response
+Get relay status log
+Get relay status log response
+-->
