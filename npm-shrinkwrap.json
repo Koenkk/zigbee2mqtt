@@ -2180,7 +2180,7 @@
     },
     "mute-stream": {
       "version": "0.0.7",
-      "resolved": "https://registry.npmjs.org/mute-stream/-/mute-stream-0.0.7.tgz",
+      "resolved": "http://registry.npmjs.org/mute-stream/-/mute-stream-0.0.7.tgz",
       "integrity": "sha1-MHXOk7whuPq0PhvE2n6BFe0ee6s="
     },
     "nan": {
@@ -4795,8 +4795,8 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#8d22cb5e0167a9f2d754efc8b228007fcd403441",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#8d22cb5e0167a9f2d754efc8b228007fcd403441",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#bc2445dc0bb7a2a1d5b4a461c231e28d07f517e7",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#bc2445dc0bb7a2a1d5b4a461c231e28d07f517e7",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
