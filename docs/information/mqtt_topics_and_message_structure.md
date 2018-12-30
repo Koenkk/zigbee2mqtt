@@ -95,7 +95,12 @@ Publishing messages to this topic allows you to control your Zigbee devices via 
     // RGB color
     "r": 46,
     "g": 102,
-    "b": 193
+    "b": 193,
+
+    // OR
+
+    // HEX color
+    "hex": "#547CFF"
   },
 
   // Blinks the bulbs, possible values:
@@ -143,7 +148,7 @@ Execute selftest
 ```
 
 ### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
-Set the state of the curtain. 
+Set the state of the curtain.
 ```json
 {
   "state": "open" // Possible values to set: 'open', 'close', 'stop'
