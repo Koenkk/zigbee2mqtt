@@ -26,6 +26,7 @@ Welcome to the Zigbee2mqtt documentation!
 * [How to debug](how_tos/how_to_debug.md)
 * [How to support new devices on Hass.io](how_tos/how_to_support_new_devices_on_hassio.md)
 * [How to sniff Zigbee traffic](how_tos/how_to_sniff_zigbee_traffic.md)
+* [How to create a CC2530 router](how_tos/how_to_create_a_cc2530_router.md)
 
 ### Information
 * [Supported devices](information/supported_devices.md)
