@@ -1,4 +1,4 @@
-# MQT topics and message structure
+# MQTT topics and message structure
 
 This page describes which MQTT topics are used by Zigbee2mqtt. Note that the base topic (by default `zigbee2mqtt`) is configurable in the [Zigbee2mqtt `configuration.yaml`](../configuration/configuration.md).
 
