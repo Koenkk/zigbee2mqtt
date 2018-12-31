@@ -59,12 +59,6 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | ------------- | ------------- | -------------------------- |
 | Mega23M12 | Dresden Elektronik ZigBee Light Link wireless electronic ballast (on/off, brightness, color temperature, color xy) | ![../images/devices/Mega23M12.jpg](../images/devices/Mega23M12.jpg) |
 
-### eCozy
-
-| Model | Description | Picture |
-| ------------- | ------------- | -------------------------- |
-| eCozy Smart Thermostat | eCozy Smart Thermostat | ![../images/devices/ecozy_smart_thermostat.jpg](../images/devices/ecozy_smart_thermostat.jpg) |
-
 ### EDP
 
 | Model | Description | Picture |
@@ -306,3 +300,5 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | Model | Description | Picture |
 | ------------- | ------------- | -------------------------- |
 | 900008-WW | ilux Dimmable A60 E27 LED Bulb (on/off, brightness) | ![../images/devices/900008-WW.jpg](../images/devices/900008-WW.jpg) |
+
+
