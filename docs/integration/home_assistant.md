@@ -1283,6 +1283,20 @@ light:
 ```
 {% endraw %}
 
+### 464800
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 8718696695203
 {% raw %}
 ```yaml
@@ -1339,7 +1353,35 @@ light:
 ```
 {% endraw %}
 
+### 3261331P7
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 3216331P5
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### 3216431P5
 {% raw %}
 ```yaml
 light:
@@ -2571,6 +2613,21 @@ light:
 ```
 {% endraw %}
 
+### GL-B-008Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### STSS-MULT-001
 {% raw %}
 ```yaml
@@ -2743,6 +2800,36 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
+```
+{% endraw %}
+
+### AV2010/25
+{% raw %}
+```yaml
+switch:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_off: "OFF"
+    payload_on: "ON"
+    value_template: "{{ value_json.state }}"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "Watt"
+    icon: "mdi:flash"
+    value_template: "{{ value_json.power }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "temperature"
+      - "consumption"
+      - "current"
+      - "power_factor"
       - "last_seen"
 ```
 {% endraw %}
