@@ -140,43 +140,74 @@ Let the device beep.
 ```
 
 ### ecozy Thermostat
-Get local temperature in degrees celsius:
+Get local temperature in degrees Celsius
 ```json
 {
-  "localTemp": ""
-}
-```
-Get or set occupiedHeatingSetpoint to Number degrees celsius
-```json
-{
-  "occupiedHeatingSetpoint": "Number" // Possible values: ; leave empty to read
+  "local_temperature": ""
 }
 ```
 
-Increase or decrease setpoint by Number degrees celsius
+Get or set offset added to/subtracted from the actual displayed room temperature to NUMBER, in steps of 0.1°C
 ```json
 {
-  "setpointRaiseLower": "Number" // Possible values:
+  "local_temperature_calibration": "NUMBER" // Possible values: –25 to +25; leave empty to read
 }
 ```
 
-Get or set weekly schdule
+Get room occupancy
 ```json
 {
-  "weeklySchedule": "Number" // Possible values: ; leave empty to read
+  "thermostat_occupancy": ""
+}
+```
+
+Get or set occupied heating setpoint to NUMBER in degrees Celsius
+```json
+{
+  "occupied_heating_setpoint": "NUMBER" // Possible values: ; leave empty to read
+}
+```
+
+Get or set unoccupied heating setpoint to NUMBER in degrees Celsius
+```json
+{
+  "unoccupied_heating_setpoint": "NUMBER" // Possible values: tbd ; leave empty to read
+}
+```
+
+Get or set control sequence of operation
+```json
+{
+  "control_sequence_of_operation": "NUMBER" // Possible values: ; leave empty to read
+}
+```
+
+Get or set system mode
+```json
+{
+  "system_mode": "NUMBER" // Possible values: tbd
+}
+```
+
+Get or set weekly schedule
+```json
+{
+  "weekly_schedule": "NUMBER" // Possible values: tbd ; leave empty to read
 }
 ```
 
 Clear weekly schedule
 ```json
 {
-  "clearWeeklySchedule": ""
+  "clear_weekly_schedule": ""
 }
 ```
-
 <!--
 Coming soon:
 Get weekly schedule response
+tz.thermostat_weekly_schedule_rsp
 Get relay status log
+tz.thermostat_relay_status_log
 Get relay status log response
+tz.thermostat_relay_status_log_rsp
 -->
