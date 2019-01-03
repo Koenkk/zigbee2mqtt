@@ -127,6 +127,19 @@ Only used when `homeassistant: true` in `configuration.yaml`. Required for [Home
 ## Device specific
 Device specific commands are always send to the topic: `zigbee2mqtt/[DEVICE_ID]/set`. Below you will find the possible payloads.
 
+### Philips Hue motion detector (SML001)
+Sets the sensors timeout between last motion detected
+and sensor reports occupance false
+```json
+{
+    // Value >= 0,
+    // 0 - 10: 10sec (min possible timeout)
+    //   > 10: timeout in sec
+    // (must be written to (default) endpoint 2)
+    "occupancy_timeout": 0,
+}
+```
+
 ### Xiaomi Aqara vibration sensor (DJT11LM)
 Set the sensitivity of the sensor. **NOTE:** As this device is sleeping most of the time, right before sending this command press the button on the device.
 ```json
