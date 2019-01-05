@@ -9,6 +9,8 @@ use their documentation*
 ## MQTT discovery
 **At least Home Assistant >= 0.84 is required!**
 
+**NOTE:** Groups are not auto-discovered, see configuration below.
+
 The easiest way to integrate Zigbee2mqtt with Home Assistant is by
 using [MQTT discovery](https://www.home-assistant.io/docs/mqtt/discovery/).
 This allows Zigbee2mqtt to automatically add devices to Home Assistant.
@@ -69,6 +71,26 @@ automation:
       entity_id: light.bedroom
       service: light.toggle
 ```
+{% endraw %}
+
+## Groups
+Groups are not auto-discovered. Use the following configuration:
+
+{% raw %}
+
+```yaml
+- platform: mqtt
+  schema: json
+  name: MY_GROUP
+  command_topic: "zigbee2mqtt/[GROUP_FRIENDLY_NAME]/set"
+  state_topic: "zigbee2mqtt/[GROUP_FRIENDLY_NAME]/set"
+
+  // Modify according to features supported by all devices in group
+  color_temp: true
+  brightness: true
+  rgb: true
+```
+
 {% endraw %}
 
 ## Controlling Zigbee2mqtt via Home Assistant
@@ -210,6 +232,20 @@ automation:
 
 ## Configuration when NOT using Home Assistant MQTT discovery
 
+### ZNLDP12LM
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### WXKG01LM
 {% raw %}
 ```yaml
@@ -225,6 +261,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -244,6 +281,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -263,6 +301,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -282,6 +321,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -301,6 +341,7 @@ sensor:
       - "voltage"
       - "action"
       - "duration"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -345,6 +386,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -418,6 +460,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -435,6 +478,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -447,6 +491,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -464,6 +509,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -476,6 +522,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -488,6 +535,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -514,6 +562,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -540,6 +589,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -552,6 +602,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -578,6 +629,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -604,6 +656,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -630,6 +683,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -657,6 +711,7 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -687,6 +742,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -716,6 +772,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -742,6 +799,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -768,6 +826,14 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    value_template: "{{ value_json.gas_density }}"
+    icon: "mdi:google-circles-communities"
 ```
 {% endraw %}
 
@@ -784,6 +850,7 @@ sensor:
       - "linkquality"
       - "forgotten"
       - "keyerror"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -811,7 +878,31 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
+```
+{% endraw %}
+
+### ZNCLDJ11LM
+{% raw %}
+```yaml
+cover:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+    optimistic: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    value_template: "{{ value_json.position }}"
+    icon: "mdi:view-array"
+    json_attributes: 
+      - "linkquality"
+      - "running"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -949,6 +1040,7 @@ sensor:
     value_template: "{{ value_json.brightness }}"
     json_attributes: 
       - "linkquality"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1191,6 +1283,20 @@ light:
 ```
 {% endraw %}
 
+### 464800
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 8718696695203
 {% raw %}
 ```yaml
@@ -1247,7 +1353,35 @@ light:
 ```
 {% endraw %}
 
+### 3261331P7
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 3216331P5
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### 3216431P5
 {% raw %}
 ```yaml
 light:
@@ -1299,6 +1433,7 @@ sensor:
       - "angle_y"
       - "angle_x"
       - "unknown_data"
+      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -1326,6 +1461,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1338,6 +1474,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1350,6 +1487,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1392,6 +1530,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1416,6 +1555,7 @@ sensor:
       - "description"
       - "type"
       - "rssi"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1821,6 +1961,21 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
+```
+{% endraw %}
+
+### AC03648
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 {% endraw %}
 
@@ -2105,6 +2260,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2200,6 +2356,20 @@ light:
     availability_topic: "zigbee2mqtt/bridge/state"
     brightness: true
     color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### LTFY004
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    xy: true
     schema: "json"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
@@ -2353,6 +2523,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2427,6 +2598,36 @@ light:
 ```
 {% endraw %}
 
+### GL-S-007Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### GL-B-008Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### STSS-MULT-001
 {% raw %}
 ```yaml
@@ -2450,6 +2651,7 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2476,6 +2678,34 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
+```
+{% endraw %}
+
+### 3325-S
+{% raw %}
+```yaml
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    value_template: "{{ value_json.temperature }}"
+    json_attributes: 
+      - "linkquality"
+      - "battery"
+      - "voltage"
+      - "last_seen"
+
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: true
+    payload_off: false
+    value_template: "{{ value_json.occupancy }}"
+    device_class: "motion"
 ```
 {% endraw %}
 
@@ -2489,6 +2719,34 @@ light:
     brightness: true
     schema: "json"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### ZPIR-8000
+{% raw %}
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: true
+    payload_off: false
+    value_template: "{{ value_json.occupancy }}"
+    device_class: "motion"
+```
+{% endraw %}
+
+### ZCTS-808
+{% raw %}
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: false
+    payload_off: true
+    value_template: "{{ value_json.contact }}"
+    device_class: "door"
 ```
 {% endraw %}
 
@@ -2542,6 +2800,37 @@ sensor:
       - "voltage"
       - "action"
       - "sensitivity"
+      - "last_seen"
+```
+{% endraw %}
+
+### AV2010/25
+{% raw %}
+```yaml
+switch:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_off: "OFF"
+    payload_on: "ON"
+    value_template: "{{ value_json.state }}"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "Watt"
+    icon: "mdi:flash"
+    value_template: "{{ value_json.power }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "temperature"
+      - "consumption"
+      - "current"
+      - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2582,6 +2871,7 @@ sensor:
       - "linkquality"
       - "battery"
       - "voltage"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2681,6 +2971,7 @@ sensor:
       - "consumption"
       - "current"
       - "power_factor"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -2755,6 +3046,34 @@ binary_sensor:
 {% endraw %}
 
 ### 421786
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### D1821
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### 4713407
 {% raw %}
 ```yaml
 light:
