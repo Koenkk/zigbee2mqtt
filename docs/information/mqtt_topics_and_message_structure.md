@@ -139,7 +139,7 @@ Let the device beep.
 }
 ```
 
-### ecozy Thermostat
+### eCozy Smart heating thermostat (1TST-EU)
 Get local temperature in degrees Celsius
 ```json
 {
