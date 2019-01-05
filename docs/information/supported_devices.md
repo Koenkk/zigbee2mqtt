@@ -113,7 +113,6 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | L1527 | IKEA FLOALT LED light panel, dimmable, white spectrum (30x30 cm) (on/off, brightness, color temperature) | ![../images/devices/L1527.jpg](../images/devices/L1527.jpg) |
 | L1529 | IKEA FLOALT LED light panel, dimmable, white spectrum (60x60 cm) (on/off, brightness, color temperature) | ![../images/devices/L1529.jpg](../images/devices/L1529.jpg) |
 | L1528 | IKEA FLOALT LED light panel, dimmable, white spectrum (30x90 cm) (on/off, brightness, color temperature) | ![../images/devices/L1528.jpg](../images/devices/L1528.jpg) |
-| L1531 | IKEA SUARTE light panel, dimmable, white spectrum (38x60 cm) (on/off, brightness, color temperature) | |
 | E1603 | IKEA TRADFRI control outlet (on/off) | ![../images/devices/E1603.jpg](../images/devices/E1603.jpg) |
 
 ### Innr
