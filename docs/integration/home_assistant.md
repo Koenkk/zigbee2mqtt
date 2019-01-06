@@ -257,12 +257,24 @@ sensor:
     value_template: "{{ value_json.click }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "action"
       - "duration"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -277,12 +289,24 @@ sensor:
     value_template: "{{ value_json.click }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "action"
       - "duration"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -297,12 +321,24 @@ sensor:
     value_template: "{{ value_json.click }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "action"
       - "duration"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -317,12 +353,24 @@ sensor:
     value_template: "{{ value_json.click }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "action"
       - "duration"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -337,12 +385,24 @@ sensor:
     value_template: "{{ value_json.click }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "action"
       - "duration"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -476,8 +536,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -489,8 +547,20 @@ sensor:
     value_template: "{{ value_json.humidity }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
+      - "last_seen"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
       - "voltage"
+      - "action"
+      - "sensitivity"
       - "last_seen"
 ```
 {% endraw %}
@@ -507,8 +577,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -520,8 +588,6 @@ sensor:
     value_template: "{{ value_json.humidity }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -533,8 +599,20 @@ sensor:
     value_template: "{{ value_json.pressure }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
+      - "last_seen"
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
       - "voltage"
+      - "action"
+      - "sensitivity"
       - "last_seen"
 ```
 {% endraw %}
@@ -588,8 +666,6 @@ sensor:
     value_template: "{{ value_json.illuminance }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -703,8 +779,6 @@ sensor:
     value_template: "{{ value_json.action }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "angle"
       - "side"
       - "from_side"
@@ -718,6 +792,20 @@ sensor:
       - "unknown_data"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -872,8 +960,6 @@ sensor:
     value_template: "{{ value_json.action }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "angle"
       - "side"
       - "from_side"
@@ -887,6 +973,20 @@ sensor:
       - "unknown_data"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1441,8 +1541,6 @@ sensor:
     value_template: "{{ value_json.action }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "angle"
       - "side"
       - "from_side"
@@ -1456,6 +1554,20 @@ sensor:
       - "unknown_data"
       - "last_seen"
     force_update: true
+
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
+    device_class: "battery"
+    value_template: "{{ value_json.battery }}"
+    json_attributes: 
+      - "linkquality"
+      - "voltage"
+      - "action"
+      - "sensitivity"
+      - "last_seen"
 ```
 {% endraw %}
 
@@ -1480,8 +1592,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -1493,8 +1603,6 @@ sensor:
     value_template: "{{ value_json.illuminance }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 sensor:
@@ -1987,8 +2095,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 ```
 {% endraw %}
@@ -2806,8 +2912,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 
 binary_sensor:
@@ -2842,8 +2946,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 ```
 {% endraw %}
@@ -3009,8 +3111,6 @@ sensor:
     value_template: "{{ value_json.temperature }}"
     json_attributes: 
       - "linkquality"
-      - "battery"
-      - "voltage"
       - "last_seen"
 ```
 {% endraw %}
