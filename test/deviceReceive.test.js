@@ -142,12 +142,12 @@ describe('DeviceReceive', () => {
             chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
         });
 
-        it('Should handle a zigbee message with voltage 2750', () => {
+        it('Should handle a zigbee message with voltage 2850', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2850}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            const expected = {battery: 50, voltage: 2850};
+            const expected = {battery: 35, voltage: 2850};
             chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
         });
 
@@ -156,7 +156,16 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2650}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             chai.assert.isTrue(publishDeviceState.calledOnce);
-            const expected = {battery: 0, voltage: 2650};
+            const expected = {battery: 14, voltage: 2650};
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
+        });
+
+        it('Should handle a zigbee message with voltage 2000', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2000}}, 1);
+            deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            const expected = {battery: 0, voltage: 2000};
             chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
         });
     });
