@@ -555,6 +555,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -595,6 +596,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -622,6 +624,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -649,6 +652,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -676,6 +680,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -792,6 +797,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -819,6 +825,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -1494,6 +1501,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -2746,6 +2754,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -2773,6 +2782,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
@@ -2922,6 +2932,7 @@ sensor:
   - platform: "mqtt"
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
+    unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
     json_attributes: 
