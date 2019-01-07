@@ -139,8 +139,11 @@ Let the device beep.
 }
 ```
 
-### ecozy Thermostat
-Get local temperature in degrees Celsius
+=======
+### Smart Thermostats
+#### eCozy Smart heating thermostat (1TST-EU), Bitron Wall thermostat (AV2010/32)
+
+Get local temperature in degrees Celsius (in the range 0x954d to 0x7fff, i.e. -273.15°C to 327.67 ºC)
 ```json
 {
   "local_temperature": ""
@@ -150,51 +153,120 @@ Get local temperature in degrees Celsius
 Get or set offset added to/subtracted from the actual displayed room temperature to NUMBER, in steps of 0.1°C
 ```json
 {
-  "local_temperature_calibration": "NUMBER" // Possible values: –25 to +25; leave empty to read
+  "local_temperature_calibration": "NUMBER" // Possible values: –2.5 to +2.5; leave empty to read
 }
 ```
 
-Get room occupancy
+Set temperature display mode
+```json
+{
+  "temperature_display_mode": "" // Possible values: 0 to set °C or 1 so set °F
+}
+```
+
+Get room occupancy. Specifies whether the heated/cooled space is occupied or not. If 1, the space is occupied, else it is unoccupied.
 ```json
 {
   "thermostat_occupancy": ""
 }
 ```
 
-Get or set occupied heating setpoint to NUMBER in degrees Celsius
+Get or set occupied heating setpoint to NUMBER in degrees Celsius.
 ```json
 {
-  "occupied_heating_setpoint": "NUMBER" // Possible values: ; leave empty to read
+  "occupied_heating_setpoint": "NUMBER" // Possible values: MinHeatSetpointLimit to  MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
 }
 ```
 
 Get or set unoccupied heating setpoint to NUMBER in degrees Celsius
 ```json
 {
-  "unoccupied_heating_setpoint": "NUMBER" // Possible values: tbd ; leave empty to read
+  "unoccupied_heating_setpoint": "NUMBER" // Possible values: MinHeatSetpointLimit to MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
 }
 ```
+
+Increase or decrease heating setpoint by NUMBER degrees in °C.
+```json
+{
+  "setpoint_raise_lower": {
+    "mode": "0x00", // Possible values: see table below
+    "amount": "NUMBER" // Possible values: signed 8-bit integer that specifies the amount the setpoint(s) are to be increased (or decreased) by, in steps of 0.1°C
+  }
+}
+```
+Attribute Value | Description
+----------------|-----------------------------------------------
+0x00            | Heat (adjust Heat Setpoint)
+0x01            | Cool (adjust Cool Setpoint)
+0x02            | Both (adjust Heat Setpoint and Cool Setpoint)
+
+Get or set whether the local temperature, outdoor temperature and occupancy are being sensed by internal sensors or remote networked sensors
+```json
+{
+  "remote_sensing": "NUMBER" // Possible values: see table below; leave empty to read
+}
+```
+Bit Number | Description
+-----------|-----------------------------------------
+0          | 0 – local temperature sensed internally <br> 1 – local temperature sensed remotely
+1          | 0 – outdoor temperature sensed internally <br> 1 – outdoor temperature sensed remotely
+2          | 0 – occupancy sensed internally <br> 1 – occupancy sensed remotely
 
 Get or set control sequence of operation
 ```json
 {
-  "control_sequence_of_operation": "NUMBER" // Possible values: ; leave empty to read
+  "control_sequence_of_operation": "NUMBER" // Possible values: see table below; leave empty to read
 }
 ```
+Values | Description                             | Possible Values of SystemMode
+-------|-----------------------------------------|-------------------------------------
+0x00   | Cooling Only                            | Heat and Emergency are not possible
+0x01   | Cooling With Reheat                     | Heat and Emergency are not possible
+0x02   | Heating Only                            | Cool and precooling are not possible
+0x03   | Heating With Reheat                     | Cool and precooling are not possible
+0x04   | Cooling and Heating 4-pipes             | All modes are possible
+0x05   | Cooling and Heating 4-pipes with Reheat | All modes are possible
 
 Get or set system mode
 ```json
 {
-  "system_mode": "NUMBER" // Possible values: tbd
+  "system_mode": "NUMBER" // Possible values: see table below; leave empty to read
+}
+```
+Attribute Value | Description
+----------------|------------------
+0x00            | Off
+0x01            | Auto
+0x03            | Cool
+0x04            | Heat
+0x05            | Emergency heating
+0x06            | Precooling
+0x07            | Fan only
+0x08            | Dry
+0x09            | Sleep
+
+Get running state
+```json
+{
+  "running_state": "" // leave empty when reading
 }
 ```
 
 Get or set weekly schedule
 ```json
 {
-  "weekly_schedule": "NUMBER" // Possible values: tbd ; leave empty to read
+  "weekly_schedule": {
+    "TemperatureSetpointHold": "0x00", // 0x00 setpoint hold off or 0x01 on
+    "TemperatureSetpointHoldDuration": "0xffff", // 0xffff to 0x05a0
+    "ThermostatProgrammingOperationMode": "00xxxxxx" //see table below
+  } // leave empty to read
 }
 ```
+Attribute Value | Description
+----------------|---------------------------------------------------------------------------
+0               | 0 – Simple/setpoint mode. This mode means the thermostat setpoint is altered only by manual up/down changes at the thermostat or remotely, not by internal schedule programming. <br> 1 – Schedule programming mode. This enables or disables any programmed weekly schedule configurations. <br> Note: It does not clear or delete previous weekly schedule programming configurations.
+1               | 0 - Auto/recovery mode set to OFF <br> 1 – Auto/recovery mode set to ON
+2               | 0 – Economy/EnergyStar mode set to OFF <br> 1 – Economy/EnergyStar mode set to ON
 
 Clear weekly schedule
 ```json
