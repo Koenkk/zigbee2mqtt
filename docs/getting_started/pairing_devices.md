@@ -29,6 +29,27 @@ I start with bulb on, then off, and then 6 “on’s”, where I kill the light 
 
 * To factory reset the TRADFRI drivers (ICPSHC24-10EU-IL-1 and ICPSHC24-30EU-IL-1) use a small pin or paperclip to push the reset button once.
 
+### IKEA TRADFRI remote control (E1524)
+This device requires extra setup as it is meant to only control groups. Therefore it does not send any information directly to the coordinator. As the group ID is randomized upon factor reset we need to find out the group ID where it sends its commands to. This can be done by using Zigbee sniffing.
+
+1. Pair the remote to Zigbee2mqtt by holding it close to the coordinator and pressing the button next to the battery 4 times. The red light on the remote will now flash a few times.
+2. Setup your Zigbee traffic sniffer by following [How to sniff Zigbee traffic](../how_tos/how_to_sniff_zigbee_traffic.md).
+3. Press the middle (power) button on the remote, this will produce the following message in Wireshark:
+![E1524 group](../images/E1524_group.png)
+4. Retrieve the group from the message, which is `0xeb12` in the above example.
+5. Add the group to the device in `configuration.yaml`, example:
+```yaml
+devices:
+  '0x000b57fffecb472d':
+    friendly_name: '0x000b57fffecb472d'
+    retain: false
+    coordinator_group: 0xeb12
+```
+6. Restart Zigbee2mqtt, when everything went OK you will see:
+```
+zigbee2mqtt:info 1/8/2019, 8:42:40 PM Sucesfully applied coordinator group for IKEA TRADFRI remote control (0x000b57fffecb472d)
+```
+
 ## Philips Hue
 Factory reset the light bulb see [HOWTO: Factory reset a Hue bulb](https://www.youtube.com/watch?v=qvlEAELiJKs). After resetting the bulb will automatically connect.
 
@@ -68,7 +89,7 @@ will rapidly flash green.
 - After fast flashes, Z809A will reboot, and the restore is completed. The socket will automatically connect now.
 
 ## Gledopto
-Some of the Gledopto devices are not providing a `modelID`, in that case the modelID `undefined` is shown. Sometimes it helps to repair the device while keeping it close to the coordinator (less than one meter). 
+Some of the Gledopto devices are not providing a `modelID`, in that case the modelID `undefined` is shown. Sometimes it helps to repair the device while keeping it close to the coordinator (less than one meter).
 
 If this fails, the `modelID` has to be set manually in `data/database.db`. First find out the `modelID` of your devices from the [Supported devices page](../information/supported_devices.md). Then open `data/database.db` and add the `modelId` as highlighted in **bold** below.
 

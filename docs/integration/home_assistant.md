@@ -1247,6 +1247,33 @@ switch:
 ```
 {% endraw %}
 
+### E1524
+{% raw %}
+```yaml
+sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    icon: "mdi:gesture-double-tap"
+    value_template: "{{ value_json.action }}"
+    json_attributes: 
+      - "linkquality"
+      - "angle"
+      - "side"
+      - "from_side"
+      - "to_side"
+      - "brightness"
+      - "angle_x_absolute"
+      - "angle_y_absolute"
+      - "angle_z"
+      - "angle_y"
+      - "angle_x"
+      - "unknown_data"
+      - "last_seen"
+    force_update: true
+```
+{% endraw %}
+
 ### 7299760PH
 {% raw %}
 ```yaml
