@@ -12,6 +12,7 @@ zigbee2mqtt will output log to this endpoint. Message are always in the form of 
 * `"pairing"`: logging when device is connecting to the network.
 * `"device_connected"`: send when a new device connects to the network.
 * `"device_removed"`: send when a device is removed from the network.
+* `"device_banned"`: send when a device is banned from the network.
 * `"devices"`: a list of all devices, this message can be triggered by sending a message to `zigbee2mqtt/bridge/config/devices` (payload doesn't matter).
 
 ## zigbee2mqtt/bridge/config/permit_join
@@ -24,6 +25,9 @@ Allows you to switch the `log_level` during runtime. This is not persistent (wil
 
 ## zigbee2mqtt/bridge/config/remove
 Allows you to remove devices from the network. Payload should be the `friendly_name`, e.g. `0x00158d0001b79111`. On successful remove a [`device_removed`](https://koenkk.github.io/zigbee2mqtt/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgelog) message is send.
+
+## zigbee2mqtt/bridge/config/ban
+Allows you to ban devices from the network. Payload should be the `friendly_name`, e.g. `0x00158d0001b79111`. On successful ban a [`device_banned`](https://koenkk.github.io/zigbee2mqtt/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgelog) message is send.
 
 ## zigbee2mqtt/bridge/config/rename
 Allows you to change the `friendly_name` of a device on the fly.
