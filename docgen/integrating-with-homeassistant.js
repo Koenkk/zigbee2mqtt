@@ -18,6 +18,8 @@ use their documentation*
 ## MQTT discovery
 **At least Home Assistant >= 0.84 is required!**
 
+**NOTE:** Groups are not auto-discovered, see configuration below.
+
 The easiest way to integrate Zigbee2mqtt with Home Assistant is by
 using [MQTT discovery](https://www.home-assistant.io/docs/mqtt/discovery/).
 This allows Zigbee2mqtt to automatically add devices to Home Assistant.
@@ -78,6 +80,26 @@ automation:
       entity_id: light.bedroom
       service: light.toggle
 \`\`\`
+{% endraw %}
+
+## Groups
+Groups are not auto-discovered. Use the following configuration:
+
+{% raw %}
+
+\`\`\`yaml
+- platform: mqtt
+  schema: json
+  name: MY_GROUP
+  command_topic: "zigbee2mqtt/[GROUP_FRIENDLY_NAME]/set"
+  state_topic: "zigbee2mqtt/[GROUP_FRIENDLY_NAME]/set"
+
+  // Modify according to features supported by all devices in group
+  color_temp: true
+  brightness: true
+  rgb: true
+\`\`\`
+
 {% endraw %}
 
 ## Controlling Zigbee2mqtt via Home Assistant

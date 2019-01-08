@@ -32,6 +32,12 @@ Format should be: `{"old": "OLD_FRIENDLY_NAME", "new": "NEW_FRIENDLY_NAME"}`.
 ## zigbee2mqtt/bridge/networkmap
 Allows you to retrieve a map of your zigbee network. Possible payloads are `raw`, `graphviz`. Zigbee2mqtt will send the networkmap to `zigbee2mqtt/bridge/networkmap/[graphviz OR raw]`.
 
+## zigbee2mqtt/bridge/groups/[friendly_name]/(add|remove|remove_all)
+See [Groups](groups.md)
+
+## zigbee2mqtt/bridge/(bind|unbind)/[friendly_name]
+See [Binding](binding.md)
+
 ## zigbee2mqtt/[DEVICE_ID]
 Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topic are **always** in a JSON format. Each device produces a different JSON message, **some** examples:
 
@@ -66,6 +72,14 @@ Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topi
 }
 ```
 
+**Xiaomi Aqara curtain motor (ZNCLDJ11LM)**
+```json
+{
+  "position": 60, // Value between 0 and 100, (0 - closed / 100 - open)
+  "running": true, // Curtain is moving
+}
+```
+
 ## zigbee2mqtt/[DEVICE_ID]/set
 Publishing messages to this topic allows you to control your Zigbee devices via MQTT. Only accepts JSON messages. An example to control a Philips Hue Go (7146060PH).
 
@@ -84,7 +98,12 @@ Publishing messages to this topic allows you to control your Zigbee devices via 
     // RGB color
     "r": 46,
     "g": 102,
-    "b": 193
+    "b": 193,
+
+    // OR
+
+    // HEX color
+    "hex": "#547CFF"
   },
 
   // Blinks the bulbs, possible values:
@@ -108,6 +127,19 @@ Only used when `homeassistant: true` in `configuration.yaml`. Required for [Home
 ## Device specific
 Device specific commands are always send to the topic: `zigbee2mqtt/[DEVICE_ID]/set`. Below you will find the possible payloads.
 
+### Philips Hue motion detector (SML001)
+Sets the sensors timeout between last motion detected
+and sensor reports occupance false
+```json
+{
+    // Value >= 0,
+    // 0 - 10: 10sec (min possible timeout)
+    //   > 10: timeout in sec
+    // (must be written to (default) endpoint 2)
+    "occupancy_timeout": 0,
+}
+```
+
 ### Xiaomi Aqara vibration sensor (DJT11LM)
 Set the sensitivity of the sensor. **NOTE:** As this device is sleeping most of the time, right before sending this command press the button on the device.
 ```json
@@ -128,6 +160,21 @@ Execute selftest
 ```json
 {
   "selftest": ""
+}
+```
+
+### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
+Set the state of the curtain.
+```json
+{
+  "state": "open" // Possible values to set: 'open', 'close', 'stop'
+}
+```
+
+Set the position of the curtain.
+```json
+{
+  "position": 50 // Possible values to set: 0 - 100 (0 - closed / 100 - open)
 }
 ```
 
