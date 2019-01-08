@@ -139,8 +139,7 @@ Let the device beep.
 }
 ```
 
-### Smart Thermostats
-#### eCozy Smart heating thermostat (1TST-EU), Bitron Wall thermostat (AV2010/32)
+### eCozy Smart heating thermostat (1TST-EU), Bitron Video wireless wall thermostat with relay (AV2010/32)
 Get local temperature in degrees Celsius (in the range 0x954d to 0x7fff, i.e. -273.15°C to 327.67 ºC)
 ```json
 {
