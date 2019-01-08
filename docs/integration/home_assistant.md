@@ -3076,6 +3076,12 @@ sensor:
 ```
 {% endraw %}
 
+### AV2010/32
+{% raw %}
+```yaml
+```
+{% endraw %}
+
 ### 3210-L
 {% raw %}
 ```yaml
@@ -3313,6 +3319,32 @@ light:
 ```
 {% endraw %}
 
+### D1531
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### D1532
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### 4713407
 {% raw %}
 ```yaml
@@ -3329,6 +3361,21 @@ light:
 ### AIRAM-CTR.U
 {% raw %}
 ```yaml
+```
+{% endraw %}
+
+### HGZB-07A
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 {% endraw %}
 
