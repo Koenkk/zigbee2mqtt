@@ -14,6 +14,21 @@ mqtt:
   # user: my_user
   # password: my_password
 
+# Homie: An MQTT Convention for IoT/M2M
+# see https://homieiot.github.io/
+# zigbee2mqtt exports one device (this server) and a node per zigbee device
+homie:
+  # Set to true to enable the homie integration
+  enabled: false
+  # the base topic of the homie tree, use homie for auto-discovery
+  base_topic: homie
+  # homie settings of this device
+  device: zigbee2mqtt
+  name: zigbee2mqtt
+  mac: CA:DE:AD:BE:EF:FF
+  ip: 127.0.0.1
+
+
 # Serial settings
 serial:
   # Location of CC2531 USB sniffer
