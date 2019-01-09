@@ -25,10 +25,14 @@ Welcome to the Zigbee2mqtt documentation!
 * [How to support new devices](how_tos/how_to_support_new_devices.md)
 * [How to debug](how_tos/how_to_debug.md)
 * [How to support new devices on Hass.io](how_tos/how_to_support_new_devices_on_hassio.md)
+* [How to sniff Zigbee traffic](how_tos/how_to_sniff_zigbee_traffic.md)
+* [How to create a CC2530 router](how_tos/how_to_create_a_cc2530_router.md)
 
 ### Information
 * [Supported devices](information/supported_devices.md)
 * [MQTT topics and message structure](information/mqtt_topics_and_message_structure.md)
+* [Groups](information/groups.md)
+* [Binding](information/binding.md)
 * [Docker](information/docker.md)
 * [Zigbee network](information/zigbee_network.md)
 * [3D cases](information/3d_cases.md)
