@@ -1495,9 +1495,9 @@
       }
     },
     "globals": {
-      "version": "11.9.0",
-      "resolved": "https://registry.npmjs.org/globals/-/globals-11.9.0.tgz",
-      "integrity": "sha512-5cJVtyXWH8PiJPVLZzzoIizXx944O4OmRro5MWKx5fT4MgcN7OfaMutPeaTdJCCURwbWdhhcCWcKIffPnmTzBg==",
+      "version": "11.10.0",
+      "resolved": "https://registry.npmjs.org/globals/-/globals-11.10.0.tgz",
+      "integrity": "sha512-0GZF1RiPKU97IHUO5TORo9w1PwrH/NBPl+fS7oMLdaTRiYmYbwK4NWoZWrAdd0/abG9R2BU+OiwyQpTpE6pdfQ==",
       "dev": true
     },
     "graceful-fs": {
@@ -4832,9 +4832,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "7.0.12",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.12.tgz",
-      "integrity": "sha512-72Q6WgRN4qbe7VCAnI9U947otx7blAl5Ai/ap9y54kkbfnGhqR+b/cgKGAorrqMntFW5UqKd76rhY8b7QORHdw==",
+      "version": "7.0.13",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.13.tgz",
+      "integrity": "sha512-rXIs0USl+b2T3GWUSfmaXi7hriHErfvrL0E45R9X3l7xbqS6PGWI+0RNBNIxZkb+UJ2cn6Cwj9gMtZ07a7eHXg==",
       "requires": {
         "debounce": "*",
         "debug": "3.2.6",

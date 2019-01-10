@@ -2798,6 +2798,19 @@ switch:
 ```
 {% endraw %}
 
+### HGZB-01A
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### GL-C-008
 {% raw %}
 ```yaml
