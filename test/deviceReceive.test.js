@@ -10,6 +10,7 @@ const sandbox = sinon.createSandbox();
 const WXKG11LM = devices.find((d) => d.model === 'WXKG11LM');
 const WXKG02LM = devices.find((d) => d.model === 'WXKG02LM');
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
+const RTCGQ11LM = devices.find((d) => d.model === 'RTCGQ11LM');
 
 const mqtt = {
     log: () => {},
@@ -167,6 +168,26 @@ describe('DeviceReceive', () => {
             chai.assert.isTrue(publishDeviceState.calledOnce);
             const expected = {battery: 0, voltage: 2000};
             chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
+        });
+
+        it('Should publish 1 message when converted twice', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            const payload = {
+                '65281': {'1': 3045, '3': 19, '4': 17320, '5': 35, '6': [0, 3], '10': 51107, '11': 381, '100': 0},
+            };
+            const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', payload, 1);
+            deviceReceive.onZigbeeMessage(message, device, RTCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.calledOnce);
+            const expected = {'battery': 100, 'illuminance': 381, 'voltage': 3045};
+            chai.assert.deepEqual(utils.withoutLastSeen(publishDeviceState.getCall(0).args[1]), expected);
+        });
+
+        it('Should publish no message when converted without result', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            const payload = {'9999': {'1': 3045}};
+            const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', payload, 1);
+            deviceReceive.onZigbeeMessage(message, device, RTCGQ11LM);
+            chai.assert.isTrue(publishDeviceState.notCalled);
         });
     });
 });
