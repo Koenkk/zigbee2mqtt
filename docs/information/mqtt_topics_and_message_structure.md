@@ -77,17 +77,17 @@ Where `[DEVICE_ID]` is E.G. `0x00158d0001b79111`. Message published to this topi
 ```
 
 **Xiaomi Aqara curtain motor (ZNCLDJ11LM)**
-```json
+```
 {
-  "position": 60, // Value between 0 and 100, (0 - closed / 100 - open)
-  "running": true, // Curtain is moving
+  "position": 60,       // Value between 0 and 100, (0 - closed / 100 - open)
+  "running": true,      // Curtain is moving
 }
 ```
 
 ## zigbee2mqtt/[DEVICE_ID]/set
 Publishing messages to this topic allows you to control your Zigbee devices via MQTT. Only accepts JSON messages. An example to control a Philips Hue Go (7146060PH).
 
-```json
+```
 {
   "state": "ON", // Or "OFF", "TOGGLE"
   "brightness": 255,
@@ -131,10 +131,26 @@ Only used when `homeassistant: true` in `configuration.yaml`. Required for [Home
 ## Device specific
 Device specific commands are always send to the topic: `zigbee2mqtt/[DEVICE_ID]/set`. Below you will find the possible payloads.
 
+### Philips Hue power-on behavior
+Sets the Philips Hue power-on behavior which was introduced with the November/December '18 firmware update.
+```
+{
+  "hue_power_on_behavior": "on",          //default, on, off, recover, default = on
+  "hue_power_on_brightness": 125,         //default, same values as brightness converter, default = 255
+  "hue_power_on_color_temperature": 280,  //default, same values as colo-temperature converter, default = 366
+}
+```
+Attribute Value | Description
+----------------|-----------------------------------------------
+default | reset to factory default value
+on | lamps on after power loss with configured brightness, color-temperature, color (to-do)
+off | lamps off after power loss
+recover | last running state after power loss
+
 ### Philips Hue motion detector (SML001)
 Sets the sensors timeout between last motion detected
 and sensor reports occupance false
-```json
+```
 {
     // Value >= 0,
     // 0 - 10: 10sec (min possible timeout)
@@ -146,17 +162,17 @@ and sensor reports occupance false
 
 ### Xiaomi Aqara vibration sensor (DJT11LM)
 Set the sensitivity of the sensor. **NOTE:** As this device is sleeping most of the time, right before sending this command press the button on the device.
-```json
+```
 {
-  "sensitivity": "medium" // Possible values: 'low', 'medium', 'high'
+  "sensitivity": "medium"     // Possible values: 'low', 'medium', 'high'
 }
 ```
 
 ### Xiaomi MiJia gas leak detector (JTQJBF01LMBW)
 Set/read the sensitivity of the sensor.
-```json
+```
 {
-  "sensitivity": "medium" // Possible values; to set: 'low', 'medium', 'high'; to read: 'read'
+  "sensitivity": "medium"     // Possible values; to set: 'low', 'medium', 'high'; to read: 'read'
 }
 ```
 
@@ -169,16 +185,16 @@ Execute selftest
 
 ### Xiaomi Aqara curtain motor (ZNCLDJ11LM)
 Set the state of the curtain.
-```json
+```
 {
-  "state": "open" // Possible values to set: 'open', 'close', 'stop'
+  "state": "open"       // Possible values to set: 'open', 'close', 'stop'
 }
 ```
 
 Set the position of the curtain.
-```json
+```
 {
-  "position": 50 // Possible values to set: 0 - 100 (0 - closed / 100 - open)
+  "position": 50      // Possible values to set: 0 - 100 (0 - closed / 100 - open)
 }
 ```
 
@@ -199,16 +215,16 @@ Get local temperature in degrees Celsius (in the range 0x954d to 0x7fff, i.e. -2
 ```
 
 Get or set offset added to/subtracted from the actual displayed room temperature to NUMBER, in steps of 0.1°C
-```json
+```
 {
-  "local_temperature_calibration": "NUMBER" // Possible values: –2.5 to +2.5; leave empty to read
+  "local_temperature_calibration": "NUMBER"       // Possible values: –2.5 to +2.5; leave empty to read
 }
 ```
 
 Set temperature display mode
-```json
+```
 {
-  "temperature_display_mode": "" // Possible values: 0 to set °C or 1 so set °F
+  "temperature_display_mode": ""      // Possible values: 0 to set °C or 1 so set °F
 }
 ```
 
@@ -220,25 +236,25 @@ Get room occupancy. Specifies whether the heated/cooled space is occupied or not
 ```
 
 Get or set occupied heating setpoint to NUMBER in degrees Celsius.
-```json
+```
 {
-  "occupied_heating_setpoint": "NUMBER" // Possible values: MinHeatSetpointLimit to  MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
+  "occupied_heating_setpoint": "NUMBER"       // Possible values: MinHeatSetpointLimit to  MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
 }
 ```
 
 Get or set unoccupied heating setpoint to NUMBER in degrees Celsius
-```json
+```
 {
-  "unoccupied_heating_setpoint": "NUMBER" // Possible values: MinHeatSetpointLimit to MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
+  "unoccupied_heating_setpoint": "NUMBER"       // Possible values: MinHeatSetpointLimit to MaxHeatSetpointLimit, i.e. 7 to 30 by default; leave empty to read
 }
 ```
 
 Increase or decrease heating setpoint by NUMBER degrees in °C.
-```json
+```
 {
   "setpoint_raise_lower": {
-    "mode": "0x00", // Possible values: see table below
-    "amount": "NUMBER" // Possible values: signed 8-bit integer that specifies the amount the setpoint(s) are to be increased (or decreased) by, in steps of 0.1°C
+    "mode": "0x00",       // Possible values: see table below
+    "amount": "NUMBER"    // Possible values: signed 8-bit integer that specifies the amount the setpoint(s) are to be increased (or decreased) by, in steps of 0.1°C
   }
 }
 ```
@@ -249,9 +265,9 @@ Attribute Value | Description
 0x02            | Both (adjust Heat Setpoint and Cool Setpoint)
 
 Get or set whether the local temperature, outdoor temperature and occupancy are being sensed by internal sensors or remote networked sensors
-```json
+```
 {
-  "remote_sensing": "NUMBER" // Possible values: see table below; leave empty to read
+  "remote_sensing": "NUMBER"      // Possible values: see table below; leave empty to read
 }
 ```
 Bit Number | Description
@@ -261,9 +277,9 @@ Bit Number | Description
 2          | 0 – occupancy sensed internally <br> 1 – occupancy sensed remotely
 
 Get or set control sequence of operation
-```json
+```
 {
-  "control_sequence_of_operation": "NUMBER" // Possible values: see table below; leave empty to read
+  "control_sequence_of_operation": "NUMBER"       // Possible values: see table below; leave empty to read
 }
 ```
 Values | Description                             | Possible Values of SystemMode
@@ -276,9 +292,9 @@ Values | Description                             | Possible Values of SystemMode
 0x05   | Cooling and Heating 4-pipes with Reheat | All modes are possible
 
 Get or set system mode
-```json
+```
 {
-  "system_mode": "NUMBER" // Possible values: see table below; leave empty to read
+  "system_mode": "NUMBER"       // Possible values: see table below; leave empty to read
 }
 ```
 Attribute Value | Description
@@ -294,20 +310,20 @@ Attribute Value | Description
 0x09            | Sleep
 
 Get running state
-```json
+```
 {
-  "running_state": "" // leave empty when reading
+  "running_state": ""       // leave empty when reading
 }
 ```
 
 Get or set weekly schedule
-```json
+```
 {
   "weekly_schedule": {
-    "TemperatureSetpointHold": "0x00", // 0x00 setpoint hold off or 0x01 on
-    "TemperatureSetpointHoldDuration": "0xffff", // 0xffff to 0x05a0
-    "ThermostatProgrammingOperationMode": "00xxxxxx" //see table below
-  } // leave empty to read
+    "TemperatureSetpointHold": "0x00",                // 0x00 setpoint hold off or 0x01 on
+    "TemperatureSetpointHoldDuration": "0xffff",      // 0xffff to 0x05a0
+    "ThermostatProgrammingOperationMode": "00xxxxxx"  //see table below
+  }                                                   // leave empty to read
 }
 ```
 Attribute Value | Description
