@@ -136,8 +136,8 @@ Sets the Philips Hue power-on behavior which was introduced with the November/De
 ```
 {
   "hue_power_on_behavior": "on",          //default, on, off, recover, default = on
-  "hue_power_on_brightness": 125,         //default, same values as brightness converter, default = 255
-  "hue_power_on_color_temperature": 280,  //default, same values as colo-temperature converter, default = 366
+  "hue_power_on_brightness": 125,         //default, same values as brightness, default = 255
+  "hue_power_on_color_temperature": 280,  //default, same values as color_temp, default = 366
 }
 ```
 Attribute Value | Description
