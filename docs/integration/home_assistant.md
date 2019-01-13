@@ -19,7 +19,7 @@ To achieve the best possible integration (including MQTT discovery):
 ```yaml
 mqtt:
   discovery: true
-  broker: [YOUR MQTT BROKER]  # Remove if you want to use builtin-in MQTT broker
+  broker: [YOUR MQTT BROKER]
   birth_message:
     topic: 'hass/status'
     payload: 'online'
@@ -27,6 +27,7 @@ mqtt:
     topic: 'hass/status'
     payload: 'offline'
 ```
+Mind you that if you want to use the embedded broker of Home Assistant you have to [follow this guide](https://www.home-assistant.io/docs/mqtt/broker#embedded-broker).
 
 Zigbee2mqtt is expecting Home Assistant to send it's birth/will
 messages to `hass/status`. Be sure to add this to your `configuration.yaml` if you want
