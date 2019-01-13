@@ -2840,6 +2840,20 @@ light:
 ```
 {% endraw %}
 
+### GL-C-006
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### GL-S-007Z
 {% raw %}
 ```yaml
@@ -3443,6 +3457,33 @@ switch:
     payload_off: "OFF"
     payload_on: "ON"
     value_template: "{{ value_json.state }}"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### 100.424.11
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### ICZB-IW11D
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 {% endraw %}
