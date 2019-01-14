@@ -255,11 +255,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:toggle-switch"
     value_template: "{{ value_json.click }}"
-    json_attributes: 
-      - "linkquality"
-      - "action"
-      - "duration"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -269,12 +264,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -287,11 +276,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:toggle-switch"
     value_template: "{{ value_json.click }}"
-    json_attributes: 
-      - "linkquality"
-      - "action"
-      - "duration"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -301,12 +285,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -319,11 +297,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:toggle-switch"
     value_template: "{{ value_json.click }}"
-    json_attributes: 
-      - "linkquality"
-      - "action"
-      - "duration"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -333,12 +306,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -351,11 +318,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:toggle-switch"
     value_template: "{{ value_json.click }}"
-    json_attributes: 
-      - "linkquality"
-      - "action"
-      - "duration"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -365,12 +327,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -383,11 +339,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:toggle-switch"
     value_template: "{{ value_json.click }}"
-    json_attributes: 
-      - "linkquality"
-      - "action"
-      - "duration"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -397,12 +348,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -439,14 +384,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -461,9 +398,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_left"
 
 switch:
   - platform: "mqtt"
@@ -473,9 +407,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_right"
 ```
 {% endraw %}
 
@@ -490,9 +421,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_left"
 
 switch:
   - platform: "mqtt"
@@ -502,9 +430,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_right"
 
 sensor:
   - platform: "mqtt"
@@ -513,14 +438,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -534,9 +451,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -545,9 +459,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "humidity"
     value_template: "{{ value_json.humidity }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -556,12 +467,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -575,9 +480,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -586,9 +488,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "humidity"
     value_template: "{{ value_json.humidity }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -597,9 +496,6 @@ sensor:
     unit_of_measurement: "hPa"
     device_class: "pressure"
     value_template: "{{ value_json.pressure }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -608,12 +504,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -636,12 +526,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -664,9 +548,6 @@ sensor:
     unit_of_measurement: "lx"
     device_class: "illuminance"
     value_template: "{{ value_json.illuminance }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -675,12 +556,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -703,12 +578,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -731,12 +600,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -759,12 +622,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -777,20 +634,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:gesture-double-tap"
     value_template: "{{ value_json.action }}"
-    json_attributes: 
-      - "linkquality"
-      - "angle"
-      - "side"
-      - "from_side"
-      - "to_side"
-      - "brightness"
-      - "angle_x_absolute"
-      - "angle_y_absolute"
-      - "angle_z"
-      - "angle_y"
-      - "angle_x"
-      - "unknown_data"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -800,12 +643,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -828,14 +665,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -858,14 +687,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -888,12 +709,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -916,12 +731,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -941,11 +750,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:lock"
     value_template: "{{ value_json.inserted }}"
-    json_attributes: 
-      - "linkquality"
-      - "forgotten"
-      - "keyerror"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -958,20 +762,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:gesture-double-tap"
     value_template: "{{ value_json.action }}"
-    json_attributes: 
-      - "linkquality"
-      - "angle"
-      - "side"
-      - "from_side"
-      - "to_side"
-      - "brightness"
-      - "angle_x_absolute"
-      - "angle_y_absolute"
-      - "angle_z"
-      - "angle_y"
-      - "angle_x"
-      - "unknown_data"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -981,12 +771,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1006,10 +790,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     value_template: "{{ value_json.position }}"
     icon: "mdi:view-array"
-    json_attributes: 
-      - "linkquality"
-      - "running"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1145,9 +925,6 @@ sensor:
     unit_of_measurement: "brightness"
     icon: "mdi:brightness-5"
     value_template: "{{ value_json.brightness }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1156,12 +933,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1270,20 +1041,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:gesture-double-tap"
     value_template: "{{ value_json.action }}"
-    json_attributes: 
-      - "linkquality"
-      - "angle"
-      - "side"
-      - "from_side"
-      - "to_side"
-      - "brightness"
-      - "angle_x_absolute"
-      - "angle_y_absolute"
-      - "angle_z"
-      - "angle_y"
-      - "angle_x"
-      - "unknown_data"
-      - "last_seen"
     force_update: true
 ```
 {% endraw %}
@@ -1580,20 +1337,6 @@ sensor:
     availability_topic: "zigbee2mqtt/bridge/state"
     icon: "mdi:gesture-double-tap"
     value_template: "{{ value_json.action }}"
-    json_attributes: 
-      - "linkquality"
-      - "angle"
-      - "side"
-      - "from_side"
-      - "to_side"
-      - "brightness"
-      - "angle_x_absolute"
-      - "angle_y_absolute"
-      - "angle_z"
-      - "angle_y"
-      - "angle_x"
-      - "unknown_data"
-      - "last_seen"
     force_update: true
 
 sensor:
@@ -1603,12 +1346,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1631,9 +1368,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1642,9 +1376,6 @@ sensor:
     unit_of_measurement: "lx"
     device_class: "illuminance"
     value_template: "{{ value_json.illuminance }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 sensor:
   - platform: "mqtt"
@@ -1653,12 +1384,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1694,14 +1419,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1722,11 +1439,6 @@ sensor:
     state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
     availability_topic: "zigbee2mqtt/bridge/state"
     value_template: "{{ value_json.linkquality }}"
-    json_attributes: 
-      - "description"
-      - "type"
-      - "rssi"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -1755,9 +1467,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_left"
 
 switch:
   - platform: "mqtt"
@@ -1767,9 +1476,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_right"
 ```
 {% endraw %}
 
@@ -1784,9 +1490,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_left"
 
 switch:
   - platform: "mqtt"
@@ -1796,9 +1499,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_right"
 
 switch:
   - platform: "mqtt"
@@ -1808,9 +1508,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_center }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/center/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_center"
 ```
 {% endraw %}
 
@@ -1825,9 +1522,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_bottom_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/bottom_left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_bottom_left"
 
 switch:
   - platform: "mqtt"
@@ -1837,9 +1531,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_bottom_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/bottom_right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_bottom_right"
 
 switch:
   - platform: "mqtt"
@@ -1849,9 +1540,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_top_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/top_left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_top_left"
 
 switch:
   - platform: "mqtt"
@@ -1861,9 +1549,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_top_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/top_right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_top_right"
 ```
 {% endraw %}
 
@@ -2134,9 +1819,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -2455,14 +2137,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -2745,14 +2419,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -2794,9 +2460,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_left }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/left/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_left"
 
 switch:
   - platform: "mqtt"
@@ -2806,9 +2469,6 @@ switch:
     payload_on: "ON"
     value_template: "{{ value_json.state_right }}"
     command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/right/set"
-    json_attributes: 
-      - "linkquality"
-      - "button_right"
 ```
 {% endraw %}
 
@@ -2931,12 +2591,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -2959,12 +2613,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -2978,9 +2626,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 
 binary_sensor:
   - platform: "mqtt"
@@ -3012,9 +2657,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -3105,12 +2747,6 @@ sensor:
     unit_of_measurement: "%"
     device_class: "battery"
     value_template: "{{ value_json.battery }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "action"
-      - "sensitivity"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -3133,14 +2769,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -3183,9 +2811,6 @@ sensor:
     unit_of_measurement: "°C"
     device_class: "temperature"
     value_template: "{{ value_json.temperature }}"
-    json_attributes: 
-      - "linkquality"
-      - "last_seen"
 ```
 {% endraw %}
 
@@ -3278,14 +2903,6 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
-    json_attributes: 
-      - "linkquality"
-      - "voltage"
-      - "temperature"
-      - "consumption"
-      - "current"
-      - "power_factor"
-      - "last_seen"
 ```
 {% endraw %}
 
