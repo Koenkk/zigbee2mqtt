@@ -390,4 +390,13 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(parsed.postfix, 'bottom_left');
         });
     });
+
+    it('Should not publish messages to zigbee devices when payload is invalid', () => {
+        zigbee.publish.resetHistory();
+        zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral1'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: true}));
+        chai.assert.isTrue(zigbee.publish.notCalled);
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({state: 1}));
+        chai.assert.isTrue(zigbee.publish.notCalled);
+    });
 });

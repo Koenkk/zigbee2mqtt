@@ -326,8 +326,8 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | WXKG01LM | Xiaomi MiJia wireless switch (single, double, triple, quadruple, many, long, long_release click) | ![../images/devices/WXKG01LM.jpg](../images/devices/WXKG01LM.jpg) |
 | WXKG11LM | Xiaomi Aqara wireless switch (single, double click (and triple, quadruple, hold, release depending on model)) | ![../images/devices/WXKG11LM.jpg](../images/devices/WXKG11LM.jpg) |
 | WXKG12LM | Xiaomi Aqara wireless switch (with gyroscope) (single, double, shake, hold, release) | ![../images/devices/WXKG12LM.jpg](../images/devices/WXKG12LM.jpg) |
-| WXKG03LM | Xiaomi Aqara single key wireless wall switch (single click) | ![../images/devices/WXKG03LM.jpg](../images/devices/WXKG03LM.jpg) |
-| WXKG02LM | Xiaomi Aqara double key wireless wall switch (left, right and both click) | ![../images/devices/WXKG02LM.jpg](../images/devices/WXKG02LM.jpg) |
+| WXKG03LM | Xiaomi Aqara single key wireless wall switch (single, double, hold, release and long click) | ![../images/devices/WXKG03LM.jpg](../images/devices/WXKG03LM.jpg) |
+| WXKG02LM | Xiaomi Aqara double key wireless wall switch (left, right, both click (and double, long click for left, right and both depending on model)) | ![../images/devices/WXKG02LM.jpg](../images/devices/WXKG02LM.jpg) |
 | QBKG04LM | Xiaomi Aqara single key wired wall switch (on/off) | ![../images/devices/QBKG04LM.jpg](../images/devices/QBKG04LM.jpg) |
 | QBKG11LM | Xiaomi Aqara single key wired wall switch (on/off, power measurement) | ![../images/devices/QBKG11LM.jpg](../images/devices/QBKG11LM.jpg) |
 | QBKG03LM | Xiaomi Aqara double key wired wall switch (release/hold, on/off) | ![../images/devices/QBKG03LM.jpg](../images/devices/QBKG03LM.jpg) |
