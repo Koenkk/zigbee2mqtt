@@ -1,7 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const DeviceAvailability = require('../lib/extension/deviceAvailability');
-const settings = require('../lib/util/settings');
 const utils = require('./utils');
 const sandbox = sinon.createSandbox();
 
@@ -21,8 +20,8 @@ describe('DeviceAvailability', () => {
         it('Router device should be a pingable device', () => {
             const device = {
                 powerSource: 'Mains (single phase)',
-                type: 'Router'
-            }
+                type: 'Router',
+            };
 
             chai.assert.isTrue(deviceAvailability.isPingable(device));
         });
@@ -30,8 +29,8 @@ describe('DeviceAvailability', () => {
         it('Battery device should not be a pingable device', () => {
             const device = {
                 powerSource: 'Battery',
-                type: 'EndDevice'
-            }
+                type: 'EndDevice',
+            };
 
             chai.assert.isFalse(deviceAvailability.isPingable(device));
         });
@@ -42,7 +41,7 @@ describe('DeviceAvailability', () => {
                 type: 'EndDevice',
                 modelId: 'E11-G13',
                 manufId: 4448,
-            }
+            };
 
             chai.assert.isTrue(deviceAvailability.isPingable(device));
         });
