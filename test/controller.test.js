@@ -30,7 +30,7 @@ describe('Controller', () => {
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
             chai.assert.strictEqual(
-                utils.withoutLastSeen(mqttPublish.getCall(0).args[1]),
+                mqttPublish.getCall(0).args[1],
                 JSON.stringify({state: 'ON'})
             );
         });
@@ -52,7 +52,7 @@ describe('Controller', () => {
             controller.onZigbeeMessage(message);
             chai.assert.isTrue(mqttPublish.calledOnce);
             chai.assert.strictEqual(
-                utils.withoutLastSeen(mqttPublish.getCall(0).args[1]),
+                mqttPublish.getCall(0).args[1],
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
                 `"modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
             );
