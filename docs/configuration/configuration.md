@@ -55,4 +55,7 @@ advanced:
   soft_reset_timeout: 0
   # Optional: network encryption key, changing requires repairing of all devices.
   network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
+  # Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message
+  # possible values are: disable (default), ISO_8601, epoch
+  last_seen: 'disable'
 ```
