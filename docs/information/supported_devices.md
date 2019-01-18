@@ -240,8 +240,7 @@ In case you own a Zigbee device which is **NOT** listed here, please see
 | E11-G23/E11-G33 | Sengled Element Classic (A60) (on/off, brightness) | ![../images/devices/E11-G23-E11-G33.jpg](../images/devices/E11-G23-E11-G33.jpg) |
 | Z01-CIA19NAE26 | Sengled Element Touch (A19) (on/off, brightness) | ![../images/devices/Z01-CIA19NAE26.jpg](../images/devices/Z01-CIA19NAE26.jpg) |
 | Z01-A19NAE26 | Sengled Element Plus (A19) (on/off, brightness, color temperature) | ![../images/devices/Z01-A19NAE26.jpg](../images/devices/Z01-A19NAE26.jpg) |
-| E11-N1EA | Sengled Element Plus Color (A19) (on/off, brightness, color temperature, color xy) | ![../images/devices/E11-N1EA.jpg]| 
-| E1A-AC2 | Sengled Element Downlight (on/off, brightness) | ![../images/devices/E1A-AC2.jpg](../images/devices/E1A-AC2.jpg) |
+| E11-N1EA | Sengled Element Plus Color (A19) (on/off, brightness, color temperature, color xy) | ![../images/devices/E11-N1EA.jpg](../images/devices/E11-N1EA.jpg) |
 
 ### SmartThings
 
