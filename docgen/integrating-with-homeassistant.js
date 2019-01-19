@@ -39,7 +39,8 @@ mqtt:
     payload: 'offline'
 \`\`\`
 
-Mind you that if you want to use the embedded broker of Home Assistant you have to [follow this guide](https://www.home-assistant.io/docs/mqtt/broker#embedded-broker).
+Mind you that if you want to use the embedded broker of Home Assistant you
+have to [follow this guide](https://www.home-assistant.io/docs/mqtt/broker#embedded-broker).
 
 Zigbee2mqtt is expecting Home Assistant to send it's birth/will
 messages to \`hass/status\`. Be sure to add this to your \`configuration.yaml\` if you want
