@@ -279,35 +279,35 @@ Bit Number | Description
 Get or set control sequence of operation
 ```
 {
-  "control_sequence_of_operation": "NUMBER"       // Possible values: see table below; leave empty to read
+  "control_sequence_of_operation": "VALUE"       // Possible values: see table below; leave empty to read
 }
 ```
-Values | Description                             | Possible Values of SystemMode
--------|-----------------------------------------|-------------------------------------
-0x00   | Cooling Only                            | Heat and Emergency are not possible
-0x01   | Cooling With Reheat                     | Heat and Emergency are not possible
-0x02   | Heating Only                            | Cool and precooling are not possible
-0x03   | Heating With Reheat                     | Cool and precooling are not possible
-0x04   | Cooling and Heating 4-pipes             | All modes are possible
-0x05   | Cooling and Heating 4-pipes with Reheat | All modes are possible
+Values                                    | Possible Values of SystemMode
+------------------------------------------|-------------------------------------
+`cooling only`                            | Heat and Emergency are not possible
+`cooling with reheat`                     | Heat and Emergency are not possible
+`heating only`                            | Cool and precooling are not possible
+`heating with reheat`                     | Cool and precooling are not possible
+`cooling and heating 4-pipes`             | All modes are possible
+`cooling and heating 4-pipes with reheat` | All modes are possible
 
 Get or set system mode
 ```
 {
-  "system_mode": "NUMBER"       // Possible values: see table below; leave empty to read
+  "system_mode": "VALUE"       // Possible values: see table below; leave empty to read
 }
 ```
-Attribute Value | Description
-----------------|------------------
-0x00            | Off
-0x01            | Auto
-0x03            | Cool
-0x04            | Heat
-0x05            | Emergency heating
-0x06            | Precooling
-0x07            | Fan only
-0x08            | Dry
-0x09            | Sleep
+| Values
+|------------------
+| `off`
+| `auto`
+| `cool`
+| `heat`
+| `emergency heating`
+| `precooling`
+| `fan only`
+| `dry`
+| `sleep`
 
 Get running state
 ```
@@ -315,6 +315,12 @@ Get running state
   "running_state": ""       // leave empty when reading
 }
 ```
+Possible values:
+| Values
+|------------------
+| `off`
+| `cool`
+| `heat`
 
 Get or set weekly schedule
 ```
