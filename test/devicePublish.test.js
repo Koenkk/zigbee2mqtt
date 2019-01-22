@@ -400,23 +400,29 @@ describe('DevicePublish', () => {
         chai.assert.isTrue(zigbee.publish.notCalled);
     });
 
-    it('Should set state before color', () => {
+    it('Should set state before color', (done) => {
         zigbee.publish.resetHistory();
         zigbee.getDevice = sinon.fake.returns({modelId: 'LCT001'});
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify(msg));
-        chai.assert.isTrue(zigbee.publish.calledTwice);
-        chai.assert.equal(zigbee.publish.getCall(0).args[2], 'genOnOff');
-        chai.assert.equal(zigbee.publish.getCall(1).args[2], 'lightingColorCtrl');
+        setTimeout(() => {
+            chai.assert.isTrue(zigbee.publish.calledTwice);
+            chai.assert.equal(zigbee.publish.getCall(0).args[2], 'genOnOff');
+            chai.assert.equal(zigbee.publish.getCall(1).args[2], 'lightingColorCtrl');
+            done();
+        }, 300);
     });
 
-    it('Should set state with brightness before color', () => {
+    it('Should set state with brightness before color', (done) => {
         zigbee.publish.resetHistory();
         zigbee.getDevice = sinon.fake.returns({modelId: 'LCT001'});
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}, 'transition': 3, 'brightness': 100};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify(msg));
-        chai.assert.isTrue(zigbee.publish.calledTwice);
-        chai.assert.equal(zigbee.publish.getCall(0).args[2], 'genLevelCtrl');
-        chai.assert.equal(zigbee.publish.getCall(1).args[2], 'lightingColorCtrl');
+        setTimeout(() => {
+            chai.assert.isTrue(zigbee.publish.calledTwice);
+            chai.assert.equal(zigbee.publish.getCall(0).args[2], 'genLevelCtrl');
+            chai.assert.equal(zigbee.publish.getCall(1).args[2], 'lightingColorCtrl');
+            done();
+        }, 300);
     });
 });
