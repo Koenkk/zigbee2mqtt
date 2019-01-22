@@ -58,4 +58,6 @@ advanced:
   # Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message
   # possible values are: disable (default), ISO_8601, epoch
   last_seen: 'disable'
+  # Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg
+  elapsed: false
 ```
