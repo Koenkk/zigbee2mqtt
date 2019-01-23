@@ -49,6 +49,8 @@ devices:
 ```
 zigbee2mqtt:info 1/8/2019, 8:42:40 PM Sucesfully applied coordinator group for IKEA TRADFRI remote control (0x000b57fffecb472d)
 ```
+### Why is this needed?
+The TRADFRI remote sends the group ID using touchlink commissioning (while holding the reset button close to a bulb) but this is currently not supported by the firmware (Z-Stack 1.2 HA). Perhaps it will work in Z-Stack 3.0.
 
 ## Philips Hue
 Factory reset the light bulb see [HOWTO: Factory reset a Hue bulb](https://www.youtube.com/watch?v=qvlEAELiJKs). After resetting the bulb will automatically connect.
