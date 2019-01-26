@@ -1,6 +1,6 @@
 To make the cc2530 (i got this one https://www.aliexpress.com/item/CC2530-Zigbee-UART-Wireless-Core-Board-Development-Board-CC2530F256-Serial-Port-Wireless-Module-24MHz/32767470382.html) work in zigbee2mqtt i did the following:
 
-Flash this firmware: https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/CC2530/bin. I did this via the alternativ flashing methode (pinout is described here: http://ptvo.info/how-to-select-and-flash-cc2530-144/)
+Flash this firmware: https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/CC2530/bin. I did this via the alternativ flashing methode (pinout is described here: http://ptvo.info/how-to-select-and-flash-cc2530-144/), if you use the alternativ flashing mode you need to to remove the penultimate line from the firmware .hex file (just delete it with a texteditor)
 
 Get a USB to Serial Converter like this one: https://www.aliexpress.com/item/6Pin-USB-2-0-to-TTL-UART-Module-Serial-Converter-CP2102-STC-Replace-Ft232/32364013343.html?spm=a2g0s.9042311.0.0.27424c4dTjqWI9
 
