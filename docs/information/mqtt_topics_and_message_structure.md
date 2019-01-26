@@ -111,9 +111,9 @@ Publishing messages to this topic allows you to control your Zigbee devices via 
 
     // OR
 
-    // Hue/Saturation color
+    // Hue and/or saturation color
     "hue": 360,
-    "sat": 100
+    "saturation": 100
   },
 
   // Blinks the bulbs, possible values:
