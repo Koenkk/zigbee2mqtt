@@ -2619,6 +2619,21 @@ light:
 ```
 {% endraw %}
 
+### GL-S-003Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### GD-CZ-006
 {% raw %}
 ```yaml
@@ -3009,6 +3024,20 @@ binary_sensor:
 {% endraw %}
 
 ### HS1DS
+{% raw %}
+```yaml
+binary_sensor:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    payload_on: false
+    payload_off: true
+    value_template: "{{ value_json.contact }}"
+    device_class: "door"
+```
+{% endraw %}
+
+### HS1DS-E
 {% raw %}
 ```yaml
 binary_sensor:
