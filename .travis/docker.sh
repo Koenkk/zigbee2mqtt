@@ -10,9 +10,7 @@ tag_push() {
 }
 
 build_and_push() {
-  platform=${3:-amd64}
-
-  docker build --platform=$platform --build-arg COMMIT=$(git rev-parse --short HEAD) -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
+  docker build --platform=$3 --build-arg COMMIT=$(git rev-parse --short HEAD) -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
   docker push $DOCKER_USERNAME/zigbee2mqtt:$1
 }
 
@@ -25,7 +23,7 @@ then
   login
 
   # Push versioned images
-  build_and_push "$TRAVIS_TAG" docker/Dockerfile.amd64
+  build_and_push "$TRAVIS_TAG" docker/Dockerfile.amd64 amd64
   build_and_push "$TRAVIS_TAG-arm32v6" docker/Dockerfile.arm32v6 arm
   build_and_push "$TRAVIS_TAG-arm64v8" docker/Dockerfile.arm64v8 arm64
 
@@ -37,7 +35,7 @@ elif [ "$TRAVIS_BRANCH" = "dev" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
   echo "Updating docker images for dev branch!"
   login
-  build_and_push latest-dev docker/Dockerfile.amd64
+  build_and_push latest-dev docker/Dockerfile.amd64 amd64
   build_and_push arm32v6-dev docker/Dockerfile.arm32v6 arm
   build_and_push arm64v8-dev docker/Dockerfile.arm64v8 arm64
 else
