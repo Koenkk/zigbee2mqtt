@@ -56,7 +56,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -80,7 +80,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -104,7 +104,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -128,7 +128,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -167,7 +167,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -191,7 +191,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -215,7 +215,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
@@ -239,7 +239,7 @@ describe('HomeAssistant extension', () => {
             'device': {
                 'identifiers': 'zigbee2mqtt_0x12345678',
                 'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt 1.0.1',
+                'sw_version': 'Zigbee2mqtt 1.1.0',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
