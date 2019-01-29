@@ -2611,6 +2611,21 @@ light:
 ```
 {% endraw %}
 
+### GL-B-007Z
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
 ### GL-B-008Z
 {% raw %}
 ```yaml
@@ -3278,6 +3293,21 @@ sensor:
     unit_of_measurement: "Watt"
     icon: "mdi:flash"
     value_template: "{{ value_json.power }}"
+```
+{% endraw %}
+
+### 81809
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    color_temp: true
+    xy: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
 ```
 {% endraw %}
 
