@@ -1,4 +1,5 @@
 **IMPORTANT:** Before you start, make sure that `permit_join: true` is set in your `configuration.yaml`. Otherwise new devices cannot join the network!
+It's equally important that `permit_join: false` is set in your `configuration.yaml` after initial setup is done to keep your Zigbee network safe and to avoid accidental joining of other Zigbee devices.
 
 Start by checking if your Zigbee device is supported, see  [Supported devices](../information/supported_devices.md).
 

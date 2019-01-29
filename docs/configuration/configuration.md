@@ -7,7 +7,8 @@ The values shown are the default ones.
 # Required: Home Assistant integration (MQTT discovery)
 homeassistant: false
 
-# Required: allow new devices to join
+# Required: allow new devices to join.
+# WARNING: Disable this after all devices have been paired!
 permit_join: true
 
 # Required: MQTT settings
