@@ -61,4 +61,7 @@ advanced:
   last_seen: 'disable'
   # Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg
   elapsed: false
+  # Availability timeout in seconds, disabled by default (0).
+  # When enabled, devices will be checked if they are still online.
+  availability_timeout: 0,
 ```
