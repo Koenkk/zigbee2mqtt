@@ -369,9 +369,9 @@
       }
     },
     "ansi-escapes": {
-      "version": "3.1.0",
-      "resolved": "https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-3.1.0.tgz",
-      "integrity": "sha512-UgAb8H9D41AQnu/PbWlCofQVcnV4Gs2bBJi9eZPxfU/hgglFh3SMDMENRIqdr7H6XFnXdoknctFByVsCOotTVw==",
+      "version": "3.2.0",
+      "resolved": "https://registry.npmjs.org/ansi-escapes/-/ansi-escapes-3.2.0.tgz",
+      "integrity": "sha512-cBhpre4ma+U0T1oM5fXg7Dy1Jw7zzwv7lt/GoCpr+hDQJoYnKVPLL4dCvSEFMmQurOQvSrwT7SL/DAlhBI97RQ==",
       "dev": true
     },
     "ansi-gray": {
@@ -2247,9 +2247,9 @@
       }
     },
     "node-abi": {
-      "version": "2.5.1",
-      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-2.5.1.tgz",
-      "integrity": "sha512-oDbFc7vCFx0RWWCweTer3hFm1u+e60N5FtGnmRV6QqvgATGFH/XRR6vqWIeBVosCYCqt6YdIr2L0exLZuEdVcQ==",
+      "version": "2.6.0",
+      "resolved": "https://registry.npmjs.org/node-abi/-/node-abi-2.6.0.tgz",
+      "integrity": "sha512-kCnEh6af6Z6DB7RFI/7LHNwqRjvJW7rgrv3lhIFoQ/+XhLPI/lJYwsk5vzvkldPWWgqnAMcuPF5S8/jj56kVOA==",
       "requires": {
         "semver": "^5.4.1"
       }
@@ -4208,9 +4208,9 @@
       }
     },
     "slice-ansi": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/slice-ansi/-/slice-ansi-2.0.0.tgz",
-      "integrity": "sha512-4j2WTWjp3GsZ+AOagyzVbzp4vWGtZ0hEZ/gDY/uTvm6MTxUfTUIsnMIFb1bn8o0RuXiqUw15H1bue8f22Vw2oQ==",
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/slice-ansi/-/slice-ansi-2.1.0.tgz",
+      "integrity": "sha512-Qu+VC3EwYLldKa1fCxuuvULvSJOKEgk9pi8dZeCVK7TqBfUNTH4sFkk4joj8afVSfAYgJoSOetjx9QWOJ5mYoQ==",
       "dev": true,
       "requires": {
         "ansi-styles": "^3.2.0",
@@ -4385,14 +4385,14 @@
       }
     },
     "table": {
-      "version": "5.2.1",
-      "resolved": "https://registry.npmjs.org/table/-/table-5.2.1.tgz",
-      "integrity": "sha512-qmhNs2GEHNqY5fd2Mo+8N1r2sw/rvTAAvBZTaTx+Y7PHLypqyrxr1MdIu0pLw6Xvl/Gi4ONu/sdceP8vvUjkyA==",
+      "version": "5.2.2",
+      "resolved": "https://registry.npmjs.org/table/-/table-5.2.2.tgz",
+      "integrity": "sha512-f8mJmuu9beQEDkKHLzOv4VxVYlU68NpdzjbGPl69i4Hx0sTopJuNxuzJd17iV2h24dAfa93u794OnDA5jqXvfQ==",
       "dev": true,
       "requires": {
         "ajv": "^6.6.1",
         "lodash": "^4.17.11",
-        "slice-ansi": "2.0.0",
+        "slice-ansi": "^2.0.0",
         "string-width": "^2.1.1"
       },
       "dependencies": {
@@ -4830,19 +4830,19 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "7.0.23",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.23.tgz",
-      "integrity": "sha512-xaEkqwsBZpZi5JA0ZpuPi+nlaH+FVC1wrIiQKh4I+JJRtoDan0aHNXHZT/HyUeqpiBnv5h7E1iwFFlWGbQRTug==",
+      "version": "7.0.27",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.27.tgz",
+      "integrity": "sha512-U+eqCRpb0J6/woUD/Jr3Y0j28whjamkMa8tnFegyHLQ+a3jrZlR+zV/XXLAQ1Yp4AG/qjGBsMRbDBWRzmvPlWA==",
       "requires": {
         "chai": "*",
         "debounce": "*",
         "debug": "3.2.6",
-        "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#509f77ab620ece6ad8e83a008283457a5280c8db"
+        "zcl-id": "https://github.com/koenkk/zcl-id/tarball/master"
       },
       "dependencies": {
         "zcl-id": {
-          "version": "git+https://github.com/Koenkk/zcl-id.git#509f77ab620ece6ad8e83a008283457a5280c8db",
-          "from": "git+https://github.com/Koenkk/zcl-id.git#509f77ab620ece6ad8e83a008283457a5280c8db",
+          "version": "https://github.com/koenkk/zcl-id/tarball/master",
+          "integrity": "sha512-VzHMq1JqhdCVVLWBmCECLrkQMEY6DYL/0gp4GrsJbyQuBE4wcMGs0zAHhF9DxlWZ4eT6zkiH0e5z6hEhUSRLRA==",
           "requires": {
             "busyman": "^0.3.0",
             "enum": "^2.5.0"
