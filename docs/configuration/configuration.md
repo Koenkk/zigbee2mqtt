@@ -7,7 +7,8 @@ The values shown are the default ones.
 # Required: Home Assistant integration (MQTT discovery)
 homeassistant: false
 
-# Required: allow new devices to join
+# Required: allow new devices to join.
+# WARNING: Disable this after all devices have been paired!
 permit_join: true
 
 # Required: MQTT settings
@@ -60,4 +61,7 @@ advanced:
   last_seen: 'disable'
   # Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg
   elapsed: false
+  # Availability timeout in seconds, disabled by default (0).
+  # When enabled, devices will be checked if they are still online.
+  availability_timeout: 0,
 ```

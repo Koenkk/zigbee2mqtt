@@ -107,7 +107,13 @@ Publishing messages to this topic allows you to control your Zigbee devices via 
     // OR
 
     // HEX color
-    "hex": "#547CFF"
+    "hex": "#547CFF",
+
+    // OR
+
+    // Hue and/or saturation color
+    "hue": 360,
+    "saturation": 100
   },
 
   // Blinks the bulbs, possible values:

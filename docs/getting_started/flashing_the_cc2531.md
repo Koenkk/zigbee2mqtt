@@ -19,10 +19,10 @@ The CC2531 USB stick needs to be flashed with a custom firmware.
 Credits to [@Frans-Willem](https://github.com/frans-Willem) for majority of instructions.
 
 1. Install prerequisites for [CC-Tool](https://github.com/dashesy/cc-tool) using a package manager (e.g. [Homebrew](https://brew.sh/) for macOS)
-> Ubuntu: dh-autoreconf, libusb-1.0, libboost-all-dev
-> Fedora: dh-autoreconf, boost-devel, libusb1-devel
-> Archlinux: dh-autoreconf, libusb, boost
-> macOS: autoconf, automake, libusb, boost, pkgconfig, libtool
+* Ubuntu: dh-autoreconf, libusb-1.0, libboost-all-dev
+* Fedora: dh-autoreconf, boost-devel, libusb1-devel
+* Archlinux: dh-autoreconf, libusb, boost
+* macOS: brew install autoconf automake libusb boost pkgconfig libtool
 
 2. Build cc-tool
 ```bash

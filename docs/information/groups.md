@@ -1,9 +1,9 @@
 # Groups
-*This is an experimental feature, ongoing discussion can be found here: https://github.com/Koenkk/zigbee2mqtt/issues/764*
+*Ongoing discussion can be found here: https://github.com/Koenkk/zigbee2mqtt/issues/764*
 
 Zigbee2mqtt has support for Zigbee groups. By using Zigbee groups you can control multiple devices simultaneously with one command.
 
-**NOTE:** to use groups, at least firmware version `20181224` is required! (available [here](https://github.com/Koenkk/Z-Stack-firmware/tree/dev/coordinator))
+**NOTE:** to use groups, at least firmware version `20181224` is required! (available [here](https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator))
 
 ## Configuration
 Add the following to your `configuration.yaml`.
