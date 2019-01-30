@@ -2,13 +2,23 @@
 Sniffing Zigbee traffic can be handy sometimes. E.g. when you want to analyze the commands used by a device.
 
 ## Prerequisites
-* Ubuntu machine (tested with 18.10)
+* Computer
+  * Ubuntu machine (tested with 18.10)
+  * Windows machine (tested with Windows 10)
 * CC2531 stick
 
 ## 1. Flashing the CC2531 stick
-The CC2531 needs to be flashed with a sniffer firmware. This firmware is included with [PACKET-SNIFFER](http://www.ti.com/tool/PACKET-SNIFFER) (not **PACKET-SNIFFER-2!**). Download and install PACKET-SNIFFER. The firmware can then be found here: `C:\Program Files (x86)\Texas Instruments\SmartRF Tools\Packet Sniffer\bin\general\firmware\sniffer_fw_cc2531.hex`. Flash the firmware using the instructions from [Flashing the CC2531](../getting_started/flashing_the_cc2531.md).
+The CC2531 needs to be flashed with a sniffer firmware. Flash the firmware using the instructions from [Flashing the CC2531](../getting_started/flashing_the_cc2531.md).
+
+### Ubuntu
+For Ubuntu this firmware is included with [PACKET-SNIFFER](http://www.ti.com/tool/PACKET-SNIFFER) (not **PACKET-SNIFFER-2!**). Download and install PACKET-SNIFFER. The firmware can then be found here: `C:\Program Files (x86)\Texas Instruments\SmartRF Tools\Packet Sniffer\bin\general\firmware\sniffer_fw_cc2531.hex`.
+
+### Windows (and possibly Ubuntu)
+For Windows this firmware is included with [ZBOSS](http://zboss.dsr-wireless.com/downloads/index/zboss). Register an account and download *ZBOSS Sniffer for Windows 64-bit*. Included in the ZIP file is the firmware in subfolder `hw\CC2531 USB dongle\zboss_sniffer.hex`. Please note that ZBOSS is also available for Ubuntu.
 
 ## 2. Installing required tools
+
+### Ubuntu
 ```bash
 cd /opt
 sudo apt-get install -y libusb-1.0-0-dev wireshark
@@ -18,8 +28,11 @@ make
 sudo make install
 ```
 
+### Windows
+Download and install the latest version of [Wireshark](https://www.wireshark.org/download.html). ZBOSS itself is portable and won't need to be installed.
+
 ## 3. Sniffing traffic
-Start wireshark with `sudo whsniff -c ZIGBEE_CHANNEL_NUMBER | wireshark -k -i -`
+On Ubuntu start wireshark with `sudo whsniff -c ZIGBEE_CHANNEL_NUMBER | wireshark -k -i -`. For Windows run the ZBOSS executable in `gui\zboss_sniffer.exe`, enter the path to your Wireshark executable and click on the `Start` button.
 
 Wireshark will start and log the Zigbee messages. As these messages are encrypted we need to add 2 encryption keys. The first one is the Trust Center link key, which is the same for (almost) every Zigbee network. The second on is the network encryption key.
 
