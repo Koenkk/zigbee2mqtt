@@ -4,7 +4,7 @@
 In Zigbee, there are three different types of devices: end device, router, and coordinator. A Zigbee network always has **one** (and no more) coordinator, and can have multiple routers and end devices. In the case of zigbee2mqtt, the coordinator is your CC2531 USB stick.
 
 ### End Device
-End devices do not route traffic. They may also sleep, which makes end devices a suitable choice for battery operated devices.
+End devices do not route traffic. They may also sleep, which makes end devices a suitable choice for battery operated devices. An end device only has one parent, either the coordinator or a router, generally the closest device when it was paired. All communications to and from the end device is via their parent. If a parent router goes offline all traffic to its children will cease until those end devices time out and attempt to find a new parent. Some models of end device, notably Xiaomi, don't attempt to find a new parent so will remain isolated until re-paired with the network.
 
 *Examples: WXKG01LM, RTCGQ01LM, MCCGQ11LM*
 
