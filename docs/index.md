@@ -31,6 +31,7 @@ Welcome to the Zigbee2mqtt documentation!
 * [How to connect a CC2530 coordinator using a USB to serial adapter](how_tos/how_to_connect_a_cc2530_coordinator_using_a_usb_to_serial_adapter.md)
 
 ### Information
+* [FAQ](information/FAQ.md)
 * [Supported devices](information/supported_devices.md)
 * [MQTT topics and message structure](information/mqtt_topics_and_message_structure.md)
 * [Groups](information/groups.md)
