@@ -12,7 +12,7 @@ Zigbee2mqtt uses a known default encryption key. Therefore it is recommended to 
 **Do not use this exact key.**
 ```
 advanced:
-  network_key: [7, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 11, 12, 13],
+  network_key: [7, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 11, 12, 13]
 ```
 
 The network encryption key size is `128-bit` which is essentially 16 decimal values between `0` and `255` or 16 hexadecimal values between `0x00`and `0xFF`.
