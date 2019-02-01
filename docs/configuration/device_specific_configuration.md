@@ -5,6 +5,7 @@ The `configuration.yaml` allows to set device specific configuration. The follow
 * `friendly_name`: Used in the MQTT topic of a device. By default this is the device ID (e.g. `0x00128d0001d9e1d2`).
 * `retain`: Retain MQTT messages of this device.
 * `qos`: QoS level for MQTT messages of this device. [What is QoS?](https://www.npmjs.com/package/mqtt#about-qos)
+* `report`: The device will be setup to report it's changed state when not directly controlled by zigbee2mqtt (e.g. via a remote control).
 
 ### Device type specific
 * `occupancy_timeout`: Timeout (in seconds) after the `occupancy: false` message is sent, only available for occupany sensors. If not set, the timeout is `90` seconds. When set to `0` no `occupancy: false` is send.
@@ -20,6 +21,7 @@ devices:
     retain: true
     occupancy_timeout: 20
     qos: 1
+    report: true
 ```
 
 ### Changing device type specific defaults
