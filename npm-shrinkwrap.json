@@ -1135,9 +1135,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "5.12.1",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.12.1.tgz",
-      "integrity": "sha512-54NV+JkTpTu0d8+UYSA8mMKAG4XAsaOrozA9rCW7tgneg1mevcL7wIotPC+fZ0SkWwdhNqoXoxnQCTBp7UvTsg==",
+      "version": "5.13.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.13.0.tgz",
+      "integrity": "sha512-nqD5WQMisciZC5EHZowejLKQjWGuFS5c70fxqSKlnDME+oz9zmE8KTlX+lHSg+/5wsC/kf9Q9eMkC8qS3oM2fg==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.0.0",
@@ -1169,7 +1169,6 @@
         "natural-compare": "^1.4.0",
         "optionator": "^0.8.2",
         "path-is-inside": "^1.0.2",
-        "pluralize": "^7.0.0",
         "progress": "^2.0.0",
         "regexpp": "^2.0.1",
         "semver": "^5.5.1",
@@ -3603,12 +3602,6 @@
       "resolved": "https://registry.npmjs.org/pathval/-/pathval-1.1.0.tgz",
       "integrity": "sha1-uULm1L3mUwBe9rcTYd74cn0GReA="
     },
-    "pluralize": {
-      "version": "7.0.0",
-      "resolved": "https://registry.npmjs.org/pluralize/-/pluralize-7.0.0.tgz",
-      "integrity": "sha512-ARhBOdzS3e41FbkW/XWrTEtukqqLoK5+Z/4UeDaLuSW+39JPeFgs4gCGqsrJHVZX0fUrx//4OF0K1CUGwlIFow==",
-      "dev": true
-    },
     "pointer-symbol": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/pointer-symbol/-/pointer-symbol-1.0.0.tgz",
@@ -4830,9 +4823,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "7.0.27",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.27.tgz",
-      "integrity": "sha512-U+eqCRpb0J6/woUD/Jr3Y0j28whjamkMa8tnFegyHLQ+a3jrZlR+zV/XXLAQ1Yp4AG/qjGBsMRbDBWRzmvPlWA==",
+      "version": "7.0.28",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.0.28.tgz",
+      "integrity": "sha512-YIpBsnmy65lRiCIXlJLpGKAd7ufTQi6WwAt9W6nddvb5Wym/7TZ5UHM+C4flPJ/S56urhtCMfx1Ctm1Z+IWvvQ==",
       "requires": {
         "chai": "*",
         "debounce": "*",
