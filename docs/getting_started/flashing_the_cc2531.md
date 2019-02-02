@@ -1,7 +1,9 @@
 # Flashing the firmware on the CC2531 USB stick
 The CC2531 USB stick needs to be flashed with a custom firmware.
 
-*NOTE: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](../information/alternative_flashing_methods.md).*
+*NOTE 1: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](../information/alternative_flashing_methods.md).*
+
+*NOTE 2: When you have already flashed the stick and paired devices to it, reflashing it requires to re-pair all your devices!*
 
 ## Windows
 1. Install [SmartRF Flash programmer](http://www.ti.com/tool/FLASH-PROGRAMMER) (**NOT V2**). This software is free but requires a Texas Instruments account in order to download.
