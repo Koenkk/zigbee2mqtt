@@ -39,6 +39,8 @@ serial:
 advanced:
   # Optional: ZigBee pan ID
   pan_id: 0x1a62
+  # Optional: Zigbee extended pan ID
+  ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD]
   # Optional: ZigBee channel
   channel: 11
   # Optional: state caching
