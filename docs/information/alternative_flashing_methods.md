@@ -1,5 +1,7 @@
 # Alternative flashing methods
 
+*NOTE: When you have already flashed the stick and paired devices to it, reflashing it requires to re-pair all your devices!*
+
 ### Via Arduino/ESP8266
 Flashing firmware via Arduino is implemented using the project https://github.com/wavesoft/CCLib
 **But with minor improvements!!!**
