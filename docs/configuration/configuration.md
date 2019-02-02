@@ -39,6 +39,8 @@ serial:
 advanced:
   # Optional: ZigBee pan ID
   pan_id: 0x1a62
+  # Optional: Zigbee extended pan ID
+  ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD]
   # Optional: ZigBee channel
   channel: 11
   # Optional: state caching
@@ -64,4 +66,7 @@ advanced:
   # Availability timeout in seconds, disabled by default (0).
   # When enabled, devices will be checked if they are still online.
   availability_timeout: 0,
+  # Blacklist devices from being checked for availability
+  availability_blacklist:
+    - DEVICE_FRIENDLY_NAME
 ```
