@@ -3326,6 +3326,12 @@ light:
 ```
 {% endraw %}
 
+### SPZB0001
+{% raw %}
+```yaml
+```
+{% endraw %}
+
 ### TI0001
 {% raw %}
 ```yaml
