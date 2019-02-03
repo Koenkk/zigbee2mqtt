@@ -219,9 +219,9 @@
       "dev": true
     },
     "ajv": {
-      "version": "6.7.0",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.7.0.tgz",
-      "integrity": "sha512-RZXPviBTtfmtka9n9sy1N5M5b82CbxWIR6HIis4s3WQTXDJamc/0gpCWNGz6EWdWp4DOfjzJfhz/AS9zVPjjWg==",
+      "version": "6.8.1",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.8.1.tgz",
+      "integrity": "sha512-eqxCp82P+JfqL683wwsL73XmFs1eG6qjw+RD3YHx+Jll1r0jNd4dh8QG9NYAeNGA/hnZjeEDgtTskgJULbxpWQ==",
       "dev": true,
       "requires": {
         "fast-deep-equal": "^2.0.1",
@@ -4823,9 +4823,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "7.1.0",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.1.0.tgz",
-      "integrity": "sha512-jCFlOpT0z5DIh+njCu2Qu8Yw4jAYJUJZivhBWTczQRkQeFHsmQBBKNq+yaYaUWJHHIeQKmlJ6nHcWR7Vah/Vqg==",
+      "version": "7.1.1",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.1.1.tgz",
+      "integrity": "sha512-8kSi5GtuoN5DhZGk42qbhKhTEP8LNxOpeIrSQGKoVoaF90TtlKgAk4UaIvZV+KGqhDNc1kW6/V1NOpP1wAs2qw==",
       "requires": {
         "chai": "*",
         "debounce": "*",
