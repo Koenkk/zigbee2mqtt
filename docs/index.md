@@ -23,6 +23,7 @@ Welcome to the Zigbee2mqtt documentation!
 
 ### How tos
 * [How to support new devices](how_tos/how_to_support_new_devices.md)
+* [How to improve network range](how_tos/how_to_improve_network_range.md)
 * [How to debug](how_tos/how_to_debug.md)
 * [How to support new devices on Hass.io](how_tos/how_to_support_new_devices_on_hassio.md)
 * [How to sniff Zigbee traffic](how_tos/how_to_sniff_zigbee_traffic.md)
