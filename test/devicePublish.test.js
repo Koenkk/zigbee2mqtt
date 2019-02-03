@@ -406,9 +406,13 @@ describe('DevicePublish', () => {
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify(msg));
         setTimeout(() => {
-            chai.assert.isTrue(zigbee.publish.calledTwice);
+            chai.assert.equal(zigbee.publish.callCount, 3);
             chai.assert.equal(zigbee.publish.getCall(0).args[2], 'genOnOff');
+            chai.assert.equal(zigbee.publish.getCall(0).args[3], 'on');
             chai.assert.equal(zigbee.publish.getCall(1).args[2], 'lightingColorCtrl');
+            chai.assert.equal(zigbee.publish.getCall(1).args[3], 'moveToColor');
+            chai.assert.equal(zigbee.publish.getCall(2).args[2], 'lightingColorCtrl');
+            chai.assert.equal(zigbee.publish.getCall(2).args[3], 'read');
             done();
         }, 300);
     });
