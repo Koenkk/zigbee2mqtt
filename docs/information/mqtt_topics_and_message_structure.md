@@ -36,7 +36,7 @@ Format should be: `{"old": "OLD_FRIENDLY_NAME", "new": "NEW_FRIENDLY_NAME"}`.
 ## zigbee2mqtt/bridge/networkmap
 Allows you to retrieve a map of your zigbee network. Possible payloads are `raw`, `graphviz`. Zigbee2mqtt will send the networkmap to `zigbee2mqtt/bridge/networkmap/[graphviz OR raw]`.
 
-## zigbee2mqtt/bridge/groups/[friendly_name]/(add|remove|remove_all)
+## zigbee2mqtt/bridge/group/[friendly_name]/(add|remove|remove_all)
 See [Groups](groups.md)
 
 ## zigbee2mqtt/bridge/(bind|unbind)/[friendly_name]
