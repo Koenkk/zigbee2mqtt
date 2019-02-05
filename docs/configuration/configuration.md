@@ -63,5 +63,5 @@ advanced:
   elapsed: false
   # Availability timeout in seconds, disabled by default (0).
   # When enabled, devices will be checked if they are still online.
-  availability_timeout: 0,
+  availability_timeout: 0
 ```
