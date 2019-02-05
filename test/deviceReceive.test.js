@@ -36,24 +36,27 @@ describe('DeviceReceive', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
-            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.isTrue(publishEntityState.calledTwice);
             chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'single'});
+            chai.assert.deepEqual(publishEntityState.getCall(1).args[1], {click: 'idle'});
         });
 
         it('Should handle a zigbee message which uses ep (left)', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.isTrue(publishEntityState.calledTwice);
             chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'left'});
+            chai.assert.deepEqual(publishEntityState.getCall(1).args[1], {click: 'idle'});
         });
 
         it('Should handle a zigbee message which uses ep (right)', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 2);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.isTrue(publishEntityState.calledTwice);
             chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'right'});
+            chai.assert.deepEqual(publishEntityState.getCall(1).args[1], {click: 'idle'});
         });
 
         it('Should handle a zigbee message with default precision', () => {
@@ -207,7 +210,7 @@ describe('DeviceReceive', () => {
                 };
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.isTrue(publishEntityState.calledTwice);
             chai.assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'number');
         });
 
@@ -222,7 +225,7 @@ describe('DeviceReceive', () => {
                 };
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.isTrue(publishEntityState.calledTwice);
             chai.assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'string');
         });
     });
