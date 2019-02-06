@@ -114,6 +114,3 @@ deactivate
 # Start zigbee2mqtt
 sudo systemctl start zigbee2mqtt
 ```
-
-# What's next?
-[Pairing devices](../getting_started/pairing_devices.md)
