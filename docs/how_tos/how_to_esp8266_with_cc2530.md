@@ -3,6 +3,7 @@ This setup allows you to connect a CC2530 to an ESP8266 which can be put everywh
 
 ## Wiring
 Wire the CC2530 to the ESP8266 using the following scheme:
+
 | ESP8266 | CC2530 |
 | :------------: |:---------------:|
 | 3v3     | VCC |
