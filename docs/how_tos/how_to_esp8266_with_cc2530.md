@@ -1,30 +1,29 @@
+# How to connect a CC2530 coordinator via an ESP8266
+This setup allows you to connect a CC2530 to an ESP8266 which can be put everywhere in your house. Via a serial socket, Zigbee2mqtt will connect to your CC2530.
 
-# CC2530 with esp8266
+## Wiring
+Wire the CC2530 to the ESP8266 using the following scheme:
+| ESP8266 | CC2530 |
+| :------------: |:---------------:|
+| 3v3     | VCC |
+| GND     | GND |
+| TX      | P02 |
+| RX      | P03 |
+| GND     | P20 |
+| GND     | P04 |
+| GND     | P05 |
 
-# Wiring:
-```
-ESP8266   --> CC2530
-3v3       --> VCC
-GND       --> GND
-TX        --> P02
-RX        --> P03
-GND       --> P20
-GND       --> P04
-GND       --> P05
-```
-# Esp8266 flashing
-Press the Flashmode button when connection to the computer
+## Flashing the ESP8266
+The ESP8266 needs to be flashed with ESPEasy. ESPEasy has suficient documentation on how to get you up and running:
+- [How to flash the ESP8266 with ESPEasy](https://www.letscontrolit.com/wiki/index.php?title=Tutorial_ESPEasy_Firmware_Upload)
+- ESP8266 firmware: [ESP_Easy_mega-XXXXXXXX_normal_ESP8266_4096.bin](https://github.com/letscontrolit/ESPEasy/releases)
+- [More information about ESPEasy](https://www.letscontrolit.com/wiki/index.php/ESPEasy#Introduction)
 
-Downlad the lastest https://github.com/letscontrolit/ESPEasy/releases
-Extract the ESPMega zip file, and open ‘FlashESP8266.exe’
-Select the right COM port and select the right Firmware (ESP_Easy_mega-XXXXXXXX_normal_ESP8266_4096.bin)
+## Setting up the ESP8266
+Open the ESPEasy web interface and complete the setup. Afterwards open the web interface again.
 
-When it is ready close the flashing tool
-The ESP8266 will now emit a wifi signal, connect with it with the following password: ‘configesp’ (more information at https://www.letscontrolit.com/wiki/index.php/ESPEasy#Introduction)
-After connection a screen opens in which you can let the ESP8266 connect to your WIFI, if succesfull its new IP address will be shown.
-Go to this IP address in your browser and click on devices
-or Go to http://192.168.4.1/setup
-Click on "Devices" Edit of the first task and select ‘Communication - Serial Server’ from the dropdown list
+Click on *Devices* Edit of the first task and select *Communication - Serial Server* from the dropdown list.
+
 Fill in the form as following:
 ```
 a.    Name: ZIGBEE2MQTT
@@ -38,46 +37,41 @@ h.    Reset target after boot: - none –
 i.    RX receive timeout: 0
 j.    Event processing: Generic
 ```
-Press Submit
 
-Then its complete the device will get devicename ESP-Easy-0 check your router for the IP or you will get directed after the setup of the Wifi the first time you connected to the device.
+Press Submit, the setup is now completed.
 
-You can also try to use ser2net on Linux then use that port.
-https://www.letscontrolit.com/wiki/index.php/Ser2Net
-Mount with socat
-  
+## Mounting the serialport
+The following instructions need to be executed on the computer that Zigbee2mqtt is running on.
 
-# Install socat
 ```bash
-sudo apt-get install socat
-```
+# Install soccat
+sudo apt-get install -y socat
 
-# Setup of socat virtualport on zigbee2mqtt server side
-Make dir
-```bash
+# Create directory for mount point
 sudo mkdir /opt/zigbee2mqtt/vusb/
-```
-Give Pi user owner rights to /dev/vusb
-```bash
+
+# Give pi user owner rights to /opt/zigbee2mqtt/vusb/
 sudo chown -R pi:pi /opt/zigbee2mqtt/vusb/
 ```
-# Comfirm connection works 
-Change first IP and PORT
+
+## Comfirm that the connection works
+Change the `IP` and `PORT` and execute:
+
 ```bash
 socat -d -d pty,raw,echo=0,link=/opt/zigbee2mqtt/vusb/zigbee_cc2530 tcp-connect:IP:PORT
 ```
 or
+
 ```bash
 socat -d -d pty,raw,b115200,echo=0,link=/opt/zigbee2mqtt/vusb/zigbee_cc2530 tcp:127.0.0.1:1775
 ```
-# Create a systemctl configuration file for socat-vusb
- I’m also running it pi because its on the group "dialout" otherwise you will have a permission issue on the device.
- ```bash
-sudo nano /etc/systemd/system/socat-vusb.service
- ```
-Add the following to this file:
 
-Change first IP and PORT
+## Mounting the serialport on boot
+```bash
+sudo nano /etc/systemd/system/socat-vusb.service
+```
+
+Add the following to this file (make sure to change the `IP` and `PORT`)
 
 ```bash
 [Unit]
@@ -94,39 +88,46 @@ RestartSec=10
 WantedBy=multi-user.targett
 ```
 Save the file and exit.
- 
-Update systemd
+
+Update systemd:
+
 ```bash
 sudo systemctl --system daemon-reload
- ```
+```
+
 Verify that the configuration works:
 ```bash
 sudo systemctl start socat-vusb.service
  ```
+
 Show status
 ```bash
 systemctl status socat-vusb.service
- ```
-# Restart and check Log
+```
+
+## Restart and check Log
 ```bash
 sudo systemctl restart socat-vusb.service && sudo journalctl -f -u socat-vusb.service
 ```
- Now that everything works, we want systemctl to start socat-vusb automatically on boot, this can be done by executing:
- ```bash
+
+Now that everything works, we want systemctl to start socat-vusb automatically on boot, this can be done by executing:
+
+```bash
 sudo systemctl enable socat-vusb.service
- ```
-# Some tips that can be handy later:
- 
+```
+
+## Some tips that can be handy later:
 Stopping socat-vusb
 ```bash
 sudo systemctl stop socat-vusb
- ```
- Starting socat-vusb
+```
+
+Starting socat-vusb
 ```bash
 sudo systemctl start socat-vusb
- ```
- 
-# View the log of socat-vusb
+```
+
+## View the log of socat-vusb
 ```bash
 sudo journalctl -u socat-vusb.service -f
 
@@ -146,17 +147,21 @@ Feb 01 15:35:24 hassbian socat[1406]: 2019/02/01 15:35:24 socat[1406] N opening 
 Feb 01 15:35:24 hassbian socat[1406]: 2019/02/01 15:35:24 socat[1406] N successfully connected from local address AF=2 127.0.0.1:47512
 Feb 01 15:35:24 hassbian socat[1406]: 2019/02/01 15:35:24 socat[1406] N starting data transfer loop with FDs [5,5] and [7,7]
 ```
-# Adding virtual device to zigbee2mqtt config
+
+## Adding virtual device to zigbee2mqtt config
 ```bash
 sudo nano  /opt/zigbee2mqtt/data/configuration.yaml
- ```
- ```yaml
+```
+
+```yaml
 serial:
   port: /opt/zigbee2mqtt/vusb/zigbee_cc2530
+
 advanced:
   rtscts: false
-  ```
- # Restart zigbee2mqtt and confirm it works.
+```
+
+## Restart zigbee2mqtt and confirm it works.
 ```bash
 sudo systemctl restart zigbee2mqtt.service && sudo journalctl -f -u zigbee2mqtt.service
 ```
