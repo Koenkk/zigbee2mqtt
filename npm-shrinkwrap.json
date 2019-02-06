@@ -4830,11 +4830,11 @@
         "chai": "*",
         "debounce": "*",
         "debug": "3.2.6",
-        "zcl-id": "https://github.com/koenkk/zcl-id/tarball/master"
+        "zcl-id": "https://github.com/koenkk/zcl-id/tarball/509f77ab620ece6ad8e83a008283457a5280c8db"
       },
       "dependencies": {
         "zcl-id": {
-          "version": "https://github.com/koenkk/zcl-id/tarball/master",
+          "version": "https://github.com/koenkk/zcl-id/tarball/509f77ab620ece6ad8e83a008283457a5280c8db",
           "integrity": "sha512-VzHMq1JqhdCVVLWBmCECLrkQMEY6DYL/0gp4GrsJbyQuBE4wcMGs0zAHhF9DxlWZ4eT6zkiH0e5z6hEhUSRLRA==",
           "requires": {
             "busyman": "^0.3.0",
