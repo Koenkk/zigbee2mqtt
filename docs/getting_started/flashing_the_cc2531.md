@@ -11,10 +11,9 @@ The CC2531 USB stick needs to be flashed with a custom firmware.
 2. Connect `CC debugger --> Downloader cable CC2531 --> CC2531 USB sniffer`.
 3. Connect **BOTH** the `CC2531 USB sniffer` and the `CC debugger` to your PC using USB.
 3. If the light on the CC debugger is RED press set reset button on the CC debugger. The light on the CC debugger should now turn GREEN. If not use [CC debugger user guide](http://www.ti.com/lit/ug/swru197h/swru197h.pdf) to troubleshoot your problem.
-
 ![How to connect](../images/connected.jpg)
 4. Download the firmware [CC2531ZNP-Prod.hex](https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/CC2531/bin)
-5. Start SmartRF Flash Programmer, setup as shown below and press `Perform actions`.
+5. Start SmartRF Flash Programmer, setup as shown below and press `Perform actions`. Make sure to select the `.hex` file, not the `.bin` file!
 ![SmartRF Flash Programmer](../images/smartrf.png)
 
 ## Linux or MacOS
