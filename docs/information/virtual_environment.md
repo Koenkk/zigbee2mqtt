@@ -1,5 +1,5 @@
 # Running Zigbee2mqtt in Virtual Environment
-It is possible to run Zigbee2mqtt in a virtual environment, tested with an Raspberry Pi 3B+.
+It is possible to run Zigbee2mqtt in a virtual environment, tested with a Raspberry Pi 3B+.
 
 ## 1. Determine location of CC2531 USB sniffer and checking user permissions
 We first need to determine the location of the CC2531 USB sniffer. Connect the CC2531 USB to your Raspberry Pi. Most of the times the location of the CC2531 is `/dev/ttyACM0`. This can be verified by:
