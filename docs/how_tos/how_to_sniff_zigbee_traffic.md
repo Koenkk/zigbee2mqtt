@@ -42,7 +42,11 @@ Add the Trust Center link key by going to to Edit -> Preferences -> Protocols ->
 
 ![Wireshark Trust Center link key](../images/wireshark_tclink_key.png)
 
-Next we need to figure out the network encryption key. The network encryption key is exposed when a device joins the network. Pair a new device to the network (or repair an existing one) and grab the message where the Info is *Device Announcement....*. Open the message and expand *ZigBee Network Layer Data* -> *ZigBee Security Header*.
+Next we need to figure out the network encryption key. There are two ways to do this:
+
+1) By default, if you haven't changed network_key in your `configuration.yaml` this will be `01:03:05:07:09:0B:0D:0F:00:02:04:06:08:0A:0C:0D`. If you changed your `network_key`, then convert each number into its 2-digit hexadecimal value, and combine them all with `:` between. E.g. `[1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13]` -> `01:03:05:07:09:0B:0D:0F:00:02:04:06:08:0A:0C:0D`
+
+2) If you don't want to manually translate the numbers, the network encryption key is also exposed when a device joins the network. Pair a new device to the network (or repair an existing one) and grab the message where the Info is *Device Announcement....*. Open the message and expand *ZigBee Network Layer Data* -> *ZigBee Security Header*.
 
 ![Wireshark network key](../images/wireshark_network_key.png)
 
