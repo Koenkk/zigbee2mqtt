@@ -42,3 +42,4 @@ Welcome to the Zigbee2mqtt documentation!
 * [3D cases](information/3d_cases.md)
 * [CC sniffer devices](information/cc_sniffer_devices.md)
 * [Alternative flashing methods](information/alternative_flashing_methods.md)
+* [Running Zigbee2mqtt in Virtual Environment](information/virtual_environment.md)
