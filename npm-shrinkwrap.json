@@ -207,9 +207,9 @@
       }
     },
     "acorn": {
-      "version": "6.0.7",
-      "resolved": "https://registry.npmjs.org/acorn/-/acorn-6.0.7.tgz",
-      "integrity": "sha512-HNJNgE60C9eOTgn974Tlp3dpLZdUr+SoxxDwPaY9J/kDNOLQTkaDgwBUXAF4SSsrAwD9RpdxuHK/EbuF+W9Ahw==",
+      "version": "6.1.0",
+      "resolved": "https://registry.npmjs.org/acorn/-/acorn-6.1.0.tgz",
+      "integrity": "sha512-MW/FjM+IvU9CgBzjO3UIPCE2pyEwUsoFl+VGdczOPEdxfGFjuKny/gN54mOuX7Qxmb9Rg9MCn2oKiSUeW+pjrw==",
       "dev": true
     },
     "acorn-jsx": {
@@ -4691,8 +4691,8 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#bff587393e59c351ba15927b2233dbe247a510b7",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#bff587393e59c351ba15927b2233dbe247a510b7",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#76af47e307b1c6cfca49f51d35d7d2624a4fead9",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#76af47e307b1c6cfca49f51d35d7d2624a4fead9",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
