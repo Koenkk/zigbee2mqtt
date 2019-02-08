@@ -45,3 +45,4 @@ Welcome to the Zigbee2mqtt documentation!
 * [CC sniffer devices](information/cc_sniffer_devices.md)
 * [Alternative flashing methods](information/alternative_flashing_methods.md)
 * [Running Zigbee2mqtt in Virtual Environment](information/virtual_environment.md)
+* [Flashing without re-pairing](information/flashing_without_re-pairing.md)
