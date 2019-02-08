@@ -65,6 +65,7 @@ advanced:
   elapsed: false
   # Availability timeout in seconds, disabled by default (0).
   # When enabled, devices will be checked if they are still online.
+  # Only AC powered routers are checked for availability.
   availability_timeout: 0,
   # Blacklist devices from being checked for availability
   availability_blacklist:
