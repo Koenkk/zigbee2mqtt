@@ -1,5 +1,7 @@
 # Alternative flashing methods
 
+*NOTE: When you have already flashed the stick and paired devices to it, reflashing it requires to re-pair all your devices!*
+
 ### Via Arduino/ESP8266
 Flashing firmware via Arduino is implemented using the project https://github.com/wavesoft/CCLib
 **But with minor improvements!!!**
@@ -80,7 +82,9 @@ Debug config:
 ```
 [Another example of connection on MacOS](https://github.com/wavesoft/CCLib/issues/22#issuecomment-384452424)
 
-7. If everything is successful, then download [modified firmware for flashing via Arduino](https://github.com/kirovilya/files/blob/master/CC2531ZNP-Pro-Secure_LinkKeyJoin_mod.hex)
+7. If everything is successful, download [the firmware](https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator).
+Before we flash the firmware we need to make a modification to it. Open the `.hex`
+file in a text editor and **remove the second last line**. Now save the file.
 
 8. Start the flashing firmware (it takes a long time, about 2-3 hours):
 

@@ -1,7 +1,9 @@
 # Flashing the firmware on the CC2531 USB stick
 The CC2531 USB stick needs to be flashed with a custom firmware.
 
-*NOTE: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](../information/alternative_flashing_methods.md).*
+*NOTE 1: The following instructions assume you have a CC Debugger. In case you don't, see [Alternative firmware flashing methods](../information/alternative_flashing_methods.md).*
+
+*NOTE 2: When you have already flashed the stick and paired devices to it, reflashing it requires to re-pair all your devices! You can try to avoid this (see: [Flashing without re-pairing](../information/flashing_without_re-pairing.md))*
 
 ## Windows
 1. Install [SmartRF Flash programmer](http://www.ti.com/tool/FLASH-PROGRAMMER) (**NOT V2**). This software is free but requires a Texas Instruments account in order to download.
@@ -9,10 +11,9 @@ The CC2531 USB stick needs to be flashed with a custom firmware.
 2. Connect `CC debugger --> Downloader cable CC2531 --> CC2531 USB sniffer`.
 3. Connect **BOTH** the `CC2531 USB sniffer` and the `CC debugger` to your PC using USB.
 3. If the light on the CC debugger is RED press set reset button on the CC debugger. The light on the CC debugger should now turn GREEN. If not use [CC debugger user guide](http://www.ti.com/lit/ug/swru197h/swru197h.pdf) to troubleshoot your problem.
-
 ![How to connect](../images/connected.jpg)
 4. Download the firmware [CC2531ZNP-Prod.hex](https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/CC2531/bin)
-5. Start SmartRF Flash Programmer, setup as shown below and press `Perform actions`.
+5. Start SmartRF Flash Programmer, setup as shown below and press `Perform actions`. Make sure to select the `.hex` file, not the `.bin` file!
 ![SmartRF Flash Programmer](../images/smartrf.png)
 
 ## Linux or MacOS

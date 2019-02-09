@@ -6,6 +6,7 @@ The CC2530 is highly suitable for serving as a router. It has an external antenn
 ![CC2530 in an enclosure](../images/cc2530_router_enclosure.jpg)
 
 ## 1. What do I need?
+
 | Name | Price | Picture |
 | ------------- | ------------- | ------------- |
 | CC2530 <br/> **OR** <br/> CC2530 + CC2591 <br/> *The CC2530 + CC2591 is more powerful but more expensive* | +-7.50$ on AliExpress <br/><br/>  +-15$ on AliExpress | ![CC2530](../images/cc2530.jpg)|
@@ -34,6 +35,7 @@ The CC2530 has to be flashed with a router firmware which has to be done with a 
 | 9 | VCC |
 
 ### Pin layout of various CC2530 modules
+
 | Name | Pin layout | Picture |
 | ------------- | ------------- | ------------- |
 | CC2530 | ![CC2530 pin layout](../images/cc2530_pin_layout.png) | ![CC2530](../images/cc2530.jpg)

@@ -1,7 +1,7 @@
 # Running Zigbee2mqtt
 These instructions explain how to run Zigbee2mqtt on bare-metal Linux.
 
-Other ways to run Zigbee2mqtt are [Docker](../information/docker.md) and the [Hass.io Zigbee2mqtt add-on](https://github.com/danielwelch/hassio-zigbee2mqtt).
+Other ways to run Zigbee2mqtt are [Docker](../information/docker.md), the [Hass.io Zigbee2mqtt add-on](https://github.com/danielwelch/hassio-zigbee2mqtt) and [Virtual Enviroment](../information/virtual_environment.md).
 
 For the sake of simplicity this guide assumes running on a Raspberry Pi 3 with Raspbian Stretch Lite, but will work on any Linux machine.
 
