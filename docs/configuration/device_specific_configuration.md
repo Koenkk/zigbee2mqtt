@@ -6,6 +6,7 @@ The `configuration.yaml` allows to set device specific configuration. The follow
 * `retain`: Retain MQTT messages of this device.
 * `qos`: QoS level for MQTT messages of this device. [What is QoS?](https://www.npmjs.com/package/mqtt#about-qos)
 * `report`: The device will be setup to report it's changed state when not directly controlled by zigbee2mqtt (e.g. via a remote control).
+* `homeassistant`: Allows to override values of the Home Assistant discovery payload. See example below.
 
 ### Device type specific
 * `occupancy_timeout`: Timeout (in seconds) after the `occupancy: false` message is sent, only available for occupany sensors. If not set, the timeout is `90` seconds. When set to `0` no `occupancy: false` is send.
@@ -22,6 +23,12 @@ devices:
     occupancy_timeout: 20
     qos: 1
     report: true
+    homeassistant:
+      # Applied to all discovered entities.
+      expire_after: 30
+      # Only applied to discovered temperature sensor.
+      temperature:
+        icon: mdi:oil-temperature
 ```
 
 ### Changing device type specific defaults
