@@ -7,7 +7,7 @@ This page will guide you through the process of adding support for new devices t
 In case you require any help feel free to create an [issue](https://github.com/Koenkk/zigbee2mqtt/issues).
 
 ## 1. Pairing the device with Zigbee2mqtt
-The first step is to pair the device with zigbee2mqtt. It should be possible to pair your unsupported device out of the box because zigbee2mqtt can pair with any zigbee device. You need to find out how to bring your device into pairing mode, most of the times via a factory reset. For some vendors this is already documented [here](https://koenkk.github.io/zigbee2mqtt/getting_started/pairing_devices.html).
+The first step is to pair the device with zigbee2mqtt. It should be possible to pair your unsupported device out of the box because zigbee2mqtt can pair with any zigbee device. You need to find out how to bring your device into pairing mode, most of the time via a factory reset. For some vendors this is already documented [here](https://koenkk.github.io/zigbee2mqtt/getting_started/pairing_devices.html).
 
 Once you successfully paired the device you will see something like:
 ```
@@ -38,7 +38,7 @@ Once finished, restart Zigbee2mqtt and trigger some actions on the device. You w
 2018-5-1 18:19:41 WARN Please create an issue on https://github.com/Koenkk/zigbee2mqtt/issues with this message.
 ```
 
-In case your device is not reporting anything, it could be that this device requires additional configure. This can be done by adding a `configure:` section, [examples]([https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js). In case your device is a contact or motion sensor, it could be that this is an [IAS device](https://stackoverflow.com/questions/31241211/zigbee-ias-device-enroll-and-response). Example of an IAS `configure:` section can be found [here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js#L1495).
+In case your device is not reporting anything, it could be that this device requires additional configuration. This can be done by adding a `configure:` section ([examples here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js)). In case your device is a contact or motion sensor, it could be that this is an [IAS device](https://stackoverflow.com/questions/31241211/zigbee-ias-device-enroll-and-response). Example of an IAS `configure:` section can be found [here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js#L1495).
 
 ## 3. Adding converter(s) for your device
 In order to parse the messages of your zigbee device we need to add converter(s) to `node_modules/zigbee-shepherd-converters/converters/fromZigbee.js`.
