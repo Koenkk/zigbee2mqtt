@@ -38,7 +38,19 @@ Once finished, restart Zigbee2mqtt and trigger some actions on the device. You w
 2018-5-1 18:19:41 WARN Please create an issue on https://github.com/Koenkk/zigbee2mqtt/issues with this message.
 ```
 
-In case your device is not reporting anything, it could be that this device requires additional configuration. This can be done by adding a `configure:` section ([examples here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js)). In case your device is a contact or motion sensor, it could be that this is an [IAS device](https://stackoverflow.com/questions/31241211/zigbee-ias-device-enroll-and-response). Example of an IAS `configure:` section can be found [here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js#L1495).
+In case your device is not reporting anything, it could be that this device requires additional configuration. This can be done by adding a `configure:` section ([examples here](https://github.com/Koenkk/zigbee-shepherd-converters/blob/master/devices.js)). In case your device is a contact or motion sensor, it could be that this is an [IAS device](https://stackoverflow.com/questions/31241211/zigbee-ias-device-enroll-and-response). Example of an IAS `configure:` section:
+
+```js
+configure: (ieeeAddr, shepherd, coordinator, callback) => {
+    const device = shepherd.find(ieeeAddr, 1);
+    const actions = [
+        (cb) => device.write('ssIasZone', 'iasCieAddr', coordinator.device.getIeeeAddr(), cb),
+        (cb) => device.functional('ssIasZone', 'enrollRsp', {enrollrspcode: 0, zoneid: 23}, cb),
+    ];
+
+    execute(device, actions, callback);
+},
+```
 
 ## 3. Adding converter(s) for your device
 In order to parse the messages of your zigbee device we need to add converter(s) to `node_modules/zigbee-shepherd-converters/converters/fromZigbee.js`.
