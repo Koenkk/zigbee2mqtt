@@ -83,7 +83,7 @@ describe('DevicePublish', () => {
 
         it('Should publish messages to zigbee devices with color_temp', () => {
             zigbee.publish.resetHistory();
-            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 WS opal 980lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({color_temp: '222'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');
@@ -98,7 +98,7 @@ describe('DevicePublish', () => {
 
         it('Should publish messages to zigbee devices with color_temp in %', () => {
             zigbee.publish.resetHistory();
-            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+            zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 WS opal 980lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({color_temp_percent: '100'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345678');

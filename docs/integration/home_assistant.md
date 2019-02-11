@@ -1040,6 +1040,12 @@ sensor:
 ```
 {% endraw %}
 
+### E1746
+{% raw %}
+```yaml
+```
+{% endraw %}
+
 ### 7299760PH
 {% raw %}
 ```yaml
@@ -2009,6 +2015,19 @@ light:
 {% endraw %}
 
 ### RS 125
+{% raw %}
+```yaml
+light:
+  - platform: "mqtt"
+    state_topic: "zigbee2mqtt/<FRIENDLY_NAME>"
+    availability_topic: "zigbee2mqtt/bridge/state"
+    brightness: true
+    schema: "json"
+    command_topic: "zigbee2mqtt/<FRIENDLY_NAME>/set"
+```
+{% endraw %}
+
+### RS 225
 {% raw %}
 ```yaml
 light:
