@@ -35,7 +35,6 @@
   "dependencies": {
     "git-last-commit": "*",
     "js-yaml": "*",
-    "json2yaml": "*",
     "mkdir-recursive": "*",
     "moment": "*",
     "mqtt": "*",
@@ -55,7 +54,6 @@
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-mocha": "*",
-    "image-size": "*",
     "mocha": "*",
     "nyc": "*",
     "proxyquire": "*",
