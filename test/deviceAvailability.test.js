@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const Availability = require('../lib/extension/availability');
+const Availability = require('../lib/extension/deviceAvailability');
 const utils = require('./utils');
 const sandbox = sinon.createSandbox();
 
