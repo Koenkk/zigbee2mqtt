@@ -16,6 +16,9 @@ const zigbee = {
     }),
 };
 
+const publishEntityState = sandbox.stub().callsFake((entityID, payload, cache) => {
+});
+
 const cfg = {
     default: {
         manufSpec: 0,
@@ -28,7 +31,7 @@ describe('DevicePublish', () => {
 
     beforeEach(() => {
         utils.stubLogger(sandbox);
-        devicePublish = new DevicePublish(zigbee, mqtt, null, () => {});
+        devicePublish = new DevicePublish(zigbee, mqtt, null, publishEntityState);
     });
 
     afterEach(() => {
@@ -38,6 +41,7 @@ describe('DevicePublish', () => {
     describe('Parse topic', () => {
         it('Should publish messages to zigbee devices', () => {
             zigbee.publish.resetHistory();
+            publishEntityState.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({brightness: '200'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
@@ -49,6 +53,10 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {level: '200', transtime: 0});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[0], '0x12345678');
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state: 'ON'});
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
         });
 
         it('Should publish messages to zigbee devices when brightness is in %', () => {
@@ -97,6 +105,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to zigbee devices with color_temp in %', () => {
+            publishEntityState.resetHistory();
             zigbee.publish.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'TRADFRI bulb E27 WS opal 980lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/set', JSON.stringify({color_temp_percent: '100'}));
@@ -109,6 +118,7 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {colortemp: '500', transtime: 0});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.isTrue(publishEntityState.notCalled);
         });
 
         it('Should publish messages to zigbee devices with non-default ep', () => {
@@ -128,6 +138,7 @@ describe('DevicePublish', () => {
 
         it('Should publish messages to zigbee devices with non-default ep and postfix', () => {
             zigbee.publish.resetHistory();
+            publishEntityState.resetHistory();
             zigbee.getDevice = sinon.fake.returns({modelId: 'lumi.ctrl_neutral2'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x12345678/right/set', JSON.stringify({state: 'OFF'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
@@ -139,6 +150,10 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[7], 3);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[0], '0x12345678');
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state_right: 'OFF'});
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
         });
 
         it('Should publish messages to zigbee gledopto with [11,13]', () => {
@@ -234,6 +249,7 @@ describe('DevicePublish', () => {
         it('Should publish messages to groups', () => {
             sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
+            publishEntityState.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
             chai.assert.isTrue(zigbee.publish.calledOnce);
             chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], 1);
@@ -244,6 +260,30 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[0], 1);
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state: 'ON'});
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
+        });
+
+        it('Should publish messages to groups with brightness_percent', () => {
+            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
+            zigbee.publish.resetHistory();
+            publishEntityState.resetHistory();
+            devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({brightness_percent: 50}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], 1);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'group');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'genLevelCtrl');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'moveToLevelWithOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[4], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {level: '127', transtime: 0});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[0], 1);
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {brightness: 127});
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
         });
     });
 
