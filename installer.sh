@@ -57,7 +57,7 @@ if [ ! -z "${validation}" ]; then
   echo
   echo -e "\\e[32mInstallation done..\\e[0m"
   echo -e "Update of configuration.yaml is required found at /opt/zigbee2mqtt/data/"
-  echo -e "Some further configuration is required and details can be found here https://github.com/Koenkk/zigbee2mqtt/wiki/Running-the-bridge "
+  echo -e "Some further configuration is required and details can be found here https://www.zigbee2mqtt.io/getting_started/running_zigbee2mqtt.html "
   echo
   echo -e "Service can be started after configuration but running sudo systemctl start zigbee2mqtt"
   echo
