@@ -263,6 +263,12 @@
         "lodash": "^4.17.11"
       }
     },
+    "@sinonjs/text-encoding": {
+      "version": "0.7.1",
+      "resolved": "https://registry.npmjs.org/@sinonjs/text-encoding/-/text-encoding-0.7.1.tgz",
+      "integrity": "sha512-+iTbntw2IZPb/anVDbypzfQa+ay64MW0Zo8aJ8gZPWMMK6/OubMVb6lUPMagqjOPnmtauXnFCACVl3O7ogjeqQ==",
+      "dev": true
+    },
     "acorn": {
       "version": "6.1.0",
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-6.1.0.tgz",
@@ -1647,9 +1653,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "5.14.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.14.0.tgz",
-      "integrity": "sha512-jrOhiYyENRrRnWlMYANlGZTqb89r2FuRT+615AabBoajhNjeh9ywDNlh2LU9vTqf0WYN+L3xdXuIi7xuj/tK9w==",
+      "version": "5.14.1",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.14.1.tgz",
+      "integrity": "sha512-CyUMbmsjxedx8B0mr79mNOqetvkbij/zrXnFeK2zc3pGRn3/tibjiNAv/3UxFEyfMDjh+ZqTrJrEGBFiGfD5Og==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.0.0",
@@ -2556,16 +2562,16 @@
       "dev": true
     },
     "nise": {
-      "version": "1.4.8",
-      "resolved": "https://registry.npmjs.org/nise/-/nise-1.4.8.tgz",
-      "integrity": "sha512-kGASVhuL4tlAV0tvA34yJYZIVihrUt/5bDwpp4tTluigxUr2bBlJeDXmivb6NuEdFkqvdv/Ybb9dm16PSKUhtw==",
+      "version": "1.4.10",
+      "resolved": "https://registry.npmjs.org/nise/-/nise-1.4.10.tgz",
+      "integrity": "sha512-sa0RRbj53dovjc7wombHmVli9ZihXbXCQ2uH3TNm03DyvOSIQbxg+pbqDKrk2oxMK1rtLGVlKxcB9rrc6X5YjA==",
       "dev": true,
       "requires": {
         "@sinonjs/formatio": "^3.1.0",
+        "@sinonjs/text-encoding": "^0.7.1",
         "just-extend": "^4.0.2",
         "lolex": "^2.3.2",
-        "path-to-regexp": "^1.7.0",
-        "text-encoding": "^0.6.4"
+        "path-to-regexp": "^1.7.0"
       },
       "dependencies": {
         "lolex": {
@@ -4065,17 +4071,17 @@
       }
     },
     "sinon": {
-      "version": "7.2.3",
-      "resolved": "https://registry.npmjs.org/sinon/-/sinon-7.2.3.tgz",
-      "integrity": "sha512-i6j7sqcLEqTYqUcMV327waI745VASvYuSuQMCjbAwlpAeuCgKZ3LtrjDxAbu+GjNQR0FEDpywtwGCIh8GicNyg==",
+      "version": "7.2.4",
+      "resolved": "https://registry.npmjs.org/sinon/-/sinon-7.2.4.tgz",
+      "integrity": "sha512-FGlcfrkiBRfaEIKRw8s/9mk4nP4AMGswvKFixLo+AzsOhskjaBCHAHGLMd8pCJpQGS+9ZI71px6qoQUyvADeyA==",
       "dev": true,
       "requires": {
         "@sinonjs/commons": "^1.3.0",
         "@sinonjs/formatio": "^3.1.0",
-        "@sinonjs/samsam": "^3.0.2",
+        "@sinonjs/samsam": "^3.1.1",
         "diff": "^3.5.0",
-        "lolex": "^3.0.0",
-        "nise": "^1.4.8",
+        "lolex": "^3.1.0",
+        "nise": "^1.4.10",
         "supports-color": "^5.5.0"
       }
     },
@@ -4248,12 +4254,6 @@
         "to-buffer": "^1.1.1",
         "xtend": "^4.0.0"
       }
-    },
-    "text-encoding": {
-      "version": "0.6.4",
-      "resolved": "https://registry.npmjs.org/text-encoding/-/text-encoding-0.6.4.tgz",
-      "integrity": "sha1-45mpgiV6J22uQou5KEXLcb3CbRk=",
-      "dev": true
     },
     "text-table": {
       "version": "0.2.0",
@@ -4484,8 +4484,8 @@
       }
     },
     "zcl-packet": {
-      "version": "git+https://github.com/Koenkk/zcl-packet.git#3acee8aa20f2d07d746ebd281d6a1df728401803",
-      "from": "git+https://github.com/Koenkk/zcl-packet.git#3acee8aa20f2d07d746ebd281d6a1df728401803",
+      "version": "git+https://github.com/Koenkk/zcl-packet.git#d69cd6fc41086e59e4fa11511d807fc271d0c729",
+      "from": "git+https://github.com/Koenkk/zcl-packet.git#d69cd6fc41086e59e4fa11511d807fc271d0c729",
       "requires": {
         "concentrate": "^0.2.3",
         "dissolve-chunks": "^1.3.0",
@@ -4513,8 +4513,8 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#98f73de091a0f0259a031750d893a077e1beb7f4",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#98f73de091a0f0259a031750d893a077e1beb7f4",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#99b093a454917f29b73142ec91f34d428fbe3452",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#99b093a454917f29b73142ec91f34d428fbe3452",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
@@ -4524,7 +4524,7 @@
         "proving": "^0.1.0",
         "q": "^1.5.1",
         "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#2f25e0848562b570453abd663794d5b95e1f324f",
-        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#3acee8aa20f2d07d746ebd281d6a1df728401803",
+        "zcl-packet": "git+https://github.com/Koenkk/zcl-packet.git#d69cd6fc41086e59e4fa11511d807fc271d0c729",
         "ziee": "^0.3.0",
         "zstack-constants": "^0.2.0"
       },
