@@ -43,7 +43,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 4);
+        chai.assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -140,6 +140,29 @@ describe('HomeAssistant extension', () => {
         chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
         chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
         chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+
+        // 5
+        payload = {
+            'unit_of_measurement': '-',
+            'value_template': '{{ value_json.linkquality }}',
+            'state_topic': 'zigbee2mqtt/my_device',
+            'json_attributes_topic': 'zigbee2mqtt/my_device',
+            'name': 'my_device_linkquality',
+            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
+            'device': {
+                'identifiers': 'zigbee2mqtt_0x12345678',
+                'name': 'my_device',
+                'sw_version': 'Zigbee2mqtt test',
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability_topic': 'zigbee2mqtt/bridge/state',
+        };
+
+        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
+        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 
     it('Should discover devices with precision', () => {
@@ -154,7 +177,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 4);
+        chai.assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -251,6 +274,29 @@ describe('HomeAssistant extension', () => {
         chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
         chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
         chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+
+        // 5
+        payload = {
+            'unit_of_measurement': '-',
+            'value_template': '{{ value_json.linkquality }}',
+            'state_topic': 'zigbee2mqtt/my_device',
+            'json_attributes_topic': 'zigbee2mqtt/my_device',
+            'name': 'my_device_linkquality',
+            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
+            'device': {
+                'identifiers': 'zigbee2mqtt_0x12345678',
+                'name': 'my_device',
+                'sw_version': 'Zigbee2mqtt test',
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability_topic': 'zigbee2mqtt/bridge/state',
+        };
+
+        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
+        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 
     it('Should discover devices with overriden user configuration', () => {
@@ -269,7 +315,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 4);
+        chai.assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -374,5 +420,30 @@ describe('HomeAssistant extension', () => {
         chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
         chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
         chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+
+        // 5
+        payload = {
+            'unit_of_measurement': '-',
+            'value_template': '{{ value_json.linkquality }}',
+            'state_topic': 'zigbee2mqtt/my_device',
+            'json_attributes_topic': 'zigbee2mqtt/my_device',
+            'name': 'my_device_linkquality',
+            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
+            'expire_after': 30,
+            'icon': 'mdi:test',
+            'device': {
+                'identifiers': 'zigbee2mqtt_0x12345678',
+                'name': 'my_device',
+                'sw_version': 'Zigbee2mqtt test',
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability_topic': 'zigbee2mqtt/bridge/state',
+        };
+
+        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
+        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 });
