@@ -6,6 +6,7 @@ const sandbox = sinon.createSandbox();
 const settings = require('../lib/util/settings');
 
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
+const SV01 = devices.find((d) => d.model === 'SV01');
 
 describe('HomeAssistant extension', () => {
     let homeassistant = null;
@@ -445,5 +446,39 @@ describe('HomeAssistant extension', () => {
         chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
         chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
         chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
+    });
+
+    it('Should discover devices with cover_position', () => {
+        let payload = null;
+        sandbox.stub(settings, 'getDevice').callsFake(() => {
+            return {friendly_name: 'my_device'};
+        });
+
+        homeassistant.discover('0x12345678', SV01, false);
+        chai.assert.equal(mqtt.publish.callCount, 5);
+
+        // 1
+        payload = {
+            name: 'my_device_cover',
+            command_topic: 'zigbee2mqtt/my_device/set',
+            position_topic: 'zigbee2mqtt/my_device',
+            set_position_topic: 'zigbee2mqtt/my_device/set',
+            set_position_template: '{ "position": {{ position }} }',
+            value_template: '{{ value_json.position }}',
+            unique_id: '0x12345678_cover_zigbee2mqtt',
+            device: {
+                'identifiers': 'zigbee2mqtt_0x12345678',
+                'name': 'my_device',
+                'sw_version': 'Zigbee2mqtt test',
+                'model': 'Smart vent (SV01)',
+                'manufacturer': 'Keen Home',
+            },
+            availability_topic: 'zigbee2mqtt/bridge/state',
+        };
+
+        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
+        chai.assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
+        chai.assert.equal(mqtt.publish.getCall(0).args[3], null);
+        chai.assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
     });
 });
