@@ -57,6 +57,7 @@
     "mocha": "*",
     "nyc": "*",
     "proxyquire": "*",
-    "sinon": "*"
+    "sinon": "*",
+    "tmp": "*"
   }
 }
