@@ -55,7 +55,7 @@ describe('DevicePublish', () => {
             chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
             chai.assert.isTrue(publishEntityState.calledOnce);
             chai.assert.strictEqual(publishEntityState.getCall(0).args[0], '0x12345678');
-            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state: 'ON'});
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state: 'ON', brightness: 200});
             chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
         });
 
