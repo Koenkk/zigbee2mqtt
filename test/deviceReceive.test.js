@@ -225,5 +225,20 @@ describe('DeviceReceive', () => {
             chai.assert.isTrue(publishEntityState.calledOnce);
             chai.assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'string');
         });
+
+        it('Should publish last_seen ISO_8601_local', () => {
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
+            sandbox.stub(settings, 'get').callsFake(() => {
+                return {
+                    advanced: {
+                        last_seen: 'ISO_8601_local',
+                    },
+                };
+            });
+            deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'string');
+        });
     });
 });
