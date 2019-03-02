@@ -45,7 +45,7 @@
     "winston": "2.4.2",
     "ziee": "*",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#8c53bd423b69a0eef73e521a2edf447c9392b050",
-    "zigbee-shepherd-converters": "7.2.1",
+    "zigbee-shepherd-converters": "7.2.2",
     "zive": "*"
   },
   "devDependencies": {
