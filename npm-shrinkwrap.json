@@ -235,21 +235,22 @@
       }
     },
     "@sinonjs/commons": {
-      "version": "1.3.0",
-      "resolved": "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.3.0.tgz",
-      "integrity": "sha512-j4ZwhaHmwsCb4DlDOIWnI5YyKDNMoNThsmwEpfHx6a1EpsGZ9qYLxP++LMlmBRjtGptGHFsGItJ768snllFWpA==",
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.3.1.tgz",
+      "integrity": "sha512-rgmZk5CrBGAMATk0HlHOFvo8V44/r+On6cKS80tqid0Eljd+fFBWBOXZp9H2/EB3faxdNdzXTx6QZIKLkbJ7mA==",
       "dev": true,
       "requires": {
         "type-detect": "4.0.8"
       }
     },
     "@sinonjs/formatio": {
-      "version": "3.1.0",
-      "resolved": "https://registry.npmjs.org/@sinonjs/formatio/-/formatio-3.1.0.tgz",
-      "integrity": "sha512-ZAR2bPHOl4Xg6eklUGpsdiIJ4+J1SNag1DHHrG/73Uz/nVwXqjgUtRPLoS+aVyieN9cSbc0E4LsU984tWcDyNg==",
+      "version": "3.2.0",
+      "resolved": "https://registry.npmjs.org/@sinonjs/formatio/-/formatio-3.2.0.tgz",
+      "integrity": "sha512-hskkZG4qB0HgsxrPUlnk2EiIyBwntM+ETIxCha/gidl172MCfdosNezB5706ciS5P2VhueM7MoACWwMc4A4gMQ==",
       "dev": true,
       "requires": {
-        "@sinonjs/samsam": "^2 || ^3"
+        "@sinonjs/commons": "^1",
+        "@sinonjs/samsam": "^3.1.0"
       }
     },
     "@sinonjs/samsam": {
@@ -1978,9 +1979,9 @@
       "dev": true
     },
     "eslint": {
-      "version": "5.14.1",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.14.1.tgz",
-      "integrity": "sha512-CyUMbmsjxedx8B0mr79mNOqetvkbij/zrXnFeK2zc3pGRn3/tibjiNAv/3UxFEyfMDjh+ZqTrJrEGBFiGfD5Og==",
+      "version": "5.15.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-5.15.0.tgz",
+      "integrity": "sha512-xwG7SS5JLeqkiR3iOmVgtF8Y6xPdtr6AAsN6ph7Q6R/fv+3UlKYoika8SmNzmb35qdRF+RfTY35kMEdtbi+9wg==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.0.0",
@@ -1989,7 +1990,7 @@
         "cross-spawn": "^6.0.5",
         "debug": "^4.0.1",
         "doctrine": "^3.0.0",
-        "eslint-scope": "^4.0.0",
+        "eslint-scope": "^4.0.2",
         "eslint-utils": "^1.3.1",
         "eslint-visitor-keys": "^1.0.0",
         "espree": "^5.0.1",
@@ -2063,9 +2064,9 @@
       }
     },
     "eslint-scope": {
-      "version": "4.0.0",
-      "resolved": "https://registry.npmjs.org/eslint-scope/-/eslint-scope-4.0.0.tgz",
-      "integrity": "sha512-1G6UTDi7Jc1ELFwnR58HV4fK9OQK4S6N985f166xqXxpjU6plxFISJa2Ba9KCQuFa8RCnj/lSFJbHo7UFDBnUA==",
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/eslint-scope/-/eslint-scope-4.0.2.tgz",
+      "integrity": "sha512-5q1+B/ogmHl8+paxtOKx38Z8LtWkVGuNt3+GQNErqwLl6ViNp/gdJGMCjZNxZ8j/VYjDNZ2Fo+eQc1TAVPIzbg==",
       "dev": true,
       "requires": {
         "esrecurse": "^4.1.0",
@@ -5264,13 +5265,13 @@
       }
     },
     "sinon": {
-      "version": "7.2.5",
-      "resolved": "https://registry.npmjs.org/sinon/-/sinon-7.2.5.tgz",
-      "integrity": "sha512-1c2KK6g5NQr9XNYCEcUbeFtBpKZD1FXEw0VX7gNhWUBtkchguT2lNdS7XmS7y64OpQWfSNeeV/f8py3NNcQ63Q==",
+      "version": "7.2.6",
+      "resolved": "https://registry.npmjs.org/sinon/-/sinon-7.2.6.tgz",
+      "integrity": "sha512-n5r5wZ/VyrP7oAJpGGGjSxvw2Yy8T+qdGjDBltK01KBqB33O60V/xcG0Hgqm6SbJEIyCGuICpaXg9uFzY5DOYw==",
       "dev": true,
       "requires": {
         "@sinonjs/commons": "^1.3.0",
-        "@sinonjs/formatio": "^3.1.0",
+        "@sinonjs/formatio": "^3.2.0",
         "@sinonjs/samsam": "^3.2.0",
         "diff": "^3.5.0",
         "lolex": "^3.1.0",
@@ -6135,9 +6136,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "7.1.12",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.1.12.tgz",
-      "integrity": "sha512-36Guhlqtm1u2alAjc5WrWkMdIcOLCgYfISuC+g+Y667QXYIfsfAMh+r5Ur07kYwziaOIn0RvD9Q4PanGFV+Ciw==",
+      "version": "7.2.0",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-7.2.0.tgz",
+      "integrity": "sha512-NQ78Zz7T7cVQYoodXUSXgwIi/JpLtltvPf3Y76vrq4vV98jqujRUyVbLJ1u9fvQUvYtokw+chIHDrsI4ACuapg==",
       "requires": {
         "chai": "*",
         "debounce": "*",
