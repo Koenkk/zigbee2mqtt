@@ -52,6 +52,9 @@ describe('Controller', () => {
                     advanced: {
                         cache_state: false,
                     },
+                    experimental: {
+                        output: 'json',
+                    },
                 };
             });
 
@@ -64,6 +67,40 @@ describe('Controller', () => {
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
                 `"manufName":"IKEA","modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
             );
+        });
+
+        it('Should output to json by default', () => {
+            const payload = {temperature: 1, humidity: 2};
+            controller.publishEntityState('0x12345678', payload);
+            chai.assert.isTrue(mqttPublish.calledOnce);
+            chai.assert.deepEqual(
+                JSON.parse(mqttPublish.getCall(0).args[1]),
+                payload
+            );
+        });
+
+        it('Should output to attribute', () => {
+            sandbox.stub(settings, 'get').callsFake(() => {
+                return {
+                    mqtt: {
+                        include_device_information: false,
+                    },
+                    advanced: {
+                        cache_state: false,
+                    },
+                    experimental: {
+                        output: 'attribute',
+                    },
+                };
+            });
+
+            const payload = {temperature: 1, humidity: 2};
+            controller.publishEntityState('0x12345678', payload);
+            chai.assert.isTrue(mqttPublish.calledTwice);
+            chai.assert.deepEqual(mqttPublish.getCall(0).args[0], 'test/temperature');
+            chai.assert.deepEqual(mqttPublish.getCall(0).args[1], '1');
+            chai.assert.deepEqual(mqttPublish.getCall(1).args[0], 'test/humidity');
+            chai.assert.deepEqual(mqttPublish.getCall(1).args[1], '2');
         });
     });
 });
