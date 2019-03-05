@@ -44,7 +44,7 @@
     "semver": "*",
     "winston": "2.4.2",
     "ziee": "*",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#8c53bd423b69a0eef73e521a2edf447c9392b050",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#4de4613dd80f7f2b17eefe7848d116b85586a26d",
     "zigbee-shepherd-converters": "7.2.4",
     "zive": "*"
   },
