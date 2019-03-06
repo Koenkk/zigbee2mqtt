@@ -59,6 +59,27 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
         });
 
+        it('Should publish messages to zigbee devices', () => {
+            zigbee.publish.resetHistory();
+            publishEntityState.resetHistory();
+            sandbox.stub(settings, 'getIeeeAddrByFriendlyName').callsFake(() => '0x12345666');
+            zigbee.getDevice = sinon.fake.returns({modelId: 'LCT003'});
+            devicePublish.onMQTTMessage('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
+            chai.assert.isTrue(zigbee.publish.calledOnce);
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[0], '0x12345666');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[1], 'device');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[2], 'genOnOff');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[3], 'on');
+            chai.assert.strictEqual(zigbee.publish.getCall(0).args[4], 'functional');
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[5], {});
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[6], cfg.default);
+            chai.assert.deepEqual(zigbee.publish.getCall(0).args[7], null);
+            chai.assert.isTrue(publishEntityState.calledOnce);
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[0], '0x12345666');
+            chai.assert.deepEqual(publishEntityState.getCall(0).args[1], {state: 'ON'});
+            chai.assert.strictEqual(publishEntityState.getCall(0).args[2], true);
+        });
+
         it('Should publish messages to zigbee devices when brightness is in %', () => {
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
@@ -569,6 +590,14 @@ describe('DevicePublish', () => {
             chai.assert.strictEqual(parsed.type, 'set');
             chai.assert.strictEqual(parsed.ID, '0x12345689');
             chai.assert.strictEqual(parsed.postfix, 'left');
+        });
+
+        it('Should parse set with almost postfix topic', () => {
+            const topic = 'zigbee2mqtt/wohnzimmer.light.wall.right/set';
+            const parsed = devicePublish.parseTopic(topic);
+            chai.assert.strictEqual(parsed.type, 'set');
+            chai.assert.strictEqual(parsed.ID, 'wohnzimmer.light.wall.right');
+            chai.assert.strictEqual(parsed.postfix, '');
         });
 
         it('Should parse set with postfix topic', () => {
