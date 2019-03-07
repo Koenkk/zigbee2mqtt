@@ -1,8 +1,6 @@
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const data = require('../lib/util/data');
-const proxyquire = require('proxyquire').noPreserveCache();
-const settingsProxy = () => proxyquire('../lib/util/settings.js', {});
 const tmp = require('tmp');
 const path = require('path');
 const fs = require('fs');
@@ -25,7 +23,8 @@ describe('Settings', () => {
     const setup = (configuration) => {
         configurationFile = path.join(dir.name, 'configuration.yaml');
         write(configurationFile, configuration);
-        settings = settingsProxy();
+        delete require.cache[require.resolve('../lib/util/settings.js')];
+        settings = require('../lib/util/settings.js');
     };
 
     beforeEach(() => {
