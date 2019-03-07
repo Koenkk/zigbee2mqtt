@@ -9,8 +9,6 @@ const rimraf = require('rimraf');
 
 describe('Settings', () => {
     let dir = null;
-    let settings = null;
-    let configurationFile = null;
 
     const write = (file, json) => {
         fs.writeFileSync(file, yaml.safeDump(json));
@@ -21,10 +19,11 @@ describe('Settings', () => {
     };
 
     const setup = (configuration) => {
-        configurationFile = path.join(dir.name, 'configuration.yaml');
+        const configurationFile = path.join(dir.name, 'configuration.yaml');
         write(configurationFile, configuration);
         delete require.cache[require.resolve('../lib/util/settings.js')];
-        settings = require('../lib/util/settings.js');
+        const settings = require('../lib/util/settings.js');
+        return {configurationFile, settings};
     };
 
     beforeEach(() => {
@@ -41,13 +40,13 @@ describe('Settings', () => {
 
     describe('Settings', () => {
         it('Should return default settings', () => {
-            setup({});
+            const {settings} = setup({});
             const s = settings.get();
             assert.deepEqual(s, settings._getDefaults());
         });
 
         it('Should return settings', () => {
-            setup({permit_join: true});
+            const {settings} = setup({permit_join: true});
             const s = settings.get();
             const expected = settings._getDefaults();
             expected.permit_join = true;
@@ -55,7 +54,7 @@ describe('Settings', () => {
         });
 
         it('Should add devices', () => {
-            setup({});
+            const {settings, configurationFile} = setup({});
             settings.addDevice('0x12345678');
 
             const actual = read(configurationFile);
@@ -81,7 +80,7 @@ describe('Settings', () => {
                 },
             };
 
-            setup(content);
+            const {settings} = setup(content);
 
             const device = settings.getDevice('0x12345678');
             const expected = {
@@ -105,7 +104,7 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'devices.yaml'), contentDevices);
-            setup(contentConfiguration);
+            const {settings} = setup(contentConfiguration);
 
             const device = settings.getDevice('0x12345678');
             const expected = {
@@ -130,7 +129,7 @@ describe('Settings', () => {
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
             write(devicesFile, contentDevices);
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
 
@@ -156,7 +155,7 @@ describe('Settings', () => {
             };
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
 
@@ -178,7 +177,7 @@ describe('Settings', () => {
             };
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
             assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
@@ -198,7 +197,7 @@ describe('Settings', () => {
                 },
             };
 
-            setup(content);
+            const {settings} = setup(content);
 
             const group = settings.getGroup('1');
             const expected = {
@@ -220,7 +219,7 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'groups.yaml'), contentGroups);
-            setup(contentConfiguration);
+            const {settings} = setup(contentConfiguration);
 
             const group = settings.getGroup('1');
             const expected = {
@@ -243,10 +242,9 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'groups.yaml'), contentGroups);
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
 
             const expectedConfiguration = {
                 devices: 'devices.yaml',
