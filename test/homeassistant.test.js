@@ -2,7 +2,6 @@ const devices = require('zigbee-shepherd-converters').devices;
 const HomeassistantExtension = require('../lib/extension/homeassistant');
 const chai = require('chai');
 const sinon = require('sinon');
-const sandbox = sinon.createSandbox();
 const settings = require('../lib/util/settings');
 
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
@@ -22,7 +21,7 @@ describe('HomeAssistant extension', () => {
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     it('Should have mapping for all devices supported by zigbee-shepherd-converters', () => {
@@ -39,7 +38,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices', () => {
         let payload = null;
-        sandbox.stub(settings, 'getDevice').callsFake(() => {
+        sinon.stub(settings, 'getDevice').callsFake(() => {
             return {friendly_name: 'my_device'};
         });
 
@@ -168,7 +167,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with precision', () => {
         let payload = null;
-        sandbox.stub(settings, 'getDevice').callsFake(() => {
+        sinon.stub(settings, 'getDevice').callsFake(() => {
             return {
                 friendly_name: 'my_device',
                 humidity_precision: 0,
@@ -302,7 +301,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with overriden user configuration', () => {
         let payload = null;
-        sandbox.stub(settings, 'getDevice').callsFake(() => {
+        sinon.stub(settings, 'getDevice').callsFake(() => {
             return {
                 friendly_name: 'my_device',
                 homeassistant: {
@@ -450,7 +449,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with cover_position', () => {
         let payload = null;
-        sandbox.stub(settings, 'getDevice').callsFake(() => {
+        sinon.stub(settings, 'getDevice').callsFake(() => {
             return {friendly_name: 'my_device'};
         });
 

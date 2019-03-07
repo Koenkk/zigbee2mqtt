@@ -4,7 +4,6 @@ const data = require('../lib/util/data');
 const proxyquire = require('proxyquire').noPreserveCache();
 const settingsProxy = () => proxyquire('../lib/util/settings.js', {});
 const tmp = require('tmp');
-const sandbox = sinon.createSandbox();
 const path = require('path');
 const fs = require('fs');
 const yaml = require('js-yaml');
@@ -31,14 +30,14 @@ describe('Settings', () => {
 
     beforeEach(() => {
         dir = tmp.dirSync();
-        sandbox.stub(data, 'joinPath').callsFake((file) => {
+        sinon.stub(data, 'joinPath').callsFake((file) => {
             return path.join(dir.name, file);
         });
     });
 
     afterEach(() => {
         rimraf.sync(dir.name);
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Settings', () => {

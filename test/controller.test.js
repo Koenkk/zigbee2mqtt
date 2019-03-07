@@ -4,18 +4,17 @@ const Controller = require('../lib/controller');
 const settings = require('../lib/util/settings');
 const mqtt = require('../lib/mqtt');
 const utils = require('./utils');
-const sandbox = sinon.createSandbox();
 
 describe('Controller', () => {
     let controller;
     let mqttPublish;
 
     beforeEach(() => {
-        utils.stubLogger(sandbox);
-        sandbox.stub(settings, 'getDevice').callsFake((ieeeAddr) => {
+        utils.stubLogger(sinon);
+        sinon.stub(settings, 'getDevice').callsFake((ieeeAddr) => {
             return {friendly_name: 'test'};
         });
-        mqttPublish = sandbox.stub(mqtt.prototype, 'publish').callsFake(() => {});
+        mqttPublish = sinon.stub(mqtt.prototype, 'publish').callsFake(() => {});
         controller = new Controller();
         controller.zigbee = {
             getDevice: () => {
@@ -28,7 +27,7 @@ describe('Controller', () => {
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Handling zigbee messages', () => {
@@ -44,7 +43,7 @@ describe('Controller', () => {
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         include_device_information: true,
@@ -80,7 +79,7 @@ describe('Controller', () => {
         });
 
         it('Should output to attribute', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         include_device_information: false,

@@ -3,7 +3,6 @@ const sinon = require('sinon');
 const DevicePublish = require('../lib/extension/devicePublish');
 const settings = require('../lib/util/settings');
 const utils = require('./utils');
-const sandbox = sinon.createSandbox();
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -13,12 +12,12 @@ const mqtt = {
 
 const zigbee = {
     getDevice: null,
-    publish: sandbox.stub().callsFake((entityID, entityType, cid, cmd, cmdType, zclData, cfg, ep, callback) => {
+    publish: sinon.stub().callsFake((entityID, entityType, cid, cmd, cmdType, zclData, cfg, ep, callback) => {
         callback(false, null);
     }),
 };
 
-const publishEntityState = sandbox.stub().callsFake((entityID, payload, cache) => {
+const publishEntityState = sinon.stub().callsFake((entityID, payload, cache) => {
 });
 
 const cfg = {
@@ -32,12 +31,12 @@ describe('DevicePublish', () => {
     let devicePublish;
 
     beforeEach(() => {
-        utils.stubLogger(sandbox);
+        utils.stubLogger(sinon);
         devicePublish = new DevicePublish(zigbee, mqtt, null, publishEntityState);
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Parse topic', () => {
@@ -66,7 +65,7 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices', async () => {
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
-            sandbox.stub(settings, 'getIeeeAddrByFriendlyName').callsFake(() => '0x00000002');
+            sinon.stub(settings, 'getIeeeAddrByFriendlyName').callsFake(() => '0x00000002');
             zigbee.getDevice = sinon.fake.returns({modelId: 'LCT003'});
             devicePublish.onMQTTMessage('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
             chai.assert.strictEqual(zigbee.publish.callCount, 1);
@@ -447,7 +446,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups', async () => {
-            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
+            sinon.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
@@ -469,7 +468,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with brightness_percent', async () => {
-            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
+            sinon.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({brightness_percent: 50}));
@@ -491,7 +490,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with on and brightness', async () => {
-            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
+            sinon.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON', brightness: 50}));
@@ -513,7 +512,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with off and brightness', async () => {
-            sandbox.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
+            sinon.stub(settings, 'getGroupIDByFriendlyName').callsFake(() => '1');
             zigbee.publish.resetHistory();
             publishEntityState.resetHistory();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'OFF', brightness: 5}));
@@ -583,7 +582,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base topic has multiple slashes', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/home',
@@ -607,7 +606,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base and deviceID have multiple slashes', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/basement',
@@ -671,7 +670,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse set with and slashes in base and deviceID postfix topic', () => {
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     mqtt: {
                         base_topic: 'zigbee2mqtt/at/my/home',

@@ -4,7 +4,6 @@ const DeviceReceive = require('../lib/extension/deviceReceive');
 const settings = require('../lib/util/settings');
 const devices = require('zigbee-shepherd-converters').devices;
 const utils = require('./utils');
-const sandbox = sinon.createSandbox();
 
 // Devices
 const WXKG11LM = devices.find((d) => d.model === 'WXKG11LM');
@@ -21,14 +20,14 @@ describe('DeviceReceive', () => {
     let publishEntityState;
 
     beforeEach(() => {
-        utils.stubLogger(sandbox);
-        sandbox.stub(settings, 'addDevice').callsFake(() => {});
+        utils.stubLogger(sinon);
+        sinon.stub(settings, 'addDevice').callsFake(() => {});
         publishEntityState = sinon.spy();
         deviceReceive = new DeviceReceive(null, mqtt, null, publishEntityState);
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Handling zigbee messages', () => {
@@ -68,7 +67,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 1 precision', () => {
             const device = {ieeeAddr: '0x12345678'};
-            sandbox.stub(settings, 'getDevice').callsFake(() => {
+            sinon.stub(settings, 'getDevice').callsFake(() => {
                 return {temperature_precision: 1};
             });
             const message = utils.zigbeeMessage(
@@ -81,7 +80,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 0 precision', () => {
             const device = {ieeeAddr: '0x12345678'};
-            sandbox.stub(settings, 'getDevice').callsFake(() => {
+            sinon.stub(settings, 'getDevice').callsFake(() => {
                 return {temperature_precision: 0};
             });
             const message = utils.zigbeeMessage(
@@ -94,7 +93,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 1 precision when set via device_options', () => {
             const device = {ieeeAddr: '0x12345678'};
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     device_options: {
                         temperature_precision: 1,
@@ -104,7 +103,7 @@ describe('DeviceReceive', () => {
                     },
                 };
             });
-            sandbox.stub(settings, 'getDevice').callsFake(() => {
+            sinon.stub(settings, 'getDevice').callsFake(() => {
                 return {};
             });
             const message = utils.zigbeeMessage(
@@ -117,7 +116,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 2 precision when overrides device_options', () => {
             const device = {ieeeAddr: '0x12345678'};
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     device_options: {
                         temperature_precision: 1,
@@ -127,7 +126,7 @@ describe('DeviceReceive', () => {
                     },
                 };
             });
-            sandbox.stub(settings, 'getDevice').callsFake(() => {
+            sinon.stub(settings, 'getDevice').callsFake(() => {
                 return {
                     temperature_precision: 2,
                 };
@@ -199,7 +198,7 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen epoch', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     advanced: {
                         last_seen: 'epoch',
@@ -214,7 +213,7 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen ISO_8601', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     advanced: {
                         last_seen: 'ISO_8601',
@@ -229,7 +228,7 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen ISO_8601_local', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            sandbox.stub(settings, 'get').callsFake(() => {
+            sinon.stub(settings, 'get').callsFake(() => {
                 return {
                     advanced: {
                         last_seen: 'ISO_8601_local',
