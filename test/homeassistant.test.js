@@ -1,6 +1,6 @@
 const devices = require('zigbee-shepherd-converters').devices;
 const HomeassistantExtension = require('../lib/extension/homeassistant');
-const chai = require('chai');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 const settings = require('../lib/util/settings');
 
@@ -33,7 +33,7 @@ describe('HomeAssistant extension', () => {
             }
         });
 
-        chai.assert.strictEqual(missing.length, 0, `Missing HomeAssistant mapping for: ${missing.join(', ')}`);
+        assert.strictEqual(missing.length, 0, `Missing HomeAssistant mapping for: ${missing.join(', ')}`);
     });
 
     it('Should discover devices', () => {
@@ -43,7 +43,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 5);
+        assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -64,10 +64,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(0).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(0).args[3], null);
+        assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
 
         // 2
         payload = {
@@ -88,10 +88,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(1).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(1).args[3], null);
+        assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
 
         // 3
         payload = {
@@ -112,10 +112,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(2).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(2).args[3], null);
+        assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
 
         // 4
         payload = {
@@ -136,10 +136,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(3).args[3], null);
+        assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
 
         // 5
         payload = {
@@ -159,10 +159,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(4).args[3], null);
+        assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 
     it('Should discover devices with precision', () => {
@@ -177,7 +177,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 5);
+        assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -198,10 +198,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(0).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(0).args[3], null);
+        assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
 
         // 2
         payload = {
@@ -222,10 +222,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(1).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(1).args[3], null);
+        assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
 
         // 3
         payload = {
@@ -246,10 +246,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(2).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(2).args[3], null);
+        assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
 
         // 4
         payload = {
@@ -270,10 +270,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(3).args[3], null);
+        assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
 
         // 5
         payload = {
@@ -293,10 +293,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(4).args[3], null);
+        assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 
     it('Should discover devices with overriden user configuration', () => {
@@ -315,7 +315,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        chai.assert.equal(mqtt.publish.callCount, 5);
+        assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -338,10 +338,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(0).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(0).args[3], null);
+        assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
 
         // 2
         payload = {
@@ -364,10 +364,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(1).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(1).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(1).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(1).args[3], null);
+        assert.equal(mqtt.publish.getCall(1).args[4], 'homeassistant');
 
         // 3
         payload = {
@@ -390,10 +390,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(2).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(2).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(2).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(2).args[3], null);
+        assert.equal(mqtt.publish.getCall(2).args[4], 'homeassistant');
 
         // 4
         payload = {
@@ -416,10 +416,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(3).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(3).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(3).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(3).args[3], null);
+        assert.equal(mqtt.publish.getCall(3).args[4], 'homeassistant');
 
         // 5
         payload = {
@@ -441,10 +441,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(4).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(4).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(4).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(4).args[3], null);
+        assert.equal(mqtt.publish.getCall(4).args[4], 'homeassistant');
     });
 
     it('Should discover devices with cover_position', () => {
@@ -454,7 +454,7 @@ describe('HomeAssistant extension', () => {
         });
 
         homeassistant.discover('0x12345678', SV01, false);
-        chai.assert.equal(mqtt.publish.callCount, 5);
+        assert.equal(mqtt.publish.callCount, 5);
 
         // 1
         payload = {
@@ -475,9 +475,9 @@ describe('HomeAssistant extension', () => {
             availability_topic: 'zigbee2mqtt/bridge/state',
         };
 
-        chai.assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
-        chai.assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
-        chai.assert.equal(mqtt.publish.getCall(0).args[3], null);
-        chai.assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
+        assert.deepEqual(JSON.parse(mqtt.publish.getCall(0).args[1]), payload);
+        assert.deepEqual(mqtt.publish.getCall(0).args[2], {retain: true, qos: 0});
+        assert.equal(mqtt.publish.getCall(0).args[3], null);
+        assert.equal(mqtt.publish.getCall(0).args[4], 'homeassistant');
     });
 });
