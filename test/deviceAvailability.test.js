@@ -1,19 +1,18 @@
-const chai = require('chai');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 const Availability = require('../lib/extension/deviceAvailability');
 const utils = require('./utils');
-const sandbox = sinon.createSandbox();
 
 describe('Availability', () => {
     let availability;
 
     beforeEach(() => {
-        utils.stubLogger(sandbox);
+        utils.stubLogger(sinon);
         availability = new Availability(null, null, null, () => {});
     });
 
     afterEach(() => {
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Determine pingable devices', () => {
@@ -23,7 +22,7 @@ describe('Availability', () => {
                 type: 'Router',
             };
 
-            chai.assert.isTrue(availability.isPingable(device));
+            assert.isTrue(availability.isPingable(device));
         });
 
         it('Battery device should not be a pingable device', () => {
@@ -32,7 +31,7 @@ describe('Availability', () => {
                 type: 'EndDevice',
             };
 
-            chai.assert.isFalse(availability.isPingable(device));
+            assert.isFalse(availability.isPingable(device));
         });
 
         it('E11-G13 should be a pingable device', () => {
@@ -43,7 +42,7 @@ describe('Availability', () => {
                 manufId: 4448,
             };
 
-            chai.assert.isTrue(availability.isPingable(device));
+            assert.isTrue(availability.isPingable(device));
         });
     });
 });

@@ -1,10 +1,7 @@
-const chai = require('chai');
+const assert = require('chai').assert;
 const sinon = require('sinon');
 const data = require('../lib/util/data');
-const proxyquire = require('proxyquire').noPreserveCache();
-const settingsProxy = () => proxyquire('../lib/util/settings.js', {});
 const tmp = require('tmp');
-const sandbox = sinon.createSandbox();
 const path = require('path');
 const fs = require('fs');
 const yaml = require('js-yaml');
@@ -12,8 +9,6 @@ const rimraf = require('rimraf');
 
 describe('Settings', () => {
     let dir = null;
-    let settings = null;
-    let configurationFile = null;
 
     const write = (file, json) => {
         fs.writeFileSync(file, yaml.safeDump(json));
@@ -24,40 +19,42 @@ describe('Settings', () => {
     };
 
     const setup = (configuration) => {
-        configurationFile = path.join(dir.name, 'configuration.yaml');
+        const configurationFile = path.join(dir.name, 'configuration.yaml');
         write(configurationFile, configuration);
-        settings = settingsProxy();
+        delete require.cache[require.resolve('../lib/util/settings.js')];
+        const settings = require('../lib/util/settings.js');
+        return {configurationFile, settings};
     };
 
     beforeEach(() => {
         dir = tmp.dirSync();
-        sandbox.stub(data, 'joinPath').callsFake((file) => {
+        sinon.stub(data, 'joinPath').callsFake((file) => {
             return path.join(dir.name, file);
         });
     });
 
     afterEach(() => {
         rimraf.sync(dir.name);
-        sandbox.restore();
+        sinon.restore();
     });
 
     describe('Settings', () => {
         it('Should return default settings', () => {
-            setup({});
+            const {settings} = setup({});
             const s = settings.get();
-            chai.assert.deepEqual(s, settings._getDefaults());
+            assert.deepEqual(s, settings._getDefaults());
         });
 
         it('Should return settings', () => {
-            setup({permit_join: true});
+            const {settings} = setup({permit_join: true});
             const s = settings.get();
             const expected = settings._getDefaults();
             expected.permit_join = true;
-            chai.assert.deepEqual(s, expected);
+            assert.deepEqual(s, expected);
         });
 
         it('Should add devices', () => {
-            setup({});
+            const {settings, configurationFile} = setup({});
             settings.addDevice('0x12345678');
 
             const actual = read(configurationFile);
@@ -70,7 +67,7 @@ describe('Settings', () => {
                 },
             };
 
-            chai.assert.deepEqual(actual, expected);
+            assert.deepEqual(actual, expected);
         });
 
         it('Should read devices', () => {
@@ -83,7 +80,7 @@ describe('Settings', () => {
                 },
             };
 
-            setup(content);
+            const {settings} = setup(content);
 
             const device = settings.getDevice('0x12345678');
             const expected = {
@@ -91,7 +88,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            chai.assert.deepEqual(device, expected);
+            assert.deepEqual(device, expected);
         });
 
         it('Should read devices form a seperate file', () => {
@@ -107,7 +104,7 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'devices.yaml'), contentDevices);
-            setup(contentConfiguration);
+            const {settings} = setup(contentConfiguration);
 
             const device = settings.getDevice('0x12345678');
             const expected = {
@@ -115,7 +112,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            chai.assert.deepEqual(device, expected);
+            assert.deepEqual(device, expected);
         });
 
         it('Should add devices to a seperate file', () => {
@@ -132,11 +129,11 @@ describe('Settings', () => {
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
             write(devicesFile, contentDevices);
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
 
-            chai.assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
 
             const expected = {
                 '0x12345678': {
@@ -149,7 +146,7 @@ describe('Settings', () => {
                 },
             };
 
-            chai.assert.deepEqual(read(devicesFile), expected);
+            assert.deepEqual(read(devicesFile), expected);
         });
 
         it('Should add devices to a seperate file if devices.yaml doesnt exist', () => {
@@ -158,11 +155,11 @@ describe('Settings', () => {
             };
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
 
-            chai.assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
 
             const expected = {
                 '0x1234': {
@@ -171,7 +168,7 @@ describe('Settings', () => {
                 },
             };
 
-            chai.assert.deepEqual(read(devicesFile), expected);
+            assert.deepEqual(read(devicesFile), expected);
         });
 
         it('Should add and remove devices to a seperate file if devices.yaml doesnt exist', () => {
@@ -180,15 +177,15 @@ describe('Settings', () => {
             };
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             settings.addDevice('0x1234');
-            chai.assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
 
             settings.removeDevice('0x1234');
-            chai.assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
 
-            chai.assert.deepEqual(read(devicesFile), {});
+            assert.deepEqual(read(devicesFile), {});
         });
 
         it('Should read groups', () => {
@@ -200,14 +197,14 @@ describe('Settings', () => {
                 },
             };
 
-            setup(content);
+            const {settings} = setup(content);
 
             const group = settings.getGroup('1');
             const expected = {
                 friendly_name: '123',
             };
 
-            chai.assert.deepEqual(group, expected);
+            assert.deepEqual(group, expected);
         });
 
         it('Should read groups form a seperate file', () => {
@@ -222,14 +219,14 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'groups.yaml'), contentGroups);
-            setup(contentConfiguration);
+            const {settings} = setup(contentConfiguration);
 
             const group = settings.getGroup('1');
             const expected = {
                 friendly_name: '123',
             };
 
-            chai.assert.deepEqual(group, expected);
+            assert.deepEqual(group, expected);
         });
 
         it('Combine everything! groups and devices from separte file :)', () => {
@@ -245,21 +242,20 @@ describe('Settings', () => {
             };
 
             write(path.join(dir.name, 'groups.yaml'), contentGroups);
-            setup(contentConfiguration);
+            const {settings, configurationFile} = setup(contentConfiguration);
 
             const devicesFile = path.join(dir.name, 'devices.yaml');
-            setup(contentConfiguration);
 
             const expectedConfiguration = {
                 devices: 'devices.yaml',
                 groups: 'groups.yaml',
             };
 
-            chai.assert.deepEqual(read(configurationFile), expectedConfiguration);
+            assert.deepEqual(read(configurationFile), expectedConfiguration);
 
             settings.addDevice('0x1234');
 
-            chai.assert.deepEqual(read(configurationFile), expectedConfiguration);
+            assert.deepEqual(read(configurationFile), expectedConfiguration);
 
             const expectedDevice = {
                 '0x1234': {
@@ -268,23 +264,23 @@ describe('Settings', () => {
                 },
             };
 
-            chai.assert.deepEqual(read(devicesFile), expectedDevice);
+            assert.deepEqual(read(devicesFile), expectedDevice);
 
             const group = settings.getGroup('1');
             const expectedGroup = {
                 friendly_name: '123',
             };
 
-            chai.assert.deepEqual(group, expectedGroup);
+            assert.deepEqual(group, expectedGroup);
 
-            chai.assert.deepEqual(read(configurationFile), expectedConfiguration);
+            assert.deepEqual(read(configurationFile), expectedConfiguration);
 
             const expectedDevice2 = {
                 friendly_name: '0x1234',
                 retain: false,
             };
 
-            chai.assert.deepEqual(settings.getDevice('0x1234'), expectedDevice2);
+            assert.deepEqual(settings.getDevice('0x1234'), expectedDevice2);
         });
     });
 });
