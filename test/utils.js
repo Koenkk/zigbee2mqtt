@@ -8,6 +8,6 @@ module.exports = {
         sandbox.stub(logger, 'error').callsFake(() => {});
     },
     zigbeeMessage: (device, cid, type, data, epId) => {
-        return {data: {cid: cid, data: data}, type: type, endpoints: [{device: device, epId: epId}]};
+        return {data: {cid, data}, type, endpoints: [{device, epId}]};
     },
 };
