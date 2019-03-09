@@ -91,7 +91,7 @@ describe('Settings', () => {
             assert.deepEqual(device, expected);
         });
 
-        it('Should read devices form a seperate file', () => {
+        it('Should read devices form a separate file', () => {
             const contentConfiguration = {
                 devices: 'devices.yaml',
             };
@@ -115,7 +115,7 @@ describe('Settings', () => {
             assert.deepEqual(device, expected);
         });
 
-        it('Should add devices to a seperate file', () => {
+        it('Should add devices to a separate file', () => {
             const contentConfiguration = {
                 devices: 'devices.yaml',
             };
@@ -149,7 +149,7 @@ describe('Settings', () => {
             assert.deepEqual(read(devicesFile), expected);
         });
 
-        it('Should add devices to a seperate file if devices.yaml doesnt exist', () => {
+        it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
             const contentConfiguration = {
                 devices: 'devices.yaml',
             };
@@ -171,7 +171,7 @@ describe('Settings', () => {
             assert.deepEqual(read(devicesFile), expected);
         });
 
-        it('Should add and remove devices to a seperate file if devices.yaml doesnt exist', () => {
+        it('Should add and remove devices to a separate file if devices.yaml doesnt exist', () => {
             const contentConfiguration = {
                 devices: 'devices.yaml',
             };
@@ -207,7 +207,7 @@ describe('Settings', () => {
             assert.deepEqual(group, expected);
         });
 
-        it('Should read groups form a seperate file', () => {
+        it('Should read groups form a separate file', () => {
             const contentConfiguration = {
                 groups: 'groups.yaml',
             };
@@ -229,7 +229,7 @@ describe('Settings', () => {
             assert.deepEqual(group, expected);
         });
 
-        it('Combine everything! groups and devices from separte file :)', () => {
+        it('Combine everything! groups and devices from separate file :)', () => {
             const contentConfiguration = {
                 devices: 'devices.yaml',
                 groups: 'groups.yaml',
