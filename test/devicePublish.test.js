@@ -39,6 +39,7 @@ describe('DevicePublish', () => {
         sinon.restore();
     });
 
+    /* eslint-disable jest/no-identical-title */ // TODO: FIXME
     describe('Parse topic', () => {
         it('Should publish messages to zigbee devices', async () => {
             zigbee.publish.resetHistory();
