@@ -49,7 +49,6 @@
     "zive": "*"
   },
   "devDependencies": {
-    "chai": "*",
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-jest": "^22.3.0",

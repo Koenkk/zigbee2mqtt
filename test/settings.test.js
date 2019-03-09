@@ -1,4 +1,3 @@
-const assert = require('chai').assert;
 const sinon = require('sinon');
 const objectAssignDeep = require('object-assign-deep');
 
@@ -16,8 +15,8 @@ describe('Settings', () => {
     const read = (file) => fs.readYaml(file);
 
     const files = new Map();
-    // eslint-disable-next-line no-undef
-    (typeof jest === 'undefined' ? before : beforeAll)(()=>{
+
+    beforeAll(() => {
         sinon.stub(fs, 'readYaml').callsFake((file) => {
             if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
             throw new Error(`Fake file not found: ${file}`);
@@ -36,8 +35,7 @@ describe('Settings', () => {
         files.clear();
     });
 
-    // eslint-disable-next-line no-undef
-    (typeof jest === 'undefined' ? after : afterAll)(() => {
+    afterAll(() => {
         fs.readYaml.restore();
         fs.readYamlIfExists.restore();
         fs.writeYaml.restore();
@@ -47,7 +45,7 @@ describe('Settings', () => {
         it('Should return default settings', () => {
             write(configurationFile, {});
             const s = settings.get();
-            assert.deepEqual(s, settings._getDefaults());
+            expect(s).toEqual(settings._getDefaults());
         });
 
         it('Should return settings', () => {
@@ -55,7 +53,7 @@ describe('Settings', () => {
             const s = settings.get();
             const expected = settings._getDefaults();
             expected.permit_join = true;
-            assert.deepEqual(s, expected);
+            expect(s).toEqual(expected);
         });
 
         it('Should add devices', () => {
@@ -72,7 +70,7 @@ describe('Settings', () => {
                 },
             };
 
-            assert.deepEqual(actual, expected);
+            expect(actual).toEqual(expected);
         });
 
         it('Should read devices', () => {
@@ -93,7 +91,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            assert.deepEqual(device, expected);
+            expect(device).toEqual(expected);
         });
 
         it('Should read devices form a separate file', () => {
@@ -117,7 +115,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            assert.deepEqual(device, expected);
+            expect(device).toEqual(expected);
         });
 
         it('Should add devices to a separate file', () => {
@@ -137,7 +135,7 @@ describe('Settings', () => {
 
             settings.addDevice('0x1234');
 
-            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
 
             const expected = {
                 '0x12345678': {
@@ -150,7 +148,7 @@ describe('Settings', () => {
                 },
             };
 
-            assert.deepEqual(read(devicesFile), expected);
+            expect(read(devicesFile)).toEqual(expected);
         });
 
         it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
@@ -162,7 +160,7 @@ describe('Settings', () => {
 
             settings.addDevice('0x1234');
 
-            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
 
             const expected = {
                 '0x1234': {
@@ -171,8 +169,9 @@ describe('Settings', () => {
                 },
             };
 
-            assert.deepEqual(read(devicesFile), expected);
-        });
+            expect(read(devicesFile)).toEqual(expected);
+        }
+        );
 
         it('Should add and remove devices to a separate file if devices.yaml doesnt exist', () => {
             const contentConfiguration = {
@@ -182,13 +181,14 @@ describe('Settings', () => {
             write(configurationFile, contentConfiguration);
 
             settings.addDevice('0x1234');
-            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
 
             settings.removeDevice('0x1234');
-            assert.deepEqual(read(configurationFile), {devices: 'devices.yaml'});
+            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
 
-            assert.deepEqual(read(devicesFile), {});
-        });
+            expect(read(devicesFile)).toEqual({});
+        }
+        );
 
         it('Should read groups', () => {
             const content = {
@@ -206,7 +206,7 @@ describe('Settings', () => {
                 friendly_name: '123',
             };
 
-            assert.deepEqual(group, expected);
+            expect(group).toEqual(expected);
         });
 
         it('Should read groups form a separate file', () => {
@@ -228,7 +228,7 @@ describe('Settings', () => {
                 friendly_name: '123',
             };
 
-            assert.deepEqual(group, expected);
+            expect(group).toEqual(expected);
         });
 
         it('Combine everything! groups and devices from separate file :)', () => {
@@ -251,11 +251,11 @@ describe('Settings', () => {
                 groups: 'groups.yaml',
             };
 
-            assert.deepEqual(read(configurationFile), expectedConfiguration);
+            expect(read(configurationFile)).toEqual(expectedConfiguration);
 
             settings.addDevice('0x1234');
 
-            assert.deepEqual(read(configurationFile), expectedConfiguration);
+            expect(read(configurationFile)).toEqual(expectedConfiguration);
 
             const expectedDevice = {
                 '0x1234': {
@@ -264,23 +264,23 @@ describe('Settings', () => {
                 },
             };
 
-            assert.deepEqual(read(devicesFile), expectedDevice);
+            expect(read(devicesFile)).toEqual(expectedDevice);
 
             const group = settings.getGroup('1');
             const expectedGroup = {
                 friendly_name: '123',
             };
 
-            assert.deepEqual(group, expectedGroup);
+            expect(group).toEqual(expectedGroup);
 
-            assert.deepEqual(read(configurationFile), expectedConfiguration);
+            expect(read(configurationFile)).toEqual(expectedConfiguration);
 
             const expectedDevice2 = {
                 friendly_name: '0x1234',
                 retain: false,
             };
 
-            assert.deepEqual(settings.getDevice('0x1234'), expectedDevice2);
+            expect(settings.getDevice('0x1234')).toEqual(expectedDevice2);
         });
     });
 });
