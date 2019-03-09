@@ -11,8 +11,6 @@ const devicesFile = data.joinPath('devices.yaml');
 const groupsFile = data.joinPath('groups.yaml');
 
 describe('Settings', () => {
-    // eslint-disable-next-line padded-blocks Good git diffs - they're not easy.
-
     const write = (file, json) => fs.writeYaml(file, json);
 
     const read = (file) => fs.readYaml(file);
