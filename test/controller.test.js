@@ -1,4 +1,3 @@
-const sinon = require('sinon');
 const Controller = require('../lib/controller');
 const settings = require('../lib/util/settings');
 const mqtt = require('../lib/mqtt');
@@ -9,11 +8,11 @@ describe('Controller', () => {
     let mqttPublish;
 
     beforeEach(() => {
-        utils.stubLogger(sinon);
-        sinon.stub(settings, 'getDevice').callsFake((ieeeAddr) => {
+        utils.stubLogger(jest);
+        jest.spyOn(settings, 'getDevice').mockImplementation((ieeeAddr) => {
             return {friendly_name: 'test'};
         });
-        mqttPublish = sinon.stub(mqtt.prototype, 'publish').callsFake(() => {});
+        mqttPublish = jest.spyOn(mqtt.prototype, 'publish').mockImplementation(() => {});
         controller = new Controller();
         controller.zigbee = {
             getDevice: () => {
@@ -26,7 +25,7 @@ describe('Controller', () => {
     });
 
     afterEach(() => {
-        sinon.restore();
+        jest.restoreAllMocks();
     });
 
     describe('Handling zigbee messages', () => {
@@ -34,12 +33,12 @@ describe('Controller', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            expect(mqttPublish.calledOnce).toBe(true);
-            expect(mqttPublish.getCall(0).args[1]).toBe(JSON.stringify({state: 'ON'}));
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(mqttPublish.mock.calls[0][1]).toBe(JSON.stringify({state: 'ON'}));
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
-            sinon.stub(settings, 'get').callsFake(() => {
+            jest.spyOn(settings, 'get').mockImplementation(() => {
                 return {
                     mqtt: {
                         include_device_information: true,
@@ -56,8 +55,8 @@ describe('Controller', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            expect(mqttPublish.calledOnce).toBe(true);
-            expect(mqttPublish.getCall(0).args[1]).toBe(
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(mqttPublish.mock.calls[0][1]).toBe(
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
                 `"manufName":"IKEA","modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
             );
@@ -67,12 +66,12 @@ describe('Controller', () => {
         it('Should output to json by default', () => {
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            expect(mqttPublish.calledOnce).toBe(true);
-            expect(JSON.parse(mqttPublish.getCall(0).args[1])).toEqual(payload);
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toEqual(payload);
         });
 
         it('Should output to attribute', () => {
-            sinon.stub(settings, 'get').callsFake(() => {
+            jest.spyOn(settings, 'get').mockImplementation(() => {
                 return {
                     mqtt: {
                         include_device_information: false,
@@ -88,11 +87,11 @@ describe('Controller', () => {
 
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            expect(mqttPublish.calledTwice).toBe(true);
-            expect(mqttPublish.getCall(0).args[0]).toEqual('test/temperature');
-            expect(mqttPublish.getCall(0).args[1]).toEqual('1');
-            expect(mqttPublish.getCall(1).args[0]).toEqual('test/humidity');
-            expect(mqttPublish.getCall(1).args[1]).toEqual('2');
+            expect(mqttPublish).toHaveBeenCalledTimes(2);
+            expect(mqttPublish.mock.calls[0][0]).toEqual('test/temperature');
+            expect(mqttPublish.mock.calls[0][1]).toEqual('1');
+            expect(mqttPublish.mock.calls[1][0]).toEqual('test/humidity');
+            expect(mqttPublish.mock.calls[1][1]).toEqual('2');
         });
     });
 });

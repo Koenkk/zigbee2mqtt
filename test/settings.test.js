@@ -1,4 +1,3 @@
-const sinon = require('sinon');
 const objectAssignDeep = require('object-assign-deep');
 
 const data = require('../lib/util/data');
@@ -17,15 +16,15 @@ describe('Settings', () => {
     const files = new Map();
 
     beforeAll(() => {
-        sinon.stub(fs, 'readYaml').callsFake((file) => {
+        jest.spyOn(fs, 'readYaml').mockImplementation((file) => {
             if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
             throw new Error(`Fake file not found: ${file}`);
         });
-        sinon.stub(fs, 'readYamlIfExists').callsFake((file) => {
+        jest.spyOn(fs, 'readYamlIfExists').mockImplementation((file) => {
             if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
             return null;
         });
-        sinon.stub(fs, 'writeYaml').callsFake((file, content) => {
+        jest.spyOn(fs, 'writeYaml').mockImplementation((file, content) => {
             files.set(file, objectAssignDeep.noMutate(content));
         });
     });
@@ -36,9 +35,9 @@ describe('Settings', () => {
     });
 
     afterAll(() => {
-        fs.readYaml.restore();
-        fs.readYamlIfExists.restore();
-        fs.writeYaml.restore();
+        fs.readYaml.mockRestore();
+        fs.readYamlIfExists.mockRestore();
+        fs.writeYaml.mockRestore();
     });
 
     describe('Settings', () => {
