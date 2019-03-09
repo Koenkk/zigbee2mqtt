@@ -1,4 +1,3 @@
-const sinon = require('sinon');
 const Availability = require('../lib/extension/deviceAvailability');
 const utils = require('./utils');
 
@@ -6,12 +5,12 @@ describe('Availability', () => {
     let availability;
 
     beforeEach(() => {
-        utils.stubLogger(sinon);
+        utils.stubLogger(jest);
         availability = new Availability(null, null, null, () => {});
     });
 
     afterEach(() => {
-        sinon.restore();
+        jest.restoreAllMocks();
     });
 
     describe('Determine pingable devices', () => {

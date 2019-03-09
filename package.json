@@ -52,7 +52,6 @@
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-jest": "^22.3.0",
-    "jest": "^24.3.1",
-    "sinon": "*"
+    "jest": "^24.3.1"
   }
 }
