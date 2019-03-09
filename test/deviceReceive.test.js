@@ -1,4 +1,3 @@
-const assert = require('chai').assert;
 const sinon = require('sinon');
 const DeviceReceive = require('../lib/extension/deviceReceive');
 const settings = require('../lib/util/settings');
@@ -35,24 +34,24 @@ describe('DeviceReceive', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'single'});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({click: 'single'});
         });
 
         it('Should handle a zigbee message which uses ep (left)', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'left'});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({click: 'left'});
         });
 
         it('Should handle a zigbee message which uses ep (right)', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 2);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {click: 'right'});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({click: 'right'});
         });
 
         it('Should handle a zigbee message with default precision', () => {
@@ -61,8 +60,8 @@ describe('DeviceReceive', () => {
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {temperature: -0.85});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({temperature: -0.85});
         });
 
         it('Should handle a zigbee message with 1 precision', () => {
@@ -74,8 +73,8 @@ describe('DeviceReceive', () => {
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {temperature: -0.8});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({temperature: -0.8});
         });
 
         it('Should handle a zigbee message with 0 precision', () => {
@@ -87,8 +86,8 @@ describe('DeviceReceive', () => {
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {temperature: -1});
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({temperature: -1});
         });
 
         it('Should handle a zigbee message with 1 precision when set via device_options', () => {
@@ -110,9 +109,10 @@ describe('DeviceReceive', () => {
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {temperature: -0.8});
-        });
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({temperature: -0.8});
+        }
+        );
 
         it('Should handle a zigbee message with 2 precision when overrides device_options', () => {
             const device = {ieeeAddr: '0x12345678'};
@@ -135,44 +135,45 @@ describe('DeviceReceive', () => {
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.deepEqual(publishEntityState.getCall(0).args[1], {temperature: -0.85});
-        });
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(publishEntityState.getCall(0).args[1]).toEqual({temperature: -0.85});
+        }
+        );
 
         it('Should handle a zigbee message with voltage 3010', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 3010}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
+            expect(publishEntityState.calledOnce).toBe(true);
             const expected = {battery: 100, voltage: 3010};
-            assert.deepEqual(publishEntityState.getCall(0).args[1], expected);
+            expect(publishEntityState.getCall(0).args[1]).toEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2850', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2850}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
+            expect(publishEntityState.calledOnce).toBe(true);
             const expected = {battery: 35, voltage: 2850};
-            assert.deepEqual(publishEntityState.getCall(0).args[1], expected);
+            expect(publishEntityState.getCall(0).args[1]).toEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2650', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2650}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
+            expect(publishEntityState.calledOnce).toBe(true);
             const expected = {battery: 14, voltage: 2650};
-            assert.deepEqual(publishEntityState.getCall(0).args[1], expected);
+            expect(publishEntityState.getCall(0).args[1]).toEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2000', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', {'65281': {'1': 2000}}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
+            expect(publishEntityState.calledOnce).toBe(true);
             const expected = {battery: 0, voltage: 2000};
-            assert.deepEqual(publishEntityState.getCall(0).args[1], expected);
+            expect(publishEntityState.getCall(0).args[1]).toEqual(expected);
         });
 
         it('Should publish 1 message when converted twice', () => {
@@ -182,9 +183,9 @@ describe('DeviceReceive', () => {
             };
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', payload, 1);
             deviceReceive.onZigbeeMessage(message, device, RTCGQ11LM);
-            assert.isTrue(publishEntityState.calledOnce);
+            expect(publishEntityState.calledOnce).toBe(true);
             const expected = {'battery': 100, 'illuminance': 381, 'voltage': 3045};
-            assert.deepEqual(publishEntityState.getCall(0).args[1], expected);
+            expect(publishEntityState.getCall(0).args[1]).toEqual(expected);
         });
 
         it('Should publish no message when converted without result', () => {
@@ -192,7 +193,7 @@ describe('DeviceReceive', () => {
             const payload = {'9999': {'1': 3045}};
             const message = utils.zigbeeMessage(device, 'genBasic', 'attReport', payload, 1);
             deviceReceive.onZigbeeMessage(message, device, RTCGQ11LM);
-            assert.isTrue(publishEntityState.notCalled);
+            expect(publishEntityState.notCalled).toBe(true);
         });
 
         it('Should publish last_seen epoch', () => {
@@ -206,8 +207,8 @@ describe('DeviceReceive', () => {
                 };
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'number');
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(typeof publishEntityState.getCall(0).args[1].last_seen).toEqual('number');
         });
 
         it('Should publish last_seen ISO_8601', () => {
@@ -221,8 +222,8 @@ describe('DeviceReceive', () => {
                 };
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'string');
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(typeof publishEntityState.getCall(0).args[1].last_seen).toEqual('string');
         });
 
         it('Should publish last_seen ISO_8601_local', () => {
@@ -236,8 +237,8 @@ describe('DeviceReceive', () => {
                 };
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
-            assert.isTrue(publishEntityState.calledOnce);
-            assert.equal(typeof publishEntityState.getCall(0).args[1].last_seen, 'string');
+            expect(publishEntityState.calledOnce).toBe(true);
+            expect(typeof publishEntityState.getCall(0).args[1].last_seen).toEqual('string');
         });
     });
 });

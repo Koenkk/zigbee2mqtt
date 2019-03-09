@@ -1,4 +1,3 @@
-const assert = require('chai').assert;
 const sinon = require('sinon');
 const Controller = require('../lib/controller');
 const settings = require('../lib/util/settings');
@@ -35,11 +34,8 @@ describe('Controller', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.strictEqual(
-                mqttPublish.getCall(0).args[1],
-                JSON.stringify({state: 'ON'})
-            );
+            expect(mqttPublish.calledOnce).toBe(true);
+            expect(mqttPublish.getCall(0).args[1]).toBe(JSON.stringify({state: 'ON'}));
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
@@ -60,22 +56,19 @@ describe('Controller', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.strictEqual(
-                mqttPublish.getCall(0).args[1],
+            expect(mqttPublish.calledOnce).toBe(true);
+            expect(mqttPublish.getCall(0).args[1]).toBe(
                 `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
                 `"manufName":"IKEA","modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
             );
-        });
+        }
+        );
 
         it('Should output to json by default', () => {
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.deepEqual(
-                JSON.parse(mqttPublish.getCall(0).args[1]),
-                payload
-            );
+            expect(mqttPublish.calledOnce).toBe(true);
+            expect(JSON.parse(mqttPublish.getCall(0).args[1])).toEqual(payload);
         });
 
         it('Should output to attribute', () => {
@@ -95,11 +88,11 @@ describe('Controller', () => {
 
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            assert.isTrue(mqttPublish.calledTwice);
-            assert.deepEqual(mqttPublish.getCall(0).args[0], 'test/temperature');
-            assert.deepEqual(mqttPublish.getCall(0).args[1], '1');
-            assert.deepEqual(mqttPublish.getCall(1).args[0], 'test/humidity');
-            assert.deepEqual(mqttPublish.getCall(1).args[1], '2');
+            expect(mqttPublish.calledTwice).toBe(true);
+            expect(mqttPublish.getCall(0).args[0]).toEqual('test/temperature');
+            expect(mqttPublish.getCall(0).args[1]).toEqual('1');
+            expect(mqttPublish.getCall(1).args[0]).toEqual('test/humidity');
+            expect(mqttPublish.getCall(1).args[1]).toEqual('2');
         });
     });
 });
