@@ -1,10 +1,10 @@
 {
     "env": {
-        "mocha": true,
+        "jest/globals": true,
         "es6": true,
         "node": true
     },
-    "extends": ["eslint:recommended", "google"],
+    "extends": ["eslint:recommended", "google", "plugin:jest/recommended", "plugin:jest/style"],
     "parserOptions": {
         "ecmaVersion": 2018,
         "sourceType": "module"
@@ -12,10 +12,9 @@
     "rules": {
         "require-jsdoc": "off",
         "indent": ["error", 4],
-        "max-len": ["error", { "code": 120 }],
-        "mocha/no-exclusive-tests": "error"
+        "max-len": ["error", { "code": 120 }]
     },
     "plugins": [
-        "mocha"
+        "jest"
     ]
 }

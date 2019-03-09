@@ -20,11 +20,10 @@
     "cc2531"
   ],
   "scripts": {
-    "coverage": "nyc --all report --reporter=text mocha --recursive --timeout=3000",
-    "docgen": "node docgen/docgen.js",
+    "coverage": "jest --collect-coverage",
     "eslint": "node_modules/.bin/eslint .",
     "start": "node index.js",
-    "test": "mocha --recursive"
+    "test": "jest"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -51,13 +50,10 @@
   },
   "devDependencies": {
     "chai": "*",
-    "chai-spies": "*",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-mocha": "*",
-    "mocha": "*",
-    "nyc": "*",
-    "sinon": "*",
-    "tmp": "*"
+    "eslint-plugin-jest": "^22.3.0",
+    "jest": "^24.3.1",
+    "sinon": "*"
   }
 }
