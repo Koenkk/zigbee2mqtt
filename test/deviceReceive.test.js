@@ -19,7 +19,7 @@ describe('DeviceReceive', () => {
 
     beforeEach(() => {
         utils.stubLogger(jest);
-        jest.spyOn(settings, 'addDevice').mockImplementation(() => {});
+        jest.spyOn(settings, 'addDevice').mockReturnValue(undefined);
         publishEntityState = jest.fn();
         deviceReceive = new DeviceReceive(null, mqtt, null, publishEntityState);
     });
@@ -65,9 +65,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 1 precision', () => {
             const device = {ieeeAddr: '0x12345678'};
-            jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-                return {temperature_precision: 1};
-            });
+            jest.spyOn(settings, 'getDevice').mockReturnValue({temperature_precision: 1});
             const message = utils.zigbeeMessage(
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
@@ -78,9 +76,7 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 0 precision', () => {
             const device = {ieeeAddr: '0x12345678'};
-            jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-                return {temperature_precision: 0};
-            });
+            jest.spyOn(settings, 'getDevice').mockReturnValue({temperature_precision: 0});
             const message = utils.zigbeeMessage(
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
@@ -91,19 +87,15 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 1 precision when set via device_options', () => {
             const device = {ieeeAddr: '0x12345678'};
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    device_options: {
-                        temperature_precision: 1,
-                    },
-                    advanced: {
-                        last_seen: 'disable',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                device_options: {
+                    temperature_precision: 1,
+                },
+                advanced: {
+                    last_seen: 'disable',
+                },
             });
-            jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-                return {};
-            });
+            jest.spyOn(settings, 'getDevice').mockReturnValue({});
             const message = utils.zigbeeMessage(
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
             );
@@ -115,20 +107,16 @@ describe('DeviceReceive', () => {
 
         it('Should handle a zigbee message with 2 precision when overrides device_options', () => {
             const device = {ieeeAddr: '0x12345678'};
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    device_options: {
-                        temperature_precision: 1,
-                    },
-                    advanced: {
-                        last_seen: 'disable',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                device_options: {
+                    temperature_precision: 1,
+                },
+                advanced: {
+                    last_seen: 'disable',
+                },
             });
-            jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-                return {
-                    temperature_precision: 2,
-                };
+            jest.spyOn(settings, 'getDevice').mockReturnValue({
+                temperature_precision: 2,
             });
             const message = utils.zigbeeMessage(
                 device, 'msTemperatureMeasurement', 'attReport', {measuredValue: -85}, 1
@@ -198,12 +186,10 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen epoch', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    advanced: {
-                        last_seen: 'epoch',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                advanced: {
+                    last_seen: 'epoch',
+                },
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
@@ -213,12 +199,10 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen ISO_8601', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    advanced: {
-                        last_seen: 'ISO_8601',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                advanced: {
+                    last_seen: 'ISO_8601',
+                },
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
@@ -228,12 +212,10 @@ describe('DeviceReceive', () => {
         it('Should publish last_seen ISO_8601_local', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    advanced: {
-                        last_seen: 'ISO_8601_local',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                advanced: {
+                    last_seen: 'ISO_8601_local',
+                },
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);

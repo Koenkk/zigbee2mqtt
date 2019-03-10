@@ -9,10 +9,8 @@ describe('Controller', () => {
 
     beforeEach(() => {
         utils.stubLogger(jest);
-        jest.spyOn(settings, 'getDevice').mockImplementation((ieeeAddr) => {
-            return {friendly_name: 'test'};
-        });
-        mqttPublish = jest.spyOn(mqtt.prototype, 'publish').mockImplementation(() => {});
+        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'test'});
+        mqttPublish = jest.spyOn(mqtt.prototype, 'publish').mockReturnValue(undefined);
         controller = new Controller();
         controller.zigbee = {
             getDevice: () => {
@@ -38,18 +36,16 @@ describe('Controller', () => {
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    mqtt: {
-                        include_device_information: true,
-                    },
-                    advanced: {
-                        cache_state: false,
-                    },
-                    experimental: {
-                        output: 'json',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    include_device_information: true,
+                },
+                advanced: {
+                    cache_state: false,
+                },
+                experimental: {
+                    output: 'json',
+                },
             });
 
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
@@ -71,18 +67,16 @@ describe('Controller', () => {
         });
 
         it('Should output to attribute', () => {
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    mqtt: {
-                        include_device_information: false,
-                    },
-                    advanced: {
-                        cache_state: false,
-                    },
-                    experimental: {
-                        output: 'attribute',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    include_device_information: false,
+                },
+                advanced: {
+                    cache_state: false,
+                },
+                experimental: {
+                    output: 'attribute',
+                },
             });
 
             const payload = {temperature: 1, humidity: 2};

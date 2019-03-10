@@ -66,7 +66,7 @@ describe('DevicePublish', () => {
         it('Should publish messages to zigbee devices', async () => {
             zigbee.publish.mockClear();
             publishEntityState.mockClear();
-            jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockImplementation(() => '0x00000002');
+            jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x00000002');
             zigbee.getDevice = () => ({modelId: 'LCT003'});
             devicePublish.onMQTTMessage('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
@@ -512,7 +512,7 @@ describe('DevicePublish', () => {
         );
 
         it('Should publish messages to groups', async () => {
-            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockImplementation(() => '1');
+            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue('1');
             zigbee.publish.mockClear();
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
@@ -537,7 +537,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with brightness_percent', async () => {
-            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockImplementation(() => '1');
+            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue('1');
             zigbee.publish.mockClear();
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({brightness_percent: 50}));
@@ -562,7 +562,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with on and brightness', async () => {
-            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockImplementation(() => '1');
+            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue('1');
             zigbee.publish.mockClear();
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON', brightness: 50}));
@@ -587,7 +587,7 @@ describe('DevicePublish', () => {
         });
 
         it('Should publish messages to groups with off and brightness', async () => {
-            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockImplementation(() => '1');
+            jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue('1');
             zigbee.publish.mockClear();
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'OFF', brightness: 5}));
@@ -660,12 +660,10 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base topic has multiple slashes', () => {
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    mqtt: {
-                        base_topic: 'zigbee2mqtt/at/my/home',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    base_topic: 'zigbee2mqtt/at/my/home',
+                },
             });
 
             const topic = 'zigbee2mqtt/at/my/home/my_device_id2/get';
@@ -684,12 +682,10 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse topic with when base and deviceID have multiple slashes', () => {
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    mqtt: {
-                        base_topic: 'zigbee2mqtt/at/my/basement',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    base_topic: 'zigbee2mqtt/at/my/basement',
+                },
             });
 
             const topic = 'zigbee2mqtt/at/my/basement/floor0/basement/my_device_id2/set';
@@ -749,12 +745,10 @@ describe('DevicePublish', () => {
         });
 
         it('Should parse set with and slashes in base and deviceID postfix topic', () => {
-            jest.spyOn(settings, 'get').mockImplementation(() => {
-                return {
-                    mqtt: {
-                        base_topic: 'zigbee2mqtt/at/my/home',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    base_topic: 'zigbee2mqtt/at/my/home',
+                },
             });
 
             const topic = 'zigbee2mqtt/at/my/home/my/device/in/basement/sensor/bottom_left/get';
