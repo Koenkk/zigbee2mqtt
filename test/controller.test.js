@@ -63,7 +63,7 @@ describe('Controller', () => {
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
             expect(mqttPublish).toHaveBeenCalledTimes(1);
-            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toEqual(payload);
+            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toStrictEqual(payload);
         });
 
         it('Should output to attribute', () => {
@@ -82,10 +82,10 @@ describe('Controller', () => {
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
             expect(mqttPublish).toHaveBeenCalledTimes(2);
-            expect(mqttPublish.mock.calls[0][0]).toEqual('test/temperature');
-            expect(mqttPublish.mock.calls[0][1]).toEqual('1');
-            expect(mqttPublish.mock.calls[1][0]).toEqual('test/humidity');
-            expect(mqttPublish.mock.calls[1][1]).toEqual('2');
+            expect(mqttPublish.mock.calls[0][0]).toBe('test/temperature');
+            expect(mqttPublish.mock.calls[0][1]).toBe('1');
+            expect(mqttPublish.mock.calls[1][0]).toBe('test/humidity');
+            expect(mqttPublish.mock.calls[1][1]).toBe('2');
         });
     });
 });

@@ -34,7 +34,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({click: 'single'});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({click: 'single'});
         });
 
         it('Should handle a zigbee message which uses ep (left)', () => {
@@ -42,7 +42,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({click: 'left'});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({click: 'left'});
         });
 
         it('Should handle a zigbee message which uses ep (right)', () => {
@@ -50,7 +50,7 @@ describe('DeviceReceive', () => {
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 2);
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({click: 'right'});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({click: 'right'});
         });
 
         it('Should handle a zigbee message with default precision', () => {
@@ -60,7 +60,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({temperature: -0.85});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -0.85});
         });
 
         it('Should handle a zigbee message with 1 precision', () => {
@@ -71,7 +71,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({temperature: -0.8});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -0.8});
         });
 
         it('Should handle a zigbee message with 0 precision', () => {
@@ -82,7 +82,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({temperature: -1});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -1});
         });
 
         it('Should handle a zigbee message with 1 precision when set via device_options', () => {
@@ -101,7 +101,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({temperature: -0.8});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -0.8});
         }
         );
 
@@ -123,7 +123,7 @@ describe('DeviceReceive', () => {
             );
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({temperature: -0.85});
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -0.85});
         }
         );
 
@@ -133,7 +133,7 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             const expected = {battery: 100, voltage: 3010};
-            expect(publishEntityState.mock.calls[0][1]).toEqual(expected);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2850', () => {
@@ -142,7 +142,7 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             const expected = {battery: 35, voltage: 2850};
-            expect(publishEntityState.mock.calls[0][1]).toEqual(expected);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2650', () => {
@@ -151,7 +151,7 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             const expected = {battery: 14, voltage: 2650};
-            expect(publishEntityState.mock.calls[0][1]).toEqual(expected);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual(expected);
         });
 
         it('Should handle a zigbee message with voltage 2000', () => {
@@ -160,7 +160,7 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             const expected = {battery: 0, voltage: 2000};
-            expect(publishEntityState.mock.calls[0][1]).toEqual(expected);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual(expected);
         });
 
         it('Should publish 1 message when converted twice', () => {
@@ -172,7 +172,7 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, RTCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             const expected = {'battery': 100, 'illuminance': 381, 'voltage': 3045};
-            expect(publishEntityState.mock.calls[0][1]).toEqual(expected);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual(expected);
         });
 
         it('Should publish no message when converted without result', () => {
@@ -193,7 +193,7 @@ describe('DeviceReceive', () => {
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toEqual('number');
+            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('number');
         });
 
         it('Should publish last_seen ISO_8601', () => {
@@ -206,7 +206,7 @@ describe('DeviceReceive', () => {
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toEqual('string');
+            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('string');
         });
 
         it('Should publish last_seen ISO_8601_local', () => {
@@ -219,7 +219,7 @@ describe('DeviceReceive', () => {
             });
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toEqual('string');
+            expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('string');
         });
     });
 });
