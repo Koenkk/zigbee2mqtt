@@ -37,9 +37,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices', () => {
         let payload = null;
-        jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-            return {friendly_name: 'my_device'};
-        });
+        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
         expect(mqtt.publish).toHaveBeenCalledTimes(5);
@@ -166,13 +164,11 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with precision', () => {
         let payload = null;
-        jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-            return {
-                friendly_name: 'my_device',
-                humidity_precision: 0,
-                temperature_precision: 1,
-                pressure_precision: 2,
-            };
+        jest.spyOn(settings, 'getDevice').mockReturnValue({
+            friendly_name: 'my_device',
+            humidity_precision: 0,
+            temperature_precision: 1,
+            pressure_precision: 2,
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
@@ -300,17 +296,15 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with overriden user configuration', () => {
         let payload = null;
-        jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-            return {
-                friendly_name: 'my_device',
-                homeassistant: {
-                    expire_after: 30,
-                    icon: 'mdi:test',
-                    temperature: {
-                        expire_after: 90,
-                    },
+        jest.spyOn(settings, 'getDevice').mockReturnValue({
+            friendly_name: 'my_device',
+            homeassistant: {
+                expire_after: 30,
+                icon: 'mdi:test',
+                temperature: {
+                    expire_after: 90,
                 },
-            };
+            },
         });
 
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
@@ -448,9 +442,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices with cover_position', () => {
         let payload = null;
-        jest.spyOn(settings, 'getDevice').mockImplementation(() => {
-            return {friendly_name: 'my_device'};
-        });
+        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
 
         homeassistant.discover('0x12345678', SV01, false);
         expect(mqtt.publish).toHaveBeenCalledTimes(5);
