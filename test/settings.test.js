@@ -44,7 +44,7 @@ describe('Settings', () => {
         it('Should return default settings', () => {
             write(configurationFile, {});
             const s = settings.get();
-            expect(s).toEqual(settings._getDefaults());
+            expect(s).toStrictEqual(settings._getDefaults());
         });
 
         it('Should return settings', () => {
@@ -52,7 +52,7 @@ describe('Settings', () => {
             const s = settings.get();
             const expected = settings._getDefaults();
             expected.permit_join = true;
-            expect(s).toEqual(expected);
+            expect(s).toStrictEqual(expected);
         });
 
         it('Should add devices', () => {
@@ -69,7 +69,7 @@ describe('Settings', () => {
                 },
             };
 
-            expect(actual).toEqual(expected);
+            expect(actual).toStrictEqual(expected);
         });
 
         it('Should read devices', () => {
@@ -90,7 +90,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            expect(device).toEqual(expected);
+            expect(device).toStrictEqual(expected);
         });
 
         it('Should read devices form a separate file', () => {
@@ -114,7 +114,7 @@ describe('Settings', () => {
                 retain: false,
             };
 
-            expect(device).toEqual(expected);
+            expect(device).toStrictEqual(expected);
         });
 
         it('Should add devices to a separate file', () => {
@@ -134,7 +134,7 @@ describe('Settings', () => {
 
             settings.addDevice('0x1234');
 
-            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
+            expect(read(configurationFile)).toStrictEqual({devices: 'devices.yaml'});
 
             const expected = {
                 '0x12345678': {
@@ -147,7 +147,7 @@ describe('Settings', () => {
                 },
             };
 
-            expect(read(devicesFile)).toEqual(expected);
+            expect(read(devicesFile)).toStrictEqual(expected);
         });
 
         it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
@@ -159,7 +159,7 @@ describe('Settings', () => {
 
             settings.addDevice('0x1234');
 
-            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
+            expect(read(configurationFile)).toStrictEqual({devices: 'devices.yaml'});
 
             const expected = {
                 '0x1234': {
@@ -168,7 +168,7 @@ describe('Settings', () => {
                 },
             };
 
-            expect(read(devicesFile)).toEqual(expected);
+            expect(read(devicesFile)).toStrictEqual(expected);
         }
         );
 
@@ -180,12 +180,12 @@ describe('Settings', () => {
             write(configurationFile, contentConfiguration);
 
             settings.addDevice('0x1234');
-            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
+            expect(read(configurationFile)).toStrictEqual({devices: 'devices.yaml'});
 
             settings.removeDevice('0x1234');
-            expect(read(configurationFile)).toEqual({devices: 'devices.yaml'});
+            expect(read(configurationFile)).toStrictEqual({devices: 'devices.yaml'});
 
-            expect(read(devicesFile)).toEqual({});
+            expect(read(devicesFile)).toStrictEqual({});
         }
         );
 
@@ -205,7 +205,7 @@ describe('Settings', () => {
                 friendly_name: '123',
             };
 
-            expect(group).toEqual(expected);
+            expect(group).toStrictEqual(expected);
         });
 
         it('Should read groups form a separate file', () => {
@@ -227,7 +227,7 @@ describe('Settings', () => {
                 friendly_name: '123',
             };
 
-            expect(group).toEqual(expected);
+            expect(group).toStrictEqual(expected);
         });
 
         it('Combine everything! groups and devices from separate file :)', () => {
@@ -250,11 +250,11 @@ describe('Settings', () => {
                 groups: 'groups.yaml',
             };
 
-            expect(read(configurationFile)).toEqual(expectedConfiguration);
+            expect(read(configurationFile)).toStrictEqual(expectedConfiguration);
 
             settings.addDevice('0x1234');
 
-            expect(read(configurationFile)).toEqual(expectedConfiguration);
+            expect(read(configurationFile)).toStrictEqual(expectedConfiguration);
 
             const expectedDevice = {
                 '0x1234': {
@@ -263,23 +263,23 @@ describe('Settings', () => {
                 },
             };
 
-            expect(read(devicesFile)).toEqual(expectedDevice);
+            expect(read(devicesFile)).toStrictEqual(expectedDevice);
 
             const group = settings.getGroup('1');
             const expectedGroup = {
                 friendly_name: '123',
             };
 
-            expect(group).toEqual(expectedGroup);
+            expect(group).toStrictEqual(expectedGroup);
 
-            expect(read(configurationFile)).toEqual(expectedConfiguration);
+            expect(read(configurationFile)).toStrictEqual(expectedConfiguration);
 
             const expectedDevice2 = {
                 friendly_name: '0x1234',
                 retain: false,
             };
 
-            expect(settings.getDevice('0x1234')).toEqual(expectedDevice2);
+            expect(settings.getDevice('0x1234')).toStrictEqual(expectedDevice2);
         });
     });
 });

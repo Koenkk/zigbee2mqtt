@@ -778,14 +778,14 @@ describe('DevicePublish', () => {
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x00000020/set', JSON.stringify(msg));
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
-        expect(zigbee.publish.mock.calls[0][2]).toEqual('genOnOff');
-        expect(zigbee.publish.mock.calls[0][3]).toEqual('on');
-        expect(zigbee.publish.mock.calls[1][2]).toEqual('lightingColorCtrl');
-        expect(zigbee.publish.mock.calls[1][3]).toEqual('moveToColor');
+        expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
+        expect(zigbee.publish.mock.calls[0][3]).toBe('on');
+        expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
         await wait(10);
         expect(zigbee.publish).toHaveBeenCalledTimes(3);
-        expect(zigbee.publish.mock.calls[2][2]).toEqual('lightingColorCtrl');
-        expect(zigbee.publish.mock.calls[2][3]).toEqual('read');
+        expect(zigbee.publish.mock.calls[2][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[2][3]).toBe('read');
     });
 
     it('Should set state with brightness before color', async () => {
@@ -794,8 +794,8 @@ describe('DevicePublish', () => {
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}, 'transition': 3, 'brightness': 100};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x00000021/set', JSON.stringify(msg));
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
-        expect(zigbee.publish.mock.calls[0][2]).toEqual('genLevelCtrl');
-        expect(zigbee.publish.mock.calls[1][2]).toEqual('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
+        expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
         await wait(10);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
     });

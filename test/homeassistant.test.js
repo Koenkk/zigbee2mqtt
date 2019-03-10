@@ -61,10 +61,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
 
         // 2
         payload = {
@@ -85,10 +85,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
 
         // 3
         payload = {
@@ -109,10 +109,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
 
         // 4
         payload = {
@@ -133,10 +133,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
 
         // 5
         payload = {
@@ -156,10 +156,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
     });
 
     it('Should discover devices with precision', () => {
@@ -193,10 +193,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
 
         // 2
         payload = {
@@ -217,10 +217,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
 
         // 3
         payload = {
@@ -241,10 +241,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
 
         // 4
         payload = {
@@ -265,10 +265,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
 
         // 5
         payload = {
@@ -288,10 +288,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
     });
 
     it('Should discover devices with overriden user configuration', () => {
@@ -331,10 +331,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
 
         // 2
         payload = {
@@ -357,10 +357,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
 
         // 3
         payload = {
@@ -383,10 +383,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
 
         // 4
         payload = {
@@ -409,10 +409,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
 
         // 5
         payload = {
@@ -434,10 +434,10 @@ describe('HomeAssistant extension', () => {
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
     });
 
     it('Should discover devices with cover_position', () => {
@@ -466,9 +466,9 @@ describe('HomeAssistant extension', () => {
             availability_topic: 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toEqual({retain: true, qos: 0});
+        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toEqual('homeassistant');
+        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
     });
 });
