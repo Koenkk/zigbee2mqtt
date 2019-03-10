@@ -1,0 +1,59 @@
+const BridgeConfig = require('../lib/extension/bridgeConfig');
+const settings = require('../lib/util/settings');
+const fs = require('../lib/util/fs');
+const objectAssignDeep = require('object-assign-deep');
+const data = require('../lib/util/data');
+const configurationFile = data.joinPath('configuration.yaml');
+
+const mqtt = {
+    subscribe: (topic) => {},
+};
+
+describe('BridgeConfig', () => {
+    let bridgeConfig;
+    const write = (file, json) => fs.writeYaml(file, json);
+    const read = (file) => fs.readYaml(file);
+    const files = new Map();
+
+    beforeAll(() => {
+        jest.spyOn(fs, 'readYaml').mockImplementation((file) => {
+            if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
+            throw new Error(`Fake file not found: ${file}`);
+        });
+        jest.spyOn(fs, 'readYamlIfExists').mockImplementation((file) => {
+            if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
+            return null;
+        });
+        jest.spyOn(fs, 'writeYaml').mockImplementation((file, content) => {
+            files.set(file, objectAssignDeep.noMutate(content));
+        });
+    });
+
+    beforeEach(() => {
+        settings._clear();
+        files.clear();
+        bridgeConfig = new BridgeConfig(null, mqtt, null, null);
+    });
+
+    afterAll(() => {
+        fs.readYaml.mockRestore();
+        fs.readYamlIfExists.mockRestore();
+        fs.writeYaml.mockRestore();
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    it('Setting elapsed false', async () => {
+        write(configurationFile, {advanced: {elapsed: true}});
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/elapsed', 'false');
+        const expected = {
+            advanced: {
+                elapsed: false,
+            },
+        };
+
+        expect(read(configurationFile)).toStrictEqual(expected);
+    });
+});
