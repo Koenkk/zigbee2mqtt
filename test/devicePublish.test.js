@@ -44,18 +44,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({brightness: '200'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000001');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 200, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000001',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 200, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000001');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 200});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000001',
+                {state: 'ON', brightness: 200},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         });
@@ -67,18 +70,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'LCT003'});
             devicePublish.onMQTTMessage('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000002');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('on');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000002',
+                'device',
+                'genOnOff',
+                'on',
+                'functional',
+                {},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000002');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000002',
+                {state: 'ON'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -89,18 +95,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify({brightness_percent: '92'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000003');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 235, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000003',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 235, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000003');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 235});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000003',
+                {state: 'ON', brightness: 235},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -112,18 +121,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000004/set', JSON.stringify({brightness: 230}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000004');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 230, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000004',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 230, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000004');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 230});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000004',
+                {state: 'ON', brightness: 230},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -134,14 +146,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 WS opal 980lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000005/set', JSON.stringify({color_temp: '222'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000005');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColorTemp');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({colortemp: '222', transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000005',
+                'device',
+                'lightingColorCtrl',
+                'moveToColorTemp',
+                'functional',
+                {colortemp: '222', transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         });
@@ -152,14 +166,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 WS opal 980lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000006/set', JSON.stringify({color_temp_percent: '100'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000006');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColorTemp');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({colortemp: '500', transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000006',
+                'device',
+                'lightingColorCtrl',
+                'moveToColorTemp',
+                'functional',
+                {colortemp: '500', transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(0);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
@@ -171,14 +187,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral1'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000007/set', JSON.stringify({state: 'OFF'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000007');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBe(2);
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000007',
+                'device',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                2,
+                expect.any(Function));
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
@@ -190,18 +208,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000008/right/set', JSON.stringify({state: 'OFF'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000008');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBe(3);
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000008',
+                'device',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                3,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000008');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state_right: 'OFF'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000008',
+                {state_right: 'OFF'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
@@ -213,18 +234,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'GLEDOPTO', epList: [11, 13]});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000009/set', JSON.stringify({state: 'OFF'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000009');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBe(11);
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000009',
+                'device',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                11,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000009');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'OFF'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000009',
+                {state: 'OFF'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -235,18 +259,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'GLEDOPTO', epList: [11, 12, 13]});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000010/set', JSON.stringify({state: 'OFF', brightness: 50}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000010');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBe(12);
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000010',
+                'device',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                12,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000010');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'OFF'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000010',
+                {state: 'OFF'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
@@ -257,14 +284,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000011/set', JSON.stringify({color: {x: 100, y: 50}}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000011');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({colorx: 6553500, colory: 3276750, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000011',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 6553500, colory: 3276750, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         });
@@ -276,26 +305,31 @@ describe('DevicePublish', () => {
             const payload = {color: {x: 100, y: 50}, state: 'ON'};
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000012/set', JSON.stringify(payload));
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000012');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('on');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
-            expect(zigbee.publish.mock.calls[1][0]).toBe('0x00000012');
-            expect(zigbee.publish.mock.calls[1][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[1][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[1][5]).toEqual({colorx: 6553500, colory: 3276750, transtime: 0});
-            expect(zigbee.publish.mock.calls[1][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[1][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000012',
+                'device',
+                'genOnOff',
+                'on',
+                'functional',
+                {},
+                cfg.default,
+                null,
+                expect.any(Function));
+            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+                '0x00000012',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 6553500, colory: 3276750, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000012');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000012',
+                {state: 'ON'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(3);
         }
@@ -308,26 +342,31 @@ describe('DevicePublish', () => {
             const payload = {color: {x: 100, y: 50}, brightness: 20};
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000013/set', JSON.stringify(payload));
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000013');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 20, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
-            expect(zigbee.publish.mock.calls[1][0]).toBe('0x00000013');
-            expect(zigbee.publish.mock.calls[1][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[1][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[1][5]).toEqual({colorx: 6553500, colory: 3276750, transtime: 0});
-            expect(zigbee.publish.mock.calls[1][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[1][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000013',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 20, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
+            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+                '0x00000013',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 6553500, colory: 3276750, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000013');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 20});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000013',
+                {state: 'ON', brightness: 20},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(4);
         }
@@ -340,26 +379,31 @@ describe('DevicePublish', () => {
             const payload = {color: {x: 100, y: 50}, brightness: 20, state: 'oN'};
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000014/set', JSON.stringify(payload));
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000014');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 20, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
-            expect(zigbee.publish.mock.calls[1][0]).toBe('0x00000014');
-            expect(zigbee.publish.mock.calls[1][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[1][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[1][5]).toEqual({colorx: 6553500, colory: 3276750, transtime: 0});
-            expect(zigbee.publish.mock.calls[1][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[1][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000014',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 20, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
+            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+                '0x00000014',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 6553500, colory: 3276750, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000014');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 20});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000014',
+                {state: 'ON', brightness: 20},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(4);
         }
@@ -372,26 +416,31 @@ describe('DevicePublish', () => {
             const payload = {color: {x: 100, y: 50}, brightness: 20, state: 'oFF'};
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000015/set', JSON.stringify(payload));
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000015');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
-            expect(zigbee.publish.mock.calls[1][0]).toBe('0x00000015');
-            expect(zigbee.publish.mock.calls[1][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[1][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[1][5]).toEqual({colorx: 6553500, colory: 3276750, transtime: 0});
-            expect(zigbee.publish.mock.calls[1][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[1][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000015',
+                'device',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                null,
+                expect.any(Function));
+            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+                '0x00000015',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 6553500, colory: 3276750, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000015');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'OFF'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000015',
+                {state: 'OFF'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(3);
         }
@@ -402,14 +451,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000016/set', JSON.stringify({color: {r: 100, g: 200, b: 10}}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000016');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({colorx: 17085, colory: 44000, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000016',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 17085, colory: 44000, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         });
@@ -419,14 +470,16 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000017/set', JSON.stringify({color: {rgb: '100,200,10'}}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000017');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColor');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({colorx: 17085, colory: 44000, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000017',
+                'device',
+                'lightingColorCtrl',
+                'moveToColor',
+                'functional',
+                {colorx: 17085, colory: 44000, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -438,18 +491,21 @@ describe('DevicePublish', () => {
             zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
             devicePublish.onMQTTMessage('zigbee2mqtt/0x00000018/set', JSON.stringify({state: 'ON', brightness: '50'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe('0x00000018');
-            expect(zigbee.publish.mock.calls[0][1]).toBe('device');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 50, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                '0x00000018',
+                'device',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 50, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe('0x00000018');
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 50});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                '0x00000018',
+                {state: 'ON', brightness: 50},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -461,18 +517,21 @@ describe('DevicePublish', () => {
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON'}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe(1);
-            expect(zigbee.publish.mock.calls[0][1]).toBe('group');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('on');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                1,
+                'group',
+                'genOnOff',
+                'on',
+                'functional',
+                {},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                1,
+                {state: 'ON'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -483,18 +542,21 @@ describe('DevicePublish', () => {
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({brightness_percent: 50}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe(1);
-            expect(zigbee.publish.mock.calls[0][1]).toBe('group');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 127, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                1,
+                'group',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 127, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 127});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                1,
+                {state: 'ON', brightness: 127},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -505,18 +567,21 @@ describe('DevicePublish', () => {
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'ON', brightness: 50}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe(1);
-            expect(zigbee.publish.mock.calls[0][1]).toBe('group');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({level: 50, transtime: 0});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                1,
+                'group',
+                'genLevelCtrl',
+                'moveToLevelWithOnOff',
+                'functional',
+                {level: 50, transtime: 0},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'ON', brightness: 50});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                1,
+                {state: 'ON', brightness: 50},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -527,18 +592,21 @@ describe('DevicePublish', () => {
             publishEntityState.mockClear();
             devicePublish.onMQTTMessage('zigbee2mqtt/group/group_1/set', JSON.stringify({state: 'OFF', brightness: 5}));
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
-            expect(zigbee.publish.mock.calls[0][0]).toBe(1);
-            expect(zigbee.publish.mock.calls[0][1]).toBe('group');
-            expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
-            expect(zigbee.publish.mock.calls[0][3]).toBe('off');
-            expect(zigbee.publish.mock.calls[0][4]).toBe('functional');
-            expect(zigbee.publish.mock.calls[0][5]).toEqual({});
-            expect(zigbee.publish.mock.calls[0][6]).toEqual(cfg.default);
-            expect(zigbee.publish.mock.calls[0][7]).toBeNull();
+            expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+                1,
+                'group',
+                'genOnOff',
+                'off',
+                'functional',
+                {},
+                cfg.default,
+                null,
+                expect.any(Function));
             expect(publishEntityState).toHaveBeenCalledTimes(1);
-            expect(publishEntityState.mock.calls[0][0]).toBe(1);
-            expect(publishEntityState.mock.calls[0][1]).toEqual({state: 'OFF'});
-            expect(publishEntityState.mock.calls[0][2]).toBe(true);
+            expect(publishEntityState).toHaveBeenNthCalledWith(1,
+                1,
+                {state: 'OFF'},
+                true);
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
