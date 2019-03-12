@@ -41,16 +41,74 @@ describe('BridgeConfig', () => {
         fs.writeYaml.mockRestore();
     });
 
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
     it('Setting elapsed false', async () => {
         write(configurationFile, {advanced: {elapsed: true}});
         bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/elapsed', 'false');
         const expected = {
             advanced: {
                 elapsed: false,
+            },
+        };
+
+        expect(read(configurationFile)).toStrictEqual(expected);
+    });
+
+    it('Add groups when there are none', async () => {
+        write(configurationFile, {});
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/add_group', 'test123');
+        const expected = {
+            groups: {
+                '1': {
+                    friendly_name: 'test123',
+                },
+            },
+        };
+
+        expect(read(configurationFile)).toStrictEqual(expected);
+    });
+
+    it('Add groups when there are', async () => {
+        write(configurationFile, {
+            groups: {
+                '1': {
+                    friendly_name: 'test123',
+                },
+            },
+        });
+
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/add_group', 'test1234');
+        const expected = {
+            groups: {
+                '1': {
+                    friendly_name: 'test123',
+                },
+                '2': {
+                    friendly_name: 'test1234',
+                },
+            },
+        };
+
+        expect(read(configurationFile)).toStrictEqual(expected);
+    });
+
+    it('Remove group', async () => {
+        write(configurationFile, {
+            groups: {
+                '1': {
+                    friendly_name: 'test123',
+                },
+                '2': {
+                    friendly_name: 'test1234',
+                },
+            },
+        });
+
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/remove_group', 'test123');
+        const expected = {
+            groups: {
+                '2': {
+                    friendly_name: 'test1234',
+                },
             },
         };
 
