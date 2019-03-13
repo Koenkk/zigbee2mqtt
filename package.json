@@ -45,7 +45,7 @@
     "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#77ba3058c6c4b09a9958761ae5e3046765c12872",
     "ziee": "*",
     "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#4618b861d195de48666f801d9e531dc3a22bc2a4",
-    "zigbee-shepherd-converters": "7.2.8",
+    "zigbee-shepherd-converters": "8.0.0",
     "zive": "*"
   },
   "devDependencies": {
