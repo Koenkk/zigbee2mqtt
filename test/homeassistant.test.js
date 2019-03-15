@@ -557,4 +557,37 @@ describe('HomeAssistant extension', () => {
         expect(mqtt.publish.mock.calls[0][3]).toBeNull();
         expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
     });
+
+    it('Should discover devices with a custom discovery topic', () => {
+        jest.spyOn(settings, 'get').mockReturnValue({
+            mqtt: {
+                base_topic: 'zigbee2mqtt',
+            },
+            experimental: {
+                output: 'json',
+            },
+            advanced: {
+                homeassistant_discovery_topic: 'my_custom_topic',
+            },
+        });
+
+        homeassistant = new HomeassistantExtension(null, mqtt, null, null);
+
+        jest.spyOn(settings, 'getDevice').mockReturnValue({
+            friendly_name: 'my_device',
+            homeassistant: {
+                temperature: {
+                    expire_after: 90,
+                    device: {
+                        identifiers: 'test',
+                    },
+                },
+            },
+        });
+
+        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
+
+        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        expect(mqtt.publish.mock.calls[0][4]).toBe('my_custom_topic');
+    });
 });
