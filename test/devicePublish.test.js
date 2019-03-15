@@ -57,8 +57,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000001',
-                {state: 'ON', brightness: 200},
-                true);
+                {state: 'ON', brightness: 200});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         });
@@ -83,8 +82,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000002',
-                {state: 'ON'},
-                true);
+                {state: 'ON'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -108,8 +106,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000003',
-                {state: 'ON', brightness: 235},
-                true);
+                {state: 'ON', brightness: 235});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -134,8 +131,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000004',
-                {state: 'ON', brightness: 230},
-                true);
+                {state: 'ON', brightness: 230});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -221,8 +217,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000008',
-                {state_right: 'OFF'},
-                true);
+                {state_right: 'OFF'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
@@ -247,8 +242,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000009',
-                {state: 'OFF'},
-                true);
+                {state: 'OFF'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -272,8 +266,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000010',
-                {state: 'OFF'},
-                true);
+                {state: 'OFF'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
@@ -328,8 +321,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000012',
-                {state: 'ON'},
-                true);
+                {state: 'ON'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(3);
         }
@@ -365,8 +357,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000013',
-                {state: 'ON', brightness: 20},
-                true);
+                {state: 'ON', brightness: 20});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(4);
         }
@@ -402,8 +393,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000014',
-                {state: 'ON', brightness: 20},
-                true);
+                {state: 'ON', brightness: 20});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(4);
         }
@@ -439,8 +429,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000015',
-                {state: 'OFF'},
-                true);
+                {state: 'OFF'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(3);
         }
@@ -504,8 +493,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000018',
-                {state: 'ON', brightness: 50},
-                true);
+                {state: 'ON', brightness: 50});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
@@ -530,8 +518,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 1,
-                {state: 'ON'},
-                true);
+                {state: 'ON'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -555,8 +542,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 1,
-                {state: 'ON', brightness: 127},
-                true);
+                {state: 'ON', brightness: 127});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -580,8 +566,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 1,
-                {state: 'ON', brightness: 50},
-                true);
+                {state: 'ON', brightness: 50});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
@@ -605,8 +590,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 1,
-                {state: 'OFF'},
-                true);
+                {state: 'OFF'});
             await wait(10);
             expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
