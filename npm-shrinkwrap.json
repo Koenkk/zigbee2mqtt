@@ -2072,9 +2072,9 @@
       }
     },
     "commander": {
-      "version": "2.17.1",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-2.17.1.tgz",
-      "integrity": "sha512-wPMUt6FnH2yzG95SA6mzjQOEKUU3aLaDEmzs1ti+1E9h+CsrZghRlqEM/EJ4KscsQVG8uNN4uVreUeT8+drlgg==",
+      "version": "2.19.0",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-2.19.0.tgz",
+      "integrity": "sha512-6tvAOO+D6OENvRAh524Dh9jcfKTYDQAqvqezbCW82xj5X0pSrcpxtvRKHLG0yBY6SD7PSDrJaj+0AiOcKVd1Xg==",
       "dev": true,
       "optional": true
     },
@@ -2672,9 +2672,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.4.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.4.0.tgz",
-      "integrity": "sha512-BLgYcXY8EfvujGdMWr6xK7cNjNAcYuyDjLI8NNU3D9qf0Iqd2FF8N+GbZkae45KG/MFDQLctz8gmiO1zo7i7BA==",
+      "version": "22.4.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.4.1.tgz",
+      "integrity": "sha512-gcLfn6P2PrFAVx3AobaOzlIEevpAEf9chTpFZz7bYfc7pz8XRv7vuKTIE4hxPKZSha6XWKKplDQ0x9Pq8xX2mg==",
       "dev": true
     },
     "eslint-scope": {
@@ -6489,13 +6489,13 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.4.9",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.4.9.tgz",
-      "integrity": "sha512-8CJsbKOtEbnJsTyv6LE6m6ZKniqMiFWmm9sRbopbkGs3gMPPfd3Fh8iIA4Ykv5MgaTbqHr4BaoGLJLZNhsrW1Q==",
+      "version": "3.4.10",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.4.10.tgz",
+      "integrity": "sha512-Y2VsbPVs0FIshJztycsO2SfPk7/KAF/T72qzv9u5EpQ4kB2hQoHlhNQTsNyy6ul7lQtqJN/AoWeS23OzEiEFxw==",
       "dev": true,
       "optional": true,
       "requires": {
-        "commander": "~2.17.1",
+        "commander": "~2.19.0",
         "source-map": "~0.6.1"
       }
     },
@@ -6952,9 +6952,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "8.0.2",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-8.0.2.tgz",
-      "integrity": "sha512-AebQIUMOymvuv7QmxxYytESDSlCOBYHHIgdjCNd7HvsYlqtiFMrm2v9OfrQggxOmsaYPip1h+yuES0V4jdPHTA==",
+      "version": "8.0.3",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-8.0.3.tgz",
+      "integrity": "sha512-S/0xk+LoibihoxHFzDSyX5Rtgkne54CTuYxsSBiO/bZgaA/4tIQKCWbPYJMCSjQO4IkiB+pmewc5Aa6YhFBLtA==",
       "requires": {
         "chai": "*",
         "debounce": "*",
