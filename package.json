@@ -42,10 +42,10 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#77ba3058c6c4b09a9958761ae5e3046765c12872",
+    "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#4fa75c92424cd070a3bf6e1f4640b1e3ad8f802d",
     "ziee": "*",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#47fc75a070530f217273c561dd15eb68629c3c0a",
-    "zigbee-shepherd-converters": "8.0.4",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#6e587ad4093246baedaa01ad651be1be08c11a14",
+    "zigbee-shepherd-converters": "8.0.6",
     "zive": "*"
   },
   "devDependencies": {
