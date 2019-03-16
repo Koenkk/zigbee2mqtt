@@ -52,8 +52,12 @@ const zigbee = {
     getDevice: (ID) => {
         if (ID === 'switch_ep2') {
             return {modelId: 'lumi.sensor_86sw2.es1'};
-        } else if (ID == 'switch_ep3') {
+        } else if (ID === 'switch_ep3') {
             return {modelId: 'DNCKAT_S003'};
+        } else if (ID === 'bulb') {
+            return {modelId: 'TRADFRI bulb E27 WS opal 980lm'};
+        } else if (ID === 'remote') {
+            return {modelId: 'TRADFRI remote control'};
         }
 
         throw new Error(`No mock for ${ID}`);
