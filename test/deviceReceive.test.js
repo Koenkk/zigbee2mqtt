@@ -3,6 +3,8 @@ const settings = require('../lib/util/settings');
 const devices = require('zigbee-shepherd-converters').devices;
 const utils = require('./utils');
 
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // Devices
 const WXKG11LM = devices.find((d) => d.model === 'WXKG11LM');
 const WXKG02LM = devices.find((d) => d.model === 'WXKG02LM');
@@ -61,6 +63,31 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WSDCGQ11LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: -0.85});
+        });
+
+        it('Should debounce messages', async () => {
+            const device = {ieeeAddr: '0x12345678'};
+            jest.spyOn(settings, 'getDevice').mockReturnValue({debounce: 0.1});
+            const message1 = utils.zigbeeMessage(
+                device, 'msTemperatureMeasurement', 'attReport', {measuredValue: 8}, 1
+            );
+            const message2 = utils.zigbeeMessage(
+                device, 'msRelativeHumidity', 'attReport', {measuredValue: 1}, 1
+            );
+            const message3 = utils.zigbeeMessage(
+                device, 'msPressureMeasurement', 'attReport', {measuredValue: 2}, 1
+            );
+            deviceReceive.onZigbeeMessage(message1, device, WSDCGQ11LM);
+            deviceReceive.onZigbeeMessage(message2, device, WSDCGQ11LM);
+            deviceReceive.onZigbeeMessage(message3, device, WSDCGQ11LM);
+            await wait(200);
+            expect(publishEntityState).toHaveBeenCalledTimes(1);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
+
+            deviceReceive.onZigbeeMessage(message1, device, WSDCGQ11LM);
+            await wait(200);
+            expect(publishEntityState).toHaveBeenCalledTimes(2);
+            expect(publishEntityState.mock.calls[1][1]).toStrictEqual({temperature: 0.08});
         });
 
         it('Should handle a zigbee message with 1 precision', () => {
