@@ -128,13 +128,13 @@ describe('BridgeConfig', () => {
             groups: {
                 '1': {
                     friendly_name: 'test1',
-		},
+                },
                 '4711': {
                     friendly_name: 'test42',
                 },
             },
         });
 
-	bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/groups', 'whatever');
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/groups', 'whatever');
     });
 });
