@@ -118,24 +118,23 @@ describe('BridgeConfig', () => {
 
     it('Get groups', async () => {
         jest.spyOn(mqtt, 'log').mockImplementation((type, message) => {
-	    expect(type).toBe('groups');
-	    expect(Object.keys(message).length).toBe(2);
-	    expect(message['1'].friendly_name).toBe('test1');
-	    expect(message['4711'].friendly_name).toBe('test42');
-	});
+            expect(type).toBe('groups');
+            expect(Object.keys(message)).toHaveLength(2);
+            expect(message['1'].friendly_name).toBe('test1');
+            expect(message['4711'].friendly_name).toBe('test42');
+        });
 
         write(configurationFile, {
-	    groups: {
+            groups: {
                 '1': {
-		    friendly_name: 'test1',
+                    friendly_name: 'test1',
 		},
-		'4711': {
-		    friendly_name: 'test42',
-		},
-	    },
-	});
+                '4711': {
+                    friendly_name: 'test42',
+                },
+            },
+        });
 
 	bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/groups', 'whatever');
     });
-
 });
