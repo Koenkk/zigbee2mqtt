@@ -783,4 +783,48 @@ describe('DevicePublish', () => {
         await wait(10);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
     });
+
+    it('Should turn device of when brightness 0 is send', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({brightness: 0}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genOnOff',
+            'off',
+            'functional',
+            {},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            {state: 'OFF'});
+    });
+
+    it('Should turn device of when brightness 0 is send with light_brightness converter', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'FB56+ZSC05HG1.0'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({brightness: 0}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genOnOff',
+            'off',
+            'functional',
+            {},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            {state: 'OFF'});
+    });
 });
