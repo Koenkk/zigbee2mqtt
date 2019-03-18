@@ -10,6 +10,7 @@ const WXKG11LM = devices.find((d) => d.model === 'WXKG11LM');
 const WXKG02LM = devices.find((d) => d.model === 'WXKG02LM');
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
 const RTCGQ11LM = devices.find((d) => d.model === 'RTCGQ11LM');
+const ZNCZ02LM = devices.find((d) => d.model === 'ZNCZ02LM');
 
 const mqtt = {
     log: () => {},
@@ -247,6 +248,21 @@ describe('DeviceReceive', () => {
             deviceReceive.onZigbeeMessage(message, device, WXKG02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('string');
+        });
+
+        it('Should not handle messages forwarded Xiaomi messages', () => {
+            const device = {ieeeAddr: '0x12345678', manufId: 4151, type: 'Router'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1, 599);
+            deviceReceive.onZigbeeMessage(message, device, ZNCZ02LM);
+            expect(publishEntityState).toHaveBeenCalledTimes(0);
+        });
+
+        it('Should handle messages from Xiaomi router devices', () => {
+            const device = {ieeeAddr: '0x12345678', manufId: 4151, type: 'Router'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1});
+            deviceReceive.onZigbeeMessage(message, device, ZNCZ02LM);
+            expect(publishEntityState).toHaveBeenCalledTimes(1);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({state: 'ON'});
         });
     });
 });
