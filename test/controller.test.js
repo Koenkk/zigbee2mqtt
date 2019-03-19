@@ -17,6 +17,8 @@ describe('Controller', () => {
                 return {
                     modelId: 'TRADFRI bulb E27 CWS opal 600lm',
                     manufName: 'IKEA',
+                    hwVersion: '1.1',
+                    swBuildId: '2.0',
                 };
             },
         };
@@ -48,14 +50,23 @@ describe('Controller', () => {
                 },
             });
 
+            const payload = {
+                'state': 'ON',
+                'device': {
+                    'ieeeAddr': '0x12345678',
+                    'friendlyName': 'test',
+                    'manufName': 'IKEA',
+                    'modelId': 'TRADFRI bulb E27 CWS opal 600lm',
+                    'hwVersion': '1.1',
+                    'swBuildId': '2.0',
+                },
+            };
+
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
             expect(mqttPublish).toHaveBeenCalledTimes(1);
-            expect(mqttPublish.mock.calls[0][1]).toBe(
-                `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
-                `"manufName":"IKEA","modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
-            );
+            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toStrictEqual(payload);
         }
         );
 
