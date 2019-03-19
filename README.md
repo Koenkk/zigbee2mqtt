@@ -17,7 +17,7 @@
         <a href="https://www.paypal.me/koenkk">
             <img src="https://img.shields.io/badge/donate-PayPal-blue.svg">
         </a>
-        <a href="https://discord.gg/NyseBeK">
+        <a href="https://discord.gg/dadfWYE">
             <img src="https://img.shields.io/discord/556563650429583360.svg">
         </a>
         <a href="http://zigbee2mqtt.discourse.group/">
