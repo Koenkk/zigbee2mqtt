@@ -803,10 +803,10 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenCalledTimes(1);
         expect(publishEntityState).toHaveBeenNthCalledWith(1,
             '0x00000001',
-            {state: 'OFF'});
+            {state: 'OFF', brightness: 0});
     });
 
-    it('Should turn device of when brightness 0 is send with light_brightness converter', async () => {
+    it('Should turn device off when brightness 0 is send with light_brightness converter', async () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         zigbee.getDevice = () => ({modelId: 'FB56+ZSC05HG1.0'});
@@ -825,6 +825,6 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenCalledTimes(1);
         expect(publishEntityState).toHaveBeenNthCalledWith(1,
             '0x00000001',
-            {state: 'OFF'});
+            {state: 'OFF', brightness: 0});
     });
 });
