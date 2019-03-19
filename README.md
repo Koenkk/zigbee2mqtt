@@ -20,6 +20,9 @@
         <a href="https://discord.gg/NyseBeK">
             <img src="https://img.shields.io/discord/556563650429583360.svg">
         </a>
+        <a href="http://zigbee2mqtt.discourse.group/">
+            <img src="https://img.shields.io/discourse/https/zigbee2mqtt.discourse.group/status.svg">
+        </a>
     </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
     <p>
