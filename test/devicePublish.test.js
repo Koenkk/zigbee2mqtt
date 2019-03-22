@@ -855,4 +855,48 @@ describe('DevicePublish', () => {
             'functional', {}, cfg.default, null, expect.any(Function)
         );
     });
+
+    it('Should turn device off when brightness 0 is send with light_brightness converter', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'ON', transition: 1}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genLevelCtrl',
+            'moveToLevelWithOnOff',
+            'functional',
+            {level: 255, transtime: 10},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            {state: 'ON', brightness: 255});
+    });
+
+    it('Should turn device off when brightness 0 is send with light_brightness converter', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'OFF', transition: 2}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genLevelCtrl',
+            'moveToLevelWithOnOff',
+            'functional',
+            {level: 0, transtime: 20},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            {state: 'OFF', brightness: 0});
+    });
 });
