@@ -440,9 +440,9 @@
       "dev": true
     },
     "@types/node": {
-      "version": "11.11.4",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-11.11.4.tgz",
-      "integrity": "sha512-02tIL+QIi/RW4E5xILdoAMjeJ9kYq5t5S2vciUdFPXv/ikFTb0zK8q9vXkg4+WAJuYXGiVT1H28AkD2C+IkXVw==",
+      "version": "11.11.6",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-11.11.6.tgz",
+      "integrity": "sha512-Exw4yUWMBXM3X+8oqzJNRqZSwUAaS4+7NdvHqQuFi/d+synz++xmX3QIf+BFqneW8N31R8Ky+sikfZUXq07ggQ==",
       "dev": true
     },
     "@types/stack-utils": {
@@ -5042,9 +5042,9 @@
       }
     },
     "react-is": {
-      "version": "16.8.4",
-      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.8.4.tgz",
-      "integrity": "sha512-PVadd+WaUDOAciICm/J1waJaSvgq+4rHE/K70j0PFqKhkTBsPv/82UGQJNXAngz1fOQLLxI6z1sEDmJDQhCTAA==",
+      "version": "16.8.5",
+      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.8.5.tgz",
+      "integrity": "sha512-sudt2uq5P/2TznPV4Wtdi+Lnq3yaYW8LfvPKLM9BKD8jJNBkxMVyB0C9/GmVhLw7Jbdmndk/73n7XQGeN9A3QQ==",
       "dev": true
     },
     "read-pkg": {
@@ -6447,9 +6447,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "8.0.9",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-8.0.9.tgz",
-      "integrity": "sha512-JX8KqTKqtFuzZ6wHzHX36jBf5ky/skkY2g5SHI8ZAi60O22E1Q4locbbFe4zt5jnUyzfPp/PbJotfhvWk94RFg==",
+      "version": "8.0.10",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-8.0.10.tgz",
+      "integrity": "sha512-d45yVA4MIIvNTyw3K3BTUd61GOEP163ePYfKN4tfr+bwBVVhWrtWazQWuaxjxpte23feLc9ft24200KCz0rKhA==",
       "requires": {
         "chai": "*",
         "debounce": "*",

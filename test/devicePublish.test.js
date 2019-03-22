@@ -827,4 +827,32 @@ describe('DevicePublish', () => {
             '0x00000001',
             {state: 'OFF', brightness: 0});
     });
+
+    it('Specifc ZNCLDJ11LM test', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.curtain'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'OPEN'}));
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001', 'device', 'genAnalogOutput', 'write',
+            'foundation', [{attrId: 0x0055, dataType: 0x39, attrData: 100}], cfg.default, null, expect.any(Function)
+        );
+
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({position: 10}));
+        expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+            '0x00000001', 'device', 'genAnalogOutput', 'write',
+            'foundation', [{attrId: 0x0055, dataType: 0x39, attrData: 10}], cfg.default, null, expect.any(Function)
+        );
+
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'CLOSE'}));
+        expect(zigbee.publish).toHaveBeenNthCalledWith(3,
+            '0x00000001', 'device', 'genAnalogOutput', 'write',
+            'foundation', [{attrId: 0x0055, dataType: 0x39, attrData: 0}], cfg.default, null, expect.any(Function)
+        );
+
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'STOP'}));
+        expect(zigbee.publish).toHaveBeenNthCalledWith(4,
+            '0x00000001', 'device', 'closuresWindowCovering', 'stop',
+            'functional', {}, cfg.default, null, expect.any(Function)
+        );
+    });
 });
