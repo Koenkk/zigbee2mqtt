@@ -11,6 +11,7 @@ const controller = new Controller();
 controller.start();
 
 process.on('SIGINT', handleQuit);
+process.on('SIGTERM', handleQuit);
 
 function handleQuit() {
     controller.stop(() => process.exit());
