@@ -84,7 +84,17 @@ describe('DevicePublish', () => {
                 '0x00000002',
                 {state: 'ON'});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(1);
+            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+                '0x00000002',
+                'device',
+                'genLevelCtrl',
+                'read',
+                'foundation',
+                [{attrId: 0}],
+                cfg.default,
+                null,
+                expect.any(Function));
         });
 
         it('Should publish messages to zigbee devices when brightness is in %', async () => {
@@ -323,7 +333,11 @@ describe('DevicePublish', () => {
                 '0x00000012',
                 {state: 'ON'});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(3);
+            expect(zigbee.publish).toHaveBeenCalledTimes(4);
+            expect(zigbee.publish.mock.calls[2][2]).toBe('genLevelCtrl');
+            expect(zigbee.publish.mock.calls[2][3]).toBe('read');
+            expect(zigbee.publish.mock.calls[3][2]).toBe('lightingColorCtrl');
+            expect(zigbee.publish.mock.calls[3][3]).toBe('read');
         }
         );
 
@@ -767,9 +781,11 @@ describe('DevicePublish', () => {
         expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
         expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
         await wait(10);
-        expect(zigbee.publish).toHaveBeenCalledTimes(3);
-        expect(zigbee.publish.mock.calls[2][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish).toHaveBeenCalledTimes(4);
+        expect(zigbee.publish.mock.calls[2][2]).toBe('genLevelCtrl');
         expect(zigbee.publish.mock.calls[2][3]).toBe('read');
+        expect(zigbee.publish.mock.calls[3][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[3][3]).toBe('read');
     });
 
     it('Should set state with brightness before color', async () => {
