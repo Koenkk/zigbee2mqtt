@@ -20,11 +20,10 @@
     "cc2531"
   ],
   "scripts": {
-    "coverage": "nyc --all report --reporter=text mocha --recursive --timeout=3000",
-    "docgen": "node docgen/docgen.js",
+    "coverage": "jest --collect-coverage",
     "eslint": "node_modules/.bin/eslint .",
     "start": "node index.js",
-    "test": "mocha --recursive"
+    "test": "jest"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -33,6 +32,7 @@
   },
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
+    "debounce": "*",
     "git-last-commit": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",
@@ -43,21 +43,17 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#77ba3058c6c4b09a9958761ae5e3046765c12872",
+    "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#4fa75c92424cd070a3bf6e1f4640b1e3ad8f802d",
     "ziee": "*",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#f1f3701c20a125c939504e46c82ac4dda692ff41",
-    "zigbee-shepherd-converters": "7.2.7",
+    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#a8b5828200140adf4de83457508576f6879f7ec1",
+    "zigbee-shepherd-converters": "8.0.12",
     "zive": "*"
   },
   "devDependencies": {
-    "chai": "*",
-    "chai-spies": "*",
+    "@types/jest": "^24.0.11",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-mocha": "*",
-    "mocha": "*",
-    "nyc": "*",
-    "sinon": "*",
-    "tmp": "*"
+    "eslint-plugin-jest": "^22.3.0",
+    "jest": "^24.3.1"
   }
 }

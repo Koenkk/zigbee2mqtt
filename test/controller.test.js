@@ -1,5 +1,3 @@
-const assert = require('chai').assert;
-const sinon = require('sinon');
 const Controller = require('../lib/controller');
 const settings = require('../lib/util/settings');
 const mqtt = require('../lib/mqtt');
@@ -10,24 +8,24 @@ describe('Controller', () => {
     let mqttPublish;
 
     beforeEach(() => {
-        utils.stubLogger(sinon);
-        sinon.stub(settings, 'getDevice').callsFake((ieeeAddr) => {
-            return {friendly_name: 'test'};
-        });
-        mqttPublish = sinon.stub(mqtt.prototype, 'publish').callsFake(() => {});
+        utils.stubLogger(jest);
+        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'test'});
+        mqttPublish = jest.spyOn(mqtt.prototype, 'publish').mockReturnValue(undefined);
         controller = new Controller();
         controller.zigbee = {
             getDevice: () => {
                 return {
                     modelId: 'TRADFRI bulb E27 CWS opal 600lm',
                     manufName: 'IKEA',
+                    hwVersion: '1.1',
+                    swBuildId: '2.0',
                 };
             },
         };
     });
 
     afterEach(() => {
-        sinon.restore();
+        jest.restoreAllMocks();
     });
 
     describe('Handling zigbee messages', () => {
@@ -35,71 +33,70 @@ describe('Controller', () => {
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.strictEqual(
-                mqttPublish.getCall(0).args[1],
-                JSON.stringify({state: 'ON'})
-            );
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(mqttPublish.mock.calls[0][1]).toBe(JSON.stringify({state: 'ON'}));
         });
 
         it('Should handle a zigbee message when include_device_information is set', () => {
-            sinon.stub(settings, 'get').callsFake(() => {
-                return {
-                    mqtt: {
-                        include_device_information: true,
-                    },
-                    advanced: {
-                        cache_state: false,
-                    },
-                    experimental: {
-                        output: 'json',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    include_device_information: true,
+                },
+                advanced: {
+                    cache_state: false,
+                },
+                experimental: {
+                    output: 'json',
+                },
             });
+
+            const payload = {
+                'state': 'ON',
+                'device': {
+                    'ieeeAddr': '0x12345678',
+                    'friendlyName': 'test',
+                    'manufName': 'IKEA',
+                    'modelId': 'TRADFRI bulb E27 CWS opal 600lm',
+                    'hwVersion': '1.1',
+                    'swBuildId': '2.0',
+                },
+            };
 
             const device = {ieeeAddr: '0x12345678', modelId: 'TRADFRI bulb E27 CWS opal 600lm'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'devChange', {onOff: 1}, 1);
             controller.onZigbeeMessage(message);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.strictEqual(
-                mqttPublish.getCall(0).args[1],
-                `{"state":"ON","device":{"ieeeAddr":"0x12345678","friendlyName":"test",` +
-                `"manufName":"IKEA","modelId":"TRADFRI bulb E27 CWS opal 600lm"}}`
-            );
-        });
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toStrictEqual(payload);
+        }
+        );
 
         it('Should output to json by default', () => {
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            assert.isTrue(mqttPublish.calledOnce);
-            assert.deepEqual(
-                JSON.parse(mqttPublish.getCall(0).args[1]),
-                payload
-            );
+            expect(mqttPublish).toHaveBeenCalledTimes(1);
+            expect(JSON.parse(mqttPublish.mock.calls[0][1])).toStrictEqual(payload);
         });
 
         it('Should output to attribute', () => {
-            sinon.stub(settings, 'get').callsFake(() => {
-                return {
-                    mqtt: {
-                        include_device_information: false,
-                    },
-                    advanced: {
-                        cache_state: false,
-                    },
-                    experimental: {
-                        output: 'attribute',
-                    },
-                };
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    include_device_information: false,
+                },
+                advanced: {
+                    cache_state: false,
+                },
+                experimental: {
+                    output: 'attribute',
+                },
             });
 
             const payload = {temperature: 1, humidity: 2};
             controller.publishEntityState('0x12345678', payload);
-            assert.isTrue(mqttPublish.calledTwice);
-            assert.deepEqual(mqttPublish.getCall(0).args[0], 'test/temperature');
-            assert.deepEqual(mqttPublish.getCall(0).args[1], '1');
-            assert.deepEqual(mqttPublish.getCall(1).args[0], 'test/humidity');
-            assert.deepEqual(mqttPublish.getCall(1).args[1], '2');
+            expect(mqttPublish).toHaveBeenCalledTimes(2);
+            expect(mqttPublish.mock.calls[0][0]).toBe('test/temperature');
+            expect(mqttPublish.mock.calls[0][1]).toBe('1');
+            expect(mqttPublish.mock.calls[1][0]).toBe('test/humidity');
+            expect(mqttPublish.mock.calls[1][1]).toBe('2');
         });
     });
 });
