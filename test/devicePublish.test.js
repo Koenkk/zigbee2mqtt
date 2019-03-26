@@ -581,6 +581,27 @@ describe('DevicePublish', () => {
             assert.strictEqual(parsed.postfix, '');
         });
 
+
+        it('Should not respond to bridge/config/devices/get', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices/get';
+            const parsed = devicePublish.parseTopic(topic);
+            assert.strictEqual(parsed, null);
+        });
+
+        it('Should not respond to bridge/config/devices/set', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices/set';
+            const parsed = devicePublish.parseTopic(topic);
+            assert.strictEqual(parsed, null);
+        });
+
+
+        it('Should not respond to bridge/config/devices', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices';
+            const parsed = devicePublish.parseTopic(topic);
+            assert.strictEqual(parsed, null);
+        });
+
+
         it('Should parse topic with when base topic has multiple slashes', () => {
             sinon.stub(settings, 'get').callsFake(() => {
                 return {
