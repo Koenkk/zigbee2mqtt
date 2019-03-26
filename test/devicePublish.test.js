@@ -657,6 +657,27 @@ describe('DevicePublish', () => {
             expect(parsed.postfix).toBe('');
         });
 
+
+        it('Should not respond to bridge/config/devices/get', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices/get';
+            const parsed = devicePublish.parseTopic(topic);
+            expect(parsed).toBeNull();
+        });
+
+        it('Should not respond to bridge/config/devices/set', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices/set';
+            const parsed = devicePublish.parseTopic(topic);
+            expect(parsed).toBeNull();
+        });
+
+
+        it('Should not respond to bridge/config/devices', () => {
+            const topic = 'zigbee2mqtt/bridge/config/devices';
+            const parsed = devicePublish.parseTopic(topic);
+            expect(parsed).toBeNull();
+        });
+
+
         it('Should parse topic with when base topic has multiple slashes', () => {
             jest.spyOn(settings, 'get').mockReturnValue({
                 mqtt: {
