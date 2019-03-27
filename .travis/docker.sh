@@ -31,6 +31,23 @@ then
   tag_push "$TRAVIS_TAG-arm32v6" "arm32v6"
   tag_push "$TRAVIS_TAG-arm64v8" "arm64v8"
   tag_push "$TRAVIS_TAG" latest
+  
+  # Make sure that docker cli experimental is enabled from here
+  docker manifest create $DOCKER_USERNAME/zigbee2mqtt:latest \
+		$DOCKER_USERNAME/zigbee2mqtt:latest \
+		$DOCKER_USERNAME/zigbee2mqtt:arm32v6 \
+		$DOCKER_USERNAME/zigbee2mqtt:arm64v8 \
+		
+  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest $DOCKER_USERNAME/zigbee2mqtt:arm32v6 --os linux --arch arm --variant v6
+  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest $DOCKER_USERNAME/zigbee2mqtt:arm64v8 --os linux --arch arm64 --variant v8
+  
+  docker manifest inspect $DOCKER_USERNAME/zigbee2mqtt:latest
+  
+  docker manifest push -p $DOCKER_USERNAME/zigbee2mqtt:latest
+  
+  docker run --rm mplatform/mquery $DOCKER_USERNAME/zigbee2mqtt:latest
+  
+  
 elif [ "$TRAVIS_BRANCH" = "dev" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
   echo "Updating docker images for dev branch!"
@@ -38,6 +55,22 @@ then
   build_and_push latest-dev docker/Dockerfile.amd64 amd64
   build_and_push arm32v6-dev docker/Dockerfile.arm32v6 arm
   build_and_push arm64v8-dev docker/Dockerfile.arm64v8 arm64
+  
+    # Make sure that docker cli experimental is enabled from here
+  docker manifest create $DOCKER_USERNAME/zigbee2mqtt:latest-dev \
+		$DOCKER_USERNAME/zigbee2mqtt:latest-dev \
+		$DOCKER_USERNAME/zigbee2mqtt:arm32v6-dev \
+		$DOCKER_USERNAME/zigbee2mqtt:arm64v8-dev
+
+  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest-dev $DOCKER_USERNAME/zigbee2mqtt:arm32v6-dev --os linux --arch arm --variant v6		
+  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest-dev $DOCKER_USERNAME/zigbee2mqtt:arm64v8-dev --os linux --arch arm64 --variant v8
+  
+  docker manifest inspect $DOCKER_USERNAME/zigbee2mqtt:latest-dev
+  
+  docker manifest push -p $DOCKER_USERNAME/zigbee2mqtt:latest-dev
+  
+  docker run --rm mplatform/mquery $DOCKER_USERNAME/zigbee2mqtt:latest-dev
+  
 else
   echo "Not updating docker images, triggered by pull request or not on master/dev branch"
 fi
