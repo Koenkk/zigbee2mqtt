@@ -19,6 +19,7 @@ describe('Controller', () => {
                     manufName: 'IKEA',
                     hwVersion: '1.1',
                     swBuildId: '2.0',
+                    dateCode: '2018-01-01',
                 };
             },
         };
@@ -59,6 +60,7 @@ describe('Controller', () => {
                     'modelId': 'TRADFRI bulb E27 CWS opal 600lm',
                     'hwVersion': '1.1',
                     'swBuildId': '2.0',
+                    'dateCode': '2018-01-01',
                 },
             };
 
