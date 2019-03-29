@@ -15,6 +15,8 @@ build_and_push() {
 }
 
 push_manifest() {
+  export DOCKER_CLI_EXPERIMENTAL=enabled  
+
   docker manifest create $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm32v6$1 $DOCKER_USERNAME/zigbee2mqtt:arm64v8$1
 
   docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm32v6$1 --os linux --arch arm --variant v6
@@ -25,6 +27,8 @@ push_manifest() {
   docker manifest push -p $DOCKER_USERNAME/zigbee2mqtt:latest$1
 
   docker run --rm mplatform/mquery $DOCKER_USERNAME/zigbee2mqtt:latest$1
+
+  export DOCKER_CLI_EXPERIMENTAL=disabled
 }
 
 # Only update Docker images for:
