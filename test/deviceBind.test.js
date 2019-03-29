@@ -1,5 +1,6 @@
 const DeviceBind = require('../lib/extension/deviceBind');
 const utils = require('./utils');
+const settings = require('../lib/util/settings');
 
 const mqtt = {
     subscribe: () => {},
@@ -37,9 +38,9 @@ const zigbee = {
         callback(false, null);
     }),
     getEndpoint: (ID, ep) => {
-        if (ID === 'bulb') {
+        if (ID === 'bulb' || ID === '0x002') {
             return devices.bulb;
-        } else if (ID === 'remote') {
+        } else if (ID === 'remote' || ID === '0x001') {
             return devices.remote;
         } else if (ep == 2 && ID === 'switch_ep2') {
             return devices.switch_ep2;
@@ -50,14 +51,17 @@ const zigbee = {
         throw new Error(`No mock for ${ID} and ep ${ep}`);
     },
     getDevice: (ID) => {
-        if (ID === 'switch_ep2') {
-            return {modelId: 'lumi.sensor_86sw2.es1'};
-        } else if (ID === 'switch_ep3') {
-            return {modelId: 'DNCKAT_S003'};
-        } else if (ID === 'bulb') {
-            return {modelId: 'TRADFRI bulb E27 WS opal 980lm'};
-        } else if (ID === 'remote') {
-            return {modelId: 'TRADFRI remote control'};
+        const lookup = {
+            'switch_ep2': 'lumi.sensor_86sw2.es1',
+            'switch_ep3': 'DNCKAT_S003',
+            'bulb': 'TRADFRI bulb E27 WS opal 980lm',
+            'remote': 'TRADFRI remote control',
+            '0x002': 'TRADFRI bulb E27 WS opal 980lm',
+            '0x001': 'TRADFRI remote control',
+        };
+
+        if (lookup.hasOwnProperty(ID)) {
+            return {modelId: lookup[ID]};
         }
 
         throw new Error(`No mock for ${ID}`);
@@ -81,6 +85,33 @@ describe('DeviceBind', () => {
     describe('Bind devices', () => {
         it('Bind', async () => {
             deviceBind.onMQTTMessage('zigbee2mqtt/bridge/bind/remote', 'bulb');
+            expect(zigbee.bind).toHaveBeenCalledTimes(2);
+            expect(zigbee.bind).toHaveBeenNthCalledWith(1,
+                devices.remote,
+                6,
+                devices.bulb,
+                expect.any(Function)
+            );
+            expect(zigbee.bind).toHaveBeenNthCalledWith(2,
+                devices.remote,
+                8,
+                devices.bulb,
+                expect.any(Function)
+            );
+        });
+
+        it('Bind by friendly name', async () => {
+            jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockImplementation((friendlyName) => {
+                const lookup = {
+                    remote: '0x001',
+                    bulb: '0x002',
+                };
+
+                return lookup[friendlyName];
+            });
+
+            deviceBind.onMQTTMessage('zigbee2mqtt/bridge/bind/remote', 'bulb');
+
             expect(zigbee.bind).toHaveBeenCalledTimes(2);
             expect(zigbee.bind).toHaveBeenNthCalledWith(1,
                 devices.remote,
