@@ -63,7 +63,7 @@ describe('DevicePublish', () => {
                 '0x00000001',
                 {state: 'ON', brightness: 200});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
 
         it('Should publish messages to zigbee devices', async () => {
@@ -88,17 +88,7 @@ describe('DevicePublish', () => {
                 '0x00000002',
                 {state: 'ON'});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
-            expect(zigbee.publish).toHaveBeenNthCalledWith(2,
-                '0x00000002',
-                'device',
-                'genLevelCtrl',
-                'read',
-                'foundation',
-                [{attrId: 0}],
-                cfg.default,
-                null,
-                expect.any(Function));
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
 
         it('Should publish messages to zigbee devices when brightness is in %', async () => {
@@ -122,7 +112,7 @@ describe('DevicePublish', () => {
                 '0x00000003',
                 {state: 'ON', brightness: 235});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
         );
 
@@ -147,7 +137,7 @@ describe('DevicePublish', () => {
                 '0x00000004',
                 {state: 'ON', brightness: 230});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
         );
 
@@ -172,7 +162,7 @@ describe('DevicePublish', () => {
                 '0x00000005',
                 {color_temp: 222});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         });
 
         it('Should publish messages to zigbee devices with color_temp in %', async () => {
@@ -196,7 +186,7 @@ describe('DevicePublish', () => {
                 '0x00000006',
                 {color_temp: 500});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
         );
 
@@ -316,7 +306,7 @@ describe('DevicePublish', () => {
                 null,
                 expect.any(Function));
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000011',
@@ -358,11 +348,7 @@ describe('DevicePublish', () => {
                 '0x00000012',
                 {color: {x: 100, y: 50}});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(4);
-            expect(zigbee.publish.mock.calls[2][2]).toBe('genLevelCtrl');
-            expect(zigbee.publish.mock.calls[2][3]).toBe('read');
-            expect(zigbee.publish.mock.calls[3][2]).toBe('lightingColorCtrl');
-            expect(zigbee.publish.mock.calls[3][3]).toBe('read');
+            expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
         );
 
@@ -394,7 +380,7 @@ describe('DevicePublish', () => {
                 null,
                 expect.any(Function));
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(4);
+            expect(zigbee.publish).toHaveBeenCalledTimes(2);
             expect(publishEntityState).toHaveBeenCalledTimes(2);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000013',
@@ -433,7 +419,7 @@ describe('DevicePublish', () => {
                 null,
                 expect.any(Function));
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(4);
+            expect(zigbee.publish).toHaveBeenCalledTimes(2);
             expect(publishEntityState).toHaveBeenCalledTimes(2);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000014',
@@ -479,7 +465,7 @@ describe('DevicePublish', () => {
                 '0x00000015',
                 {color: {x: 100, y: 50}});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(3);
+            expect(zigbee.publish).toHaveBeenCalledTimes(2);
         }
         );
 
@@ -500,7 +486,7 @@ describe('DevicePublish', () => {
                 null,
                 expect.any(Function));
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000016',
@@ -524,7 +510,7 @@ describe('DevicePublish', () => {
                 null,
                 expect.any(Function));
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000017',
@@ -553,7 +539,7 @@ describe('DevicePublish', () => {
                 '0x00000018',
                 {state: 'ON', brightness: 50});
             await wait(10);
-            expect(zigbee.publish).toHaveBeenCalledTimes(2);
+            expect(zigbee.publish).toHaveBeenCalledTimes(1);
         }
         );
 
@@ -894,15 +880,39 @@ describe('DevicePublish', () => {
         expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
         expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
         await wait(10);
+        expect(zigbee.publish).toHaveBeenCalledTimes(2);
+    });
+
+    it('Should read after write when enabled', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'LCT001'});
+        jest.spyOn(settings, 'getDevice').mockReturnValue({retrieve_state: true});
+        const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000020/set', JSON.stringify(msg));
+        expect(zigbee.publish).toHaveBeenCalledTimes(2);
+        expect(zigbee.publish.mock.calls[0][2]).toBe('genOnOff');
+        expect(zigbee.publish.mock.calls[0][3]).toBe('on');
+        expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
+        await wait(10);
         expect(zigbee.publish).toHaveBeenCalledTimes(4);
         expect(zigbee.publish.mock.calls[2][2]).toBe('genLevelCtrl');
         expect(zigbee.publish.mock.calls[2][3]).toBe('read');
         expect(zigbee.publish.mock.calls[3][2]).toBe('lightingColorCtrl');
         expect(zigbee.publish.mock.calls[3][3]).toBe('read');
+        expect(publishEntityState).toHaveBeenCalledTimes(2);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000020',
+            {state: 'ON'});
+        expect(publishEntityState).toHaveBeenNthCalledWith(2,
+            '0x00000020',
+            {color: {x: 0.701, y: 0.299}});
     });
 
     it('Should set state with brightness before color', async () => {
         zigbee.publish.mockClear();
+        publishEntityState.mockClear();
         zigbee.getDevice = () => ({modelId: 'LCT001'});
         const msg = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}, 'transition': 3, 'brightness': 100};
         devicePublish.onMQTTMessage('zigbee2mqtt/0x00000021/set', JSON.stringify(msg));
@@ -911,6 +921,13 @@ describe('DevicePublish', () => {
         expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
         await wait(10);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
+        expect(publishEntityState).toHaveBeenCalledTimes(2);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000021',
+            {state: 'ON', brightness: 100});
+        expect(publishEntityState).toHaveBeenNthCalledWith(2,
+            '0x00000021',
+            {color: {x: 0.701, y: 0.299}});
     });
 
     it('Should turn device off when brightness 0 is send', async () => {
