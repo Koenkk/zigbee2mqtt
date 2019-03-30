@@ -15,6 +15,10 @@ const zigbee = {
     }),
 };
 
+const state = {
+    get: jest.fn(),
+};
+
 const publishEntityState = jest.fn();
 
 const cfg = {
@@ -29,7 +33,7 @@ describe('DevicePublish', () => {
 
     beforeEach(() => {
         utils.stubLogger(jest);
-        devicePublish = new DevicePublish(zigbee, mqtt, null, publishEntityState);
+        devicePublish = new DevicePublish(zigbee, mqtt, state, publishEntityState);
     });
 
     afterEach(() => {
@@ -935,5 +939,122 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenNthCalledWith(1,
             '0x00000001',
             {state: 'OFF', brightness: 0});
+    });
+
+    it('Home Assistant: should set state', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        zigbee.getDevice = () => ({modelId: 'RB 185 C'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'ON'}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genOnOff',
+            'on',
+            'functional',
+            {},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(publishEntityState).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            {state: 'ON'});
+    });
+
+    it('Home Assistant: should not set state when color temperature is also set', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        jest.spyOn(state, 'get').mockReturnValue({state: 'ON'});
+        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        zigbee.getDevice = () => ({modelId: 'RB 185 C'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'ON', color_temp: 100}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'lightingColorCtrl',
+            'moveToColorTemp',
+            'functional',
+            {colortemp: 100, transtime: 0},
+            cfg.default,
+            null,
+            expect.any(Function));
+
+        // TODO
+        // expect(publishEntityState).toHaveBeenCalledTimes(1);
+        // expect(publishEntityState).toHaveBeenNthCalledWith(1,
+        //     '0x00000001',
+        //     {state: 'ON', brightness: 100});
+    });
+
+    it('Home Assistant: should not set state when color is also set', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        jest.spyOn(state, 'get').mockReturnValue({state: 'ON'});
+        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        zigbee.getDevice = () => ({modelId: 'RB 185 C'});
+        devicePublish.onMQTTMessage(
+            'zigbee2mqtt/0x00000001/set',
+            JSON.stringify({state: 'ON', color: {x: 0.41, y: 0.25}})
+        );
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'lightingColorCtrl',
+            'moveToColor',
+            'functional',
+            {colorx: 26869, colory: 16384, transtime: 0},
+            cfg.default,
+            null,
+            expect.any(Function));
+
+        // TODO
+        // expect(publishEntityState).toHaveBeenCalledTimes(1);
+        // expect(publishEntityState).toHaveBeenNthCalledWith(1,
+        //     '0x00000001',
+        //     {state: 'ON', brightness: 100});
+    });
+
+    it('Home Assistant: should set state when color is also set and bulb is off', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        jest.spyOn(state, 'get').mockReturnValue({state: 'OFF'});
+        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        zigbee.getDevice = () => ({modelId: 'RB 185 C'});
+        devicePublish.onMQTTMessage(
+            'zigbee2mqtt/0x00000001/set',
+            JSON.stringify({state: 'ON', color: {x: 0.41, y: 0.25}})
+        );
+        expect(zigbee.publish).toHaveBeenCalledTimes(2);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000001',
+            'device',
+            'genOnOff',
+            'on',
+            'functional',
+            {},
+            cfg.default,
+            null,
+            expect.any(Function));
+        expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+            '0x00000001',
+            'device',
+            'lightingColorCtrl',
+            'moveToColor',
+            'functional',
+            {colorx: 26869, colory: 16384, transtime: 0},
+            cfg.default,
+            null,
+            expect.any(Function));
+
+        // TODO
+        // expect(publishEntityState).toHaveBeenCalledTimes(1);
+        // expect(publishEntityState).toHaveBeenNthCalledWith(1,
+        //     '0x00000001',
+        //     {state: 'ON', brightness: 100});
     });
 });
