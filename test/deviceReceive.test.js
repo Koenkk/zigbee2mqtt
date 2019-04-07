@@ -40,6 +40,16 @@ describe('DeviceReceive', () => {
             expect(publishEntityState.mock.calls[0][1]).toStrictEqual({click: 'single'});
         });
 
+        it('Should handle a zigbee message and counter it when Home Assistant integration is enabled', () => {
+            jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, advanced: {last_seen: 'disabled'}});
+            const device = {ieeeAddr: '0x12345678'};
+            const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
+            deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
+            expect(publishEntityState).toHaveBeenCalledTimes(2);
+            expect(publishEntityState.mock.calls[0][1]).toStrictEqual({click: 'single'});
+            expect(publishEntityState.mock.calls[1][1]).toStrictEqual({click: ''});
+        });
+
         it('Should handle a zigbee message which uses ep (left)', () => {
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
