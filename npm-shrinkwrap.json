@@ -461,9 +461,9 @@
       "dev": true
     },
     "@types/yargs": {
-      "version": "12.0.11",
-      "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-12.0.11.tgz",
-      "integrity": "sha512-IsU1TD+8cQCyG76ZqxP0cVFnofvfzT8p/wO8ENT4jbN/KKN3grsHFgHNl/U+08s33ayX4LwI85cEhYXCOlOkMw==",
+      "version": "12.0.12",
+      "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-12.0.12.tgz",
+      "integrity": "sha512-SOhuU4wNBxhhTHxYaiG5NY4HBhDIDnJF60GU+2LqHAdKKer86//e4yg69aENCtQ04n0ovz+tq2YPME5t5yp4pw==",
       "dev": true
     },
     "abab": {
@@ -932,8 +932,8 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "git+https://github.com/Koenkk/cc-znp.git#8f4d6ff9fad15dba6e4433b8340c8ba7865dc53e",
-      "from": "git+https://github.com/Koenkk/cc-znp.git#8f4d6ff9fad15dba6e4433b8340c8ba7865dc53e",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
+      "from": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
       "requires": {
         "debug": "^4.1.1",
         "enum": "^2.5.0",
@@ -4728,9 +4728,9 @@
       "dev": true
     },
     "kleur": {
-      "version": "3.0.2",
-      "resolved": "https://registry.npmjs.org/kleur/-/kleur-3.0.2.tgz",
-      "integrity": "sha512-3h7B2WRT5LNXOtQiAaWonilegHcPSf9nLVXlSTci8lu1dZUuui61+EsPEZqSVxY7rXYmB2DVKMQILxaO5WL61Q==",
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/kleur/-/kleur-3.0.3.tgz",
+      "integrity": "sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==",
       "dev": true
     },
     "lcid": {
@@ -6170,9 +6170,9 @@
       }
     },
     "source-map-support": {
-      "version": "0.5.11",
-      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.11.tgz",
-      "integrity": "sha512-//sajEx/fGL3iw6fltKMdPvy8kL3kJ2O3iuYlRoT3k9Kb4BjOoZ+BZzaNHeuaruSt+Kf3Zk9tnfAQg9/AJqUVQ==",
+      "version": "0.5.12",
+      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.12.tgz",
+      "integrity": "sha512-4h2Pbvyy15EE02G+JOZpUCmqWJuqrs+sEkzewTm++BPi7Hvn/HwcqLAcNxYAyI0x13CpPPn+kMjl+hplXMHITQ==",
       "dev": true,
       "requires": {
         "buffer-from": "^1.0.0",
@@ -7040,12 +7040,12 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#4f408f73c0b7b515bfe2e3a5e93355aa45232024",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#4f408f73c0b7b515bfe2e3a5e93355aa45232024",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#d6f85a47639a40fa5d85f848912449eaa16ac1b1",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#d6f85a47639a40fa5d85f848912449eaa16ac1b1",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
-        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#8f4d6ff9fad15dba6e4433b8340c8ba7865dc53e",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
         "debug": "^3.2.6",
         "objectbox": "^0.3.0",
         "proving": "^0.1.0",
