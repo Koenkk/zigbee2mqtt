@@ -932,8 +932,8 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
-      "from": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
+      "from": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
       "requires": {
         "debug": "^4.1.1",
         "enum": "^2.5.0",
@@ -7040,12 +7040,12 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#d6f85a47639a40fa5d85f848912449eaa16ac1b1",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#d6f85a47639a40fa5d85f848912449eaa16ac1b1",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#605eb63a3211e7b259c0f6887bc022c600a5d03e",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#605eb63a3211e7b259c0f6887bc022c600a5d03e",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
-        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#cb208726f41e7615bcc32d6c12fb3c85388d3345",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
         "debug": "^3.2.6",
         "objectbox": "^0.3.0",
         "proving": "^0.1.0",
