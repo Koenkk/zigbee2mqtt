@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Zigbee to MQTT bridge using zigbee-shepherd",
   "main": "index.js",
   "repository": {
