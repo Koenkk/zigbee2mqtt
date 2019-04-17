@@ -4039,9 +4039,9 @@
       "integrity": "sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo="
     },
     "istanbul-api": {
-      "version": "2.1.4",
-      "resolved": "https://registry.npmjs.org/istanbul-api/-/istanbul-api-2.1.4.tgz",
-      "integrity": "sha512-aAFQL0HA2BLUl18XmTQ7H7CGKI58DtZFvvfmg6e+rA3iNFergvpi16czLV4CpI7HOImMeZ5mqI62dvSNVtUQVA==",
+      "version": "2.1.5",
+      "resolved": "https://registry.npmjs.org/istanbul-api/-/istanbul-api-2.1.5.tgz",
+      "integrity": "sha512-meYk1BwDp59Pfse1TvPrkKYgVqAufbdBLEVoqvu/hLLKSaQ054ZTksbNepyc223tMnWdm6AdK2URIJJRqdP87g==",
       "dev": true,
       "requires": {
         "async": "^2.6.1",
@@ -4052,7 +4052,7 @@
         "istanbul-lib-instrument": "^3.2.0",
         "istanbul-lib-report": "^2.0.7",
         "istanbul-lib-source-maps": "^3.0.5",
-        "istanbul-reports": "^2.2.2",
+        "istanbul-reports": "^2.2.3",
         "js-yaml": "^3.13.0",
         "make-dir": "^2.1.0",
         "minimatch": "^3.0.4",
@@ -4147,9 +4147,9 @@
       }
     },
     "istanbul-reports": {
-      "version": "2.2.2",
-      "resolved": "https://registry.npmjs.org/istanbul-reports/-/istanbul-reports-2.2.2.tgz",
-      "integrity": "sha512-ZFuTdBQ3PSaPnm02aEA4R6mzQ2AF9w03CYiXADzWbbE48v/EFOWF4MaX4FT0NRdqIk48I7o0RPi+S8TMswaCbQ==",
+      "version": "2.2.3",
+      "resolved": "https://registry.npmjs.org/istanbul-reports/-/istanbul-reports-2.2.3.tgz",
+      "integrity": "sha512-T6EbPuc8Cb620LWAYyZ4D8SSn06dY9i1+IgUX2lTH8gbwflMc9Obd33zHTyNX653ybjpamAHS9toKS3E6cGhTw==",
       "dev": true,
       "requires": {
         "handlebars": "^4.1.0"
@@ -7049,8 +7049,8 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#c726e880a064f1d2b5e2c464d1f6d6a2ae7e1952",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#c726e880a064f1d2b5e2c464d1f6d6a2ae7e1952",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#6c05654ef31b093386d368a9db8e51691452968e",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#6c05654ef31b093386d368a9db8e51691452968e",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
