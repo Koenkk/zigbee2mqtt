@@ -926,8 +926,8 @@
       "dev": true
     },
     "cc-znp": {
-      "version": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
-      "from": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
+      "version": "git+https://github.com/Koenkk/cc-znp.git#a994d0c532c53745dfae596f69ed924158d8ecce",
+      "from": "git+https://github.com/Koenkk/cc-znp.git#a994d0c532c53745dfae596f69ed924158d8ecce",
       "requires": {
         "debug": "^4.1.1",
         "enum": "^2.5.0",
@@ -6596,9 +6596,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.5.4",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.5.4.tgz",
-      "integrity": "sha512-GpKo28q/7Bm5BcX9vOu4S46FwisbPbAmkkqPnGIpKvKTM96I85N6XHQV+k4I6FA2wxgLhcsSyHoNhzucwCflvA==",
+      "version": "3.5.5",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.5.5.tgz",
+      "integrity": "sha512-e58FqZzPwaLODQetDQKlvErZaGkh1UmzP8YwU0aG65NLourKNtwVyDG8tkIyUU0vqWzxaikSvTaxrCSscmvqvQ==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -7049,12 +7049,12 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#6c05654ef31b093386d368a9db8e51691452968e",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#6c05654ef31b093386d368a9db8e51691452968e",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#30d08aacf50327dc1e2c3f146076b9efb8581192",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#30d08aacf50327dc1e2c3f146076b9efb8581192",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
-        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#099b16a894cdc22184d44d3c9c9e74bc6c0e966e",
+        "cc-znp": "git+https://github.com/Koenkk/cc-znp.git#a994d0c532c53745dfae596f69ed924158d8ecce",
         "debug": "^3.2.6",
         "objectbox": "^0.3.0",
         "proving": "^0.1.0",
