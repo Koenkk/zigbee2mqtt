@@ -2077,6 +2077,11 @@
       "integrity": "sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=",
       "dev": true
     },
+    "deep-diff": {
+      "version": "1.0.2",
+      "resolved": "https://registry.npmjs.org/deep-diff/-/deep-diff-1.0.2.tgz",
+      "integrity": "sha512-aWS3UIVH+NPGCD1kki+DCU9Dua032iSsO43LqQpcs4R3+dVv7tX0qBGjiVHJHjplsoUM2XRO/KB92glqc68awg=="
+    },
     "deep-eql": {
       "version": "3.0.1",
       "resolved": "https://registry.npmjs.org/deep-eql/-/deep-eql-3.0.1.tgz",
