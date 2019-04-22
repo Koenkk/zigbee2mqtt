@@ -65,3 +65,4 @@ data/state.json
 data/log
 data-backup/
 data/coordinator_backup.json
+data/.storage
