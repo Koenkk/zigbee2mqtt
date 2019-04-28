@@ -4,6 +4,7 @@ const settings = require('../lib/util/settings');
 
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
 const SV01 = devices.find((d) => d.model === 'SV01');
+const FAN99432 = devices.find((d) => d.model === '99432');
 
 describe('HomeAssistant extension', () => {
     let homeassistant = null;
@@ -438,6 +439,41 @@ describe('HomeAssistant extension', () => {
         expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
         expect(mqtt.publish.mock.calls[4][3]).toBeNull();
         expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
+    });
+
+    it('Should discover devices with fan', () => {
+        let payload = null;
+        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
+
+        homeassistant.discover('0x12345678', FAN99432, false);
+        expect(mqtt.publish).toHaveBeenCalledTimes(2);
+
+        // 1
+        payload = {
+            name: 'my_device_fan',
+            state_topic: 'zigbee2mqtt/my_device',
+            state_value_template: '{{ value_json.fan_state }}',
+            command_topic: 'zigbee2mqtt/my_device/set/fan_state',
+            speed_state_topic: 'zigbee2mqtt/my_device',
+            speed_value_template: '{{ value_json.fan_mode }}',
+            speed_command_topic: 'zigbee2mqtt/my_device/set/fan_mode',
+            unique_id: '0x12345678_fan_zigbee2mqtt',
+            speeds: ['off', 'low', 'medium', 'high', 'on', 'auto', 'smart'],
+            device: {
+                'identifiers': 'zigbee2mqtt_0x12345678',
+                'name': 'my_device',
+                'sw_version': 'Zigbee2mqtt test',
+                'manufacturer': 'Hampton Bay',
+                'model': 'Universal wink enabled white ceiling fan premier remote control (99432)',
+            },
+            availability_topic: 'zigbee2mqtt/bridge/state',
+            json_attributes_topic: 'zigbee2mqtt/my_device',
+        };
+
+        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
+        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
+        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
+        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
     });
 
     it('Should discover devices with cover_position', () => {
