@@ -446,7 +446,7 @@ describe('HomeAssistant extension', () => {
         jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
 
         homeassistant.discover('0x12345678', FAN99432, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(2);
+        expect(mqtt.publish).toHaveBeenCalledTimes(3);
 
         // 1
         payload = {
