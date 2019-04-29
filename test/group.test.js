@@ -20,7 +20,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {};
         const to = {'1': ['1', '2']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '1', 'device', 'genGroups', 'add', 'functional',
@@ -36,7 +36,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1', '2', '3']};
         const to = {'1': ['1']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '3', 'device', 'genGroups', 'remove', 'functional',
@@ -52,7 +52,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1']};
         const to = {'1': ['1', '2', '3']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '3', 'device', 'genGroups', 'add', 'functional',
@@ -68,7 +68,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1', '2']};
         const to = {'2': ['1', '2']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(4);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '1', 'device', 'genGroups', 'remove', 'functional',
@@ -92,7 +92,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1', '4', '2']};
         const to = {'1': ['1', '2', '3']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '3', 'device', 'genGroups', 'add', 'functional',
@@ -108,7 +108,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1', '2', '3']};
         const to = {'1': ['3', '1', '2', '4']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(1);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '4', 'device', 'genGroups', 'add', 'functional',
@@ -120,7 +120,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1', '2']};
         const to = {'1': ['3', '1', '4', '2']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(2);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '3', 'device', 'genGroups', 'add', 'functional',
@@ -136,7 +136,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1']};
         const to = {'2': ['3', '1']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(3);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '1', 'device', 'genGroups', 'remove', 'functional',
@@ -156,7 +156,7 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         const from = {'1': ['1']};
         const to = {'1': ['3'], '2': ['3', '1']};
-        groupExtension.applyGroups(from, to);
+        groupExtension.apply(from, to);
         expect(zigbee.publish).toHaveBeenCalledTimes(4);
         expect(zigbee.publish).toHaveBeenCalledWith(
             '1', 'device', 'genGroups', 'remove', 'functional',

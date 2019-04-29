@@ -440,9 +440,9 @@
       "dev": true
     },
     "@types/jest": {
-      "version": "24.0.11",
-      "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.11.tgz",
-      "integrity": "sha512-2kLuPC5FDnWIDvaJBzsGTBQaBbnDweznicvK7UGYzlIJP4RJR2a4A/ByLUXEyEgag6jz8eHdlWExGDtH3EYUXQ==",
+      "version": "24.0.12",
+      "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.12.tgz",
+      "integrity": "sha512-60sjqMhat7i7XntZckcSGV8iREJyXXI6yFHZkSZvCPUeOnEJ/VP1rU/WpEWQ56mvoh8NhC+sfKAuJRTyGtCOow==",
       "dev": true,
       "requires": {
         "@types/jest-diff": "*"
@@ -2906,9 +2906,9 @@
       "integrity": "sha1-FQStJSMVjKpA20onh8sBQRmU6k8="
     },
     "fsevents": {
-      "version": "1.2.8",
-      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-1.2.8.tgz",
-      "integrity": "sha512-tPvHgPGB7m40CZ68xqFGkKuzN+RnpGmSV+hgeKxhRpbxdqKXUFJGC3yonBOLzQBcJyGpdZFDfCsdOC2KFsXzeA==",
+      "version": "1.2.9",
+      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-1.2.9.tgz",
+      "integrity": "sha512-oeyj2H3EjjonWcFjD5NvZNE9Rqe4UW+nQBU2HNeKw0koVLEFIhtyETyAakeAM3de7Z/SW5kcA+fZUait9EApnw==",
       "dev": true,
       "optional": true,
       "requires": {
