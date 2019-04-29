@@ -203,12 +203,13 @@ describe('Settings', () => {
             const group = settings.getGroup('1');
             const expected = {
                 friendly_name: '123',
+                devices: [],
             };
 
             expect(group).toStrictEqual(expected);
         });
 
-        it('Should read groups form a separate file', () => {
+        it('Should read groups from a separate file', () => {
             const contentConfiguration = {
                 groups: 'groups.yaml',
             };
@@ -225,6 +226,7 @@ describe('Settings', () => {
             const group = settings.getGroup('1');
             const expected = {
                 friendly_name: '123',
+                devices: [],
             };
 
             expect(group).toStrictEqual(expected);
@@ -239,6 +241,7 @@ describe('Settings', () => {
             const contentGroups = {
                 '1': {
                     friendly_name: '123',
+                    devices: [],
                 },
             };
 
@@ -268,6 +271,7 @@ describe('Settings', () => {
             const group = settings.getGroup('1');
             const expectedGroup = {
                 friendly_name: '123',
+                devices: [],
             };
 
             expect(group).toStrictEqual(expectedGroup);
