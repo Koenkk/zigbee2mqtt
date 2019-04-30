@@ -2330,9 +2330,9 @@
       }
     },
     "es5-ext": {
-      "version": "0.10.49",
-      "resolved": "https://registry.npmjs.org/es5-ext/-/es5-ext-0.10.49.tgz",
-      "integrity": "sha512-3NMEhi57E31qdzmYp2jwRArIUsj1HI/RxbQ4bgnSB+AIKIxsAmTiK83bYMifIcpWvEc3P1X30DhUKOqEtF/kvg==",
+      "version": "0.10.50",
+      "resolved": "https://registry.npmjs.org/es5-ext/-/es5-ext-0.10.50.tgz",
+      "integrity": "sha512-KMzZTPBkeQV/JcSQhI5/z6d9VWJ3EnQ194USTUwIYZ2ZbpN8+SGXQKt1h68EX44+qt+Fzr8DO17vnxrw7c3agw==",
       "requires": {
         "es6-iterator": "~2.0.3",
         "es6-symbol": "~3.1.1",
@@ -3545,9 +3545,9 @@
       }
     },
     "globals": {
-      "version": "11.11.0",
-      "resolved": "https://registry.npmjs.org/globals/-/globals-11.11.0.tgz",
-      "integrity": "sha512-WHq43gS+6ufNOEqlrDBxVEbb8ntfXrfAUU2ZOpCxrBdGKW3gyv8mCxAfIBD0DroPKGrJ2eSsXsLtY9MPntsyTw==",
+      "version": "11.12.0",
+      "resolved": "https://registry.npmjs.org/globals/-/globals-11.12.0.tgz",
+      "integrity": "sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==",
       "dev": true
     },
     "graceful-fs": {
@@ -5188,9 +5188,9 @@
       "dev": true
     },
     "nwsapi": {
-      "version": "2.1.3",
-      "resolved": "https://registry.npmjs.org/nwsapi/-/nwsapi-2.1.3.tgz",
-      "integrity": "sha512-RowAaJGEgYXEZfQ7tvvdtAQUKPyTR6T6wNu0fwlNsGQYr/h3yQc6oI8WnVZh3Y/Sylwc+dtAlvPqfFZjhTyk3A==",
+      "version": "2.1.4",
+      "resolved": "https://registry.npmjs.org/nwsapi/-/nwsapi-2.1.4.tgz",
+      "integrity": "sha512-iGfd9Y6SFdTNldEy2L0GUhcarIutFmk+MPWIn9dmj8NMIup03G08uUF2KGbbmv/Ux4RT0VZJoP/sVbWA6d/VIw==",
       "dev": true
     },
     "oauth-sign": {
@@ -7054,8 +7054,8 @@
       }
     },
     "zigbee-shepherd": {
-      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#30d08aacf50327dc1e2c3f146076b9efb8581192",
-      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#30d08aacf50327dc1e2c3f146076b9efb8581192",
+      "version": "git+https://github.com/Koenkk/zigbee-shepherd.git#566cba295119cb334a7a7d939b4741e59415ed80",
+      "from": "git+https://github.com/Koenkk/zigbee-shepherd.git#566cba295119cb334a7a7d939b4741e59415ed80",
       "requires": {
         "areq": "^0.2.0",
         "busyman": "^0.3.0",
