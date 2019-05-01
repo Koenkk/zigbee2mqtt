@@ -926,11 +926,13 @@ describe('DevicePublish', () => {
         expect(zigbee.publish.mock.calls[1][2]).toBe('lightingColorCtrl');
         expect(zigbee.publish.mock.calls[1][3]).toBe('moveToColor');
         await wait(10);
-        expect(zigbee.publish).toHaveBeenCalledTimes(4);
-        expect(zigbee.publish.mock.calls[2][2]).toBe('genLevelCtrl');
+        expect(zigbee.publish).toHaveBeenCalledTimes(5);
+        expect(zigbee.publish.mock.calls[2][2]).toBe('genOnOff');
         expect(zigbee.publish.mock.calls[2][3]).toBe('read');
-        expect(zigbee.publish.mock.calls[3][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[3][2]).toBe('genLevelCtrl');
         expect(zigbee.publish.mock.calls[3][3]).toBe('read');
+        expect(zigbee.publish.mock.calls[4][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[4][3]).toBe('read');
         expect(publishEntityState).toHaveBeenCalledTimes(2);
         expect(publishEntityState).toHaveBeenNthCalledWith(1,
             '0x00000020',
