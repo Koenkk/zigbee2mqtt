@@ -807,7 +807,7 @@ describe('DevicePublish', () => {
             expect(parsed.attribute).toBe('foobar');
         });
 
-        it('Should parse set with ieeAddr topic', () => {
+        it('Should parse set with ieeeAddr topic', () => {
             const topic = 'zigbee2mqtt/0x12345689/set';
             const parsed = devicePublish.parseTopic(topic);
             expect(parsed.type).toBe('set');
