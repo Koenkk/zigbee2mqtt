@@ -13,6 +13,11 @@ controller.start();
 process.on('SIGINT', handleQuit);
 process.on('SIGTERM', handleQuit);
 
+let stopping = false;
+
 function handleQuit() {
-    controller.stop(() => process.exit());
+    if (!stopping) {
+        stopping = true;
+        controller.stop(() => process.exit());
+    }
 }
