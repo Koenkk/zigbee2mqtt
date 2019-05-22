@@ -2475,9 +2475,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.5.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.5.1.tgz",
-      "integrity": "sha512-c3WjZR/HBoi4GedJRwo2OGHa8Pzo1EbSVwQ2HFzJ+4t2OoYM7Alx646EH/aaxZ+9eGcPiq0FT0UGkRuFFx2FHg==",
+      "version": "22.6.3",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.6.3.tgz",
+      "integrity": "sha512-Db1b54TCPrxHYz4Mmn/jI48WIIlM6L7ajuyxpse8OjybkM+/xSmDGA46DLqnVe+JoShU+Dc3j6X6IEU4XfiLtw==",
       "dev": true
     },
     "eslint-scope": {
@@ -5520,9 +5520,9 @@
       "dev": true
     },
     "prompts": {
-      "version": "2.0.4",
-      "resolved": "https://registry.npmjs.org/prompts/-/prompts-2.0.4.tgz",
-      "integrity": "sha512-HTzM3UWp/99A0gk51gAegwo1QRYA7xjcZufMNe33rCclFszUYAuHe1fIN/3ZmiHeGPkUsNaRyQm1hHOfM0PKxA==",
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/prompts/-/prompts-2.1.0.tgz",
+      "integrity": "sha512-+x5TozgqYdOwWsQFZizE/Tra3fKvAoy037kOyU6cgz84n8f6zxngLOV4O32kTwt9FcLCxAqw0P/c8rOr9y+Gfg==",
       "dev": true,
       "requires": {
         "kleur": "^3.0.2",
@@ -7017,9 +7017,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "9.0.15",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.15.tgz",
-      "integrity": "sha512-w9idnyF7KpMxGV65DDnuU5wozctUQASEtOA0pZVPZ5gAz3dGiCUUX2ndvX29By5VjNsMyCgXUx6jwCBJ5WSfNQ==",
+      "version": "9.0.16",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.16.tgz",
+      "integrity": "sha512-uFATjeYdzhy5hF/KOLcs6NO3S3T8V2/+GB2Cr1krPceymj0YMrr2xgeTju8kNVZKX5+MjJHV994YYsMD3i3WNw==",
       "requires": {
         "chai": "*",
         "debounce": "*",
