@@ -96,24 +96,22 @@ describe('Controller', () => {
                 humidity: 2,
                 state: 'ON',
                 allowedStates: ['ON', 'OFF'],
-                color: {r: 100, g: 101, b: 102},
+                color: {r: 100, g: 0, b: 102, a: 0},
+                nested: {
+                    state: 'OFF',
+                    color: {r: 1, g: 0, b: 2},
+                },
             };
             controller.publishEntityState('0x12345678', payload);
-            expect(mqttPublish).toHaveBeenCalledTimes(7);
-            expect(mqttPublish.mock.calls[0][0]).toBe('test/temperature');
-            expect(mqttPublish.mock.calls[0][1]).toBe('1');
-            expect(mqttPublish.mock.calls[1][0]).toBe('test/humidity');
-            expect(mqttPublish.mock.calls[1][1]).toBe('2');
-            expect(mqttPublish.mock.calls[2][0]).toBe('test/state');
-            expect(mqttPublish.mock.calls[2][1]).toBe('ON');
-            expect(mqttPublish.mock.calls[3][0]).toBe('test/allowedStates');
-            expect(mqttPublish.mock.calls[3][1]).toBe('["ON","OFF"]');
-            expect(mqttPublish.mock.calls[4][0]).toBe('test/color-r');
-            expect(mqttPublish.mock.calls[4][1]).toBe('100');
-            expect(mqttPublish.mock.calls[5][0]).toBe('test/color-g');
-            expect(mqttPublish.mock.calls[5][1]).toBe('101');
-            expect(mqttPublish.mock.calls[6][0]).toBe('test/color-b');
-            expect(mqttPublish.mock.calls[6][1]).toBe('102');
+            expect(mqttPublish.mock.calls.map((x) => [x[0], x[1]])).toEqual([
+                ['test/temperature', '1'],
+                ['test/humidity', '2'],
+                ['test/state', 'ON'],
+                ['test/allowedStates', 'ON,OFF'],
+                ['test/color', '100,0,102'],
+                ['test/nested-state', 'OFF'],
+                ['test/nested-color', '1,0,2'],
+            ]);
         });
 
         it('Should cache state', () => {
