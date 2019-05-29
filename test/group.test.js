@@ -1,4 +1,5 @@
 const Groups = require('../lib/extension/groups');
+const settings = require('../lib/util/settings');
 
 let groupExtension = null;
 let zigbee = null;
@@ -179,7 +180,7 @@ describe('Groups', () => {
     it('Apply group updates add with postfix', async () => {
         zigbee.publish.mockClear();
         zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
-        zigbee.getEndpoint = (entityID, ep) => ({epId: ep})
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
         const from = {};
         const to = {'1': ['0x12345689/right']};
         groupExtension.apply(from, to);
@@ -193,7 +194,7 @@ describe('Groups', () => {
     it('Apply group updates add and remove with postfix', async () => {
         zigbee.publish.mockClear();
         zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
-        zigbee.getEndpoint = (entityID, ep) => ({epId: ep})
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
         const from = {'1': ['0x12345689/right']};
         const to = {'1': ['0x12345689'], '2': ['0x12345689/left']};
         groupExtension.apply(from, to);
@@ -209,6 +210,48 @@ describe('Groups', () => {
         expect(zigbee.publish).toHaveBeenCalledWith(
             '0x12345689', 'device', 'genGroups', 'add', 'functional',
             {groupid: '1', groupname: ''}, null, null, expect.any(Function)
+        );
+    });
+
+    it('Add to group via MQTT', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
+        jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
+        jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
+        groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/my_group/add', 'my_switch');
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'add', 'functional',
+            {groupid: '1', groupname: ''}, null, null, expect.any(Function)
+        );
+    });
+
+    it('Add to group via MQTT with postfix', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
+        jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
+        jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
+        groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/my_group/add', 'my_switch/right');
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'add', 'functional',
+            {groupid: '1', groupname: ''}, null, 3, expect.any(Function)
+        );
+    });
+
+    it('Remove from group via MQTT with postfix', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
+        jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
+        jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
+        groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/my_group/remove', 'my_switch/left');
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'remove', 'functional',
+            {groupid: '1'}, null, 2, expect.any(Function)
         );
     });
 });
