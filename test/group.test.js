@@ -175,4 +175,40 @@ describe('Groups', () => {
             {groupid: '2', groupname: ''}, null, null, expect.any(Function)
         );
     });
+
+    it('Apply group updates add with postfix', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep})
+        const from = {};
+        const to = {'1': ['0x12345689/right']};
+        groupExtension.apply(from, to);
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'add', 'functional',
+            {groupid: '1', groupname: ''}, null, 3, expect.any(Function)
+        );
+    });
+
+    it('Apply group updates add and remove with postfix', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep})
+        const from = {'1': ['0x12345689/right']};
+        const to = {'1': ['0x12345689'], '2': ['0x12345689/left']};
+        groupExtension.apply(from, to);
+        expect(zigbee.publish).toHaveBeenCalledTimes(3);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'add', 'functional',
+            {groupid: '2', groupname: ''}, null, 2, expect.any(Function)
+        );
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'remove', 'functional',
+            {groupid: '1'}, null, 3, expect.any(Function)
+        );
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'add', 'functional',
+            {groupid: '1', groupname: ''}, null, null, expect.any(Function)
+        );
+    });
 });
