@@ -53,7 +53,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_temperature',
             'unique_id': '0x12345678_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -77,7 +77,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_humidity',
             'unique_id': '0x12345678_humidity_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -101,7 +101,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_pressure',
             'unique_id': '0x12345678_pressure_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -125,7 +125,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_battery',
             'unique_id': '0x12345678_battery_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -148,7 +148,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_linkquality',
             'unique_id': '0x12345678_linkquality_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -185,7 +185,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_temperature',
             'unique_id': '0x12345678_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -209,7 +209,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_humidity',
             'unique_id': '0x12345678_humidity_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -233,7 +233,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_pressure',
             'unique_id': '0x12345678_pressure_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -257,7 +257,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_battery',
             'unique_id': '0x12345678_battery_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -280,7 +280,7 @@ describe('HomeAssistant extension', () => {
             'name': 'my_device_linkquality',
             'unique_id': '0x12345678_linkquality_zigbee2mqtt',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -323,7 +323,7 @@ describe('HomeAssistant extension', () => {
             'expire_after': 90,
             'icon': 'mdi:test',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -349,7 +349,7 @@ describe('HomeAssistant extension', () => {
             'expire_after': 30,
             'icon': 'mdi:test',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -375,7 +375,7 @@ describe('HomeAssistant extension', () => {
             'expire_after': 30,
             'icon': 'mdi:test',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -401,7 +401,7 @@ describe('HomeAssistant extension', () => {
             'expire_after': 30,
             'icon': 'mdi:test',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -426,7 +426,7 @@ describe('HomeAssistant extension', () => {
             'expire_after': 30,
             'icon': 'mdi:test',
             'device': {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -460,7 +460,7 @@ describe('HomeAssistant extension', () => {
             unique_id: '0x12345678_fan_zigbee2mqtt',
             speeds: ['off', 'low', 'medium', 'high', 'on', 'auto', 'smart'],
             device: {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'manufacturer': 'Hampton Bay',
@@ -493,7 +493,7 @@ describe('HomeAssistant extension', () => {
             value_template: '{{ value_json.position }}',
             unique_id: '0x12345678_cover_zigbee2mqtt',
             device: {
-                'identifiers': 'zigbee2mqtt_0x12345678',
+                'identifiers': ['zigbee2mqtt_0x12345678'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Smart vent (SV01)',
@@ -514,7 +514,7 @@ describe('HomeAssistant extension', () => {
             friendly_name: 'my_device',
             homeassistant: {
                 device: {
-                    identifiers: 'test123',
+                    identifiers: ['test123'],
                 },
                 temperature: {
                     expire_after: 90,
@@ -536,7 +536,7 @@ describe('HomeAssistant extension', () => {
             'unique_id': '0x12345678_temperature_zigbee2mqtt',
             'expire_after': 90,
             'device': {
-                'identifiers': 'test123',
+                'identifiers': ['test123'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -559,7 +559,7 @@ describe('HomeAssistant extension', () => {
                 temperature: {
                     expire_after: 90,
                     device: {
-                        identifiers: 'test',
+                        identifiers: ['test'],
                     },
                 },
             },
@@ -579,7 +579,7 @@ describe('HomeAssistant extension', () => {
             'unique_id': '0x12345678_temperature_zigbee2mqtt',
             'expire_after': 90,
             'device': {
-                'identifiers': 'test',
+                'identifiers': ['test'],
                 'name': 'my_device',
                 'sw_version': 'Zigbee2mqtt test',
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
@@ -615,7 +615,7 @@ describe('HomeAssistant extension', () => {
                 temperature: {
                     expire_after: 90,
                     device: {
-                        identifiers: 'test',
+                        identifiers: ['test'],
                     },
                 },
             },
