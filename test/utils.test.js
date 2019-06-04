@@ -16,5 +16,17 @@ describe('Utils', () => {
             const device = {type: 'Router', manufId: 4151, manufName: 'Trust International B.V.\u0000'};
             expect(false).toBe(utils.isXiaomiDevice(device));
         });
+
+        it('Identify QBKG03LM as enddevice', () => {
+            const device = {type: 'Router', manufId: 4447, modelId: 'lumi.ctrl_neutral1'};
+            expect(false).toBe(utils.isRouter(device));
+            expect('EndDevice').toBe(utils.correctDeviceType(device));
+        });
+
+        it('Identify QBKG04LM as enddevice', () => {
+            const device = {type: 'Router', manufId: 4447, modelId: 'lumi.ctrl_neutral2'};
+            expect(false).toBe(utils.isRouter(device));
+            expect('EndDevice').toBe(utils.correctDeviceType(device));
+        });
     });
 });
