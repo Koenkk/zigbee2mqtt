@@ -1,6 +1,11 @@
 const utils = require('../lib/util/utils.js');
+const testUtils = require('./utils');
 
 describe('Utils', () => {
+    beforeAll(() => {
+        testUtils.stubLogger(jest);
+    });
+
     describe('Is xiaomi device', () => {
         it('Identify xiaomi device', () => {
             const device = {type: 'Router', manufId: 4151, manufName: 'Xiaomi'};

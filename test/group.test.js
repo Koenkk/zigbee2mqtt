@@ -1,11 +1,14 @@
 const Groups = require('../lib/extension/groups');
 const settings = require('../lib/util/settings');
+const utils = require('./utils');
 
 let groupExtension = null;
 let zigbee = null;
 
 describe('Groups', () => {
     beforeEach(() => {
+        utils.stubLogger(jest);
+
         zigbee = {
             publish: jest.fn(),
         };

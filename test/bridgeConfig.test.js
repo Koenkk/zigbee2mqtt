@@ -4,6 +4,7 @@ const fs = require('../lib/util/fs');
 const objectAssignDeep = require('object-assign-deep');
 const data = require('../lib/util/data');
 const configurationFile = data.joinPath('configuration.yaml');
+const utils = require('./utils');
 
 const mqtt = {
     subscribe: (topic) => {},
@@ -17,6 +18,7 @@ describe('BridgeConfig', () => {
     const files = new Map();
 
     beforeAll(() => {
+        utils.stubLogger(jest);
         jest.spyOn(fs, 'readYaml').mockImplementation((file) => {
             if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
             throw new Error(`Fake file not found: ${file}`);

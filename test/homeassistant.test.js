@@ -1,6 +1,7 @@
 const devices = require('zigbee-shepherd-converters').devices;
 const HomeassistantExtension = require('../lib/extension/homeassistant');
 const settings = require('../lib/util/settings');
+const utils = require('./utils');
 
 const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
 const SV01 = devices.find((d) => d.model === 'SV01');
@@ -11,6 +12,8 @@ describe('HomeAssistant extension', () => {
     let mqtt = null;
 
     beforeEach(() => {
+        utils.stubLogger(jest);
+
         mqtt = {
             publish: jest.fn(),
         };
