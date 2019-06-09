@@ -4984,9 +4984,9 @@
       }
     },
     "ms": {
-      "version": "2.1.1",
-      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.1.tgz",
-      "integrity": "sha512-tgp+dl5cGk28utYktBsrFqA7HKgrhgPsg6Z/EfhWI4gl1Hwq8B/GmY/0oXZ6nF8hDVesS/FpnYaD/kOWhYQvyg=="
+      "version": "2.1.2",
+      "resolved": "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz",
+      "integrity": "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="
     },
     "mute-stream": {
       "version": "0.0.7",
@@ -5768,9 +5768,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.11.0",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.11.0.tgz",
-      "integrity": "sha512-WL2pBDjqT6pGUNSUzMw00o4T7If+z4H2x3Gz893WoUQ5KW8Vr9txp00ykiP16VBaZF5+j/OcXJHZ9+PCvdiDKw==",
+      "version": "1.11.1",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.11.1.tgz",
+      "integrity": "sha512-vIpgF6wfuJOZI7KKKSP+HmiKggadPQAdsp5HiC1mvqnfp0gF1vdwgBWZIdrVft9pgqoMFQN+R7BSWZiBxx+BBw==",
       "dev": true,
       "requires": {
         "path-parse": "^1.0.6"
@@ -5830,9 +5830,9 @@
       }
     },
     "rsvp": {
-      "version": "4.8.4",
-      "resolved": "https://registry.npmjs.org/rsvp/-/rsvp-4.8.4.tgz",
-      "integrity": "sha512-6FomvYPfs+Jy9TfXmBpBuMWNH94SgCsZmJKcanySzgNNP6LjWxBvyLTa9KaMfDDM5oxRfrKDB0r/qeRsLwnBfA==",
+      "version": "4.8.5",
+      "resolved": "https://registry.npmjs.org/rsvp/-/rsvp-4.8.5.tgz",
+      "integrity": "sha512-nfMOlASu9OnRJo1mbEk2cz0D56a1MBNrJ7orjRZQG10XDyuvwksKbuXNp6qa+kbn839HwjwhBzhFmdsaEAfauA==",
       "dev": true
     },
     "run-async": {
@@ -6565,9 +6565,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.5.15",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.5.15.tgz",
-      "integrity": "sha512-fe7aYFotptIddkwcm6YuA0HmknBZ52ZzOsUxZEdhhkSsz7RfjHDX2QDxwKTiv4JQ5t5NhfmpgAK+J7LiDhKSqg==",
+      "version": "3.6.0",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.0.tgz",
+      "integrity": "sha512-W+jrUHJr3DXKhrsS7NUVxn3zqMOFn0hL/Ei6v0anCIMoKC93TjcflTagwIHLW7SfMFfiQuktQyFVCFHGUE0+yg==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -7035,9 +7035,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "9.0.19",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.19.tgz",
-      "integrity": "sha512-05RPaYhmQWmx+WieeacLXqlk5Q/AcOgJuRa72ZW+9q/VKSF1UzY0vTvRZE9eocp21EwjlBf27LJmKa5PH8RHAQ==",
+      "version": "9.0.20",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.20.tgz",
+      "integrity": "sha512-qiL8SBga2I3wqs8krFtI60+X05DBVFZvLHjrxZh60wDL4L7TNaluLrR9CwAJXXiGVdngq1tShQjdtCe3iAz6Iw==",
       "requires": {
         "chai": "*",
         "debounce": "*",
