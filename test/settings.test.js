@@ -3,6 +3,7 @@ const objectAssignDeep = require('object-assign-deep');
 const data = require('../lib/util/data');
 const settings = require('../lib/util/settings.js');
 const fs = require('../lib/util/fs');
+const utils = require('./utils');
 
 const configurationFile = data.joinPath('configuration.yaml');
 const devicesFile = data.joinPath('devices.yaml');
@@ -16,6 +17,8 @@ describe('Settings', () => {
     const files = new Map();
 
     beforeAll(() => {
+        utils.stubLogger(jest);
+
         jest.spyOn(fs, 'readYaml').mockImplementation((file) => {
             if (files.has(file)) return objectAssignDeep.noMutate(files.get(file));
             throw new Error(`Fake file not found: ${file}`);

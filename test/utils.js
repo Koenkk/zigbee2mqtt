@@ -6,6 +6,7 @@ module.exports = {
         jest.spyOn(logger, 'warn').mockReturnValue(undefined);
         jest.spyOn(logger, 'debug').mockReturnValue(undefined);
         jest.spyOn(logger, 'error').mockReturnValue(undefined);
+        jest.spyOn(logger, 'trace').mockReturnValue(undefined);
     },
     zigbeeMessage: (device, cid, type, data, epId, groupid=0) => {
         return {data: {cid, data}, type, groupid, endpoints: [{device, epId}]};

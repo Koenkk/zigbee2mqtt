@@ -91,13 +91,27 @@ describe('Controller', () => {
                 },
             });
 
-            const payload = {temperature: 1, humidity: 2};
+            const payload = {
+                temperature: 1,
+                humidity: 2,
+                state: 'ON',
+                allowedStates: ['ON', 'OFF'],
+                color: {r: 100, g: 0, b: 102, a: 0},
+                nested: {
+                    state: 'OFF',
+                    color: {r: 1, g: 0, b: 2},
+                },
+            };
             controller.publishEntityState('0x12345678', payload);
-            expect(mqttPublish).toHaveBeenCalledTimes(2);
-            expect(mqttPublish.mock.calls[0][0]).toBe('test/temperature');
-            expect(mqttPublish.mock.calls[0][1]).toBe('1');
-            expect(mqttPublish.mock.calls[1][0]).toBe('test/humidity');
-            expect(mqttPublish.mock.calls[1][1]).toBe('2');
+            expect(mqttPublish.mock.calls.map((x) => [x[0], x[1]])).toEqual([
+                ['test/temperature', '1'],
+                ['test/humidity', '2'],
+                ['test/state', 'ON'],
+                ['test/allowedStates', 'ON,OFF'],
+                ['test/color', '100,0,102'],
+                ['test/nested-state', 'OFF'],
+                ['test/nested-color', '1,0,2'],
+            ]);
         });
 
         it('Should cache state', () => {
