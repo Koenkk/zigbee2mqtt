@@ -427,9 +427,9 @@
       }
     },
     "@types/babel__traverse": {
-      "version": "7.0.6",
-      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.0.6.tgz",
-      "integrity": "sha512-XYVgHF2sQ0YblLRMLNPB3CkFMewzFmlDsH/TneZFHUXDlABQgh88uOxuez7ZcXxayLFrqLwtDH1t+FmlFwNZxw==",
+      "version": "7.0.7",
+      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.0.7.tgz",
+      "integrity": "sha512-CeBpmX1J8kWLcDEnI3Cl2Eo6RfbGvzUctA+CjZUhOKDFbLfcr7fc4usEqLNWetrlJd7RhAkyYe2czXop4fICpw==",
       "dev": true,
       "requires": {
         "@babel/types": "^7.3.0"
@@ -461,9 +461,9 @@
       }
     },
     "@types/jest": {
-      "version": "24.0.13",
-      "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.13.tgz",
-      "integrity": "sha512-3m6RPnO35r7Dg+uMLj1+xfZaOgIHHHut61djNjzwExXN4/Pm9has9C6I1KMYSfz7mahDhWUOVg4HW/nZdv5Pww==",
+      "version": "24.0.14",
+      "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.14.tgz",
+      "integrity": "sha512-IxS2AO0nOr4zrpKfRCxobQUb1bSK6ejodZ7odCzHXMjsASCI8J10N8qVQhrCjvJTc3bUjGGeuD+ytKZqyhajqQ==",
       "dev": true,
       "requires": {
         "@types/jest-diff": "*"
@@ -4248,9 +4248,9 @@
       "dev": true
     },
     "jest-haste-map": {
-      "version": "24.8.0",
-      "resolved": "https://registry.npmjs.org/jest-haste-map/-/jest-haste-map-24.8.0.tgz",
-      "integrity": "sha512-ZBPRGHdPt1rHajWelXdqygIDpJx8u3xOoLyUBWRW28r3tagrgoepPrzAozW7kW9HrQfhvmiv1tncsxqHJO1onQ==",
+      "version": "24.8.1",
+      "resolved": "https://registry.npmjs.org/jest-haste-map/-/jest-haste-map-24.8.1.tgz",
+      "integrity": "sha512-SwaxMGVdAZk3ernAx2Uv2sorA7jm3Kx+lR0grp6rMmnY06Kn/urtKx1LPN2mGTea4fCT38impYT28FfcLUhX0g==",
       "dev": true,
       "requires": {
         "@jest/types": "^24.8.0",
@@ -5768,9 +5768,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.11.1",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.11.1.tgz",
-      "integrity": "sha512-vIpgF6wfuJOZI7KKKSP+HmiKggadPQAdsp5HiC1mvqnfp0gF1vdwgBWZIdrVft9pgqoMFQN+R7BSWZiBxx+BBw==",
+      "version": "1.11.0",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.11.0.tgz",
+      "integrity": "sha512-WL2pBDjqT6pGUNSUzMw00o4T7If+z4H2x3Gz893WoUQ5KW8Vr9txp00ykiP16VBaZF5+j/OcXJHZ9+PCvdiDKw==",
       "dev": true,
       "requires": {
         "path-parse": "^1.0.6"
@@ -6334,9 +6334,9 @@
       }
     },
     "symbol-tree": {
-      "version": "3.2.2",
-      "resolved": "https://registry.npmjs.org/symbol-tree/-/symbol-tree-3.2.2.tgz",
-      "integrity": "sha1-rifbOPZgp64uHDt9G8KQgZuFGeY=",
+      "version": "3.2.4",
+      "resolved": "https://registry.npmjs.org/symbol-tree/-/symbol-tree-3.2.4.tgz",
+      "integrity": "sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==",
       "dev": true
     },
     "table": {
@@ -6525,9 +6525,9 @@
       "dev": true
     },
     "tslib": {
-      "version": "1.9.3",
-      "resolved": "https://registry.npmjs.org/tslib/-/tslib-1.9.3.tgz",
-      "integrity": "sha512-4krF8scpejhaOgqzBEcGM7yDIEfi0/8+8zDRZhNZZ2kjmHJ4hv3zCbQWxoJGz1iw5U0Jl0nma13xzHXcncMavQ==",
+      "version": "1.10.0",
+      "resolved": "https://registry.npmjs.org/tslib/-/tslib-1.10.0.tgz",
+      "integrity": "sha512-qOebF53frne81cf0S9B41ByenJ3/IuH8yJKngAX35CmiZySA0khhkovshKK+jGCaMnVomla7gVlIcc3EvKPbTQ==",
       "dev": true
     },
     "tunnel-agent": {
@@ -7035,9 +7035,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "9.0.20",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.20.tgz",
-      "integrity": "sha512-qiL8SBga2I3wqs8krFtI60+X05DBVFZvLHjrxZh60wDL4L7TNaluLrR9CwAJXXiGVdngq1tShQjdtCe3iAz6Iw==",
+      "version": "9.0.21",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-9.0.21.tgz",
+      "integrity": "sha512-s3JCgd6/w7xAH8wnRqWncKHL9gT8wLg0mC6Vt0nG5pAsHF8hdvr7Eg2oCFHODEJMjTzoYF+0EsH+VdIU3oZiaA==",
       "requires": {
         "chai": "*",
         "debounce": "*",
