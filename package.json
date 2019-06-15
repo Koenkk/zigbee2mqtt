@@ -43,12 +43,9 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zcl-id": "git+https://github.com/Koenkk/zcl-id.git#4fa75c92424cd070a3bf6e1f4640b1e3ad8f802d",
-    "ziee": "*",
-    "zigbee-shepherd": "git+https://github.com/Koenkk/zigbee-shepherd.git#f6dc5b4469a87c90007dfc9f0d329cdb01d35072",
+    "zigbee-herdsman": "git+https://github.com/Koenkk/zigbee-herdsman.git#d6cd7eeed592900a9b3bbb1ab68c08ea632d49ab",
     "zigbee-shepherd-converters": "9.0.22",
-    "deep-diff": "*",
-    "zive": "*"
+    "deep-diff": "*"
   },
   "devDependencies": {
     "@types/jest": "^24.0.11",
