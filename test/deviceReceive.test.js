@@ -41,7 +41,7 @@ describe('DeviceReceive', () => {
         });
 
         it('Should handle a zigbee message and counter it when Home Assistant integration is enabled', () => {
-            jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, advanced: {last_seen: 'disabled'}});
+            jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, advanced: {last_seen: 'disable'}});
             const device = {ieeeAddr: '0x12345678'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1);
             deviceReceive.onZigbeeMessage(message, device, WXKG11LM);
