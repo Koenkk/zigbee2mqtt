@@ -45,6 +45,7 @@ describe('Controller', () => {
                 },
                 advanced: {
                     cache_state: false,
+                    last_seen: 'disable',
                 },
                 experimental: {
                     output: 'json',
