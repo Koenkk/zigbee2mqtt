@@ -257,4 +257,32 @@ describe('Groups', () => {
             {groupid: '1'}, null, 2, expect.any(Function)
         );
     });
+
+    it('Remove all group via MQTT', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
+        //jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
+        jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
+        groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/remove_all', 'my_switch');
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'removeAll', 'functional',
+            {}, null, null, expect.any(Function)
+        );
+    });
+
+    it('Remove all group via MQTT deprecated', async () => {
+        zigbee.publish.mockClear();
+        zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
+        zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
+        jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
+        jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
+        groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/my_group/remove_all', 'my_switch');
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenCalledWith(
+            '0x12345689', 'device', 'genGroups', 'removeAll', 'functional',
+            {}, null, null, expect.any(Function)
+        );
+    });
 });
