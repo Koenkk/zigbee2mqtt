@@ -262,7 +262,6 @@ describe('Groups', () => {
         zigbee.publish.mockClear();
         zigbee.getDevice = () => ({modelId: 'lumi.ctrl_neutral2'});
         zigbee.getEndpoint = (entityID, ep) => ({epId: ep});
-        //jest.spyOn(settings, 'getGroupIDByFriendlyName').mockReturnValue(1);
         jest.spyOn(settings, 'getIeeeAddrByFriendlyName').mockReturnValue('0x12345689');
         groupExtension.onMQTTMessage('zigbee2mqtt/bridge/group/remove_all', 'my_switch');
         expect(zigbee.publish).toHaveBeenCalledTimes(1);
