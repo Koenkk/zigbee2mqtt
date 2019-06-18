@@ -43,7 +43,7 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zigbee-herdsman": "git+https://github.com/Koenkk/zigbee-herdsman.git#823797bbfdda9cf30faa17882062910fbd7d9209",
+    "zigbee-herdsman": "0.1.9",
     "zigbee-shepherd-converters": "9.0.22",
     "deep-diff": "*"
   },
