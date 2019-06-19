@@ -26,6 +26,13 @@ const cfg = {
         manufSpec: 0,
         disDefaultRsp: 0,
     },
+    defaultApsNoAck: {
+        manufSpec: 0,
+        disDefaultRsp: 0,
+        options: {
+            options: 16,
+        },
+    },
 };
 
 describe('DevicePublish', () => {
@@ -1193,5 +1200,36 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenNthCalledWith(2,
             '0x00000001',
             {color: {x: 0.41, y: 0.25}});
+    });
+
+    it('Should publish message with apsNoAck when set', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'HDC52EastwindFan'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify({brightness: '92'}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000003',
+            'device',
+            'genLevelCtrl',
+            'moveToLevelWithOnOff',
+            'functional',
+            {level: 92, transtime: 0},
+            cfg.defaultApsNoAck,
+            null,
+            expect.any(Function));
+
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify({state: 'OFF'}));
+        expect(zigbee.publish).toHaveBeenCalledTimes(2);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(2,
+            '0x00000003',
+            'device',
+            'genOnOff',
+            'off',
+            'functional',
+            {},
+            cfg.defaultApsNoAck,
+            null,
+            expect.any(Function));
     });
 });

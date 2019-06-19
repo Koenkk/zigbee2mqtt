@@ -43,8 +43,8 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zigbee-herdsman": "0.1.10",
-    "zigbee-shepherd-converters": "9.0.22",
+    "zigbee-herdsman": "0.1.11",
+    "zigbee-shepherd-converters": "10.0.0",
     "deep-diff": "*"
   },
   "devDependencies": {
