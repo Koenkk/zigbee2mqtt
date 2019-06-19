@@ -288,5 +288,35 @@ describe('Settings', () => {
 
             expect(settings.getDevice('0x1234')).toStrictEqual(expectedDevice2);
         });
+
+        it('Should add groups', () => {
+            write(configurationFile, {});
+
+            const added = settings.addGroup('test123');
+            const expected = {
+                '1': {
+                    friendly_name: 'test123',
+                },
+            };
+
+            expect(added).toStrictEqual(true);
+            expect(settings.get().groups).toStrictEqual(expected);
+        });
+
+        it('Should not add duplicate groups', () => {
+            write(configurationFile, {});
+
+            const added = settings.addGroup('test123');
+            const added2 = settings.addGroup('test123');
+            const expected = {
+                '1': {
+                    friendly_name: 'test123',
+                },
+            };
+
+            expect(added).toStrictEqual(true);
+            expect(added2).toStrictEqual(false);
+            expect(settings.get().groups).toStrictEqual(expected);
+        });
     });
 });
