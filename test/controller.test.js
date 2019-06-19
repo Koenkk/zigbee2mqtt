@@ -162,5 +162,22 @@ describe('Controller', () => {
             expect(JSON.parse(mqttPublish.mock.calls[1][1])).toStrictEqual({humidity: 2});
             expect(JSON.parse(mqttPublish.mock.calls[2][1])).toStrictEqual({temperature: 3});
         });
+
+        it('Should not send empty messages', () => {
+            jest.spyOn(settings, 'get').mockReturnValue({
+                mqtt: {
+                    include_device_information: false,
+                },
+                advanced: {
+                    cache_state: true,
+                },
+                experimental: {
+                    output: 'json',
+                },
+            });
+
+            controller.publishEntityState('0x12345678', {});
+            expect(mqttPublish).toHaveBeenCalledTimes(0);
+        });
     });
 });
