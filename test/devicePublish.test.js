@@ -26,12 +26,10 @@ const cfg = {
         manufSpec: 0,
         disDefaultRsp: 0,
     },
-    defaultApsNoAck: {
+    disFeedbackRsp: {
         manufSpec: 0,
         disDefaultRsp: 0,
-        options: {
-            options: 16,
-        },
+        disFeedbackRsp: true,
     },
 };
 
@@ -1202,7 +1200,7 @@ describe('DevicePublish', () => {
             {color: {x: 0.41, y: 0.25}});
     });
 
-    it('Should publish message with apsNoAck when set', async () => {
+    it('Should publish message with disFeedbackRsp when set', async () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         zigbee.getDevice = () => ({modelId: 'HDC52EastwindFan'});
@@ -1215,7 +1213,7 @@ describe('DevicePublish', () => {
             'moveToLevelWithOnOff',
             'functional',
             {level: 92, transtime: 0},
-            cfg.defaultApsNoAck,
+            cfg.disFeedbackRsp,
             null,
             expect.any(Function));
 
@@ -1228,7 +1226,7 @@ describe('DevicePublish', () => {
             'off',
             'functional',
             {},
-            cfg.defaultApsNoAck,
+            cfg.disFeedbackRsp,
             null,
             expect.any(Function));
     });
