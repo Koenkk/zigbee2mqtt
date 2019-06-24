@@ -4930,9 +4930,9 @@
       "dev": true
     },
     "semver": {
-      "version": "6.1.1",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-6.1.1.tgz",
-      "integrity": "sha512-rWYq2e5iYW+fFe/oPPtYJxYgjBm8sC4rmoGdUOgBB7VnwKt6HrL793l2voH1UlsyYZpJ4g0wfjnTEO1s1NP2eQ=="
+      "version": "6.1.2",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-6.1.2.tgz",
+      "integrity": "sha512-z4PqiCpomGtWj8633oeAdXm1Kn1W++3T8epkZYnwiVgIYIJ0QHszhInYSJTYxebByQH7KVCEAn8R9duzZW2PhQ=="
     },
     "set-blocking": {
       "version": "2.0.0",
@@ -6013,9 +6013,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.1.12",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.12.tgz",
-      "integrity": "sha512-3o5BO2+Zr06fe1eOP82Rherem4WyHYNR5cjE0U9KpAxsFYUkJKHxJwpmU/KU6lu1nK4hm8/dPCrMmY/lqHCw0Q==",
+      "version": "0.1.13",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.13.tgz",
+      "integrity": "sha512-KxXPZqbZ88DNwZq1gO9I4EfDL2XxnvpDsdocUstLMrVxvGDsMwIhBkO5uZone5Zv3mAFMKZ+XsY1JuPZ81u/uw==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
