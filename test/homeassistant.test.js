@@ -606,7 +606,7 @@ describe('HomeAssistant extension', () => {
                 output: 'json',
             },
             advanced: {
-                homeassistant_discovery_topic: 'my_custom_topic',
+                homeassistant_discovery_topic: 'my_custom_discovery_topic',
             },
         });
 
@@ -627,6 +627,33 @@ describe('HomeAssistant extension', () => {
         homeassistant.discover('0x12345678', WSDCGQ11LM, false);
 
         expect(mqtt.publish).toHaveBeenCalledTimes(5);
-        expect(mqtt.publish.mock.calls[0][4]).toBe('my_custom_topic');
+        expect(mqtt.publish.mock.calls[0][4]).toBe('my_custom_discovery_topic');
+    });
+
+    it('Should subscribe to custom status topic', () => {
+        jest.spyOn(settings, 'get').mockReturnValue({
+            experimental: {
+                output: 'json',
+            },
+            advanced: {
+                homeassistant_status_topic: 'my_custom_status_topic',
+            },
+        });
+
+        const zigbee = {
+            getAllClients: jest.fn().mockReturnValue([]),
+        };
+
+        mqtt = {
+            subscribe: jest.fn(),
+        };
+
+
+        homeassistant = new HomeassistantExtension(zigbee, mqtt, null, null);
+
+        homeassistant.onMQTTConnected();
+
+        expect(mqtt.subscribe).toHaveBeenCalledTimes(1);
+        expect(mqtt.subscribe.mock.calls[0][0]).toBe('my_custom_status_topic');
     });
 });
