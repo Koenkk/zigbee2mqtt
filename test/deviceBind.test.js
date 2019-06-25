@@ -28,6 +28,11 @@ const devices = {
             return {inClusterList: [5, 6]};
         },
     },
+    occupancy_sensor: {
+        getSimpleDesc: () => {
+            return {outClusterList: [5, 6]};
+        },
+    },
 };
 
 const zigbee = {
@@ -46,12 +51,15 @@ const zigbee = {
             return devices.switch_ep2;
         } else if (ep == 3 && ID === 'switch_ep3') {
             return devices.switch_ep3;
+        } else if (ep == 2 && ID == 'occupancy_sensor') {
+            return devices.occupancy_sensor;
         }
 
         throw new Error(`No mock for ${ID} and ep ${ep}`);
     },
     getDevice: (ID) => {
         const lookup = {
+            'occupancy_sensor': 'SML002',
             'switch_ep2': 'lumi.sensor_86sw2.es1',
             'switch_ep3': 'DNCKAT_S003',
             'bulb': 'TRADFRI bulb E27 WS opal 980lm',
@@ -151,6 +159,17 @@ describe('DeviceBind', () => {
                 devices.switch_ep2,
                 6,
                 devices.switch_ep3,
+                expect.any(Function)
+            );
+        });
+
+        it('Bind default ep when mapped', async () => {
+            deviceBind.onMQTTMessage('zigbee2mqtt/bridge/bind/occupancy_sensor', 'bulb');
+            expect(zigbee.bind).toHaveBeenCalledTimes(1);
+            expect(zigbee.bind).toHaveBeenNthCalledWith(1,
+                devices.occupancy_sensor,
+                6,
+                devices.bulb,
                 expect.any(Function)
             );
         });

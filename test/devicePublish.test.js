@@ -26,12 +26,10 @@ const cfg = {
         manufSpec: 0,
         disDefaultRsp: 0,
     },
-    defaultApsNoAck: {
+    disFeedbackRsp: {
         manufSpec: 0,
         disDefaultRsp: 0,
-        options: {
-            options: 16,
-        },
+        disFeedbackRsp: true,
     },
 };
 
@@ -1088,7 +1086,11 @@ describe('DevicePublish', () => {
     it('Home Assistant: should set state', async () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
-        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        jest.spyOn(settings, 'get').mockReturnValue({
+            homeassistant: true,
+            mqtt: {base_topic: 'zigbee2mqtt'},
+            advanced: {last_seen: 'disable'},
+        });
         zigbee.getDevice = () => ({modelId: 'RB 185 C'});
         devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'ON'}));
         expect(zigbee.publish).toHaveBeenCalledTimes(1);
@@ -1112,7 +1114,11 @@ describe('DevicePublish', () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         jest.spyOn(state, 'get').mockReturnValue({state: 'ON'});
-        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        jest.spyOn(settings, 'get').mockReturnValue({
+            homeassistant: true,
+            mqtt: {base_topic: 'zigbee2mqtt'},
+            advanced: {last_seen: 'disable'},
+        });
         zigbee.getDevice = () => ({modelId: 'RB 185 C'});
         devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({state: 'ON', color_temp: 100}));
         expect(zigbee.publish).toHaveBeenCalledTimes(1);
@@ -1137,7 +1143,11 @@ describe('DevicePublish', () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         jest.spyOn(state, 'get').mockReturnValue({state: 'ON'});
-        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        jest.spyOn(settings, 'get').mockReturnValue({
+            homeassistant: true,
+            mqtt: {base_topic: 'zigbee2mqtt'},
+            advanced: {last_seen: 'disable'},
+        });
         zigbee.getDevice = () => ({modelId: 'RB 185 C'});
         devicePublish.onMQTTMessage(
             'zigbee2mqtt/0x00000001/set',
@@ -1165,7 +1175,11 @@ describe('DevicePublish', () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         jest.spyOn(state, 'get').mockReturnValue({state: 'OFF'});
-        jest.spyOn(settings, 'get').mockReturnValue({homeassistant: true, mqtt: {base_topic: 'zigbee2mqtt'}});
+        jest.spyOn(settings, 'get').mockReturnValue({
+            homeassistant: true,
+            mqtt: {base_topic: 'zigbee2mqtt'},
+            advanced: {last_seen: 'disable'},
+        });
         zigbee.getDevice = () => ({modelId: 'RB 185 C'});
         devicePublish.onMQTTMessage(
             'zigbee2mqtt/0x00000001/set',
@@ -1202,7 +1216,7 @@ describe('DevicePublish', () => {
             {color: {x: 0.41, y: 0.25}});
     });
 
-    it('Should publish message with apsNoAck when set', async () => {
+    it('Should publish message with disFeedbackRsp when set', async () => {
         zigbee.publish.mockClear();
         publishEntityState.mockClear();
         zigbee.getDevice = () => ({modelId: 'HDC52EastwindFan'});
@@ -1215,7 +1229,7 @@ describe('DevicePublish', () => {
             'moveToLevelWithOnOff',
             'functional',
             {level: 92, transtime: 0},
-            cfg.defaultApsNoAck,
+            cfg.disFeedbackRsp,
             null,
             expect.any(Function));
 
@@ -1228,8 +1242,20 @@ describe('DevicePublish', () => {
             'off',
             'functional',
             {},
-            cfg.defaultApsNoAck,
+            cfg.disFeedbackRsp,
             null,
             expect.any(Function));
+    });
+
+    it('Should publish messages to zigbee devices', async () => {
+        jest.spyOn(settings, 'get').mockReturnValue({
+            mqtt: {base_topic: 'zigbee2mqtt'},
+            advanced: {last_seen: 'ISO_8601'},
+        });
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'TRADFRI bulb E27 CWS opal 600lm'});
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000001/set', JSON.stringify({brightness: '200'}));
+        expect(publishEntityState).toHaveBeenCalledTimes(1);
+        expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('string');
     });
 });
