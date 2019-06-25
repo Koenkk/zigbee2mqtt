@@ -34,4 +34,45 @@ describe('Utils', () => {
             expect('EndDevice').toBe(utils.correctDeviceType(device));
         });
     });
+
+    describe('Get endpoint by id', () => {
+        it('Pick default ep', () => {
+            const zigbee = {
+                getDevice: (entityID) => {
+                    return {modelId: 'TRADFRI on/off switch'};
+                },
+                getEndpoint: (entityID, epId) => {
+                    return {epId: epId == null ? 1 : 0};
+                },
+            };
+            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
+            expect(endpoint.epId).toBe(1);
+        });
+
+        it('Pick default ep from mapping when default defined', () => {
+            const zigbee = {
+                getDevice: (entityID) => {
+                    return {modelId: 'SML002'};
+                },
+                getEndpoint: (entityID, epId) => {
+                    return {epId};
+                },
+            };
+            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
+            expect(endpoint.epId).toBe(2);
+        });
+
+        it('Pick default ep from mapping when not defined', () => {
+            const zigbee = {
+                getDevice: (entityID) => {
+                    return {modelId: 'lumi.sensor_86sw2.es1'};
+                },
+                getEndpoint: (entityID, epId) => {
+                    return {epId: epId == null ? 1 : 0};
+                },
+            };
+            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
+            expect(endpoint.epId).toBe(1);
+        });
+    });
 });
