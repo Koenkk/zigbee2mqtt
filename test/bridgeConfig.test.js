@@ -139,4 +139,36 @@ describe('BridgeConfig', () => {
 
         bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/groups', 'whatever');
     });
+
+    it('Rename device with é', async () => {
+        jest.spyOn(mqtt, 'log').mockImplementation((type, message) => {
+            expect(type).toBe('device_renamed');
+        });
+
+        write(configurationFile, {
+            devices: {
+                '0x12345678': {
+                    friendly_name: 'test123',
+                    retain: false,
+                },
+            },
+        });
+
+        const payload = {
+            old: 'test123',
+            new: 'tést123',
+        };
+
+        bridgeConfig.onMQTTMessage('zigbee2mqtt/bridge/config/rename', JSON.stringify(payload));
+        const expected = {
+            devices: {
+                '0x12345678': {
+                    friendly_name: 'tést123',
+                    retain: false,
+                },
+            },
+        };
+
+        expect(read(configurationFile)).toStrictEqual(expected);
+    });
 });
