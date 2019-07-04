@@ -1258,4 +1258,80 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenCalledTimes(1);
         expect(typeof publishEntityState.mock.calls[0][1].last_seen).toBe('string');
     });
+
+    it('HS2WD-E burglar warning', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'WarningDevice'});
+        const payload = {warning: {duration: 100, mode: 'burglar', strobe: true, level: 'high'}};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify(payload));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000003',
+            'device',
+            'ssIasWd',
+            'startWarning',
+            'functional',
+            {startwarninginfo: 22, warningduration: 100},
+            cfg.default,
+            null,
+            expect.any(Function));
+    });
+
+    it('HS2WD-E emergency warning', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'WarningDevice'});
+        const payload = {warning: {duration: 10, mode: 'emergency', strobe: false, level: 'very_high'}};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify(payload));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000003',
+            'device',
+            'ssIasWd',
+            'startWarning',
+            'functional',
+            {startwarninginfo: 51, warningduration: 10},
+            cfg.default,
+            null,
+            expect.any(Function));
+    });
+
+    it('HS2WD-E emergency without level', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'WarningDevice'});
+        const payload = {warning: {duration: 10, mode: 'emergency', strobe: false}};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify(payload));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000003',
+            'device',
+            'ssIasWd',
+            'startWarning',
+            'functional',
+            {startwarninginfo: 49, warningduration: 10},
+            cfg.default,
+            null,
+            expect.any(Function));
+    });
+
+    it('HS2WD-E wrong payload (should use defaults)', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'WarningDevice'});
+        const payload = {warning: 'wrong'};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify(payload));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish).toHaveBeenNthCalledWith(1,
+            '0x00000003',
+            'device',
+            'ssIasWd',
+            'startWarning',
+            'functional',
+            {startwarninginfo: 53, warningduration: 10},
+            cfg.default,
+            null,
+            expect.any(Function));
+    });
 });
