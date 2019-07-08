@@ -115,9 +115,9 @@
       }
     },
     "@babel/helpers": {
-      "version": "7.5.0",
-      "resolved": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.5.0.tgz",
-      "integrity": "sha512-EgCUEa8cNwuMrwo87l2d7i2oShi8m2Q58H7h3t4TWtqATZalJYFwfL9DulRe02f3KdqM9xmMCw3v/7Ll+EiaWg==",
+      "version": "7.5.1",
+      "resolved": "https://registry.npmjs.org/@babel/helpers/-/helpers-7.5.1.tgz",
+      "integrity": "sha512-rVOTDv8sH8kNI72Unenusxw6u+1vEepZgLxeV+jHkhsQlYhzVhzL1EpfoWT7Ub3zpWSv2WV03V853dqsnyoQzA==",
       "dev": true,
       "requires": {
         "@babel/template": "^7.4.4",
@@ -522,9 +522,9 @@
       "dev": true
     },
     "ajv": {
-      "version": "6.10.0",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.10.0.tgz",
-      "integrity": "sha512-nffhOpkymDECQyR0mnsUtoCE8RlX38G0rYP+wgLWFyZuUyuuojSSvi/+euOiQBIn63whYwYVIIH1TvE3tu4OEg==",
+      "version": "6.10.1",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.10.1.tgz",
+      "integrity": "sha512-w1YQaVGNC6t2UCPjEawK/vo/dG8OOrVtUmhBT1uJJYxbl5kU2Tj3v6LGqBcsysN1yhuCStJCCA3GqdvKY8sqXQ==",
       "dev": true,
       "requires": {
         "fast-deep-equal": "^2.0.1",
@@ -1763,9 +1763,9 @@
       }
     },
     "external-editor": {
-      "version": "3.0.3",
-      "resolved": "https://registry.npmjs.org/external-editor/-/external-editor-3.0.3.tgz",
-      "integrity": "sha512-bn71H9+qWoOQKyZDo25mOMVpSmXROAsTJVVVYzrrtol3d4y+AsKjf4Iwl2Q+IuT0kFSQ1qo166UuIwqYq7mGnA==",
+      "version": "3.1.0",
+      "resolved": "https://registry.npmjs.org/external-editor/-/external-editor-3.1.0.tgz",
+      "integrity": "sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==",
       "dev": true,
       "requires": {
         "chardet": "^0.7.0",
@@ -4038,9 +4038,9 @@
       }
     },
     "mqtt-packet": {
-      "version": "6.1.2",
-      "resolved": "https://registry.npmjs.org/mqtt-packet/-/mqtt-packet-6.1.2.tgz",
-      "integrity": "sha512-yVG5PoS3wJ8TLzfS8pQMsDVLAf/EipnBAG5XQE9X/9L0EMxuduI9J2WnlRvJT497K1CUT4VJWjoP08+CKiKt1Q==",
+      "version": "6.2.0",
+      "resolved": "https://registry.npmjs.org/mqtt-packet/-/mqtt-packet-6.2.0.tgz",
+      "integrity": "sha512-ULPTkemvZHvLv3qAk8m7EfrNf3v1uP6yhQHR2pc4IUxjJtUh2JaYia0DIR9OpGbMf+Y1Fct2mzxAFFqAkA4UCQ==",
       "requires": {
         "bl": "^1.2.2",
         "inherits": "^2.0.3",
@@ -5921,9 +5921,9 @@
       "dev": true
     },
     "xtend": {
-      "version": "4.0.1",
-      "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz",
-      "integrity": "sha1-pcbVMr5lbiPbgg77lDofBJmNY68="
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz",
+      "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
     },
     "y18n": {
       "version": "4.0.0",
@@ -5970,9 +5970,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.1.13",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.13.tgz",
-      "integrity": "sha512-KxXPZqbZ88DNwZq1gO9I4EfDL2XxnvpDsdocUstLMrVxvGDsMwIhBkO5uZone5Zv3mAFMKZ+XsY1JuPZ81u/uw==",
+      "version": "0.1.15",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.15.tgz",
+      "integrity": "sha512-ZaKJs/Mz3mL/K8gDLYHpOn454B6ZOiLkL1ORtdE4gFu9GS3T699RL5iCgvjp8+FJNJYeQ7OVxTm7IDWky1TFnw==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
@@ -12489,9 +12489,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "10.1.1",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-10.1.1.tgz",
-      "integrity": "sha512-DarrdqxyEAdN66GsScGZ0BT9gG2M3Jj40/h250VkXollAEEpK8K534dcdXa2DKrCThyWcZ6mhggt3D0k+RmPwg==",
+      "version": "10.1.2",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-10.1.2.tgz",
+      "integrity": "sha512-jPRa8rsF+fGtHjGeggzeki7tswOklvKUaWuF9KgImWysEWyvR8XpKx+0Z6I13PdvGaBsC5wTAQebjzNJ/Wcxyg==",
       "requires": {
         "chai": "*",
         "debounce": "*",
