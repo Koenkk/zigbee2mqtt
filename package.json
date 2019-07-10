@@ -43,7 +43,7 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zigbee-herdsman": "0.1.15",
+    "zigbee-herdsman": "0.1.16",
     "zigbee-shepherd-converters": "10.1.2",
     "deep-diff": "*"
   },
