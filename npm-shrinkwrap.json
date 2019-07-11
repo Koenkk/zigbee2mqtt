@@ -2811,9 +2811,9 @@
       "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="
     },
     "inquirer": {
-      "version": "6.4.1",
-      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-6.4.1.tgz",
-      "integrity": "sha512-/Jw+qPZx4EDYsaT6uz7F4GJRNFMRdKNeUZw3ZnKV8lyuUgz/YWRCSUAJMZSVhSq4Ec0R2oYnyi6b3d4JXcL5Nw==",
+      "version": "6.5.0",
+      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-6.5.0.tgz",
+      "integrity": "sha512-scfHejeG/lVZSpvCXpsB4j/wQNPM5JC8kiElOI0OUTwmc1RTpXr4H32/HOlQHcZiYl2z2VElwuCVDRG8vFmbnA==",
       "dev": true,
       "requires": {
         "ansi-escapes": "^3.2.0",
@@ -2822,7 +2822,7 @@
         "cli-width": "^2.0.0",
         "external-editor": "^3.0.3",
         "figures": "^2.0.0",
-        "lodash": "^4.17.11",
+        "lodash": "^4.17.12",
         "mute-stream": "0.0.7",
         "run-async": "^2.2.0",
         "rxjs": "^6.4.0",
@@ -5191,9 +5191,9 @@
       }
     },
     "spdx-license-ids": {
-      "version": "3.0.4",
-      "resolved": "https://registry.npmjs.org/spdx-license-ids/-/spdx-license-ids-3.0.4.tgz",
-      "integrity": "sha512-7j8LYJLeY/Yb6ACbQ7F76qy5jHkp0U6jgBfJsk97bwWlVUnUWsAgpyaCvo17h0/RQGnQ036tVDomiwoI4pDkQA==",
+      "version": "3.0.5",
+      "resolved": "https://registry.npmjs.org/spdx-license-ids/-/spdx-license-ids-3.0.5.tgz",
+      "integrity": "sha512-J+FWzZoynJEXGphVIS+XEh3kFSjZX/1i9gFBaWQcB+/tmpe2qUsSBABpcxqxnAxFdiUFEgAX1bjYGQvIZmoz9Q==",
       "dev": true
     },
     "split-string": {
@@ -12489,9 +12489,9 @@
       }
     },
     "zigbee-shepherd-converters": {
-      "version": "10.1.2",
-      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-10.1.2.tgz",
-      "integrity": "sha512-jPRa8rsF+fGtHjGeggzeki7tswOklvKUaWuF9KgImWysEWyvR8XpKx+0Z6I13PdvGaBsC5wTAQebjzNJ/Wcxyg==",
+      "version": "10.1.3",
+      "resolved": "https://registry.npmjs.org/zigbee-shepherd-converters/-/zigbee-shepherd-converters-10.1.3.tgz",
+      "integrity": "sha512-+nOTLtKe4GLD/M0+FyWxFYtVkMisEo+56Ud4Fsf3+2hBR37LBwxAQe73CR6j3wCH6hO/xF7xPXNbjk6CHUHccg==",
       "requires": {
         "chai": "*",
         "debounce": "*",

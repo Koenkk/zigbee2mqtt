@@ -486,7 +486,7 @@ describe('DevicePublish', () => {
                 'lightingColorCtrl',
                 'moveToColor',
                 'functional',
-                {colorx: 17085, colory: 44000, transtime: 0},
+                {colorx: 17806, colory: 43155, transtime: 0},
                 cfg.default,
                 null,
                 expect.any(Function));
@@ -495,7 +495,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000016',
-                {color: {x: 0.2607, y: 0.6714}});
+                {color: {x: 0.2717, y: 0.6585}});
         });
 
         it('Should publish messages to zigbee devices with color rgb string', async () => {
@@ -510,7 +510,7 @@ describe('DevicePublish', () => {
                 'lightingColorCtrl',
                 'moveToColor',
                 'functional',
-                {colorx: 17085, colory: 44000, transtime: 0},
+                {colorx: 17806, colory: 43155, transtime: 0},
                 cfg.default,
                 null,
                 expect.any(Function));
@@ -519,7 +519,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000017',
-                {color: {x: 0.2607, y: 0.6714}});
+                {color: {x: 0.2717, y: 0.6585}});
         }
         );
 
