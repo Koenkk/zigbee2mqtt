@@ -522,9 +522,9 @@
       "dev": true
     },
     "ajv": {
-      "version": "6.10.1",
-      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.10.1.tgz",
-      "integrity": "sha512-w1YQaVGNC6t2UCPjEawK/vo/dG8OOrVtUmhBT1uJJYxbl5kU2Tj3v6LGqBcsysN1yhuCStJCCA3GqdvKY8sqXQ==",
+      "version": "6.10.2",
+      "resolved": "https://registry.npmjs.org/ajv/-/ajv-6.10.2.tgz",
+      "integrity": "sha512-TXtUUEYHuaTEbLZWIKUr5pmBuhDLy+8KYtPYdcV8qC+pOZL+NKqYwvWSRrVXHn+ZmRRAu8vJTAznH7Oag6RVRw==",
       "dev": true,
       "requires": {
         "fast-deep-equal": "^2.0.1",
@@ -1563,9 +1563,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.7.2",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.7.2.tgz",
-      "integrity": "sha512-Aecqe3ulBVI7amgOycVI8ZPL8o0SnGHOf3zn2/Ciu8TXyXDHcjtwD3hOs3ss/Qh/VAwlW/DMcuiXg5btgF+XMA==",
+      "version": "22.8.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.8.0.tgz",
+      "integrity": "sha512-2VftZMfILmlhL3VMq5ptHRIuyyXb3ShDEDb1J1UjvWNzm4l+UK/YmwNuTuJcM0gv8pJuOfiR/8ZptJ8Ou68pFw==",
       "dev": true
     },
     "eslint-scope": {
@@ -1579,10 +1579,13 @@
       }
     },
     "eslint-utils": {
-      "version": "1.3.1",
-      "resolved": "https://registry.npmjs.org/eslint-utils/-/eslint-utils-1.3.1.tgz",
-      "integrity": "sha512-Z7YjnIldX+2XMcjr7ZkgEsOj/bREONV60qYeB/bjMAqqqZ4zxKyWX+BOUkdmRmA9riiIPVvo5x86m5elviOk0Q==",
-      "dev": true
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/eslint-utils/-/eslint-utils-1.4.0.tgz",
+      "integrity": "sha512-7ehnzPaP5IIEh1r1tkjuIrxqhNkzUJa9z3R92tLJdZIVdWaczEhr3EbhGtsMrVxi1KeR8qA7Off6SWc5WNQqyQ==",
+      "dev": true,
+      "requires": {
+        "eslint-visitor-keys": "^1.0.0"
+      }
     },
     "eslint-visitor-keys": {
       "version": "1.0.0",
@@ -5970,9 +5973,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.1.16",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.16.tgz",
-      "integrity": "sha512-qzcSnjl0JXBtm/6I9GqWxCXih/O5N3LLJrP76EJaLFqAzJLarNawis9YFtx+2B1ghUTVR1ljAUUSyEAKf8ktmA==",
+      "version": "0.1.17",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.1.17.tgz",
+      "integrity": "sha512-Vj5KtJ1wZHHiAC6Sb6AEyLYnre9h+FzWlWiKhwGdxUkxd20xl5TTAteu/gQZIxKP5Nt06JJemPZzWscACySfCA==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
