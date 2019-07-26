@@ -1609,9 +1609,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.13.6",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.13.6.tgz",
-      "integrity": "sha512-wn3n9Djj+Dyi8AS1kvGOXpzUJfs9SJYhoZxIb49y4cwHRPaSgDHzSJPZX3sliZ3k8l6bYVeEGW76QvvqoOjSEw==",
+      "version": "22.13.7",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.13.7.tgz",
+      "integrity": "sha512-ckgSt9YHwgYd0PgMGtdYei4dfjsPmKnQlNs+Hr238sLKiLXODu38nbumtpDloa6uqUN/NVzHGYG9lV+X7iUv6Q==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^1.13.0"
@@ -2628,9 +2628,9 @@
       }
     },
     "git-last-commit": {
-      "version": "0.3.0",
-      "resolved": "https://registry.npmjs.org/git-last-commit/-/git-last-commit-0.3.0.tgz",
-      "integrity": "sha1-zHcBrcYpt0f9OzOuXddTp0as6d8="
+      "version": "1.0.0",
+      "resolved": "https://registry.npmjs.org/git-last-commit/-/git-last-commit-1.0.0.tgz",
+      "integrity": "sha512-wpnmsd2dW1MnoencljcWO/06VUealfMaY40ZjK5t3v9ljL+bKCMbNaTn/YzwIh4pDo2hk5QcN+pLzUJ8aWB17A=="
     },
     "glob": {
       "version": "7.1.4",
@@ -6032,9 +6032,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.3.1",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.3.1.tgz",
-      "integrity": "sha512-qkWhi8X+SivCpEraa5Gg5Wi6F+iCN2N3MwIYGZi9+ds9lxyZ+6ULKYpDcNI7e+1WV/ZFUy9jjz3R5DPGppdKWw==",
+      "version": "0.4.0",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.4.0.tgz",
+      "integrity": "sha512-g4UAP+pOF6OFhin+07Yn7fcnNKktGcAwRJWRV/BwCprHt0f+OdHzNF5KLE3wfqlEWHs3AyTh2a97BL+EHMlz4A==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
