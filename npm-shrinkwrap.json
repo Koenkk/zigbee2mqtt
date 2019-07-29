@@ -4079,9 +4079,9 @@
       }
     },
     "mqtt-packet": {
-      "version": "6.2.0",
-      "resolved": "https://registry.npmjs.org/mqtt-packet/-/mqtt-packet-6.2.0.tgz",
-      "integrity": "sha512-ULPTkemvZHvLv3qAk8m7EfrNf3v1uP6yhQHR2pc4IUxjJtUh2JaYia0DIR9OpGbMf+Y1Fct2mzxAFFqAkA4UCQ==",
+      "version": "6.2.1",
+      "resolved": "https://registry.npmjs.org/mqtt-packet/-/mqtt-packet-6.2.1.tgz",
+      "integrity": "sha512-ZxG5QVb7+gMix5n4DClym9dQoCZC6DoNEqgMkMi/GMXvIU4Wsdx+/6KBavw50HHFH9kN1lBSY7phxNlAS2+jnw==",
       "requires": {
         "bl": "^1.2.2",
         "inherits": "^2.0.3",
@@ -6032,9 +6032,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.4.0",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.4.0.tgz",
-      "integrity": "sha512-g4UAP+pOF6OFhin+07Yn7fcnNKktGcAwRJWRV/BwCprHt0f+OdHzNF5KLE3wfqlEWHs3AyTh2a97BL+EHMlz4A==",
+      "version": "0.4.1",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.4.1.tgz",
+      "integrity": "sha512-W9psJHNc9ruZK5qg38WJ71bSleXb6TaIq8QBvIeORWADTz7v3wiY+PDH2HkXECm4uB9I7mxodAsA6bU39jOPYw==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
