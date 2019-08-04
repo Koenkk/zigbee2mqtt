@@ -2678,9 +2678,9 @@
       "dev": true
     },
     "graceful-fs": {
-      "version": "4.2.0",
-      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.0.tgz",
-      "integrity": "sha512-jpSvDPV4Cq/bgtpndIWbI5hmYxhQGHPC4d4cqBPb4DLniCfhJokdXhwhaDuLBGLQdvvRum/UiX6ECVIPvDXqdg==",
+      "version": "4.2.1",
+      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.1.tgz",
+      "integrity": "sha512-b9usnbDGnD928gJB3LrCmxoibr3VE4U2SMo5PBuBnokWyDADTqDPXg4YpwKF1trpH+UbGp7QLicO3+aWEy0+mw==",
       "dev": true
     },
     "growly": {
@@ -6032,9 +6032,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.5.0",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.5.0.tgz",
-      "integrity": "sha512-uuVH9hQ4L7ZEQnOuqCVv3VqPC7OgPEBlMa8YZlzks92yQ/gR1a/ufTSshVss3tWtkXLS/0qMBG51qSAWXkdkUA==",
+      "version": "0.5.1",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.5.1.tgz",
+      "integrity": "sha512-ll2Y5egb0Y63Bjf2+O6pB41gpB2jim09yuWT0BCB7695SUi20oc8VGCkJGzhc7JCBkkAwcYCVysaj0jmNinAlQ==",
       "requires": {
         "busyman": "^0.3.0",
         "concentrate": "^0.2.3",
