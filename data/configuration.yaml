@@ -4,9 +4,10 @@ mqtt:
   base_topic: zigbee2mqtt
   server: 'mqtt://localhost'
 serial:
+  # Location of CC2531 USB sniffer
   port: /dev/tty.usbmodem14201
 advanced:
-  channel: 18
+  channel: 21
   last_seen: disable
   log_level: debug
 devices:
