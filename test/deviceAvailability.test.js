@@ -37,7 +37,7 @@ describe('Availability', () => {
                 powerSource: 'Mains (single phase)',
                 type: 'EndDevice',
                 modelId: 'E11-G13',
-                manufId: 4448,
+                manufacturerID: 4448,
             };
 
             expect(availability.isPingable(device)).toBe(true);

@@ -261,14 +261,14 @@ describe('DeviceReceive', () => {
         });
 
         it('Should not handle messages forwarded Xiaomi messages', () => {
-            const device = {ieeeAddr: '0x12345678', manufId: 4151, type: 'Router'};
+            const device = {ieeeAddr: '0x12345678', manufacturerID: 4151, type: 'Router'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1}, 1, 599);
             deviceReceive.onZigbeeMessage(message, device, ZNCZ02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(0);
         });
 
         it('Should handle messages from Xiaomi router devices', () => {
-            const device = {ieeeAddr: '0x12345678', manufId: 4151, type: 'Router'};
+            const device = {ieeeAddr: '0x12345678', manufacturerID: 4151, type: 'Router'};
             const message = utils.zigbeeMessage(device, 'genOnOff', 'attReport', {onOff: 1});
             deviceReceive.onZigbeeMessage(message, device, ZNCZ02LM);
             expect(publishEntityState).toHaveBeenCalledTimes(1);

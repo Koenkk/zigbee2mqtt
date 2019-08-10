@@ -466,9 +466,15 @@
       }
     },
     "@types/jest": {
+<<<<<<< HEAD
       "version": "24.0.18",
       "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.18.tgz",
       "integrity": "sha512-jcDDXdjTcrQzdN06+TSVsPPqxvsZA/5QkYfIZlq1JMw7FdP5AZylbOc+6B/cuDurctRe+MziUMtQ3xQdrbjqyQ==",
+=======
+      "version": "24.0.17",
+      "resolved": "https://registry.npmjs.org/@types/jest/-/jest-24.0.17.tgz",
+      "integrity": "sha512-1cy3xkOAfSYn78dsBWy4M3h/QF/HeWPchNFDjysVtp3GHeTdSmtluNnELfCmfNRRHo0OWEcpf+NsEJQvwQfdqQ==",
+>>>>>>> updates.
       "dev": true,
       "requires": {
         "@types/jest-diff": "*"
@@ -1693,6 +1699,7 @@
     },
     "eslint-plugin-jest": {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "version": "22.15.1",
       "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.15.1.tgz",
       "integrity": "sha512-CWq/RR/3tLaKFB+FZcCJwU9hH5q/bKeO3rFP8G07+q7hcDCFNqpvdphVbEbGE6o6qo1UbciEev4ejUWv7brUhw==",
@@ -1701,6 +1708,11 @@
       "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.13.4.tgz",
       "integrity": "sha512-+pua8duX2ELhCN55CGdnT1kIudDl2NE7k0koIbobx9ZzNYT8GhZHilP0WIIhOQ0XuU06JXFdOcQtPC/Z17zZ0g==",
 >>>>>>> Update zigbee-herdsman and zigbee-shepherd-converters.
+=======
+      "version": "22.15.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.15.0.tgz",
+      "integrity": "sha512-hgnPbSqAIcLLS9ePb12hNHTRkXnkVaCfOwCt2pzQ8KpOKPWGA4HhLMaFN38NBa/0uvLfrZpcIRjT+6tMAfr58Q==",
+>>>>>>> updates.
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^1.13.0"
@@ -2882,10 +2894,20 @@
       }
     },
     "hosted-git-info": {
+<<<<<<< HEAD
       "version": "2.8.4",
       "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.4.tgz",
       "integrity": "sha512-pzXIvANXEFrc5oFFXRMkbLPQ2rXRoDERwDLyrcUxGhaZhgP54BBSl9Oheh7Vv0T090cszWBxPjkQQ5Sq1PbBRQ==",
       "dev": true
+=======
+      "version": "2.8.2",
+      "resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.8.2.tgz",
+      "integrity": "sha512-CyjlXII6LMsPMyUzxpTt8fzh5QwzGqPmQXgY/Jyf4Zfp27t/FvfhwoE/8laaMUcMy816CkWF20I7NeQhwwY88w==",
+      "dev": true,
+      "requires": {
+        "lru-cache": "^5.1.1"
+      }
+>>>>>>> updates.
     },
     "html-encoding-sniffer": {
       "version": "1.0.2",
@@ -3972,6 +3994,15 @@
         "js-tokens": "^3.0.0 || ^4.0.0"
       }
     },
+    "lru-cache": {
+      "version": "5.1.1",
+      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-5.1.1.tgz",
+      "integrity": "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==",
+      "dev": true,
+      "requires": {
+        "yallist": "^3.0.2"
+      }
+    },
     "make-dir": {
       "version": "2.1.0",
       "resolved": "https://registry.npmjs.org/make-dir/-/make-dir-2.1.0.tgz",
@@ -4235,9 +4266,15 @@
       "dev": true
     },
     "node-notifier": {
+<<<<<<< HEAD
       "version": "5.4.3",
       "resolved": "https://registry.npmjs.org/node-notifier/-/node-notifier-5.4.3.tgz",
       "integrity": "sha512-M4UBGcs4jeOK9CjTsYwkvH6/MzuUmGCyTW+kCY7uO+1ZVr0+FHGdPdIf5CCLqAaxnRrWidyoQlNkMIIVwbKB8Q==",
+=======
+      "version": "5.4.1",
+      "resolved": "https://registry.npmjs.org/node-notifier/-/node-notifier-5.4.1.tgz",
+      "integrity": "sha512-p52B+onAEHKW1OF9MGO/S7k/ahGEHfhP5/tvwYzog/5XLYOd8ZuD6vdNZdUuWMONRnKPneXV43v3s6Snx1wsCQ==",
+>>>>>>> updates.
       "dev": true,
       "requires": {
         "growly": "^1.3.0",
@@ -5866,9 +5903,9 @@
       "dev": true
     },
     "v8-compile-cache": {
-      "version": "2.0.3",
-      "resolved": "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.0.3.tgz",
-      "integrity": "sha512-CNmdbwQMBjwr9Gsmohvm0pbL954tJrNzf6gWL3K+QMQf00PF7ERGrEiLgjuU3mKreLC2MeGhUsNV9ybTbLgd3w==",
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.1.0.tgz",
+      "integrity": "sha512-usZBT3PW+LOjM25wbqIlZwPeJV+3OSz3M1k1Ws8snlW39dZyYL9lOGC5FgPVHfk0jKmjiDV8Z0mIbVQPiwFs7g==",
       "dev": true
     },
     "validate-npm-package-license": {
@@ -6075,6 +6112,12 @@
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/y18n/-/y18n-4.0.0.tgz",
       "integrity": "sha512-r9S/ZyXu/Xu9q1tYlpsLIsa3EeLXXk0VwlxqTcFRfg9EhMW+17kbt9G0NrgCmhGb5vT2hyhJZLfDGx+7+5Uj/w==",
+      "dev": true
+    },
+    "yallist": {
+      "version": "3.0.3",
+      "resolved": "https://registry.npmjs.org/yallist/-/yallist-3.0.3.tgz",
+      "integrity": "sha512-S+Zk8DEWE6oKpV+vI3qWkaK+jSbIK86pCwe2IF/xwIpQ8jEuxpw9NyaGjmp9+BoJv5FV2piqCDcoCtStppiq2A==",
       "dev": true
     },
     "yargs": {
