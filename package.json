@@ -33,6 +33,7 @@
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
     "debounce": "*",
+    "deep-diff": "*",
     "git-last-commit": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",
@@ -43,20 +44,14 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-<<<<<<< HEAD
-    "zigbee-herdsman": "0.5.7",
-    "zigbee-shepherd-converters": "10.2.4",
-=======
-    "zigbee-herdsman": "0.2.0",
-    "zigbee-shepherd-converters": "10.1.5",
->>>>>>> Update zigbee-herdsman and zigbee-shepherd-converters.
-    "deep-diff": "*"
+    "zigbee-herdsman": "0.6.0",
+    "zigbee-shepherd-converters": "10.2.4"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.11",
+    "@types/jest": "*",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-jest": "^22.3.0",
-    "jest": "^24.3.1"
+    "eslint-plugin-jest": "*",
+    "jest": "*"
   }
 }

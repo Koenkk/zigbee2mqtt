@@ -18,6 +18,6 @@ let stopping = false;
 function handleQuit() {
     if (!stopping) {
         stopping = true;
-        controller.stop().finally(() => process.exit());
+        controller.stop();
     }
 }
