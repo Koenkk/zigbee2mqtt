@@ -1,6 +1,7 @@
 const tmp = require('tmp');
 const yaml = require('../../lib/util/yaml');
 const path = require('path');
+const fs = require('fs');
 
 const mockDir = tmp.dirSync().name;
 const mockDirStorage = tmp.dirSync().name;
@@ -15,10 +16,40 @@ function writeDefaultConfiguration() {
         },
         serial: {
             "port": "/dev/dummy",
+        },
+        devices: {
+            "0x000b57fffec6a5b2": {
+                retain: true,
+                friendly_name: "bulb"
+            },
+            "0x0017880104e45517": {
+                retain: true,
+                friendly_name: "remote"
+            },
         }
     };
 
     yaml.write(path.join(mockDir, 'configuration.yaml'), config);
+}
+
+function writeEmptyState() {
+    yaml.write(path.join(mockDir, 'state.json'), JSON.stringify({}));
+}
+
+function writeDefaultState() {
+    const state = {
+        "0x000b57fffec6a5b2": {
+            "state": "ON",
+            "brightness": 50,
+            "color_temp": 370,
+            "linkquality": 99,
+        },
+        "0x0017880104e45517": {
+            "brightness": 255
+        }
+    }
+
+    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
 }
 
 jest.mock('../../lib/util/data', () => ({
@@ -28,5 +59,11 @@ jest.mock('../../lib/util/data', () => ({
 }));
 
 writeDefaultConfiguration();
+writeDefaultState();
 
-module.exports = {};
+module.exports = {
+    mockDir,
+    writeDefaultConfiguration,
+    writeDefaultState,
+    writeEmptyState,
+};

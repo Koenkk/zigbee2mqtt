@@ -1,7 +1,8 @@
 const events = {};
 
 const mock = {
-    publish: jest.fn(),
+    publish: jest.fn().mockImplementation((topic, payload, options, cb) => cb()),
+    end: jest.fn(),
     on: (type, handler) => {
         if (type === 'connect') {
             handler();
@@ -18,5 +19,5 @@ jest.mock('mqtt', () => {
 });
 
 module.exports = {
-    events, mock, connect: mockConnect,
+    events, ...mock, connect: mockConnect,
 };
