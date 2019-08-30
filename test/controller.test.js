@@ -21,9 +21,6 @@ describe('Controller', () => {
         data.writeDefaultState();
     });
 
-    afterEach(() => {
-    });
-
     it('Start controller', async () => {
         await controller.start();
         expect(logger.cleanup).toHaveBeenCalledTimes(1);

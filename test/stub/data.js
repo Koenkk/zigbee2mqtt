@@ -26,6 +26,10 @@ function writeDefaultConfiguration() {
                 retain: true,
                 friendly_name: "remote"
             },
+            "0x0017880104e45520": {
+                retain: false,
+                friendly_name: "button"
+            }
         }
     };
 
@@ -46,7 +50,7 @@ function writeDefaultState() {
         },
         "0x0017880104e45517": {
             "brightness": 255
-        }
+        },
     }
 
     fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
