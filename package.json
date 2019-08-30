@@ -20,10 +20,11 @@
     "cc2531"
   ],
   "scripts": {
-    "coverage": "jest --collect-coverage",
-    "eslint": "node_modules/.bin/eslint .",
+    "test-with-coverage": "jest test --coverage --collectCoverageFrom 'lib/**'",
+    "eslint": "node_modules/.bin/eslint lib/",
     "start": "node index.js",
-    "test": "jest"
+    "test": "jest test",
+    "test-watch": "jest test --watch"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -52,6 +53,17 @@
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-jest": "*",
-    "jest": "*"
+    "jest": "*",
+    "tmp": "*"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
   }
 }
