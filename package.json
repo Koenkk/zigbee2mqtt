@@ -46,17 +46,13 @@
     "semver": "*",
     "winston": "2.4.2",
     "zigbee-herdsman": "0.6.2",
-    "zigbee-herdsman-converters": "11.0.0"
+    "zigbee-herdsman-converters": "11.0.1"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "*",
-    "@babel/preset-env": "*",
-    "@types/jest": "*",
     "eslint": "*",
     "eslint-config-google": "*",
     "eslint-plugin-jest": "*",
     "jest": "*",
-    "regenerator-runtime": "*",
     "tmp": "*"
   },
   "jest": {
