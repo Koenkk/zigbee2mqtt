@@ -53,6 +53,32 @@ function writeDefaultConfiguration() {
             "0x0017880104e45540": {
                 retain: false,
                 friendly_name: "ikea_onoff"
+            },
+            "0x000b57fffec6a5b3": {
+                retain: false,
+                friendly_name: "bulb_color"
+            },
+            "0x0017880104e45541": {
+                retain: false,
+                friendly_name: "wall_switch"
+            },
+            "0x0017880104e45542": {
+                retain: false,
+                friendly_name: "wall_switch_double"
+            },
+            "0x0017880104e45543": {
+                retain: false,
+                friendly_name: "led_controller_1"
+            },
+            "0x0017880104e45544": {
+                retain: false,
+                friendly_name: "led_controller_2"
+            }
+        },
+        groups: {
+            '1': {
+                friendly_name: 'group_1',
+                retain: false,
             }
         }
     };

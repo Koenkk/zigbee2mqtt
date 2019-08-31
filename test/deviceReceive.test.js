@@ -1,5 +1,3 @@
-import "regenerator-runtime/runtime";
-
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
@@ -335,6 +333,10 @@ describe('Device receive', () => {
     });
 
     it('Should add elapsed', async () => {
+        // hacky; needed otherwise bridge config is published resulting in 3 mqtt publish calls
+        await wait(100);
+        MQTT.publish.mockClear();
+
         settings.set(['advanced', 'elapsed'], true);
         const device = zigbeeHerdsman.devices.E1743;
         const data = {};

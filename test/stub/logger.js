@@ -5,6 +5,7 @@ const mock = {
     debug: jest.fn(),
     trace: jest.fn(),
     cleanup: jest.fn(),
+    transports: {console: {level: 1}}
 };
 
 jest.mock('../../lib/util/logger', () => (mock));

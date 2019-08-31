@@ -1,4 +1,3 @@
-import "regenerator-runtime/runtime";
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');

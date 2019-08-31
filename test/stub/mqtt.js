@@ -3,6 +3,7 @@ const events = {};
 const mock = {
     publish: jest.fn().mockImplementation((topic, payload, options, cb) => cb()),
     end: jest.fn(),
+    subscribe: jest.fn(),
     on: (type, handler) => {
         if (type === 'connect') {
             handler();
