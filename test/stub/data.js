@@ -29,6 +29,30 @@ function writeDefaultConfiguration() {
             "0x0017880104e45520": {
                 retain: false,
                 friendly_name: "button"
+            },
+            "0x0017880104e45521": {
+                retain: false,
+                friendly_name: "button_double_key"
+            },
+            "0x0017880104e45522": {
+                retain: false,
+                friendly_name: "weather_sensor"
+            },
+            "0x0017880104e45523": {
+                retain: false,
+                friendly_name: "occupancy_sensor"
+            },
+            "0x0017880104e45524": {
+                retain: false,
+                friendly_name: "power_plug"
+            },
+            "0x0017880104e45530": {
+                retain: false,
+                friendly_name: "button_double_key_interviewing"
+            },
+            "0x0017880104e45540": {
+                retain: false,
+                friendly_name: "ikea_onoff"
             }
         }
     };
