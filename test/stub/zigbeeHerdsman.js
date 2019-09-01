@@ -16,6 +16,8 @@ class Endpoint {
         this.command = jest.fn();
         this.read = jest.fn();
         this.write = jest.fn();
+        this.bind = jest.fn();
+        this.configureReporting = jest.fn();
     }
 }
 

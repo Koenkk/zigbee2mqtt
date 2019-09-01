@@ -7,7 +7,7 @@ const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe('onlythis HomeAssistant extension', () => {
+describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
         this.version = `Zigbee2mqtt ${this.version.version}`;
