@@ -34,8 +34,9 @@ describe('Entity publish', () => {
     });
 
     beforeEach(async () => {
-        await flushPromises();
         jest.useRealTimers();
+        await flushPromises();
+        await wait(50);
         data.writeDefaultConfiguration();
         controller.state.state = {};
         settings._reRead();
@@ -50,7 +51,6 @@ describe('Entity publish', () => {
         Object.values(zigbeeHerdsman.groups).forEach((g) => {
             g.command.mockClear();
         });
-        await flushPromises();
     });
 
     it('Should publish messages to zigbee devices', async () => {
