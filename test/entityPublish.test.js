@@ -24,13 +24,18 @@ const expectNothingPublished = () => {
 describe('Entity publish', () => {
     let controller;
 
+    beforeAll(async () => {
+        data.writeEmptyState();
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+    });
+
     beforeEach(async () => {
         jest.useRealTimers();
         data.writeDefaultConfiguration();
+        controller.state.state = {};
         settings._reRead();
-        data.writeEmptyState();
-        controller = new Controller(false);
-        await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         Object.values(zigbeeHerdsman.devices).forEach((d) => {
             d.endpoints.forEach((e) => {
@@ -74,6 +79,7 @@ describe('Entity publish', () => {
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
+        console.log(MQTT.publish.mock.calls);
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
