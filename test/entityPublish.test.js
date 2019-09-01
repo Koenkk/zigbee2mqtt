@@ -36,7 +36,7 @@ describe('Entity publish', () => {
     beforeEach(async () => {
         jest.useRealTimers();
         await flushPromises();
-        await wait(50);
+        await wait(1000);
         data.writeDefaultConfiguration();
         controller.state.state = {};
         settings._reRead();
