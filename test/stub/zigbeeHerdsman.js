@@ -18,6 +18,7 @@ class Endpoint {
         this.write = jest.fn();
         this.bind = jest.fn();
         this.configureReporting = jest.fn();
+        this.ping = jest.fn();
     }
 }
 

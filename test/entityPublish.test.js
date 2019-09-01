@@ -29,6 +29,7 @@ describe('Entity publish', () => {
         controller = new Controller();
         await controller.start();
         await flushPromises();
+        await flushPromises();
     });
 
     beforeEach(async () => {
@@ -48,6 +49,7 @@ describe('Entity publish', () => {
         Object.values(zigbeeHerdsman.groups).forEach((g) => {
             g.command.mockClear();
         });
+        await flushPromises();
     });
 
     it('Should publish messages to zigbee devices', async () => {
