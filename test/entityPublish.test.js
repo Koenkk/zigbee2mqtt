@@ -46,7 +46,9 @@ describe('Entity publish', () => {
         })
         Object.values(zigbeeHerdsman.groups).forEach((g) => {
             g.command.mockClear();
-        })
+        });
+
+        await flushPromises();
     });
 
     it('Should publish messages to zigbee devices', async () => {
@@ -79,7 +81,6 @@ describe('Entity publish', () => {
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
-        console.log(MQTT.publish.mock.calls);
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
