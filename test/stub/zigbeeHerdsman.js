@@ -45,6 +45,8 @@ class Device {
     }
 }
 
+const returnDevices = [];
+
 const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
     'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096])], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
@@ -88,10 +90,11 @@ const mock = {
     stop: jest.fn(),
     disableLED: jest.fn(),
     getDevices: jest.fn().mockImplementation((query) => {
-        return Object.values(devices);
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
     }),
     getDevice: jest.fn().mockImplementation((query) => {
-       return Object.values(devices).find((d) => {
+       return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
+        .find((d) => {
            return (!query.hasOwnProperty('ieeeAddr') || query.ieeeAddr === d.ieeeAddr) &&
             (!query.hasOwnProperty('type') || query.type === d.type);
        })
@@ -114,5 +117,5 @@ jest.mock('zigbee-herdsman', () => ({
 }));
 
 module.exports = {
-    events, ...mock, constructor: mockConstructor, devices, groups,
+    events, ...mock, constructor: mockConstructor, devices, groups, returnDevices
 };
