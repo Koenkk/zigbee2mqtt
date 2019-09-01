@@ -21,7 +21,7 @@ const expectNothingPublished = () => {
     })
 }
 
-describe('Device publish', () => {
+describe('Entity publish', () => {
     let controller;
 
     beforeEach(async () => {

@@ -97,6 +97,14 @@ function writeDefaultConfiguration() {
             '0x0017880104e45550': {
                 retain: false,
                 friendly_name: 'thermostat'
+            },
+            '0x0017880104e45551': {
+                retain: false,
+                friendly_name: 'smart_vent'
+            },
+            '0x0017880104e45552': {
+                retain: false,
+                friendly_name: 'j1'
             }
         },
         groups: {

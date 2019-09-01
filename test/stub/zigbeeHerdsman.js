@@ -66,6 +66,8 @@ const devices = {
     'HAMPTON99432':  new Device('Router', '0x0017880104e45548', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'HDC52EastwindFan'),
     'HS2WD': new Device('Router', '0x0017880104e45549', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'WarningDevice'),
     '1TST_EU': new Device('Router', '0x0017880104e45550', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'Thermostat'),
+    'SV01': new Device('Router', '0x0017880104e45551', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'SV01-410-MP-1.0'),
+    'J1': new Device('Router', '0x0017880104e45552', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'J1 (5502)'),
 }
 
 const groups = {
