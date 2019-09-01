@@ -418,7 +418,6 @@ describe('Entity publish', () => {
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/bulb_color/get', JSON.stringify({state: ''}));
         await flushPromises();
-        console.log(endpoint.read.mock.calls);
         expect(endpoint.read).toHaveBeenCalledTimes(1);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
