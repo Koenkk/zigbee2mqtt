@@ -73,11 +73,39 @@ function writeDefaultConfiguration() {
             "0x0017880104e45544": {
                 retain: false,
                 friendly_name: "led_controller_2"
+            },
+            '0x0017880104e45545': {
+                retain: false,
+                friendly_name: "dimmer_wall_switch"
+            },
+            '0x0017880104e45547': {
+                retain: false,
+                friendly_name: "curtain"
+            },
+            '0x0017880104e45548': {
+                retain: false,
+                friendly_name: 'fan'
+            },
+            '0x0017880104e45549': {
+                retain: false,
+                friendly_name: 'siren'
+            },
+            '0x0017880104e45529': {
+                retain: false,
+                friendly_name: 'unsupported2'
+            },
+            '0x0017880104e45550': {
+                retain: false,
+                friendly_name: 'thermostat'
             }
         },
         groups: {
             '1': {
                 friendly_name: 'group_1',
+                retain: false,
+            },
+            '2': {
+                friendly_name: 'group_2',
                 retain: false,
             }
         }

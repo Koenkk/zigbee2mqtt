@@ -14,6 +14,8 @@ class Endpoint {
         this.inputClusters = inputClusters;
         this.outputClusters = outputClusters;
         this.command = jest.fn();
+        this.read = jest.fn();
+        this.write = jest.fn();
     }
 }
 
@@ -46,6 +48,7 @@ const devices = {
     'bulb_color': new Device('Router', '0x000b57fffec6a5b3', 40399, 6535, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096])], true, "Mains (single phase)", "LLC020"),
     'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5]), new Endpoint(2, [0,1,3,15,64512], [25])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
+    'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
     'notInSettings': new Device('EndDevice', '0x0017880104e45519', 6537, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "lumi.sensor_switch.aq2"),
     'WXKG11LM': new Device('EndDevice', '0x0017880104e45520', 6537,4151, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "lumi.sensor_switch.aq2"),
@@ -58,6 +61,11 @@ const devices = {
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], []), new Endpoint(3, [0], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
+    'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),
+    'ZNCLDJ11LM': new Device('Router', '0x0017880104e45547', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'lumi.curtain'),
+    'HAMPTON99432':  new Device('Router', '0x0017880104e45548', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'HDC52EastwindFan'),
+    'HS2WD': new Device('Router', '0x0017880104e45549', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'WarningDevice'),
+    '1TST_EU': new Device('Router', '0x0017880104e45550', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'Thermostat'),
 }
 
 const groups = {
