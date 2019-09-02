@@ -18,7 +18,6 @@ class Endpoint {
         this.write = jest.fn();
         this.bind = jest.fn();
         this.configureReporting = jest.fn();
-        this.ping = jest.fn();
     }
 }
 
@@ -34,6 +33,7 @@ class Device {
         this.modelID = modelID;
         this.interviewing = interviewing;
         this.meta = {};
+        this.ping = jest.fn();
     }
 
     getEndpoint(ID) {
