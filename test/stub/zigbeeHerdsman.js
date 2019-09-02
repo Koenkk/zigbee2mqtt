@@ -1,4 +1,5 @@
 const events = {};
+const assert = require('assert');
 
 class Group {
     constructor(groupID) {
@@ -6,6 +7,13 @@ class Group {
         this.command = jest.fn();
         this.meta = {};
     }
+}
+
+const clusters = {
+    'genScenes': 5,
+    'genOnOff': 6,
+    'genLevelCtrl': 8,
+    'lightingColorCtrl': 768,
 }
 
 class Endpoint {
@@ -17,7 +25,17 @@ class Endpoint {
         this.read = jest.fn();
         this.write = jest.fn();
         this.bind = jest.fn();
+        this.unbind = jest.fn();
         this.configureReporting = jest.fn();
+        this.supportsInputCluster = (cluster) => {
+            assert(clusters[cluster], `Undefined '${cluster}'`);
+            return this.inputClusters.includes(clusters[cluster]);
+        }
+
+        this.supportsOutputCluster = (cluster) => {
+            assert(clusters[cluster], `Undefined '${cluster}'`);
+            return this.outputClusters.includes(clusters[cluster]);
+        }
     }
 }
 
@@ -43,6 +61,10 @@ class Device {
     getEndpoints() {
         return this.endpoints;
     }
+
+    isType(type) {
+        return type === 'device';
+    }
 }
 
 const returnDevices = [];
@@ -51,7 +73,7 @@ const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
     'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096])], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
     'bulb_color': new Device('Router', '0x000b57fffec6a5b3', 40399, 6535, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096])], true, "Mains (single phase)", "LLC020"),
-    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5]), new Endpoint(2, [0,1,3,15,64512], [25])], true, "Battery", "RWL021"),
+    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
@@ -63,7 +85,7 @@ const devices = {
     'ZNCZ02LM': new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", "lumi.plug"),
     'E1743': new Device('Router', '0x0017880104e45540', 6540,4476, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'TRADFRI on/off switch'),
     'QBKG04LM': new Device('Router', '0x0017880104e45541', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
-    'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], []), new Endpoint(3, [0], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
+    'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0, 6], []), new Endpoint(3, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
     'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),

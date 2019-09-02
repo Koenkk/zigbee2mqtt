@@ -224,7 +224,7 @@ describe('Device availability', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(0);
     });
 
-    it('onlythis Should not read when device has is unsupported', async () => {
+    it('Should not read when device has is unsupported', async () => {
         const device = zigbeeHerdsman.devices.unsupported_router;
         getExtension().state[device.ieeeAddr] = true;
         const endpoint = device.getEndpoint(1);
@@ -232,6 +232,4 @@ describe('Device availability', () => {
         await flushPromises();
         expect(endpoint.read).toHaveBeenCalledTimes(0);
     });
-
-
 });
