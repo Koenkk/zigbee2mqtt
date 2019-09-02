@@ -105,6 +105,10 @@ function writeDefaultConfiguration() {
             '0x0017880104e45552': {
                 retain: false,
                 friendly_name: 'j1'
+            },
+            '0x0017880104e45553': {
+                retain: false,
+                friendly_name: 'bulb_enddevice'
             }
         },
         groups: {

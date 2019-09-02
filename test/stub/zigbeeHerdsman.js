@@ -73,6 +73,9 @@ const devices = {
     '1TST_EU': new Device('Router', '0x0017880104e45550', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'Thermostat'),
     'SV01': new Device('Router', '0x0017880104e45551', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'SV01-410-MP-1.0'),
     'J1': new Device('Router', '0x0017880104e45552', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'J1 (5502)'),
+    'E11_G13': new Device('EndDevice', '0x0017880104e45553', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'E11-G13'),
+    'nomodel': new Device('Router', '0x0017880104e45535', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Mains (single phase)", undefined, true),
+    'unsupported_router': new Device('Router', '0x0017880104e45525', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Mains (single phase)", "notSupportedModelID"),
 }
 
 const groups = {
