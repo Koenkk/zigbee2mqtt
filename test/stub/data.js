@@ -109,6 +109,10 @@ function writeDefaultConfiguration() {
             '0x0017880104e45553': {
                 retain: false,
                 friendly_name: 'bulb_enddevice'
+            },
+            '0x0017880104e45559': {
+                retain: false,
+                friendly_name: 'cc2530_router'
             }
         },
         groups: {

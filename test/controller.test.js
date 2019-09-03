@@ -129,7 +129,7 @@ describe('Controller', () => {
         const payload = {device};
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", `{"type":"device_connected","message":"bulb"}`, {"retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", `{"type":"device_connected","message":"bulb"}`, {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('On zigbee deviceInterview started', async () => {
@@ -138,7 +138,7 @@ describe('Controller', () => {
         const payload = {device, status: 'started'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_started","meta":{"friendlyName":"bulb"}}', { retain: false }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_started","meta":{"friendlyName":"bulb"}}', { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview failed', async () => {
@@ -147,7 +147,7 @@ describe('Controller', () => {
         const payload = {device, status: 'failed'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_failed","meta":{"friendlyName":"bulb"}}', { retain: false }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_failed","meta":{"friendlyName":"bulb"}}', { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview successful supported', async () => {
@@ -156,7 +156,7 @@ describe('Controller', () => {
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendlyName":"bulb","model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supported":true}}', { retain: false }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendlyName":"bulb","model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supported":true}}', { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview successful not supported', async () => {
@@ -165,7 +165,7 @@ describe('Controller', () => {
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendlyName":"0x0017880104e45518","supported":false}}', { retain: false }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendlyName":"0x0017880104e45518","supported":false}}', { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee event device announce', async () => {
@@ -183,7 +183,7 @@ describe('Controller', () => {
         const payload = {ieeeAddr: device.ieeeAddr};
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendlyName":"bulb"}}', { retain: false }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendlyName":"bulb"}}', { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('Publish entity state attribute output', async () => {
