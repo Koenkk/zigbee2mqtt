@@ -86,7 +86,7 @@ describe('Device report', () => {
         jest.useRealTimers();
     });
 
-    it('onlythis Should not mark as configured when reporting setup fails', async () => {
+    it('Should not mark as configured when reporting setup fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('failed')});
