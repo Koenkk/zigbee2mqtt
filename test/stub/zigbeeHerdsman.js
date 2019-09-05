@@ -14,7 +14,7 @@ const clusters = {
     'genOnOff': 6,
     'genLevelCtrl': 8,
     'lightingColorCtrl': 768,
-    'closuresWindowCovering': 9999, // todo
+    'closuresWindowCovering': 258,
 }
 
 class Endpoint {
