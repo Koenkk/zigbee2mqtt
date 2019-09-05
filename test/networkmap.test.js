@@ -132,7 +132,6 @@ describe('Networkmap', () => {
         const data = {modelID: 'test'}
         const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
-        await wait(1000);
         MQTT.events.message('zigbee2mqtt/bridge/networkmap/routes', 'graphviz');
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -144,7 +143,7 @@ describe('Networkmap', () => {
               "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0)|Last seen: 00:00:00s ago}"];
               "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (40369)|IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)|Last seen: unknown}"];
               "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 6540)"]
-              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (40399)|Philips Hue Go (7146060PH)|Last seen: 00:00:01s ago}"];
+              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (40399)|Philips Hue Go (7146060PH)|Last seen: 00:00:00s ago}"];
               "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
               "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
               "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (6538)|Xiaomi Aqara double key wireless wall switch (WXKG02LM)|Last seen: unknown}"];
