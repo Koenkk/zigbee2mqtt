@@ -153,4 +153,15 @@ describe('Device bind', () => {
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
         expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
     });
+
+    it('Should bind to default endpoint returned by endpoints()', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.devices.QBKG04LM.getEndpoint(2);
+        const endpoint = device.getEndpoint(2);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/bind/remote/ep2', 'wall_switch');
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
+    });
 });

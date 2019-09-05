@@ -88,7 +88,7 @@ const devices = {
     'RTCGQ11LM': new Device('EndDevice', '0x0017880104e45523', 6540,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.sensor_motion.aq2"),
     'ZNCZ02LM': new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", "lumi.plug"),
     'E1743': new Device('Router', '0x0017880104e45540', 6540,4476, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'TRADFRI on/off switch'),
-    'QBKG04LM': new Device('Router', '0x0017880104e45541', 6549,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
+    'QBKG04LM': new Device('Router', '0x0017880104e45541', 6549,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0, 6], []), new Endpoint(3, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GLEDOPTO'),
@@ -139,6 +139,7 @@ const mock = {
     }),
     getPermitJoin: jest.fn().mockReturnValue(false),
     softReset: jest.fn(),
+    createGroup: jest.fn(),
 };
 
 const mockConstructor = jest.fn().mockImplementation(() => mock);

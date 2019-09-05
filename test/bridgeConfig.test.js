@@ -203,6 +203,8 @@ describe('Bridge config', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
         expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: []});
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
     });
 
     it('Should allow to remove groups', async () => {
@@ -221,6 +223,7 @@ describe('Bridge config', () => {
     });
 
     it('Should allow to remove device', async () => {
+        controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
         await flushPromises();
@@ -237,6 +240,7 @@ describe('Bridge config', () => {
             {qos: 0, retain: false},
             expect.any(Function)
         );
+        expect(controller.state.state).toStrictEqual({})
     });
 
     it('Should allow to ban device', async () => {

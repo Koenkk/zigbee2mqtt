@@ -35,7 +35,7 @@ function writeDefaultConfiguration() {
                 friendly_name: "button_double_key"
             },
             "0x0017880104e45522": {
-                retain: false,
+                qos: 1,
                 friendly_name: "weather_sensor"
             },
             "0x0017880104e45523": {
@@ -150,6 +150,10 @@ function writeDefaultState() {
     fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
 }
 
+function removeState() {
+    fs.unlinkSync(path.join(mockDir, 'state.json'))
+}
+
 jest.mock('../../lib/util/data', () => ({
     joinPath: (file) => require('path').join(mockDir, file),
     joinPathStorage: (file) => require('path').join(mockDirStorage, file),
@@ -163,5 +167,6 @@ module.exports = {
     mockDir,
     writeDefaultConfiguration,
     writeDefaultState,
+    removeState,
     writeEmptyState,
 };

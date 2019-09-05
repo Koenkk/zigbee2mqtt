@@ -7,8 +7,14 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
+const tmp = require('tmp');
+const mocksClear = [
+    zigbeeHerdsman.permitJoin, mockExit, MQTT.end, zigbeeHerdsman.stop, logger.debug,
+    MQTT.publish, MQTT.connect, zigbeeHerdsman.devices.bulb_color.removeFromNetwork,
+    zigbeeHerdsman.devices.bulb.removeFromNetwork
+];
 
-const mocksClear = [zigbeeHerdsman.permitJoin, mockExit, MQTT.end, zigbeeHerdsman.stop, logger.debug, MQTT.publish];
+const fs = require('fs');
 
 describe('Controller', () => {
     let controller;
@@ -37,6 +43,90 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", {"will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"}});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',{ retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', '{"brightness":255}', { retain: true, qos: 0 }, expect.any(Function));
+    });
+
+    it('Start controller with specific MQTT settings', async () => {
+        const ca = tmp.fileSync().name;
+        fs.writeFileSync(ca, "ca");
+        const key = tmp.fileSync().name;
+        fs.writeFileSync(key, "key");
+        const cert = tmp.fileSync().name;
+        fs.writeFileSync(cert, "cert");
+
+        const configuration = {
+            base_topic: "zigbee2mqtt",
+            server: "mqtt://localhost",
+            ca, cert, key,
+            password: 'pass',
+            user: 'user1',
+            client_id: 'my_client_id',
+            reject_unauthorized: false,
+        }
+        settings.set(['mqtt'], configuration)
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.connect).toHaveBeenCalledTimes(1);
+        const expected = {
+            "will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"},
+            ca: Buffer.from([99, 97]),
+            key: Buffer.from([107, 101, 121]),
+            cert: Buffer.from([99, 101, 114, 116]),
+            password: 'pass',
+            username: 'user1',
+            clientId: 'my_client_id',
+            rejectUnauthorized: false,
+
+        }
+        expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
+    });
+
+    it('Log when MQTT client is unavailable', async () => {
+        jest.useFakeTimers();
+        await controller.start();
+        await flushPromises();
+        logger.error.mockClear();
+        controller.mqtt.client.reconnecting = true;
+        jest.advanceTimersByTime(11 * 1000);
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
+        controller.mqtt.client.reconnecting = false;
+    });
+
+    it('Dont publish to mqtt when client is unavailable', async () => {
+        await controller.start();
+        await flushPromises();
+        logger.error.mockClear();
+        controller.mqtt.client.reconnecting = true;
+        await controller.publishEntityState('bulb', {state: 'ON', brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
+        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"state\":\"ON\",\"brightness\":50,\"color_temp\":370,\"linkquality\":99,\"color\":{\"r\":100,\"g\":50,\"b\":10},\"dummy\":{\"1\":\"yes\",\"2\":\"no\"}}");
+        controller.mqtt.client.reconnecting = false;
+    });
+
+    it('Load empty state when state file does not exist', async () => {
+        data.removeState();
+        await controller.start();
+        await flushPromises();
+        expect(controller.state.state).toStrictEqual({});
+    });
+
+    it('Should remove non whitelisted devices on startup', async () => {
+        settings.set(['whitelist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
+        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should remove banned devices on startup', async () => {
+        settings.set(['ban'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(0);
     });
 
     it('Start controller fails', async () => {

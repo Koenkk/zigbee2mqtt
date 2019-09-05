@@ -8,7 +8,7 @@ const devicesFile = data.joinPath('devices.yaml');
 const groupsFile = data.joinPath('groups.yaml');
 const yaml = require('js-yaml');
 
-describe('onlythis Settings', () => {
+describe('Settings', () => {
     const write = (file, json) => {
         fs.writeFileSync(file, yaml.safeDump(json))
         settings._reRead();
