@@ -7,7 +7,7 @@ const logger = require('../lib/util/logger.js');
 const fs = require('fs');
 const path = require('path');
 
-describe('onlythis Logger', () => {
+describe('Logger', () => {
     it('Create log directory', () => {
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);

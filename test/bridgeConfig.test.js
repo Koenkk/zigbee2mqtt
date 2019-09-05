@@ -202,7 +202,7 @@ describe('Bridge config', () => {
     it('Should allow to add groups', async () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group"});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: []});
     });
 
     it('Should allow to remove groups', async () => {
