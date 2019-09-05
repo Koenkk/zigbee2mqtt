@@ -486,7 +486,7 @@ describe('DevicePublish', () => {
                 'lightingColorCtrl',
                 'moveToColor',
                 'functional',
-                {colorx: 17085, colory: 44000, transtime: 0},
+                {colorx: 17806, colory: 43155, transtime: 0},
                 cfg.default,
                 null,
                 expect.any(Function));
@@ -495,7 +495,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000016',
-                {color: {x: 0.2607, y: 0.6714}});
+                {color: {x: 0.2717, y: 0.6585}});
         });
 
         it('Should publish messages to zigbee devices with color rgb string', async () => {
@@ -510,7 +510,7 @@ describe('DevicePublish', () => {
                 'lightingColorCtrl',
                 'moveToColor',
                 'functional',
-                {colorx: 17085, colory: 44000, transtime: 0},
+                {colorx: 17806, colory: 43155, transtime: 0},
                 cfg.default,
                 null,
                 expect.any(Function));
@@ -519,7 +519,7 @@ describe('DevicePublish', () => {
             expect(publishEntityState).toHaveBeenCalledTimes(1);
             expect(publishEntityState).toHaveBeenNthCalledWith(1,
                 '0x00000017',
-                {color: {x: 0.2607, y: 0.6714}});
+                {color: {x: 0.2717, y: 0.6585}});
         }
         );
 
@@ -945,6 +945,45 @@ describe('DevicePublish', () => {
         expect(publishEntityState).toHaveBeenNthCalledWith(2,
             '0x00000020',
             {color: {x: 0.701, y: 0.299}});
+    });
+
+    it('Should use transition when enabled', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'LCT001'});
+        jest.spyOn(settings, 'getDevice').mockReturnValue({transition: 20});
+        const msg = {'brightness': 200};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000020/set', JSON.stringify(msg));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
+        expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
+        expect(zigbee.publish.mock.calls[0][5]).toStrictEqual({level: 200, transtime: 200});
+    });
+
+    it('Should use transition when color temp', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'LCT001'});
+        jest.spyOn(settings, 'getDevice').mockReturnValue({transition: 20});
+        const msg = {'color_temp': 200};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000020/set', JSON.stringify(msg));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish.mock.calls[0][2]).toBe('lightingColorCtrl');
+        expect(zigbee.publish.mock.calls[0][3]).toBe('moveToColorTemp');
+        expect(zigbee.publish.mock.calls[0][5]).toStrictEqual({colortemp: 200, transtime: 200});
+    });
+
+    it('Message transition should overrule options transition', async () => {
+        zigbee.publish.mockClear();
+        publishEntityState.mockClear();
+        zigbee.getDevice = () => ({modelId: 'LCT001'});
+        jest.spyOn(settings, 'getDevice').mockReturnValue({transition: 20});
+        const msg = {'brightness': 200, 'transition': 10};
+        devicePublish.onMQTTMessage('zigbee2mqtt/0x00000020/set', JSON.stringify(msg));
+        expect(zigbee.publish).toHaveBeenCalledTimes(1);
+        expect(zigbee.publish.mock.calls[0][2]).toBe('genLevelCtrl');
+        expect(zigbee.publish.mock.calls[0][3]).toBe('moveToLevelWithOnOff');
+        expect(zigbee.publish.mock.calls[0][5]).toStrictEqual({level: 200, transtime: 100});
     });
 
     it('Should set state with brightness before color', async () => {

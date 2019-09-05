@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.4.0",
+  "version": "1.5.1",
   "description": "Zigbee to MQTT bridge using zigbee-shepherd",
   "main": "index.js",
   "repository": {
@@ -43,8 +43,8 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zigbee-herdsman": "0.1.16",
-    "zigbee-shepherd-converters": "10.1.2",
+    "zigbee-herdsman": "0.5.7",
+    "zigbee-shepherd-converters": "10.2.4",
     "deep-diff": "*"
   },
   "devDependencies": {
