@@ -6,6 +6,9 @@ class Group {
         this.groupID = groupID;
         this.command = jest.fn();
         this.meta = {};
+        this.members = [];
+        this.hasMember = (endpoint) => this.members.includes(endpoint);
+        this.getMembers = () => this.members;
     }
 }
 
@@ -36,6 +39,14 @@ class Endpoint {
         this.supportsOutputCluster = (cluster) => {
             assert(clusters[cluster], `Undefined '${cluster}'`);
             return this.outputClusters.includes(clusters[cluster]);
+        }
+
+        this.addToGroup = (group) => {
+            group.members.push(this);
+        }
+
+        this.removeFromGroup = (group) => {
+            group.members.splice(group.members.indexOf(this), 1);
         }
     }
 }
@@ -139,7 +150,11 @@ const mock = {
     }),
     getPermitJoin: jest.fn().mockReturnValue(false),
     softReset: jest.fn(),
-    createGroup: jest.fn(),
+    createGroup: jest.fn().mockImplementation((groupID) => {
+        const group = new Group(groupID);
+        groups[`group_${groupID}`] = group
+        return group;
+    })
 };
 
 const mockConstructor = jest.fn().mockImplementation(() => mock);
