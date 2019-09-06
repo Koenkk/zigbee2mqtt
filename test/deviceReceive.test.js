@@ -5,7 +5,6 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
@@ -332,17 +331,16 @@ describe('Device receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
-    it('Should add elapsed', async () => {
-        // hacky; needed otherwise bridge config is published resulting in 3 mqtt publish calls
-        await wait(100);
-        MQTT.publish.mockClear();
-
+    it('onlythis Should add elapsed', async () => {
         settings.set(['advanced', 'elapsed'], true);
         const device = zigbeeHerdsman.devices.E1743;
-        const data = {};
-        const payload = {data, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff'};
+        const payload = {data: {}, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff'};
+        const oldNow = Date.now;
+        Date.now = jest.fn()
+        Date.now.mockReturnValue(new Date(150));
         await zigbeeHerdsman.events.message(payload);
-        await wait(50);
+        await flushPromises();
+        Date.now.mockReturnValue(new Date(200));
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
@@ -351,9 +349,9 @@ describe('Device receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/ikea_onoff');
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toMatchObject({'click': 'brightness_stop'});
-        // Not sure how jest.runTimersToTime, get something around 16 here but would expect 5000.
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1]).elapsed >= 50).toBeTruthy();
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1]).elapsed).toBe(50);
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
+        Date.now = oldNow;
     });
 
     it('Should log when message is from supported device but has no converters', async () => {
