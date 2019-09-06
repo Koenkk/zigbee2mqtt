@@ -22,17 +22,5 @@ describe('Data', () => {
             delete process.env.ZIGBEE2MQTT_DATA;
             data._reload();
         });
-
-        it('Should create storage directory when it doesnt exist', () => {
-            const expected = tmp.dirSync().name;
-            process.env.ZIGBEE2MQTT_DATA = expected;
-            data._reload();
-            expect(fs.existsSync(path.join(expected, '.storage'))).toBeFalsy();
-            expect(data.joinPathStorage('test')).toStrictEqual(path.join(expected, '.storage', 'test'));
-            expect(fs.existsSync(path.join(expected, '.storage'))).toBeTruthy();
-            expect(data.joinPathStorage('test')).toStrictEqual(path.join(expected, '.storage', 'test'));
-            delete process.env.ZIGBEE2MQTT_DATA;
-            data._reload();
-        });
     });
 });

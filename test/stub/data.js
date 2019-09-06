@@ -156,7 +156,6 @@ function removeState() {
 
 jest.mock('../../lib/util/data', () => ({
     joinPath: (file) => require('path').join(mockDir, file),
-    joinPathStorage: (file) => require('path').join(mockDirStorage, file),
     getPath: () => mockDir,
 }));
 
