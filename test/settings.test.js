@@ -319,8 +319,7 @@ describe('Settings', () => {
         });
 
         settings.addGroup('test123');
-        settings.addDeviceToGroup('test123', 'bulb');
-        settings.addDeviceToGroup('test123', 'bulb');
+        settings.addDeviceToGroup('test123', ['0x123']);
         const expected = {
             '1': {
                 friendly_name: 'test123',
@@ -347,8 +346,7 @@ describe('Settings', () => {
             }
         });
 
-        settings.removeDeviceFromGroup('test123', 'bulb');
-        settings.removeDeviceFromGroup('test123', 'bulb');
+        settings.removeDeviceFromGroup('test123', ['0x123']);
         const expected = {
             '1': {
                 friendly_name: 'test123',

@@ -331,7 +331,7 @@ describe('Device receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
-    it('onlythis Should add elapsed', async () => {
+    it('Should add elapsed', async () => {
         settings.set(['advanced', 'elapsed'], true);
         const device = zigbeeHerdsman.devices.E1743;
         const payload = {data: {}, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff'};

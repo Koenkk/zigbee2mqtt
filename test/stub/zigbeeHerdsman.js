@@ -42,11 +42,18 @@ class Endpoint {
         }
 
         this.addToGroup = (group) => {
-            group.members.push(this);
+            if (!group.members.includes(this)) group.members.push(this);
         }
 
         this.removeFromGroup = (group) => {
-            group.members.splice(group.members.indexOf(this), 1);
+            const index = group.members.indexOf(this);
+            if (index != -1) {
+                group.members.splice(index, 1);
+            }
+        }
+
+        this.removeFromAllGroups = () => {
+            Object.values(groups).forEach((g) => this.removeFromGroup(g))
         }
     }
 }
