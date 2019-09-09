@@ -57,7 +57,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness: '200'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {"level": 200, "transtime": 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {"level": 200, "transtime": 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({brightness: 200, state: 'ON'});
@@ -83,7 +83,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/wohnzimmer.light.wall.right/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/wohnzimmer.light.wall.right');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
@@ -96,7 +96,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness_percent: '92'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 235, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 235, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 235});
@@ -109,7 +109,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness: 230}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 230, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 230, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 230});
@@ -122,7 +122,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color_temp: '222'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 222, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 222, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 222});
@@ -135,7 +135,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color_temp_percent: '100'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 500, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 500, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 500});
@@ -148,7 +148,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/wall_switch/set', JSON.stringify({state: 'OFF'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/wall_switch');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
@@ -161,7 +161,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/wall_switch_double/right/set', JSON.stringify({state: 'OFF'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/wall_switch_double');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_right: 'OFF'});
@@ -174,7 +174,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/led_controller_1/set', JSON.stringify({state: 'OFF'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {disableDefaultResponse: true});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/led_controller_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
@@ -187,7 +187,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/led_controller_2/set', JSON.stringify({state: 'OFF'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {disableDefaultResponse: true});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/led_controller_2');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
@@ -200,7 +200,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {x: 100, y: 50}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 100, y: 50}});
@@ -213,8 +213,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {x: 100, y: 50}, state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
@@ -230,8 +230,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {x: 100, y: 50}, brightness: 20}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0});
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 20});
@@ -247,8 +247,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {x: 100, y: 50}, brightness: 20, state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0});
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 20});
@@ -264,8 +264,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {x: 100, y: 50}, brightness: 20, state: 'OFF'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {});
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 6553500, colory: 3276750, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
@@ -281,7 +281,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {r: 100, g: 200, b: 10}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17806, colory: 43155, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17806, colory: 43155, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.2717, y: 0.6585}});
@@ -293,7 +293,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({color: {rgb: '100,200,10'}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17806, colory: 43155, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17806, colory: 43155, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.2717, y: 0.6585}});
@@ -305,7 +305,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'ON', brightness: '50'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 50});
@@ -316,7 +316,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
@@ -327,7 +327,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({brightness_percent: 50}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 127, transtime: 0});
+        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 127, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 127});
@@ -338,7 +338,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON', brightness: 50}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0});
+        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 50});
@@ -349,7 +349,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'OFF', brightness: 50}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {});
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
@@ -360,7 +360,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({color: {x: 0.37, y: 0.28}}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 24248, colory: 18350, transtime: 0});
+        expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 24248, colory: 18350, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.37, y: 0.28}});
@@ -371,7 +371,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({color_temp: 100}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0});
+        expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 100});
@@ -384,7 +384,7 @@ describe('Entity publish', () => {
         await flushPromises();
         expect(Object.values(zigbeeHerdsman.groups).length).toBe(2);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should handle non-valid topics', async () => {
@@ -481,7 +481,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set/state', 'ON');
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should parse set with ieeeAddr topic', async () => {
@@ -490,7 +490,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/0x000b57fffec6a5b3/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should parse set with non-existing postfix', async () => {
@@ -505,7 +505,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/wall_switch_double/left/set', 'ON');
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should parse set with and slashes in base and deviceID postfix topic', async () => {
@@ -516,7 +516,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/at/my/home/in/basement/wall_switch_double/left/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should not publish messages to zigbee devices when payload is invalid', async () => {
@@ -535,8 +535,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}, {}]);
     });
 
     it('Should read after write when enabled', async () => {
@@ -549,8 +549,8 @@ describe('Entity publish', () => {
         await flushPromises();
         jest.runAllTimers();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}, {}]);
         expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read.mock.calls[0]).toEqual(["genOnOff", ["onOff"]]);
         expect(endpoint.read.mock.calls[1]).toEqual(["lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]]);
@@ -564,7 +564,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 200}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 200}, {}]);
     });
 
     it('Should use transition when color temp', async () => {
@@ -575,7 +575,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
     });
 
     it('Message transition should overrule options transition', async () => {
@@ -586,7 +586,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 200, transtime: 100}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 200, transtime: 100}, {}]);
     });
 
     it('Should set state with brightness before color', async () => {
@@ -596,8 +596,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 100, transtime: 30}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 30}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 100, transtime: 30}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 30}, {}]);
     });
 
     it('Should turn device off when brightness 0 is send', async () => {
@@ -607,7 +607,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}, {}]);
     });
 
     it('Should turn device off when brightness 0 is send with light_brightness converter', async () => {
@@ -617,7 +617,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/dimmer_wall_switch/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}, {}]);
     });
 
     it('ZNCLDJ11LM open', async () => {
@@ -657,7 +657,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("closuresWindowCovering", "stop", {});
+        expect(endpoint.command).toHaveBeenCalledWith("closuresWindowCovering", "stop", {}, {});
     });
 
 
@@ -668,7 +668,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 10}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 10}, {}]);
     });
 
     it('Should turn device off when brightness 0 is send with light_brightness converter OFF', async () => {
@@ -678,7 +678,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 0, transtime: 10}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 0, transtime: 10}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF', brightness: 0});
@@ -692,7 +692,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
@@ -707,7 +707,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', color_temp: 100});
@@ -722,8 +722,8 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
@@ -740,10 +740,23 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColor", {colorx: 26869, colory: 16384, transtime: 0}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColor", {colorx: 26869, colory: 16384, transtime: 0}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.41, y: 0.25}, state: 'ON'});
+    });
+
+    it('Should publish messages with options disableDefaultResponse', async () => {
+        const device = zigbeeHerdsman.devices.GLEDOPTO1112;
+        const endpoint = device.getEndpoint(11);
+        await MQTT.events.message('zigbee2mqtt/led_controller_1/set', JSON.stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/led_controller_1');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
     // TODO
@@ -788,7 +801,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100}, {});
     });
 
     it('HS2WD-E emergency warning', async () => {
@@ -797,7 +810,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10}, {});
     });
 
     it('HS2WD-E emergency without level', async () => {
@@ -806,7 +819,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10}, {});
     });
 
     it('HS2WD-E wrong payload (should use defaults)', async () => {
@@ -815,7 +828,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10}, {});
     });
 
     it('Shouldnt do anythign when device is not supported', async () => {
