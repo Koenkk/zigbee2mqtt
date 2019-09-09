@@ -20,10 +20,11 @@
     "cc2531"
   ],
   "scripts": {
-    "coverage": "jest --collect-coverage",
-    "eslint": "node_modules/.bin/eslint .",
+    "test-with-coverage": "jest test --coverage",
+    "eslint": "node_modules/.bin/eslint lib/",
     "start": "node index.js",
-    "test": "jest"
+    "test": "jest test",
+    "test-watch": "jest test --watch"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -39,19 +40,30 @@
     "moment": "*",
     "mqtt": "*",
     "object-assign-deep": "*",
-    "queue": "*",
     "rimraf": "*",
     "semver": "*",
     "winston": "2.4.2",
-    "zigbee-herdsman": "0.5.7",
-    "zigbee-shepherd-converters": "10.2.5",
-    "deep-diff": "*"
+    "zigbee-herdsman": "0.6.4",
+    "zigbee-herdsman-converters": "11.0.8"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.11",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-jest": "^22.3.0",
-    "jest": "^24.3.1"
+    "eslint-plugin-jest": "*",
+    "jest": "*",
+    "tmp": "*"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "collectCoverageFrom": [
+      "lib/**"
+    ]
   }
 }

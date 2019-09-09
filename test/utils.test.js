@@ -1,78 +1,53 @@
 const utils = require('../lib/util/utils.js');
-const testUtils = require('./utils');
+const version = require('../package.json').version;
 
 describe('Utils', () => {
-    beforeAll(() => {
-        testUtils.stubLogger(jest);
-    });
-
     describe('Is xiaomi device', () => {
         it('Identify xiaomi device', () => {
-            const device = {type: 'Router', manufId: 4151, manufName: 'Xiaomi'};
+            const device = {type: 'Router', manufacturerID: 4151, manufacturerName: 'Xiaomi'};
             expect(true).toBe(utils.isXiaomiDevice(device));
         });
 
-        it('Identify xiaomi device without manufName', () => {
-            const device = {type: 'Router', manufId: 4447};
+        it('Identify xiaomi device without manufacturerName', () => {
+            const device = {type: 'Router', manufacturerID: 4447};
             expect(true).toBe(utils.isXiaomiDevice(device));
         });
 
-        it('Identify xiaomi device with different manufName', () => {
-            const device = {type: 'Router', manufId: 4151, manufName: 'Trust International B.V.\u0000'};
+        it('Identify xiaomi device with different manufacturerName', () => {
+            const device = {type: 'Router', manufacturerID: 4151, manufacturerName: 'Trust International B.V.\u0000'};
             expect(false).toBe(utils.isXiaomiDevice(device));
         });
-
-        it('Identify QBKG03LM as enddevice', () => {
-            const device = {type: 'Router', manufId: 4447, modelId: 'lumi.ctrl_neutral1'};
-            expect(false).toBe(utils.isRouter(device));
-            expect('EndDevice').toBe(utils.correctDeviceType(device));
-        });
-
-        it('Identify QBKG04LM as enddevice', () => {
-            const device = {type: 'Router', manufId: 4447, modelId: 'lumi.ctrl_neutral2'};
-            expect(false).toBe(utils.isRouter(device));
-            expect('EndDevice').toBe(utils.correctDeviceType(device));
-        });
     });
 
-    describe('Get endpoint by id', () => {
-        it('Pick default ep', () => {
-            const zigbee = {
-                getDevice: (entityID) => {
-                    return {modelId: 'TRADFRI on/off switch'};
-                },
-                getEndpoint: (entityID, epId) => {
-                    return {epId: epId == null ? 1 : 0};
-                },
-            };
-            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
-            expect(endpoint.epId).toBe(1);
-        });
+    it('Convert milliseconds to seconds', () => {
+        expect(utils.millisecondsToSeconds(2000)).toBe(2);
+    })
 
-        it('Pick default ep from mapping when default defined', () => {
-            const zigbee = {
-                getDevice: (entityID) => {
-                    return {modelId: 'SML002'};
-                },
-                getEndpoint: (entityID, epId) => {
-                    return {epId};
-                },
-            };
-            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
-            expect(endpoint.epId).toBe(2);
-        });
+    it('Object has properties', () => {
+        expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b'])).toBeTruthy();
+        expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b', 'd'])).toBeFalsy();
+    })
 
-        it('Pick default ep from mapping when not defined', () => {
-            const zigbee = {
-                getDevice: (entityID) => {
-                    return {modelId: 'lumi.sensor_86sw2.es1'};
-                },
-                getEndpoint: (entityID, epId) => {
-                    return {epId: epId == null ? 1 : 0};
-                },
-            };
-            const endpoint = utils.getEndpointByEntityID(zigbee, '0x12345678', null);
-            expect(endpoint.epId).toBe(1);
-        });
-    });
+    it('git last commit', async () => {
+        let mockReturnValue = [];
+        jest.mock('git-last-commit', () => ({
+            getLastCommit: (cb) => cb(mockReturnValue[0], mockReturnValue[1])
+        }));
+
+        mockReturnValue = [false, {shortHash: '123'}]
+        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": version});
+
+        mockReturnValue = [true, null]
+        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": version});
+    })
+
+    it('To local iso string', async () => {
+        var date = new Date('August 19, 1975 23:15:30 UTC+00:00');
+        var getTimezoneOffset = Date.prototype.getTimezoneOffset;
+        Date.prototype.getTimezoneOffset = () => 60;
+        expect(utils.formatDate(date, 'ISO_8601_local').endsWith('-01:00')).toBeTruthy();
+        Date.prototype.getTimezoneOffset = () => -60;
+        expect(utils.formatDate(date, 'ISO_8601_local').endsWith('+01:00')).toBeTruthy();
+        Date.prototype.getTimezoneOffset = getTimezoneOffset;
+    })
 });

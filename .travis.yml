@@ -18,7 +18,7 @@ install:
   - npm install
 
 before_script:
-  - npm test
+  - npm run test-with-coverage
   - npm run eslint
 
 script:
