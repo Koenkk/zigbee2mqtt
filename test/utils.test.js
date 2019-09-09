@@ -1,4 +1,5 @@
 const utils = require('../lib/util/utils.js');
+const version = require('../package.json').version;
 
 describe('Utils', () => {
     describe('Is xiaomi device', () => {
@@ -34,10 +35,10 @@ describe('Utils', () => {
         }));
 
         mockReturnValue = [false, {shortHash: '123'}]
-        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": "1.5.1"});
+        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": version});
 
         mockReturnValue = [true, null]
-        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": "1.5.1"});
+        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": version});
     })
 
     it('To local iso string', async () => {
