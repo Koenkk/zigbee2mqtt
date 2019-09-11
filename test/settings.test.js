@@ -394,4 +394,31 @@ describe('Settings', () => {
         settings.banDevice('0x1234');
         expect(settings.get().ban).toStrictEqual(['0x123', '0x1234']);
     });
+
+    it('Should throw error when yaml file is invalid', () => {
+        fs.writeFileSync(configurationFile, `
+             good: 9
+             \t wrong
+        `)
+
+        let error;
+        try {
+            settings._reRead();
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error.message).toContain(`Your YAML file '${configurationFile}' is invalid`);
+    });
+
+    it('Should throw error when yaml file does not exist', () => {
+        let error;
+        try {
+            settings._reRead();
+        } catch (e) {
+            error = e;
+        }
+
+        expect(error.message).toContain(`no such file or directory, open`);
+    });
 });
