@@ -75,6 +75,7 @@ class Device {
         this.removeFromNetwork = jest.fn();
         this.save = jest.fn();
         this.manufacturerName = manufacturerName;
+        this.lastSeen = 1000;
     }
 
     getEndpoint(ID) {

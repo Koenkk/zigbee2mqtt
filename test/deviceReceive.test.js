@@ -103,6 +103,7 @@ describe('Device receive', () => {
         jest.advanceTimersByTime(50);
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
         jest.runAllTimers();
+        await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2, linkquality: 10});
