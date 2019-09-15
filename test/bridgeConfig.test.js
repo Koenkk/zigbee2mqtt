@@ -54,7 +54,7 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
-          JSON.stringify({type: "device_whitelisted", "message": "bulb_color"}),
+          JSON.stringify({type: "device_whitelisted", "message": {friendly_name: "bulb_color"}}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );
@@ -65,7 +65,7 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
-          JSON.stringify({type: "device_whitelisted", "message": "bulb"}),
+          JSON.stringify({type: "device_whitelisted", "message": {friendly_name: "bulb"}}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );

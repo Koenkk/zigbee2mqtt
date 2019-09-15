@@ -89,6 +89,7 @@ describe('Groups', () => {
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
         expect(settings.getGroup('group_1').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_group_add","message":{"friendly_name":"bulb_color","group":"group_1"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Add to group via MQTT with postfix', async () => {
@@ -131,6 +132,7 @@ describe('Groups', () => {
         await flushPromises();
         expect(group.members).toStrictEqual([]);
         expect(settings.getGroup('group_1').devices).toStrictEqual([]);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_group_remove","message":{"friendly_name":"bulb_color","group":"group_1"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Remove from group via MQTT when in zigbee but not in settings', async () => {
@@ -201,6 +203,7 @@ describe('Groups', () => {
         await flushPromises();
         expect(group.members).toStrictEqual([]);
         expect(settings.getGroup('group_1').devices).toStrictEqual([]);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_group_remove_all","message":{"friendly_name":"wall_switch_double"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Remove from group all deprecated', async () => {
