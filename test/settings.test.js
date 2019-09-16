@@ -78,6 +78,12 @@ describe('Settings', () => {
         expect(device).toStrictEqual(expected);
     });
 
+    it('Should not throw error when devices is null', () => {
+        const content = {devices: null};
+        write(configurationFile, content);
+        settings.getDevice('0x12345678');
+    });
+
     it('Should read devices form a separate file', () => {
         const contentConfiguration = {
             devices: 'devices.yaml',
