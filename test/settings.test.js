@@ -27,13 +27,18 @@ describe('Settings', () => {
     it('Should return default settings', () => {
         write(configurationFile, {});
         const s = settings.get();
-        expect(s).toStrictEqual(settings._getDefaults());
+        const expected = settings._getDefaults();
+        expected.devices = {};
+        expected.groups = {};
+        expect(s).toStrictEqual(expected);
     });
 
     it('Should return settings', () => {
         write(configurationFile, {permit_join: true});
         const s = settings.get();
         const expected = settings._getDefaults();
+        expected.devices = {};
+        expected.groups = {};
         expected.permit_join = true;
         expect(s).toStrictEqual(expected);
     });
