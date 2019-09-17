@@ -10,8 +10,8 @@ node_js:
 
 before_install:
   - "echo '{\"experimental\": true}' | sudo tee /etc/docker/daemon.json"
-#   - sudo apt update -y
-#   - sudo apt install --only-upgrade docker-ce -y
+  - sudo apt update -y
+  - sudo apt install --only-upgrade docker-ce -y
   - sudo service docker restart
 
 install:
