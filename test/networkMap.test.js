@@ -95,11 +95,11 @@ describe('Networkmap', () => {
                 {"lastSeen": 1000,"ieeeAddr":CC2530_ROUTER.ieeeAddr,"friendlyName":"cc2530_router","type":"Router","networkAddress":6540,"modelID":"lumi.router","failed":[]},
             ],
             "links":[
-                {depth: 1, linkquality: 120, routes: [], source: conv(bulb_color), target: conv(coordinator)},
-                {depth: 1, linkquality: 92, routes: [{destinationAddress: CC2530_ROUTER.networkAddress, status: 'ACTIVE', nextHop: bulb.networkAddress}], source: conv(bulb), target: conv(coordinator)},
-                {depth: 2, linkquality: 110, routes: [], source: conv(bulb_color), target: conv(bulb)},
-                {depth: 2, linkquality: 100, routes: [], source: conv(CC2530_ROUTER), target: conv(bulb)},
-                {depth: 2, linkquality: 130, routes: [], source: conv(WXKG02LM), target: conv(CC2530_ROUTER)}
+                {depth: 1, linkquality: 120, routes: [], source: conv(bulb_color), target: conv(coordinator), sourceIeeeAddr: bulb_color.ieeeAddr, sourceNwkAddr: bulb_color.networkAddress, targetIeeeAddr: coordinator.ieeeAddr, lqi: 120, relationship: 2},
+                {depth: 1, linkquality: 92, routes: [{destinationAddress: CC2530_ROUTER.networkAddress, status: 'ACTIVE', nextHop: bulb.networkAddress}], source: conv(bulb), target: conv(coordinator), sourceIeeeAddr: bulb.ieeeAddr, sourceNwkAddr: bulb.networkAddress, targetIeeeAddr: coordinator.ieeeAddr, lqi: 92, relationship: 2},
+                {depth: 2, linkquality: 110, routes: [], source: conv(bulb_color), target: conv(bulb), sourceIeeeAddr: bulb_color.ieeeAddr, sourceNwkAddr: bulb_color.networkAddress, targetIeeeAddr: bulb.ieeeAddr, lqi: 110, relationship: 1},
+                {depth: 2, linkquality: 100, routes: [], source: conv(CC2530_ROUTER), target: conv(bulb), sourceIeeeAddr: CC2530_ROUTER.ieeeAddr, sourceNwkAddr: CC2530_ROUTER.networkAddress, targetIeeeAddr: bulb.ieeeAddr, lqi: 100, relationship: 1},
+                {depth: 2, linkquality: 130, routes: [], source: conv(WXKG02LM), target: conv(CC2530_ROUTER), sourceIeeeAddr: WXKG02LM.ieeeAddr, sourceNwkAddr: WXKG02LM.networkAddress, targetIeeeAddr: CC2530_ROUTER.ieeeAddr, lqi: 130, relationship: 1}
             ]
         };
 
