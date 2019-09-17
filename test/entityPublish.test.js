@@ -771,31 +771,6 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
-    // TODO
-    // it('Should publish message with disFeedbackRsp when set', async () => {
-    //     const device = zigbeeHerdsman.devices.HAMPTON99432;
-    //     controller.state.set(device.ieeeAddr, {state: 'ON'})
-    //     const endpoint = device.getEndpoint(1);
-    //     const payload = {brightness: '92'};
-    //     await MQTT.events.message('zigbee2mqtt/fan/set', JSON.stringify(payload));
-    //     await flushPromises();
-    //     expect(endpoint.command).toHaveBeenCalledTimes(1);
-    //     expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 92}]);
-    // });
-    //     devicePublish.onMQTTMessage('zigbee2mqtt/0x00000003/set', JSON.stringify({state: 'OFF'}));
-    //     expect(zigbee.publish).toHaveBeenCalledTimes(2);
-    //     expect(zigbee.publish).toHaveBeenNthCalledWith(2,
-    //         '0x00000003',
-    //         'device',
-    //         'genOnOff',
-    //         'off',
-    //         'functional',
-    //         {},
-    //         cfg.disFeedbackRsp,
-    //         null,
-    //         expect.any(Function));
-    // });
-
     it('Should publish messages to zigbee devices', async () => {
         settings.set(['advanced', 'last_seen'], 'ISO_8601')
         const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);

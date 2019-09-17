@@ -237,4 +237,20 @@ describe('Groups', () => {
         await flushPromises();
         expect(logger.error).toHaveBeenCalledWith("Device 'bulb_color_not_existing' does not exist");
     });
+
+    it('Should publish group state change when a device in it changes state', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(endpoint);
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [device.ieeeAddr]}});
+        await controller.start();
+        await flushPromises();
+
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
+    });
 });
