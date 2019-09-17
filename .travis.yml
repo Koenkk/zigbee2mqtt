@@ -1,18 +1,18 @@
 language: node_js
 
-sudo: required
+# sudo: required
 
-services:
-  - docker
+# services:
+#   - docker
 
 node_js:
   - "10"
 
-before_install:
-  - "echo '{\"experimental\": true}' | sudo tee /etc/docker/daemon.json"
-  - sudo apt update -y
-  - sudo apt install --only-upgrade docker-ce -y
-  - sudo service docker restart
+# before_install:
+#   - "echo '{\"experimental\": true}' | sudo tee /etc/docker/daemon.json"
+#   - sudo apt update -y
+#   - sudo apt install --only-upgrade docker-ce -y
+#   - sudo service docker restart
 
 install:
   - npm install
