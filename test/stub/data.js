@@ -113,6 +113,10 @@ function writeDefaultConfiguration() {
             '0x0017880104e45559': {
                 retain: false,
                 friendly_name: 'cc2530_router'
+            },
+            '0x0017880104e45560': {
+                retain: false,
+                friendly_name: 'livolo'
             }
         },
         groups: {

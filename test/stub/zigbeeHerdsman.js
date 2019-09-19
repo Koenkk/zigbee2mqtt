@@ -123,6 +123,7 @@ const devices = {
     'nomodel': new Device('Router', '0x0017880104e45535', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Mains (single phase)", undefined, true),
     'unsupported_router': new Device('Router', '0x0017880104e45525', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Mains (single phase)", "notSupportedModelID", false, "Boef"),
     'CC2530_ROUTER': new Device('Router', '0x0017880104e45559', 6540,4151, [new Endpoint(1, [0, 6], [])], true, "Mains (single phase)", 'lumi.router'),
+    'LIVOLO': new Device('Router', '0x0017880104e45560', 6541,4152, [new Endpoint(1, [0, 6], [])], true, "Mains (single phase)", 'TI0001          '),
 }
 
 const groups = {
