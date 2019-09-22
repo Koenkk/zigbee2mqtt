@@ -1545,9 +1545,9 @@
       },
       "dependencies": {
         "glob-parent": {
-          "version": "5.0.0",
-          "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.0.0.tgz",
-          "integrity": "sha512-Z2RwiujPRGluePM6j699ktJYxmPpJKCfpGA13jz2hmFZC7gKetzrWvg5KN3+OsIFmydGyZ1AVwERCq1w/ZZwRg==",
+          "version": "5.1.0",
+          "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.0.tgz",
+          "integrity": "sha512-qjtRgnIVmOfnKUE3NJAQEdk+lKrxfw8t5ke7SXtfMTHcjsBfOfWXCQfdb30zfDoZQ2IRSIiidmjtbHZPZ++Ihw==",
           "dev": true,
           "requires": {
             "is-glob": "^4.0.1"
@@ -12974,9 +12974,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.1",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.1.tgz",
-      "integrity": "sha512-Ai8crY4rND5F8KbkNsF5KXUgqX64K7Ho/qxTYBjyxMT1HHTEiV8Hjd3bwUcltgb2sWTs/R+Tt3mff4lds3kzZg==",
+      "version": "11.1.3",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.3.tgz",
+      "integrity": "sha512-DxtyhPokoMbzP6TmIRQYUhGQI7ezUCxFdRJj9PuKHuUh2G2VeRanJsNtGRKNZLWqwJo1FjS65Vy4w3n/SHYeEQ==",
       "requires": {
         "debounce": "^1.2.0"
       }
