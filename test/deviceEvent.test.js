@@ -16,7 +16,7 @@ const mockOnEvent = jest.fn();
 const mappedLivolo = zigbeeHerdsmanConverters.findByZigbeeModel(zigbeeHerdsman.devices.LIVOLO.modelID);
 mappedLivolo.onEvent = mockOnEvent;
 
-describe('onlythis Device event', () => {
+describe('Device event', () => {
     let controller;
     const device = zigbeeHerdsman.devices.LIVOLO;
 

@@ -85,10 +85,6 @@ class Device {
     getEndpoints() {
         return this.endpoints;
     }
-
-    isType(type) {
-        return type === 'device';
-    }
 }
 
 const returnDevices = [];
@@ -140,23 +136,20 @@ const mock = {
     },
     stop: jest.fn(),
     disableLED: jest.fn(),
-    getDevices: jest.fn().mockImplementation((query) => {
-        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
+    getDevices: jest.fn().mockImplementation(() => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr));
     }),
-    getDevice: jest.fn().mockImplementation((query) => {
-       return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
-        .find((d) => {
-           return (!query.hasOwnProperty('ieeeAddr') || query.ieeeAddr === d.ieeeAddr) &&
-            (!query.hasOwnProperty('type') || query.type === d.type);
-       })
+    getDevicesByType: jest.fn().mockImplementation((type) => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).filter((d) => d.type === type);
+    }),
+    getDeviceByIeeeAddr: jest.fn().mockImplementation((ieeeAddr) => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.ieeeAddr === ieeeAddr);
     }),
     getGroups: jest.fn().mockImplementation((query) => {
         return Object.values(groups);
     }),
-    getGroup: jest.fn().mockImplementation((query) => {
-       return Object.values(groups).find((g) => {
-           return (!query.hasOwnProperty('groupID') || g.groupID === query.groupID);
-       })
+    getGroupByID: jest.fn().mockImplementation((groupID) => {
+        return Object.values(groups).find((d) => d.groupID === groupID);
     }),
     getPermitJoin: jest.fn().mockReturnValue(false),
     softReset: jest.fn(),
