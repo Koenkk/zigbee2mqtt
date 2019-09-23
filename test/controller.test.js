@@ -222,6 +222,16 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
+    it('Shouldnt crash when two device join events are received', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        const payload = {device};
+        zigbeeHerdsman.events.deviceJoined(payload);
+        zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
+    });
+
     it('On zigbee deviceInterview started', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
