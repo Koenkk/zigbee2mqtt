@@ -15,7 +15,7 @@ RUN [ "qemu-arm-static", "/bin/sh", "-c", \
       "cp /app/data/configuration.yaml /app && \
        cp /app/docker/run.sh /app && chmod +x /app/run.sh && \
        apk add --update --no-cache make gcc g++ python linux-headers udev nodejs npm git && \
-       npm install --unsafe-perm && \
+       npm install --unsafe-perm --production && \
        apk del make gcc g++ python linux-headers udev git"]
 
 # Entrypoint

@@ -13,7 +13,7 @@ RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 # Install dependencies
 RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs npm git && \
-    npm install --unsafe-perm && \
+    npm install --unsafe-perm --production && \
     apk del make gcc g++ python linux-headers udev git
 
 # Entrypoint
