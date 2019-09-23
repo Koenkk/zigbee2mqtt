@@ -27,7 +27,7 @@ describe('Bridge config', () => {
     it('Should publish bridge configuration on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/config',
-          JSON.stringify({"version":this.version.version,"commit":this.version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1}},"log_level":1,"permit_join":false}),
+          JSON.stringify({"version":this.version.version,"commit":this.version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1, "revision": 20190425}},"log_level":1,"permit_join":false}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
