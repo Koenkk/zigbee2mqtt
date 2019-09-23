@@ -300,7 +300,7 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-2", 'no', {"qos": 0, "retain": true}, expect.any(Function));
     });
 
-    it('onlythis Publish entity state with device information', async () => {
+    it('Publish entity state with device information', async () => {
         await controller.start();
         settings.set(['mqtt', 'include_device_information'], true);
         MQTT.publish.mockClear();
