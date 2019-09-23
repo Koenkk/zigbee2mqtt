@@ -129,7 +129,7 @@ const groups = {
 const mock = {
     start: jest.fn(),
     permitJoin: jest.fn(),
-    getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1}}),
+    getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     getNetworkParameters: jest.fn().mockReturnValue({panID: 0x162a, extendedPanID: [0, 11, 22], channel: 15}),
     on: (type, handler) => {
         events[type] = handler;

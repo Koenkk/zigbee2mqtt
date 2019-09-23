@@ -152,14 +152,17 @@ describe('Bridge config', () => {
     });
 
     it('Should allow to get devices', async () => {
+        const now = Date.now;
+        Date.now = () => 100;
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/devices/get', '');
         await flushPromises();
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/config/devices');
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
         expect(payload.length).toStrictEqual(Object.values(zigbeeHerdsman.devices).length);
-        expect(payload[0]).toStrictEqual({"ieeeAddr": "0x00124b00120144ae", "type": "Coordinator"});
+        expect(payload[0]).toStrictEqual({"ieeeAddr": "0x00124b00120144ae", "type": "Coordinator", "dateCode": "20190425", "friendly_name": "Coordinator", networkAddress: 0, softwareBuildID: "z-Stack", lastSeen: 100});
         expect(payload[1]).toStrictEqual({"friendly_name": "bulb", "ieeeAddr": "0x000b57fffec6a5b2", "lastSeen": 1000, "manufacturerID": 4476, "model": "LED1545G12", "modelID": "TRADFRI bulb E27 WS opal 980lm", "networkAddress": 40369, "powerSource": "Mains (single phase)", "type": "Router"});
+        Date.now = now;
     });
 
     it('Should allow to get groups', async () => {
