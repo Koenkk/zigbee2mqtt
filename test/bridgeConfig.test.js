@@ -168,7 +168,7 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
-        expect(payload).toStrictEqual({"message": [{"ID": 1, "friendly_name": "group_1", "retain": false, 'devices': [], optimistic: true}, {"ID": 2, "friendly_name": "group_2", "retain": false, "devices": [], optimistic: true}], "type": "groups"});
+        expect(payload).toStrictEqual({"message": [{"ID": 1, "friendly_name": "group_1", "retain": false, 'devices': [], optimistic: "group"}, {"ID": 2, "friendly_name": "group_2", "retain": false, "devices": [], optimistic: "group"}], "type": "groups"});
     });
 
     it('Should allow rename devices', async () => {
@@ -203,7 +203,7 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: "group"});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
     });
