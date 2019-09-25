@@ -20,6 +20,7 @@ describe('Controller', () => {
     let controller;
 
     beforeEach(() => {
+        zigbeeHerdsman.returnDevices.splice(0);
         controller = new Controller();
         mocksClear.forEach((m) => m.mockClear());
         data.writeDefaultConfiguration();
@@ -303,13 +304,27 @@ describe('Controller', () => {
         expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
     });
 
-    it('On zigbee event device leave', async () => {
+    it('On zigbee event device leave (removed from database and settings)', async () => {
         await controller.start();
+        zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
+        settings.set(['devices'], {})
+        MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.bulb;
         const payload = {ieeeAddr: device.ieeeAddr};
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendly_name":"bulb"}}', { retain: false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}', { retain: false, qos: 0}, expect.any(Function));
+    });
+
+    it('On zigbee event device leave (removed from database and NOT settings)', async () => {
+        await controller.start();
+        zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        const payload = {ieeeAddr: device.ieeeAddr};
+        await zigbeeHerdsman.events.deviceLeave(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}', { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('Publish entity state attribute output', async () => {
