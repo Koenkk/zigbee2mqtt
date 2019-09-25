@@ -274,7 +274,7 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"ON","linkquality":10}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
-    it('onlythis Should publish group and members state change when a group is in optimistic group_devices', async () => {
+    it('Should publish group and members state change when a group is in optimistic group_devices', async () => {
         const device1 = zigbeeHerdsman.devices.bulb_color;
         const device2 = zigbeeHerdsman.devices.bulb;
         const group = zigbeeHerdsman.groups.group_1;

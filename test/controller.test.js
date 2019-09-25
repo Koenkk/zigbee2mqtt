@@ -80,6 +80,23 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
+    it('Start controller should publish cached states', async () => {
+        data.writeDefaultState();
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", `{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}`, {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", `{"brightness":255}`, {"qos": 0, "retain": true}, expect.any(Function));
+    });
+
+    it('Start controller should not publish cached states when cache_state is false', async () => {
+        settings.set(['advanced', 'cache_state'], false);
+        data.writeDefaultState();
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).not.toHaveBeenCalledWith("zigbee2mqtt/bulb", `{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}`, {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).not.toHaveBeenCalledWith("zigbee2mqtt/remote", `{"brightness":255}`, {"qos": 0, "retain": true}, expect.any(Function));
+    });
+
     it('Log when MQTT client is unavailable', async () => {
         jest.useFakeTimers();
         await controller.start();
