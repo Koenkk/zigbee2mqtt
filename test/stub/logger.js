@@ -1,3 +1,5 @@
+let level = 'info';
+
 const mock = {
     info: jest.fn(),
     warn: jest.fn(),
@@ -5,7 +7,8 @@ const mock = {
     debug: jest.fn(),
     trace: jest.fn(),
     cleanup: jest.fn(),
-    transports: {console: {level: 1}, file: {level: 1}}
+    setLevel: (newLevel) => {level = newLevel},
+    getLevel: () => level,
 };
 
 jest.mock('../../lib/util/logger', () => (mock));

@@ -27,7 +27,7 @@ describe('Bridge config', () => {
     it('Should publish bridge configuration on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/config',
-          JSON.stringify({"version":this.version.version,"commit":this.version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1, "revision": 20190425}},"log_level":1,"permit_join":false}),
+          JSON.stringify({"version":this.version.version,"commit":this.version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1, "revision": 20190425}},"log_level":'info',"permit_join":false}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -139,16 +139,13 @@ describe('Bridge config', () => {
     it('Should allow to set log_level', async () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/log_level', 'debug');
         await flushPromises();
-        expect(logger.transports.console.level).toBe('debug');
-        expect(logger.transports.file.level).toBe('debug');
+        expect(logger.getLevel()).toBe('debug');
         MQTT.events.message('zigbee2mqtt/bridge/config/log_level', 'error');
         await flushPromises();
-        expect(logger.transports.console.level).toBe('error');
-        expect(logger.transports.file.level).toBe('error');
+        expect(logger.getLevel()).toBe('error');
         MQTT.events.message('zigbee2mqtt/bridge/config/log_level', 'notvalid');
         await flushPromises();
-        expect(logger.transports.console.level).toBe('error');
-        expect(logger.transports.file.level).toBe('error');
+        expect(logger.getLevel()).toBe('error');
     });
 
     it('Should allow to get devices', async () => {

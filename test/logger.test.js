@@ -1,6 +1,5 @@
 const tmp = require('tmp');
 const dir = tmp.dirSync();
-const data = require('./stub/data');
 const settings = require('../lib/util/settings');
 settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
 const logger = require('../lib/util/logger.js');
@@ -33,4 +32,9 @@ describe('Logger', () => {
         logger.cleanup();
         expect(fs.readdirSync(dir.name).length).toBe(20);
     })
+
+    it('Set and get log level', () => {
+        logger.setLevel('debug');
+        expect(logger.getLevel()).toBe('debug');
+    });
 });
