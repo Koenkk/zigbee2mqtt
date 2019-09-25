@@ -26,6 +26,9 @@
         <a>
             <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen.svg">
         </a>
+        <a href="https://www.codacy.com/manual/Koenkk/zigbee2mqtt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Koenkk/zigbee2mqtt&amp;utm_campaign=Badge_Grade">
+            <img src="https://api.codacy.com/project/badge/Grade/24f1e0fe39f04daa810e8a1416693d3f">
+        </a>
     </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
     <p>
