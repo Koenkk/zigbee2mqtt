@@ -590,6 +590,17 @@ describe('Entity publish', () => {
         expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
     });
 
+    it('Should use transition only once when setting brightness and color temperature for TRADFRI', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        const payload = {brightness: 20, state: 'ON', color_temp: 200, transition: 20};
+        await MQTT.events.message('zigbee2mqtt/bulb/set', JSON.stringify(payload));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
+    });
+
     it('Message transition should overrule options transition', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['devices', device.ieeeAddr, 'transition'], 20);
