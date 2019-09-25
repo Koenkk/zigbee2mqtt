@@ -22,7 +22,7 @@ describe('Groups', () => {
     })
 
     it('Apply group updates add', async () => {
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: ['bulb', 'bulb_color']}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['bulb', 'bulb_color']}});
         zigbeeHerdsman.groups.group_1.members.push(zigbeeHerdsman.devices.bulb.getEndpoint(1))
         await controller.start();
         await flushPromises();
@@ -36,7 +36,7 @@ describe('Groups', () => {
         const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1'}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false,}});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
@@ -47,7 +47,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'3': {friendly_name: 'group_3', devices: [device.ieeeAddr]}});
+        settings.set(['groups'], {'3': {friendly_name: 'group_3', retain: false, devices: [device.ieeeAddr]}});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
@@ -55,7 +55,7 @@ describe('Groups', () => {
 
     it('Add non standard endpoint to group with name', async () => {
         const QBKG03LM = zigbeeHerdsman.devices.QBKG03LM;
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: ['0x0017880104e45542/right']}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['0x0017880104e45542/right']}});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([QBKG03LM.getEndpoint(3)]);
@@ -63,7 +63,7 @@ describe('Groups', () => {
 
     it('Add non standard endpoint to group with number', async () => {
         const QBKG03LM = zigbeeHerdsman.devices.QBKG03LM;
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: ['wall_switch_double/2']}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['wall_switch_double/2']}});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([QBKG03LM.getEndpoint(2)]);
@@ -71,7 +71,7 @@ describe('Groups', () => {
 
     it('Shouldnt crash on non-existing devices', async () => {
         logger.error.mockClear();
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: ['not_existing_bla']}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['not_existing_bla']}});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
@@ -82,7 +82,7 @@ describe('Groups', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: []}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: []}});
         expect(group.members.length).toBe(0);
         await controller.start();
         await flushPromises();
@@ -126,7 +126,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [device.ieeeAddr]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove', 'bulb_color');
@@ -141,7 +141,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: ['dummy']}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['dummy']}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove', 'bulb_color');
@@ -155,7 +155,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [`wall_switch_double/right`]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/right`]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove', '0x0017880104e45542/3');
@@ -169,7 +169,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [`0x0017880104e45542/right`]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [`0x0017880104e45542/right`]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove', 'wall_switch_double/3');
@@ -183,7 +183,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [`wall_switch_double/3`]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/3`]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove', '0x0017880104e45542/right');
@@ -197,7 +197,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [`wall_switch_double/3`]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/3`]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/remove_all', '0x0017880104e45542/right');
@@ -212,7 +212,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [`wall_switch_double/3`]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/3`]}});
         await controller.start();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/group/group_1/remove_all', '0x0017880104e45542/right');
@@ -244,7 +244,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [device.ieeeAddr]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
         await controller.start();
         await flushPromises();
 
@@ -260,7 +260,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [device.ieeeAddr], optimistic: false}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', devices: [device.ieeeAddr], optimistic: false, retain: false}});
         await controller.start();
         await flushPromises();
 

@@ -33,6 +33,7 @@
   },
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
+    "ajv": "*",
     "debounce": "*",
     "git-last-commit": "*",
     "js-yaml": "*",

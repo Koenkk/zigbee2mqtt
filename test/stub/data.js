@@ -36,6 +36,7 @@ function writeDefaultConfiguration() {
             },
             "0x0017880104e45522": {
                 qos: 1,
+                retain: false,
                 friendly_name: "weather_sensor"
             },
             "0x0017880104e45523": {

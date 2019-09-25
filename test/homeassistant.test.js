@@ -171,6 +171,7 @@ describe('HomeAssistant extension', () => {
             temperature_precision: 1,
             pressure_precision: 2,
             friendly_name: 'weather_sensor',
+            retain: false,
         })
 
         controller = new Controller(false);
@@ -276,6 +277,7 @@ describe('HomeAssistant extension', () => {
                 }
             },
             friendly_name: 'weather_sensor',
+            retain: false,
         })
 
         controller = new Controller(false);
