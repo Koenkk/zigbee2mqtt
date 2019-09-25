@@ -23,6 +23,9 @@
         <a href="http://zigbee2mqtt.discourse.group/">
             <img src="https://img.shields.io/discourse/https/zigbee2mqtt.discourse.group/status.svg">
         </a>
+        <a>
+            <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen.svg">
+        </a>
     </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
     <p>
