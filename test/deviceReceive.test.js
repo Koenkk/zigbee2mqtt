@@ -375,4 +375,17 @@ describe('Device receive', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
         expect(logger.warn).toBeCalledTimes(0);
     });
+
+    it('Should allow to calibrate temperature values', async () => {
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        settings.set(['devices', device.ieeeAddr, 'temperature_calibration'], 2);
+        const data = {measuredValue: -85}
+        const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 1.15, linkquality: 10});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
+    });
 });
