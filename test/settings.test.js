@@ -312,7 +312,7 @@ describe('Settings', () => {
         settings.addGroup('test123');
         expect(() => {
             settings.addGroup('test123');
-        }).toThrow(new Error("Group 'test123' already exists"));
+        }).toThrow(new Error("friendly_name 'test123' is already in use"));
         const expected = {
             '1': {
                 friendly_name: 'test123',
@@ -434,5 +434,33 @@ describe('Settings', () => {
         }
 
         expect(error.message).toContain(`no such file or directory, open`);
+    });
+
+    it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'myname', retain: false}},
+            groups: {'1': {friendly_name: 'myname', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Duplicate friendly_name 'myname' found`);
+    });
+
+    it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
+        write(configurationFile, {
+            devices: {
+                '0x0017880104e45519': {friendly_name: 'myname', retain: false},
+                '0x0017880104e45511': {friendly_name: 'myname1', retain: false}
+            },
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.changeFriendlyName('myname1', 'myname');
+        }).toThrowError(`friendly_name 'myname' is already in use`);
     });
 });
