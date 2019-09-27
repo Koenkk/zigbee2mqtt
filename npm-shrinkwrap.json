@@ -4644,9 +4644,9 @@
       "dev": true
     },
     "react-is": {
-      "version": "16.9.0",
-      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.9.0.tgz",
-      "integrity": "sha512-tJBzzzIgnnRfEm046qRcURvwQnZVXmuCbscxUO5RWrGTXpon2d4c8mI0D8WE6ydVIm29JiLB6+RslkIvym9Rjw==",
+      "version": "16.10.0",
+      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.10.0.tgz",
+      "integrity": "sha512-WRki2sBb7MTpYp7FtDEmSeGKX2vamYyq3rc9o7fKUG+/DHVyJu69NnvJsiSwwhh2Tt8XN40MQHkDBEXwyfxncQ==",
       "dev": true
     },
     "read-pkg": {
@@ -13014,9 +13014,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.10",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.10.tgz",
-      "integrity": "sha512-Lt6DP6mwgeiL5YEUA60xNp3dzQWltBkf8LjlBK5DLthVVl4h2JbXX+io92ePU8TG+4aXy0bLRCcpsesxzGGVow==",
+      "version": "11.1.11",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.11.tgz",
+      "integrity": "sha512-wFk1aWZHWFE45ma0v3BYEBmXyHDpwLOy2POhGFqCTBM/Td+8b6KS17clCKMRc9YAhgbf1/IIq0yDUmTfZKVacQ==",
       "requires": {
         "debounce": "^1.2.0"
       }

@@ -593,7 +593,7 @@ describe('Entity publish', () => {
     it('Should use transition only once when setting brightness and color temperature for TRADFRI', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
-        const payload = {brightness: 20, state: 'ON', color_temp: 200, transition: 20};
+        const payload = {state: 'ON', brightness: 20, color_temp: 200, transition: 20};
         await MQTT.events.message('zigbee2mqtt/bulb/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
