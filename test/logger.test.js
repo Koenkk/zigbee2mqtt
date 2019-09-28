@@ -1,4 +1,5 @@
 const tmp = require('tmp');
+const data = require('./stub/data');
 const dir = tmp.dirSync();
 const settings = require('../lib/util/settings');
 settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
