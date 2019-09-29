@@ -1107,9 +1107,9 @@
       }
     },
     "commander": {
-      "version": "2.20.0",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-2.20.0.tgz",
-      "integrity": "sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==",
+      "version": "2.20.1",
+      "resolved": "https://registry.npmjs.org/commander/-/commander-2.20.1.tgz",
+      "integrity": "sha512-cCuLsMhJeWQ/ZpsFTbE765kvVfoeSddc4nU3up4fV+fDBcfUXnbITJ+JzhkdjzOqhURjZgujxaioam4RM9yGUg==",
       "dev": true,
       "optional": true
     },
@@ -1557,9 +1557,9 @@
       }
     },
     "eslint": {
-      "version": "6.4.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-6.4.0.tgz",
-      "integrity": "sha512-WTVEzK3lSFoXUovDHEbkJqCVPEPwbhCq4trDktNI6ygs7aO41d4cDT0JFAT5MivzZeVLWlg7vHL+bgrQv/t3vA==",
+      "version": "6.5.0",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-6.5.0.tgz",
+      "integrity": "sha512-IIbSW+vKOqMatPmS9ayyku4tvWxHY2iricSRtOz6+ZA5IPRlgXzEL0u/j6dr4eha0ugmhMwDTqxtmNu3kj9O4w==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.0.0",
@@ -4644,9 +4644,9 @@
       "dev": true
     },
     "react-is": {
-      "version": "16.10.0",
-      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.10.0.tgz",
-      "integrity": "sha512-WRki2sBb7MTpYp7FtDEmSeGKX2vamYyq3rc9o7fKUG+/DHVyJu69NnvJsiSwwhh2Tt8XN40MQHkDBEXwyfxncQ==",
+      "version": "16.10.1",
+      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.10.1.tgz",
+      "integrity": "sha512-BXUMf9sIOPXXZWqr7+c5SeOKJykyVr2u0UDzEf4LNGc6taGkQe1A9DFD07umCIXz45RLr9oAAwZbAJ0Pkknfaw==",
       "dev": true
     },
     "read-pkg": {
