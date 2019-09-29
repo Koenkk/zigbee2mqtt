@@ -12,9 +12,10 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 # Install dependencies
-RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs npm git && \
+RUN apk add --update --no-cache nodejs npm tzdata && \
+    apk add --update --no-cache --virtual .buildtools make gcc g++ python linux-headers udev git && \
     npm install --unsafe-perm --production && \
-    apk del make gcc g++ python linux-headers udev git
+    apk del .buildtools
 
 # Entrypoint
 ENTRYPOINT ["./run.sh"]
