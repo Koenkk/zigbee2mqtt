@@ -14,9 +14,10 @@ ADD . /app
 RUN [ "qemu-arm-static", "/bin/sh", "-c", \
       "cp /app/data/configuration.yaml /app && \
        cp /app/docker/run.sh /app && chmod +x /app/run.sh && \
-       apk add --update --no-cache make gcc g++ python linux-headers udev nodejs npm git && \
+       apk add --update --no-cache nodejs npm tzdata && \
+       apk add --update --no-cache --virtual .buildtools make gcc g++ python linux-headers udev git && \
        npm install --unsafe-perm --production && \
-       apk del make gcc g++ python linux-headers udev git"]
+       apk del .buildtools"]
 
 # Entrypoint
 ENTRYPOINT ["./run.sh"]
