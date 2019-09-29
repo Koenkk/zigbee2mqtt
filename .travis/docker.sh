@@ -15,7 +15,7 @@ build_and_push() {
 }
 
 push_manifest() {
-  export DOCKER_CLI_EXPERIMENTAL=enabled  
+  export DOCKER_CLI_EXPERIMENTAL=enabled
 
   docker manifest create $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm32v6$1 $DOCKER_USERNAME/zigbee2mqtt:arm64v8$1
 
