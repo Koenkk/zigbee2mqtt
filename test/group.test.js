@@ -301,7 +301,8 @@ describe('Groups', () => {
         group.members.push(endpoint);
         settings.set(['groups'], {
             '1': {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]},
-            '2': {friendly_name: 'group_2', retain: false, devices: [device.ieeeAddr]}
+            '2': {friendly_name: 'group_2', retain: false, devices: [device.ieeeAddr]},
+            '3': {friendly_name: 'group_3', retain: false, devices: []}
         });
         await controller.start();
         await flushPromises();
