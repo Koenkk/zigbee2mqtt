@@ -1,3 +1,11 @@
+trigger:
+  tags:
+    include:
+    - '*'
+  branches:
+    include:
+    - '*'
+
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -58,7 +66,7 @@ steps:
       -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" \
       .
   displayName: 'Docker build release'
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
 
 # Trigger downstream
 - bash: |
