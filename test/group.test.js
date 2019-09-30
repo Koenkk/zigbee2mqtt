@@ -293,4 +293,26 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"ON","linkquality":10}', {"retain": false, qos: 0}, expect.any(Function));
     });
+
+    it('Should publish state change of another group with shared device when a group changes its state', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(endpoint);
+        settings.set(['groups'], {
+            '1': {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]},
+            '2': {friendly_name: 'group_2', retain: false, devices: [device.ieeeAddr]},
+            '3': {friendly_name: 'group_3', retain: false, devices: []}
+        });
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(3);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_2", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
+    });
 });
