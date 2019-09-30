@@ -75,3 +75,4 @@ steps:
         -d "$BODY" \
         "https://api.travis-ci.org/repo/danielwelch%2Fhassio-zigbee2mqtt/requests"
   displayName: 'Trigger Hass.io build'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'), ne(variables['Build.Reason'], 'PullRequest'))
