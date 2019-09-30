@@ -4,31 +4,26 @@ login() {
   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
 }
 
-tag_push() {
-  docker tag $DOCKER_USERNAME/zigbee2mqtt:$1 $DOCKER_USERNAME/zigbee2mqtt:$2
-  docker push $DOCKER_USERNAME/zigbee2mqtt:$2
+setup() {
+  echo '{\"experimental\": true}' | sudo tee /etc/docker/daemon.json
+  sudo apt update -y
+  sudo apt install --only-upgrade docker-ce -y
+  sudo service docker restart
+  docker --version
+  mkdir -p ~/.docker/cli-plugins
+  wget -O ~/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
+  chmod a+x ~/.docker/cli-plugins/docker-buildx
+  #sudo docker run --rm --privileged hypriot/qemu-register
 }
 
 build_and_push() {
-  docker build --platform=$3 --build-arg COMMIT=$(git rev-parse --short HEAD) -t $DOCKER_USERNAME/zigbee2mqtt:$1 -f $2 .
-  docker push $DOCKER_USERNAME/zigbee2mqtt:$1
-}
-
-push_manifest() {
-  export DOCKER_CLI_EXPERIMENTAL=enabled
-
-  docker manifest create $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm32v6$1 $DOCKER_USERNAME/zigbee2mqtt:arm64v8$1
-
-  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm32v6$1 --os linux --arch arm --variant v6
-  docker manifest annotate $DOCKER_USERNAME/zigbee2mqtt:latest$1 $DOCKER_USERNAME/zigbee2mqtt:arm64v8$1 --os linux --arch arm64 --variant v8
-
-  docker manifest inspect $DOCKER_USERNAME/zigbee2mqtt:latest$1
-
-  docker manifest push -p $DOCKER_USERNAME/zigbee2mqtt:latest$1
-
-  docker run --rm mplatform/mquery $DOCKER_USERNAME/zigbee2mqtt:latest$1
-
-  export DOCKER_CLI_EXPERIMENTAL=disabled
+  docker buildx build \
+    --build-arg COMMIT=$(git rev-parse --short HEAD) \
+    --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/386 \
+    -f docker/Dockerfile \
+    --push \
+    $1
+    .
 }
 
 # Only update Docker images for:
@@ -37,32 +32,15 @@ push_manifest() {
 if [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ ! -z ${TRAVIS_TAG+x} ] && [ ! "$TRAVIS_TAG" = "" ]
 then
   echo "Updating docker images for master branch!"
+  setup
   login
-
-  # Push versioned images
-  build_and_push "$TRAVIS_TAG" docker/Dockerfile.amd64 amd64
-  build_and_push "$TRAVIS_TAG-arm32v6" docker/Dockerfile.arm32v6 arm
-  build_and_push "$TRAVIS_TAG-arm64v8" docker/Dockerfile.arm64v8 arm64
-
-  # Push latest images.
-  tag_push "$TRAVIS_TAG-arm32v6" "arm32v6"
-  tag_push "$TRAVIS_TAG-arm64v8" "arm64v8"
-  tag_push "$TRAVIS_TAG" latest
-
-  # Push manifest
-  push_manifest ""
-
+  build_and_push "-t koenkk/zigbee2mqtt:latest -t koenkk/zigbee2mqtt:$TRAVIS_TAG"
 elif [ "$TRAVIS_BRANCH" = "dev" -a "$TRAVIS_PULL_REQUEST" = "false" ]
 then
   echo "Updating docker images for dev branch!"
+  setup
   login
-  build_and_push latest-dev docker/Dockerfile.amd64 amd64
-  build_and_push arm32v6-dev docker/Dockerfile.arm32v6 arm
-  build_and_push arm64v8-dev docker/Dockerfile.arm64v8 arm64
-
-  # Push manifest
-  push_manifest "-dev"
-
+  build_and_push "-t koenkk/zigbee2mqtt:latest-dev"
 else
   echo "Not updating docker images, triggered by pull request or not on master/dev branch"
 fi
