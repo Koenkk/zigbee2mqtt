@@ -33,7 +33,7 @@ describe('Controller', () => {
         expect(logger.cleanup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extenedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.disableLED).toHaveBeenCalledTimes(0);
+        expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true);
         expect(logger.info).toHaveBeenCalledWith(`Currently ${Object.values(zigbeeHerdsman.devices).length - 1} devices are joined:`)
@@ -169,10 +169,11 @@ describe('Controller', () => {
         expect(mockExit).toHaveBeenCalledWith(1);
     });
 
-    it('Start controller with permit join true', async () => {
+    it('Start controller with disable_led', async () => {
         settings.set(['serial', 'disable_led'], true);
         await controller.start();
-        expect(zigbeeHerdsman.disableLED).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.setLED).toHaveBeenCalledWith(false);
     });
 
     it('Start controller and stop', async () => {
