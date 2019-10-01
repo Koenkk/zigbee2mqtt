@@ -1557,9 +1557,9 @@
       }
     },
     "eslint": {
-      "version": "6.5.0",
-      "resolved": "https://registry.npmjs.org/eslint/-/eslint-6.5.0.tgz",
-      "integrity": "sha512-IIbSW+vKOqMatPmS9ayyku4tvWxHY2iricSRtOz6+ZA5IPRlgXzEL0u/j6dr4eha0ugmhMwDTqxtmNu3kj9O4w==",
+      "version": "6.5.1",
+      "resolved": "https://registry.npmjs.org/eslint/-/eslint-6.5.1.tgz",
+      "integrity": "sha512-32h99BoLYStT1iq1v2P9uwpyznQ4M2jRiFB6acitKz52Gqn+vPaMDUTB1bYi1WN4Nquj2w+t+bimYUG83DC55A==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.0.0",
@@ -6053,9 +6053,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.7.6",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.7.6.tgz",
-      "integrity": "sha512-Od4XNGLT6hxkFeibotU1WoopjAGvDc2LUpcly1rER0PA+clKU8WgkYvYkqBTqjfja1Q1s89k3QTgv+365nsxmg==",
+      "version": "0.8.0",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.8.0.tgz",
+      "integrity": "sha512-Nb8rElnm566CoFqhIYdvNrGaVEFqwEtXWgx9li492Ja1kyvNmbCsaqtIlWVOKpzTqlNbtOjxycDXyGwP60Gcpw==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",

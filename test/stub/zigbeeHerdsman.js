@@ -8,7 +8,6 @@ class Group {
         this.meta = {};
         this.members = [];
         this.hasMember = (endpoint) => this.members.includes(endpoint);
-        this.getMembers = () => this.members;
     }
 }
 
@@ -46,6 +45,10 @@ class Endpoint {
             if (!group.members.includes(this)) group.members.push(this);
         }
 
+        this.getDevice = () => {
+            return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);
+        }
+
         this.removeFromGroup = (group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
@@ -80,10 +83,6 @@ class Device {
 
     getEndpoint(ID) {
         return this.endpoints.find((e) => e.ID === ID);
-    }
-
-    getEndpoints() {
-        return this.endpoints;
     }
 }
 
