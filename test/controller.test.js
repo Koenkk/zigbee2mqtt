@@ -219,7 +219,7 @@ describe('Controller', () => {
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb' of type 'attributeReport' with data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1`);
+        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1`);
     });
 
     it('On zigbee event message with group ID', async () => {
@@ -228,7 +228,7 @@ describe('Controller', () => {
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, groupID: 0, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb' of type 'attributeReport' with data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`);
+        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`);
     });
 
     it('On zigbee event message from unkown device should create it', async () => {
