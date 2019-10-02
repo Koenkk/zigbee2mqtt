@@ -1436,9 +1436,9 @@
       }
     },
     "es-abstract": {
-      "version": "1.14.2",
-      "resolved": "https://registry.npmjs.org/es-abstract/-/es-abstract-1.14.2.tgz",
-      "integrity": "sha512-DgoQmbpFNOofkjJtKwr87Ma5EW4Dc8fWhD0R+ndq7Oc456ivUfGOOP6oAZTTKl5/CcNMP+EN+e3/iUzgE0veZg==",
+      "version": "1.15.0",
+      "resolved": "https://registry.npmjs.org/es-abstract/-/es-abstract-1.15.0.tgz",
+      "integrity": "sha512-bhkEqWJ2t2lMeaJDuk7okMkJWI/yqgH/EoGwpcvv0XW9RWQsRspI4wt6xuyuvMvvQE3gg/D9HXppgk21w78GyQ==",
       "dev": true,
       "requires": {
         "es-to-primitive": "^1.2.0",
@@ -1449,8 +1449,8 @@
         "is-regex": "^1.0.4",
         "object-inspect": "^1.6.0",
         "object-keys": "^1.1.1",
-        "string.prototype.trimleft": "^2.0.0",
-        "string.prototype.trimright": "^2.0.0"
+        "string.prototype.trimleft": "^2.1.0",
+        "string.prototype.trimright": "^2.1.0"
       }
     },
     "es-to-primitive": {
@@ -2729,9 +2729,9 @@
       "dev": true
     },
     "handlebars": {
-      "version": "4.4.0",
-      "resolved": "https://registry.npmjs.org/handlebars/-/handlebars-4.4.0.tgz",
-      "integrity": "sha512-xkRtOt3/3DzTKMOt3xahj2M/EqNhY988T+imYSlMgs5fVhLN2fmKVVj0LtEGmb+3UUYV5Qmm1052Mm3dIQxOvw==",
+      "version": "4.4.1",
+      "resolved": "https://registry.npmjs.org/handlebars/-/handlebars-4.4.1.tgz",
+      "integrity": "sha512-lj/malGM5VJjSeqhYVpoOBP3hsugN6uU9NlOvLqq6kSFASpveWVLj3kb1b3w7Q3umSPdRMR1kAbFH/5EEEPiIA==",
       "dev": true,
       "requires": {
         "neo-async": "^2.6.0",
@@ -13014,9 +13014,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.17",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.17.tgz",
-      "integrity": "sha512-MqPCnYr2lqGOjt6zkJ8rCxDTOG3IO6iK/Meqs4PskD6AOUExolKmKOS4KIyk69bdj0r9MP7bbXd2g0dfgBk1pA==",
+      "version": "11.1.18",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.18.tgz",
+      "integrity": "sha512-4slE4mqfRppiibAwgJvXSkcrjFpA3CZqbHpKE58HpR8pjubC0pdPZ1AoLZhcD0GL2IaBvkDd0JmAxakdQ/QSAA==",
       "requires": {
         "debounce": "^1.2.0"
       }
