@@ -168,32 +168,6 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
-    it('Should publish messages to zigbee gledopto with [11,13]', async () => {
-        const device = zigbeeHerdsman.devices.GLEDOPTO1112;
-        const endpoint = device.getEndpoint(11);
-        await MQTT.events.message('zigbee2mqtt/led_controller_1/set', JSON.stringify({state: 'OFF'}));
-        await flushPromises();
-        expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {disableDefaultResponse: true});
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/led_controller_1');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
-    });
-
-    it('Should publish messages to zigbee gledopto with [11,12,13]', async () => {
-        const device = zigbeeHerdsman.devices.GLEDOPTO111213;
-        const endpoint = device.getEndpoint(12);
-        await MQTT.events.message('zigbee2mqtt/led_controller_2/set', JSON.stringify({state: 'OFF'}));
-        await flushPromises();
-        expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {disableDefaultResponse: true});
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/led_controller_2');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
-    });
-
     it('Should publish messages to zigbee devices with color xy', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
