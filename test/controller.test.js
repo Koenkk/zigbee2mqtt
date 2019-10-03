@@ -380,4 +380,11 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
+
+    it('Should start when state is corrupted', async () => {
+        fs.writeFileSync(path.join(data.mockDir, 'state.json'), 'corrupted');
+        await controller.start();
+        await flushPromises();
+        expect(controller.state.state).toStrictEqual({});
+    });
 });

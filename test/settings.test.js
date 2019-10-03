@@ -463,4 +463,15 @@ describe('Settings', () => {
             settings.changeFriendlyName('myname1', 'myname');
         }).toThrowError(`friendly_name 'myname' is already in use`);
     });
+
+    it('Shouldnt write to configuration.yaml when there are no changes in it', () => {
+        const contentConfiguration = {devices: 'devices.yaml'};
+        const contentDevices = {};
+        write(configurationFile, contentConfiguration);
+        const before = fs.statSync(configurationFile).mtimeMs;
+        write(devicesFile, contentDevices);
+        settings.addDevice('0x1234');
+        const after = fs.statSync(configurationFile).mtimeMs;
+        expect(before).toBe(after);
+    });
 });

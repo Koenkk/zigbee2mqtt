@@ -35,6 +35,7 @@
   "dependencies": {
     "ajv": "*",
     "debounce": "*",
+    "fast-deep-equal": "*",
     "git-last-commit": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",

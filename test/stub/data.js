@@ -132,11 +132,11 @@ function writeDefaultConfiguration() {
         }
     };
 
-    yaml.write(path.join(mockDir, 'configuration.yaml'), config);
+    yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
 }
 
 function writeEmptyState() {
-    yaml.write(path.join(mockDir, 'state.json'), JSON.stringify({}));
+    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify({}));
 }
 
 function writeDefaultState() {
