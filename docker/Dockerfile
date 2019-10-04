@@ -1,4 +1,4 @@
-FROM alpine:3.9
+FROM node:10-alpine
 
 # Copy files
 ADD . /app
@@ -12,9 +12,10 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 # Install dependencies
-RUN apk add --update --no-cache make gcc g++ python linux-headers udev nodejs npm git && \
-    npm install --unsafe-perm && \
-    apk del make gcc g++ python linux-headers udev git
+RUN apk add --update --no-cache tzdata && \
+    apk add --update --no-cache --virtual .buildtools make gcc g++ python linux-headers udev git && \
+    npm install --unsafe-perm --production && \
+    apk del .buildtools
 
 # Entrypoint
 ENTRYPOINT ["./run.sh"]

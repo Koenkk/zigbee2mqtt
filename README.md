@@ -5,8 +5,8 @@
     <br>
     <br>
     <div style="display: flex;">
-        <a href="https://travis-ci.org/Koenkk/zigbee2mqtt/">
-            <img src="https://img.shields.io/travis/Koenkk/zigbee2mqtt.svg">
+        <a href="https://dev.azure.com/koenkk-zigbee/zigbee2mqtt/_build?definitionId=1">
+            <img src="https://dev.azure.com/koenkk-zigbee/zigbee2mqtt/_apis/build/status/Koenkk.zigbee2mqtt?branchName=dev">
         </a>
         <a href="https://github.com/Koenkk/zigbee2mqtt/releases">
             <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
@@ -22,6 +22,12 @@
         </a>
         <a href="http://zigbee2mqtt.discourse.group/">
             <img src="https://img.shields.io/discourse/https/zigbee2mqtt.discourse.group/status.svg">
+        </a>
+        <a>
+            <img src="https://img.shields.io/badge/Coverage-100%25-brightgreen.svg">
+        </a>
+        <a href="https://www.codacy.com/manual/Koenkk/zigbee2mqtt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Koenkk/zigbee2mqtt&amp;utm_campaign=Badge_Grade">
+            <img src="https://api.codacy.com/project/badge/Grade/24f1e0fe39f04daa810e8a1416693d3f">
         </a>
     </div>
     <h1>Zigbee2mqtt  🌉 🐝</h1>
