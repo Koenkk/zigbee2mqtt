@@ -257,7 +257,6 @@ describe('Bridge config', () => {
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(controller.state[device.ieeeAddr]).toBeUndefined();
         expect(settings.getDevice('bulb_color')).toBeNull();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
             JSON.stringify({type: 'device_banned', message: 'bulb_color'}),
