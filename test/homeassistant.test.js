@@ -340,6 +340,23 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Shouldnt discover devices when homeassistant null is set in device options', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
+            homeassistant: null,
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
+
+        controller = new Controller(false);
+        await controller.start();
+
+        await flushPromises();
+
+        const topics = MQTT.publish.mock.calls.map((c) => c[0]);
+        expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config')
+        expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/temperature/config')
+    });
+
     it('Should discover devices with fan', async () => {
         controller = new Controller(false);
         await controller.start();
