@@ -75,7 +75,7 @@ describe('Device bind', () => {
         const endpoint = device.getEndpoint(1);
         mockClear(device);
         endpoint.unbind.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/unbind/remote', 'coordinator');
+        MQTT.events.message('zigbee2mqtt/bridge/unbind/remote', 'Coordinator');
         await flushPromises();
         expect(endpoint.unbind).toHaveBeenCalledTimes(3);
         expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", target);
