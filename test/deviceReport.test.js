@@ -149,4 +149,18 @@ describe('Device report', () => {
         expect(endpoint.bind).toHaveBeenCalledTimes(0);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
     });
+
+    it('Should not configure reporting again when it already failed once', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.bind.mockImplementationOnce(async () => {throw new Error('failed')});
+        delete device.meta.reporting;
+        mockClear(device);
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+    });
 });
