@@ -5,7 +5,7 @@
     <br>
     <br>
     <div style="display: flex;">
-        <a href="https://dev.azure.com/koenkk-zigbee/zigbee2mqtt/_build?definitionId=1">
+        <a href="https://dev.azure.com/koenkk/zigbee/_build?definitionId=5&branchName=dev">
             <img src="https://dev.azure.com/koenkk/zigbee/_apis/build/status/Koenkk.zigbee2mqtt?branchName=dev">
         </a>
         <a href="https://github.com/Koenkk/zigbee2mqtt/releases">
