@@ -389,8 +389,8 @@ describe('Groups', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"OFF"}', {"retain": false, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"OFF\","brightness":50,"color_temp":370,"linkquality":99}', {"retain": true, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"OFF"}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"OFF","brightness":50,"color_temp":370,"linkquality":99}', {"retain": true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"OFF","brightness":50,"color_temp":370}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change off even when missing current state', async () => {
