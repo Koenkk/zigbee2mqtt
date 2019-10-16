@@ -12,7 +12,7 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 # Install dependencies
-RUN apk add --update --no-cache tzdata && \
+RUN apk add --update --no-cache tzdata udev && \
     apk add --update --no-cache --virtual .buildtools make gcc g++ python linux-headers udev git && \
     npm install --unsafe-perm --production && \
     apk del .buildtools
