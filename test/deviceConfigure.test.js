@@ -89,7 +89,7 @@ describe('Device receive', () => {
         device.interviewing = false;
     });
 
-    it('Should not configure when not interviewCompleted', async () => {
+    it('Should configure when not interviewCompleted', async () => {
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;
         device.interviewCompleted = false;
@@ -98,7 +98,7 @@ describe('Device receive', () => {
         const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expectRemoteNotConfigured();
+        expectRemoteConfigured();
         device.interviewCompleted = true;
     });
 
