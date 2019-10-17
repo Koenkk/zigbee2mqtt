@@ -31,7 +31,7 @@ describe('Controller', () => {
     it('Start controller', async () => {
         await controller.start();
         expect(logger.cleanup).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extenedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
+        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extenedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),"serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
@@ -248,6 +248,47 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
+    });
+
+    it('acceptJoiningDeviceHandler reject banned device', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['ban'], [device.ieeeAddr]);
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(false);
+    });
+
+    it('acceptJoiningDeviceHandler accept not banned device', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['ban'], ['123']);
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(true);
+    });
+
+    it('acceptJoiningDeviceHandler accept whitelisted device', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['whitelist'], [device.ieeeAddr]);
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(true);
+    });
+
+    it('acceptJoiningDeviceHandler reject non-whitelisted device', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['whitelist'], ['123']);
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(false);
+    });
+
+    it('acceptJoiningDeviceHandler should prefer whitelist above ban', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['whitelist'], [device.ieeeAddr]);
+        settings.set(['ban'], [device.ieeeAddr]);
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
     it('Shouldnt crash when two device join events are received', async () => {
