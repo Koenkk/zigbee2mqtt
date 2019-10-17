@@ -229,6 +229,7 @@ describe('Bridge config', () => {
         controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
+        expect(settings.get().ban.length).toBe(0);
         await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'bulb_color');
@@ -243,13 +244,14 @@ describe('Bridge config', () => {
             {qos: 0, retain: false},
             expect.any(Function)
         );
-        expect(controller.state.state).toStrictEqual({})
+        expect(controller.state.state).toStrictEqual({});
+        expect(settings.get().ban.length).toBe(0);
     });
 
     it('Should allow to ban device', async () => {
-        // TODO: Ban doesn't ban at the moment
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
+        expect(settings.get().ban.length).toBe(0);
         await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/ban', 'bulb_color');
@@ -263,6 +265,7 @@ describe('Bridge config', () => {
             {qos: 0, retain: false},
             expect.any(Function)
         );
+        expect(settings.get().ban).toStrictEqual(['0x000b57fffec6a5b3']);
     });
 
     it('Should handle when remove fails', async () => {
