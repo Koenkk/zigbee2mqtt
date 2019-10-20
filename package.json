@@ -46,7 +46,7 @@
     "semver": "*",
     "winston": "*",
     "zigbee-herdsman": "0.10.7",
-    "zigbee-herdsman-converters": "11.1.26"
+    "zigbee-herdsman-converters": "11.1.27"
   },
   "devDependencies": {
     "eslint": "*",
