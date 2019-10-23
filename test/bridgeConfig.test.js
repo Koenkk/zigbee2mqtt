@@ -170,7 +170,7 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
-        expect(payload).toStrictEqual({"message": [{"ID": 1, "friendly_name": "group_1", "retain": false, 'devices': [], optimistic: true}, {"ID": 2, "friendly_name": "group_2", "retain": false, "devices": [], optimistic: true}], "type": "groups"});
+        expect(payload).toStrictEqual({"message": [{"ID": 1, "friendly_name": "group_1", "retain": false, 'devices': [], optimistic: true}, {"ID": 2, "friendly_name": "group_2", "retain": false, "devices": [], optimistic: true}, {"ID": 15071, "friendly_name": "group_tradfri_remote", "retain": false, "devices": ['bulb_color_2', 'bulb_2'], optimistic: true}], "type": "groups"});
     });
 
     it('Should allow rename devices', async () => {
