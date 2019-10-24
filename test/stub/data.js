@@ -55,9 +55,17 @@ function writeDefaultConfiguration() {
                 retain: false,
                 friendly_name: "ikea_onoff"
             },
+            '0x000b57fffec6a5b7': {
+                retain: false,
+                friendly_name: "bulb_2"
+            },
             "0x000b57fffec6a5b3": {
                 retain: false,
                 friendly_name: "bulb_color"
+            },
+            '0x000b57fffec6a5b4': {
+                retain: false,
+                friendly_name: "bulb_color_2"
             },
             "0x0017880104e45541": {
                 retain: false,
@@ -118,6 +126,10 @@ function writeDefaultConfiguration() {
             '0x0017880104e45560': {
                 retain: false,
                 friendly_name: 'livolo'
+            },
+            '0x90fd9ffffe4b64ae': {
+                retain: false,
+                friendly_name: 'tradfri_remote',
             }
         },
         groups: {
@@ -128,6 +140,11 @@ function writeDefaultConfiguration() {
             '2': {
                 friendly_name: 'group_2',
                 retain: false,
+            },
+            '15071': {
+                friendly_name: 'group_tradfri_remote',
+                retain: false,
+                devices: ['bulb_color_2', 'bulb_2']
             }
         }
     };

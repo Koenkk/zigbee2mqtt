@@ -880,9 +880,9 @@
       }
     },
     "bser": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/bser/-/bser-2.1.0.tgz",
-      "integrity": "sha512-8zsjWrQkkBoLK6uxASk1nJ2SKv97ltiGDo6A3wA0/yRPz+CwmEyDo0hUrhIuukG2JHpAl3bvFIixw2/3Hi0DOg==",
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/bser/-/bser-2.1.1.tgz",
+      "integrity": "sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==",
       "dev": true,
       "requires": {
         "node-int64": "^0.4.0"
@@ -1628,9 +1628,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.19.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.19.0.tgz",
-      "integrity": "sha512-4zUc3rh36ds0SXdl2LywT4YWA3zRe8sfLhz8bPp8qQPIKvynTTkNGwmSCMpl5d9QiZE2JxSinGF+WD8yU+O0Lg==",
+      "version": "22.20.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.20.0.tgz",
+      "integrity": "sha512-UwHGXaYprxwd84Wer8H7jZS+5C3LeEaU8VD7NqORY6NmPJrs+9Ugbq3wyjqO3vWtSsDaLar2sqEB8COmOZA4zw==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^1.13.0"
@@ -2717,9 +2717,9 @@
       "dev": true
     },
     "graceful-fs": {
-      "version": "4.2.2",
-      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.2.tgz",
-      "integrity": "sha512-IItsdsea19BoLC7ELy13q1iJFNmd7ofZH5+X/pJr90/nRoPEX0DJo1dHDbgtYWOhJhcCgMDTOw84RZ72q6lB+Q==",
+      "version": "4.2.3",
+      "resolved": "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.3.tgz",
+      "integrity": "sha512-a30VEBm4PEdx1dRB7MFK7BejejvCvBronbLjht+sHuGYj8PHs7M/5Z+rt5lw551vZ7yfTCj4Vuyy3mSJytDWRQ==",
       "dev": true
     },
     "growly": {
@@ -4644,9 +4644,9 @@
       "dev": true
     },
     "react-is": {
-      "version": "16.10.2",
-      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.10.2.tgz",
-      "integrity": "sha512-INBT1QEgtcCCgvccr5/86CfD71fw9EPmDxgiJX4I2Ddr6ZsV6iFXsuby+qWJPtmNuMY0zByTsG4468P7nHuNWA==",
+      "version": "16.11.0",
+      "resolved": "https://registry.npmjs.org/react-is/-/react-is-16.11.0.tgz",
+      "integrity": "sha512-gbBVYR2p8mnriqAwWx9LbuUrShnAuSCNnuPGyc7GJrMVQtPDAh8iLpv7FRuMPFb56KkaVZIYSz1PrjI9q0QPCw==",
       "dev": true
     },
     "read-pkg": {
@@ -5665,9 +5665,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.6.3",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.3.tgz",
-      "integrity": "sha512-KfQUgOqTkLp2aZxrMbCuKCDGW9slFYu2A23A36Gs7sGzTLcRBDORdOi5E21KWHFIfkY8kzgi/Pr1cXCh0yIp5g==",
+      "version": "3.6.4",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.4.tgz",
+      "integrity": "sha512-9Yc2i881pF4BPGhjteCXQNaXx1DCwm3dtOyBaG2hitHjLWOczw/ki8vD1bqyT3u6K0Ms/FpCShkmfg+FtlOfYA==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -6053,9 +6053,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.10.9",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.10.9.tgz",
-      "integrity": "sha512-QcV/v1hqGYdlawvvgoZsClOI6aeXGvJVSCZkMm4xQS1SbevTXzXFP4VtcR5WlnK0a+Kl7ibXcVfnR4XCl2r5IA==",
+      "version": "0.11.1",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.11.1.tgz",
+      "integrity": "sha512-eBIEZN8cF9hlPMRDUQ8J0LBEa7obYX74pmMwvK3dBmeMfc4m3kzNYZ0Lgc+XV93VSEEe9Hj9flOuHa93KUZKIQ==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",

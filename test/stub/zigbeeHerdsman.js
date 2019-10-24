@@ -2,11 +2,11 @@ const events = {};
 const assert = require('assert');
 
 class Group {
-    constructor(groupID) {
+    constructor(groupID, members) {
         this.groupID = groupID;
         this.command = jest.fn();
         this.meta = {};
-        this.members = [];
+        this.members = members;
         this.hasMember = (endpoint) => this.members.includes(endpoint);
     }
 }
@@ -20,7 +20,7 @@ const clusters = {
 }
 
 class Endpoint {
-    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress) {
+    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[]) {
         this.deviceIeeeAddress = deviceIeeeAddress;
         this.ID = ID;
         this.inputClusters = inputClusters;
@@ -31,6 +31,7 @@ class Endpoint {
         this.bind = jest.fn();
         this.unbind = jest.fn();
         this.configureReporting = jest.fn();
+        this.binds = binds;
         this.supportsInputCluster = (cluster) => {
             assert(clusters[cluster], `Undefined '${cluster}'`);
             return this.inputClusters.includes(clusters[cluster]);
@@ -88,11 +89,17 @@ class Device {
 
 const returnDevices = [];
 
+const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3')], true, "Mains (single phase)", "LLC020");
+const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020");
+const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
+
 const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
     'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
-    'bulb_color': new Device('Router', '0x000b57fffec6a5b3', 40399, 6535, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3')], true, "Mains (single phase)", "LLC020"),
-    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
+    'bulb_color': bulb_color,
+    'bulb_2': bulb_2,
+    'bulb_color_2': bulb_color_2,
+    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0]}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
@@ -119,10 +126,12 @@ const devices = {
     'unsupported_router': new Device('Router', '0x0017880104e45525', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Mains (single phase)", "notSupportedModelID", false, "Boef"),
     'CC2530_ROUTER': new Device('Router', '0x0017880104e45559', 6540,4151, [new Endpoint(1, [0, 6], [])], true, "Mains (single phase)", 'lumi.router'),
     'LIVOLO': new Device('Router', '0x0017880104e45560', 6541,4152, [new Endpoint(6, [0, 6], [])], true, "Mains (single phase)", 'TI0001          '),
+    'tradfri_remote': new Device('EndDevice', '0x90fd9ffffe4b64ae', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64ae')], true, "Battery", "TRADFRI remote control"),
 }
 
 const groups = {
-    'group_1': new Group(1),
+    'group_1': new Group(1, []),
+    'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
 }
 
 const mock = {
@@ -153,7 +162,7 @@ const mock = {
     getPermitJoin: jest.fn().mockReturnValue(false),
     reset: jest.fn(),
     createGroup: jest.fn().mockImplementation((groupID) => {
-        const group = new Group(groupID);
+        const group = new Group(groupID, []);
         groups[`group_${groupID}`] = group
         return group;
     })
@@ -163,6 +172,7 @@ const mockConstructor = jest.fn().mockImplementation(() => mock);
 
 jest.mock('zigbee-herdsman', () => ({
     Controller: mockConstructor,
+    Zcl: {ManufacturerCode: {Philips: 4107}},
 }));
 
 module.exports = {
