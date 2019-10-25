@@ -117,6 +117,9 @@ describe('Settings', () => {
         };
 
         expect(settings.get().mqtt).toStrictEqual(expected);
+
+        settings._write();
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
     });
 
     it('Should read devices form a separate file', () => {
