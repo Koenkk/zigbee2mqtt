@@ -6,12 +6,15 @@ const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
 const devicesFile = data.joinPath('devices.yaml');
 const groupsFile = data.joinPath('groups.yaml');
+const secretFile = data.joinPath('secret.yaml');
 const yaml = require('js-yaml');
 
 describe('Settings', () => {
-    const write = (file, json) => {
+    const write = (file, json, reread=true) => {
         fs.writeFileSync(file, yaml.safeDump(json))
-        settings._reRead();
+        if (reread) {
+            settings._reRead();
+        }
     };
     const read = (file) => yaml.safeLoad(fs.readFileSync(file, 'utf8'));
     const remove = (file) => {
@@ -87,6 +90,33 @@ describe('Settings', () => {
         const content = {devices: null};
         write(configurationFile, content);
         settings.getDevice('0x12345678');
+    });
+
+    it('onlythis Should read MQTT username asn password form a separate file', () => {
+        const contentConfiguration = {
+            mqtt: {
+                server: 'my.mqtt.server',
+                user: '!secret username',
+                password: '!secret password',
+            },
+        };
+
+        const contentSecret = {
+            username: 'mysecretusername',
+            password: 'mysecretpassword',
+        };
+
+        write(secretFile, contentSecret, false);
+        write(configurationFile, contentConfiguration);
+
+        const expected = {
+            include_device_information: false,
+            password: "mysecretpassword",
+            server: "my.mqtt.server",
+            user: "mysecretusername",
+        };
+
+        expect(settings.get().mqtt).toStrictEqual(expected);
     });
 
     it('Should read devices form a separate file', () => {
