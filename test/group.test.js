@@ -93,6 +93,27 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_group_add","message":{"friendly_name":"bulb_color","group":"group_1"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
+    it('Add to group with slashes via MQTT', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const group = zigbeeHerdsman.groups["group/with/slashes"];
+        settings.set(['groups'], {'99': {friendly_name: 'group/with/slashes', retain: false, devices: []}});
+        expect(group.members.length).toBe(0);
+        await controller.start();
+        await flushPromises();
+        MQTT.events.message('zigbee2mqtt/bridge/group/group/with/slashes/add', 'bulb_color');
+        await flushPromises();
+        expect(group.members).toStrictEqual([endpoint]);
+        expect(settings.getGroup('group/with/slashes').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_group_add","message":{"friendly_name":"bulb_color","group":"group/with/slashes"}}', {"retain": false, qos: 0}, expect.any(Function));
+
+        // Test if subscribed to topics with slashes
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/remove');
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/remove');
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/+/+/+/remove');
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/+/+/+/add');
+    });
+
     it('Add to group via MQTT with postfix', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(3);
