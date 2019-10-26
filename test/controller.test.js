@@ -291,6 +291,13 @@ describe('Controller', () => {
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
+    it('acceptJoiningDeviceHandler accept when no ban and whitelist', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.bulb;
+        const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
+        expect(await handler(device.ieeeAddr)).toBe(true);
+    });
+
     it('Shouldnt crash when two device join events are received', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
