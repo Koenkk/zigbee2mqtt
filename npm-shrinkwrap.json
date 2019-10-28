@@ -469,43 +469,37 @@
       "dev": true
     },
     "@typescript-eslint/experimental-utils": {
-      "version": "1.13.0",
-      "resolved": "https://registry.npmjs.org/@typescript-eslint/experimental-utils/-/experimental-utils-1.13.0.tgz",
-      "integrity": "sha512-zmpS6SyqG4ZF64ffaJ6uah6tWWWgZ8m+c54XXgwFtUv0jNz8aJAVx8chMCvnk7yl6xwn8d+d96+tWp7fXzTuDg==",
+      "version": "2.6.0",
+      "resolved": "https://registry.npmjs.org/@typescript-eslint/experimental-utils/-/experimental-utils-2.6.0.tgz",
+      "integrity": "sha512-34BAFpNOwHXeqT+AvdalLxOvcPYnCxA5JGmBAFL64RGMdP0u65rXjii7l/nwpgk5aLEE1LaqF+SsCU0/Cb64xA==",
       "dev": true,
       "requires": {
         "@types/json-schema": "^7.0.3",
-        "@typescript-eslint/typescript-estree": "1.13.0",
-        "eslint-scope": "^4.0.0"
-      },
-      "dependencies": {
-        "eslint-scope": {
-          "version": "4.0.3",
-          "resolved": "https://registry.npmjs.org/eslint-scope/-/eslint-scope-4.0.3.tgz",
-          "integrity": "sha512-p7VutNr1O/QrxysMo3E45FjYDTeXBy0iTltPFNSqKAIfjDSXC+4dj+qfyuD8bfAXrW/y6lW3O76VaYNPKfpKrg==",
-          "dev": true,
-          "requires": {
-            "esrecurse": "^4.1.0",
-            "estraverse": "^4.1.1"
-          }
-        }
+        "@typescript-eslint/typescript-estree": "2.6.0",
+        "eslint-scope": "^5.0.0"
       }
     },
     "@typescript-eslint/typescript-estree": {
-      "version": "1.13.0",
-      "resolved": "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-1.13.0.tgz",
-      "integrity": "sha512-b5rCmd2e6DCC6tCTN9GSUAuxdYwCM/k/2wdjHGrIRGPSJotWMCe/dGpi66u42bhuh8q3QBzqM4TMA1GUUCJvdw==",
+      "version": "2.6.0",
+      "resolved": "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-2.6.0.tgz",
+      "integrity": "sha512-A3lSBVIdj2Gp0lFEL6in2eSPqJ33uAc3Ko+Y4brhjkxzjbzLnwBH22CwsW2sCo+iwogfIyvb56/AJri15H0u5Q==",
       "dev": true,
       "requires": {
+        "debug": "^4.1.1",
+        "glob": "^7.1.4",
+        "is-glob": "^4.0.1",
         "lodash.unescape": "4.0.1",
-        "semver": "5.5.0"
+        "semver": "^6.3.0"
       },
       "dependencies": {
-        "semver": {
-          "version": "5.5.0",
-          "resolved": "https://registry.npmjs.org/semver/-/semver-5.5.0.tgz",
-          "integrity": "sha512-4SJ3dm0WAwWy/NVeioZh5AntkdJoWKxHxcmyP622fOkgHa4z3R0TdBJICINyaSDE6uNwVc8gZr+ZinwZAH4xIA==",
-          "dev": true
+        "is-glob": {
+          "version": "4.0.1",
+          "resolved": "https://registry.npmjs.org/is-glob/-/is-glob-4.0.1.tgz",
+          "integrity": "sha512-5G0tKtBTFImOqDnLB2hG6Bp2qcKEFduo4tZu9MT/H6NQv/ghhy30o55ufafxJ/LdH79LLs2Kfrn85TLKyA7BUg==",
+          "dev": true,
+          "requires": {
+            "is-extglob": "^2.1.1"
+          }
         }
       }
     },
@@ -1649,12 +1643,12 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "22.20.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-22.20.1.tgz",
-      "integrity": "sha512-bNkII1QUmb7P9KHXqRoDWwFrY1hkxI2bAXCvuZbKuzywcxjPNrCzRqsOEUe9T4fHVfhat2zRN7dS5n61C8rhoA==",
+      "version": "23.0.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.0.1.tgz",
+      "integrity": "sha512-dcsf8z2gil+E5kqqdoIKqgLxUXNwC+V8uAij9y4c7byAbBuQE6hYfbFLKM0RYHPmc6oqmrpri6zrwpfWnMX3vg==",
       "dev": true,
       "requires": {
-        "@typescript-eslint/experimental-utils": "^1.13.0"
+        "@typescript-eslint/experimental-utils": "^2.5.0"
       }
     },
     "eslint-scope": {
@@ -12618,9 +12612,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.30",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.30.tgz",
-      "integrity": "sha512-BbBvg0gg6+7fvAZvli5qxwnOMA8ghon7Jyty+kkptIHEY0RKACfobUI0GDf3zFZFlNlT836ike8QzmxhGpsdFQ=="
+      "version": "11.1.31",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.31.tgz",
+      "integrity": "sha512-SZGRAN9gCpt6zLee6TMHzGGAWrldC6kqhtKwfHzaIZABy3ggbuGruWLDhq0EiErP24nJeELY/45VeULglxJclg=="
     }
   }
 }
