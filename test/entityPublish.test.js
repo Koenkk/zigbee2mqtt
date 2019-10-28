@@ -658,14 +658,14 @@ describe('Entity publish', () => {
     });
 
 
-    it('Should turn device off when brightness 0 is send with light_brightness converter ON', async () => {
+    it('Should turn device on with on/off when transition is provided', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const payload = {state: 'ON', transition: 1};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 10}, {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
     });
 
     it('Should turn device off when brightness 0 is send with light_brightness converter OFF', async () => {
