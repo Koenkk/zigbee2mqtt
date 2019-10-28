@@ -99,11 +99,15 @@ describe('Settings', () => {
                 user: '!secret username',
                 password: '!secret password',
             },
+            advanced: {
+                network_key: '!secret network_key'
+            }
         };
 
         const contentSecret = {
             username: 'mysecretusername',
             password: 'mysecretpassword',
+            network_key: [1,2,3],
         };
 
         write(secretFile, contentSecret, false);
@@ -117,6 +121,7 @@ describe('Settings', () => {
         };
 
         expect(settings.get().mqtt).toStrictEqual(expected);
+        expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
 
         settings._write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
