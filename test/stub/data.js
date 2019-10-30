@@ -145,7 +145,12 @@ function writeDefaultConfiguration() {
                 friendly_name: 'group_tradfri_remote',
                 retain: false,
                 devices: ['bulb_color_2', 'bulb_2']
-            }
+            },
+            '11': {
+                friendly_name: 'group_with_tradfri',
+                retain: false,
+                devices: ['bulb_2']
+            },
         }
     };
 

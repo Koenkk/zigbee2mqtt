@@ -353,10 +353,10 @@ describe('Entity publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(3);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(4);
         await MQTT.events.message('zigbee2mqtt/group_2/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(4);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(5);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
@@ -573,6 +573,15 @@ describe('Entity publish', () => {
         expect(endpoint.command).toHaveBeenCalledTimes(2);
         expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {}]);
         expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
+    });
+
+    it('Should use transition only once when setting brightness and color temperature for group which contains TRADFRI', async () => {
+        const group = zigbeeHerdsman.groups.group_with_tradfri;
+        await MQTT.events.message('zigbee2mqtt/group_with_tradfri/set', JSON.stringify({"state": "ON", "transition": 60, "brightness": 20, "color_temp": 400}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(2);
+        expect(group.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {}]);
+        expect(group.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 400, transtime: 600}, {}]);
     });
 
     it('Message transition should overrule options transition', async () => {

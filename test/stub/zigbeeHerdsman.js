@@ -133,6 +133,7 @@ const groups = {
     'group_1': new Group(1, []),
     'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
     'group/with/slashes': new Group(99, []),
+    'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]])
 }
 
 const mock = {
