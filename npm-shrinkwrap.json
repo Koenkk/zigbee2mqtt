@@ -5709,9 +5709,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.6.5",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.5.tgz",
-      "integrity": "sha512-7L3W+Npia1OCr5Blp4/Vw83tK1mu5gnoIURtT1fUVfQ3Kf8WStWV6NJz0fdoBJZls0KlweruRTLVe6XLafmy5g==",
+      "version": "3.6.6",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.6.tgz",
+      "integrity": "sha512-q3Zusqd028P8MdbarqL0I1snTZ7+IbIWiKUXVZyXMVdOSxOG2FFqLXyGlgYSqYu46SR7tR3Sk0xqN1VtvxGWnQ==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -6121,9 +6121,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.11.4",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.11.4.tgz",
-      "integrity": "sha512-QZ8iWH9csTqWt88LS5681EtWCNS2M9W6NVMeCDtsEy+K2PiygmPuzJOP36FztSJOUdXIZtVQKH0Y0++gy1Kpug==",
+      "version": "0.11.5",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.11.5.tgz",
+      "integrity": "sha512-tV0sdlEQQ+7uHg4n9tVqg/sJFIvR2Bgpo6zZhw33iDAuJYa43UceTHM/3rlK5m6zwRXnETnh1Rk4cFiWChdiNQ==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
