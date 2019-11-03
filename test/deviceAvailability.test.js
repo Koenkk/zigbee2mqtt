@@ -1,8 +1,9 @@
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
-zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3')
-zigbeeHerdsman.returnDevices.push('0x00124b00120144ae')
+zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
+zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
@@ -53,7 +54,7 @@ describe('Device availability', () => {
         device.ping.mockImplementationOnce(() => {throw new Error('failed')});
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/bulb_color/availability',
           'offline',
@@ -65,10 +66,10 @@ describe('Device availability', () => {
         device.ping.mockImplementationOnce(() => {throw new Error('failed')});
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledTimes(1);
+        expect(logger.debug).toHaveBeenCalledTimes(3);
         expect(logger.debug).toHaveBeenCalledWith("Failed to ping 'bulb_color'");
-        expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish).toHaveBeenNthCalledWith(2,
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish).toHaveBeenNthCalledWith(3,
             'zigbee2mqtt/bulb_color/availability',
           'offline',
           { retain: true, qos: 0 },
