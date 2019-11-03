@@ -61,12 +61,12 @@ describe('Device availability', () => {
           expect.any(Function)
         );
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith("Failed to ping '0x000b57fffec6a5b3'");
+        expect(logger.error).toHaveBeenCalledWith("Failed to ping 'bulb_color'");
         device.ping.mockImplementationOnce(() => {throw new Error('failed')});
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
         expect(logger.debug).toHaveBeenCalledTimes(1);
-        expect(logger.debug).toHaveBeenCalledWith("Failed to ping '0x000b57fffec6a5b3'");
+        expect(logger.debug).toHaveBeenCalledWith("Failed to ping 'bulb_color'");
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenNthCalledWith(2,
             'zigbee2mqtt/bulb_color/availability',
