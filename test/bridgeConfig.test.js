@@ -247,6 +247,28 @@ describe('Bridge config', () => {
         expect(settings.get().ban.length).toBe(0);
     });
 
+    it('Should allow to force remove device', async () => {
+        controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.removeFromDatabase.mockClear();
+        expect(settings.get().ban.length).toBe(0);
+        await flushPromises();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/force_remove', 'bulb_color');
+        await flushPromises();
+        expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
+        expect(controller.state[device.ieeeAddr]).toBeUndefined();
+        expect(settings.getDevice('bulb_color')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'device_force_removed', message: 'bulb_color'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
+        expect(controller.state.state).toStrictEqual({});
+        expect(settings.get().ban.length).toBe(0);
+    });
+
     it('Should allow to ban device', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();

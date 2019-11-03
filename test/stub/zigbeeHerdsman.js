@@ -77,6 +77,7 @@ class Device {
         this.meta = {};
         this.ping = jest.fn();
         this.removeFromNetwork = jest.fn();
+        this.removeFromDatabase = jest.fn();
         this.save = jest.fn();
         this.manufacturerName = manufacturerName;
         this.lastSeen = 1000;
