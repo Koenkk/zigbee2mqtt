@@ -289,6 +289,13 @@ describe('Bridge config', () => {
         expect(settings.get().ban).toStrictEqual(['0x000b57fffec6a5b3']);
     });
 
+    it('Shouldnt crash when removing non-existing device', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'not_existing_123');
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith(`Cannot remove, device 'not_existing_123' does not exist`);
+    });
+
     it('Should handle when remove fails', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
