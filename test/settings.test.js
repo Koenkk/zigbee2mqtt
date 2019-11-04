@@ -338,6 +338,21 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
+                retain: false,
+            },
+        };
+
+        expect(settings.get().groups).toStrictEqual(expected);
+    });
+
+    it('Should add groups with specific ID', () => {
+        write(configurationFile, {});
+
+        const added = settings.addGroup('test123', 123);
+        const expected = {
+            '123': {
+                friendly_name: 'test123',
+                retain: false,
             },
         };
 
@@ -354,6 +369,24 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
+                retain: false,
+            },
+        };
+
+        expect(settings.get().groups).toStrictEqual(expected);
+    });
+
+    it('Should not add duplicate groups with specific ID', () => {
+        write(configurationFile, {});
+
+        settings.addGroup('test123', 123);
+        expect(() => {
+            settings.addGroup('test_id_123', 123);
+        }).toThrow(new Error("group id '123' is already in use"));
+        const expected = {
+            '123': {
+                friendly_name: 'test123',
+                retain: false,
             },
         };
 
@@ -375,6 +408,7 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
+                retain: false,
                 devices: ['0x123'],
             },
         };

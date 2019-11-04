@@ -205,9 +205,36 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
+    });
+
+    it('Should allow to add groups with json', async () => {
+        zigbeeHerdsman.createGroup.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"friendly_name": "new_group"}');
+        await flushPromises();
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
+    });
+
+    it('Should allow to add groups with json specifying id', async () => {
+        zigbeeHerdsman.createGroup.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"friendly_name": "new_group", "id": 42}');
+        await flushPromises();
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 42, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42)
+    });
+
+    it('Should allow to add groups with json specifying only id', async () => {
+        zigbeeHerdsman.createGroup.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"id": 42}');
+        await flushPromises();
+        expect(settings.getGroup('group_42')).toStrictEqual({"ID": 42, "friendlyName": "group_42", "friendly_name": "group_42", "retain": false, devices: [], optimistic: true});
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42)
     });
 
     it('Should allow to remove groups', async () => {
@@ -215,6 +242,13 @@ describe('Bridge config', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/remove_group', 'to_be_removed');
         await flushPromises();
         expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
+    });
+
+    it('Shouldnt allow add groups without id or friendly_name in json', async () => {
+        zigbeeHerdsman.createGroup.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{}');
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith('Failed to add group, missing friendly_name!');
     });
 
     it('Shouldnt do anything on unsupported topic', async () => {
