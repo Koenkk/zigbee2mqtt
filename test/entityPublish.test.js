@@ -677,17 +677,17 @@ describe('Entity publish', () => {
         expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
     });
 
-    it('Should turn device off when brightness 0 is send with light_brightness converter OFF', async () => {
+    it('Should turn device off with onOff on off with transition', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const payload = {state: 'OFF', transition: 1};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 0, transtime: 10}, {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF', brightness: 0});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF'});
     });
 
     it('Home Assistant: should set state', async () => {
