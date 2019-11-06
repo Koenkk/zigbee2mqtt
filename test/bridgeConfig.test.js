@@ -205,7 +205,7 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
     });
@@ -214,7 +214,7 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"friendly_name": "new_group"}');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
     });
@@ -223,7 +223,7 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"friendly_name": "new_group", "id": 42}');
         await flushPromises();
-        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 42, "friendlyName": "new_group", "friendly_name": "new_group", "retain": false, devices: [], optimistic: true});
+        expect(settings.getGroup('new_group')).toStrictEqual({"ID": 42, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42)
     });
@@ -232,7 +232,7 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', '{"id": 42}');
         await flushPromises();
-        expect(settings.getGroup('group_42')).toStrictEqual({"ID": 42, "friendlyName": "group_42", "friendly_name": "group_42", "retain": false, devices: [], optimistic: true});
+        expect(settings.getGroup('group_42')).toStrictEqual({"ID": 42, "friendlyName": "group_42", "friendly_name": "group_42", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42)
     });

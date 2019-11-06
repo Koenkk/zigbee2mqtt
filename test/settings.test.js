@@ -55,7 +55,6 @@ describe('Settings', () => {
             devices: {
                 '0x12345678': {
                     friendly_name: '0x12345678',
-                    retain: false,
                 },
             },
         };
@@ -178,7 +177,6 @@ describe('Settings', () => {
             },
             '0x1234': {
                 friendly_name: '0x1234',
-                retain: false,
             },
         };
 
@@ -199,7 +197,6 @@ describe('Settings', () => {
         const expected = {
             '0x1234': {
                 friendly_name: '0x1234',
-                retain: false,
             },
         };
 
@@ -302,7 +299,6 @@ describe('Settings', () => {
         const expectedDevice = {
             '0x1234': {
                 friendly_name: '0x1234',
-                retain: false,
             },
         };
 
@@ -325,7 +321,6 @@ describe('Settings', () => {
             ID: '0x1234',
             friendlyName: '0x1234',
             friendly_name: '0x1234',
-            retain: false,
         };
 
         expect(settings.getDevice('0x1234')).toStrictEqual(expectedDevice2);
@@ -338,7 +333,6 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
-                retain: false,
             },
         };
 
@@ -352,7 +346,6 @@ describe('Settings', () => {
         const expected = {
             '123': {
                 friendly_name: 'test123',
-                retain: false,
             },
         };
 
@@ -369,7 +362,6 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
-                retain: false,
             },
         };
 
@@ -386,7 +378,6 @@ describe('Settings', () => {
         const expected = {
             '123': {
                 friendly_name: 'test123',
-                retain: false,
             },
         };
 
@@ -408,7 +399,6 @@ describe('Settings', () => {
         const expected = {
             '1': {
                 friendly_name: 'test123',
-                retain: false,
                 devices: ['0x123'],
             },
         };
