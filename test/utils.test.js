@@ -50,4 +50,9 @@ describe('Utils', () => {
         expect(utils.formatDate(date, 'ISO_8601_local').endsWith('+01:00')).toBeTruthy();
         Date.prototype.getTimezoneOffset = getTimezoneOffset;
     })
+
+    it('Throw exception when formating with invalid date', async () => {
+        var date = new Date('August 19, 1975 23:15:30 UTC+00:00');
+        expect(() => utils.formatDate(date, 'invalid', 1)).toThrowError("Unsupported type 'invalid'")
+    })
 });

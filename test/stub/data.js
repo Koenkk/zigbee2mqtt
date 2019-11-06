@@ -52,7 +52,6 @@ function writeDefaultConfiguration() {
                 friendly_name: "button_double_key_interviewing"
             },
             "0x0017880104e45540": {
-                retain: false,
                 friendly_name: "ikea_onoff"
             },
             '0x000b57fffec6a5b7': {
