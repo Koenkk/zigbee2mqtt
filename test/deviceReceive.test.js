@@ -363,7 +363,6 @@ describe('Device receive', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
         expect(logger.warn).toHaveBeenCalledWith('No converter available for \'ZNCZ02LM\' with cluster \'genBinaryOutput\' and type \'attributeReport\' and data \'{"inactiveText":"hello"}\'');
-        expect(logger.warn).toHaveBeenCalledWith(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`)
     });
 
     it('Should not log when message is from supported device but has no converters is readResponse', async () => {
