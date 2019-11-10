@@ -752,6 +752,30 @@ describe('Entity publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.41, y: 0.25}, color_temp: 150, state: 'ON'});
     });
 
+    it('Should publish correct state on toggle command to zigbee bulb', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'TOGGLE'}));
+        await flushPromises();
+
+        // At this point the bulb has no state yet, so we cannot determine the next state and therefore shouldn't publish it to MQTT.
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "toggle", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Turn bulb off so that the bulb gets a state.
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'OFF'}));
+        await flushPromises();
+
+        // Toggle again, now that we have state it should publish state ON
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'TOGGLE'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bulb_color');
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({state: 'ON'});
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
+    });
+
     it('Should publish messages with options disableDefaultResponse', async () => {
         const device = zigbeeHerdsman.devices.GLEDOPTO1112;
         const endpoint = device.getEndpoint(11);
