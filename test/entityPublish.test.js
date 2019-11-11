@@ -493,6 +493,16 @@ describe('Entity publish', () => {
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
+    it('Should parse set with number at the end of friendly_name and postfix', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        settings.set(['devices', device.ieeeAddr, 'friendly_name'], 'ground_floor/kitchen/wall_switch/2');
+        const endpoint = device.getEndpoint(2);
+        await MQTT.events.message('zigbee2mqtt/ground_floor/kitchen/wall_switch/2/left/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+    });
+
     it('Should not publish messages to zigbee devices when payload is invalid', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(2);
