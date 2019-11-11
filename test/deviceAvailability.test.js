@@ -99,6 +99,21 @@ describe('Device availability', () => {
         expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'colorTemperature']);
     });
 
+    it('Should fail gracefully when quering state after reconnect fails', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        endpoint.read.mockClear();
+        endpoint.read.mockImplementationOnce(() => {throw new Error('Device timedout')});
+        device.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        logger.debug.mockClear();
+        jest.advanceTimersByTime(11 * 2000);
+        await flushPromises();
+
+        expect(endpoint.read).toHaveBeenCalledTimes(1);
+        expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
+        expect(logger.error).toHaveBeenCalledWith(`Failed to read state of 'bulb_color' after reconnect`);
+    });
+
     it('Shouldnt ping again when still pinging', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.ping.mockClear();
