@@ -91,7 +91,7 @@ describe('Settings', () => {
         settings.getDevice('0x12345678');
     });
 
-    it('Should read MQTT username asn password form a separate file', () => {
+    it('Should read MQTT username and password form a separate file', () => {
         const contentConfiguration = {
             mqtt: {
                 server: 'my.mqtt.server',
