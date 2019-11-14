@@ -858,7 +858,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/roller_shutter/set', JSON.stringify({state: 'OPEN'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "currentLevel", {"level": "255", "transtime": 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevel", {"level": "255", "transtime": 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/roller_shutter');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({position: 100});
