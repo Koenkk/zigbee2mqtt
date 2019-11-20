@@ -54,6 +54,18 @@ describe('Device receive', () => {
         expectRemoteConfigured();
     });
 
+    it('Should re-configure when device rejoins', async () => {
+        expectRemoteConfigured();
+        const device = zigbeeHerdsman.devices.remote;
+        const endpoint = device.getEndpoint(1);
+        await flushPromises();
+        mockClear(device);
+        const payload = {device};
+        zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expectRemoteConfigured();
+    });
+
     it('Should not configure twice', async () => {
         expectRemoteConfigured();
         const device = zigbeeHerdsman.devices.remote;
