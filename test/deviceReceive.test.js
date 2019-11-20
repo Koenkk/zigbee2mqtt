@@ -110,6 +110,29 @@ describe('Device receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
 
+    it('Should debounce messages only with the same payload values for provided debounce_ignore keys', async () => {
+        jest.useFakeTimers();
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
+        settings.set(['devices', device.ieeeAddr, 'debounce_ignore'], ['temperature']);
+        const tempMsg = {data: {measuredValue: 8}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 13};
+        await zigbeeHerdsman.events.message(tempMsg);
+        const pressureMsg = {data: {measuredValue: 2}, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 13};
+        await zigbeeHerdsman.events.message(pressureMsg);
+        const tempMsg2 = {data: {measuredValue: 7}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 13};
+        await zigbeeHerdsman.events.message(tempMsg2);
+        const humidityMsg = {data: {measuredValue: 3}, cluster: 'msRelativeHumidity', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 13};
+        await zigbeeHerdsman.events.message(humidityMsg);
+        await flushPromises();
+        jest.advanceTimersByTime(50);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, pressure: 2, linkquality: 13});
+        jest.runAllTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.07, pressure: 2, humidity: 0.03, linkquality: 13});
+    });
+
     it('Should handle a zigbee message with 1 precision', async () => {
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         settings.set(['devices', device.ieeeAddr, 'temperature_precision'], 1);
