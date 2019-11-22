@@ -260,7 +260,6 @@ describe('Device availability', () => {
         expect(device.ping).toHaveBeenCalledTimes(0);
     });    
 
-
     it('Should not read when device has no modelID and reconnects', async () => {
         const device = zigbeeHerdsman.devices.nomodel;
         getExtension().state[device.ieeeAddr] = true;
