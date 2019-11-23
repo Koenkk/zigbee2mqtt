@@ -139,6 +139,7 @@ const groups = {
 }
 
 const mock = {
+    touchlinkFactoryReset: jest.fn(),
     start: jest.fn(),
     permitJoin: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
