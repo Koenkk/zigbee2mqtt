@@ -45,8 +45,14 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "*",
+<<<<<<< d37d9ee85919df915edd1cd3dfb636c272507d1f
     "zigbee-herdsman": "0.12.9",
     "zigbee-herdsman-converters": "11.1.47"
+=======
+    "winston-daily-rotate-file": "^4.3.0",
+    "zigbee-herdsman": "0.12.4",
+    "zigbee-herdsman-converters": "11.1.41"
+>>>>>>> Reworked logging
   },
   "devDependencies": {
     "eslint": "*",

@@ -4,6 +4,7 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+const mockLog = jest.spyOn(global.console, 'log')
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
@@ -11,7 +12,7 @@ const tmp = require('tmp');
 const mocksClear = [
     zigbeeHerdsman.permitJoin, mockExit, MQTT.end, zigbeeHerdsman.stop, logger.debug,
     MQTT.publish, MQTT.connect, zigbeeHerdsman.devices.bulb_color.removeFromNetwork,
-    zigbeeHerdsman.devices.bulb.removeFromNetwork, logger.error,
+    zigbeeHerdsman.devices.bulb.removeFromNetwork, logger.error, mockLog
 ];
 
 const fs = require('fs');
@@ -31,6 +32,7 @@ describe('Controller', () => {
     it('Start controller', async () => {
         await controller.start();
         expect(logger.cleanup).toHaveBeenCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledWith(`Logging to directory: '${logger.directory}'`);
         expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),"serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
@@ -435,4 +437,18 @@ describe('Controller', () => {
         await flushPromises();
         expect(controller.state.state).toStrictEqual({});
     });
+
+    it('Set logging to console only', async () => {
+        settings.set(['advanced', 'log_output'], ['console']);
+        await controller.start();
+        expect(logger.info).toHaveBeenCalledWith(`Logging to console only`);
+    });
+
+    it('Set logging to none', async () => {
+        data.writeDefaultConfiguration();
+        settings.set(['advanced', 'log_output'], []);
+        await controller.start();
+        expect(console.log).toHaveBeenCalledWith(`No logging configured`);
+    });
+
 });

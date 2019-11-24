@@ -2019,6 +2019,14 @@
         "flat-cache": "^2.0.1"
       }
     },
+    "file-stream-rotator": {
+      "version": "0.5.5",
+      "resolved": "https://registry.npmjs.org/file-stream-rotator/-/file-stream-rotator-0.5.5.tgz",
+      "integrity": "sha512-XzvE1ogpxUbARtZPZLICaDRAeWxoQLFMKS3ZwADoCQmurKEwuDD2jEfDVPm/R1HeKYsRYEl9PzVIezjQ3VTTPQ==",
+      "requires": {
+        "moment": "^2.11.2"
+      }
+    },
     "fill-range": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/fill-range/-/fill-range-4.0.0.tgz",
@@ -4331,6 +4339,11 @@
         }
       }
     },
+    "object-hash": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/object-hash/-/object-hash-1.3.1.tgz",
+      "integrity": "sha512-OSuu/pU4ENM9kmREg0BdNrUDIl1heYa4mBZacJc+vVWz4GtAwu7jO8s4AIt2aGRUTqxykpWzI3Oqnsm13tTMDA=="
+    },
     "object-inspect": {
       "version": "1.7.0",
       "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.7.0.tgz",
@@ -6005,6 +6018,17 @@
             "util-deprecate": "^1.0.1"
           }
         }
+      }
+    },
+    "winston-daily-rotate-file": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/winston-daily-rotate-file/-/winston-daily-rotate-file-4.3.0.tgz",
+      "integrity": "sha512-YlGYkWuXG91WhWabtX0cXIuwfAv8Zv6eVCMBs+xErtxOLNLNr0HO8XMk3SyKq3ZLc9Gii8UIEWhEWHy4ZyENfA==",
+      "requires": {
+        "file-stream-rotator": "^0.5.5",
+        "object-hash": "^1.3.0",
+        "triple-beam": "^1.3.0",
+        "winston-transport": "^4.2.0"
       }
     },
     "winston-transport": {
