@@ -45,6 +45,7 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "*",
+    "winston-daily-rotate-file": "^4.3.0",
     "zigbee-herdsman": "0.12.4",
     "zigbee-herdsman-converters": "11.1.41"
   },

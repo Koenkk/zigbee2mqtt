@@ -3,7 +3,7 @@ const data = require('./stub/data');
 const dir = tmp.dirSync();
 const settings = require('../lib/util/settings');
 settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
-const logger = require('../lib/util/logger.js');
+let logger = require('../lib/util/logger.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -37,5 +37,11 @@ describe('Logger', () => {
     it('Set and get log level', () => {
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
+    });
+
+    it('Disabled logging', () => {
+        settings.set(['advanced', 'log_output'], []);
+        jest.resetModules()
+        logger = require('../lib/util/logger.js');
     });
 });

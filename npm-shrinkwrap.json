@@ -2010,6 +2010,14 @@
         "flat-cache": "^2.0.1"
       }
     },
+    "file-stream-rotator": {
+      "version": "0.5.5",
+      "resolved": "https://registry.npmjs.org/file-stream-rotator/-/file-stream-rotator-0.5.5.tgz",
+      "integrity": "sha512-XzvE1ogpxUbARtZPZLICaDRAeWxoQLFMKS3ZwADoCQmurKEwuDD2jEfDVPm/R1HeKYsRYEl9PzVIezjQ3VTTPQ==",
+      "requires": {
+        "moment": "^2.11.2"
+      }
+    },
     "fill-range": {
       "version": "4.0.0",
       "resolved": "https://registry.npmjs.org/fill-range/-/fill-range-4.0.0.tgz",
@@ -2760,9 +2768,9 @@
       "dev": true
     },
     "handlebars": {
-      "version": "4.5.1",
-      "resolved": "https://registry.npmjs.org/handlebars/-/handlebars-4.5.1.tgz",
-      "integrity": "sha512-C29UoFzHe9yM61lOsIlCE5/mQVGrnIOrOq7maQl76L7tYPCgC1og0Ajt6uWnX4ZTxBPnjw+CUvawphwCfJgUnA==",
+      "version": "4.5.3",
+      "resolved": "https://registry.npmjs.org/handlebars/-/handlebars-4.5.3.tgz",
+      "integrity": "sha512-3yPecJoJHK/4c6aZhSvxOyG4vJKDshV36VHp0iVCDVh7o9w2vwi3NSnL2MMPj3YdduqaBcu7cGbggJQM0br9xA==",
       "dev": true,
       "requires": {
         "neo-async": "^2.6.0",
@@ -4319,6 +4327,11 @@
         }
       }
     },
+    "object-hash": {
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/object-hash/-/object-hash-1.3.1.tgz",
+      "integrity": "sha512-OSuu/pU4ENM9kmREg0BdNrUDIl1heYa4mBZacJc+vVWz4GtAwu7jO8s4AIt2aGRUTqxykpWzI3Oqnsm13tTMDA=="
+    },
     "object-inspect": {
       "version": "1.6.0",
       "resolved": "https://registry.npmjs.org/object-inspect/-/object-inspect-1.6.0.tgz",
@@ -5713,9 +5726,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.6.8",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.8.tgz",
-      "integrity": "sha512-XhHJ3S3ZyMwP8kY1Gkugqx3CJh2C3O0y8NPiSxtm1tyD/pktLAkFZsFGpuNfTZddKDQ/bbDBLAd2YyA1pbi8HQ==",
+      "version": "3.6.9",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.6.9.tgz",
+      "integrity": "sha512-pcnnhaoG6RtrvHJ1dFncAe8Od6Nuy30oaJ82ts6//sGSXOP5UjBMEthiProjXmMNHOfd93sqlkztifFMcb+4yw==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -5966,6 +5979,17 @@
             "util-deprecate": "^1.0.1"
           }
         }
+      }
+    },
+    "winston-daily-rotate-file": {
+      "version": "4.3.0",
+      "resolved": "https://registry.npmjs.org/winston-daily-rotate-file/-/winston-daily-rotate-file-4.3.0.tgz",
+      "integrity": "sha512-YlGYkWuXG91WhWabtX0cXIuwfAv8Zv6eVCMBs+xErtxOLNLNr0HO8XMk3SyKq3ZLc9Gii8UIEWhEWHy4ZyENfA==",
+      "requires": {
+        "file-stream-rotator": "^0.5.5",
+        "object-hash": "^1.3.0",
+        "triple-beam": "^1.3.0",
+        "winston-transport": "^4.2.0"
       }
     },
     "winston-transport": {
