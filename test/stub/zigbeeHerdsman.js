@@ -139,6 +139,7 @@ const groups = {
 }
 
 const mock = {
+    setTransmitPower: jest.fn(),
     touchlinkFactoryReset: jest.fn(),
     start: jest.fn(),
     permitJoin: jest.fn(),
