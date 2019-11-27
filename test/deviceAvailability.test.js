@@ -258,7 +258,7 @@ describe('Device availability', () => {
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
         expect(device.ping).toHaveBeenCalledTimes(0);
-    });    
+    });
 
     it('Should not read when device has no modelID and reconnects', async () => {
         const device = zigbeeHerdsman.devices.nomodel;
@@ -276,5 +276,18 @@ describe('Device availability', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(endpoint.read).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should stop pinging device when removed', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.ping.mockClear();
+        const endpoint = device.getEndpoint(1);
+        jest.advanceTimersByTime(11 * 1000);
+        await flushPromises();
+        expect(device.ping).toHaveBeenCalledTimes(1);
+        settings.removeDevice(device.ieeeAddr);
+        jest.advanceTimersByTime(11 * 1000);
+        await flushPromises();
+        expect(device.ping).toHaveBeenCalledTimes(1);
     });
 });
