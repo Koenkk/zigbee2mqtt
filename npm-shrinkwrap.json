@@ -536,9 +536,9 @@
       },
       "dependencies": {
         "acorn": {
-          "version": "6.3.0",
-          "resolved": "https://registry.npmjs.org/acorn/-/acorn-6.3.0.tgz",
-          "integrity": "sha512-/czfa8BwS88b9gWQVhc8eknunSA2DoJpJyTQkhheIf5E48u1N0R4q/YxxsAeqRrmK9TQ/uYfgLDfZo91UlANIA==",
+          "version": "6.4.0",
+          "resolved": "https://registry.npmjs.org/acorn/-/acorn-6.4.0.tgz",
+          "integrity": "sha512-gac8OEcQ2Li1dxIEWGZzsp2BitJxwkwcOm0zHAJLcPJaVvm58FRnk6RkuLRpU1EujipU2ZFODv2P9DLMfnV8mw==",
           "dev": true
         }
       }
@@ -697,9 +697,9 @@
       "dev": true
     },
     "aws4": {
-      "version": "1.8.0",
-      "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.8.0.tgz",
-      "integrity": "sha512-ReZxvNHIOv88FlT7rxcXIIC0fPt4KZqZbOlivyWtXLt8ESx84zd3kMC6iK5jVeS2qt+g7ftS7ye4fi06X5rtRQ==",
+      "version": "1.9.0",
+      "resolved": "https://registry.npmjs.org/aws4/-/aws4-1.9.0.tgz",
+      "integrity": "sha512-Uvq6hVe90D0B2WEnUqtdgY1bATGz3mw33nH9Y+dmA+w5DHvUmBgkr5rM/KCHpCsiFNRUfokW/szpPPgMK2hm4A==",
       "dev": true
     },
     "babel-jest": {
@@ -1653,9 +1653,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "23.0.4",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.0.4.tgz",
-      "integrity": "sha512-OaP8hhT8chJNodUPvLJ6vl8gnalcsU/Ww1t9oR3HnGdEWjm/DdCCUXLOral+IPGAeWu/EwgVQCK/QtxALpH1Yw==",
+      "version": "23.0.5",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.0.5.tgz",
+      "integrity": "sha512-etxXrWsFWzxsrxKwJnFC38uppH/vlJ3oF7Wmp/cxedqxRIxVhXup8e5y5MmtVXelevgxrgA1QS1vo8j889iK5Q==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^2.5.0"
@@ -6170,9 +6170,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.11",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.11.tgz",
-      "integrity": "sha512-wjbV/LN6G8VnVkLNPSSS6UP/3OFZydQPo4o1mTq9mtmFS1YV+BujS84rWcM6SaLlnVr2twpaUXFi4y2LlaHL0A==",
+      "version": "0.12.12",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.12.tgz",
+      "integrity": "sha512-GPH8lO1C64tW5Vr74MwOAgkCLJhNj9ifENzGaNE7zSDErmwhxVSNMDklCdgTwySucNy5Fdt6r7JuBEvbnzzdUw==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
