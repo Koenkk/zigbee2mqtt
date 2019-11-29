@@ -85,7 +85,7 @@ describe('Logger', () => {
         expect(pipes.silent).toBe(false);
     });
 
-    it('onlythis Logger can be nothing', () => {
+    it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
         const logger = require('../lib/util/logger.js');
         const pipes = logger._readableState.pipes;
