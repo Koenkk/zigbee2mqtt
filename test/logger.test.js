@@ -6,7 +6,7 @@ const path = require('path');
 const data = require('./stub/data');
 let stdOutWriteOriginal;
 
-describe('onlythis Logger', () => {
+describe('Logger', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         jest.resetModules();
