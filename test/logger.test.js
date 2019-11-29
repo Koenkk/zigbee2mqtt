@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const data = require('./stub/data');
 let stdOutWriteOriginal;
+const rimraf = require('rimraf');
 
 describe('Logger', () => {
     beforeEach(async () => {
@@ -27,9 +28,14 @@ describe('Logger', () => {
         expect(dirs.length).toBe(1);
     });
 
-    it('Should cleanup', () => {
+    it('onlythis Should cleanup', () => {
         const logger = require('../lib/util/logger.js');
-        for (let i = 0; i < 20; i++) {
+
+        for (const d of fs.readdirSync(dir.name)) {
+            rimraf.sync(path.join(dir.name, d));
+        }
+
+        for (let i = 0; i < 21; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
