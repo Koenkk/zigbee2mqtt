@@ -28,7 +28,7 @@ describe('Logger', () => {
         expect(dirs.length).toBe(1);
     });
 
-    it('onlythis Should cleanup', () => {
+    it('Should cleanup', () => {
         const logger = require('../lib/util/logger.js');
 
         for (const d of fs.readdirSync(dir.name)) {
