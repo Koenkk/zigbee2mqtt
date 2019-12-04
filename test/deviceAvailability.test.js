@@ -290,4 +290,19 @@ describe('Device availability', () => {
         await flushPromises();
         expect(device.ping).toHaveBeenCalledTimes(1);
     });
+
+    it('Should publish availability when end device joins', async () => {
+        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const payload = {device};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expect(device.ping).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button_double_key/availability',
+          'online',
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
+    });
 });
