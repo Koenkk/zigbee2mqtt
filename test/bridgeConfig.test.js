@@ -203,6 +203,33 @@ describe('Bridge config', () => {
         expect(settings.getDevice('bulb_color2')).toStrictEqual(bulb_color2);
     });
 
+    it('Should allow to rename last joined device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const payload = {device};
+        await zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+        MQTT.events.message('zigbee2mqtt/bridge/config/rename_last', 'bulb_new_name');
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb_new_name');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'device_renamed', message: {from: 'bulb', to: 'bulb_new_name'}}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
+    });
+
+    it('Shouldnt rename when no device has been joined', async () => {
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+        MQTT.events.message('zigbee2mqtt/bridge/config/rename_last', 'bulb_new_name');
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+    });
+
     it('Should allow to add groups', async () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
