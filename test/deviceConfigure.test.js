@@ -9,7 +9,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
-describe('Device receive', () => {
+describe('Device configure', () => {
     let controller;
 
     expectRemoteConfigured = () => {
@@ -17,6 +17,8 @@ describe('Device receive', () => {
         const endpoint1 = device.getEndpoint(1);
         expect(endpoint1.bind).toHaveBeenCalledTimes(2);
         expect(endpoint1.bind).toHaveBeenCalledWith('genOnOff', this.coordinatorEndoint);
+        expect(endpoint1.bind).toHaveBeenCalledWith('genLevelCtrl', this.coordinatorEndoint);
+
         const endpoint2 = device.getEndpoint(2);
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
         expect(endpoint2.write).toHaveBeenCalledWith("genBasic", {"49": {"type": 25, "value": 11}}, {"disableDefaultResponse": true, "manufacturerCode": 4107});
@@ -54,6 +56,18 @@ describe('Device receive', () => {
         expectRemoteConfigured();
     });
 
+    it('Should re-configure when device rejoins', async () => {
+        expectRemoteConfigured();
+        const device = zigbeeHerdsman.devices.remote;
+        const endpoint = device.getEndpoint(1);
+        await flushPromises();
+        mockClear(device);
+        const payload = {device};
+        zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expectRemoteConfigured();
+    });
+
     it('Should not configure twice', async () => {
         expectRemoteConfigured();
         const device = zigbeeHerdsman.devices.remote;
@@ -74,6 +88,21 @@ describe('Device receive', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expectRemoteConfigured();
+    });
+
+    it('Should allow to reconfigure manually', async () => {
+        expectRemoteConfigured();
+        mockClear(zigbeeHerdsman.devices.remote);
+        expectRemoteNotConfigured();
+        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote');
+        await flushPromises();
+        expectRemoteConfigured();
+    });
+
+    it('Shouldnt manually reconfigure when device does not exist', async () => {
+        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote_random_non_existing');
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith(`Device 'remote_random_non_existing' does not exist`);
     });
 
     it('Should not configure when interviewing', async () => {

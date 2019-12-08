@@ -30,10 +30,10 @@ describe('Controller', () => {
 
     it('Start controller', async () => {
         await controller.start();
-        expect(logger.cleanup).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),"serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
+        expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true);
         expect(logger.info).toHaveBeenCalledWith(`Currently ${Object.values(zigbeeHerdsman.devices).length - 1} devices are joined:`)
@@ -174,6 +174,13 @@ describe('Controller', () => {
         await controller.start();
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledWith(false);
+    });
+
+    it('Start controller with transmit power', async () => {
+        settings.set(['experimental', 'transmit_power'], 14);
+        await controller.start();
+        expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledWith(14);
     });
 
     it('Start controller and stop', async () => {

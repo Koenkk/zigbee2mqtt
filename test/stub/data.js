@@ -129,6 +129,9 @@ function writeDefaultConfiguration() {
             '0x90fd9ffffe4b64ae': {
                 retain: false,
                 friendly_name: 'tradfri_remote',
+            },
+            '0x90fd9ffffe4b64af': {
+                friendly_name: 'roller_shutter',
             }
         },
         groups: {
