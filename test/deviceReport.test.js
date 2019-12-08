@@ -29,8 +29,8 @@ describe('Device report', () => {
         expect(endpoint.bind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
         expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [{"attribute": "onOff", "maximumReportInterval": 300, "minimumReportInterval": 0, "reportableChange": 0}]);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 0}]);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 0}, {"attribute": "currentX", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 0}, {"attribute": "currentY", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 0}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentX", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentY", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
     }
 
     mockClear = (device) => {
