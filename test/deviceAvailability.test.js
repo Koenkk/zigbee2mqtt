@@ -4,6 +4,8 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45517');
+
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
@@ -239,16 +241,18 @@ describe('Device availability', () => {
     it('Should not ping non-whitelisted devices if availability_whitelist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         getExtension().state[device.ieeeAddr] = false;
-        settings.set(['advanced', 'availability_whitelist'], [device.ieeeAddr])
+        settings.set(['advanced', 'availability_whitelist'], ['0x000b57fffec6a5b3'])
         await controller.stop();
         await flushPromises();
         controller = new Controller();
         await controller.start();
         await flushPromises();
-        device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
         expect(device.ping).toHaveBeenCalledTimes(0);
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceAnnounce({device});
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Should not read when device has no modelID and reconnects', async () => {
@@ -297,12 +301,28 @@ describe('Device availability', () => {
         );
     });
 
-    // it('Should do nothing when receiving message from non-pingable device', async () => {
-    //     MQTT.publish.mockClear();
-    //     const device = zigbeeHerdsman.devices.WXKG11LM;
-    //     const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, cluster: 'genBasic', data: {modelId: device.modelID}};
-    //     await zigbeeHerdsman.events.message(payload);
-    //     await flushPromises();
-    //     expect(MQTT.publish).toHaveBeenCalledTimes(0);
-    // });
+    it('Should mark non-pingable device as non-available when offline for longer than 24 hours', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const defaultLastSeen = device.lastSeen;
+        device.lastSeen = Date.now();
+        MQTT.publish.mockClear();
+        jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        device.lastSeen = device.lastSeen - (1000 * 60 * 60 * 25);
+        jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote/availability',
+          'offline',
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
+
+        // Shouldn't do anything more when device is removed
+        settings.removeDevice(device.ieeeAddr);
+        jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+
+        device.lastSeen = defaultLastSeen;
+    });
 });
