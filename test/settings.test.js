@@ -1,6 +1,7 @@
 require('./stub/logger');
 require('./stub/data');
 const data = require('../lib/util/data.js');
+const utils = require('../lib/util/utils.js');
 const settings = require('../lib/util/settings.js');
 const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
@@ -509,6 +510,18 @@ describe('Settings', () => {
         expect(() => {
             settings.validate();
         }).toThrowError(`Duplicate friendly_name 'myname' found`);
+    });
+
+    it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Following friendly_name are not allowed: '${utils.getPostfixes()}'`);
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
