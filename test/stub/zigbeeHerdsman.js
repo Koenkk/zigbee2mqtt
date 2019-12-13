@@ -128,6 +128,7 @@ const devices = {
     'CC2530_ROUTER': new Device('Router', '0x0017880104e45559', 6540,4151, [new Endpoint(1, [0, 6], [])], true, "Mains (single phase)", 'lumi.router'),
     'LIVOLO': new Device('Router', '0x0017880104e45560', 6541,4152, [new Endpoint(6, [0, 6], [])], true, "Mains (single phase)", 'TI0001          '),
     'tradfri_remote': new Device('EndDevice', '0x90fd9ffffe4b64ae', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64ae')], true, "Battery", "TRADFRI remote control"),
+    'roller_shutter': new Device('EndDevice', '0x90fd9ffffe4b64af', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64af')], true, "Battery", "SCM-R_00.00.03.15TC"),
 }
 
 const groups = {
@@ -138,6 +139,8 @@ const groups = {
 }
 
 const mock = {
+    setTransmitPower: jest.fn(),
+    touchlinkFactoryReset: jest.fn(),
     start: jest.fn(),
     permitJoin: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),

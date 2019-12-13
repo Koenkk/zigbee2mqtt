@@ -66,3 +66,7 @@ data/log
 data-backup/
 data/coordinator_backup.json
 data/.storage
+data/database.db.backup
+
+# MacOS indexing file
+.DS_Store

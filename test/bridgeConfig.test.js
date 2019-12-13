@@ -22,6 +22,8 @@ describe('Bridge config', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeDefaultState();
+        logger.info.mockClear();
+        logger.warn.mockClear();
     });
 
     it('Should publish bridge configuration on startup', async () => {
@@ -201,6 +203,33 @@ describe('Bridge config', () => {
         expect(settings.getDevice('bulb_color2')).toStrictEqual(bulb_color2);
     });
 
+    it('Should allow to rename last joined device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const payload = {device};
+        await zigbeeHerdsman.events.deviceJoined(payload);
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+        MQTT.events.message('zigbee2mqtt/bridge/config/rename_last', 'bulb_new_name');
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb_new_name');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'device_renamed', message: {from: 'bulb', to: 'bulb_new_name'}}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
+    });
+
+    it('Shouldnt rename when no device has been joined', async () => {
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+        MQTT.events.message('zigbee2mqtt/bridge/config/rename_last', 'bulb_new_name');
+        await flushPromises();
+        expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
+    });
+
     it('Should allow to add groups', async () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
@@ -354,5 +383,25 @@ describe('Bridge config', () => {
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(settings.getDevice('bulb_color')).toStrictEqual({"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "retain": false})
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should allow to touchlink factory reset (OK)', async () => {
+        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+
+        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(true);
+        MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledWith('Succesfully factory reset device through Touchlink');
+    });
+
+    it('Should allow to touchlink factory reset (FAILS)', async () => {
+        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+
+        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(false);
+        MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(logger.warn).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
     });
 });

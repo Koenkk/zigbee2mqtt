@@ -168,6 +168,19 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish messages to zigbee devices to non default-ep with state_[EP]', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/set', JSON.stringify({state_right: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/wall_switch_double');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_right: 'OFF'});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+    });
+
     it('Should publish messages to zigbee devices with color xy', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
@@ -458,6 +471,18 @@ describe('Entity publish', () => {
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
+    it('Should parse set with color attribute topic', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set/color', '#64C80A');
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17806, colory: 43155, transtime: 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 156, color: {x: 0.2717, y: 0.6585}});
+    });
+
     it('Should parse set with ieeeAddr topic', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
@@ -634,6 +659,17 @@ describe('Entity publish', () => {
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "off", {}, {}]);
+    });
+
+    it('Should allow to set color via hue and saturation', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color_2;
+        const endpoint = device.getEndpoint(1);
+        const payload = {"color":{"hue":250, "saturation":50}};
+        await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', JSON.stringify(payload));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "enhancedMoveToHueAndSaturation", {"direction": 0, "enhancehue": 45510.416666666664, "saturation": 127, "transtime": 0,}, {}]);
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('ZNCLDJ11LM open', async () => {
@@ -851,5 +887,17 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/unsupported2/set', JSON.stringify(payload));
         await flushPromises();
         expectNothingPublished();
+    });
+
+    it('Should publish state to roller shutter', async () => {
+        const endpoint = zigbeeHerdsman.devices.roller_shutter.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/roller_shutter/set', JSON.stringify({state: 'OPEN'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevel", {"level": "255", "transtime": 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/roller_shutter');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({position: 100});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 });
