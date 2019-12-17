@@ -385,17 +385,7 @@ describe('Device receive', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
-        expect(logger.warn).toHaveBeenCalledWith('No converter available for \'ZNCZ02LM\' with cluster \'genBinaryOutput\' and type \'attributeReport\' and data \'{"inactiveText":"hello"}\'');
-    });
-
-    it('Should not log when message is from supported device but has no converters is readResponse', async () => {
-        const device = zigbeeHerdsman.devices.ZNCZ02LM;
-        const data = {inactiveText: 'hello'};
-        const payload = {data, cluster: 'genBinaryOutput', device, endpoint: device.getEndpoint(1), type: 'readResponse', linkquality: 20};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
-        expect(logger.warn).toBeCalledTimes(0);
+        expect(logger.debug).toHaveBeenCalledWith('No converter available for \'ZNCZ02LM\' with cluster \'genBinaryOutput\' and type \'attributeReport\' and data \'{"inactiveText":"hello"}\'');
     });
 
     it('Should allow to calibrate temperature values', async () => {
