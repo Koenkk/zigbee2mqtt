@@ -477,20 +477,20 @@
       "dev": true
     },
     "@typescript-eslint/experimental-utils": {
-      "version": "2.11.0",
-      "resolved": "https://registry.npmjs.org/@typescript-eslint/experimental-utils/-/experimental-utils-2.11.0.tgz",
-      "integrity": "sha512-YxcA/y0ZJaCc/fB/MClhcDxHI0nOBB7v2/WxBju2cOTanX7jO9ttQq6Fy4yW9UaY5bPd9xL3cun3lDVqk67sPQ==",
+      "version": "2.12.0",
+      "resolved": "https://registry.npmjs.org/@typescript-eslint/experimental-utils/-/experimental-utils-2.12.0.tgz",
+      "integrity": "sha512-jv4gYpw5N5BrWF3ntROvCuLe1IjRenLy5+U57J24NbPGwZFAjhnM45qpq0nDH1y/AZMb3Br25YiNVwyPbz6RkA==",
       "dev": true,
       "requires": {
         "@types/json-schema": "^7.0.3",
-        "@typescript-eslint/typescript-estree": "2.11.0",
+        "@typescript-eslint/typescript-estree": "2.12.0",
         "eslint-scope": "^5.0.0"
       }
     },
     "@typescript-eslint/typescript-estree": {
-      "version": "2.11.0",
-      "resolved": "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-2.11.0.tgz",
-      "integrity": "sha512-HGY4+d4MagO6cKMcKfIKaTMxcAv7dEVnji2Zi+vi5VV8uWAM631KjAB5GxFcexMYrwKT0EekRiiGK1/Sd7VFGA==",
+      "version": "2.12.0",
+      "resolved": "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-2.12.0.tgz",
+      "integrity": "sha512-rGehVfjHEn8Frh9UW02ZZIfJs6SIIxIu/K1bbci8rFfDE/1lQ8krIJy5OXOV3DVnNdDPtoiPOdEANkLMrwXbiQ==",
       "dev": true,
       "requires": {
         "debug": "^4.1.1",
@@ -3193,12 +3193,12 @@
       "dev": true
     },
     "is-regex": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/is-regex/-/is-regex-1.0.4.tgz",
-      "integrity": "sha1-VRdIm1RwkbCTDglWVM7SXul+lJE=",
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/is-regex/-/is-regex-1.0.5.tgz",
+      "integrity": "sha512-vlKW17SNq44owv5AQR3Cq0bQPEb8+kF3UKZ2fiZNOWtztYE5i0CzCZxFDwO58qAOWtxdBRVO/V5Qin1wjCqFYQ==",
       "dev": true,
       "requires": {
-        "has": "^1.0.1"
+        "has": "^1.0.3"
       }
     },
     "is-relative": {
@@ -5059,9 +5059,9 @@
       "dev": true
     },
     "semver": {
-      "version": "7.0.0",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-7.0.0.tgz",
-      "integrity": "sha512-+GB6zVA9LWh6zovYQLALHwv5rb2PHGlJi3lfiqIHxR0uuwCgefcOJc59v9fv1w8GbStwxuuqqAjI9NMAOOgq1A=="
+      "version": "7.1.1",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.1.1.tgz",
+      "integrity": "sha512-WfuG+fl6eh3eZ2qAf6goB7nhiCd7NPXhmyFxigB/TOkQyeLP8w8GsVehvtGNtnNmyboz4TgeK40B1Kbql/8c5A=="
     },
     "set-blocking": {
       "version": "2.0.0",
@@ -12803,9 +12803,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.61",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.61.tgz",
-      "integrity": "sha512-lO88v71HboUvTDyX1j7mZybnsYEzwa8hBFLGjtEEyEdVLI1gIWcUrv2vhFLgA3wSxWdsneprsRwWIIJAz/K3+A=="
+      "version": "11.1.62",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.62.tgz",
+      "integrity": "sha512-cRix8QmcX17WxVtrYT+rWDNnqxmP+dv4sW75RVPA3fgQNpBf/qzCv7VfEom+8/bu+SiInmUD7v98dE6gHmbT5w=="
     }
   }
 }
