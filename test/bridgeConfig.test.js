@@ -117,15 +117,15 @@ describe('Bridge config', () => {
 
     it('Should allow to reset', async () => {
         zigbeeHerdsman.reset.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/config/reset', '');
+        MQTT.events.message('zigbee2mqtt/bridge/config/reset', 'soft');
         await flushPromises();
         expect(zigbeeHerdsman.reset).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.reset).toHaveBeenCalledWith('soft');
-        zigbeeHerdsman.reset.mockImplementationOnce(() => {throw new Error('')});
-        MQTT.events.message('zigbee2mqtt/bridge/config/reset', '');
+        zigbeeHerdsman.reset.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/reset', 'hard');
         await flushPromises();
-        expect(zigbeeHerdsman.reset).toHaveBeenCalledTimes(2);
-        expect(zigbeeHerdsman.reset.mock.calls[1][0]).toBe('soft');
+        expect(zigbeeHerdsman.reset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.reset).toHaveBeenCalledWith('hard');
     });
 
     it('Should allow to set last_seen', async () => {
