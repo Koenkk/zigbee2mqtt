@@ -1,659 +1,640 @@
-const devices = require('zigbee-shepherd-converters').devices;
-const HomeassistantExtension = require('../lib/extension/homeassistant');
+const data = require('./stub/data');
 const settings = require('../lib/util/settings');
-const utils = require('./utils');
-
-const WSDCGQ11LM = devices.find((d) => d.model === 'WSDCGQ11LM');
-const SV01 = devices.find((d) => d.model === 'SV01');
-const FAN99432 = devices.find((d) => d.model === '99432');
+const logger = require('./stub/logger');
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const flushPromises = () => new Promise(setImmediate);
+const MQTT = require('./stub/mqtt');
+const Controller = require('../lib/controller');
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('HomeAssistant extension', () => {
-    let homeassistant = null;
-    let mqtt = null;
-
-    beforeEach(() => {
-        utils.stubLogger(jest);
-
-        mqtt = {
-            publish: jest.fn(),
-        };
-
-        homeassistant = new HomeassistantExtension(null, mqtt, null, null);
-        homeassistant.zigbee2mqttVersion = 'test';
+    beforeEach(async () => {
+        this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
+        this.version = `Zigbee2mqtt ${this.version.version}`;
+        jest.useRealTimers();
+        data.writeDefaultConfiguration();
+        settings._reRead();
+        data.writeEmptyState();
+        MQTT.publish.mockClear();
+        settings.set(['homeassistant'], true);
     });
 
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
-    it('Should have mapping for all devices supported by zigbee-shepherd-converters', () => {
+    it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
         const missing = [];
+        const HomeAssistant = require('../lib/extension/homeassistant');
+        const ha = new HomeAssistant(null, null, null, null);
 
-        devices.forEach((d) => {
-            if (!homeassistant._getMapping()[d.model]) {
+        require('zigbee-herdsman-converters').devices.forEach((d) => {
+            if (!ha._getMapping()[d.model]) {
                 missing.push(d.model);
             }
         });
 
         expect(missing).toHaveLength(0);
-    }
-    );
+    });
 
-    it('Should discover devices', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
+    it('Should discover devices', async () => {
+        controller = new Controller(false);
+        await controller.start();
 
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        let payload;
+        await flushPromises();
 
-        // 1
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'value_template': '{{ value_json.temperature }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_temperature',
-            'unique_id': '0x12345678_temperature_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 2
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
             'value_template': '{{ value_json.humidity }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_humidity',
-            'unique_id': '0x12345678_humidity_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 3
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
             'value_template': '{{ value_json.pressure }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_pressure',
-            'unique_id': '0x12345678_pressure_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_pressure',
+            'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/pressure/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 4
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'battery',
             'value_template': '{{ value_json.battery }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_battery',
-            'unique_id': '0x12345678_battery_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_battery',
+            'unique_id': '0x0017880104e45522_battery_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/battery/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 5
         payload = {
             'unit_of_measurement': '-',
             'value_template': '{{ value_json.linkquality }}',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_linkquality',
-            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_linkquality',
+            'unique_id': '0x0017880104e45522_linkquality_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/linkquality/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with precision', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({
-            friendly_name: 'my_device',
+    it('Should discover devices with precision', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
             humidity_precision: 0,
             temperature_precision: 1,
             pressure_precision: 2,
-        });
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
 
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        controller = new Controller(false);
+        await controller.start();
 
-        // 1
+        let payload;
+        await flushPromises();
+
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ (value_json.temperature | float) | round(1) }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_temperature',
-            'unique_id': '0x12345678_temperature_zigbee2mqtt',
+            'value_template': "{{ (value_json.temperature | float) | round(1) }}",
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 2
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
             'value_template': '{{ (value_json.humidity | float) | round(0) }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_humidity',
-            'unique_id': '0x12345678_humidity_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 3
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
             'value_template': '{{ (value_json.pressure | float) | round(2) }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_pressure',
-            'unique_id': '0x12345678_pressure_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_pressure',
+            'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
-
-        // 4
-        payload = {
-            'unit_of_measurement': '%',
-            'device_class': 'battery',
-            'value_template': '{{ value_json.battery }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_battery',
-            'unique_id': '0x12345678_battery_zigbee2mqtt',
-            'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
-            },
-            'availability_topic': 'zigbee2mqtt/bridge/state',
-        };
-
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
-
-        // 5
-        payload = {
-            'unit_of_measurement': '-',
-            'value_template': '{{ value_json.linkquality }}',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_linkquality',
-            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
-            'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
-            },
-            'availability_topic': 'zigbee2mqtt/bridge/state',
-        };
-
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/pressure/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with overriden user configuration', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({
-            friendly_name: 'my_device',
+    it('Should discover devices with overriden user configuration', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
             homeassistant: {
                 expire_after: 30,
                 icon: 'mdi:test',
                 temperature: {
                     expire_after: 90,
+                    device: {
+                        manufacturer: 'From Xiaomi',
+                        sw_version: 'test'
+                    }
                 },
+                humidity: {
+                    unique_id: null,
+                },
+                device: {
+                    manufacturer: 'Not from Xiaomi',
+                    model: 'custom model',
+                }
             },
-        });
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
 
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        controller = new Controller(false);
+        await controller.start();
 
-        // 1
+        let payload;
+        await flushPromises();
+
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'value_template': '{{ value_json.temperature }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_temperature',
-            'unique_id': '0x12345678_temperature_zigbee2mqtt',
-            'expire_after': 90,
-            'icon': 'mdi:test',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': 'test',
+                'model': 'custom model',
+                'manufacturer': 'From Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
+            'expire_after': 90,
+            'icon': 'mdi:test',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
-        // 2
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
             'value_template': '{{ value_json.humidity }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_humidity',
-            'unique_id': '0x12345678_humidity_zigbee2mqtt',
-            'expire_after': 30,
-            'icon': 'mdi:test',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_humidity',
             'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
+                'model': 'custom model',
+                'manufacturer': 'Not from Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
-        };
-
-        expect(JSON.parse(mqtt.publish.mock.calls[1][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[1][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[1][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[1][4]).toBe('homeassistant');
-
-        // 3
-        payload = {
-            'unit_of_measurement': 'hPa',
-            'device_class': 'pressure',
-            'value_template': '{{ value_json.pressure }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_pressure',
-            'unique_id': '0x12345678_pressure_zigbee2mqtt',
             'expire_after': 30,
             'icon': 'mdi:test',
-            'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
-            },
-            'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[2][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[2][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[2][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[2][4]).toBe('homeassistant');
-
-        // 4
-        payload = {
-            'unit_of_measurement': '%',
-            'device_class': 'battery',
-            'value_template': '{{ value_json.battery }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_battery',
-            'unique_id': '0x12345678_battery_zigbee2mqtt',
-            'expire_after': 30,
-            'icon': 'mdi:test',
-            'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
-            },
-            'availability_topic': 'zigbee2mqtt/bridge/state',
-        };
-
-        expect(JSON.parse(mqtt.publish.mock.calls[3][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[3][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[3][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[3][4]).toBe('homeassistant');
-
-        // 5
-        payload = {
-            'unit_of_measurement': '-',
-            'value_template': '{{ value_json.linkquality }}',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_linkquality',
-            'unique_id': '0x12345678_linkquality_zigbee2mqtt',
-            'expire_after': 30,
-            'icon': 'mdi:test',
-            'device': {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
-            },
-            'availability_topic': 'zigbee2mqtt/bridge/state',
-        };
-
-        expect(JSON.parse(mqtt.publish.mock.calls[4][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[4][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[4][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[4][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with fan', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
+    it('Shouldnt discover devices when homeassistant null is set in device options', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
+            homeassistant: null,
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
 
-        homeassistant.discover('0x12345678', FAN99432, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(3);
+        controller = new Controller(false);
+        await controller.start();
 
-        // 1
-        payload = {
-            name: 'my_device_fan',
-            state_topic: 'zigbee2mqtt/my_device',
-            state_value_template: '{{ value_json.fan_state }}',
-            command_topic: 'zigbee2mqtt/my_device/set/fan_state',
-            speed_state_topic: 'zigbee2mqtt/my_device',
-            speed_value_template: '{{ value_json.fan_mode }}',
-            speed_command_topic: 'zigbee2mqtt/my_device/set/fan_mode',
-            unique_id: '0x12345678_fan_zigbee2mqtt',
-            speeds: ['off', 'low', 'medium', 'high', 'on', 'auto', 'smart'],
-            device: {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'manufacturer': 'Hampton Bay',
-                'model': 'Universal wink enabled white ceiling fan premier remote control (99432)',
-            },
-            availability_topic: 'zigbee2mqtt/bridge/state',
-            json_attributes_topic: 'zigbee2mqtt/my_device',
-        };
+        await flushPromises();
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        const topics = MQTT.publish.mock.calls.map((c) => c[0]);
+        expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config')
+        expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/temperature/config')
     });
 
-    it('Should discover devices with cover_position', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({friendly_name: 'my_device'});
+    it('Should discover devices with fan', async () => {
+        controller = new Controller(false);
+        await controller.start();
 
-        homeassistant.discover('0x12345678', SV01, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        let payload;
+        await flushPromises();
 
-        // 1
         payload = {
-            name: 'my_device_cover',
-            command_topic: 'zigbee2mqtt/my_device/set',
-            position_topic: 'zigbee2mqtt/my_device',
-            set_position_topic: 'zigbee2mqtt/my_device/set',
+            "state_topic":"zigbee2mqtt/fan",
+            "state_value_template":"{{ value_json.fan_state }}",
+            "command_topic":"zigbee2mqtt/fan/set/fan_state",
+            "speed_state_topic":"zigbee2mqtt/fan",
+            "speed_command_topic":"zigbee2mqtt/fan/set/fan_mode",
+            "speed_value_template":"{{ value_json.fan_mode }}",
+            "speeds":[
+               "off",
+               "low",
+               "medium",
+               "high",
+               "on",
+               "auto",
+               "smart"
+            ],
+            "json_attributes_topic":"zigbee2mqtt/fan",
+            "name":"fan_fan",
+            "unique_id":"0x0017880104e45548_fan_zigbee2mqtt",
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_0x0017880104e45548"
+               ],
+               "name":"fan",
+               "sw_version":this.version,
+               "model":"Universal wink enabled white ceiling fan premier remote control (99432)",
+               "manufacturer":"Hampton Bay"
+            },
+            "availability_topic":"zigbee2mqtt/bridge/state"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/fan/0x0017880104e45548/fan/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover devices with cover_position', async () => {
+        controller = new Controller(false);
+        await controller.start();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            command_topic: 'zigbee2mqtt/smart_vent/set',
+            position_topic: 'zigbee2mqtt/smart_vent',
+            set_position_topic: 'zigbee2mqtt/smart_vent/set',
             set_position_template: '{ "position": {{ position }} }',
             value_template: '{{ value_json.position }}',
-            unique_id: '0x12345678_cover_zigbee2mqtt',
-            device: {
-                'identifiers': ['zigbee2mqtt_0x12345678'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
-                'model': 'Smart vent (SV01)',
-                'manufacturer': 'Keen Home',
+            json_attributes_topic: 'zigbee2mqtt/smart_vent',
+            name: 'smart_vent_cover',
+            unique_id: '0x0017880104e45551_cover_zigbee2mqtt',
+            device:
+            {
+                identifiers: [ 'zigbee2mqtt_0x0017880104e45551' ],
+                name: 'smart_vent',
+                sw_version: this.version,
+                model: 'Smart vent (SV01)',
+                manufacturer: 'Keen Home'
             },
-            availability_topic: 'zigbee2mqtt/bridge/state',
+            availability_topic: 'zigbee2mqtt/bridge/state'
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/cover/0x0017880104e45551/cover/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with overriden user configuration in device', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({
-            friendly_name: 'my_device',
-            homeassistant: {
-                device: {
-                    identifiers: ['test123'],
-                },
-                temperature: {
-                    expire_after: 90,
-                },
-            },
-        });
+    it('Should discover devices with custom homeassistant_discovery_topic', async () => {
+        settings.set(['advanced', 'homeassistant_discovery_topic'], 'my_custom_discovery_topic')
+        controller = new Controller(false);
+        await controller.start();
 
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+        let payload;
+        await flushPromises();
 
-        // 1
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'value_template': '{{ value_json.temperature }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_temperature',
-            'unique_id': '0x12345678_temperature_zigbee2mqtt',
-            'expire_after': 90,
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': ['test123'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'my_custom_discovery_topic/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with overriden user configuration in device in temperature', () => {
-        let payload = null;
-        jest.spyOn(settings, 'getDevice').mockReturnValue({
-            friendly_name: 'my_device',
-            homeassistant: {
-                temperature: {
-                    expire_after: 90,
-                    device: {
-                        identifiers: ['test'],
-                    },
-                },
-            },
-        });
+    it('Should throw error when starting with attributes output', async () => {
+        settings.set(['experimental', 'output'], 'attribute')
+        expect(() => {
+            controller = new Controller(false);
+        }).toThrowError('Home Assitant integration is not possible with attribute output!');
+    });
 
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
+    it('Should warn when starting with cache_state false', async () => {
+        settings.set(['advanced', 'cache_state'], false);
+        logger.warn.mockClear();
+        controller = new Controller(false);
+        expect(logger.warn).toHaveBeenCalledWith("In order for HomeAssistant integration to work properly set `cache_state: true");
+    });
 
-        // 1
-        payload = {
+    it('Shouldt discover when already discovered', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        const data = {measuredValue: -85}
+        const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        // 1 publish is the publish from deviceReceive
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should discover when not discovered yet', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        const data = {measuredValue: -85}
+        const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        const payloadHA = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'value_template': '{{ value_json.temperature }}',
-            'json_attributes_topic': 'zigbee2mqtt/my_device',
-            'state_topic': 'zigbee2mqtt/my_device',
-            'name': 'my_device_temperature',
-            'unique_id': '0x12345678_temperature_zigbee2mqtt',
-            'expire_after': 90,
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
-                'identifiers': ['test'],
-                'name': 'my_device',
-                'sw_version': 'Zigbee2mqtt test',
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
             'availability_topic': 'zigbee2mqtt/bridge/state',
         };
 
-        expect(JSON.parse(mqtt.publish.mock.calls[0][1])).toStrictEqual(payload);
-        expect(mqtt.publish.mock.calls[0][2]).toStrictEqual({retain: true, qos: 0});
-        expect(mqtt.publish.mock.calls[0][3]).toBeNull();
-        expect(mqtt.publish.mock.calls[0][4]).toBe('homeassistant');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payloadHA),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
-    it('Should discover devices with a custom discovery topic', () => {
-        jest.spyOn(settings, 'get').mockReturnValue({
-            mqtt: {
-                base_topic: 'zigbee2mqtt',
-            },
-            experimental: {
-                output: 'json',
-            },
-            advanced: {
-                homeassistant_discovery_topic: 'my_custom_discovery_topic',
-            },
-        });
-
-        homeassistant = new HomeassistantExtension(null, mqtt, null, null);
-
-        jest.spyOn(settings, 'getDevice').mockReturnValue({
-            friendly_name: 'my_device',
-            homeassistant: {
-                temperature: {
-                    expire_after: 90,
-                    device: {
-                        identifiers: ['test'],
-                    },
-                },
-            },
-        });
-
-        homeassistant.discover('0x12345678', WSDCGQ11LM, false);
-
-        expect(mqtt.publish).toHaveBeenCalledTimes(5);
-        expect(mqtt.publish.mock.calls[0][4]).toBe('my_custom_discovery_topic');
+    it('Shouldnt discover when message has no device yet', async () => {
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        const device = zigbeeHerdsman.devices.bulb;
+        const payload = {ieeeAddr: device.ieeeAddr};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceLeave(payload);
+        await flushPromises();
+        // 1 publish is from device_removed
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
-    it('Should subscribe to custom status topic', () => {
-        jest.spyOn(settings, 'get').mockReturnValue({
-            experimental: {
-                output: 'json',
-            },
-            advanced: {
-                homeassistant_status_topic: 'my_custom_status_topic',
-            },
-        });
+    it('Should send all status when home assistant comes online', async () => {
+        jest.useFakeTimers();
+        data.writeDefaultState();
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        await MQTT.events.message('hass/status', 'online');
+        await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',
+            { retain: true, qos: 0 },
+            expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote',
+            '{"brightness":255}',
+            { retain: true, qos: 0 },
+            expect.any(Function)
+        );
+    });
 
-        const zigbee = {
-            getAllClients: jest.fn().mockReturnValue([]),
+    it('Shouldnt send all status when home assistant comes offline', async () => {
+        jest.useFakeTimers();
+        data.writeDefaultState();
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        await MQTT.events.message('hass/status', 'offline');
+        await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Shouldnt send all status when home assistant comes online with different topic', async () => {
+        jest.useFakeTimers();
+        data.writeDefaultState();
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        await MQTT.events.message('hass/status_different', 'offline');
+        await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should discover devices with availability', async () => {
+        settings.set(['advanced', 'availability_timeout'], 1)
+        controller = new Controller(false);
+        await controller.start();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            'unit_of_measurement': '°C',
+            'device_class': 'temperature',
+            'value_template': '{{ value_json.temperature }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': this.version,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability_topic': 'zigbee2mqtt/weather_sensor/availability',
         };
 
-        mqtt = {
-            subscribe: jest.fn(),
-        };
-
-
-        homeassistant = new HomeassistantExtension(zigbee, mqtt, null, null);
-
-        homeassistant.onMQTTConnected();
-
-        expect(mqtt.subscribe).toHaveBeenCalledTimes(1);
-        expect(mqtt.subscribe.mock.calls[0][0]).toBe('my_custom_status_topic');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 });

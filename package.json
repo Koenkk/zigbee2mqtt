@@ -1,14 +1,14 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.6.0",
-  "description": "Zigbee to MQTT bridge using zigbee-shepherd",
+  "version": "1.8.0",
+  "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "engines": {
-    "node": "10"
+    "node": "^10 || ^12 || ^13"
   },
   "keywords": [
     "xiaomi",
@@ -20,10 +20,11 @@
     "cc2531"
   ],
   "scripts": {
-    "coverage": "jest --collect-coverage",
-    "eslint": "node_modules/.bin/eslint .",
+    "test-with-coverage": "jest test --coverage",
+    "eslint": "node_modules/.bin/eslint lib/",
     "start": "node index.js",
-    "test": "jest"
+    "test": "jest test",
+    "test-watch": "jest test --watch"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -32,26 +33,39 @@
   },
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
+    "ajv": "*",
     "debounce": "*",
+    "fast-deep-equal": "*",
     "git-last-commit": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",
     "moment": "*",
     "mqtt": "*",
     "object-assign-deep": "*",
-    "queue": "*",
     "rimraf": "*",
     "semver": "*",
-    "winston": "2.4.2",
-    "zigbee-herdsman": "0.5.7",
-    "zigbee-shepherd-converters": "10.2.5",
-    "deep-diff": "*"
+    "winston": "*",
+    "zigbee-herdsman": "0.12.19",
+    "zigbee-herdsman-converters": "11.1.61"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.11",
     "eslint": "*",
     "eslint-config-google": "*",
-    "eslint-plugin-jest": "^22.3.0",
-    "jest": "^24.3.1"
+    "eslint-plugin-jest": "*",
+    "jest": "*",
+    "tmp": "*"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "collectCoverageFrom": [
+      "lib/**"
+    ]
   }
 }
