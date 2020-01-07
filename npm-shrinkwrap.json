@@ -2992,9 +2992,9 @@
       "integrity": "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="
     },
     "inquirer": {
-      "version": "7.0.2",
-      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-7.0.2.tgz",
-      "integrity": "sha512-cZGvHaHwcR9E3xK9EGO5pHKELU+yaeJO7l2qGKIbqk4bCuDuAn15LCoUTS2nSkfv9JybFlnAGrOcVpCDZZOLhw==",
+      "version": "7.0.3",
+      "resolved": "https://registry.npmjs.org/inquirer/-/inquirer-7.0.3.tgz",
+      "integrity": "sha512-+OiOVeVydu4hnCGLCSX+wedovR/Yzskv9BFqUNNKq9uU2qg7LCcCo3R86S2E7WLo0y/x2pnEZfZe1CoYnORUAw==",
       "dev": true,
       "requires": {
         "ansi-escapes": "^4.2.1",
@@ -4930,9 +4930,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.14.1",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.14.1.tgz",
-      "integrity": "sha512-fn5Wobh4cxbLzuHaE+nphztHy43/b++4M6SsGFC2gB8uYwf0C8LcarfCz1un7UTW8OFQg9iNjZ4xpcFVGebDPg==",
+      "version": "1.14.2",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.14.2.tgz",
+      "integrity": "sha512-EjlOBLBO1kxsUxsKjLt7TAECyKW6fOh1VRkykQkKGzcBbjjPIxBqGh0jf7GJ3k/f5mxMqW3htMD3WdTUVtW8HQ==",
       "dev": true,
       "requires": {
         "path-parse": "^1.0.6"
@@ -5827,9 +5827,9 @@
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
     },
     "uglify-js": {
-      "version": "3.7.3",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.7.3.tgz",
-      "integrity": "sha512-7tINm46/3puUA4hCkKYo4Xdts+JDaVC9ZPRcG8Xw9R4nhO/gZgUM3TENq8IF4Vatk8qCig4MzP/c8G4u2BkVQg==",
+      "version": "3.7.4",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.7.4.tgz",
+      "integrity": "sha512-tinYWE8X1QfCHxS1lBS8yiDekyhSXOO6R66yNOCdUJeojxxw+PX2BHAz/BWyW7PQ7pkiWVxJfIEbiDxyLWvUGg==",
       "dev": true,
       "optional": true,
       "requires": {
@@ -12803,9 +12803,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "11.1.66",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.66.tgz",
-      "integrity": "sha512-wmH9LptBkXv6tv9nYY4icdCNkE8nPH04I7pW4OiOlok4vWNetLhRJJWwsyjWg5FmtKgdPj3MOzGnhD6Fyvi+Sg==",
+      "version": "11.1.68",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-11.1.68.tgz",
+      "integrity": "sha512-7+MnusHo64wpBevSCzpO9jOlvDg5PAnFdyQ5fUUmKqo2Oz6hzd8uG4fD3o+feweE30T78S6we3xs0TRADFrOgw==",
       "dependencies": {
         "@babel/code-frame": {
           "version": "7.5.5",
