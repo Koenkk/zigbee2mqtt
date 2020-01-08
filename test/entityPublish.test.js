@@ -662,14 +662,16 @@ describe('Entity publish', () => {
     });
 
     it('Should allow to set color via hue and saturation', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color_2;
+        const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const payload = {"color":{"hue":250, "saturation":50}};
-        await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', JSON.stringify(payload));
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "enhancedMoveToHueAndSaturation", {"direction": 0, "enhancehue": 45510.416666666664, "saturation": 127, "transtime": 0,}, {}]);
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({"color":{"hue":250,"saturation":50}});
     });
 
     it('ZNCLDJ11LM open', async () => {

@@ -105,6 +105,12 @@ describe('Device configure', () => {
         expect(logger.error).toHaveBeenCalledWith(`Device 'remote_random_non_existing' does not exist`);
     });
 
+    it('Should skip reconfigure when device does not require this', async () => {
+        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'bulb');
+        await flushPromises();
+        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb', device does not require this.`)
+    });
+
     it('Should not configure when interviewing', async () => {
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;

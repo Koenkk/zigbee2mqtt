@@ -132,7 +132,10 @@ function writeDefaultConfiguration() {
             },
             '0x90fd9ffffe4b64af': {
                 friendly_name: 'roller_shutter',
-            }
+            },
+            '0x90fd9ffffe4b64ax': {
+                friendly_name: 'ZNLDP12LM',
+            },
         },
         groups: {
             '1': {

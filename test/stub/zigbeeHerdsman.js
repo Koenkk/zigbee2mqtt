@@ -129,6 +129,7 @@ const devices = {
     'LIVOLO': new Device('Router', '0x0017880104e45560', 6541,4152, [new Endpoint(6, [0, 6], [])], true, "Mains (single phase)", 'TI0001          '),
     'tradfri_remote': new Device('EndDevice', '0x90fd9ffffe4b64ae', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64ae')], true, "Battery", "TRADFRI remote control"),
     'roller_shutter': new Device('EndDevice', '0x90fd9ffffe4b64af', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64af')], true, "Battery", "SCM-R_00.00.03.15TC"),
+    'ZNLDP12LM': new Device('Router', '0x90fd9ffffe4b64ax', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64ax')], true, "Mains (single phase)", "lumi.light.aqcn02"),
 }
 
 const groups = {
