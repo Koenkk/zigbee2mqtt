@@ -15,6 +15,7 @@ const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const mockOnEvent = jest.fn();
 const mappedLivolo = zigbeeHerdsmanConverters.findByZigbeeModel(zigbeeHerdsman.devices.LIVOLO.modelID);
 mappedLivolo.onEvent = mockOnEvent;
+zigbeeHerdsmanConverters.onEvent = jest.fn();
 
 describe('Device event', () => {
     let controller;
@@ -27,6 +28,7 @@ describe('Device event', () => {
         controller = new Controller();
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
+        zigbeeHerdsmanConverters.onEvent.mockClear();
         await flushPromises();
     });
 
@@ -55,6 +57,17 @@ describe('Device event', () => {
         await flushPromises();
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
         const call = mockOnEvent.mock.calls[0];
+        expect(call[0]).toBe('deviceAnnounce')
+        expect(call[1]).toStrictEqual({device})
+        expect(call[2]).toBe(device);
+    });
+
+    it('Should call index onEvent with zigbee event', async () => {
+        zigbeeHerdsmanConverters.onEvent.mockClear();
+        await zigbeeHerdsman.events.deviceAnnounce({device});
+        await flushPromises();
+        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledTimes(1);
+        const call = zigbeeHerdsmanConverters.onEvent.mock.calls[0];
         expect(call[0]).toBe('deviceAnnounce')
         expect(call[1]).toStrictEqual({device})
         expect(call[2]).toBe(device);
