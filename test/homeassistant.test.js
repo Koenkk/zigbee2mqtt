@@ -22,7 +22,7 @@ describe('HomeAssistant extension', () => {
     it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
         const missing = [];
         const HomeAssistant = require('../lib/extension/homeassistant');
-        const ha = new HomeAssistant(null, null, null, null);
+        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
 
         require('zigbee-herdsman-converters').devices.forEach((d) => {
             if (!ha._getMapping()[d.model]) {
@@ -636,5 +636,55 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function),
         );
+    });
+
+    it('Should clear discovery when device is removed', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'weather_sensor');
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/pressure/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/battery/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/linkquality/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should not clear discovery when unsupported device is removed', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'unsupported2');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 });
