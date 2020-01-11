@@ -1,21 +1,30 @@
-FROM node:10-alpine
+FROM node:12-alpine as base
 
-# Copy files
-ADD . /app
-RUN cp /app/data/configuration.yaml /app
-RUN cp /app/docker/run.sh /app
-RUN chmod +x /app/run.sh
 WORKDIR /app
+RUN apk add --no-cache tzdata eudev
 
-# Write .hash.json
+COPY package.json .
+
+# Dependencies
+FROM base as dependencies
+
+COPY npm-shrinkwrap.json .
+
+RUN apk add --no-cache --virtual .buildtools make gcc g++ python linux-headers git && \
+    npm install --production && \
+    apk del .buildtools
+
+# Release
+FROM base as release
+
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY lib ./lib
+COPY index.js docker/run.sh data/configuration.yaml ./
+
+RUN chmod +x /app/run.sh
+RUN mkdir /app/data
+
 ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
-# Install dependencies
-RUN apk add --update --no-cache tzdata udev eudev && \
-    apk add --update --no-cache --virtual .buildtools make gcc g++ python linux-headers udev git && \
-    npm install --unsafe-perm --production && \
-    apk del .buildtools
-
-# Entrypoint
 ENTRYPOINT ["./run.sh"]
