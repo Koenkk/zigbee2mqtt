@@ -8,6 +8,7 @@ zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45559');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
+zigbeeHerdsman.returnDevices.push('0x90fd9ffffe4b64ax');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
@@ -196,5 +197,18 @@ describe('Device report', () => {
 
         // Should only call Hue bulb, not e.g. tradfri
         expect(zigbeeHerdsman.devices.bulb.getEndpoint(1).read).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should not configure reporting for the ZNLDP12LM closuresWindowCovering as it is ignored', async () => {
+        const device = zigbeeHerdsman.devices.ZNLDP12LM;
+        const coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        delete device.meta.reporting;
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(3);
+        expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', coordinatorEndpoint);
+        expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
+        expect(endpoint.bind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
     });
 });
