@@ -368,8 +368,9 @@ describe('Bridge config', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'bulb_color');
         await flushPromises();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(settings.getDevice('bulb_color')).toStrictEqual({"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "retain": false})
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
     it('Should handle when ban fails', async () => {
@@ -381,8 +382,9 @@ describe('Bridge config', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/ban', 'bulb_color');
         await flushPromises();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(settings.getDevice('bulb_color')).toStrictEqual({"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "retain": false})
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
     it('Should allow to touchlink factory reset (OK)', async () => {
@@ -392,7 +394,7 @@ describe('Bridge config', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
         expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
-        expect(logger.info).toHaveBeenCalledWith('Succesfully factory reset device through Touchlink');
+        expect(logger.info).toHaveBeenCalledWith('Successfully factory reset device through Touchlink');
     });
 
     it('Should allow to touchlink factory reset (FAILS)', async () => {
