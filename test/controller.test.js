@@ -57,6 +57,7 @@ describe('Controller', () => {
         const configuration = {
             base_topic: "zigbee2mqtt",
             server: "mqtt://localhost",
+            keepalive: 30,
             ca, cert, key,
             password: 'pass',
             user: 'user1',
@@ -69,6 +70,7 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
             "will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"},
+            keepalive: 30,
             ca: Buffer.from([99, 97]),
             key: Buffer.from([107, 101, 121]),
             cert: Buffer.from([99, 101, 114, 116]),
