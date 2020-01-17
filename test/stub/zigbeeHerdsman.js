@@ -20,8 +20,9 @@ const clusters = {
 }
 
 class Endpoint {
-    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[]) {
+    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}) {
         this.deviceIeeeAddress = deviceIeeeAddress;
+        this.clusterValues = clusterValues;
         this.ID = ID;
         this.inputClusters = inputClusters;
         this.outputClusters = outputClusters;
@@ -60,13 +61,18 @@ class Endpoint {
         this.removeFromAllGroups = () => {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))
         }
+
+        this.getClusterAttributeValue = (cluster, value) => {
+            return this.clusterValues[cluster][value];
+        }
     }
 }
 
 class Device {
-    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName) {
+    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName, dateCode= null) {
         this.type = type;
         this.ieeeAddr = ieeeAddr;
+        this.dateCode = dateCode;
         this.networkAddress = networkAddress;
         this.manufacturerID = manufacturerID;
         this.endpoints = endpoints;
@@ -130,6 +136,9 @@ const devices = {
     'tradfri_remote': new Device('EndDevice', '0x90fd9ffffe4b64ae', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64ae')], true, "Battery", "TRADFRI remote control"),
     'roller_shutter': new Device('EndDevice', '0x90fd9ffffe4b64af', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64af')], true, "Battery", "SCM-R_00.00.03.15TC"),
     'ZNLDP12LM': new Device('Router', '0x90fd9ffffe4b64ax', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64ax')], true, "Mains (single phase)", "lumi.light.aqcn02"),
+    'SP600_OLD': new Device('Router', '0x90fd9ffffe4b64aa', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20160120'),
+    'SP600_NEW': new Device('Router', '0x90fd9ffffe4b64ab', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20170220'),
+
 }
 
 const groups = {

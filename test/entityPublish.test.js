@@ -848,6 +848,22 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish brightness_move up to zigbee devices', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness_move: -40}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveWithOnOff", {"movemode": 1, "rate": 40}, {});
+    });
+
+    it('Should publish brightness_move down to zigbee devices', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness_move: 30}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveWithOnOff", {"movemode": 0, "rate": 30}, {});
+    });
+
     it('HS2WD-E burglar warning', async () => {
         const endpoint = zigbeeHerdsman.devices.HS2WD.getEndpoint(1);
         const payload = {warning: {duration: 100, mode: 'burglar', strobe: true, level: 'high'}};
