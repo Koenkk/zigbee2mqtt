@@ -136,6 +136,12 @@ function writeDefaultConfiguration() {
             '0x90fd9ffffe4b64ax': {
                 friendly_name: 'ZNLDP12LM',
             },
+            '0x90fd9ffffe4b64aa': {
+                friendly_name: 'SP600_OLD',
+            },
+            '0x90fd9ffffe4b64ab': {
+                friendly_name: 'SP600_NEW',
+            },
         },
         groups: {
             '1': {
