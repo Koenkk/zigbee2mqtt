@@ -138,6 +138,7 @@ const devices = {
     'ZNLDP12LM': new Device('Router', '0x90fd9ffffe4b64ax', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64ax')], true, "Mains (single phase)", "lumi.light.aqcn02"),
     'SP600_OLD': new Device('Router', '0x90fd9ffffe4b64aa', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20160120'),
     'SP600_NEW': new Device('Router', '0x90fd9ffffe4b64ab', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20170220'),
+    'MKS-CM-W5': new Device('Router', '0x90fd9ffffe4b64ac', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {})], true, "Mains (single phase)", "qnazj70", false),
 
 }
 

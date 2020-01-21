@@ -918,4 +918,17 @@ describe('Entity publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({position: 100});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
+
+    it('Should publish to MKS-CM-W5', async () => {
+        const device = zigbeeHerdsman.devices['MKS-CM-W5'];
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/MKS-CM-W5/l3/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 259, fn: 0, status: 0, transid: 16}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/MKS-CM-W5');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_l3: 'ON'});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+    });
 });

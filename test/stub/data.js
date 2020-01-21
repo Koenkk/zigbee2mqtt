@@ -142,6 +142,9 @@ function writeDefaultConfiguration() {
             '0x90fd9ffffe4b64ab': {
                 friendly_name: 'SP600_NEW',
             },
+            '0x90fd9ffffe4b64ac': {
+                friendly_name: 'MKS-CM-W5',
+            }
         },
         groups: {
             '1': {
