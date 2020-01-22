@@ -144,6 +144,9 @@ function writeDefaultConfiguration() {
             },
             '0x90fd9ffffe4b64ac': {
                 friendly_name: 'MKS-CM-W5',
+            },
+            '0x0017880104e45526': {
+                friendly_name: 'GL-S-007ZS',
             }
         },
         groups: {

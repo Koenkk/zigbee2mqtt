@@ -931,4 +931,17 @@ describe('Entity publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_l3: 'ON'});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
+
+    it('Should publish separate genOnOff to GL-S-007ZS when setting state and brightness as bulb doesnt turn on with moveToLevelWithOnOff', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/2757
+        const device = zigbeeHerdsman.devices['GL-S-007ZS'];
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/GL-S-007ZS/set', JSON.stringify({state: 'ON', brightness: 20}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command.mock.calls[0]).toEqual([ 'genOnOff', 'on', {}, {} ]);
+        expect(endpoint.command.mock.calls[1]).toEqual([ 'genLevelCtrl', 'moveToLevelWithOnOff', { level: 20, transtime: 0 }, {} ]);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0]).toEqual([ 'zigbee2mqtt/GL-S-007ZS', '{"state":"ON","brightness":20}', { qos: 0, retain: false }, expect.any(Function)])
+    });
 });
