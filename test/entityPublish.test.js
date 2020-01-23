@@ -848,6 +848,22 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish brightness_move up to zigbee devices', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness_move: -40}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveWithOnOff", {"movemode": 1, "rate": 40}, {});
+    });
+
+    it('Should publish brightness_move down to zigbee devices', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({brightness_move: 30}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveWithOnOff", {"movemode": 0, "rate": 30}, {});
+    });
+
     it('HS2WD-E burglar warning', async () => {
         const endpoint = zigbeeHerdsman.devices.HS2WD.getEndpoint(1);
         const payload = {warning: {duration: 100, mode: 'burglar', strobe: true, level: 'high'}};
@@ -901,5 +917,31 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/roller_shutter');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({position: 100});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+    });
+
+    it('Should publish to MKS-CM-W5', async () => {
+        const device = zigbeeHerdsman.devices['MKS-CM-W5'];
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/MKS-CM-W5/l3/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 259, fn: 0, status: 0, transid: 16}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/MKS-CM-W5');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_l3: 'ON'});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+    });
+
+    it('Should publish separate genOnOff to GL-S-007ZS when setting state and brightness as bulb doesnt turn on with moveToLevelWithOnOff', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/2757
+        const device = zigbeeHerdsman.devices['GL-S-007ZS'];
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/GL-S-007ZS/set', JSON.stringify({state: 'ON', brightness: 20}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command.mock.calls[0]).toEqual([ 'genOnOff', 'on', {}, {} ]);
+        expect(endpoint.command.mock.calls[1]).toEqual([ 'genLevelCtrl', 'moveToLevelWithOnOff', { level: 20, transtime: 0 }, {} ]);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0]).toEqual([ 'zigbee2mqtt/GL-S-007ZS', '{"state":"ON","brightness":20}', { qos: 0, retain: false }, expect.any(Function)])
     });
 });

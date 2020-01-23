@@ -57,6 +57,7 @@ describe('Controller', () => {
         const configuration = {
             base_topic: "zigbee2mqtt",
             server: "mqtt://localhost",
+            keepalive: 30,
             ca, cert, key,
             password: 'pass',
             user: 'user1',
@@ -69,6 +70,7 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
             "will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"},
+            keepalive: 30,
             ca: Buffer.from([99, 97]),
             key: Buffer.from([107, 101, 121]),
             cert: Buffer.from([99, 101, 114, 116]),
@@ -417,12 +419,12 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)"}}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)","dateCode":null}}', {"qos": 0, "retain": true}, expect.any(Function));
 
         // Unsupported device should have model "unknown"
         await controller.publishEntityState('unsupported2', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', '{"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery"}}', {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', '{"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null}}', {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Publish entity state no empty messages', async () => {

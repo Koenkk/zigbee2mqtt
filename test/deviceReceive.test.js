@@ -388,16 +388,24 @@ describe('Device receive', () => {
         expect(logger.debug).toHaveBeenCalledWith('No converter available for \'ZNCZ02LM\' with cluster \'genBinaryOutput\' and type \'attributeReport\' and data \'{"inactiveText":"hello"}\'');
     });
 
-    it('Should allow to calibrate temperature values', async () => {
-        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
-        settings.set(['devices', device.ieeeAddr, 'temperature_calibration'], 2);
-        const data = {measuredValue: -85}
-        const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+    it('Should report correct energy and power values for different versions of SP600', async () => {
+        // https://github.com/Koenkk/zigbee-herdsman-converters/issues/915, OLD and NEW use different date code
+        // divisor of OLD is not correct and therefore underreports by factor 10.
+        const data = {instantaneousDemand:496,currentSummDelivered:[0,6648]}
+
+        const SP600_NEW = zigbeeHerdsman.devices.SP600_NEW;
+        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_NEW, endpoint: SP600_NEW.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 1.15, linkquality: 10});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_NEW');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({energy: 0.66, power: 49.6, linkquality: 10});
+
+        MQTT.publish.mockClear();
+        const SP600_OLD = zigbeeHerdsman.devices.SP600_OLD;
+        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_OLD, endpoint: SP600_OLD.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_OLD');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({energy: 6.648, power: 496, linkquality: 10});
     });
 });
