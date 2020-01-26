@@ -142,6 +142,8 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'unit_of_measurement': '-',
+            'icon': 'mdi:signal',
+            'unit_of_measurement': 'lqi',
             'value_template': '{{ value_json.linkquality }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
