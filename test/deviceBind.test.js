@@ -15,6 +15,7 @@ describe('Device bind', () => {
             endpoint.write.mockClear();
             endpoint.configureReporting.mockClear();
             endpoint.bind.mockClear();
+            endpoint.unbind.mockClear();
         }
     }
 
@@ -170,5 +171,25 @@ describe('Device bind', () => {
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
         expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
+    });
+
+    it('Should unbind from default_bind_group', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = 'default_bind_group';
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/unbind/remote', target);
+        await flushPromises();
+        expect(endpoint.unbind).toHaveBeenCalledTimes(3);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", 901);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", 901);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", 901);
+        expect(MQTT.publish).toHaveBeenCalledTimes(3);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genScenes'}});
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/log');
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genOnOff'}});
+        expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('zigbee2mqtt/bridge/log');
+        expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genLevelCtrl'}});
     });
 });
