@@ -948,4 +948,15 @@ describe('Entity publish', () => {
         expect(MQTT.publish.mock.calls[0]).toEqual([ 'zigbee2mqtt/GL-S-007ZS', '{"state":"ON","brightness":20}', { qos: 0, retain: false }, expect.any(Function)]);
         jest.useRealTimers();
     });
+
+    it('Should log as error when setting property with no defined converter', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const payload = {'brightness_move': 20};
+        logger.error.mockClear();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/get', JSON.stringify(payload));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(0);
+        expect(logger.error).toHaveBeenCalledWith("No converter available for 'get' 'brightness_move' (20)");
+    });
 });
