@@ -41,7 +41,7 @@ steps:
 - bash: |
     sudo wget -O /usr/local/bin/buildx https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
     sudo chmod a+x /usr/local/bin/buildx
-    docker run --rm --privileged hypriot/qemu-register
+    docker run --rm --privileged hypriot/qemu-register:v2.8.0
     buildx create --use
     buildx ls
   displayName: 'Docker setup'
