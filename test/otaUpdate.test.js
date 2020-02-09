@@ -32,56 +32,115 @@ describe('OTA update', () => {
 
     it('Should OTA update a device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.endpoints[0];
+        let count = 0;
+        endpoint.read.mockImplementation(() => {
+            count++;
+            return {swBuildId: count, dateCode: '2019010' + count}
+        });
         const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
         mockClear(mapped);
         logger.info.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        logger.error.mockClear();
+        device.save.mockClear();
         mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
-            onUpdate(2);
-            return {from: {softwareBuildID: 1}, to: {softwareBuildID: 2}};
+            onUpdate(0, null);
+            onUpdate(10, 3600);
         });
 
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
-        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
-        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`);
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 2%`);
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"softwareBuildID":1}' to '{"softwareBuildID":2}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0%`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10%, +- 60 minutes remaining`);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"softwareBuildID":1,"dateCode":"20190101"}' to '{"softwareBuildID":2,"dateCode":"20190102"}'`);
+        expect(logger.error).toHaveBeenCalledTimes(0);
+        expect(device.save).toHaveBeenCalledTimes(1);
+        expect(device.dateCode).toBe('20190102');
+        expect(device.softwareBuildID).toBe(2);
     });
 
-    it('Should refuse to OTA update a device when no update is available', async () => {
+    it('Should handle when OTA update fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.endpoints[0];
+        endpoint.read.mockImplementation(() => {return {swBuildId: 1, dateCode: '2019010'}});
         const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
         mockClear(mapped);
         logger.info.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        logger.error.mockClear();
+        device.save.mockClear();
+        mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
+            throw new Error('Update failed');
+        });
 
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
-        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
-        expect(logger.error).toHaveBeenCalledWith(`No update available for 'bulb'`);
+        expect(logger.error).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith(`Update of 'bulb' failed (Update failed)`);
     });
 
     it('Should be able to check if OTA update is available', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
         mockClear(mapped);
+
         logger.info.mockClear();
         mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
-
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(logger.info).toHaveBeenCalledWith(`No update available for 'bulb'`);
+
+        logger.info.mockClear();
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(2);
+        expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
+        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
+    });
+
+    it('Should handle if OTA update check fails', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
+        mockClear(mapped);
+        logger.error.mockClear();
+        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF singals disturbed because of dogs barking')});
+
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
+        expect(logger.error).toHaveBeenCalledWith(`Failed to check if update available for 'bulb' (RF singals disturbed because of dogs barking)`);
     });
 
     it('Should not check for OTA when device does not support it', async () => {
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb_color_2');
         await flushPromises();
         expect(logger.error).toHaveBeenCalledWith(`Device 'bulb_color_2' does not support OTA updates`);
+    });
+
+    it('Should refuse to check/update when already in progress', async () => {
+        jest.useFakeTimers();
+        const device = zigbeeHerdsman.devices.bulb;
+        const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
+        mockClear(mapped);
+
+        logger.info.mockClear();
+        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {
+            return new Promise((resolve, reject) => {setTimeout(() => resolve(), 99999)})
+        });
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
+        await flushPromises();
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith(`Update or check already in progress for 'bulb', skipping...`);
+        jest.runAllTimers();
+        await flushPromises();
     });
 });

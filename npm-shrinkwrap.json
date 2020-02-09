@@ -5401,9 +5401,9 @@
       "dev": true
     },
     "rimraf": {
-      "version": "3.0.1",
-      "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-3.0.1.tgz",
-      "integrity": "sha512-IQ4ikL8SjBiEDZfk+DFVwqRK8md24RWMEJkdSlgNLkyyAImcjf8SWvU1qFMDOb4igBClbTQ/ugPqXcRwdFTxZw==",
+      "version": "3.0.2",
+      "resolved": "https://registry.npmjs.org/rimraf/-/rimraf-3.0.2.tgz",
+      "integrity": "sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==",
       "requires": {
         "glob": "^7.1.3"
       }
@@ -6500,9 +6500,9 @@
       "dev": true
     },
     "v8-to-istanbul": {
-      "version": "4.1.1",
-      "resolved": "https://registry.npmjs.org/v8-to-istanbul/-/v8-to-istanbul-4.1.1.tgz",
-      "integrity": "sha512-eDRcudafj/GAV2MSoDNmsV/deeIY9bJ94QuVOzZDEbBd4uX+5v/kODX+p/fqZ74/VYLK1BZv8BPJlNnCV8vDhw==",
+      "version": "4.1.2",
+      "resolved": "https://registry.npmjs.org/v8-to-istanbul/-/v8-to-istanbul-4.1.2.tgz",
+      "integrity": "sha512-G9R+Hpw0ITAmPSr47lSlc5A1uekSYzXxTMlFxso2xoffwo4jQnzbv1p9yXIinO8UMZKfAFewaCHwWvnH4Jb4Ug==",
       "dev": true,
       "requires": {
         "@types/istanbul-lib-coverage": "^2.0.1",
@@ -14750,9 +14750,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.21",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.21.tgz",
-      "integrity": "sha512-lMxv1iT8b25ikoq5crdOMG3r8jIXRH0RKsd3xsi0POK/CcFSySxYvKEbQJXNPVau9ZbKXRUHVTNd/hrRmlaPew==",
+      "version": "12.0.22",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.22.tgz",
+      "integrity": "sha512-x4UfL0pRa6ccCmmoYymliUWbfoiwCEnYsut9/ADuaanhn4LJh1WrTTvO14jmZ0US3kysIoQUh96+Gty1BJ/syg==",
       "requires": {
         "axios": "*"
       },

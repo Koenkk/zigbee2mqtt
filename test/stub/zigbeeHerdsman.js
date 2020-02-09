@@ -12,6 +12,7 @@ class Group {
 }
 
 const clusters = {
+    'genBasic': 0,
     'genScenes': 5,
     'genOnOff': 6,
     'genLevelCtrl': 8,
@@ -34,7 +35,7 @@ class Endpoint {
         this.configureReporting = jest.fn();
         this.binds = binds;
         this.supportsInputCluster = (cluster) => {
-            assert(clusters[cluster], `Undefined '${cluster}'`);
+            assert(clusters[cluster] !== undefined, `Undefined '${cluster}'`);
             return this.inputClusters.includes(clusters[cluster]);
         }
 
