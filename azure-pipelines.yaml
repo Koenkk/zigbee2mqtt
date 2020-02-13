@@ -16,7 +16,7 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
-- bash: npm install
+- bash: npm ci
   displayName: 'Install dependencies'
 
 # Verify

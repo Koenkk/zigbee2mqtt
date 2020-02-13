@@ -11,7 +11,7 @@ FROM base as dependencies
 COPY npm-shrinkwrap.json .
 
 RUN apk add --no-cache --virtual .buildtools make gcc g++ python linux-headers git && \
-    npm install --production && \
+    npm ci --production && \
     apk del .buildtools
 
 # Release
