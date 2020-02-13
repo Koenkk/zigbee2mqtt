@@ -725,6 +725,16 @@ describe('Entity publish', () => {
         expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 30}, {}]);
     });
 
+    it('Should turn device on with on/off with transition when transition 0 is provided', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const payload = {state: 'ON', transition: 0};
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 0}, {}]);
+    });
+
     it('Should turn device off with onOff on off with transition', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
