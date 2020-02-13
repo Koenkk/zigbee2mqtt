@@ -143,4 +143,22 @@ describe('OTA update', () => {
         jest.runAllTimers();
         await flushPromises();
     });
+
+    it('Shouldnt crash when read modelID after OTA update fails', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.endpoints[0];
+        let count = 0;
+        endpoint.read.mockImplementation(() => {
+            if (count === 1) throw new Error('Failed!')
+            count++;
+            return {swBuildId: 1, dateCode: '2019010'}
+        });
+
+        const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
+        mockClear(mapped);
+        logger.info.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
+        await flushPromises();
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+    });
 });
