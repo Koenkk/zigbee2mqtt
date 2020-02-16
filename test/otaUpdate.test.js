@@ -161,4 +161,21 @@ describe('OTA update', () => {
         await flushPromises();
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
     });
+
+    it('Should check for update when device requests it', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const data = {imageType: 12382};
+        const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
+        mockClear(mapped);
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+
+        // Should not request again when device asks again after a short time
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+    });
 });

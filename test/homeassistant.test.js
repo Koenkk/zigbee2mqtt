@@ -5,7 +5,6 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const flushPromises = () => new Promise(setImmediate);
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
@@ -687,5 +686,37 @@ describe('HomeAssistant extension', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'unsupported2');
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should discover update_available sensor when device supports it', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const payload = {
+            "payload_on":true,
+            "payload_off":false,
+            "value_template":"{{ value_json.update_available}}",
+            "state_topic":"zigbee2mqtt/bulb",
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb_update_available",
+            "unique_id":"0x000b57fffec6a5b2_update_available_zigbee2mqtt",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x000b57fffec6a5b2"
+                ],
+                "name":"bulb",
+                'sw_version': this.version,
+                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "manufacturer":"IKEA"
+            },
+            "availability_topic":"zigbee2mqtt/bridge/state"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/binary_sensor/0x000b57fffec6a5b2/update_available/config',
+            JSON.stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 });
