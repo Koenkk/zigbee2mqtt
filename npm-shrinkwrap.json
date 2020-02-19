@@ -688,9 +688,9 @@
       }
     },
     "@sinonjs/commons": {
-      "version": "1.7.0",
-      "resolved": "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.7.0.tgz",
-      "integrity": "sha512-qbk9AP+cZUsKdW1GJsBpxPKFmCJ0T8swwzVje3qFd+AkQb74Q/tiuzrdfFg8AD2g5HH/XbE/I8Uc1KYHVYWfhg==",
+      "version": "1.7.1",
+      "resolved": "https://registry.npmjs.org/@sinonjs/commons/-/commons-1.7.1.tgz",
+      "integrity": "sha512-Debi3Baff1Qu1Unc3mjJ96MgpbwTn43S1+9yJ0llWygPwDNu2aaWBD6yc9y/Z8XDRNhx7U+u2UDg2OGQXkclUQ==",
       "dev": true,
       "requires": {
         "type-detect": "4.0.8"
@@ -6791,9 +6791,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.49",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.49.tgz",
-      "integrity": "sha512-+E74WO9JNhoQEagbgbe6AcCS1m6N7PpX0jhO2SLNIQZwTeeGxf7RruEZgYSrK4RAjRMhEG1Z0os1yyjcZYcsDQ==",
+      "version": "0.12.52",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.52.tgz",
+      "integrity": "sha512-2ac7z8hm3Cw55QycaCUuBp8FO4GzSH/kctwiJgGVRxjgDjgMFITciTEjYTSvIslT52lULzRCjC6PuMWOq3gfTw==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
