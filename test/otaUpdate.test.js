@@ -167,15 +167,26 @@ describe('OTA update', () => {
         const data = {imageType: 12382};
         const mapped = zigbeeHerdsmanConverters.findByZigbeeModel(device.modelID)
         mockClear(mapped);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`)
 
         // Should not request again when device asks again after a short time
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+
+        const extension = controller.extensions.find((e) => e.constructor.name === 'OTAUpdate');
+        extension.lastChecked = {};
+        logger.info.mockClear();
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`)
     });
 });
