@@ -267,10 +267,11 @@ describe('Bridge config', () => {
     });
 
     it('Should allow to remove groups', async () => {
-        settings.addGroup('to_be_removed')
-        MQTT.events.message('zigbee2mqtt/bridge/config/remove_group', 'to_be_removed');
+        const group = zigbeeHerdsman.groups.group_1;
+        MQTT.events.message('zigbee2mqtt/bridge/config/remove_group', 'group_1');
         await flushPromises();
         expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
+        expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
     });
 
     it('Shouldnt allow add groups without id or friendly_name in json', async () => {

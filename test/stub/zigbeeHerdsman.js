@@ -7,6 +7,7 @@ class Group {
         this.command = jest.fn();
         this.meta = {};
         this.members = members;
+        this.removeFromDatabase = jest.fn();
         this.hasMember = (endpoint) => this.members.includes(endpoint);
     }
 }
