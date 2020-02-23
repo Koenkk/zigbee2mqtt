@@ -203,6 +203,20 @@ describe('Bridge config', () => {
         expect(settings.getDevice('bulb_color2')).toStrictEqual(bulb_color2);
     });
 
+    it('Should allow rename groups', async () => {
+        MQTT.publish.mockClear();
+        expect(settings.getGroup(1)).toStrictEqual({"ID": 1, devices: [], friendlyName: "group_1", "friendly_name": "group_1", optimistic: true, retain: false});
+        MQTT.events.message('zigbee2mqtt/bridge/config/rename', JSON.stringify({old: 'group_1', new: 'group_1_renamed'}));
+        await flushPromises();
+        expect(settings.getGroup(1)).toStrictEqual({"ID": 1, devices: [], friendlyName: "group_1_renamed", "friendly_name": "group_1_renamed", optimistic: true, retain: false});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_renamed', message: {from: 'group_1', to: 'group_1_renamed'}}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
+    });
+
     it('Should allow to rename last joined device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const payload = {device};

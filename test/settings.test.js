@@ -539,6 +539,21 @@ describe('Settings', () => {
         }).toThrowError(`friendly_name 'myname' is already in use`);
     });
 
+    it('Should throw when removing device which doesnt exist', async () => {
+        write(configurationFile, {
+            devices: {
+                '0x0017880104e45519': {friendly_name: 'myname', retain: false},
+                '0x0017880104e45511': {friendly_name: 'myname1', retain: false}
+            },
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.removeDevice('myname33');
+        }).toThrowError(`Device 'myname33' does not exist`);
+    });
+
     it('Shouldnt write to configuration.yaml when there are no changes in it', () => {
         const contentConfiguration = {devices: 'devices.yaml'};
         const contentDevices = {};
