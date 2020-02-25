@@ -912,7 +912,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E emergency warning', async () => {
@@ -921,7 +921,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E emergency without level', async () => {
@@ -930,7 +930,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E wrong payload (should use defaults)', async () => {
@@ -939,7 +939,7 @@ describe('Entity publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', JSON.stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10}, {disableDefaultResponse: true});
     });
 
     it('Shouldnt do anythign when device is not supported', async () => {
