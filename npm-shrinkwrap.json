@@ -781,9 +781,9 @@
       "dev": true
     },
     "@types/yargs": {
-      "version": "15.0.3",
-      "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-15.0.3.tgz",
-      "integrity": "sha512-XCMQRK6kfpNBixHLyHUsGmXrpEmFFxzMrcnSXFMziHd8CoNJo8l16FkHyQq4x+xbM7E2XL83/O78OD8u+iZTdQ==",
+      "version": "15.0.4",
+      "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-15.0.4.tgz",
+      "integrity": "sha512-9T1auFmbPZoxHz0enUFlUuKRy3it01R+hlggyVUMtnCTQRunsQYifnSGb8hET4Xo8yiC0o0r1paW3ud5+rbURg==",
       "dev": true,
       "requires": {
         "@types/yargs-parser": "*"
@@ -869,9 +869,9 @@
       }
     },
     "acorn-jsx": {
-      "version": "5.1.0",
-      "resolved": "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.1.0.tgz",
-      "integrity": "sha512-tMUqwBWfLFbJbizRmEcWSLw6HnFzfdJs2sOJEOwwtVPMoH/0Ay+E703oZz78VSXZiiDcZrQ5XKjPIUQixhmgVw==",
+      "version": "5.2.0",
+      "resolved": "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.2.0.tgz",
+      "integrity": "sha512-HiUX/+K2YpkpJ+SzBffkM/AQ2YE03S0U1kjTLVpoJdhZMOWy8qvXVN9JdLqv2QsaQ6MPYQIuNmwD8zOiYUofLQ==",
       "dev": true
     },
     "acorn-walk": {
@@ -5409,9 +5409,9 @@
       "dev": true
     },
     "run-async": {
-      "version": "2.3.0",
-      "resolved": "https://registry.npmjs.org/run-async/-/run-async-2.3.0.tgz",
-      "integrity": "sha1-A3GrSuC91yDUFm19/aZP96RFpsA=",
+      "version": "2.4.0",
+      "resolved": "https://registry.npmjs.org/run-async/-/run-async-2.4.0.tgz",
+      "integrity": "sha512-xJTbh/d7Lm7SBhc1tNvTpeCHaEzoyxPrqNlvSdMfBTYwaY++UJFyXUOxAtsRUXjlqOfj8luNaR9vjCh4KeV+pg==",
       "dev": true,
       "requires": {
         "is-promise": "^2.1.0"
