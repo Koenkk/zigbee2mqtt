@@ -248,9 +248,15 @@ describe('Bridge config', () => {
         zigbeeHerdsman.createGroup.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/add_group', 'new_group');
         await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_added', message: 'new_group'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
         expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3);
     });
 
     it('Should allow to add groups with json', async () => {
@@ -259,7 +265,13 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(settings.getGroup('new_group')).toStrictEqual({"ID": 3, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3)
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(3);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_added', message: 'new_group'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
     });
 
     it('Should allow to add groups with json specifying id', async () => {
@@ -268,7 +280,13 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(settings.getGroup('new_group')).toStrictEqual({"ID": 42, "friendlyName": "new_group", "friendly_name": "new_group", devices: [], optimistic: true});
         expect(zigbeeHerdsman.createGroup).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42)
+        expect(zigbeeHerdsman.createGroup).toHaveBeenCalledWith(42);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_added', message: 'new_group'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
     });
 
     it('Should allow to add groups with json specifying only id', async () => {
@@ -286,6 +304,12 @@ describe('Bridge config', () => {
         await flushPromises();
         expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
         expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_removed', message: 'group_1'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
     });
 
     it('Shouldnt allow add groups without id or friendly_name in json', async () => {
