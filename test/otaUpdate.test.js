@@ -174,7 +174,9 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
-        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`)
+        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x95});
 
         // Should not request again when device asks again after a short time
         await zigbeeHerdsman.events.message(payload);
