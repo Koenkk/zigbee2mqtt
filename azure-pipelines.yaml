@@ -25,6 +25,14 @@ steps:
 - bash: npm run eslint
   displayName: 'Lint'
 
+# NPM
+- task: Npm@1
+  inputs:
+    command: publish
+    publishEndpoint: npm
+  displayName: 'Publish to npm'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
+
 # Docker
 - task: DockerInstaller@0
   displayName: Docker install
