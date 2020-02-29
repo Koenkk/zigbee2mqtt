@@ -719,4 +719,65 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
+
+    it('Should discover trigger when click is published', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+
+        const discoverPayload = {
+            "automation_type":"trigger",
+            "type":"click",
+            "subtype":"single",
+            "payload":"single",
+            "topic":"zigbee2mqtt/button/click",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x0017880104e45520"
+                ],
+                "name":"button",
+                "sw_version": this.version,
+                "model":"Aqara wireless switch (WXKG11LM)",
+                "manufacturer":"Xiaomi"
+            }
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45520/click_single/config',
+            JSON.stringify(discoverPayload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button/click',
+            'single',
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+
+        // Should only discover it once
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45520/click_single/config',
+            JSON.stringify(discoverPayload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button/click',
+            'single',
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+    });
 });
