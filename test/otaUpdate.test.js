@@ -175,8 +175,8 @@ describe('OTA update', () => {
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
         expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
-        // expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        // expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x95});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x95});
 
         // Should not request again when device asks again after a short time
         await zigbeeHerdsman.events.message(payload);
@@ -198,7 +198,7 @@ describe('OTA update', () => {
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        // expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        // expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152});
     });
 });
