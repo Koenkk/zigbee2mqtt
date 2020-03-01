@@ -724,6 +724,12 @@ describe('HomeAssistant extension', () => {
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
+
+        const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
+        expect(discovered.length).toBe(4);
+        expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/click/config');
+        expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/action/config');
+
         MQTT.publish.mockClear();
 
         const device = zigbeeHerdsman.devices.WXKG11LM;
@@ -762,6 +768,20 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
 
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button',
+            JSON.stringify({click: "single", linkquality: 10}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button',
+            JSON.stringify({linkquality: 10, click: ""}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+
         // Should only discover it once
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.message(payload);
@@ -779,5 +799,64 @@ describe('HomeAssistant extension', () => {
             { retain: false, qos: 0 },
             expect.any(Function),
         );
+    });
+
+    it('Should disable Home Assistant legacy triggers', async () => {
+        settings.set(['advanced', 'homeassistant_legacy_triggers'], false);
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+
+        const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
+        expect(discovered.length).toBe(2);
+        expect(discovered).not.toContain('homeassistant/sensor/0x0017880104e45520/click/config');
+        expect(discovered).not.toContain('homeassistant/sensor/0x0017880104e45520/action/config');
+
+        MQTT.publish.mockClear();
+
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+
+        const discoverPayload = {
+            "automation_type":"trigger",
+            "type":"click",
+            "subtype":"single",
+            "payload":"single",
+            "topic":"zigbee2mqtt/button/click",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x0017880104e45520"
+                ],
+                "name":"button",
+                "sw_version": this.version,
+                "model":"Aqara wireless switch (WXKG11LM)",
+                "manufacturer":"Xiaomi"
+            }
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45520/click_single/config',
+            JSON.stringify(discoverPayload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button/click',
+            'single',
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/button',
+            JSON.stringify({click: "single", linkquality: 10}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledTimes(3);
     });
 });
