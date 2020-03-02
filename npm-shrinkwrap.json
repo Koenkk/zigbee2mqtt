@@ -1973,9 +1973,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "23.8.0",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.8.0.tgz",
-      "integrity": "sha512-DKXmLxguZ1Lru4u5YM12ko3WLq6gqo7dhV2b63K731+/PNyZ/Ff6NGONQsGUtPLG9zU3kdz/N+2LTbweNZifeg==",
+      "version": "23.8.1",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.8.1.tgz",
+      "integrity": "sha512-OycLNqPo/2EfO6kTqnmsu1khz1gTIOxGl3ThIVwL5/oycDF4pm5uNDyvFelNLdpr4COUuM8PVi3963NEG1Efpw==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^2.5.0"
