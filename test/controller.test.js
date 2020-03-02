@@ -417,7 +417,7 @@ describe('Controller', () => {
     it('Publish entity state attribute_json output filtered', async () => {
         await controller.start();
         settings.set(['experimental', 'output'], 'attribute_and_json');
-        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'mqtt_attribute_filter'], ['color_temp', 'linkquality']);
+        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_attributes'], ['color_temp', 'linkquality']);
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
         await flushPromises();

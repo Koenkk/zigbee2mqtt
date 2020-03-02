@@ -301,7 +301,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, mqtt_attribute_filter: ['brightness'], devices: [device.ieeeAddr]}});
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, filtered_attributes: ['brightness'], devices: [device.ieeeAddr]}});
         await controller.start();
         await flushPromises();
 
