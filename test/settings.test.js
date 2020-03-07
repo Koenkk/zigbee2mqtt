@@ -464,6 +464,18 @@ describe('Settings', () => {
         }).toThrow(new Error("Device '0x123' already exists"));
     });
 
+    it('Should not allow retention configuration without MQTT v5', () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError('MQTT retention requires protocol version 5');
+    });
+
     it('Should ban devices', () => {
         write(configurationFile, {});
         settings.banDevice('0x123');
