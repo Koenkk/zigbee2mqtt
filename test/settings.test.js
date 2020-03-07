@@ -512,6 +512,18 @@ describe('Settings', () => {
         }).toThrowError(`Duplicate friendly_name 'myname' found`);
     });
 
+    it('Configuration shouldnt be valid when friendly_name ends with /DIGIT', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'myname/123', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Friendly name cannot end with a "/DIGIT" ('myname/123')`);
+    });
+
     it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
         write(configurationFile, {
             devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
