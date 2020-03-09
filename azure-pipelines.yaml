@@ -14,7 +14,7 @@ steps:
 # Prepare
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '12.x'
   displayName: 'Install Node.js'
 - bash: npm ci
   displayName: 'Install dependencies'
@@ -24,6 +24,14 @@ steps:
   displayName: 'Test'
 - bash: npm run eslint
   displayName: 'Lint'
+
+# NPM
+- task: Npm@1
+  inputs:
+    command: publish
+    publishEndpoint: npm
+  displayName: 'Publish to npm'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
 
 # Docker
 - task: DockerInstaller@0

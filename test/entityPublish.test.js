@@ -5,7 +5,6 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
@@ -30,7 +29,6 @@ describe('Entity publish', () => {
         controller = new Controller();
         await controller.start();
         await flushPromises();
-        await wait(50);
     });
 
     beforeEach(async () => {
