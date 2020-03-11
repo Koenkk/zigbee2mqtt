@@ -360,6 +360,7 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceAnnounce(payload);
         await flushPromises();
         expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_announced","message":"announce","meta":{"friendly_name":"bulb"}}', { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('On zigbee event device leave (removed from database and settings)', async () => {
