@@ -280,7 +280,6 @@ describe('Device availability', () => {
         expect(device.ping).toHaveBeenCalledTimes(0);
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device});
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Should not read when device has no modelID and reconnects', async () => {
