@@ -25,7 +25,7 @@ describe('OTA update', () => {
         MQTT.publish.mockClear();
     });
 
-    it('Should subscribe to nested topics', async () => {
+    it('Should subscribe to topics', async () => {
         expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/ota_update/check');
         expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/ota_update/update');
     });

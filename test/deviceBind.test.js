@@ -30,11 +30,8 @@ describe('Device bind', () => {
         MQTT.publish.mockClear();
     });
 
-    it('Should subscribe to nested topics', async () => {
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/+');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/+/+');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/+/+/+');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/+/+/+/+/+');
+    it('Should subscribe to topics', async () => {
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/#');
     });
 
     it('Should bind', async () => {
