@@ -4685,9 +4685,9 @@
       }
     },
     "minimist": {
-      "version": "1.2.4",
-      "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.4.tgz",
-      "integrity": "sha512-wTiNDqe4D2rbTJGZk1qcdZgFtY0/r+iuE6GDT7V0/+Gu5MLpIDm4+CssDECR79OJs/OxLPXMzdxy153b5Qy3hg=="
+      "version": "1.2.5",
+      "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.5.tgz",
+      "integrity": "sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw=="
     },
     "mixin-deep": {
       "version": "1.3.2",
@@ -14813,9 +14813,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.45",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.45.tgz",
-      "integrity": "sha512-TVcdBDJxaK4qIao5XzQVihSZD1AjuA0kd5hFG6nPq8FNNQbMisgJsS3cH1eCEMvLHYqjN4xoEmQBJXjLGXuP1g==",
+      "version": "12.0.47",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.47.tgz",
+      "integrity": "sha512-7QyYPrOpMz9GCPZPWCvnxRxtTBeyD/GBEo7RnyCMbCQMEu+ArBgQGral+4KcZ8HuxOxf5/DVZazMCbWBIl/Avg==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
