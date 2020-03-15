@@ -119,9 +119,9 @@ describe('OTA update', () => {
     });
 
     it('Should not check for OTA when device does not support it', async () => {
-        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb_color_2');
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'ZNLDP12LM');
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith(`Device 'bulb_color_2' does not support OTA updates`);
+        expect(logger.error).toHaveBeenCalledWith(`Device 'ZNLDP12LM' does not support OTA updates`);
     });
 
     it('Should refuse to check/update when already in progress', async () => {
@@ -193,7 +193,7 @@ describe('OTA update', () => {
     });
 
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
+        const device = zigbeeHerdsman.devices.QBKG04LM;
         const data = {imageType: 12382};
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
