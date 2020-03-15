@@ -893,4 +893,29 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
     });
+
+    it('Should republish payload to postfix topic with lightWithPostfix config', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        await MQTT.events.message('zigbee2mqtt/U202DST600ZB/l2/set', JSON.stringify({state: 'ON', brightness: 20}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', JSON.stringify({state_l2:"ON", brightness_l2:20}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l2', JSON.stringify({state:"ON", brightness:20}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', JSON.stringify({}), {"qos": 0, "retain": false}, expect.any(Function));
+    });
+
+    it('Shouldnt crash in onPublishEntityState on group publish', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        logger.error.mockClear();
+        MQTT.publish.mockClear();
+
+        await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledTimes(0);
+    });
 });
