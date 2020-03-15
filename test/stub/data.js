@@ -147,7 +147,10 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45526': {
                 friendly_name: 'GL-S-007ZS',
-            }
+            },
+            '0x0017880104e43559': {
+                friendly_name: 'U202DST600ZB'
+            },
         },
         groups: {
             '1': {

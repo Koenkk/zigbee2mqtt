@@ -6860,14 +6860,15 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.62",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.62.tgz",
-      "integrity": "sha512-XdZFC1FLEq+YTCb6Z9zKog72w+hZ+m0PTkvk9iSo+S05laP1xvAvPyF748/4/vtGg6CoHgvmn2hQhDrdTl9JuQ==",
+      "version": "0.12.63",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.63.tgz",
+      "integrity": "sha512-RJ864w1xARtRJTBuMJurGZHkcZ3VCS+J0A/cm8fcDVeSQVtl0rsI8sga5Oy+Sq4UkCoszKEsXirM+rKuDE5AcQ==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
         "mixin-deep": "^2.0.1",
-        "serialport": "8.0.6"
+        "serialport": "8.0.6",
+        "slip": "^1.0.2"
       },
       "dependencies": {
         "@babel/cli": {
@@ -13750,6 +13751,11 @@
             }
           }
         },
+        "slip": {
+          "version": "1.0.2",
+          "resolved": "https://registry.npmjs.org/slip/-/slip-1.0.2.tgz",
+          "integrity": "sha1-ukWpIwNNbPQbGieuvnEoKCyNVR8="
+        },
         "snapdragon": {
           "version": "0.8.2",
           "resolved": "https://registry.npmjs.org/snapdragon/-/snapdragon-0.8.2.tgz",
@@ -14813,9 +14819,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.47",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.47.tgz",
-      "integrity": "sha512-7QyYPrOpMz9GCPZPWCvnxRxtTBeyD/GBEo7RnyCMbCQMEu+ArBgQGral+4KcZ8HuxOxf5/DVZazMCbWBIl/Avg==",
+      "version": "12.0.49",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.49.tgz",
+      "integrity": "sha512-3nbKbM/JDzyuTCeh8ysti5W42Xnnn7tw3LFf9FWdBl35KchoKbkLWeZ7kWrsilC/jhy+M9AjMvrhDDozx87OXA==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
