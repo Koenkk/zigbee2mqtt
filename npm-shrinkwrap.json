@@ -5194,9 +5194,9 @@
       "dev": true
     },
     "prompts": {
-      "version": "2.3.1",
-      "resolved": "https://registry.npmjs.org/prompts/-/prompts-2.3.1.tgz",
-      "integrity": "sha512-qIP2lQyCwYbdzcqHIUi2HAxiWixhoM9OdLCWf8txXsapC/X9YdsCoeyRIXE/GP+Q0J37Q7+XN/MFqbUa7IzXNA==",
+      "version": "2.3.2",
+      "resolved": "https://registry.npmjs.org/prompts/-/prompts-2.3.2.tgz",
+      "integrity": "sha512-Q06uKs2CkNYVID0VqwfAl9mipo99zkBv/n2JtWY89Yxa3ZabWSrs0e2KTudKVa3peLUvYXMefDqIleLPVUBZMA==",
       "dev": true,
       "requires": {
         "kleur": "^3.0.3",
@@ -5728,9 +5728,9 @@
       }
     },
     "sisteransi": {
-      "version": "1.0.4",
-      "resolved": "https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.4.tgz",
-      "integrity": "sha512-/ekMoM4NJ59ivGSfKapeG+FWtrmWvA1p6FBZwXrqojw90vJu8lBmrTxCMuBCydKtkaUe2zt4PlxeTKpjwMbyig==",
+      "version": "1.0.5",
+      "resolved": "https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.5.tgz",
+      "integrity": "sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==",
       "dev": true
     },
     "slash": {
@@ -14811,9 +14811,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.51",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.51.tgz",
-      "integrity": "sha512-0oHwO9eHSizz/M79Yp9+u+YFs2L9f9eDh6grWp5mrmw40ajpcfXj0k2kzWNCFFdOj5M7FR4glAzpUj6SZyyeXA==",
+      "version": "12.0.52",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.52.tgz",
+      "integrity": "sha512-AXPhjkodRXDWenz+3UaYQYtr50UqnCBdzR2GsnGMLkR/A183q/Vj0BHDtRlcH7MY3HwiWVP3hcJBTF9ycqwKSw==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
