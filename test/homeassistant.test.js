@@ -564,13 +564,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',
+            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            '{"brightness":255}',
+            '{"brightness":255,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
