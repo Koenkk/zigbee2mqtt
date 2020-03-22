@@ -52,9 +52,9 @@
       }
     },
     "@babel/generator": {
-      "version": "7.9.0",
-      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.9.0.tgz",
-      "integrity": "sha512-onl4Oy46oGCzymOXtKMQpI7VXtCbTSHK1kqBydZ6AmzuNcacEVqGk9tZtAS+48IA9IstZcDCgIg8hQKnb7suRw==",
+      "version": "7.9.3",
+      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.9.3.tgz",
+      "integrity": "sha512-RpxM252EYsz9qLUIq6F7YJyK1sv0wWDBFuztfDGWaQKzHjqDHysxSiRUpA/X9jmfqo+WzkAVKFaUily5h+gDCQ==",
       "dev": true,
       "requires": {
         "@babel/types": "^7.9.0",
@@ -199,9 +199,9 @@
       }
     },
     "@babel/parser": {
-      "version": "7.9.2",
-      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.9.2.tgz",
-      "integrity": "sha512-2jyvKdoOS1aWAFL2rjJZmamyDDkPCx/AAz4/Wh1Dfxvw8qqnOvek/ZlHQ2noO/o8JpnXa/WiUUFOv48meBKkpA==",
+      "version": "7.9.3",
+      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.9.3.tgz",
+      "integrity": "sha512-E6SpIDJZ0cZAKoCNk+qSDd0ChfTnpiJN9FfNf3RZ20dzwA2vL2oq5IX1XTVT+4vDmRlta2nGk5HGMMskJAR+4A==",
       "dev": true
     },
     "@babel/plugin-syntax-bigint": {
@@ -2020,9 +2020,9 @@
       },
       "dependencies": {
         "glob-parent": {
-          "version": "5.1.0",
-          "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.0.tgz",
-          "integrity": "sha512-qjtRgnIVmOfnKUE3NJAQEdk+lKrxfw8t5ke7SXtfMTHcjsBfOfWXCQfdb30zfDoZQ2IRSIiidmjtbHZPZ++Ihw==",
+          "version": "5.1.1",
+          "resolved": "https://registry.npmjs.org/glob-parent/-/glob-parent-5.1.1.tgz",
+          "integrity": "sha512-FnI+VGOpnlGHWZxthPGR+QhR78fuiK0sNLkHQv+bL9fQi57lNNdquIbna/WrfROrolq8GK5Ek6BiMwqL/voRYQ==",
           "dev": true,
           "requires": {
             "is-glob": "^4.0.1"
@@ -6923,9 +6923,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.65",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.65.tgz",
-      "integrity": "sha512-Ejk3OjiA7U0Ay+kr6jAyxjLK6Nz8Q7vm969YkQ+auQcfeZwTMNGf29B9ILP5iNSM2M1ng3igH21MC93fVOY9lA==",
+      "version": "0.12.66",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.66.tgz",
+      "integrity": "sha512-lIO9V67GhYJi5f8fj9ZeHllLIKImdtOizGKii6h7mewepQQyzCA9tfqyOs2oCobQmvdjE1M2blMzS2PcxUnrZg==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
