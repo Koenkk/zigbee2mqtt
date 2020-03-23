@@ -45,8 +45,8 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "*",
-    "zigbee-herdsman": "0.12.66",
-    "zigbee-herdsman-converters": "12.0.56"
+    "zigbee-herdsman": "0.12.67",
+    "zigbee-herdsman-converters": "12.0.57"
   },
   "devDependencies": {
     "eslint": "*",
