@@ -536,6 +536,18 @@ describe('Settings', () => {
         }).toThrowError(`Friendly name cannot end with a "/DIGIT" ('myname/123')`);
     });
 
+    it('Configuration shouldnt be valid when friendly_name contains a MQTT wildcard', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'myname#', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`);
+    });
+
     it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
         write(configurationFile, {
             devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
