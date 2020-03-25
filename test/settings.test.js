@@ -434,7 +434,7 @@ describe('Settings', () => {
         expect(settings.get().groups).toStrictEqual(expected);
     });
 
-    it('Should crash when removing device from group when group has no devices', () => {
+    it('Shouldnt crash when removing device from group when group has no devices', () => {
         write(configurationFile, {
             devices: {
                 '0x123': {
