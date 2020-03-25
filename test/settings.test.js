@@ -501,6 +501,19 @@ describe('Settings', () => {
         }).toThrowError('MQTT retention requires protocol version 5');
     });
 
+    it('Should not allow non-existing entities in availability blacklist', () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
+            advanced: {availability_blacklist: ['0x0017880104e45519', 'non_existing']},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blacklist'`);
+    });
+
     it('Should ban devices', () => {
         write(configurationFile, {});
         settings.banDevice('0x123');
