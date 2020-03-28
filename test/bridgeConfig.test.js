@@ -100,6 +100,21 @@ describe('Bridge config', () => {
         expect(settings.getDevice('bulb_color')).toStrictEqual(
             {"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "retain": true}
         );
+        MQTT.events.message('zigbee2mqtt/bridge/config/device_options', JSON.stringify({friendly_name: 'bulb_color', options: {random_setting: true}}));
+        await flushPromises();
+        expect(settings.getDevice('bulb_color')).toStrictEqual(
+            {"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "random_setting": true, "retain": true}
+        );
+        MQTT.events.message('zigbee2mqtt/bridge/config/device_options', JSON.stringify({friendly_name: 'bulb_color', options: {options: {random_1: true}}}));
+        await flushPromises();
+        expect(settings.getDevice('bulb_color')).toStrictEqual(
+            {"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "random_setting": true, "retain": true, options: {random_1: true}}
+        );
+        MQTT.events.message('zigbee2mqtt/bridge/config/device_options', JSON.stringify({friendly_name: 'bulb_color', options: {options: {random_2: false}}}));
+        await flushPromises();
+        expect(settings.getDevice('bulb_color')).toStrictEqual(
+            {"ID": "0x000b57fffec6a5b3", "friendlyName": "bulb_color", "friendly_name": "bulb_color", "random_setting": true, "retain": true, options: {random_1: true, random_2: false}}
+        );
     });
 
     it('Should allow permit join', async () => {
