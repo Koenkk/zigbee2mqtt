@@ -766,9 +766,9 @@
       }
     },
     "@types/babel__core": {
-      "version": "7.1.6",
-      "resolved": "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.1.6.tgz",
-      "integrity": "sha512-tTnhWszAqvXnhW7m5jQU9PomXSiKXk2sFxpahXvI20SZKu9ylPi8WtIxueZ6ehDWikPT0jeFujMj3X4ZHuf3Tg==",
+      "version": "7.1.7",
+      "resolved": "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.1.7.tgz",
+      "integrity": "sha512-RL62NqSFPCDK2FM1pSDH0scHpJvsXtZNiYlMB73DgPBaG1E38ZYVL+ei5EkWRbr+KC4YNiAUNBnRj+bgwpgjMw==",
       "dev": true,
       "requires": {
         "@babel/parser": "^7.1.0",
@@ -6824,9 +6824,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.72",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.72.tgz",
-      "integrity": "sha512-QwIJ6BzxtkC3lZ7C1qvNserVZBck2wi7esSC7P4ZZ+Pg03dMn3U2nHpFFDaK3JfBPjho+hd8MEN6DqmQPrqJBQ==",
+      "version": "0.12.73",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.73.tgz",
+      "integrity": "sha512-GePt67QVtgFrF4zgR9Nddm+bn9W3mMCWSgweywC+W+0Odi97lUh/yUWWdqofNfW8zlfyoGPNFt/fjCGWMyICzA==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
@@ -14783,9 +14783,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.62",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.62.tgz",
-      "integrity": "sha512-dMRnXlgUb3Lwq9vvllJIU6Qxwu9EIpGPBXJhqk2kMbFh18N9yMGota4cITgf8UZXCw2F6c4h40xte1exNNNntA==",
+      "version": "12.0.64",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.64.tgz",
+      "integrity": "sha512-EmVG8XWqCeJeAsZMhMlE8YcX24vmd/Qe/jDJ+i61NSaGoWjjR2ABZiwCkrwnUmHgk8nldZscFEhq/61YnFN8oQ==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
