@@ -100,13 +100,13 @@ class Device {
 
 const returnDevices = [];
 
-const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3')], true, "Mains (single phase)", "LLC020");
+const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020");
 const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020");
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
 
 const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
-    'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
+    'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2', [], {lightingColorCtrl: {colorCapabilities: 17}})], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
     'bulb_color': bulb_color,
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
@@ -139,7 +139,7 @@ const devices = {
     'LIVOLO': new Device('Router', '0x0017880104e45560', 6541,4152, [new Endpoint(6, [0, 6], [])], true, "Mains (single phase)", 'TI0001          '),
     'tradfri_remote': new Device('EndDevice', '0x90fd9ffffe4b64ae', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64ae')], true, "Battery", "TRADFRI remote control"),
     'roller_shutter': new Device('EndDevice', '0x90fd9ffffe4b64af', 33906, 4476, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x90fd9ffffe4b64af')], true, "Battery", "SCM-R_00.00.03.15TC"),
-    'ZNLDP12LM': new Device('Router', '0x90fd9ffffe4b64ax', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64ax')], true, "Mains (single phase)", "lumi.light.aqcn02"),
+    'ZNLDP12LM': new Device('Router', '0x90fd9ffffe4b64ax', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64ax', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "lumi.light.aqcn02"),
     'SP600_OLD': new Device('Router', '0x90fd9ffffe4b64aa', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20160120'),
     'SP600_NEW': new Device('Router', '0x90fd9ffffe4b64ab', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {seMetering: {"multiplier":1,"divisor":10000}})], true, "Mains (single phase)", "SP600", false, 'Salus', '20170220'),
     'MKS-CM-W5': new Device('Router', '0x90fd9ffffe4b64ac', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {})], true, "Mains (single phase)", "qnazj70", false),
