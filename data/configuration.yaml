@@ -4,6 +4,10 @@ homeassistant: false
 # allow new devices to join
 permit_join: true
 
+# set a network key
+advanced:
+  network_key: NETWORK_KEY
+
 # MQTT settings
 mqtt:
   # MQTT base topic for zigbee2mqtt MQTT messages
