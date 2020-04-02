@@ -15,7 +15,7 @@ if [ ! -f "$DATA/configuration.yaml" ]; then
       NETWORK_KEY=$(dd if=/dev/urandom bs=1 count=16 2>/dev/null | od -A n -t u1 | awk '{printf "["} {for(i = 1; i< NF; i++) {printf "%s, ", $i}} {printf "%s]\n", $NF}')
       echo " - NETWORK_KEY is now: ${NETWORK_KEY}"
     fi
-    cat /app/configuration.yaml |sed s:"NETWORK_KEY":"${NETWORK_KEY}":g > "$DATA/configuration.yaml"
+    cat /app/configuration.yaml.tmpl |sed s:"NETWORK_KEY":"${NETWORK_KEY}":g > "$DATA/configuration.yaml"
 fi
 
 exec npm start

@@ -19,7 +19,7 @@ FROM base as release
 
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY lib ./lib
-COPY index.js docker/run.sh data/configuration.yaml ./
+COPY index.js docker/run.sh data/configuration.yaml.tmpl ./
 
 RUN chmod +x /app/run.sh
 RUN mkdir /app/data
