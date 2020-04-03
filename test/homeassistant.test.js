@@ -32,6 +32,27 @@ describe('HomeAssistant extension', () => {
         expect(missing).toHaveLength(0);
     });
 
+    it('Should not have duplicate type/object_ids in a mapping', () => {
+        const duplicated = [];
+        const HomeAssistant = require('../lib/extension/homeassistant');
+        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
+
+        require('zigbee-herdsman-converters').devices.forEach((d) => {
+            const mapping = ha._getMapping()[d.model];
+            const cfg_type_object_ids = [];
+
+            mapping.forEach((c) => {
+                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+                    duplicated.push(d.model);
+                } else {
+                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                }
+            });
+        });
+
+        expect(duplicated).toHaveLength(0);
+    });
+
     it('Should discover devices', async () => {
         controller = new Controller(false);
         await controller.start();
