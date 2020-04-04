@@ -9,7 +9,7 @@ const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 
 
-describe('Bridge config', () => {
+describe('Bridge legacy', () => {
     let controller;
 
     beforeAll(async () => {
