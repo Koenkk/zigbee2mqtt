@@ -242,9 +242,16 @@ describe('Controller', () => {
         expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`);
     });
 
+    it('Should add entities which are missing from configuration but are in database to configuration', async () => {
+        await controller.start();
+        const device = zigbeeHerdsman.devices.notInSettings;
+        expect(settings.getDevice(device.ieeeAddr)).not.toBeNull();
+    });
+
     it('On zigbee event message from unkown device should create it', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.notInSettings;
+        settings.removeDevice(device.ieeeAddr);
         expect(settings.getDevice(device.ieeeAddr)).toBeNull();
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, groupID: 0, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
