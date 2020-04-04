@@ -98,4 +98,14 @@ describe('Logger', () => {
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
     });
+
+    it('Should allow to disable log rotation', () => {
+        settings.set(['advanced', 'log_rotation'], false);
+        const logger = require('../lib/util/logger.js');
+        const pipes = logger._readableState.pipes;
+        expect(pipes[1].constructor.name).toBe('File');
+        expect(pipes[1].maxFiles).toBeNull();
+        expect(pipes[1].tailable).toBeFalsy();
+        expect(pipes[1].maxsize).toBeNull();
+    });
 });
