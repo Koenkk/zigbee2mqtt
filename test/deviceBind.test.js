@@ -54,6 +54,17 @@ describe('Device bind', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({type: 'device_bind', message: {from: 'remote', to: 'bulb_color', cluster: 'genLevelCtrl'}});
     });
 
+    it('Should log error when there is nothing to bind', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        logger.error.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/bind/remote', 'button');
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(0);
+        expect(logger.error).toHaveBeenCalledWith(`Nothing to bind from 'remote' to 'button'`);
+    });
+
     it('Should unbind', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
