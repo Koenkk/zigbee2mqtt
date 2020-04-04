@@ -595,7 +595,7 @@ describe('Settings', () => {
 
         expect(() => {
             settings.validate();
-        }).toThrowError(`Following friendly_name are not allowed: '${utils.getPostfixes()}'`);
+        }).toThrowError(`Following friendly_name are not allowed: '${utils.getEndpointNames()}'`);
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
