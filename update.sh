@@ -3,6 +3,8 @@
 echo "Stopping zigbee2mqtt..."
 sudo systemctl stop zigbee2mqtt
 
+cd /opt/zigbee2mqtt/
+
 echo "Creating backup of configuration..."
 cp -R data data-backup
 
