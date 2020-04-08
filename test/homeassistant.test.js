@@ -32,6 +32,27 @@ describe('HomeAssistant extension', () => {
         expect(missing).toHaveLength(0);
     });
 
+    it('Should not have duplicate type/object_ids in a mapping', () => {
+        const duplicated = [];
+        const HomeAssistant = require('../lib/extension/homeassistant');
+        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
+
+        require('zigbee-herdsman-converters').devices.forEach((d) => {
+            const mapping = ha._getMapping()[d.model];
+            const cfg_type_object_ids = [];
+
+            mapping.forEach((c) => {
+                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+                    duplicated.push(d.model);
+                } else {
+                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                }
+            });
+        });
+
+        expect(duplicated).toHaveLength(0);
+    });
+
     it('Should discover devices', async () => {
         controller = new Controller(false);
         await controller.start();
@@ -564,13 +585,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',
+            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            '{"brightness":255}',
+            '{"brightness":255,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
