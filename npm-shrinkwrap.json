@@ -5749,9 +5749,9 @@
       }
     },
     "semver": {
-      "version": "7.2.1",
-      "resolved": "https://registry.npmjs.org/semver/-/semver-7.2.1.tgz",
-      "integrity": "sha512-aHhm1pD02jXXkyIpq25qBZjr3CQgg8KST8uX0OWXch3xE6jw+1bfbWnCjzMwojsTquroUmKFHNzU6x26mEiRxw=="
+      "version": "7.2.2",
+      "resolved": "https://registry.npmjs.org/semver/-/semver-7.2.2.tgz",
+      "integrity": "sha512-Zo84u6o2PebMSK3zjJ6Zp5wi8VnQZnEaCP13Ul/lt1ANsLACxnJxq4EEm1PY94/por1Hm9+7xpIswdS5AkieMA=="
     },
     "set-blocking": {
       "version": "2.0.0",
@@ -14996,9 +14996,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.71",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.71.tgz",
-      "integrity": "sha512-Ky3iP4XBj4g8E9KtMUxQ+CZJsBcMRyDtPkqzWrZVkeLx47F/Piy+2lL6zXKi8OISyYhAUsELmYdcCv4xaRzIeA==",
+      "version": "12.0.72",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.72.tgz",
+      "integrity": "sha512-+xi5DBfPuZtmjAQhD4GYldAIrx9O96Xp2rS+P1ZSb/UPrXWpIXf7aMvU8WmtCGaJk0yd0uD/BjRF9JU13W6uYg==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
