@@ -15,7 +15,7 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
-describe('Device availability', () => {
+describe('Availability', () => {
     let controller;
 
     function getExtension() {
