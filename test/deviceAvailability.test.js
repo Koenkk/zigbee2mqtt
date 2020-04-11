@@ -19,7 +19,7 @@ describe('Device availability', () => {
     let controller;
 
     function getExtension() {
-        return controller.extensions.find((e) => e.constructor.name === 'DeviceAvailability');
+        return controller.extensions.find((e) => e.constructor.name === 'Availability');
     }
 
     beforeEach(async () => {
