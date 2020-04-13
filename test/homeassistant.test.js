@@ -558,7 +558,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Shouldnt discover when message has no device yet', async () => {
+    it('Shouldnt discover when device leaves', async () => {
         controller = new Controller();
         await controller.start();
         await flushPromises();

@@ -19,7 +19,7 @@ const debounce = require('debounce');
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug, debounce];
 
-describe('Device report', () => {
+describe('Report', () => {
     let controller;
 
     function expectOnOffBrightnessColorReport(endpoint, colorXY) {
