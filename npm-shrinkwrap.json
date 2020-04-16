@@ -2173,18 +2173,18 @@
       "integrity": "sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A=="
     },
     "esquery": {
-      "version": "1.3.0",
-      "resolved": "https://registry.npmjs.org/esquery/-/esquery-1.3.0.tgz",
-      "integrity": "sha512-/5qB+Mb0m2bh86tjGbA8pB0qBfdmCIK6ZNPjcw4/TtEH0+tTf0wLA5HK4KMTweSMwLGHwBDWCBV+6+2+EuHmgg==",
+      "version": "1.3.1",
+      "resolved": "https://registry.npmjs.org/esquery/-/esquery-1.3.1.tgz",
+      "integrity": "sha512-olpvt9QG0vniUBZspVRN6lwB7hOZoTRtT+jzR+tS4ffYx2mzbw+z0XCOk44aaLYKApNX5nMm+E+P6o25ip/DHQ==",
       "dev": true,
       "requires": {
-        "estraverse": "^5.0.0"
+        "estraverse": "^5.1.0"
       },
       "dependencies": {
         "estraverse": {
-          "version": "5.0.0",
-          "resolved": "https://registry.npmjs.org/estraverse/-/estraverse-5.0.0.tgz",
-          "integrity": "sha512-j3acdrMzqrxmJTNj5dbr1YbjacrYgAxVMeF0gK16E3j494mOe7xygM/ZLIguEQ0ETwAg2hlJCtHRGav+y0Ny5A==",
+          "version": "5.1.0",
+          "resolved": "https://registry.npmjs.org/estraverse/-/estraverse-5.1.0.tgz",
+          "integrity": "sha512-FyohXK+R0vE+y1nHLoBM7ZTyqRpqAlhdZHCWIWEviFLiGB8b04H6bQs8G+XTthacvT8VuwvteiP7RJSxMs8UEw==",
           "dev": true
         }
       }
@@ -5493,9 +5493,9 @@
       "dev": true
     },
     "resolve": {
-      "version": "1.15.1",
-      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.15.1.tgz",
-      "integrity": "sha512-84oo6ZTtoTUpjgNEr5SJyzQhzL72gaRodsSfyxC/AXRvwu0Yse9H8eF9IpGo7b8YetZhlI6v7ZQ6bKBFV/6S7w==",
+      "version": "1.16.0",
+      "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.16.0.tgz",
+      "integrity": "sha512-LarL/PIKJvc09k1jaeT4kQb/8/7P+qV4qSnN2K80AES+OHdfZELAKVOBjxsvtToT/uLOfFbvYvKfZmV8cee7nA==",
       "dev": true,
       "requires": {
         "path-parse": "^1.0.6"
@@ -6911,9 +6911,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.12.82",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.82.tgz",
-      "integrity": "sha512-393p3iM0n+lFBkBzRyFrGh+TGd8myC7uqUz1Od9fe4b6FQGnr8zMs2x1c43Ma+avRW6RXN8eoO2WV1VVTIt+Xg==",
+      "version": "0.12.83",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.12.83.tgz",
+      "integrity": "sha512-I/cPcbL3Q4TgYN5ue0olyb2/6lO9tQUugczYwBsdkw11FhPaCIovzPXPIzGA+vaw9Ed98XEbZVVTHjh8FvmnBw==",
       "requires": {
         "debug": "^4.1.1",
         "fast-deep-equal": "^2.0.1",
