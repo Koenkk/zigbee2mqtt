@@ -13,4 +13,4 @@ if [ ! -f "$DATA/configuration.yaml" ]; then
     cp /app/configuration.yaml "$DATA/configuration.yaml"
 fi
 
-exec "$@"
+exec npm start
