@@ -529,4 +529,15 @@ describe('Controller', () => {
         await flushPromises();
         expect(controller.state.state).toStrictEqual({});
     });
+
+    it('Load user extension', async () => {
+        const extensionPath = path.join(data.mockDir, 'extension');
+        fs.mkdirSync(extensionPath);
+        fs.copyFileSync(path.join(__dirname, 'assets', 'exampleExtension.js'), path.join(extensionPath, 'exampleExtension.js'))
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
+    });
+
 });
