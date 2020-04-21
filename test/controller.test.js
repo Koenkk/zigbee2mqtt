@@ -85,6 +85,14 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
+    it('Should generate network_key when set to GENERATE', async () => {
+        settings.set(['advanced', 'network_key'], 'GENERATE');
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
+        expect(data.read().advanced.network_key.length).toStrictEqual(16);
+    });
+
     it('Start controller should publish cached states', async () => {
         data.writeDefaultState();
         await controller.start();
