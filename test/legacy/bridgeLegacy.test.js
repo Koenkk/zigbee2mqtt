@@ -1,11 +1,11 @@
-const data = require('./stub/data');
-const logger = require('./stub/logger');
-const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
-const MQTT = require('./stub/mqtt');
+const data = require('../stub/data');
+const logger = require('../stub/logger');
+const zigbeeHerdsman = require('../stub/zigbeeHerdsman');
+const MQTT = require('../stub/mqtt');
 const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
-const settings = require('../lib/util/settings');
-const Controller = require('../lib/controller');
+const settings = require('../../lib/util/settings');
+const Controller = require('../../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 
 
@@ -13,7 +13,7 @@ describe('Bridge legacy', () => {
     let controller;
 
     beforeAll(async () => {
-        this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
+        this.version = await require('../../lib/util/utils').getZigbee2mqttVersion();
         controller = new Controller();
         await controller.start();
     })
