@@ -54,8 +54,8 @@ describe('OTA update', () => {
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0%`);
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10%, +- 60 minutes remaining`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, +- 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"softwareBuildID":1,"dateCode":"20190101"}' to '{"softwareBuildID":2,"dateCode":"20190102"}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(1);
