@@ -214,6 +214,7 @@ writeDefaultState();
 
 module.exports = {
     mockDir,
+    read: () => yaml.read(path.join(mockDir, 'configuration.yaml')),
     writeDefaultConfiguration,
     writeDefaultState,
     removeState,
