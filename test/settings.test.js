@@ -125,6 +125,12 @@ describe('Settings', () => {
 
         settings._write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['mqtt', 'user'], 'test123');
+        settings.set(['advanced', 'network_key'], [1,2,3, 4]);
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, username: 'test123', network_key: [1,2,3,4]});
     });
 
     it('Should read devices form a separate file', () => {
@@ -488,6 +494,19 @@ describe('Settings', () => {
             settings.addDevice('0x123')
         }).toThrow(new Error("Device '0x123' already exists"));
     });
+
+    it('Should not allow any string values for network_key', () => {
+        write(configurationFile, {
+            advanced: {network_key: 'NOT_GENERATE'},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`advanced.network_key: should be array or 'GENERATE' (is 'NOT_GENERATE')`);
+    });
+
 
     it('Should not allow retention configuration without MQTT v5', () => {
         write(configurationFile, {

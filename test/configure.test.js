@@ -9,7 +9,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
-describe('Device configure', () => {
+describe('Configure', () => {
     let controller;
 
     expectRemoteConfigured = () => {
@@ -153,7 +153,7 @@ describe('Device configure', () => {
     });
 
     it('Should configure max 3 times when fails', async () => {
-        controller.extensions.find((e) => e.constructor.name === 'DeviceConfigure').attempts = {};
+        controller.extensions.find((e) => e.constructor.name === 'Configure').attempts = {};
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;
         const endpoint = device.getEndpoint(1);
