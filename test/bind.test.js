@@ -6,7 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 
-describe('Device bind', () => {
+describe('Bind', () => {
     let controller;
 
     mockClear = (device) => {
