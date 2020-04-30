@@ -201,4 +201,15 @@ describe('OTA update', () => {
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152});
     });
+
+    it('Shouldnt respond with NO_IMAGE_AVAILABLE when not supporting OTA and device has no OTA endpoint', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const data = {imageType: 12382};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.error.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(0);
+        expect(logger.error).toHaveBeenCalledTimes(0);
+    });
 });
