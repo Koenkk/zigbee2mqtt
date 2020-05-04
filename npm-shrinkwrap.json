@@ -2178,9 +2178,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "23.8.2",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.8.2.tgz",
-      "integrity": "sha512-xwbnvOsotSV27MtAe7s8uGWOori0nUsrXh2f1EnpmXua8sDfY6VZhHAhHg2sqK7HBNycRQExF074XSZ7DvfoFg==",
+      "version": "23.9.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.9.0.tgz",
+      "integrity": "sha512-8mt5xJQIFh33W5nE7vCikkDTE4saTo08V91KjU6yI5sLQ9e8Jkp1OXkWJoIHLheFqY5OXIZdAjZmNYHSJ3IpzQ==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^2.5.0"
@@ -3132,6 +3132,13 @@
         }
       }
     },
+    "is-docker": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/is-docker/-/is-docker-2.0.0.tgz",
+      "integrity": "sha512-pJEdRugimx4fBMra5z2/5iRdZ63OhYV0vr0Dwm5+xtW4D1FvRkB8hamMIhnWfyJeDdyr/aa7BDyNbtG38VxgoQ==",
+      "dev": true,
+      "optional": true
+    },
     "is-extendable": {
       "version": "0.1.1",
       "resolved": "https://registry.npmjs.org/is-extendable/-/is-extendable-0.1.1.tgz",
@@ -3216,11 +3223,14 @@
       "integrity": "sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA=="
     },
     "is-wsl": {
-      "version": "2.1.1",
-      "resolved": "https://registry.npmjs.org/is-wsl/-/is-wsl-2.1.1.tgz",
-      "integrity": "sha512-umZHcSrwlDHo2TGMXv0DZ8dIUGunZ2Iv68YZnrmCiBPkZ4aaOhtv7pXJKeki9k3qJ3RJr0cDyitcl5wEH3AYog==",
+      "version": "2.2.0",
+      "resolved": "https://registry.npmjs.org/is-wsl/-/is-wsl-2.2.0.tgz",
+      "integrity": "sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==",
       "dev": true,
-      "optional": true
+      "optional": true,
+      "requires": {
+        "is-docker": "^2.0.0"
+      }
     },
     "isarray": {
       "version": "1.0.0",
@@ -4933,9 +4943,9 @@
       }
     },
     "moment": {
-      "version": "2.25.1",
-      "resolved": "https://registry.npmjs.org/moment/-/moment-2.25.1.tgz",
-      "integrity": "sha512-nRKMf9wDS4Fkyd0C9LXh2FFXinD+iwbJ5p/lh3CHitW9kZbRbJ8hCruiadiIXZVbeAqKZzqcTvHnK3mRhFjb6w=="
+      "version": "2.25.2",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.25.2.tgz",
+      "integrity": "sha512-2BZ14aoZMfyeTmjPi2LHdPKLvb6v4uz8QruMFzHTWd1Rl98p3TWLK6GsRFqQoJOKDZmVetzYO1iU6u1QgGJelQ=="
     },
     "mqtt": {
       "version": "4.0.0",
@@ -15167,9 +15177,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.82",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.82.tgz",
-      "integrity": "sha512-8Nyjt6R1RyQXx2Rqby1J7vxDXj8qXiDOkdIIgiUMmwhqCF43PVgx/YpsJHtM4igu9FrTUNbguUpr61ZkNWRXXA==",
+      "version": "12.0.83",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.83.tgz",
+      "integrity": "sha512-cJx1RcoQMCMcHl3T5Xgj00J76rSG5KG27Z+36FMNl7GdbNlPbJeoTAjsr6OfHAzB98fwarjzlMs3URJSndTBdw==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
