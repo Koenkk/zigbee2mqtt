@@ -28,4 +28,3 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 ENTRYPOINT ["./run.sh"]
-CMD ["npm", "start"]

@@ -85,6 +85,14 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
+    it('Should generate network_key when set to GENERATE', async () => {
+        settings.set(['advanced', 'network_key'], 'GENERATE');
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
+        expect(data.read().advanced.network_key.length).toStrictEqual(16);
+    });
+
     it('Start controller should publish cached states', async () => {
         data.writeDefaultState();
         await controller.start();
@@ -529,4 +537,15 @@ describe('Controller', () => {
         await flushPromises();
         expect(controller.state.state).toStrictEqual({});
     });
+
+    it('Load user extension', async () => {
+        const extensionPath = path.join(data.mockDir, 'extension');
+        fs.mkdirSync(extensionPath);
+        fs.copyFileSync(path.join(__dirname, 'assets', 'exampleExtension.js'), path.join(extensionPath, 'exampleExtension.js'))
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
+    });
+
 });
