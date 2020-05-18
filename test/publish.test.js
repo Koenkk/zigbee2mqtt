@@ -1,6 +1,7 @@
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
@@ -48,6 +49,8 @@ describe('Publish', () => {
         Object.values(zigbeeHerdsman.groups).forEach((g) => {
             g.command.mockClear();
         });
+
+        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
     });
 
     it('Should publish messages to zigbee devices', async () => {
@@ -584,6 +587,22 @@ describe('Publish', () => {
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 200}, {}]);
+    });
+
+    it('Transition parameter should not influence brightness on state ON', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/3563
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({"state": "ON", "brightness": 50}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({"state": "ON"}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({"state": "ON", "transition": 1}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["genOnOff", "on", {}, {}]);
+        expect(endpoint.command.mock.calls[2]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 10}, {}]);
     });
 
     it('Should use transition when color temp', async () => {
