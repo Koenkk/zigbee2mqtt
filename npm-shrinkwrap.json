@@ -371,13 +371,14 @@
       }
     },
     "@istanbuljs/load-nyc-config": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/@istanbuljs/load-nyc-config/-/load-nyc-config-1.0.0.tgz",
-      "integrity": "sha512-ZR0rq/f/E4f4XcgnDvtMWXCUJpi8eO0rssVhmztsZqLIEFA9UUP9zmpE0VxlM+kv/E1ul2I876Fwil2ayptDVg==",
+      "version": "1.1.0",
+      "resolved": "https://registry.npmjs.org/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz",
+      "integrity": "sha512-VjeHSlIzpv/NyD3N0YuHfXOPDIixcA1q2ZV98wsMqcYlPmv2n3Yb2lYP9XMElnaFVXg5A7YLTeLu6V84uQDjmQ==",
       "dev": true,
       "requires": {
         "camelcase": "^5.3.1",
         "find-up": "^4.1.0",
+        "get-package-type": "^0.1.0",
         "js-yaml": "^3.13.1",
         "resolve-from": "^5.0.0"
       },
@@ -2462,6 +2463,12 @@
       "version": "2.0.5",
       "resolved": "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz",
       "integrity": "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==",
+      "dev": true
+    },
+    "get-package-type": {
+      "version": "0.1.0",
+      "resolved": "https://registry.npmjs.org/get-package-type/-/get-package-type-0.1.0.tgz",
+      "integrity": "sha512-pjzuKtY64GYfWizNAJ0fr9VqttZkNiK2iS430LtIHzjBEr6bX8Am2zm4sW4Ro5wjWW5cAlRL1qAMTcXbjNAO2Q==",
       "dev": true
     },
     "get-stream": {
@@ -14143,9 +14150,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.92",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.92.tgz",
-      "integrity": "sha512-dhJCnN/sb12Q+fJpcGQrJ6B+v2HZm9UEdvcNx/fOvMrBDHu53kd/m9dw1/0yFoYV/KbW4t15o5inqGKAXz7bJQ==",
+      "version": "12.0.93",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.93.tgz",
+      "integrity": "sha512-dn305JyE1DfXfj+qQdUt4CbI9ndEq482fehFpPedTlAeefscGxv/61bw+BfMdXz8KtMgqps5VNMeVt9ooqm7Zw==",
       "requires": {
         "axios": "*",
         "tar-stream": "*"
