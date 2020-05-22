@@ -414,6 +414,18 @@ describe('Publish', () => {
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
 
+    it('Should handle get with multiple endpoints', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint2 = device.getEndpoint(2);
+        const endpoint3 = device.getEndpoint(3);
+        await MQTT.events.message('zigbee2mqtt/0x0017880104e45542/get', JSON.stringify({state_left: '', state_right: ''}));
+        await flushPromises();
+        expect(endpoint2.read).toHaveBeenCalledTimes(1);
+        expect(endpoint2.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
+        expect(endpoint3.read).toHaveBeenCalledTimes(1);
+        expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
+    });
+
     it('Should not respond to bridge/config/devices/get', async () => {
         await MQTT.events.message('zigbee2mqtt/bridge/config/devices/get', JSON.stringify({state: 'ON'}));
         await flushPromises();
