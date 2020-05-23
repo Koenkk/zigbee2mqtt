@@ -426,6 +426,19 @@ describe('Publish', () => {
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
 
+    it('Should log error when device has no such endpoint', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint2 = device.getEndpoint(2);
+        const endpoint3 = device.getEndpoint(3);
+        logger.error.mockClear();
+        await MQTT.events.message('zigbee2mqtt/0x0017880104e45542/get', JSON.stringify({state_center: '', state_right: ''}));
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith(`Device 'wall_switch_double' has no endpoint 'center'`);
+        expect(endpoint2.read).toHaveBeenCalledTimes(0);
+        expect(endpoint3.read).toHaveBeenCalledTimes(1);
+        expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
+    });
+
     it('Should not respond to bridge/config/devices/get', async () => {
         await MQTT.events.message('zigbee2mqtt/bridge/config/devices/get', JSON.stringify({state: 'ON'}));
         await flushPromises();
