@@ -26,7 +26,7 @@ chown -R pi:pi /opt/zigbee2mqtt
 
 echo "Running install. This might take a while and can produce som expected errors"
 cd /opt/zigbee2mqtt || exit
-su pi -c "npm install"
+su pi -c "npm ci"
 
 echo "Creating service file zigbee2mqtt.service"
 service_path="/etc/systemd/system/zigbee2mqtt.service"
@@ -70,4 +70,4 @@ fi
 return 0
 }
 
-[[ "$_" == "$0" ]] && zigbee2mqtt-install-package 
+[[ "$_" == "$0" ]] && zigbee2mqtt-install-package

@@ -14,6 +14,7 @@ describe('Groups', () => {
     let controller;
 
     beforeEach(() => {
+        data.writeEmptyState();
         controller = new Controller();
         Object.values(zigbeeHerdsman.groups).forEach((g) => g.members = []);
         data.writeDefaultConfiguration();
@@ -296,6 +297,23 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
+    it('Should publish state change of all members when a group changes its state, filtered', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(endpoint);
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, filtered_attributes: ['brightness'], devices: [device.ieeeAddr]}});
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON', brightness: 100}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"ON","brightness":100}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"ON"}', {"retain": false, qos: 0}, expect.any(Function));
+    });
+
     it('Shouldnt publish group state change when a group is not optimistic', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
@@ -306,7 +324,6 @@ describe('Groups', () => {
         await flushPromises();
 
         MQTT.publish.mockClear();
-        controller.state.state = {};
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
@@ -410,8 +427,8 @@ describe('Groups', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", '{"state":"OFF"}', {"retain": false, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"OFF","brightness":50,"color_temp":370,"linkquality":99}', {"retain": true, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"OFF","brightness":50,"color_temp":370}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"OFF"}', {"retain": true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", '{"state":"OFF"}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change off even when missing current state', async () => {

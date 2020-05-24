@@ -11,8 +11,7 @@ git checkout HEAD -- npm-shrinkwrap.json
 git pull
 
 echo "Installing dependencies..."
-rm -rf node_modules
-npm install
+npm ci
 
 echo "Restore configuration..."
 cp -R data-backup/* data

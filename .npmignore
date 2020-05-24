@@ -1,0 +1,25 @@
+#tests
+test
+coverage
+
+#build tools
+.travis.yml
+.jenkins.yml
+.codeclimate.yml
+.github
+azure-pipelines.yaml
+
+#linters
+.jscsrc
+.jshintrc
+.eslintrc*
+.dockerignore
+.eslintignore
+
+#editor settings
+.vscode
+
+#src
+docs
+docker
+images

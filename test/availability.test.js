@@ -15,11 +15,11 @@ const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
-describe('Device availability', () => {
+describe('Availability', () => {
     let controller;
 
     function getExtension() {
-        return controller.extensions.find((e) => e.constructor.name === 'DeviceAvailability');
+        return controller.extensions.find((e) => e.constructor.name === 'Availability');
     }
 
     beforeEach(async () => {
@@ -280,7 +280,6 @@ describe('Device availability', () => {
         expect(device.ping).toHaveBeenCalledTimes(0);
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device});
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Should not read when device has no modelID and reconnects', async () => {

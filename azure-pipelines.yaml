@@ -14,9 +14,9 @@ steps:
 # Prepare
 - task: NodeTool@0
   inputs:
-    versionSpec: '10.x'
+    versionSpec: '12.x'
   displayName: 'Install Node.js'
-- bash: npm install
+- bash: npm ci
   displayName: 'Install dependencies'
 
 # Verify
@@ -25,12 +25,20 @@ steps:
 - bash: npm run eslint
   displayName: 'Lint'
 
+# NPM
+- task: Npm@1
+  inputs:
+    command: publish
+    publishEndpoint: npm
+  displayName: 'Publish to npm'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
+
 # Docker
 - task: DockerInstaller@0
   displayName: Docker install
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   inputs:
-    dockerVersion: 19.03.2
+    dockerVersion: 19.03.5
     releaseType: stable
 - task: Docker@2
   displayName: Docker registry login
@@ -41,7 +49,7 @@ steps:
 - bash: |
     sudo wget -O /usr/local/bin/buildx https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
     sudo chmod a+x /usr/local/bin/buildx
-    docker run --rm --privileged hypriot/qemu-register
+    docker run --rm --privileged hypriot/qemu-register:v2.7.0
     buildx create --use
     buildx ls
   displayName: 'Docker setup'
@@ -68,15 +76,13 @@ steps:
   displayName: 'Docker build release'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
 
-# Trigger downstream
+# Trigger Home Assistant Zigbee2mqtt addon build
 - bash: |
-    BODY="{\"request\": {\"branch\": \"master\"}}"
-    curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -H "Travis-API-Version: 3" \
-        -H "Authorization: token $(TRAVIS_TOKEN)" \
-        -d "$BODY" \
-        "https://api.travis-ci.org/repo/danielwelch%2Fhassio-zigbee2mqtt/requests"
+    curl -s \
+        --request POST \
+        --header "Content-Type: application/json" \
+        --data '{"definition": {"id": 1}}' \
+        -u "$(HASSIO_TRIGGER_SECRET)" \
+        "https://dev.azure.com/danielwelch2101/hassio-zigbee2mqtt/_apis/build/builds?api-version=5.1"
   displayName: 'Trigger Hass.io build'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'), ne(variables['Build.Reason'], 'PullRequest'))

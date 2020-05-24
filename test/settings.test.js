@@ -125,6 +125,12 @@ describe('Settings', () => {
 
         settings._write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['mqtt', 'user'], 'test123');
+        settings.set(['advanced', 'network_key'], [1,2,3, 4]);
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, username: 'test123', network_key: [1,2,3,4]});
     });
 
     it('Should read devices form a separate file', () => {
@@ -434,6 +440,31 @@ describe('Settings', () => {
         expect(settings.get().groups).toStrictEqual(expected);
     });
 
+    it('Shouldnt crash when removing device from group when group has no devices', () => {
+        write(configurationFile, {
+            devices: {
+                '0x123': {
+                    friendly_name: 'bulb',
+                    retain: true,
+                }
+            },
+            groups: {
+                '1': {
+                    friendly_name: 'test123',
+                }
+            }
+        });
+
+        settings.removeDeviceFromGroup('test123', ['0x123']);
+        const expected = {
+            '1': {
+                friendly_name: 'test123',
+            },
+        };
+
+        expect(settings.get().groups).toStrictEqual(expected);
+    });
+
     it('Should throw when adding device to non-existing group', () => {
         write(configurationFile, {
             devices: {
@@ -462,6 +493,44 @@ describe('Settings', () => {
         expect(() => {
             settings.addDevice('0x123')
         }).toThrow(new Error("Device '0x123' already exists"));
+    });
+
+    it('Should not allow any string values for network_key', () => {
+        write(configurationFile, {
+            advanced: {network_key: 'NOT_GENERATE'},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`advanced.network_key: should be array or 'GENERATE' (is 'NOT_GENERATE')`);
+    });
+
+
+    it('Should not allow retention configuration without MQTT v5', () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError('MQTT retention requires protocol version 5');
+    });
+
+    it('Should not allow non-existing entities in availability blacklist', () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
+            advanced: {availability_blacklist: ['0x0017880104e45519', 'non_existing']},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blacklist'`);
     });
 
     it('Should ban devices', () => {
@@ -512,6 +581,30 @@ describe('Settings', () => {
         }).toThrowError(`Duplicate friendly_name 'myname' found`);
     });
 
+    it('Configuration shouldnt be valid when friendly_name ends with /DIGIT', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'myname/123', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`Friendly name cannot end with a "/DIGIT" ('myname/123')`);
+    });
+
+    it('Configuration shouldnt be valid when friendly_name contains a MQTT wildcard', async () => {
+        write(configurationFile, {
+            devices: {'0x0017880104e45519': {friendly_name: 'myname#', retain: false}},
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.validate();
+        }).toThrowError(`MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`);
+    });
+
     it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
         write(configurationFile, {
             devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
@@ -521,7 +614,7 @@ describe('Settings', () => {
 
         expect(() => {
             settings.validate();
-        }).toThrowError(`Following friendly_name are not allowed: '${utils.getPostfixes()}'`);
+        }).toThrowError(`Following friendly_name are not allowed: '${utils.getEndpointNames()}'`);
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
@@ -537,6 +630,21 @@ describe('Settings', () => {
         expect(() => {
             settings.changeFriendlyName('myname1', 'myname');
         }).toThrowError(`friendly_name 'myname' is already in use`);
+    });
+
+    it('Should throw when removing device which doesnt exist', async () => {
+        write(configurationFile, {
+            devices: {
+                '0x0017880104e45519': {friendly_name: 'myname', retain: false},
+                '0x0017880104e45511': {friendly_name: 'myname1', retain: false}
+            },
+        });
+
+        settings._reRead();
+
+        expect(() => {
+            settings.removeDevice('myname33');
+        }).toThrowError(`Device 'myname33' does not exist`);
     });
 
     it('Shouldnt write to configuration.yaml when there are no changes in it', () => {
