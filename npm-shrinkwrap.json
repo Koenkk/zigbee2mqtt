@@ -1443,9 +1443,9 @@
       "integrity": "sha1-tf1UIgqivFq1eqtxQMlAdUUDwac="
     },
     "cross-spawn": {
-      "version": "7.0.2",
-      "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.2.tgz",
-      "integrity": "sha512-PD6G8QG3S4FK/XCGFbEQrDqO2AnMMsy0meR7lerlIOHAAbkuavGU/pOqprrlvfTNjvowivTeBsjebAL0NSoMxw==",
+      "version": "7.0.3",
+      "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz",
+      "integrity": "sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==",
       "dev": true,
       "requires": {
         "path-key": "^3.1.0",
@@ -14150,9 +14150,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.97",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.97.tgz",
-      "integrity": "sha512-xCSKijGogHevCrPLbGhpAPYsFAIUTRR3g7BEynCt/RGpxzCcoVkqGadk3yXYafWAiXigD41NezOdZN+e64k2IA==",
+      "version": "12.0.98",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.98.tgz",
+      "integrity": "sha512-fqXiQA77wXT7WT8zQ6mc3ofgX916q86GCloCraXIEKT95ExAYuKzQyWTvfgq58PiH9bcnK/0pcLFg6/3V6bHsQ==",
       "requires": {
         "axios": "*",
         "https-proxy-agent": "*",
