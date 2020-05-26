@@ -186,7 +186,7 @@ describe('Bridge', () => {
         );
     });
 
-    it('Should put erorr in response when request fails', async () => {
+    it('Should put error in response when request fails', async () => {
         zigbeeHerdsman.permitJoin.mockImplementationOnce(() => {throw new Error('Failed to connect to adapter')});
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/permitJoin', JSON.stringify({"value": false}));
