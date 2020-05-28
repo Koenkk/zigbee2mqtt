@@ -352,4 +352,21 @@ describe('Availability', () => {
 
         device.lastSeen = defaultLastSeen;
     });
+
+    it('Should republish existing state on MQTT connected', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        await controller.stop();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        controller = new Controller();
+        getExtension().state[device.ieeeAddr] = false;
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+          'offline',
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
+    });
 });
