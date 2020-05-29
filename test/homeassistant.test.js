@@ -204,7 +204,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': "{{ (value_json.temperature | float) | round(1) }}",
+            'value_template': "{{ value_json.temperature }}",
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -229,7 +229,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
-            'value_template': '{{ (value_json.humidity | float) | round(0) }}',
+            'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
@@ -254,7 +254,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
-            'value_template': '{{ (value_json.pressure | float) | round(2) }}',
+            'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
