@@ -14,19 +14,19 @@
       }
     },
     "@babel/core": {
-      "version": "7.10.1",
-      "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.10.1.tgz",
-      "integrity": "sha512-u8XiZ6sMXW/gPmoP5ijonSUln4unazG291X0XAQ5h0s8qnAFr6BRRZGUEK+jtRWdmB0NTJQt7Uga25q8GetIIg==",
+      "version": "7.10.2",
+      "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.10.2.tgz",
+      "integrity": "sha512-KQmV9yguEjQsXqyOUGKjS4+3K8/DlOCE2pZcq4augdQmtTy5iv5EHtmMSJ7V4c1BIPjuwtZYqYLCq9Ga+hGBRQ==",
       "dev": true,
       "requires": {
         "@babel/code-frame": "^7.10.1",
-        "@babel/generator": "^7.10.1",
+        "@babel/generator": "^7.10.2",
         "@babel/helper-module-transforms": "^7.10.1",
         "@babel/helpers": "^7.10.1",
-        "@babel/parser": "^7.10.1",
+        "@babel/parser": "^7.10.2",
         "@babel/template": "^7.10.1",
         "@babel/traverse": "^7.10.1",
-        "@babel/types": "^7.10.1",
+        "@babel/types": "^7.10.2",
         "convert-source-map": "^1.7.0",
         "debug": "^4.1.0",
         "gensync": "^1.0.0-beta.1",
@@ -52,12 +52,12 @@
       }
     },
     "@babel/generator": {
-      "version": "7.10.1",
-      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.10.1.tgz",
-      "integrity": "sha512-AT0YPLQw9DI21tliuJIdplVfLHya6mcGa8ctkv7n4Qv+hYacJrKmNWIteAK1P9iyLikFIAkwqJ7HAOqIDLFfgA==",
+      "version": "7.10.2",
+      "resolved": "https://registry.npmjs.org/@babel/generator/-/generator-7.10.2.tgz",
+      "integrity": "sha512-AxfBNHNu99DTMvlUPlt1h2+Hn7knPpH5ayJ8OqDWSeLld+Fi2AYBTC/IejWDM9Edcii4UzZRCsbUt0WlSDsDsA==",
       "dev": true,
       "requires": {
-        "@babel/types": "^7.10.1",
+        "@babel/types": "^7.10.2",
         "jsesc": "^2.5.1",
         "lodash": "^4.17.13",
         "source-map": "^0.5.0"
@@ -212,9 +212,9 @@
       }
     },
     "@babel/parser": {
-      "version": "7.10.1",
-      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.10.1.tgz",
-      "integrity": "sha512-AUTksaz3FqugBkbTZ1i+lDLG5qy8hIzCaAxEtttU6C0BtZZU9pkNZtWSVAht4EW9kl46YBiyTGMp9xTTGqViNg==",
+      "version": "7.10.2",
+      "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.10.2.tgz",
+      "integrity": "sha512-PApSXlNMJyB4JiGVhCOlzKIif+TKFTvu0aQAhnTvfP/z3vVSN6ZypH5bfUNwFXXjRQtUEBNFd2PtmCmG2Py3qQ==",
       "dev": true
     },
     "@babel/plugin-syntax-async-generators": {
@@ -344,9 +344,9 @@
       }
     },
     "@babel/types": {
-      "version": "7.10.1",
-      "resolved": "https://registry.npmjs.org/@babel/types/-/types-7.10.1.tgz",
-      "integrity": "sha512-L2yqUOpf3tzlW9GVuipgLEcZxnO+96SzR6fjXMuxxNkIgFJ5+07mHCZ+HkHqaeZu8+3LKnNJJ1bKbjBETQAsrA==",
+      "version": "7.10.2",
+      "resolved": "https://registry.npmjs.org/@babel/types/-/types-7.10.2.tgz",
+      "integrity": "sha512-AD3AwWBSz0AWF0AkCN9VPiWrvldXq+/e3cHa4J89vo4ymjz1XwrBFFVZmkJTsQIPNk+ZVomPSXUJqq8yyjZsng==",
       "dev": true,
       "requires": {
         "@babel/helper-validator-identifier": "^7.10.1",
@@ -5755,9 +5755,9 @@
       "optional": true
     },
     "v8-compile-cache": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.1.0.tgz",
-      "integrity": "sha512-usZBT3PW+LOjM25wbqIlZwPeJV+3OSz3M1k1Ws8snlW39dZyYL9lOGC5FgPVHfk0jKmjiDV8Z0mIbVQPiwFs7g==",
+      "version": "2.1.1",
+      "resolved": "https://registry.npmjs.org/v8-compile-cache/-/v8-compile-cache-2.1.1.tgz",
+      "integrity": "sha512-8OQ9CL+VWyt3JStj7HX7/ciTL2V3Rl1Wf5OL+SNTm0yK1KvtReVulksyeRnCANHHuUxHlQig+JJDlUhBt1NQDQ==",
       "dev": true
     },
     "v8-to-istanbul": {
@@ -14150,9 +14150,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.101",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.101.tgz",
-      "integrity": "sha512-FBYyatRnvw5kQHnfh5K9yuOmKkpDPKaH6ZlbQvBiHr+nYY1sjtFjnc+el4EBwG9HEAhZzpGtsC58nAfqKN3vsQ==",
+      "version": "12.0.102",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.102.tgz",
+      "integrity": "sha512-7lck1Fn+OTWs8TOKQ0MLDBdWB5SeW/sZ7jbQuobI+pOhT7VOtUhkd1H2etVqDxjpC6aITEgh0eZu7wScmaU8tg==",
       "requires": {
         "axios": "*",
         "https-proxy-agent": "*",
