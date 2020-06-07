@@ -524,6 +524,21 @@ describe('Publish', () => {
         expectNothingPublished();
     });
 
+    it('Should send state update on toggle specific endpoint', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(2);
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/left/set', 'ON');
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/left/set', 'TOGGLE');
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "toggle", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish.mock.calls[0]).toEqual(["zigbee2mqtt/wall_switch_double", JSON.stringify({state_left: 'ON'}), {"qos": 0, "retain": false}, expect.any(Function)]);
+        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/wall_switch_double", JSON.stringify({state_left: 'OFF'}), {"qos": 0, "retain": false}, expect.any(Function)]);
+    });
+
     it('Should parse set with postfix topic and attribute', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(2);
