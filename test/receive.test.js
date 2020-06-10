@@ -93,6 +93,34 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
 
+    it('onlythis Should debounce immediate messages', async (k) => {
+        jest.useFakeTimers();
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
+        settings.set(['devices', device.ieeeAddr, 'debounce_immediate'], true);
+        const data1 = {measuredValue: 8}
+        const payload1 = {data: data1, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload1);
+        const data2 = {measuredValue: 1}
+        const payload2 = {data: data2, cluster: 'msRelativeHumidity', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload2);
+        const data3 = {measuredValue: 2}
+        const payload3 = {data: data3, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload3);
+        await flushPromises();
+        jest.advanceTimersByTime(50);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, linkquality: 10});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
+        jest.runAllTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2, linkquality: 10});
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 1, "retain": false});
+    });
+
     it('Should debounce and retain messages when set via device_options', async () => {
         jest.useFakeTimers();
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
