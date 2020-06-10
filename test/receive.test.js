@@ -142,6 +142,20 @@ describe('Receive', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.07, pressure: 2, humidity: 0.03, linkquality: 13});
     });
 
+    it('Shouldnt republish old state', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/3572
+        jest.useFakeTimers();
+        const device = zigbeeHerdsman.devices.bulb;
+        settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
+        await zigbeeHerdsman.events.message({data: {onOff: 0}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await MQTT.events.message('zigbee2mqtt/bulb/set', JSON.stringify({state: 'ON'}));
+        await flushPromises();
+        jest.runAllTimers();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({state: 'ON', linkquality: 10});
+    });
+
     it('Should handle a zigbee message with 1 precision', async () => {
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         settings.set(['devices', device.ieeeAddr, 'temperature_precision'], 1);
