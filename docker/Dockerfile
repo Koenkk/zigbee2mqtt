@@ -22,7 +22,6 @@ COPY lib ./lib
 COPY index.js data/configuration.yaml ./
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 
-RUN chmod +x /app/run.sh
 RUN mkdir /app/data
 
 ARG COMMIT
