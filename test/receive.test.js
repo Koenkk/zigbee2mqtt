@@ -93,31 +93,101 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
 
-    it('onlythis Should debounce immediate messages', async (k) => {
-        jest.useFakeTimers();
+    it('onlythis Should debounce immediate messages', async (done) => {
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
-        settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
+        settings.set(['devices', device.ieeeAddr, 'debounce'], 0.01);
         settings.set(['devices', device.ieeeAddr, 'debounce_immediate'], true);
-        const data1 = {measuredValue: 8}
-        const payload1 = {data: data1, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload1);
-        const data2 = {measuredValue: 1}
-        const payload2 = {data: data2, cluster: 'msRelativeHumidity', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload2);
-        const data3 = {measuredValue: 2}
-        const payload3 = {data: data3, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload3);
+       settings.set(['devices', device.ieeeAddr, 'debounce_ignore'], ['temperature']);
+
+        await zigbeeHerdsman.events.message({data: {measuredValue: 8}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data: {measuredValue: 9}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data: {measuredValue: 10}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data: {measuredValue: 11}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data: {measuredValue: 12}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+
+        await zigbeeHerdsman.events.message({data: {measuredValue: 1}, cluster: 'msRelativeHumidity', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, linkquality: 10});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
-        jest.runAllTimers();
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2, linkquality: 10});
-        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 1, "retain": false});
+
+        // With: this.debouncers[ieeeAddr].publish.clear();
+        // [
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.08,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.1,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.12,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ]
+        //   ]
+
+        // With: this.debouncers[ieeeAddr].publish.flush();
+        // [
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.08,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.09,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.1,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.11,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ],
+        //     [
+        //       'zigbee2mqtt/weather_sensor',
+        //       '{"temperature":0.12,"linkquality":10}',
+        //       { qos: 1, retain: false },
+        //       [Function (anonymous)]
+        //     ]
+        //   ]
+
+        console.log(MQTT.publish.mock.calls);
+        // expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        // expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        // expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, linkquality: 10});
+        // expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
+
+        // setTimeout(async () => {
+        //     await flushPromises();
+        //     console.log(MQTT.publish.mock.calls);
+
+        //     // const data3 = {measuredValue: 2}
+        //     // const payload3 = {data: data3, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        //     // await zigbeeHerdsman.events.message(payload3);
+        //     // await flushPromises();
+
+        //     // expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        //     // expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        //     // expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.1, linkquality: 10, humidity: 0.01, pressure: 2});
+        //     // expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 1, "retain": false});
+        //     done();
+        // }, 11);
+
+        done();
+        //done();
     });
 
     it('Should debounce and retain messages when set via device_options', async () => {
