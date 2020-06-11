@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 if [ ! -z "$ZIGBEE2MQTT_DATA" ]; then
     DATA="$ZIGBEE2MQTT_DATA"
@@ -13,4 +14,4 @@ if [ ! -f "$DATA/configuration.yaml" ]; then
     cp /app/configuration.yaml "$DATA/configuration.yaml"
 fi
 
-exec npm start
+exec "$@"
