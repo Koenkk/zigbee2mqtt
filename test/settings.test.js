@@ -359,6 +359,14 @@ describe('Settings', () => {
         expect(settings.get().groups).toStrictEqual(expected);
     });
 
+    it('Should throw error when changing entity options of non-existing device', () => {
+        write(configurationFile, {});
+
+        expect(() => {
+            settings.changeEntityOptions('not_existing_123', {});
+        }).toThrow(new Error("Device or group 'not_existing_123' does not exist"));
+    });
+
     it('Should not add duplicate groups', () => {
         write(configurationFile, {});
 
