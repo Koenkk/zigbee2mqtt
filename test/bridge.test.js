@@ -24,6 +24,9 @@ describe('Bridge', () => {
         logger.info.mockClear();
         logger.warn.mockClear();
         MQTT.publish.mockClear();
+        const device = zigbeeHerdsman.devices.bulb;
+        device.removeFromDatabase.mockClear();
+        device.removeFromNetwork.mockClear();
         controller = new Controller();
         await controller.start();
         await flushPromises();
@@ -204,5 +207,112 @@ describe('Bridge', () => {
         const device = zigbeeHerdsman.devices.bulb;
         await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await flushPromises();
+    });
+
+    it('Should allow to remove device by string', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', 'bulb');
+        await flushPromises();
+        expect(controller.state[device.ieeeAddr]).toBeUndefined();
+        expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(device.removeFromDatabase).not.toHaveBeenCalled();
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{"ID": "bulb","ban":false,"force":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(settings.get().ban).toStrictEqual([]);
+    });
+
+    it('Should allow to remove device by object ID', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', JSON.stringify({ID: "bulb"}));
+        await flushPromises();
+        expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(device.removeFromDatabase).not.toHaveBeenCalled();
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{"ID": "bulb","ban":false,"force":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to force remove device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', JSON.stringify({ID: "bulb", force: true}));
+        await flushPromises();
+        expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
+        expect(device.removeFromNetwork).not.toHaveBeenCalled();
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{"ID": "bulb","ban":false,"force":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to ban device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', JSON.stringify({ID: "bulb", ban: true, force: true}));
+        await flushPromises();
+        expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{"ID": "bulb","ban":true,"force":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(settings.get().ban).toStrictEqual(["0x000b57fffec6a5b2"]);
+    });
+
+    it('Should allow to remove group', async () => {
+        const group = zigbeeHerdsman.groups.group_1;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/remove', 'group_1');
+        await flushPromises();
+        expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
+        expect(settings.getGroup('group_1')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/remove',
+            JSON.stringify({"data":{"ID": "group_1"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on removing non-existing device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', JSON.stringify({ID: "non-existing-device"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{},"status":"error","error":"Device 'non-existing-device' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when remove device fails', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        MQTT.publish.mockClear();
+        device.removeFromNetwork.mockImplementationOnce(() => {throw new Error('device timeout')})
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', JSON.stringify({ID: "bulb"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/remove',
+            JSON.stringify({"data":{},"status":"error","error":"Failed to remove device 'bulb' (ban: false, force: false) (Error: device timeout)"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 });
