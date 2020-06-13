@@ -428,4 +428,41 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('Should allow to add group by string', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/add', 'group_193');
+        await flushPromises();
+        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 3, "devices": [], "friendlyName": "group_193", "friendly_name": "group_193", "optimistic": true});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/add',
+            JSON.stringify({"data":{"friendlyName":"group_193","ID": 3},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to add group with ID', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/add', JSON.stringify({friendlyName: "group_193", ID: 9}));
+        await flushPromises();
+        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 9, "devices": [], "friendlyName": "group_193", "friendly_name": "group_193", "optimistic": true});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/add',
+            JSON.stringify({"data":{"friendlyName":"group_193","ID": 9},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when add with invalid payload', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/add', JSON.stringify({friendlyName9: "group_193"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/add',
+            JSON.stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
 });
