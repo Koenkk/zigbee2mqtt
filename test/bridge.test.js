@@ -315,4 +315,80 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('Should allow rename device', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', JSON.stringify({from: 'bulb', to: 'bulb_new_name'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendlyName": "bulb_new_name", "friendly_name": "bulb_new_name", "retain": true});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            JSON.stringify({"data":{"from":"bulb","to":"bulb_new_name"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow rename group', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', JSON.stringify({from: 'group_1', to: 'group_new_name'}));
+        await flushPromises();
+        expect(settings.getGroup('group_1')).toBeNull();
+        expect(settings.getGroup('group_new_name')).toStrictEqual({"ID": 1, "devices": [], "friendlyName": "group_new_name", "friendly_name": "group_new_name", "optimistic": true, "retain": false});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/rename',
+            JSON.stringify({"data":{"from":"group_1","to":"group_new_name"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on invalid device rename payload', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', JSON.stringify({from_bla: 'bulb', to: 'bulb_new_name'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            JSON.stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on non-existing device rename', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', JSON.stringify({from: 'bulb_not_existing', to: 'bulb_new_name'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            JSON.stringify({"data":{},"status":"error","error":"Device 'bulb_not_existing' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to rename last joined device', async () => {
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceJoined({device: zigbeeHerdsman.devices.bulb});
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', JSON.stringify({last: true, to: 'bulb_new_name'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toBeNull();
+        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendlyName": "bulb_new_name", "friendly_name": "bulb_new_name", "retain": true});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            JSON.stringify({"data":{"from":"bulb","to":"bulb_new_name"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when renaming last joined device but none has joined', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', JSON.stringify({last: true, to: 'bulb_new_name'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            JSON.stringify({"data":{},"status":"error","error":"No device has joined since start"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
 });
