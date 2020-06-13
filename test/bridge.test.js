@@ -395,11 +395,11 @@ describe('Bridge', () => {
     it('Should allow change device options', async () => {
         MQTT.publish.mockClear();
         expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendlyName": "bulb", "friendly_name": "bulb", "retain": true});
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/changeOptions', JSON.stringify({options: {retain: false, transition: 1}, ID: 'bulb'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/options', JSON.stringify({options: {retain: false, transition: 1}, ID: 'bulb'}));
         await flushPromises();
         expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendlyName": "bulb", "friendly_name": "bulb", "retain": false, "transition": 1});
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/device/changeOptions',
+            'zigbee2mqtt/bridge/response/device/options',
             JSON.stringify({"data":{"from":{"retain": true},"to":{"retain": false,"transition":1}, "ID":"bulb"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
@@ -408,11 +408,11 @@ describe('Bridge', () => {
     it('Should allow change group options', async () => {
         MQTT.publish.mockClear();
         expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false, "friendlyName": "group_1", "optimistic": true});
-        MQTT.events.message('zigbee2mqtt/bridge/request/group/changeOptions', JSON.stringify({options: {retain: true, transition: 1}, ID: 'group_1'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/options', JSON.stringify({options: {retain: true, transition: 1}, ID: 'group_1'}));
         await flushPromises();
         expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": true, "friendlyName": "group_1", "optimistic": true, "transition": 1});
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/group/changeOptions',
+            'zigbee2mqtt/bridge/response/group/options',
             JSON.stringify({"data":{"from":{"optimistic": true,"retain": false},"to":{"optimistic": true,"retain": true,"transition":1}, "ID":"group_1"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
@@ -420,10 +420,10 @@ describe('Bridge', () => {
 
     it('Should throw error on invalid device change options payload', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/changeOptions', JSON.stringify({options_: {retain: true, transition: 1}, ID: 'bulb'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/options', JSON.stringify({options_: {retain: true, transition: 1}, ID: 'bulb'}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/device/changeOptions',
+            'zigbee2mqtt/bridge/response/device/options',
             JSON.stringify({"data":{},"status":"error","error":"Invalid payload"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
