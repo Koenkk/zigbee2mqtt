@@ -37,6 +37,7 @@
     "debounce": "*",
     "fast-deep-equal": "*",
     "git-last-commit": "*",
+    "humanize-duration": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",
     "moment": "*",

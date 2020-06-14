@@ -127,10 +127,6 @@ describe('Networkmap', () => {
     });
 
     it('Output graphviz networkmap', async () => {
-        const getTimezoneOffset = Date.prototype.getTimezoneOffset;
-        const getHours = Date.prototype.getHours;
-        Date.prototype.getTimezoneOffset = () => -60;
-        Date.prototype.getHours = () => 1;
         mock();
         const device = zigbeeHerdsman.devices.bulb_color;
         device.lastSeen = null;
@@ -146,16 +142,16 @@ describe('Networkmap', () => {
 
         const expected = `digraph G {
             node[shape=record];
-              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0)|1970-01-01T01:00:10+01:00}"];
-              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (40369)|IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)|1970-01-01T01:00:01+01:00}"];
+              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0)|0 seconds ago}"];
+              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (40369)|IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)|9 seconds ago}"];
               "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 6540)"]
               "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (40399)|Philips Hue Go (7146060PH)|unknown}"];
               "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
               "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
-              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (6538)|Xiaomi Aqara double key wireless wall switch (WXKG02LM)|1970-01-01T01:00:01+01:00}"];
+              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (6538)|Xiaomi Aqara double key wireless wall switch (WXKG02LM)|9 seconds ago}"];
               "0x0017880104e45521" -> "0x0017880104e45559" [penwidth=1, weight=0, color="#994444", label="130"]
-              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (6536)failed: lqi,routingTable|Boef notSupportedModelID|1970-01-01T01:00:01+01:00}"];
-              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (6540)|Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)|1970-01-01T01:00:01+01:00}"];
+              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (6536)failed: lqi,routingTable|Boef notSupportedModelID|9 seconds ago}"];
+              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (6540)|Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)|9 seconds ago}"];
               "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
             }`;
 
@@ -165,15 +161,9 @@ describe('Networkmap', () => {
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
         }
-        Date.prototype.getTimezoneOffset = getTimezoneOffset;
-        Date.prototype.getHours = getHours;
     });
 
     it('Output plantuml networkmap', async () => {
-        const getTimezoneOffset = Date.prototype.getTimezoneOffset;
-        const getHours = Date.prototype.getHours;
-        Date.prototype.getTimezoneOffset = () => -60;
-        Date.prototype.getHours = () => 1;
         mock();
         const device = zigbeeHerdsman.devices.bulb_color;
         device.lastSeen = null;
@@ -197,7 +187,7 @@ describe('Networkmap', () => {
         ---
         Boef notSupportedModelID
         ---
-        1970-01-01T01:00:01+01:00
+        9 seconds ago
         ]
         
         card 0x000b57fffec6a5b2 [
@@ -207,7 +197,7 @@ describe('Networkmap', () => {
         ---
         IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)
         ---
-        1970-01-01T01:00:01+01:00
+        9 seconds ago
         ]
         
         card 0x000b57fffec6a5b3 [
@@ -227,7 +217,7 @@ describe('Networkmap', () => {
         ---
         Xiaomi Aqara double key wireless wall switch (WXKG02LM)
         ---
-        1970-01-01T01:00:01+01:00
+        9 seconds ago
         ]
         
         card 0x0017880104e45559 [
@@ -237,7 +227,7 @@ describe('Networkmap', () => {
         ---
         Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)
         ---
-        1970-01-01T01:00:01+01:00
+        9 seconds ago
         ]
         
         card 0x00124b00120144ae [
@@ -245,7 +235,7 @@ describe('Networkmap', () => {
         ---
         0x00124b00120144ae (0)
         ---
-        1970-01-01T01:00:10+01:00
+        0 seconds ago
         ]
         
         0x000b57fffec6a5b3 --> 0x00124b00120144ae: 120
@@ -262,7 +252,5 @@ describe('Networkmap', () => {
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
         }
-        Date.prototype.getTimezoneOffset = getTimezoneOffset;
-        Date.prototype.getHours = getHours;
     });
 });
