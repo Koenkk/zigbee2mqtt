@@ -2704,6 +2704,11 @@
       "integrity": "sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==",
       "dev": true
     },
+    "humanize-duration": {
+      "version": "3.23.1",
+      "resolved": "https://registry.npmjs.org/humanize-duration/-/humanize-duration-3.23.1.tgz",
+      "integrity": "sha512-aoOEkomAETmVuQyBx4E7/LfPlC9s8pAA/USl7vFRQpDjepo3aiyvFfOhtXSDqPowdBVPFUZ7onG/KyuolX0qPg=="
+    },
     "iconv-lite": {
       "version": "0.4.24",
       "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.24.tgz",
