@@ -26,6 +26,7 @@ describe('Networkmap', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeEmptyState();
+        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
@@ -75,7 +76,7 @@ describe('Networkmap', () => {
         unsupported_router.routingTable = () => {throw new Error('failed')};
     }
 
-    it('Output raw networkmap', async () => {
+    it('Output raw networkmap legacy api', async () => {
         mock();
         MQTT.events.message('zigbee2mqtt/bridge/networkmap/routes', 'raw');
         await flushPromises();
@@ -126,7 +127,7 @@ describe('Networkmap', () => {
         expect(JSON.parse(call[1])).toStrictEqual(expected);
     });
 
-    it('Output graphviz networkmap', async () => {
+    it('Output graphviz networkmap legacy api', async () => {
         mock();
         const device = zigbeeHerdsman.devices.bulb_color;
         device.lastSeen = null;
@@ -163,7 +164,7 @@ describe('Networkmap', () => {
         }
     });
 
-    it('Output plantuml networkmap', async () => {
+    it('Output plantuml networkmap legacy api', async () => {
         mock();
         const device = zigbeeHerdsman.devices.bulb_color;
         device.lastSeen = null;
@@ -178,7 +179,7 @@ describe('Networkmap', () => {
         expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/networkmap/plantuml');
 
         const expected = `' paste into: https://www.planttext.com/
-      
+
         @startuml
         card 0x0017880104e45525 [
         0x0017880104e45525
@@ -189,7 +190,7 @@ describe('Networkmap', () => {
         ---
         9 seconds ago
         ]
-        
+
         card 0x000b57fffec6a5b2 [
         bulb
         ---
@@ -199,7 +200,7 @@ describe('Networkmap', () => {
         ---
         9 seconds ago
         ]
-        
+
         card 0x000b57fffec6a5b3 [
         bulb_color
         ---
@@ -209,7 +210,7 @@ describe('Networkmap', () => {
         ---
         unknown
         ]
-        
+
         card 0x0017880104e45521 [
         button_double_key
         ---
@@ -219,7 +220,7 @@ describe('Networkmap', () => {
         ---
         9 seconds ago
         ]
-        
+
         card 0x0017880104e45559 [
         cc2530_router
         ---
@@ -229,7 +230,7 @@ describe('Networkmap', () => {
         ---
         9 seconds ago
         ]
-        
+
         card 0x00124b00120144ae [
         Coordinator
         ---
@@ -237,13 +238,13 @@ describe('Networkmap', () => {
         ---
         0 seconds ago
         ]
-        
+
         0x000b57fffec6a5b3 --> 0x00124b00120144ae: 120
         0x000b57fffec6a5b2 --> 0x00124b00120144ae: 92
         0x000b57fffec6a5b3 --> 0x000b57fffec6a5b2: 110
         0x0017880104e45559 --> 0x000b57fffec6a5b2: 100
         0x0017880104e45521 --> 0x0017880104e45559: 130
-        
+
         @enduml`;
 
         const expectedLines = expected.split('\n');
@@ -252,5 +253,58 @@ describe('Networkmap', () => {
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
         }
+    });
+
+    it('Should output raw networkmap', async () => {
+        mock();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', JSON.stringify({type: 'raw', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const conv = (device) => {return {ieeeAddr: device.ieeeAddr, networkAddress: device.networkAddress}};
+
+        const expected = {
+            status: 'ok',
+            data: {
+                type: 'raw',
+                routes: true,
+                value: {
+                    "nodes":[
+                        {"lastSeen": 1000,"ieeeAddr":coordinator.ieeeAddr,"friendlyName":"Coordinator","type":"Coordinator","networkAddress":0,"modelID":null,"failed":[]},
+                        {"lastSeen": 1000,"ieeeAddr":bulb.ieeeAddr,"friendlyName":"bulb","type":"Router","networkAddress":40369,"modelID":"TRADFRI bulb E27 WS opal 980lm","failed":[]},
+                        {"lastSeen": null,"ieeeAddr":bulb_color.ieeeAddr,"friendlyName":"bulb_color","type":"Router","networkAddress":40399,"modelID":"LLC020","failed":[]},
+                        {"lastSeen": 1000,"ieeeAddr":WXKG02LM.ieeeAddr,"friendlyName":"button_double_key","type":"EndDevice","networkAddress":6538,"modelID":"lumi.sensor_86sw2.es1"},
+                        {"lastSeen": 1000,"ieeeAddr":unsupported_router.ieeeAddr,"friendlyName":"0x0017880104e45525","type":"Router","networkAddress":6536,"modelID":"notSupportedModelID","manufacturerName": "Boef","failed":['lqi', 'routingTable']},
+                        {"lastSeen": 1000,"ieeeAddr":CC2530_ROUTER.ieeeAddr,"friendlyName":"cc2530_router","type":"Router","networkAddress":6540,"modelID":"lumi.router","failed":[]},
+                    ],
+                    "links":[
+                        {depth: 1, linkquality: 120, routes: [], source: conv(bulb_color), target: conv(coordinator), sourceIeeeAddr: bulb_color.ieeeAddr, sourceNwkAddr: bulb_color.networkAddress, targetIeeeAddr: coordinator.ieeeAddr, lqi: 120, relationship: 2},
+                        {depth: 1, linkquality: 92, routes: [{destinationAddress: CC2530_ROUTER.networkAddress, status: 'ACTIVE', nextHop: bulb.networkAddress}], source: conv(bulb), target: conv(coordinator), sourceIeeeAddr: bulb.ieeeAddr, sourceNwkAddr: bulb.networkAddress, targetIeeeAddr: coordinator.ieeeAddr, lqi: 92, relationship: 2},
+                        {depth: 2, linkquality: 110, routes: [], source: conv(bulb_color), target: conv(bulb), sourceIeeeAddr: bulb_color.ieeeAddr, sourceNwkAddr: bulb_color.networkAddress, targetIeeeAddr: bulb.ieeeAddr, lqi: 110, relationship: 1},
+                        {depth: 2, linkquality: 100, routes: [], source: conv(CC2530_ROUTER), target: conv(bulb), sourceIeeeAddr: CC2530_ROUTER.ieeeAddr, sourceNwkAddr: CC2530_ROUTER.networkAddress, targetIeeeAddr: bulb.ieeeAddr, lqi: 100, relationship: 1},
+                        {depth: 2, linkquality: 130, routes: [], source: conv(WXKG02LM), target: conv(CC2530_ROUTER), sourceIeeeAddr: WXKG02LM.ieeeAddr, sourceNwkAddr: WXKG02LM.networkAddress, targetIeeeAddr: CC2530_ROUTER.ieeeAddr, lqi: 130, relationship: 1}
+                    ]
+                }
+            }
+        };
+
+        const actual = JSON.parse(call[1]);
+        actual.data.value = JSON.parse(actual.data.value);
+        expect(actual).toStrictEqual(expected);
+    });
+
+    it('Should throw error when rquesting invalid type', async () => {
+        mock();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/networkmap',
+            JSON.stringify({"data":{},"status":"error","error":"Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 });
