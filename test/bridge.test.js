@@ -530,6 +530,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/config/logLevel', 'debug');
         await flushPromises();
         expect(logger.getLevel()).toBe('debug');
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/config/logLevel',
             JSON.stringify({"data":{"value":'debug'},"status":"ok"}),
