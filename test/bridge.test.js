@@ -201,6 +201,17 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should put error in response when format is incorrect', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permitJoin', JSON.stringify({"value_not_good": false}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permitJoin',
+            JSON.stringify({"data":{},"status":"error","error": "No value given"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Coverage satisfaction', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/random', JSON.stringify({"value": false}));
@@ -462,6 +473,77 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
             JSON.stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to set last_seen', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/lastSeen', 'ISO_8601');
+        await flushPromises();
+        expect(settings.get().advanced.last_seen).toBe('ISO_8601');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/lastSeen',
+            JSON.stringify({"data":{"value":"ISO_8601"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should fail to set last_seen when invalid type', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/lastSeen', 'invalid_one');
+        await flushPromises();
+        expect(settings.get().advanced.last_seen).toBe('disable');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/lastSeen',
+            JSON.stringify({"data":{},"status":"error","error":"'invalid_one' is not an allowed value, allowed: disable,ISO_8601,epoch,ISO_8601_local"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to set elapsed', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/elapsed', 'true');
+        await flushPromises();
+        expect(settings.get().advanced.elapsed).toBe(true);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/elapsed',
+            JSON.stringify({"data":{"value":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should fail to set last_seen when invalid type', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/elapsed', 'not_valid');
+        await flushPromises();
+        expect(settings.get().advanced.elapsed).toBe(false);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/elapsed',
+            JSON.stringify({"data":{},"status":"error","error":"'not_valid' is not an allowed value, allowed: true,false"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to set log level', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/logLevel', 'debug');
+        await flushPromises();
+        expect(logger.getLevel()).toBe('debug');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/logLevel',
+            JSON.stringify({"data":{"value":'debug'},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should fail to set log level when invalid type', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/logLevel', 'not_valid');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/logLevel',
+            JSON.stringify({"data":{},"status":"error","error":"'not_valid' is not an allowed value, allowed: error,warn,info,debug"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
