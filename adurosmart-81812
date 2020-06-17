@@ -1,0 +1,20 @@
+    // AduroSmart
+    {
+        zigbeeModel: ['ZLL-ExtendedColo'],
+        model: '81809',
+        vendor: 'AduroSmart',
+        description: 'ERIA Colors and White A19 60W',
+        extend: generic.light_onoff_brightness_colortemp_colorxy,
+        endpoint: (device) => {
+            return {
+                'default': 2,
+            };
+        },
+    },
+    {
+        zigbeeModel: ['ZLL-ColorTempera', 'ZLL-ColorTemperature'],
+        model: '81812',
+        vendor: 'AduroSmart',
+        description: 'ERIA Tunable White A19 60W',
+        extend: generic.light_onoff_brightness_colortemp,
+    },
