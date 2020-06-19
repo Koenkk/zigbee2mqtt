@@ -111,6 +111,12 @@ describe('Configure', () => {
         expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb', device does not require this.`)
     });
 
+    it('Shouldnt skip reconfigure when device does not require this but force was specified', async () => {
+        await MQTT.events.message('zigbee2mqtt/bridge/configure/force', 'bulb');
+        await flushPromises();
+        expect(logger.warn).toHaveBeenCalledWith(`Forcing configure of 'bulb'.`)
+    });
+
     it('Should not configure when interviewing', async () => {
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;
