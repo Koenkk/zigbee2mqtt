@@ -46,6 +46,13 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', '{"brightness":255}', { retain: true, qos: 0 }, expect.any(Function));
     });
 
+    it('Start controller when permit join fails', async () => {
+        zigbeeHerdsman.permitJoin.mockImplementationOnce(() => {throw new Error("failed!")});
+        await controller.start();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(MQTT.connect).toHaveBeenCalledTimes(1);
+    });
+
     it('Start controller with specific MQTT settings', async () => {
         const ca = tmp.fileSync().name;
         fs.writeFileSync(ca, "ca");
