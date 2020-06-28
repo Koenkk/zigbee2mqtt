@@ -174,7 +174,8 @@ function writeDefaultConfiguration() {
                 retain: false,
                 devices: ['bulb_2']
             },
-        }
+        },
+        external_converters: [],
     };
 
     yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
