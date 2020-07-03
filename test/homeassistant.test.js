@@ -5,6 +5,9 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const flushPromises = () => new Promise(setImmediate);
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
+const fs = require('fs');
+const path = require('path');
+const HomeAssistant = require('../lib/extension/homeassistant');
 
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
@@ -20,7 +23,6 @@ describe('HomeAssistant extension', () => {
 
     it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
         const missing = [];
-        const HomeAssistant = require('../lib/extension/homeassistant');
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
 
         require('zigbee-herdsman-converters').devices.forEach((d) => {
@@ -34,7 +36,6 @@ describe('HomeAssistant extension', () => {
 
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
-        const HomeAssistant = require('../lib/extension/homeassistant');
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
 
         require('zigbee-herdsman-converters').devices.forEach((d) => {
@@ -959,5 +960,29 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/click_single/config');
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/click');
+    });
+
+    it('Load Home Assistant mapping from external converters', async () => {
+        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
+        const beforeCount = Object.entries((new HomeAssistant(null, null, null, null, {on: () => {}}))._getMapping()).length;
+        settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
+        controller = new Controller();
+        const ha = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
+        await controller.start();
+        await flushPromises();
+        const afterCount = Object.entries(ha._getMapping()).length;
+        expect(beforeCount + 1).toStrictEqual(afterCount);
+
+        const homeassistantSwitch = {
+            type: 'switch',
+            object_id: 'switch',
+            discovery_payload: {
+                payload_off: 'OFF',
+                payload_on: 'ON',
+                value_template: '{{ value_json.state }}',
+                command_topic: true,
+            },
+        };
+        expect(ha._getMapping()['external_converters_device']).toStrictEqual([homeassistantSwitch]);
     });
 });
