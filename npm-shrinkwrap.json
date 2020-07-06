@@ -664,9 +664,9 @@
       }
     },
     "@types/babel__traverse": {
-      "version": "7.0.12",
-      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.0.12.tgz",
-      "integrity": "sha512-t4CoEokHTfcyfb4hUaF9oOHu9RmmNWnm1CP0YmMqOOfClKascOmvlEM736vlqeScuGvBDsHkf8R2INd4DWreQA==",
+      "version": "7.0.13",
+      "resolved": "https://registry.npmjs.org/@types/babel__traverse/-/babel__traverse-7.0.13.tgz",
+      "integrity": "sha512-i+zS7t6/s9cdQvbqKDARrcbrPvtJGlbYsMkazo03nTAK3RX9FNrLllXys22uiTGJapPOTZTQ35nHh4ISph4SLQ==",
       "dev": true,
       "requires": {
         "@babel/types": "^7.3.0"
@@ -719,9 +719,9 @@
       "dev": true
     },
     "@types/node": {
-      "version": "14.0.14",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-14.0.14.tgz",
-      "integrity": "sha512-syUgf67ZQpaJj01/tRTknkMNoBBLWJOBODF0Zm4NrXmiSuxjymFrxnTu1QVYRubhVkRcZLYZG8STTwJRdVm/WQ==",
+      "version": "14.0.18",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-14.0.18.tgz",
+      "integrity": "sha512-0Z3nS5acM0cIV4JPzrj9g/GH0Et5vmADWtip3YOXOp1NpOLU8V3KoZDc8ny9c1pe/YSYYzQkAWob6dyV/EWg4g==",
       "dev": true
     },
     "@types/normalize-package-data": {
@@ -1946,9 +1946,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "23.17.1",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.17.1.tgz",
-      "integrity": "sha512-/o36fw67qNbJGWbSBIBMfseMsNP/d88WUHAGHCi1xFwsNB3XXZGdvxbOw49j3iQz6MCW/yw8OeOsuQhi6mM5ZA==",
+      "version": "23.18.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-23.18.0.tgz",
+      "integrity": "sha512-wLPM/Rm1SGhxrFQ2TKM/BYsYPhn7ch6ZEK92S2o/vGkAAnDXM0I4nTIo745RIX+VlCRMFgBuJEax6XfTHMdeKg==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^2.5.0"
@@ -14132,9 +14132,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.125",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.125.tgz",
-      "integrity": "sha512-ShaHoLr0VuFmxRm8bMa6d7fvzC5f8HH1GWxTQnH6qIP02eLoZ272BG3q13S66QGpzKQTSrSIthPMliJhek9EHA==",
+      "version": "12.0.126",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.126.tgz",
+      "integrity": "sha512-j2WOYaX6c18oSLKSNDPD/ag0WVrHFLJ975kAGk7sVDJRYqsg5alUepQ0LhgWBCf7JBIiWEjpSeOC70TT4gSdBQ==",
       "requires": {
         "axios": "*",
         "https-proxy-agent": "*",
