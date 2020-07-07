@@ -292,12 +292,27 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/remove', 'group_1');
         await flushPromises();
+        expect(group.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(settings.getGroup('group_1')).toBeNull();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/remove',
+            JSON.stringify({"data":{"ID": "group_1", "force": false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to force remove group', async () => {
+        const group = zigbeeHerdsman.groups.group_1;
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/remove', JSON.stringify({ID: "group_1", force: true}));
+        await flushPromises();
         expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(settings.getGroup('group_1')).toBeNull();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/remove',
-            JSON.stringify({"data":{"ID": "group_1"},"status":"ok"}),
+            JSON.stringify({"data":{"ID": "group_1", "force": true},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
