@@ -48,7 +48,7 @@
     "winston": "*",
     "winston-syslog": "*",
     "zigbee-herdsman": "0.12.100",
-    "zigbee-herdsman-converters": "12.0.126"
+    "zigbee-herdsman-converters": "12.0.127"
   },
   "devDependencies": {
     "eslint": "*",
