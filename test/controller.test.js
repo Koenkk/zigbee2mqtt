@@ -108,6 +108,15 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", `{"brightness":255}`, {"qos": 0, "retain": true}, expect.any(Function));
     });
 
+    it('Start controller should not publish cached states when disabled', async () => {
+        settings.set(['advanced', 'cache_state_send_on_startup'], false);
+        data.writeDefaultState();
+        await controller.start();
+        await flushPromises();
+        const publishedTopics = MQTT.publish.mock.calls.map(m => m[0]);
+        expect(publishedTopics).toEqual(expect.not.arrayContaining(["zigbee2mqtt/bulb", "zigbee2mqtt/remote"]));
+    });
+
     it('Start controller should not publish cached states when cache_state is false', async () => {
         settings.set(['advanced', 'cache_state'], false);
         data.writeDefaultState();
@@ -515,6 +524,21 @@ describe('Controller', () => {
         await controller.publishEntityState('bulb', {});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should allow to disable state persistency', async () => {
+        settings.set(['advanced', 'cache_state_persistent'], false);
+        data.removeState();
+        await controller.start();
+        MQTT.publish.mockClear();
+        await controller.publishEntityState('bulb', {state: 'ON'});
+        await controller.publishEntityState('bulb', {brightness: 200});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON"}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON", brightness: 200}), {"qos": 0, "retain": true}, expect.any(Function));
+        await controller.stop();
+        expect(data.stateExists()).toBeFalsy();
     });
 
     it('Publish should not cache when set', async () => {
