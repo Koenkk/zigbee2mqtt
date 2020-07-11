@@ -30,7 +30,7 @@ describe('Controller', () => {
 
     it('Start controller', async () => {
         await controller.start();
-        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),adapter: {concurrent: null}, "serialPort":{"baudRate":115200,"rtscts":true,"path":"/dev/dummy"}});
+        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),adapter: {concurrent: null}, "serialPort":{"baudRate":undefined,"rtscts":undefined,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(0);
@@ -106,6 +106,15 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", `{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}`, {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", `{"brightness":255}`, {"qos": 0, "retain": true}, expect.any(Function));
+    });
+
+    it('Start controller should not publish cached states when disabled', async () => {
+        settings.set(['advanced', 'cache_state_send_on_startup'], false);
+        data.writeDefaultState();
+        await controller.start();
+        await flushPromises();
+        const publishedTopics = MQTT.publish.mock.calls.map(m => m[0]);
+        expect(publishedTopics).toEqual(expect.not.arrayContaining(["zigbee2mqtt/bulb", "zigbee2mqtt/remote"]));
     });
 
     it('Start controller should not publish cached states when cache_state is false', async () => {
@@ -515,6 +524,21 @@ describe('Controller', () => {
         await controller.publishEntityState('bulb', {});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should allow to disable state persistency', async () => {
+        settings.set(['advanced', 'cache_state_persistent'], false);
+        data.removeState();
+        await controller.start();
+        MQTT.publish.mockClear();
+        await controller.publishEntityState('bulb', {state: 'ON'});
+        await controller.publishEntityState('bulb', {brightness: 200});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON"}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON", brightness: 200}), {"qos": 0, "retain": true}, expect.any(Function));
+        await controller.stop();
+        expect(data.stateExists()).toBeFalsy();
     });
 
     it('Publish should not cache when set', async () => {
