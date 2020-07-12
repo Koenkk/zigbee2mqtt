@@ -80,7 +80,8 @@ describe('Loads external converters', () => {
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(1, {
-            mock: 1
+            mock: 1,
+            model: 'external_converters_device',
         });
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(2, {
             mock: 2

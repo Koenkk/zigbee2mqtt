@@ -318,6 +318,20 @@ describe('Bridge legacy', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/remove_group', 'group_1');
         await flushPromises();
         expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
+        expect(group.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/log',
+            JSON.stringify({type: 'group_removed', message: 'group_1'}),
+            {qos: 0, retain: false},
+            expect.any(Function)
+        );
+    });
+
+    it('Should allow to force remove groups', async () => {
+        const group = zigbeeHerdsman.groups.group_1;
+        MQTT.events.message('zigbee2mqtt/bridge/config/force_remove_group', 'group_1');
+        await flushPromises();
+        expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
         expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
