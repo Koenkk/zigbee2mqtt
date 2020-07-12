@@ -48,9 +48,10 @@ class Endpoint {
             return this.outputClusters.includes(clusters[cluster]);
         }
 
-        this.addToGroup = (group) => {
+        this.addToGroup = jest.fn();
+        this.addToGroup.mockImplementation((group) => {
             if (!group.members.includes(this)) group.members.push(this);
-        }
+        })
 
         this.getDevice = () => {
             return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);

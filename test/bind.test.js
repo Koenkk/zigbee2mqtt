@@ -210,6 +210,34 @@ describe('Bind', () => {
         );
     });
 
+    it('Error bind fails when source not existing', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', JSON.stringify({from: 'remote_not_existing', to: 'bulb_color'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/bind',
+            JSON.stringify({"data":{"from":"remote_not_existing","to":"bulb_color"},"status":"error","error":"Source device 'remote_not_existing' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Error bind fails when target not existing', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', JSON.stringify({from: 'remote', to: 'bulb_color_not_existing'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/bind',
+            JSON.stringify({"data":{"from":"remote","to":"bulb_color_not_existing"},"status":"error","error":"Target device or group 'bulb_color_not_existing' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Legacy api: Should bind', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
