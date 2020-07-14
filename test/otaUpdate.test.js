@@ -178,15 +178,11 @@ describe('OTA update', () => {
         );
     });
 
-    it('Shouldnt crash when read modelID after OTA update fails', async () => {
+    it('Shouldnt crash when read modelID before/after OTA update fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         let count = 0;
-        endpoint.read.mockImplementation(() => {
-            if (count === 1) throw new Error('Failed!')
-            count++;
-            return {swBuildId: 1, dateCode: '2019010'}
-        });
+        endpoint.read.mockImplementation(() => {throw new Error('Failed!')});
 
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
@@ -194,7 +190,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            JSON.stringify({"data":{"ID":"bulb","from":{"software_build_ID":1,"date_code":"2019010"},"to":null},"status":"ok"}),
+            JSON.stringify({"data":{"ID":"bulb","from":null,"to":null},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
