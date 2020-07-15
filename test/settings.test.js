@@ -528,17 +528,17 @@ describe('Settings', () => {
         }).toThrowError('MQTT retention requires protocol version 5');
     });
 
-    it('Should not allow non-existing entities in availability blacklist', () => {
+    it('Should not allow non-existing entities in availability_blocklist', () => {
         write(configurationFile, {
             devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
-            advanced: {availability_blacklist: ['0x0017880104e45519', 'non_existing']},
+            advanced: {availability_blocklist: ['0x0017880104e45519', 'non_existing']},
         });
 
         settings._reRead();
 
         expect(() => {
             settings.validate();
-        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blacklist'`);
+        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blocklist'`);
     });
 
     it('Should ban devices', () => {
@@ -547,6 +547,14 @@ describe('Settings', () => {
         expect(settings.get().ban).toStrictEqual(['0x123']);
         settings.banDevice('0x1234');
         expect(settings.get().ban).toStrictEqual(['0x123', '0x1234']);
+    });
+
+    it('Should add devices to blocklist', () => {
+        write(configurationFile, {});
+        settings.blockDevice('0x123');
+        expect(settings.get().blocklist).toStrictEqual(['0x123']);
+        settings.blockDevice('0x1234');
+        expect(settings.get().blocklist).toStrictEqual(['0x123', '0x1234']);
     });
 
     it('Should throw error when yaml file is invalid', () => {
