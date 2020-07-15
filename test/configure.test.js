@@ -99,38 +99,38 @@ describe('Configure', () => {
         expectRemoteConfigured();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            JSON.stringify({"data":{"ID": "remote"},"status":"ok"}),
+            JSON.stringify({"data":{"id": "remote"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
 
     it('Fail to configure via MQTT when device does not exist', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({ID: "not_existing_device"}));
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "not_existing_device"}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            JSON.stringify({"data":{"ID": "not_existing_device"},"status":"error","error": "Device 'not_existing_device' does not exist"}),
+            JSON.stringify({"data":{"id": "not_existing_device"},"status":"error","error": "Device 'not_existing_device' does not exist"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
 
     it('Fail to configure via MQTT when configure fails', async () => {
         zigbeeHerdsman.devices.remote.getEndpoint(1).bind.mockImplementationOnce(async () => {throw new Error('Bind timeout after 10s')});
-        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({ID: "remote"}));
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "remote"}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            JSON.stringify({"data":{"ID": "remote"},"status":"error","error": "Failed to configure (Bind timeout after 10s)"}),
+            JSON.stringify({"data":{"id": "remote"},"status":"error","error": "Failed to configure (Bind timeout after 10s)"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
 
     it('Fail to configure via MQTT when device has no configure', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({ID: "bulb", transaction: 20}));
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "bulb", transaction: 20}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            JSON.stringify({"data":{"ID": "bulb"},"status":"error","error": "Device 'bulb' cannot be configured","transaction":20}),
+            JSON.stringify({"data":{"id": "bulb"},"status":"error","error": "Device 'bulb' cannot be configured","transaction":20}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
