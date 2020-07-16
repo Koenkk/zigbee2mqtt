@@ -573,12 +573,39 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
+    it('Should send all status when home assistant comes online (default topic)', async () => {
+        jest.useFakeTimers();
+        data.writeDefaultState();
+        controller = new Controller();
+        await controller.start();
+        expect(MQTT.subscribe).toHaveBeenCalledWith('homeassistant/status');
+        await flushPromises();
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/status', 'online');
+        await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}',
+            { retain: true, qos: 0 },
+            expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote',
+            '{"brightness":255,"update_available":false}',
+            { retain: true, qos: 0 },
+            expect.any(Function)
+        );
+    });
+
     it('Should send all status when home assistant comes online', async () => {
         jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller();
         await controller.start();
         await flushPromises();
+        expect(MQTT.subscribe).toHaveBeenCalledWith('hass/status');
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status', 'online');
         await flushPromises();
