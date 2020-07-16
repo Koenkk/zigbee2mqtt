@@ -16,6 +16,8 @@ jobs:
     - run: npm install zigbee-herdsman@${{ github.event.client_payload.version }} --save-exact
     - run: rm -rf node_modules npm-shrinkwrap.json && npm install && npm shrinkwrap --dev
     - uses: peter-evans/create-pull-request@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
         commit-message: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
         branch: "update_zh"
