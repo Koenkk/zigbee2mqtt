@@ -159,12 +159,28 @@ describe('Controller', () => {
         expect(controller.state.state).toStrictEqual({});
     });
 
+    it('Should remove device not on passlist on startup', async () => {
+        settings.set(['passlist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
+        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
+    });
+
     it('Should remove non whitelisted devices on startup', async () => {
         settings.set(['whitelist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should remove device on blocklist on startup', async () => {
+        settings.set(['blocklist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(0);
     });
 
     it('Should remove banned devices on startup', async () => {
@@ -292,48 +308,48 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
     });
 
-    it('acceptJoiningDeviceHandler reject banned device', async () => {
+    it('acceptJoiningDeviceHandler reject device on blocklist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
-        settings.set(['ban'], [device.ieeeAddr]);
+        settings.set(['blocklist'], [device.ieeeAddr]);
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(false);
     });
 
-    it('acceptJoiningDeviceHandler accept not banned device', async () => {
+    it('acceptJoiningDeviceHandler accept device not on blocklist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
-        settings.set(['ban'], ['123']);
+        settings.set(['blocklist'], ['123']);
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
-    it('acceptJoiningDeviceHandler accept whitelisted device', async () => {
+    it('acceptJoiningDeviceHandler accept device on passlist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
-        settings.set(['whitelist'], [device.ieeeAddr]);
+        settings.set(['passlist'], [device.ieeeAddr]);
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
-    it('acceptJoiningDeviceHandler reject non-whitelisted device', async () => {
+    it('acceptJoiningDeviceHandler reject device not in passlist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
-        settings.set(['whitelist'], ['123']);
+        settings.set(['passlist'], ['123']);
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(false);
     });
 
-    it('acceptJoiningDeviceHandler should prefer whitelist above ban', async () => {
+    it('acceptJoiningDeviceHandler should prefer passlist above blocklist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
-        settings.set(['whitelist'], [device.ieeeAddr]);
-        settings.set(['ban'], [device.ieeeAddr]);
+        settings.set(['passlist'], [device.ieeeAddr]);
+        settings.set(['blocklist'], [device.ieeeAddr]);
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
-    it('acceptJoiningDeviceHandler accept when no ban and whitelist', async () => {
+    it('acceptJoiningDeviceHandler accept when not on blocklist and passlist', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;
         const handler = zigbeeHerdsman.constructor.mock.calls[0][0].acceptJoiningDeviceHandler;

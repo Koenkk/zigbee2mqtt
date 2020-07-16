@@ -33,6 +33,7 @@
   },
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
+    "zigbee-herdsman": "0.12.107",
     "ajv": "*",
     "debounce": "*",
     "fast-deep-equal": "*",
@@ -47,8 +48,7 @@
     "semver": "*",
     "winston": "*",
     "winston-syslog": "*",
-    "zigbee-herdsman": "0.12.104",
-    "zigbee-herdsman-converters": "12.0.132"
+    "zigbee-herdsman-converters": "12.0.139"
   },
   "devDependencies": {
     "eslint": "*",

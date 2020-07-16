@@ -64,7 +64,7 @@ describe('OTA update', () => {
         expect(device.softwareBuildID).toBe(2);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            JSON.stringify({"data":{"ID": "bulb","from":{"software_build_ID":1,"date_code":"20190101"},"to":{"software_build_ID":2,"date_code":"20190102"}},"status":"ok"}),
+            JSON.stringify({"data":{"id": "bulb","from":{"software_build_id":1,"date_code":"20190101"},"to":{"software_build_id":2,"date_code":"20190102"}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -80,11 +80,11 @@ describe('OTA update', () => {
             throw new Error('Update failed');
         });
 
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', JSON.stringify({ID: "bulb"}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', JSON.stringify({id: "bulb"}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            JSON.stringify({"data":{"ID": "bulb"},"status":"error","error":"Update of 'bulb' failed (Update failed)"}),
+            JSON.stringify({"data":{"id": "bulb"},"status":"error","error":"Update of 'bulb' failed (Update failed)"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -101,7 +101,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "bulb","updateAvailable":false},"status":"ok"}),
+            JSON.stringify({"data":{"id": "bulb","updateAvailable":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
 
@@ -113,7 +113,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "bulb","updateAvailable":true},"status":"ok"}),
+            JSON.stringify({"data":{"id": "bulb","updateAvailable":true},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -130,7 +130,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "bulb"},"status":"error","error": `Failed to check if update available for 'bulb' (RF singals disturbed because of dogs barking)`}),
+            JSON.stringify({"data":{"id": "bulb"},"status":"error","error": `Failed to check if update available for 'bulb' (RF singals disturbed because of dogs barking)`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -140,7 +140,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "not_existing_deviceooo"},"status":"error","error": `Device 'not_existing_deviceooo' does not exist`}),
+            JSON.stringify({"data":{"id": "not_existing_deviceooo"},"status":"error","error": `Device 'not_existing_deviceooo' does not exist`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -150,7 +150,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "ZNLDP12LM"},"status":"error","error": `Device 'ZNLDP12LM' does not support OTA updates`}),
+            JSON.stringify({"data":{"id": "ZNLDP12LM"},"status":"error","error": `Device 'ZNLDP12LM' does not support OTA updates`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -173,7 +173,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            JSON.stringify({"data":{"ID": "bulb"},"status":"error","error": `Update or check for update already in progress for 'bulb'`}),
+            JSON.stringify({"data":{"id": "bulb"},"status":"error","error": `Update or check for update already in progress for 'bulb'`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -190,7 +190,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            JSON.stringify({"data":{"ID":"bulb","from":null,"to":null},"status":"ok"}),
+            JSON.stringify({"data":{"id":"bulb","from":null,"to":null},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
