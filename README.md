@@ -66,6 +66,9 @@ Zigbee2mqtt integrates well with (almost) every home automation solution because
 ## Architecture
 ![Architecture](images/architecture.png)
 
+### Internal Architecture
+Zigbee2mqtt is made up of three modules, each developed in its own Github project. Starting from the hardware (adapter) and moving up; [zigbee-herdsman](https://github.com/koenkk/zigbee-herdsman) connects to your Zigbee adapter an makes an API available to the higher levels of the stack. For e.g. Texas Instruments hardware, zigbee-herdsman uses the [TI zStack monitoring and test API](https://github.com/koenkk/zigbee-herdsman/raw/master/docs/Z-Stack%20Monitor%20and%20Test%20API.pdf) to communicate with the adapter. Zigbee-herdsman handles the core Zigbee communication. The module [zigbee-herdsman-converters](https://github.com/koenkk/zigbee-herdsman-converters) handles the mapping from individual device models to the Zigbee clusters they support. [Zigbee clusters](https://github.com/Koenkk/zigbee-herdsman/raw/master/docs/07-5123-06-zigbee-cluster-library-specification.pdf) are the layers of the Zigbee protocol on top of the base protocol that define things like how lights, sensors and switches talk to each other over the Zigbee network.  Finally, the zigbee2mqtt module drives zigbee-herdsman and maps the zigbee messages to MQTT messages. Zigbee2mqtt also keeps track of the state of the system.  It uses a `database.db` file to store this state; a text file with a JSON database of connected devices and their capabilities.
+
 ## Supported devices
 See [Supported devices](https://www.zigbee2mqtt.io/information/supported_devices.html) to check whether your device is supported. There is quite an extensive list, including devices from vendors like Xiaomi, Ikea, Philips, OSRAM and more.
 

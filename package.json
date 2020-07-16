@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.12.0",
+  "version": "1.14.1-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "engines": {
-    "node": "^10 || ^12 || ^13"
+    "node": "^10 || ^12 || ^13 || ^14"
   },
   "keywords": [
     "xiaomi",
@@ -33,10 +33,12 @@
   },
   "homepage": "https://koenkk.github.io/zigbee2mqtt",
   "dependencies": {
+    "zigbee-herdsman": "0.12.107",
     "ajv": "*",
     "debounce": "*",
     "fast-deep-equal": "*",
     "git-last-commit": "*",
+    "humanize-duration": "*",
     "js-yaml": "*",
     "mkdir-recursive": "*",
     "moment": "*",
@@ -45,8 +47,8 @@
     "rimraf": "*",
     "semver": "*",
     "winston": "*",
-    "zigbee-herdsman": "0.12.64",
-    "zigbee-herdsman-converters": "12.0.51"
+    "winston-syslog": "*",
+    "zigbee-herdsman-converters": "12.0.139"
   },
   "devDependencies": {
     "eslint": "*",

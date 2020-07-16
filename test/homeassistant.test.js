@@ -5,6 +5,9 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const flushPromises = () => new Promise(setImmediate);
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
+const fs = require('fs');
+const path = require('path');
+const HomeAssistant = require('../lib/extension/homeassistant');
 
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
@@ -20,7 +23,6 @@ describe('HomeAssistant extension', () => {
 
     it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
         const missing = [];
-        const HomeAssistant = require('../lib/extension/homeassistant');
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
 
         require('zigbee-herdsman-converters').devices.forEach((d) => {
@@ -30,6 +32,26 @@ describe('HomeAssistant extension', () => {
         });
 
         expect(missing).toHaveLength(0);
+    });
+
+    it('Should not have duplicate type/object_ids in a mapping', () => {
+        const duplicated = [];
+        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
+
+        require('zigbee-herdsman-converters').devices.forEach((d) => {
+            const mapping = ha._getMapping()[d.model];
+            const cfg_type_object_ids = [];
+
+            mapping.forEach((c) => {
+                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+                    duplicated.push(d.model);
+                } else {
+                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                }
+            });
+        });
+
+        expect(duplicated).toHaveLength(0);
     });
 
     it('Should discover devices', async () => {
@@ -183,7 +205,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': "{{ (value_json.temperature | float) | round(1) }}",
+            'value_template': "{{ value_json.temperature }}",
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -208,7 +230,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
-            'value_template': '{{ (value_json.humidity | float) | round(0) }}',
+            'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
@@ -233,7 +255,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
-            'value_template': '{{ (value_json.pressure | float) | round(2) }}',
+            'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
@@ -496,7 +518,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        // 1 publish is the publish from deviceReceive
+        // 1 publish is the publish from receive
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
@@ -537,7 +559,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Shouldnt discover when message has no device yet', async () => {
+    it('Shouldnt discover when device leaves', async () => {
         controller = new Controller();
         await controller.start();
         await flushPromises();
@@ -564,13 +586,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',
+            '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            '{"brightness":255}',
+            '{"brightness":255,"update_available":false}',
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -917,5 +939,50 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', JSON.stringify({state: 'ON'}));
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should counter an action/click payload with an empty payload', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        const data = {onOff: 1}
+        const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({click: 'single', linkquality: 10});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({click: '', linkquality: 10});
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
+        expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/click_single/config');
+        expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/click');
+    });
+
+    it('Load Home Assistant mapping from external converters', async () => {
+        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
+        const beforeCount = Object.entries((new HomeAssistant(null, null, null, null, {on: () => {}}))._getMapping()).length;
+        settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
+        controller = new Controller();
+        const ha = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
+        await controller.start();
+        await flushPromises();
+        const afterCount = Object.entries(ha._getMapping()).length;
+        expect(beforeCount + 1).toStrictEqual(afterCount);
+
+        const homeassistantSwitch = {
+            type: 'switch',
+            object_id: 'switch',
+            discovery_payload: {
+                payload_off: 'OFF',
+                payload_on: 'ON',
+                value_template: '{{ value_json.state }}',
+                command_topic: true,
+            },
+        };
+        expect(ha._getMapping()['external_converters_device']).toStrictEqual([homeassistantSwitch]);
     });
 });

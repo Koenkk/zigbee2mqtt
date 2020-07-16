@@ -76,15 +76,13 @@ steps:
   displayName: 'Docker build release'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
 
-# Trigger downstream
+# Trigger Home Assistant Zigbee2mqtt addon build
 - bash: |
-    BODY="{\"request\": {\"branch\": \"master\"}}"
-    curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -H "Travis-API-Version: 3" \
-        -H "Authorization: token $(TRAVIS_TOKEN)" \
-        -d "$BODY" \
-        "https://api.travis-ci.org/repo/danielwelch%2Fhassio-zigbee2mqtt/requests"
+    curl -s \
+        --request POST \
+        --header "Content-Type: application/json" \
+        --data '{"definition": {"id": 1}}' \
+        -u "$(HASSIO_TRIGGER_SECRET)" \
+        "https://dev.azure.com/danielwelch2101/hassio-zigbee2mqtt/_apis/build/builds?api-version=5.1"
   displayName: 'Trigger Hass.io build'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'), ne(variables['Build.Reason'], 'PullRequest'))
