@@ -618,9 +618,20 @@ describe('Publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 100});
     });
 
-    it('Should use transition when brightness', async () => {
+    it('Should use transition on brightness command', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['devices', device.ieeeAddr, 'transition'], 20);
+        const endpoint = device.getEndpoint(1);
+        const payload = {brightness: 20};
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 200}, {}]);
+    });
+
+    it('Should use transition from device_options on brightness command', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        settings.set(['device_options'], {transition: 20});
         const endpoint = device.getEndpoint(1);
         const payload = {brightness: 20};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify(payload));
