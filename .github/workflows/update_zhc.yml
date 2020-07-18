@@ -10,14 +10,13 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: dev
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - uses: actions/setup-node@v2-beta
       with:
         node-version: 12
     - run: npm install zigbee-herdsman-converters@${{ github.event.client_payload.version }} --save-exact
     - run: rm -rf node_modules npm-shrinkwrap.json && npm install && npm shrinkwrap --dev
     - uses: peter-evans/create-pull-request@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
       with:
         commit-message: Update zigbee-herdsman-converters to ${{ github.event.client_payload.version }}
         branch: "update_zhc"
