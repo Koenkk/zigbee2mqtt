@@ -640,6 +640,29 @@ describe('Publish', () => {
         expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 200}, {}]);
     });
 
+    it('Should turn bulb on with full brightness when transition is used and no brightness is known', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/3799
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({"state": "OFF", "transition": 0.5}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({"state": "ON", "transition": 0.5}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenNthCalledWith(1,
+            'zigbee2mqtt/bulb_color',
+            JSON.stringify({state: 'OFF', brightness: 0}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(2,
+            'zigbee2mqtt/bulb_color',
+            JSON.stringify({state: 'ON', brightness: 254}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 0, transtime: 5}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 254, transtime: 5}, {}]);
+    });
+
     it('Transition parameter should not influence brightness on state ON', async () => {
         // https://github.com/Koenkk/zigbee2mqtt/issues/3563
         const device = zigbeeHerdsman.devices.bulb_color;
