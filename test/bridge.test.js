@@ -220,6 +220,17 @@ describe('Bridge', () => {
         await flushPromises();
     });
 
+    it('Should allow a healthcheck', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/health_check', '');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/health_check',
+            JSON.stringify({"data":{"healthy": true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to remove device by string', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
