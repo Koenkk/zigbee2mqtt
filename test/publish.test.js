@@ -980,15 +980,28 @@ describe('Publish', () => {
         // Turn bulb off so that the bulb gets a state.
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'OFF'}));
         await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenNthCalledWith(1,
+            'zigbee2mqtt/bulb_color',
+            JSON.stringify({state: 'OFF', brightness: 0}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
 
-        // Toggle again, now that we have state it should publish state ON
+        // Toggle again, now that we have state it should publish state ON and retrieve the brightness from the bulb.
+        endpoint.read.mockImplementationOnce((cluster, attrs) => {
+            if (cluster === 'genLevelCtrl' && attrs.includes('currentLevel')) {
+                return {currentLevel: 100};
+            }
+        });
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', JSON.stringify({state: 'TOGGLE'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(3);
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bulb_color');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({state: 'ON', brightness: 0});
-        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
+        expect(MQTT.publish).toHaveBeenNthCalledWith(2,
+            'zigbee2mqtt/bulb_color',
+            JSON.stringify({state: 'ON', brightness: 100}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should publish messages with options disableDefaultResponse', async () => {
