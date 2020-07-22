@@ -366,23 +366,27 @@ describe('Receive', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
-    it('Should not handle messages from unsupported devices', async () => {
+    it('Should not handle messages from unsupported devices and link to docs', async () => {
         const device = zigbeeHerdsman.devices.unsupported;
         const data = {onOff: 1};
+        logger.warn.mockClear();
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
+        expect(logger.warn).toHaveBeenCalledWith(`Received message from unsupported device with Zigbee model 'notSupportedModelID'`);
+        expect(logger.warn).toHaveBeenCalledWith(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
-    it('Should not handle messages from still interviewing devices with unknown modelID', async () => {
+    it('Should not handle messages from still interviewing devices with unknown definition', async () => {
         const device = zigbeeHerdsman.devices.interviewing;
         const data = {onOff: 1};
+        logger.debug.mockClear();
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
-        expect(logger.debug).toHaveBeenCalledWith(`Skipping message, modelID is undefined and still interviewing`);
+        expect(logger.debug).toHaveBeenCalledWith(`Skipping message, definition is undefined and still interviewing`);
     });
 
     it('Should handle a command', async () => {
