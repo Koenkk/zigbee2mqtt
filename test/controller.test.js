@@ -204,15 +204,6 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false);
     });
 
-    it('Refuse to start when configuration.yaml is invalid', async () => {
-        settings.set(['permit_join'], 'invalid');
-        await controller.start();
-        expect(logger.error).toHaveBeenCalledWith('Refusing to start, configuration.yaml is not valid, found the following errors:');
-        expect(logger.error).toHaveBeenCalledWith('\t - permit_join should be boolean');
-        expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
-    });
-
     it('Start controller with disable_led', async () => {
         settings.set(['serial', 'disable_led'], true);
         await controller.start();

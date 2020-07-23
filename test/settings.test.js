@@ -10,6 +10,12 @@ const groupsFile = data.joinPath('groups.yaml');
 const secretFile = data.joinPath('secret.yaml');
 const yaml = require('js-yaml');
 
+const minimalConfig = {
+    permit_join: true,
+    homeassistant: true,
+    mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost'},
+};
+
 describe('Settings', () => {
     const write = (file, json, reread=true) => {
         fs.writeFileSync(file, yaml.safeDump(json))
@@ -505,40 +511,63 @@ describe('Settings', () => {
 
     it('Should not allow any string values for network_key', () => {
         write(configurationFile, {
+            ...minimalConfig,
             advanced: {network_key: 'NOT_GENERATE'},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`advanced.network_key: should be array or 'GENERATE' (is 'NOT_GENERATE')`);
+        const error = `advanced.network_key: should be array or 'GENERATE' (is 'NOT_GENERATE')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Should allow retention configuration with MQTT v5', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost', version: 5},
+            devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
+        });
+
+        settings._reRead();
+        expect(settings.validate()).toEqual([]);
     });
 
 
     it('Should not allow retention configuration without MQTT v5', () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError('MQTT retention requires protocol version 5');
+        const error = 'MQTT retention requires protocol version 5';
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should not allow non-existing entities in availability_blocklist', () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
             advanced: {availability_blocklist: ['0x0017880104e45519', 'non_existing']},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blocklist'`);
+        const error = `Non-existing entity 'non_existing' specified in 'availability_blocklist'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Validate should if settings does not conform to scheme', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            advanced: null,
+        });
+
+        settings._reRead();
+
+        const error = `advanced should be object`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should ban devices', () => {
@@ -563,74 +592,64 @@ describe('Settings', () => {
              \t wrong
         `)
 
-        let error;
-        try {
-            settings._reRead();
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error.message).toContain(`Your YAML file '${configurationFile}' is invalid`);
+        settings._clear();
+        const error = `Your YAML file: '${configurationFile}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should throw error when yaml file does not exist', () => {
-        let error;
-        try {
-            settings._reRead();
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error.message).toContain(`no such file or directory, open`);
+        settings._clear();
+        const error = `ENOENT: no such file or directory, open '${configurationFile}'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname', retain: false}},
             groups: {'1': {friendly_name: 'myname', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Duplicate friendly_name 'myname' found`);
+        const error = `Duplicate friendly_name 'myname' found`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name ends with /DIGIT', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname/123', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Friendly name cannot end with a "/DIGIT" ('myname/123')`);
+        const error = `Friendly name cannot end with a "/DIGIT" ('myname/123')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name contains a MQTT wildcard', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname#', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`);
+        const error = `MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Following friendly_name are not allowed: '${utils.getEndpointNames()}'`);
+        const error = `Following friendly_name are not allowed: '${utils.getEndpointNames()}'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
