@@ -884,6 +884,23 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should not discover sensor_click when legacy: false is set', async () => {
+        settings.set(['devices', '0x0017880104e45520'], {
+            legacy: false,
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+
+        const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
+        expect(discovered.length).toBe(3);
+        expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/action/config');
+        expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/battery/config');
+        expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/linkquality/config');
+    });
+
     it('Should disable Home Assistant legacy triggers', async () => {
         settings.set(['advanced', 'homeassistant_legacy_triggers'], false);
         controller = new Controller(false);
