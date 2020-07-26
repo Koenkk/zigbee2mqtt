@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: 12
+    - name: Get NodeJS Version
+      id: nodeversion
+      run: |
+        echo "::set-output name=version::$(node --version)"
+    - name: Restore node_modules cache
+      id: cache-node-modules
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ steps.nodeversion.outputs.version }}-${{ hashFiles('npm-shrinkwrap.json') }}
+    - name: Install dependencies
+      if: steps.cache-node-modules.outputs.cache-hit != 'true'
+      run: npm ci
+    - name: Test
+      run: npm run test-with-coverage
+    - name: Lint
+      run: npm run eslint

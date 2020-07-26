@@ -5,6 +5,7 @@ const fs = require('fs');
 
 const mockDir = tmp.dirSync().name;
 const mockDirStorage = tmp.dirSync().name;
+const stateFile = path.join(mockDir, 'state.json');
 
 function writeDefaultConfiguration() {
     const config = {
@@ -174,14 +175,25 @@ function writeDefaultConfiguration() {
                 retain: false,
                 devices: ['bulb_2']
             },
-        }
+        },
+        external_converters: [],
     };
 
     yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
 }
 
 function writeEmptyState() {
-    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify({}));
+    fs.writeFileSync(stateFile, JSON.stringify({}));
+}
+
+function removeState() {
+    if (stateExists()) {
+        fs.unlinkSync(stateFile);
+    }
+}
+
+function stateExists() {
+    return fs.existsSync(stateFile);
 }
 
 function writeDefaultState() {
@@ -200,10 +212,6 @@ function writeDefaultState() {
     fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
 }
 
-function removeState() {
-    fs.unlinkSync(path.join(mockDir, 'state.json'))
-}
-
 jest.mock('../../lib/util/data', () => ({
     joinPath: (file) => require('path').join(mockDir, file),
     getPath: () => mockDir,
@@ -219,4 +227,5 @@ module.exports = {
     writeDefaultState,
     removeState,
     writeEmptyState,
+    stateExists,
 };

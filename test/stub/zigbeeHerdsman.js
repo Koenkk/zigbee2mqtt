@@ -8,6 +8,7 @@ class Group {
         this.meta = {};
         this.members = members;
         this.removeFromDatabase = jest.fn();
+        this.removeFromNetwork = jest.fn();
         this.hasMember = (endpoint) => this.members.includes(endpoint);
     }
 }
@@ -47,20 +48,22 @@ class Endpoint {
             return this.outputClusters.includes(clusters[cluster]);
         }
 
-        this.addToGroup = (group) => {
+        this.addToGroup = jest.fn();
+        this.addToGroup.mockImplementation((group) => {
             if (!group.members.includes(this)) group.members.push(this);
-        }
+        })
 
         this.getDevice = () => {
             return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);
         }
 
-        this.removeFromGroup = (group) => {
+        this.removeFromGroup = jest.fn();
+        this.removeFromGroup.mockImplementation((group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
                 group.members.splice(index, 1);
             }
-        }
+        });
 
         this.removeFromAllGroups = () => {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))

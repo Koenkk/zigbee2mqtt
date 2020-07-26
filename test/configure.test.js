@@ -90,8 +90,52 @@ describe('Configure', () => {
         expectRemoteConfigured();
     });
 
-    it('Should allow to reconfigure manually', async () => {
+    it('Should allow to configure via MQTT', async () => {
         expectRemoteConfigured();
+        mockClear(zigbeeHerdsman.devices.remote);
+        expectRemoteNotConfigured();
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', 'remote');
+        await flushPromises();
+        expectRemoteConfigured();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure',
+            JSON.stringify({"data":{"id": "remote"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Fail to configure via MQTT when device does not exist', async () => {
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "not_existing_device"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure',
+            JSON.stringify({"data":{"id": "not_existing_device"},"status":"error","error": "Device 'not_existing_device' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Fail to configure via MQTT when configure fails', async () => {
+        zigbeeHerdsman.devices.remote.getEndpoint(1).bind.mockImplementationOnce(async () => {throw new Error('Bind timeout after 10s')});
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "remote"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure',
+            JSON.stringify({"data":{"id": "remote"},"status":"error","error": "Failed to configure (Bind timeout after 10s)"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Fail to configure via MQTT when device has no configure', async () => {
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', JSON.stringify({id: "bulb", transaction: 20}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure',
+            JSON.stringify({"data":{"id": "bulb"},"status":"error","error": "Device 'bulb' cannot be configured","transaction":20}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Legacy api: Should allow to reconfigure manually', async () => {
         mockClear(zigbeeHerdsman.devices.remote);
         expectRemoteNotConfigured();
         await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote');
@@ -99,13 +143,13 @@ describe('Configure', () => {
         expectRemoteConfigured();
     });
 
-    it('Shouldnt manually reconfigure when device does not exist', async () => {
+    it('Legacy api: Shouldnt manually reconfigure when device does not exist', async () => {
         await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote_random_non_existing');
         await flushPromises();
         expect(logger.error).toHaveBeenCalledWith(`Device 'remote_random_non_existing' does not exist`);
     });
 
-    it('Should skip reconfigure when device does not require this', async () => {
+    it('Legacy api: Should skip reconfigure when device does not require this', async () => {
         await MQTT.events.message('zigbee2mqtt/bridge/configure', 'bulb');
         await flushPromises();
         expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb', device does not require this.`)

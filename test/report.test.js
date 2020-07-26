@@ -108,6 +108,20 @@ describe('Report', () => {
         expect(device.meta.reporting).toBeUndefined();
     });
 
+    it('Should not configure reporting when interviewing', async () => {
+        const device = zigbeeHerdsman.devices.bulb_2;
+        const endpoint = device.getEndpoint(1);
+        device.interviewing = true;
+        delete device.meta.reporting;
+        mockClear(device);
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(0);
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(device.meta.reporting).toBeUndefined();
+    });
+
     it('Should not configure reporting when receicing message from device which has already been setup yet', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
