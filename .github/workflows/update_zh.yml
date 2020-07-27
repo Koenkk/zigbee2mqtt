@@ -19,4 +19,4 @@ jobs:
       with:
         commit-message: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
         branch: "update_zh"
-        title: Update zigbee-herdsman
+        title: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
