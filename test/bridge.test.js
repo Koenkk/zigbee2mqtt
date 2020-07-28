@@ -5,7 +5,6 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const {coordinator, bulb, unsupported} = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
@@ -16,6 +15,7 @@ describe('Bridge', () => {
     let controller;
 
     beforeEach(async () => {
+        MQTT.mock.reconnecting = false;
         data.writeDefaultConfiguration();
         settings._reRead();
         settings.set(['advanced', 'legacy_api'], false);
@@ -23,6 +23,7 @@ describe('Bridge', () => {
         data.writeDefaultState();
         logger.info.mockClear();
         logger.warn.mockClear();
+        logger.setTransportsEnabled(false);
         MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.bulb;
         device.removeFromDatabase.mockClear();
@@ -51,7 +52,34 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should log to MQTT', async () => {
+        logger.setTransportsEnabled(true);
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.info("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/logging',
+            JSON.stringify({message: 'this is a test', level: 'info'}),
+          { retain: false, qos: 0 },
+          expect.any(Function)
+        );
+        expect(logger.info).toHaveBeenCalledTimes(1);
+    });
+
+    it('Shouldnt log to MQTT when not connected', async () => {
+        logger.setTransportsEnabled(true);
+        MQTT.mock.reconnecting = true;
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.error.mockClear();
+        logger.info("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(logger.info).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledTimes(0);
+    });
+
     it('Should publish devices on startup', async () => {
+        logger.setTransportsEnabled(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
           JSON.stringify([{"id":1,"friendly_name":"group_1","members":[]},{"id":15071,"friendly_name":"group_tradfri_remote","members":[]},{"id":99,"friendly_name":99,"members":[]},{"id":11,"friendly_name":"group_with_tradfri","members":[]},{"id":2,"friendly_name":"group_2","members":[]}]),
