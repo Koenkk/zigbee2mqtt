@@ -33,7 +33,7 @@ describe('Bridge', () => {
         await flushPromises();
     });
 
-    it('onlythis Should publish bridge info on startup', async () => {
+    it('Should publish bridge info on startup', async () => {
         const version = await require('../lib/util/utils').getZigbee2mqttVersion();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
