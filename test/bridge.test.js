@@ -38,7 +38,7 @@ describe('Bridge', () => {
         const version = await require('../lib/util/utils').getZigbee2mqttVersion();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
-          JSON.stringify({"version":version.version,"commit":version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1,"revision":20190425}},"log_level":"info","permit_join":false}),
+          JSON.stringify({"version":version.version,"commit":version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1,"revision":20190425}},"network":{"channel":15,"pan_id":5674,"extended_pan_id":[0,11,22]},"log_level":"info","permit_join":false}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
