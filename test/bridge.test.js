@@ -5,17 +5,18 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
-const {coordinator, bulb, unsupported} = zigbeeHerdsman.devices;
+const {coordinator, bulb, unsupported, WXKG11LM} = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(bulb.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(unsupported.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(WXKG11LM.ieeeAddr);
 
 describe('Bridge', () => {
     let controller;
 
     beforeEach(async () => {
+        MQTT.mock.reconnecting = false;
         data.writeDefaultConfiguration();
         settings._reRead();
         settings.set(['advanced', 'legacy_api'], false);
@@ -23,6 +24,7 @@ describe('Bridge', () => {
         data.writeDefaultState();
         logger.info.mockClear();
         logger.warn.mockClear();
+        logger.setTransportsEnabled(false);
         MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.bulb;
         device.removeFromDatabase.mockClear();
@@ -36,7 +38,7 @@ describe('Bridge', () => {
         const version = await require('../lib/util/utils').getZigbee2mqttVersion();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
-          JSON.stringify({"version":version.version,"commit":version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1,"revision":20190425}},"log_level":"info","permit_join":false}),
+          JSON.stringify({"version":version.version,"commit":version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1,"revision":20190425}},"network":{"channel":15,"pan_id":5674,"extended_pan_id":[0,11,22]},"log_level":"info","permit_join":false}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -45,13 +47,40 @@ describe('Bridge', () => {
     it('Should publish devices on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
-          JSON.stringify([{"ieee_address":"0x000b57fffec6a5b2","type":"Router","network_address":40369,"supported":true,"friendly_name":"bulb","definition":{"model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supports":"on/off, brightness, color temperature"},"power_source":"Mains (single phase)","date_code":null,"interviewing":false,"interview_completed":true},{"ieee_address":"0x0017880104e45518","type":"EndDevice","network_address":6536,"supported":false,"friendly_name":"0x0017880104e45518","definition":null,"power_source":"Battery","date_code":null,"interviewing":false,"interview_completed":true}]),
+          JSON.stringify([{"ieee_address":"0x000b57fffec6a5b2","type":"Router","network_address":40369,"supported":true,"friendly_name":"bulb","definition":{"model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supports":"on/off, brightness, color temperature"},"power_source":"Mains (single phase)","date_code":null,"interviewing":false,"interview_completed":true},{"ieee_address":"0x0017880104e45518","type":"EndDevice","network_address":6536,"supported":false,"friendly_name":"0x0017880104e45518","definition":null,"power_source":"Battery","date_code":null,"interviewing":false,"interview_completed":true},{"ieee_address":"0x0017880104e45520","type":"EndDevice","network_address":6537,"supported":true,"friendly_name":"button","definition":{"model":"WXKG11LM","vendor":"Xiaomi","description":"Aqara wireless switch","supports":"single, double click (and triple, quadruple, hold, release depending on model)"},"power_source":"Battery","date_code":null,"interviewing":false,"interview_completed":true}]),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
     });
 
+    it('Should log to MQTT', async () => {
+        logger.setTransportsEnabled(true);
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.info("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/logging',
+            JSON.stringify({message: 'this is a test', level: 'info'}),
+          { retain: false, qos: 0 },
+          expect.any(Function)
+        );
+        expect(logger.info).toHaveBeenCalledTimes(1);
+    });
+
+    it('Shouldnt log to MQTT when not connected', async () => {
+        logger.setTransportsEnabled(true);
+        MQTT.mock.reconnecting = true;
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.error.mockClear();
+        logger.info("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(logger.info).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledTimes(0);
+    });
+
     it('Should publish devices on startup', async () => {
+        logger.setTransportsEnabled(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
           JSON.stringify([{"id":1,"friendly_name":"group_1","members":[]},{"id":15071,"friendly_name":"group_tradfri_remote","members":[]},{"id":99,"friendly_name":99,"members":[]},{"id":11,"friendly_name":"group_with_tradfri","members":[]},{"id":2,"friendly_name":"group_2","members":[]}]),
@@ -499,6 +528,66 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
             JSON.stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to enable/disable Home Assistant extension', async () => {
+        // Test if disabled intially
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        settings.set(['devices', device.ieeeAddr, 'legacy'], false);
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        expect(settings.get().homeassistant).toBeFalsy();
+        expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
+
+        // Disable when already disabled should go OK
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/homeassistant', JSON.stringify({value: false}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/homeassistant',
+            JSON.stringify({"data":{"value":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(settings.get().homeassistant).toBeFalsy();
+
+        // Enable
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/homeassistant', JSON.stringify({value: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/homeassistant',
+            JSON.stringify({"data":{"value":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(settings.get().homeassistant).toBeTruthy();
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
+
+        // Disable
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/homeassistant', JSON.stringify({value: false}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/homeassistant',
+            JSON.stringify({"data":{"value":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(settings.get().homeassistant).toBeFalsy();
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
+    });
+
+    it('Should fail to set Home Assistant when invalid type', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/homeassistant', 'invalid_one');
+        await flushPromises();
+        expect(settings.get().homeassistant).toBeFalsy();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/config/homeassistant',
+            JSON.stringify({"data":{},"status":"error","error":"'invalid_one' is not an allowed value, allowed: true,false"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });

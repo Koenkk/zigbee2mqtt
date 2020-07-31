@@ -57,12 +57,13 @@ class Endpoint {
             return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);
         }
 
-        this.removeFromGroup = (group) => {
+        this.removeFromGroup = jest.fn();
+        this.removeFromGroup.mockImplementation((group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
                 group.members.splice(index, 1);
             }
-        }
+        });
 
         this.removeFromAllGroups = () => {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))

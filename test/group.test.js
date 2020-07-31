@@ -46,6 +46,19 @@ describe('Groups', () => {
         expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
     });
 
+    it('Apply group updates remove handle fail', async () => {
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        endpoint.removeFromGroup.mockImplementationOnce(() => {throw new Error("failed!")});
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(endpoint);
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false,}});
+        logger.error.mockClear();
+        await controller.start();
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith(`Failed to remove 'bulb_color' from 'group_1'`);
+        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([endpoint]);
+    });
+
     it('Move to non existing group', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);

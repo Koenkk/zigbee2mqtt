@@ -56,6 +56,22 @@ describe('Bind', () => {
         );
     });
 
+    it('Should bind only specifief clusters', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', JSON.stringify({from: 'remote', to: 'bulb_color', clusters: ["genOnOff"]}));
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/bind',
+            JSON.stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genOnOff"],"failed":[]},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should log error when there is nothing to bind', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
