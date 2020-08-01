@@ -76,7 +76,7 @@ steps:
   displayName: 'Docker build release'
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), ne(variables['Build.Reason'], 'PullRequest'))
 
-# Trigger Home Assistant Zigbee2mqtt addon build
+# Trigger Home Assistant Zigbee2MQTT addon build
 - bash: |
     curl -s \
         --request POST \

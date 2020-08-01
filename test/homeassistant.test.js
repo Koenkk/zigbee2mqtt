@@ -12,7 +12,7 @@ const HomeAssistant = require('../lib/extension/homeassistant');
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
-        this.version = `Zigbee2mqtt ${this.version.version}`;
+        this.version = `Zigbee2MQTT ${this.version.version}`;
         jest.useRealTimers();
         data.writeDefaultConfiguration();
         settings._reRead();

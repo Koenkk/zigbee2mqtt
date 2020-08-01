@@ -1,10 +1,10 @@
 #!/bin/bash
 function zigbee2mqtt-show-short-info {
-  echo "Setup for Zigbee2mqtt bridge."
+  echo "Setup for Zigbee2MQTT bridge."
 }
 
 function zigbee2mqtt-show-long-info {
-  echo "This script installs the Zigbee2mqtt bridge"
+  echo "This script installs the Zigbee2MQTT bridge"
 }
 
 function zigbee2mqtt-show-copyright-info {
@@ -20,7 +20,7 @@ if [ -z "${node}" ]; then #Installing NodeJS if not already installed.
   apt install -y nodejs
 fi
 
-echo "Cloning Zigbee2mqtt git repository"
+echo "Cloning Zigbee2MQTT git repository"
 git clone https://github.com/Koenkk/zigbee2mqtt.git /opt/zigbee2mqtt
 chown -R pi:pi /opt/zigbee2mqtt
 

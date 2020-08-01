@@ -3,7 +3,7 @@ const engines = require('./package.json').engines;
 
 const version = engines.node;
 if (!semver.satisfies(process.version, version)) {
-    console.log(`\t\tZigbee2mqtt requires node version ${version}, you are running ${process.version}!\n`); // eslint-disable-line
+    console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`); // eslint-disable-line
 }
 
 // Validate settings
