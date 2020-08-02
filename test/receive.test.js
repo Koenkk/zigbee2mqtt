@@ -67,6 +67,24 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
 
+    it('Should allow to invert cover', async () => {
+        const device = zigbeeHerdsman.devices.J1;
+
+        // Non-inverted (open = 100, close = 0)
+        await zigbeeHerdsman.events.message({data: {currentPositionLiftPercentage: 90, currentPositionTiltPercentage: 80}, cluster: 'closuresWindowCovering', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/J1_cover', JSON.stringify({position: 10, tilt: 20, linkquality: 10}), {retain: false, qos: 0}, expect.any(Function));
+
+        // Inverted
+        MQTT.publish.mockClear();
+        settings.set(['devices', device.ieeeAddr, 'invert_cover'], true);
+        await zigbeeHerdsman.events.message({data: {currentPositionLiftPercentage: 90, currentPositionTiltPercentage: 80}, cluster: 'closuresWindowCovering', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/J1_cover', JSON.stringify({position: 90, tilt: 80, linkquality: 10}), {retain: false, qos: 0}, expect.any(Function));
+    });
+
     it('Should allow to disable the legacy integration', async () => {
         const device = zigbeeHerdsman.devices.WXKG11LM;
         settings.set(['devices', device.ieeeAddr, 'legacy'], false);

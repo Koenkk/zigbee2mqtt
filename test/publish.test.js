@@ -524,6 +524,25 @@ describe('Publish', () => {
         expectNothingPublished();
     });
 
+    it('Should allow to invert cover', async () => {
+        const device = zigbeeHerdsman.devices.J1;
+        const endpoint = device.getEndpoint(1);
+
+        // Non-inverted (open = 100, close = 0)
+        await MQTT.events.message('zigbee2mqtt/J1_cover/set', JSON.stringify({position: 90}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("closuresWindowCovering", "goToLiftPercentage", {percentageliftvalue: 10}, {});
+
+        // // Inverted
+        endpoint.command.mockClear();
+        settings.set(['devices', device.ieeeAddr, 'invert_cover'], true);
+        await MQTT.events.message('zigbee2mqtt/J1_cover/set', JSON.stringify({position: 90}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("closuresWindowCovering", "goToLiftPercentage", {percentageliftvalue: 90}, {});
+    });
+
     it('Should send state update on toggle specific endpoint', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(2);
