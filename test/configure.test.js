@@ -68,6 +68,16 @@ describe('Configure', () => {
         expectRemoteConfigured();
     });
 
+    it('Should reconfigure reporting on reportingDisabled event', async () => {
+        expectRemoteConfigured();
+        const device = zigbeeHerdsman.devices.remote;
+        mockClear(device);
+        expectRemoteNotConfigured();
+        controller.eventBus.emit('reportingDisabled', {device})
+        await flushPromises();
+        expectRemoteConfigured();
+    });
+
     it('Should not configure twice', async () => {
         expectRemoteConfigured();
         const device = zigbeeHerdsman.devices.remote;
