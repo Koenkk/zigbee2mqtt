@@ -351,7 +351,7 @@ describe('Publish', () => {
         expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 24248, colory: 18350, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.37, y: 0.28}});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.37, y: 0.28}, color_temp: 249});
     });
 
     it('Should publish messages to groups color temperature', async () => {
@@ -362,7 +362,7 @@ describe('Publish', () => {
         expect(group.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 100, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 100});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color: {x: 0.280632719756407, y: 0.288286029784579}, color_temp: 100});
     });
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
