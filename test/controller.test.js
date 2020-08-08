@@ -430,7 +430,7 @@ describe('Controller', () => {
         await controller.start();
         settings.set(['experimental', 'output'], 'attribute');
         MQTT.publish.mockClear();
-        await controller.publishEntityState('bulb', {state: 'ON', test: undefined, test1: null, brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
+        await controller.publishEntityState('bulb', {dummy: {1: 'yes', 2: 'no'}, color: {r: 100, g: 50, b: 10}, state: 'ON', test: undefined, test1: null, color_temp: 370, brightness: 50});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "50", {"qos": 0, "retain": true}, expect.any(Function));
