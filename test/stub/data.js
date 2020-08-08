@@ -109,7 +109,7 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45551': {
                 retain: false,
-                friendly_name: 'smart_vent'
+                friendly_name: 'smart vent'
             },
             '0x0017880104e45552': {
                 retain: false,

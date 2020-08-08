@@ -433,18 +433,18 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         payload = {
-            command_topic: 'zigbee2mqtt/smart_vent/set',
-            position_topic: 'zigbee2mqtt/smart_vent',
-            set_position_topic: 'zigbee2mqtt/smart_vent/set',
+            command_topic: 'zigbee2mqtt/smart vent/set',
+            position_topic: 'zigbee2mqtt/smart vent',
+            set_position_topic: 'zigbee2mqtt/smart vent/set',
             set_position_template: '{ "position": {{ position }} }',
             value_template: '{{ value_json.position }}',
-            json_attributes_topic: 'zigbee2mqtt/smart_vent',
-            name: 'smart_vent_cover',
+            json_attributes_topic: 'zigbee2mqtt/smart vent',
+            name: 'smart vent cover',
             unique_id: '0x0017880104e45551_cover_zigbee2mqtt',
             device:
             {
                 identifiers: [ 'zigbee2mqtt_0x0017880104e45551' ],
-                name: 'smart_vent',
+                name: 'smart vent',
                 sw_version: this.version,
                 model: 'Smart vent (SV01)',
                 manufacturer: 'Keen Home'
