@@ -109,7 +109,7 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45551': {
                 retain: false,
-                friendly_name: 'smart_vent'
+                friendly_name: 'smart vent'
             },
             '0x0017880104e45552': {
                 retain: false,
@@ -154,7 +154,10 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e44559': {
                 friendly_name: '3157100_thermostat',
-            }
+            },
+            '0x0017880104a44559': {
+                friendly_name: 'J1_cover',
+            },
         },
         groups: {
             '1': {

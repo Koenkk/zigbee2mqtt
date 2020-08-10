@@ -57,12 +57,13 @@ class Endpoint {
             return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);
         }
 
-        this.removeFromGroup = (group) => {
+        this.removeFromGroup = jest.fn();
+        this.removeFromGroup.mockImplementation((group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
                 group.members.splice(index, 1);
             }
-        }
+        });
 
         this.removeFromAllGroups = () => {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))
@@ -148,6 +149,7 @@ const devices = {
     'GL-S-007ZS': new Device('Router', '0x0017880104e45526', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45526')], true, "Mains (single phase)", 'GL-S-007ZS'),
     'U202DST600ZB': new Device('Router', '0x0017880104e43559', 6540,4151, [new Endpoint(10, [0, 6], [], '0x0017880104e43559'), new Endpoint(11, [0, 6], [], '0x0017880104e43559')], true, "Mains (single phase)", 'U202DST600ZB'),
     '3157100': new Device('Router', '0x0017880104e44559', 6542,4151, [new Endpoint(1, [], [], '0x0017880104e44559')], true, "Mains (single phase)", '3157100'),
+    'J1': new Device('Router', '0x0017880104a44559', 6543,4151, [new Endpoint(1, [], [], '0x0017880104a44559')], true, "Mains (single phase)", 'J1 (5502)'),
 }
 
 const groups = {

@@ -3,7 +3,7 @@ Before submitting an issue make sure you've searched for a similar issue and rea
 
 Rules (don't ignore these, your issue will be closed without further notice):
 - English only
-- Make sure you are on the latest Zigbee2mqtt version
+- Make sure you are on the latest Zigbee2MQTT version
 - Provide a clear description of the problem
 - DON'T copy logs directly here, post a link to https://hastebin.com/ or https://pastebin.com/.
 - Make sure you are running the latest firmware https://github.com/koenkk/z-stack-firmware.
@@ -11,7 +11,7 @@ Rules (don't ignore these, your issue will be closed without further notice):
 Did you read the FAQ?
 - https://www.zigbee2mqtt.io/information/FAQ.html
 
-Zigbee2mqtt fails to start?
+Zigbee2MQTT fails to start?
 - https://www.zigbee2mqtt.io/information/FAQ.html#help-zigbee2mqtt-fails-to-start
 
 Having issues when using a CC2531?
@@ -41,6 +41,6 @@ Bug report?
 ## How to reproduce it (minimal and precise)
 
 ## Debug Info
-Zigbee2mqtt version:
+Zigbee2MQTT version:
 Adapter hardware: CC2531, CC2530, CC26X2R1 or CC1352P-2
 Adapter firmware version:

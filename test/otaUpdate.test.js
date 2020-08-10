@@ -47,7 +47,7 @@ describe('OTA update', () => {
         device.save.mockClear();
         mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
             onUpdate(0, null);
-            onUpdate(10, 3600);
+            onUpdate(10, 3600.2123);
         });
 
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
@@ -62,6 +62,21 @@ describe('OTA update', () => {
         expect(device.save).toHaveBeenCalledTimes(1);
         expect(device.dateCode).toBe('20190102');
         expect(device.softwareBuildID).toBe(2);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            JSON.stringify({"update_available":false,"update":{"state":"updating","progress":0}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            JSON.stringify({"update_available":false,"update":{"state":"updating","progress":10,"remaining":3600}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            JSON.stringify({"update_available":false,"update":{"state":"idle"}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
             JSON.stringify({"data":{"id": "bulb","from":{"software_build_id":1,"date_code":"20190101"},"to":{"software_build_id":2,"date_code":"20190102"}},"status":"ok"}),
@@ -82,6 +97,11 @@ describe('OTA update', () => {
 
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', JSON.stringify({id: "bulb"}));
         await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            JSON.stringify({"update_available":true,"update":{"state":"available"}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
             JSON.stringify({"data":{"id": "bulb"},"status":"error","error":"Update of 'bulb' failed (Update failed)"}),
@@ -222,7 +242,12 @@ describe('OTA update', () => {
         mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`)
+        expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            JSON.stringify({"update_available":true,"update":{"state":"available"}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {

@@ -204,15 +204,6 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false);
     });
 
-    it('Refuse to start when configuration.yaml is invalid', async () => {
-        settings.set(['permit_join'], 'invalid');
-        await controller.start();
-        expect(logger.error).toHaveBeenCalledWith('Refusing to start, configuration.yaml is not valid, found the following errors:');
-        expect(logger.error).toHaveBeenCalledWith('\t - permit_join should be boolean');
-        expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
-    });
-
     it('Start controller with disable_led', async () => {
         settings.set(['serial', 'disable_led'], true);
         await controller.start();
@@ -439,7 +430,7 @@ describe('Controller', () => {
         await controller.start();
         settings.set(['experimental', 'output'], 'attribute');
         MQTT.publish.mockClear();
-        await controller.publishEntityState('bulb', {state: 'ON', brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
+        await controller.publishEntityState('bulb', {dummy: {1: 'yes', 2: 'no'}, color: {r: 100, g: 50, b: 10}, state: 'ON', test: undefined, test1: null, color_temp: 370, brightness: 50});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "50", {"qos": 0, "retain": true}, expect.any(Function));
@@ -447,6 +438,8 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/color", '100,50,10', {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-1", 'yes', {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-2", 'no', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/test1", '', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/test", '', {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Publish entity state attribute_json output', async () => {

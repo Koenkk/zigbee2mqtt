@@ -24,6 +24,9 @@ describe('Report', () => {
 
     function expectOnOffBrightnessColorReport(endpoint, colorXY) {
         const coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+        const device = endpoint.getDevice();
+        expect(device.meta.reporting).toBe(1);
+        expect(endpoint.unbind).toHaveBeenCalledTimes(0);
         expect(endpoint.bind).toHaveBeenCalledTimes(3);
         expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', coordinatorEndpoint);
         expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
@@ -38,12 +41,32 @@ describe('Report', () => {
         }
     }
 
+    function expectOnOffBrightnessColorReportDisabled(endpoint, colorXY) {
+        const coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+        const device = endpoint.getDevice();
+        expect(device.meta.reporting).toBe(undefined);
+        expect(endpoint.unbind).toHaveBeenCalledTimes(3);
+        expect(endpoint.bind).toHaveBeenCalledTimes(0);
+        expect(endpoint.unbind).toHaveBeenCalledWith('genOnOff', coordinatorEndpoint);
+        expect(endpoint.unbind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
+        expect(endpoint.unbind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [{"attribute": "onOff", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 0, "reportableChange": 0}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+        if (colorXY) {
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentX", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentY", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+        } else {
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+        }
+    }
+
     mockClear = (device) => {
         for (const endpoint of device.endpoints) {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
             endpoint.configureReporting.mockClear();
             endpoint.bind.mockClear();
+            endpoint.unbind.mockClear();
         }
     }
 
@@ -52,6 +75,11 @@ describe('Report', () => {
         settings._reRead();
         data.writeEmptyState();
         settings.set(['advanced', 'report'], true);
+        for (const device of Object.values(zigbeeHerdsman.devices)) {
+            mockClear(device);
+            delete device.meta.reporting;
+        }
+
         controller = new Controller();
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
@@ -62,6 +90,31 @@ describe('Report', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         expectOnOffBrightnessColorReport(endpoint, true);
+    });
+
+    it('Should not configure reporting on startup when disabled', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        delete device.meta.report;
+        settings.set(['advanced', 'report'], false);
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expect(device.meta.reporting).toBe(undefined);
+        expect(endpoint.bind).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should disable reporting on startup when enabled earlier', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.meta.reporting = 1;
+        const endpoint = device.getEndpoint(1);
+        settings.set(['advanced', 'report'], false);
+        mockClear(device);
+        controller = new Controller();
+        await controller.start();
+        await flushPromises();
+        expectOnOffBrightnessColorReportDisabled(endpoint, true);
     });
 
     it('Should configure reporting when receicing message from device which has not been setup yet', async () => {
