@@ -27,11 +27,19 @@ describe('Settings', () => {
     const remove = (file) => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
+    const clearEnvironmentVariables = () => {
+        Object.keys(process.env).forEach((key) => { 
+            if(key.indexOf('ZIGBEE2MQTT_') >= 0) {
+                delete process.env[key];
+            }
+        });
+    }
 
     beforeEach(() => {
         remove(configurationFile);
         remove(devicesFile);
         remove(groupsFile);
+        clearEnvironmentVariables();
     });
 
     it('Should return default settings', () => {
@@ -50,6 +58,24 @@ describe('Settings', () => {
         expected.devices = {};
         expected.groups = {};
         expected.permit_join = true;
+        expect(s).toStrictEqual(expected);
+    });
+
+    it('Should apply environment variables', () => {
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_STRING_VAL'] = 'test value';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_NUMBER_VAL'] = 1;
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_BOOLEAN_VAL'] = 'true';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_OBJECT_VAL'] = '{"property": "test value"}';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_ARRAY_VAL'] = '["one", "two"]';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_EMPTY_OBJECT'] = '{"property": "test value"}';
+
+        write(configurationFile, {});
+        const s = settings.get();
+        const expected = settings._getDefaults();
+        expected.devices = {};
+        expected.groups = {};
+        expected.env_var_tests.empty_object = {property: 'test value'}
+
         expect(s).toStrictEqual(expected);
     });
 
