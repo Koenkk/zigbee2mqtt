@@ -79,6 +79,24 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
+    it('Should apply environment variables not matching defaults', () => {
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_STRING_VAL'] = 'test value 1';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_NUMBER_VAL'] = 2;
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_BOOLEAN_VAL'] = 'false';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_OBJECT_VAL'] = '{"property": "test value 1"}';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_ARRAY_VAL'] = '["one", "two 1"]';
+        process.env['ZIGBEE2MQTT_ENV_VAR_TESTS_EMPTY_OBJECT'] = '{"property": "test value 1"}';
+
+        write(configurationFile, {});
+        const s = settings.get();
+        const expected = settings._getDefaults();
+        expected.devices = {};
+        expected.groups = {};
+        expected.env_var_tests.empty_object = {property: 'test value'}
+
+        expect(s).not.toStrictEqual(expected);
+    });
+
     it('Should add devices', () => {
         write(configurationFile, {});
         settings.addDevice('0x12345678');
