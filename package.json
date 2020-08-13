@@ -39,6 +39,7 @@
     "git-last-commit": "^1.0.0",
     "humanize-duration": "^3.23.1",
     "js-yaml": "^3.14.0",
+    "json-stable-stringify": "^1.0.1",
     "mkdir-recursive": "^0.4.0",
     "moment": "^2.27.0",
     "mqtt": "^4.1.0",
