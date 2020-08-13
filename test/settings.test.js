@@ -85,23 +85,6 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
-    it('Should apply environment variables and not match defaults', () => {
-        process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
-        process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_AVAILABILITY_BLOCKLIST'] = '["0x43597f0dac781b1e", "x223b0aef2ae8d1b0"]';
-        process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
-        process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
-
-        write(configurationFile, {});
-        const s = settings.get();
-        const expected = objectAssignDeep.noMutate({}, settings._getDefaults());
-        expected.devices = {};
-        expected.groups = {};
-
-        expect(s).not.toStrictEqual(expected);
-    });
-
     it('Should add devices', () => {
         write(configurationFile, {});
         settings.addDevice('0x12345678');
