@@ -770,6 +770,13 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function),
         );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
     it('Should discover update_available sensor when device supports it', async () => {
@@ -1034,7 +1041,7 @@ describe('HomeAssistant extension', () => {
         expect(ha._getMapping()['external_converters_device']).toStrictEqual([homeassistantSwitch]);
     });
 
-    it('onlythis Should clear outdated configs', async () => {
+    it('Should clear outdated configs', async () => {
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
