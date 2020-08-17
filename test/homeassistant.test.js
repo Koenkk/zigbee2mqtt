@@ -1033,4 +1033,42 @@ describe('HomeAssistant extension', () => {
         };
         expect(ha._getMapping()['external_converters_device']).toStrictEqual([homeassistantSwitch]);
     });
+
+    it('onlythis Should clear outdated configs', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+
+        // Non-existing device -> clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability_topic: 'zigbee2mqtt/0x123/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', null, {qos: 0, retain: true}, expect.any(Function));
+
+        // Existing device -> don't clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/binary_sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability_topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Non-existing device of different instance -> don't clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability_topic: 'zigbee2mqtt_different/0x123/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Existing device but non-existing config -> don't clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability_topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 0, retain: true}, expect.any(Function));
+
+        // Non-existing device but invalid payload -> clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', '1}3');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
 });
