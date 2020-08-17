@@ -972,7 +972,7 @@ describe('Publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({state: 'ON', color: {x: 0.280632719756407, y: 0.288286029784579}, color_temp: 100});
     });
 
-    it('onlythis Home Assistant: should not set state when color is also set', async () => {
+    it('Home Assistant: should not set state when color is also set', async () => {
         settings.set(['homeassistant'], true);
         const device = zigbeeHerdsman.devices.bulb_color;
         controller.state.set(device.ieeeAddr, {state: 'ON'})
