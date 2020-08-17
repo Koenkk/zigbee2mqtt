@@ -559,6 +559,14 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/wall_switch_double", stringify({state_left: 'OFF'}), {"qos": 0, "retain": false}, expect.any(Function)]);
     });
 
+    it('Should not use state converter on non-json message when value is not on/off/toggle', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(2);
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/left/set', 'ON_RANDOM');
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(0);
+    });
+
     it('Should parse set with postfix topic and attribute', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(2);
