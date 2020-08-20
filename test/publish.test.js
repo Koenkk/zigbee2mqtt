@@ -875,7 +875,7 @@ describe('Publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF', brightness: 0});
     });
 
-    it('When device is turned off and on with transition with report enabled it should restore correct brightness', async () => {
+    it('onlythis When device is turned off and on with transition with report enabled it should restore correct brightness', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         // Set initial brightness in state
@@ -896,7 +896,7 @@ describe('Publish', () => {
         await zigbeeHerdsman.events.message({data: {currentLevel: 1}, cluster: 'genLevelCtrl', device, endpoint, type: 'attributeReport', linkquality: 10});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 1, linkquality: 10}), {"qos": 0, "retain": false}, expect.any(Function)]);
+        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 0, linkquality: 10}), {"qos": 0, "retain": false}, expect.any(Function)]);
 
         // Turn on again
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', transition: 3}));
