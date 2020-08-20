@@ -57,6 +57,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# webstorm files
+.idea
+
 # data
 data/database.db
 data/config.json
