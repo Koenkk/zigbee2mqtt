@@ -15025,9 +15025,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.166",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.166.tgz",
-      "integrity": "sha512-kloe52UgTmXyakCJHV00UrNT4TV+cXzD4S2OIG5WWGUMxyNSk0vUwnM1nwK2gyTt5dzdMIbQ6QT+JdeJYnsJBg==",
+      "version": "12.0.167",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.167.tgz",
+      "integrity": "sha512-/S1cdbvnOAy/CfeHYHbLhrRaMSVsKli51ViRz64LSB/hjZFpaeFVrOO/hwJ78jF+xCPbUHFlJbuW0344JYGzgw==",
       "requires": {
         "axios": "^0.19.2",
         "https-proxy-agent": "^5.0.0",
