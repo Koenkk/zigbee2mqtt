@@ -875,7 +875,7 @@ describe('Publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'OFF', brightness: 0});
     });
 
-    it('onlythis When device is turned off and on with transition with report enabled it should restore correct brightness', async () => {
+    it('When device is turned off and on with transition with report enabled it should restore correct brightness', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         // Set initial brightness in state
