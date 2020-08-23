@@ -103,6 +103,19 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should publish event when device announces', async () => {
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceAnnounce({device: zigbeeHerdsman.devices.bulb});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/event',
+          stringify({"type":"device_announce","data":{"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2"}}),
+          { retain: false, qos: 0 },
+          expect.any(Function)
+        );
+    });
+
     it('Should publish event when device interview started', async () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceInterview({device: zigbeeHerdsman.devices.bulb, status: 'started'});

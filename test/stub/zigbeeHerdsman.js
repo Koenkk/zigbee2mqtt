@@ -181,6 +181,9 @@ const mock = {
     getDeviceByIeeeAddr: jest.fn().mockImplementation((ieeeAddr) => {
         return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.ieeeAddr === ieeeAddr);
     }),
+    getDeviceByNetworkAddress: jest.fn().mockImplementation((networkAddress) => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.networkAddress)).find((d) => d.networkAddress === networkAddress);
+    }),
     getGroups: jest.fn().mockImplementation((query) => {
         return Object.values(groups);
     }),
