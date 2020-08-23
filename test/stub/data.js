@@ -159,6 +159,9 @@ function writeDefaultConfiguration() {
             '0x0017880104a44559': {
                 friendly_name: 'J1_cover',
             },
+            '0x0017882104a44559': {
+                friendly_name: 'TS0601_thermostat',
+            },
         },
         groups: {
             '1': {
