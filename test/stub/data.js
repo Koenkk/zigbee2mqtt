@@ -2,6 +2,7 @@ const tmp = require('tmp');
 const yaml = require('../../lib/util/yaml');
 const path = require('path');
 const fs = require('fs');
+const stringify = require('json-stable-stringify');
 
 const mockDir = tmp.dirSync().name;
 const mockDirStorage = tmp.dirSync().name;
@@ -158,6 +159,9 @@ function writeDefaultConfiguration() {
             '0x0017880104a44559': {
                 friendly_name: 'J1_cover',
             },
+            '0x0017882104a44559': {
+                friendly_name: 'TS0601_thermostat',
+            },
         },
         groups: {
             '1': {
@@ -186,7 +190,7 @@ function writeDefaultConfiguration() {
 }
 
 function writeEmptyState() {
-    fs.writeFileSync(stateFile, JSON.stringify({}));
+    fs.writeFileSync(stateFile, stringify({}));
 }
 
 function removeState() {
@@ -212,7 +216,7 @@ function writeDefaultState() {
         },
     }
 
-    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
+    fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(state));
 }
 
 jest.mock('../../lib/util/data', () => ({
