@@ -6,6 +6,7 @@ const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
+const stringify = require('json-stable-stringify');
 const flushPromises = () => new Promise(setImmediate);
 const tmp = require('tmp');
 const mocksClear = [
@@ -42,8 +43,8 @@ describe('Controller', () => {
         expect(logger.info).toHaveBeenCalledWith('0x0017880104e45518 (0x0017880104e45518): Not supported (EndDevice)');
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", {"will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"}});
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}',{ retain: true, qos: 0 }, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', '{"brightness":255}', { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}),{ retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({"brightness":255}), { retain: true, qos: 0 }, expect.any(Function));
     });
 
     it('Start controller when permit join fails', async () => {
@@ -104,8 +105,8 @@ describe('Controller', () => {
         data.writeDefaultState();
         await controller.start();
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", `{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}`, {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", `{"brightness":255}`, {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({"brightness":255}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Start controller should not publish cached states when disabled', async () => {
@@ -148,7 +149,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(2);
         expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
-        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"state\":\"ON\",\"brightness\":50,\"color_temp\":370,\"linkquality\":99,\"color\":{\"r\":100,\"g\":50,\"b\":10},\"dummy\":{\"1\":\"yes\",\"2\":\"no\"}}");
+        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}");
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -296,7 +297,7 @@ describe('Controller', () => {
         const payload = {device};
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", stringify({"type":"device_connected","message":{"friendly_name":"bulb"}}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('acceptJoiningDeviceHandler reject device on blocklist', async () => {
@@ -354,7 +355,7 @@ describe('Controller', () => {
         zigbeeHerdsman.events.deviceJoined(payload);
         zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", '{"type":"device_connected","message":{"friendly_name":"bulb"}}', {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", stringify({"type":"device_connected","message":{"friendly_name":"bulb"}}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('On zigbee deviceInterview started', async () => {
@@ -363,7 +364,7 @@ describe('Controller', () => {
         const payload = {device, status: 'started'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_started","meta":{"friendly_name":"bulb"}}', { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"pairing","message":"interview_started","meta":{"friendly_name":"bulb"}}), { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview failed', async () => {
@@ -372,7 +373,7 @@ describe('Controller', () => {
         const payload = {device, status: 'failed'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_failed","meta":{"friendly_name":"bulb"}}', { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"pairing","message":"interview_failed","meta":{"friendly_name":"bulb"}}), { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview successful supported', async () => {
@@ -381,7 +382,7 @@ describe('Controller', () => {
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendly_name":"bulb","model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supported":true}}', { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"pairing","message":"interview_successful","meta":{"friendly_name":"bulb","model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supported":true}}), { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee deviceInterview successful not supported', async () => {
@@ -390,7 +391,7 @@ describe('Controller', () => {
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"pairing","message":"interview_successful","meta":{"friendly_name":"0x0017880104e45518","supported":false}}', { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"pairing","message":"interview_successful","meta":{"friendly_name":"0x0017880104e45518","supported":false}}), { retain: false, qos: 0 }, expect.any(Function));
     });
 
     it('On zigbee event device announce', async () => {
@@ -400,7 +401,7 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceAnnounce(payload);
         await flushPromises();
         expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_announced","message":"announce","meta":{"friendly_name":"bulb"}}', { retain: false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"device_announced","message":"announce","meta":{"friendly_name":"bulb"}}), { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('On zigbee event device leave (removed from database and settings)', async () => {
@@ -412,7 +413,7 @@ describe('Controller', () => {
         const payload = {ieeeAddr: device.ieeeAddr};
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}', { retain: false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}), { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('On zigbee event device leave (removed from database and NOT settings)', async () => {
@@ -423,7 +424,7 @@ describe('Controller', () => {
         const payload = {ieeeAddr: device.ieeeAddr};
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', '{"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}', { retain: false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"device_removed","message":"left_network","meta":{"friendly_name":"0x000b57fffec6a5b2"}}), { retain: false, qos: 0}, expect.any(Function));
     });
 
     it('Publish entity state attribute output', async () => {
@@ -436,8 +437,8 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "50", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/color_temp", "370", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/color", '100,50,10', {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-1", 'yes', {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-2", 'no', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-1", "yes", {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/dummy-2", "no", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/test1", '', {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/test", '', {"qos": 0, "retain": true}, expect.any(Function));
     });
@@ -453,7 +454,7 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "200", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/color_temp", "370", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/linkquality", "99", {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"ON","brightness":200,"color_temp":370,"linkquality":99}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":200,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
 
@@ -467,7 +468,7 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "200", {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"ON","brightness":200}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":200}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Publish entity state attribute_json output filtered (device_options)', async () => {
@@ -480,7 +481,7 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "200", {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", '{"state":"ON","brightness":200}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":200}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Publish entity state with device information', async () => {
@@ -489,12 +490,12 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)","dateCode":null}}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)","dateCode":null}}), {"qos": 0, "retain": true}, expect.any(Function));
 
         // Unsupported device should have model "unknown"
         await controller.publishEntityState('unsupported2', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', '{"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null}}', {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', stringify({"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null}}), {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Should publish entity state without retain', async () => {
@@ -503,7 +504,7 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}', {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Should publish entity state with retain', async () => {
@@ -512,7 +513,7 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}', {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Should publish entity state with expiring retention', async () => {
@@ -523,7 +524,7 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}', {"qos": 0, "retain": true, "properties": {messageExpiryInterval: 37}}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true, "properties": {messageExpiryInterval: 37}}, expect.any(Function));
     });
 
     it('Publish entity state no empty messages', async () => {
@@ -544,8 +545,8 @@ describe('Controller', () => {
         await controller.publishEntityState('bulb', {brightness: 200});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON"}), {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", JSON.stringify({state: "ON", brightness: 200}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({state: "ON"}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({state: "ON", brightness: 200}), {"qos": 0, "retain": true}, expect.any(Function));
         await controller.stop();
         expect(data.stateExists()).toBeFalsy();
     });
@@ -559,8 +560,8 @@ describe('Controller', () => {
         await controller.publishEntityState('bulb', {brightness: 200});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", "{\"state\":\"ON\"}", {"qos": 0, "retain": true}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", "{\"brightness\":200}", {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON"}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"brightness":200}), {"qos": 0, "retain": true}, expect.any(Function));
     });
 
     it('Publish should not do anything for unknown entity', async () => {

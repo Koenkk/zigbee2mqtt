@@ -9,6 +9,7 @@ const devicesFile = data.joinPath('devices.yaml');
 const groupsFile = data.joinPath('groups.yaml');
 const secretFile = data.joinPath('secret.yaml');
 const yaml = require('js-yaml');
+const objectAssignDeep = require(`object-assign-deep`);
 
 const minimalConfig = {
     permit_join: true,
@@ -27,11 +28,19 @@ describe('Settings', () => {
     const remove = (file) => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
+    const clearEnvironmentVariables = () => {
+        Object.keys(process.env).forEach((key) => { 
+            if(key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
+                delete process.env[key];
+            }
+        });
+    }
 
     beforeEach(() => {
         remove(configurationFile);
         remove(devicesFile);
         remove(groupsFile);
+        clearEnvironmentVariables();
     });
 
     it('Should return default settings', () => {
@@ -50,6 +59,29 @@ describe('Settings', () => {
         expected.devices = {};
         expected.groups = {};
         expected.permit_join = true;
+        expect(s).toStrictEqual(expected);
+    });
+
+    it('Should apply environment variables', () => {
+        process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
+        process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_AVAILABILITY_BLOCKLIST'] = '["0x43597f0dac781b1e", "x223b0aef2ae8d1b0"]';
+        process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
+        process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
+
+        write(configurationFile, {});
+        const s = settings.get();
+        const expected = objectAssignDeep.noMutate({}, settings._getDefaults());
+        expected.devices = {};
+        expected.groups = {};
+        expected.serial.disable_led = true;
+        expected.advanced.soft_reset_timeout = 1;
+        expected.experimental.output = 'csvtest';
+        expected.advanced.availability_blocklist = ['0x43597f0dac781b1e', 'x223b0aef2ae8d1b0'];
+        expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
+        expected.mqtt.base_topic = 'testtopic';
+
         expect(s).toStrictEqual(expected);
     });
 

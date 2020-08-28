@@ -128,7 +128,7 @@ const devices = {
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540, 4151, [new Endpoint(11, [0], [], '0x0017880104e45543'), new Endpoint(13, [0], [], '0x0017880104e45543')], true, "Mains (single phase)", 'GL-C-008'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GL-C-008'),
-    'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),
+    'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45545')], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),
     'ZNCLDJ11LM': new Device('Router', '0x0017880104e45547', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'lumi.curtain'),
     'HAMPTON99432':  new Device('Router', '0x0017880104e45548', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'HDC52EastwindFan'),
     'HS2WD': new Device('Router', '0x0017880104e45549', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'WarningDevice'),
@@ -150,6 +150,7 @@ const devices = {
     'U202DST600ZB': new Device('Router', '0x0017880104e43559', 6540,4151, [new Endpoint(10, [0, 6], [], '0x0017880104e43559'), new Endpoint(11, [0, 6], [], '0x0017880104e43559')], true, "Mains (single phase)", 'U202DST600ZB'),
     '3157100': new Device('Router', '0x0017880104e44559', 6542,4151, [new Endpoint(1, [], [], '0x0017880104e44559')], true, "Mains (single phase)", '3157100'),
     'J1': new Device('Router', '0x0017880104a44559', 6543,4151, [new Endpoint(1, [], [], '0x0017880104a44559')], true, "Mains (single phase)", 'J1 (5502)'),
+    'TS0601_thermostat': new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l'),
 }
 
 const groups = {
@@ -179,6 +180,9 @@ const mock = {
     }),
     getDeviceByIeeeAddr: jest.fn().mockImplementation((ieeeAddr) => {
         return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.ieeeAddr === ieeeAddr);
+    }),
+    getDeviceByNetworkAddress: jest.fn().mockImplementation((networkAddress) => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.networkAddress)).find((d) => d.networkAddress === networkAddress);
     }),
     getGroups: jest.fn().mockImplementation((query) => {
         return Object.values(groups);
