@@ -48,7 +48,7 @@
     "semver": "^7.3.2",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
-    "zigbee-herdsman": "0.12.125",
+    "zigbee-herdsman": "0.12.126",
     "zigbee-herdsman-converters": "12.0.177"
   },
   "devDependencies": {
