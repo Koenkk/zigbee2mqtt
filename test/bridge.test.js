@@ -80,11 +80,11 @@ describe('Bridge', () => {
         expect(logger.error).toHaveBeenCalledTimes(0);
     });
 
-    it('Should publish devices on startup', async () => {
+    it('Should publish groups on startup', async () => {
         logger.setTransportsEnabled(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
-          stringify([{"id":1,"friendly_name":"group_1","members":[]},{"id":15071,"friendly_name":"group_tradfri_remote","members":[]},{"id":99,"friendly_name":99,"members":[]},{"id":11,"friendly_name":"group_with_tradfri","members":[]},{"id":2,"friendly_name":"group_2","members":[]}]),
+          stringify([{"friendly_name":"group_1","id":1,"members":[]},{"friendly_name":"group_tradfri_remote","id":15071,"members":[]},{"friendly_name":99,"id":99,"members":[]},{"friendly_name":"group_with_tradfri","id":11,"members":[]},{"friendly_name":"thermostat_group","id":12,"members":[]},{"friendly_name":"group_2","id":2,"members":[]}]),
           { retain: true, qos: 0 },
           expect.any(Function)
         );

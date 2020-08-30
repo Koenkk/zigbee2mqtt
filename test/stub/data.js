@@ -182,6 +182,11 @@ function writeDefaultConfiguration() {
                 retain: false,
                 devices: ['bulb_2']
             },
+            '12': {
+                friendly_name: 'thermostat_group',
+                retain: false,
+                devices: ['TS0601_thermostat'],
+            }
         },
         external_converters: [],
     };

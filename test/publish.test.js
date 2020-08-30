@@ -322,6 +322,14 @@ describe('Publish', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 127});
     });
 
+    it('Should publish messages to groups when converter is not in the default list but device in it supports it', async () => {
+        const group = zigbeeHerdsman.groups.thermostat_group;
+        await MQTT.events.message('zigbee2mqtt/thermostat_group/set', stringify({child_lock: 'LOCK'}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 263, fn: 0, status: 0, transid: expect.any(Number)}, {disableDefaultResponse: true});
+    });
+
     it('Should publish messages to groups with on and brightness', async () => {
         const group = zigbeeHerdsman.groups.group_1;
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON', brightness: 50}));
@@ -368,10 +376,10 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(4);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(5);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(5);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
