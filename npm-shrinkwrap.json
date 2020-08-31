@@ -19974,6 +19974,11 @@
           }
         }
       }
+    },
+    "zigbee2mqtt-frontend": {
+      "version": "0.1.14",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.1.14.tgz",
+      "integrity": "sha512-vDJANakI0e1jqusXlzwHcCoNECqTPexOlqAr593i7u6wRztrLn3aJLdqjsLq8ZzIA4WTQB/n582HMMTYzCfsMQ=="
     }
   }
 }
