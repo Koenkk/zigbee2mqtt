@@ -7,11 +7,12 @@ const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const stringify = require('json-stable-stringify');
 
-const {coordinator, bulb, unsupported, WXKG11LM} = zigbeeHerdsman.devices;
+const {coordinator, bulb, unsupported, WXKG11LM, remote} = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(bulb.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(unsupported.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(WXKG11LM.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(remote.ieeeAddr);
 
 describe('Bridge', () => {
     let controller;
@@ -48,7 +49,7 @@ describe('Bridge', () => {
     it('Should publish devices on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
-          stringify([{"ieee_address":"0x000b57fffec6a5b2","type":"Router","network_address":40369,"supported":true,"friendly_name":"bulb","definition":{"model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supports":"on/off, brightness, color temperature"},"power_source":"Mains (single phase)","date_code":null,"interviewing":false,"interview_completed":true},{"ieee_address":"0x0017880104e45518","type":"EndDevice","network_address":6536,"supported":false,"friendly_name":"0x0017880104e45518","definition":null,"power_source":"Battery","date_code":null,"interviewing":false,"interview_completed":true},{"ieee_address":"0x0017880104e45520","type":"EndDevice","network_address":6537,"supported":true,"friendly_name":"button","definition":{"model":"WXKG11LM","vendor":"Xiaomi","description":"Aqara wireless switch","supports":"single, double click (and triple, quadruple, hold, release depending on model)"},"power_source":"Battery","date_code":null,"interviewing":false,"interview_completed":true}]),
+          stringify([{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":[],"output":[]}}},"friendly_name":"Coordinator","ieee_address":"0x00124b00120144ae","interview_completed":false,"interviewing":false,"network_address":0,"power_source":null,"supported":false,"type":"Coordinator"},{"date_code":null,"definition":{"description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","model":"LED1545G12","supports":"on/off, brightness, color temperature","vendor":"IKEA"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic","genScenes","genOnOff","genLevelCtrl","lightingColorCtrl"],"output":["genScenes","genOta"]}}},"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2","interview_completed":true,"interviewing":false,"network_address":40369,"power_source":"Mains (single phase)","supported":true,"type":"Router"},{"date_code":null,"definition":{"description":"Hue dimmer switch","model":"324131092621","supports":"on/off, brightness, up/down/hold/release, click count","vendor":"Philips"},"endpoints":{"1":{"bindings":[{"cluster":"genLevelCtrl","target":{"endpoint":1,"ieee_address":"0x000b57fffec6a5b3","type":"endpoint"}},{"cluster":"genOnOff","target":{"id":1,"type":"group"}}],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}},"2":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genOta","genOnOff"]}}},"friendly_name":"remote","ieee_address":"0x0017880104e45517","interview_completed":true,"interviewing":false,"network_address":6535,"power_source":"Battery","supported":true,"type":"EndDevice"},{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"0x0017880104e45518","ieee_address":"0x0017880104e45518","interview_completed":true,"interviewing":false,"network_address":6536,"power_source":"Battery","supported":false,"type":"EndDevice"},{"date_code":null,"definition":{"description":"Aqara wireless switch","model":"WXKG11LM","supports":"single, double click (and triple, quadruple, hold, release depending on model)","vendor":"Xiaomi"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"button","ieee_address":"0x0017880104e45520","interview_completed":true,"interviewing":false,"network_address":6537,"power_source":"Battery","supported":true,"type":"EndDevice"}]),
           { retain: true, qos: 0 },
           expect.any(Function)
         );

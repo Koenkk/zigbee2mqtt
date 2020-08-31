@@ -1,6 +1,11 @@
 const events = {};
 const assert = require('assert');
 
+function getKeyByValue(object, value, fallback) {
+    const key = Object.keys(object).find((k) => object[k] === value);
+    return key != null ? key : fallback;
+}
+
 class Group {
     constructor(groupID, members) {
         this.groupID = groupID;
@@ -38,6 +43,14 @@ class Endpoint {
         this.unbind = jest.fn();
         this.configureReporting = jest.fn();
         this.binds = binds;
+        this.getInputClusters = () => inputClusters.map((c) => {
+            return {ID: c, name: getKeyByValue(clusters, c)};
+        }).filter((c) => c.name);
+
+        this.getOutputClusters = () => outputClusters.map((c) => {
+            return {ID: c, name: getKeyByValue(clusters, c)};
+        }).filter((c) => c.name);
+
         this.supportsInputCluster = (cluster) => {
             assert(clusters[cluster] !== undefined, `Undefined '${cluster}'`);
             return this.inputClusters.includes(clusters[cluster]);
@@ -114,7 +127,7 @@ const devices = {
     'bulb_color': bulb_color,
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
-    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0]}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
+    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: new Group(1, []), cluster: {ID: 6, name: 'genOnOff'}}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
