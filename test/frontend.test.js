@@ -123,7 +123,7 @@ describe('Frontend', () => {
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(7);
-        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', message: 'online'});
+        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
 
         // Message
         MQTT.publish.mockClear();
@@ -140,7 +140,7 @@ describe('Frontend', () => {
 
         // Received message on socket
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(1);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: stringify({state: 'ON'})}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: {state: 'ON'}}));
 
         // Shouldnt set when not ready
         mockWSClient.implementation.send.mockClear();
