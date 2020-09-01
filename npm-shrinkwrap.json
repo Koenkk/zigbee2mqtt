@@ -14887,8 +14887,14 @@
           "integrity": "sha512-ZmVCr6nfBeaMxEHALLEGy0LszYjpJqf6PVNQUQ1qd9Et+q7Jpygd4rGGDXgHjD8e99yLFseD69msHDM4YwPZ4A==",
           "requires": {
             "lodash.sortby": "^4.7.0",
-            "tr46": "^2.0.2",
-            "webidl-conversions": "^6.1.0"
+            "tr46": "^2.0.2"
+          },
+          "dependencies": {
+            "webidl-conversions": {
+              "version": "5.0.0",
+              "resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-5.0.0.tgz",
+              "integrity": "sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA=="
+            }
           }
         },
         "which": {
@@ -19804,8 +19810,14 @@
           "integrity": "sha512-ZmVCr6nfBeaMxEHALLEGy0LszYjpJqf6PVNQUQ1qd9Et+q7Jpygd4rGGDXgHjD8e99yLFseD69msHDM4YwPZ4A==",
           "requires": {
             "lodash.sortby": "^4.7.0",
-            "tr46": "^2.0.2",
-            "webidl-conversions": "^6.1.0"
+            "tr46": "^2.0.2"
+          },
+          "dependencies": {
+            "webidl-conversions": {
+              "version": "5.0.0",
+              "resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-5.0.0.tgz",
+              "integrity": "sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA=="
+            }
           }
         },
         "which": {
@@ -19976,9 +19988,9 @@
       }
     },
     "zigbee2mqtt-frontend": {
-      "version": "0.1.14",
-      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.1.14.tgz",
-      "integrity": "sha512-vDJANakI0e1jqusXlzwHcCoNECqTPexOlqAr593i7u6wRztrLn3aJLdqjsLq8ZzIA4WTQB/n582HMMTYzCfsMQ=="
+      "version": "0.1.16",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.1.16.tgz",
+      "integrity": "sha512-5zyHiSgLdLKfJoyKXbU2B8RL2C6+kK/pg53MMIPYaXt5mjKMsvcRsNq0DRlMdoeaeahns5HL/y2DQnupKMdi+Q=="
     }
   }
 }
