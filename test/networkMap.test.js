@@ -1,6 +1,7 @@
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const stringify = require('json-stable-stringify');
 
 const {coordinator, bulb, bulb_color, WXKG02LM, CC2530_ROUTER, unsupported_router} = zigbeeHerdsman.devices;
 
@@ -258,7 +259,7 @@ describe('Networkmap', () => {
     it('Should output raw networkmap', async () => {
         mock();
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', JSON.stringify({type: 'raw', routes: true}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         let call = MQTT.publish.mock.calls[0];
@@ -303,7 +304,7 @@ describe('Networkmap', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/networkmap',
-            JSON.stringify({"data":{},"status":"error","error":"Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
+            stringify({"data":{},"status":"error","error":"Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
