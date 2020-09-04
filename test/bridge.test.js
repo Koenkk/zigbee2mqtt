@@ -407,7 +407,7 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
-            stringify({"data":{"from":"bulb","to":"bulb_new_name"},"status":"ok"}),
+            stringify({"data":{"from":"bulb","to":"bulb_new_name","homeassistant_rename":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -421,7 +421,7 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/rename',
-            stringify({"data":{"from":"group_1","to":"group_new_name"},"status":"ok"}),
+            stringify({"data":{"from":"group_1","to":"group_new_name","homeassistant_rename":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -458,7 +458,7 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
-            stringify({"data":{"from":"bulb","to":"bulb_new_name"},"status":"ok"}),
+            stringify({"data":{"from":"bulb","to":"bulb_new_name","homeassistant_rename":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
