@@ -122,8 +122,9 @@ describe('Frontend', () => {
         };
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(7);
+        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(9);
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
+        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[8])).toStrictEqual({topic:"remote", payload:{brightness:255}});
 
         // Message
         MQTT.publish.mockClear();
