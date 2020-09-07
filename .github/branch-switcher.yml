@@ -1,1 +1,3 @@
 preferredBranch: dev
+exclude:
+  label: branch-switcher-ignore

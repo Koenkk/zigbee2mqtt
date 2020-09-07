@@ -159,6 +159,9 @@ function writeDefaultConfiguration() {
             '0x0017880104a44559': {
                 friendly_name: 'J1_cover',
             },
+            '0x0017882104a44559': {
+                friendly_name: 'TS0601_thermostat',
+            },
         },
         groups: {
             '1': {
@@ -179,6 +182,11 @@ function writeDefaultConfiguration() {
                 retain: false,
                 devices: ['bulb_2']
             },
+            '12': {
+                friendly_name: 'thermostat_group',
+                retain: false,
+                devices: ['TS0601_thermostat'],
+            }
         },
         external_converters: [],
     };
