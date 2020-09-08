@@ -684,11 +684,11 @@ describe('Bridge', () => {
 
     it('Should allow to touchlink factory reset (succeeds)', async () => {
         MQTT.publish.mockClear();
-        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(true);
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(true);
         MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/factory_reset', '');
         await flushPromises();
-        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/touchlink/factory_reset',
             stringify({"data":{},"status":"ok"}),
@@ -696,16 +696,45 @@ describe('Bridge', () => {
         );
     });
 
-    it('Should allow to touchlink factory reset (fails)', async () => {
+    it('Should allow to touchlink factory reset specific device', async () => {
         MQTT.publish.mockClear();
         zigbeeHerdsman.touchlinkFactoryReset.mockClear();
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(false);
-        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/factory_reset', '');
+        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(true);
+        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/factory_reset', stringify({ieee_address: '0x1239', channel: 12}));
         await flushPromises();
         expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledWith('0x1239', 12);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/touchlink/factory_reset',
+            stringify({"data":{"ieee_address":'0x1239',"channel":12},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to touchlink factory reset (fails)', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(false);
+        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/factory_reset', '');
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/touchlink/factory_reset',
             stringify({"data":{},"status":"error","error":"Failed to factory reset device through Touchlink"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to touchlink scan', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.touchlinkScan.mockClear();
+        zigbeeHerdsman.touchlinkScan.mockReturnValueOnce([{ieeeAddr: '0x123', channel: 12}, {ieeeAddr: '0x124', channel: 24}]);
+        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/scan', '');
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkScan).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/touchlink/scan',
+            stringify({"data":{"found":[{ieee_address: '0x123', channel: 12}, {ieee_address: '0x124', channel: 24}]},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
