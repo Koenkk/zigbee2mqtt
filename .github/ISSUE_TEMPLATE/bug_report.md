@@ -42,14 +42,13 @@ Bug report?
 
 <!--Start your bug report below this line-->
 
-# Bug Report
 ## What happened
 
 ## What did you expect to happen
 
 ## How to reproduce it (minimal and precise)
 
-## Debug Info
+## Debug info
 Zigbee2MQTT version:
 Adapter hardware: CC2531, CC2530, CC26X2R1, CC1352P-2, Conbee II
 Adapter firmware version:
