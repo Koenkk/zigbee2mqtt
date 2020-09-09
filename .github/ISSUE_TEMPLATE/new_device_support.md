@@ -1,8 +1,8 @@
 ---
-name: Device support request
+name: New device support request
 about: Request support for a new device
 title: ''
-labels: device support
+labels: new device support
 assignees: ''
 
 ---
