@@ -711,6 +711,33 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should allow to touchlink identify specific device', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.touchlinkIdentify.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/identify', stringify({ieee_address: '0x1239', channel: 12}));
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkIdentify).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkIdentify).toHaveBeenCalledWith('0x1239', 12);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/touchlink/identify',
+            stringify({"data":{"ieee_address":'0x1239',"channel":12},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Touchlink identify fails when payload is invalid', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.touchlinkIdentify.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/touchlink/identify', stringify({ieee_address: '0x1239'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.touchlinkIdentify).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/touchlink/identify',
+            stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to touchlink factory reset (fails)', async () => {
         MQTT.publish.mockClear();
         zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
