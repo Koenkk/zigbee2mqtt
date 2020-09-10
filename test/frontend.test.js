@@ -87,6 +87,7 @@ describe('Frontend', () => {
         data.writeDefaultState();
         settings._reRead();
         settings.set(['experimental'], {new_api: true, frontend: {port: 8081}});
+        settings.set(['homeassistant'], true);
     });
 
     it('Start/stop', async () => {
@@ -124,14 +125,14 @@ describe('Frontend', () => {
         await mockWS.events.connection(mockWSClient.implementation);
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(9);
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
-        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[8])).toStrictEqual({topic:"remote", payload:{brightness:255}});
+        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[8])).toStrictEqual({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}});
 
         // Message
         MQTT.publish.mockClear();
         mockWSClient.implementation.send.mockClear();
         mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}))
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
@@ -140,7 +141,7 @@ describe('Frontend', () => {
         );
 
         // Received message on socket
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(1);
+        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(4);
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: {state: 'ON'}}));
 
         // Shouldnt set when not ready
