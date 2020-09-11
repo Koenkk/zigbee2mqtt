@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+<!--
+IMPORTANT: Before submitting a request, first follow: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html
+-->
+
 ## Information about the device + link
 ..
 
