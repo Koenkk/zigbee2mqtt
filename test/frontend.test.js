@@ -139,6 +139,10 @@ describe('Frontend', () => {
             { retain: false, qos: 0 },
             expect.any(Function)
         );
+        mockWSClient.events.message(undefined);
+        mockWSClient.events.message("");
+        mockWSClient.events.message(null);
+        await flushPromises();
 
         // Received message on socket
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(4);
