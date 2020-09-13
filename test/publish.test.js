@@ -66,6 +66,18 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should corretly handle mallformed messages', async () => {
+        await MQTT.events.message('zigbee2mqtt/foo', undefined);
+        await MQTT.events.message('zigbee2mqtt/foo', null);
+        await MQTT.events.message('zigbee2mqtt/foo', "");
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', undefined);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', null);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', "");
+        await flushPromises();
+        expectNothingPublished();
+    });
+
     it('Should publish messages to zigbee devices when there is no converters', async () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({brightness_no: '200'}));
         await flushPromises();
