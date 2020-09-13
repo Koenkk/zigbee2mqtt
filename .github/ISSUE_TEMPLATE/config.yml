@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Home Assistant addon issues
+    url: https://github.com/danielwelch/hassio-zigbee2mqtt/issues
+    about: Issues related to the Home Assistant addon.
+  - name: FAQ
+    url: https://www.zigbee2mqtt.io/information/FAQ.html
+    about: Frequently asked questions.
+  - name: Support Chat
+    url: https://discord.gg/NyseBeK
+    about: Chat for feedback, questions and troubleshooting.
