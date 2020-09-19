@@ -83,6 +83,12 @@ describe('OTA update', () => {
             stringify({"data":{"id": "bulb","from":{"software_build_id":1,"date_code":"20190101"},"to":{"software_build_id":2,"date_code":"20190102"}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/devices',
+            expect.any(String),
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
     });
 
     it('Should handle when OTA update fails', async () => {
