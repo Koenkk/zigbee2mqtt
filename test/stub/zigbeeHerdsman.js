@@ -41,7 +41,9 @@ class Endpoint {
         this.write = jest.fn();
         this.bind = jest.fn();
         this.unbind = jest.fn();
+        this.save = jest.fn();
         this.configureReporting = jest.fn();
+        this.meta = {};
         this.binds = binds;
         this.getInputClusters = () => inputClusters.map((c) => {
             return {ID: c, name: getKeyByValue(clusters, c)};
