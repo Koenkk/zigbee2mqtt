@@ -465,6 +465,18 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should throw error when renaming device through not allowed friendlyName', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'bulb_new_name/1'}));
+        await flushPromises();
+        console.log(MQTT.publish.mock.calls);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            stringify({"data":{},"status":"error","error":`Friendly name cannot end with a "/DIGIT" ('bulb_new_name/1')`}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should throw error when renaming last joined device but none has joined', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({last: true, to: 'bulb_new_name'}));
