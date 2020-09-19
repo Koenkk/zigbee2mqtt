@@ -469,7 +469,6 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'bulb_new_name/1'}));
         await flushPromises();
-        console.log(MQTT.publish.mock.calls);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
             stringify({"data":{},"status":"error","error":`Friendly name cannot end with a "/DIGIT" ('bulb_new_name/1')`}),

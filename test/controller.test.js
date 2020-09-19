@@ -551,6 +551,15 @@ describe('Controller', () => {
         expect(data.stateExists()).toBeFalsy();
     });
 
+    it('Shouldnt crash when it cannot save state', async () => {
+        data.removeState();
+        await controller.start();
+        logger.error.mockClear();
+        controller.state.file = "/";
+        await controller.state.save();
+        expect(logger.error).toHaveBeenCalledWith(`Failed to write state to '/' (EISDIR: illegal operation on a directory, open '/')`);
+    });
+
     it('Publish should not cache when set', async () => {
         settings.set(['advanced', 'cache_state'], false);
         data.writeEmptyState();
