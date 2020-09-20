@@ -1251,55 +1251,54 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[3]).toEqual([ 'zigbee2mqtt/bulb_color', stringify({"state":"ON","brightness":150}), { qos: 0, retain: false }, expect.any(Function)]);
     });
 
-    // Enable after merge: https://github.com/Koenkk/zigbee-herdsman-converters/pull/1531
-    // it('Scenes', async () => {
-    //     const bulb_color_2 = zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1);
-    //     const bulb_2 = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
-    //     const group = zigbeeHerdsman.groups.group_tradfri_remote;
-    //     await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', stringify({"state": "ON", "brightness": 50, "color_temp": 290}));
-    //     await MQTT.events.message('zigbee2mqtt/bulb_2/set', stringify({"state": "ON", "brightness": 100}));
-    //     await flushPromises();
+    it('Scenes', async () => {
+        const bulb_color_2 = zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1);
+        const bulb_2 = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
+        const group = zigbeeHerdsman.groups.group_tradfri_remote;
+        await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', stringify({"state": "ON", "brightness": 50, "color_temp": 290}));
+        await MQTT.events.message('zigbee2mqtt/bulb_2/set', stringify({"state": "ON", "brightness": 100}));
+        await flushPromises();
 
-    //     await MQTT.events.message('zigbee2mqtt/group_tradfri_remote/set', stringify({"scene_store": 1}));
-    //     await flushPromises();
-    //     expect(group.command).toHaveBeenCalledTimes(1);
-    //     expect(group.command).toHaveBeenCalledWith('genScenes', 'store', { groupid: 15071, sceneid: 1 }, {});
+        await MQTT.events.message('zigbee2mqtt/group_tradfri_remote/set', stringify({"scene_store": 1}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith('genScenes', 'store', { groupid: 15071, sceneid: 1 }, {});
 
-    //     await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', stringify({"state": "ON", "brightness": 250, "color_temp": 20}));
-    //     await MQTT.events.message('zigbee2mqtt/bulb_2/set', stringify({"state": "ON", "brightness": 110}));
-    //     await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', stringify({"state": "ON", "brightness": 250, "color_temp": 20}));
+        await MQTT.events.message('zigbee2mqtt/bulb_2/set', stringify({"state": "ON", "brightness": 110}));
+        await flushPromises();
 
-    //     MQTT.publish.mockClear();
-    //     group.command.mockClear();
-    //     await MQTT.events.message('zigbee2mqtt/group_tradfri_remote/set', stringify({"scene_recall": 1}));
-    //     await flushPromises();
-    //     expect(group.command).toHaveBeenCalledTimes(1);
-    //     expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
-    //     expect(MQTT.publish).toHaveBeenCalledTimes(5);
-    //     expect(MQTT.publish).toHaveBeenNthCalledWith(1,
-    //         'zigbee2mqtt/group_tradfri_remote',
-    //         stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
-    //         {retain: false, qos: 0}, expect.any(Function)
-    //     );
-    //     expect(MQTT.publish).toHaveBeenNthCalledWith(2,
-    //         'zigbee2mqtt/bulb_color_2',
-    //         stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
-    //         {retain: false, qos: 0}, expect.any(Function)
-    //     );
-    //     expect(MQTT.publish).toHaveBeenNthCalledWith(3,
-    //         'zigbee2mqtt/group_tradfri_remote',
-    //         stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
-    //         {retain: false, qos: 0}, expect.any(Function)
-    //     );
-    //     expect(MQTT.publish).toHaveBeenNthCalledWith(4,
-    //         'zigbee2mqtt/bulb_2',
-    //         stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
-    //         {retain: false, qos: 0}, expect.any(Function)
-    //     );
-    //     expect(MQTT.publish).toHaveBeenNthCalledWith(5,
-    //         'zigbee2mqtt/group_with_tradfri',
-    //         stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
-    //         {retain: false, qos: 0}, expect.any(Function)
-    //     );
-    // });
+        MQTT.publish.mockClear();
+        group.command.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_tradfri_remote/set', stringify({"scene_recall": 1}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(5);
+        expect(MQTT.publish).toHaveBeenNthCalledWith(1,
+            'zigbee2mqtt/group_tradfri_remote',
+            stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(2,
+            'zigbee2mqtt/bulb_color_2',
+            stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(3,
+            'zigbee2mqtt/group_tradfri_remote',
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(4,
+            'zigbee2mqtt/bulb_2',
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(5,
+            'zigbee2mqtt/group_with_tradfri',
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
 });
