@@ -799,11 +799,12 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should refresh discovery when device is renamed', async () => {
+        settings.set(['experimental', 'new_api'], true);
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/config/rename', '{"old": "weather_sensor", "new": "weather_sensor_renamed"}');
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":true}));
         await flushPromises();
 
         const payload = {
@@ -832,6 +833,23 @@ describe('HomeAssistant extension', () => {
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Shouldnt refresh discovery when device is renamed and homeassistant_rename is false', async () => {
+        settings.set(['experimental', 'new_api'], true);
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":false}));
+        await flushPromises();
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             null,
             { retain: true, qos: 0 },

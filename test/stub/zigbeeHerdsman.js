@@ -41,7 +41,9 @@ class Endpoint {
         this.write = jest.fn();
         this.bind = jest.fn();
         this.unbind = jest.fn();
+        this.save = jest.fn();
         this.configureReporting = jest.fn();
+        this.meta = {};
         this.binds = binds;
         this.getInputClusters = () => inputClusters.map((c) => {
             return {ID: c, name: getKeyByValue(clusters, c)};
@@ -178,6 +180,9 @@ const groups = {
 const mock = {
     setTransmitPower: jest.fn(),
     touchlinkFactoryReset: jest.fn(),
+    touchlinkFactoryResetFirst: jest.fn(),
+    touchlinkScan: jest.fn(),
+    touchlinkIdentify: jest.fn(),
     start: jest.fn(),
     permitJoin: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
