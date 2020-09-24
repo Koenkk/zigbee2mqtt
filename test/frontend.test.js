@@ -4,7 +4,7 @@ require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = () => new Promise(setImmediate);
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
@@ -39,9 +39,7 @@ const mockWS = {
 };
 
 const mockNodeStatic = {
-    implementation: {
-        serve: jest.fn(),
-    },
+    implementation: jest.fn(),
     variables: {},
     events: {},
 };
@@ -60,12 +58,12 @@ jest.mock('http-proxy', () => ({
     }),
 }));
 
-jest.mock('node-static', () => ({
-    Server: jest.fn().mockImplementation((path) => {
-        mockNodeStatic.variables.path = path;
-        return mockNodeStatic.implementation;
-    }),
-}));
+jest.mock("serve-static", () =>
+    jest.fn().mockImplementation((path) => {
+        mockNodeStatic.variables.path = path
+        return mockNodeStatic.implementation
+    })
+);
 
 jest.mock('zigbee2mqtt-frontend', () => ({
     getPath: () => 'my/dummy/path',
@@ -174,8 +172,8 @@ describe('Frontend', () => {
         expect(mockSocket.destroy).toHaveBeenCalledTimes(1);
 
         mockHTTP.variables.onRequest(1, 2);
-        expect(mockNodeStatic.implementation.serve).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation.serve).toHaveBeenCalledWith(1, 2);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(1, 2, expect.any(Function));
     });
 
     it('Development server', async () => {
