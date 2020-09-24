@@ -2,7 +2,7 @@ const data = require('../stub/data');
 const logger = require('../stub/logger');
 const zigbeeHerdsman = require('../stub/zigbeeHerdsman');
 const MQTT = require('../stub/mqtt');
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const settings = require('../../lib/util/settings');
