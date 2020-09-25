@@ -927,8 +927,8 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
 
         const device = zigbeeHerdsman.devices.WXKG11LM;
-        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload1);
         await flushPromises();
 
         const discoverPayloadAction = {
@@ -1016,7 +1016,7 @@ describe('HomeAssistant extension', () => {
 
         // Should only discover it once
         MQTT.publish.mockClear();
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.message(payload1);
         await flushPromises();
         expect(MQTT.publish).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
@@ -1045,6 +1045,15 @@ describe('HomeAssistant extension', () => {
             { retain: false, qos: 0 },
             expect.any(Function),
         );
+
+        // Shouldn't rediscover when already discovered in previous session
+        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/click_double/config', stringify({topic: 'zigbee2mqtt/0x0017880104e45520/action'}));
+        await flushPromises();
+        MQTT.publish.mockClear();
+        const payload2 = {data: {'32768': 2}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload2);
+        await flushPromises();
+        expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/click_double/config', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
     it('Should not discover sensor_click when legacy: false is set', async () => {
