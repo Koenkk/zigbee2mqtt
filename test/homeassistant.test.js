@@ -803,6 +803,8 @@ describe('HomeAssistant extension', () => {
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
+        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45522/action_double/config', stringify({topic: 'zigbee2mqtt/weather_sensor/action'}));
+        await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":true}));
         await flushPromises();
@@ -835,6 +837,28 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45522/action_double/config',
+            stringify({
+                "automation_type":"trigger",
+                "type":"action",
+                "subtype":"double",
+                "payload":"double",
+                "topic":"zigbee2mqtt/weather_sensor_renamed/action",
+                "device":{
+                    "identifiers":[
+                        "zigbee2mqtt_0x0017880104e45522"
+                    ],
+                    "name":"weather_sensor_renamed",
+                    "sw_version": this.version,
+                    "model":"Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)",
+                    "manufacturer":"Xiaomi"
+                }
+            }),
             { retain: true, qos: 0 },
             expect.any(Function),
         );
@@ -1047,13 +1071,24 @@ describe('HomeAssistant extension', () => {
         );
 
         // Shouldn't rediscover when already discovered in previous session
-        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/click_double/config', stringify({topic: 'zigbee2mqtt/0x0017880104e45520/action'}));
+        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
+        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
         await flushPromises();
         MQTT.publish.mockClear();
         const payload2 = {data: {'32768': 2}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload2);
         await flushPromises();
-        expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/click_double/config', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
+
+        // Should rediscover when already discovered in previous session but with diferent name
+        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button_other_name/action'}));
+        await flushPromises();
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload2);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
     it('Should not discover sensor_click when legacy: false is set', async () => {
