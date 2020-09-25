@@ -15740,9 +15740,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "12.0.191",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.191.tgz",
-      "integrity": "sha512-zLXAVGQ9zhm3J6sXWtMEIOmJuj8Pdx66sVF1J4pGJF2QEzjKlvWD4q7TaMoawbWmg5TjbMhH56/5tBC2+EWpsQ==",
+      "version": "12.0.192",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-12.0.192.tgz",
+      "integrity": "sha512-kP7aUeCFoRzW6PTUNpHYvmU8d+XT+pey/izI0M7mHVEbyD0fEQMRvFUcmt0SUPBo6tngdgkn+B7de9s8sTE7YA==",
       "requires": {
         "axios": "^0.20.0",
         "https-proxy-agent": "^5.0.0",
@@ -17868,6 +17868,12 @@
           "resolved": "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz",
           "integrity": "sha1-FQStJSMVjKpA20onh8sBQRmU6k8="
         },
+        "fsevents": {
+          "version": "2.1.3",
+          "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.1.3.tgz",
+          "integrity": "sha512-Auw9a4AxqWpa9GUfj370BMPzzyncfBABW8Mab7BGWBYDj4Isgq+cDKtx0i6u9jcX9pQDnswsaaOTgTmA5pEjuQ==",
+          "optional": true
+        },
         "functional-red-black-tree": {
           "version": "1.0.1",
           "resolved": "https://registry.npmjs.org/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz",
@@ -18550,6 +18556,7 @@
             "@types/node": "*",
             "anymatch": "^3.0.3",
             "fb-watchman": "^2.0.0",
+            "fsevents": "^2.1.2",
             "graceful-fs": "^4.2.4",
             "jest-regex-util": "^26.0.0",
             "jest-serializer": "^26.3.0",
