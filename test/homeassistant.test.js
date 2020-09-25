@@ -1231,5 +1231,18 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', '1}3');
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Existing device, device automation -> don't clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Not-existing device, device automation -> don't clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2_not_existing/action_button_3_single/config', stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2_not_existing/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2_not_existing/action_button_3_single/config', null, {qos: 0, retain: true}, expect.any(Function));
     });
 });
