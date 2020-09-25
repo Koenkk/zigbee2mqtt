@@ -855,6 +855,31 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function),
         );
+
+        const payload = {
+            'unit_of_measurement': '°C',
+            'device_class': 'temperature',
+            'value_template': '{{ value_json.temperature }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
+            'name': 'weather_sensor_renamed_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor_renamed',
+                'sw_version': this.version,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability_topic': 'zigbee2mqtt/bridge/state',
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
     it('Should discover update_available sensor when device supports it', async () => {
