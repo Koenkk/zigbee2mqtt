@@ -84,7 +84,8 @@ describe('Frontend', () => {
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings._reRead();
-        settings.set(['experimental'], {new_api: true, frontend: {port: 8081}});
+        settings.set(['experimental'], {new_api: true});
+        settings.set(['frontend'], {port: 8081});
         settings.set(['homeassistant'], true);
     });
 
@@ -177,7 +178,7 @@ describe('Frontend', () => {
     });
 
     it('Development server', async () => {
-        settings.set(['experimental', 'frontend'], {development_server: 'localhost:3001'});
+        settings.set(['frontend'], {development_server: 'localhost:3001'});
         controller = new Controller();
         await controller.start();
         expect(mockHTTPProxy.variables.initParameter).toStrictEqual({ws: true});
