@@ -41,7 +41,9 @@ class Endpoint {
         this.write = jest.fn();
         this.bind = jest.fn();
         this.unbind = jest.fn();
+        this.save = jest.fn();
         this.configureReporting = jest.fn();
+        this.meta = {};
         this.binds = binds;
         this.getInputClusters = () => inputClusters.map((c) => {
             return {ID: c, name: getKeyByValue(clusters, c)};
@@ -89,7 +91,7 @@ class Endpoint {
 }
 
 class Device {
-    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName, dateCode= null) {
+    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName, dateCode= null, softwareBuildID=null) {
         this.type = type;
         this.ieeeAddr = ieeeAddr;
         this.dateCode = dateCode;
@@ -97,6 +99,7 @@ class Device {
         this.manufacturerID = manufacturerID;
         this.endpoints = endpoints;
         this.powerSource = powerSource;
+        this.softwareBuildID = softwareBuildID;
         this.interviewCompleted = interviewCompleted;
         this.modelID = modelID;
         this.interviewing = interviewing;
@@ -117,7 +120,7 @@ class Device {
 const returnDevices = [];
 
 const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020");
-const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020");
+const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
 const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
 
@@ -178,6 +181,9 @@ const groups = {
 const mock = {
     setTransmitPower: jest.fn(),
     touchlinkFactoryReset: jest.fn(),
+    touchlinkFactoryResetFirst: jest.fn(),
+    touchlinkScan: jest.fn(),
+    touchlinkIdentify: jest.fn(),
     start: jest.fn(),
     permitJoin: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
