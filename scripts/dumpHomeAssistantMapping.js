@@ -12,6 +12,15 @@ mapping.sort((a, b) => {
     return 0;
 });
 
-for (const entry of mapping) {
-    console.log(`${entry[0]} - ${stringify(entry[1])}`);
+for (const map of mapping) {
+    for (const entry of map[1]) {
+        if (entry.type === 'light') {
+            if (entry.discovery_payload.brightness === false) delete entry.discovery_payload.brightness;
+            if (entry.discovery_payload.color_temp === false) delete entry.discovery_payload.color_temp;
+            if (entry.discovery_payload.xy === false) delete entry.discovery_payload.xy;
+            if (entry.discovery_payload.hs === false) delete entry.discovery_payload.hs;
+        }
+    }
+
+    console.log(`${map[0]} - ${stringify(map[1])}`);
 }
