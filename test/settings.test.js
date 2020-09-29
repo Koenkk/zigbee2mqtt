@@ -9,6 +9,13 @@ const devicesFile = data.joinPath('devices.yaml');
 const groupsFile = data.joinPath('groups.yaml');
 const secretFile = data.joinPath('secret.yaml');
 const yaml = require('js-yaml');
+const objectAssignDeep = require(`object-assign-deep`);
+
+const minimalConfig = {
+    permit_join: true,
+    homeassistant: true,
+    mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost'},
+};
 
 describe('Settings', () => {
     const write = (file, json, reread=true) => {
@@ -21,11 +28,19 @@ describe('Settings', () => {
     const remove = (file) => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
+    const clearEnvironmentVariables = () => {
+        Object.keys(process.env).forEach((key) => { 
+            if(key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
+                delete process.env[key];
+            }
+        });
+    }
 
     beforeEach(() => {
         remove(configurationFile);
         remove(devicesFile);
         remove(groupsFile);
+        clearEnvironmentVariables();
     });
 
     it('Should return default settings', () => {
@@ -44,6 +59,29 @@ describe('Settings', () => {
         expected.devices = {};
         expected.groups = {};
         expected.permit_join = true;
+        expect(s).toStrictEqual(expected);
+    });
+
+    it('Should apply environment variables', () => {
+        process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
+        process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_AVAILABILITY_BLOCKLIST'] = '["0x43597f0dac781b1e", "x223b0aef2ae8d1b0"]';
+        process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
+        process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
+
+        write(configurationFile, {});
+        const s = settings.get();
+        const expected = objectAssignDeep.noMutate({}, settings._getDefaults());
+        expected.devices = {};
+        expected.groups = {};
+        expected.serial.disable_led = true;
+        expected.advanced.soft_reset_timeout = 1;
+        expected.experimental.output = 'csvtest';
+        expected.advanced.availability_blocklist = ['0x43597f0dac781b1e', 'x223b0aef2ae8d1b0'];
+        expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
+        expected.mqtt.base_topic = 'testtopic';
+
         expect(s).toStrictEqual(expected);
     });
 
@@ -125,6 +163,12 @@ describe('Settings', () => {
 
         settings._write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['mqtt', 'user'], 'test123');
+        settings.set(['advanced', 'network_key'], [1,2,3, 4]);
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, username: 'test123', network_key: [1,2,3,4]});
     });
 
     it('Should read devices form a separate file', () => {
@@ -353,6 +397,14 @@ describe('Settings', () => {
         expect(settings.get().groups).toStrictEqual(expected);
     });
 
+    it('Should throw error when changing entity options of non-existing device', () => {
+        write(configurationFile, {});
+
+        expect(() => {
+            settings.changeEntityOptions('not_existing_123', {});
+        }).toThrow(new Error("Device or group 'not_existing_123' does not exist"));
+    });
+
     it('Should not add duplicate groups', () => {
         write(configurationFile, {});
 
@@ -489,29 +541,65 @@ describe('Settings', () => {
         }).toThrow(new Error("Device '0x123' already exists"));
     });
 
+    it('Should not allow any string values for network_key', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            advanced: {network_key: 'NOT_GENERATE'},
+        });
+
+        settings._reRead();
+
+        const error = `advanced.network_key: should be array or 'GENERATE' (is 'NOT_GENERATE')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Should allow retention configuration with MQTT v5', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost', version: 5},
+            devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
+        });
+
+        settings._reRead();
+        expect(settings.validate()).toEqual([]);
+    });
+
+
     it('Should not allow retention configuration without MQTT v5', () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'tain', retention: 900}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError('MQTT retention requires protocol version 5');
+        const error = 'MQTT retention requires protocol version 5';
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Should not allow non-existing entities in availability blacklist', () => {
+    it('Should not allow non-existing entities in availability_blocklist', () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
-            advanced: {availability_blacklist: ['0x0017880104e45519', 'non_existing']},
+            advanced: {availability_blocklist: ['0x0017880104e45519', 'non_existing']},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Non-existing entity 'non_existing' specified in 'availability_blacklist'`);
+        const error = `Non-existing entity 'non_existing' specified in 'availability_blocklist'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Validate should if settings does not conform to scheme', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            advanced: null,
+        });
+
+        settings._reRead();
+
+        const error = `advanced should be object`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should ban devices', () => {
@@ -522,80 +610,78 @@ describe('Settings', () => {
         expect(settings.get().ban).toStrictEqual(['0x123', '0x1234']);
     });
 
+    it('Should add devices to blocklist', () => {
+        write(configurationFile, {});
+        settings.blockDevice('0x123');
+        expect(settings.get().blocklist).toStrictEqual(['0x123']);
+        settings.blockDevice('0x1234');
+        expect(settings.get().blocklist).toStrictEqual(['0x123', '0x1234']);
+    });
+
     it('Should throw error when yaml file is invalid', () => {
         fs.writeFileSync(configurationFile, `
              good: 9
              \t wrong
         `)
 
-        let error;
-        try {
-            settings._reRead();
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error.message).toContain(`Your YAML file '${configurationFile}' is invalid`);
+        settings._clear();
+        const error = `Your YAML file: '${configurationFile}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should throw error when yaml file does not exist', () => {
-        let error;
-        try {
-            settings._reRead();
-        } catch (e) {
-            error = e;
-        }
-
-        expect(error.message).toContain(`no such file or directory, open`);
+        settings._clear();
+        const error = `ENOENT: no such file or directory, open '${configurationFile}'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname', retain: false}},
             groups: {'1': {friendly_name: 'myname', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Duplicate friendly_name 'myname' found`);
+        const error = `Duplicate friendly_name 'myname' found`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name ends with /DIGIT', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname/123', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Friendly name cannot end with a "/DIGIT" ('myname/123')`);
+        const error = `Friendly name cannot end with a "/DIGIT" ('myname/123')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name contains a MQTT wildcard', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname#', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`);
+        const error = `MQTT wildcard (+ and #) not allowed in friendly_name ('myname#')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
         write(configurationFile, {
+            ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
         });
 
         settings._reRead();
 
-        expect(() => {
-            settings.validate();
-        }).toThrowError(`Following friendly_name are not allowed: '${utils.getEndpointNames()}'`);
+        const error = `Following friendly_name are not allowed: '${utils.getEndpointNames()}'`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {

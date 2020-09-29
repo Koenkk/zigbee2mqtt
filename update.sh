@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-echo "Stopping zigbee2mqtt..."
+echo "Stopping Zigbee2MQTT..."
 sudo systemctl stop zigbee2mqtt
 
 echo "Creating backup of configuration..."
@@ -17,7 +17,7 @@ echo "Restore configuration..."
 cp -R data-backup/* data
 rm -rf data-backup
 
-echo "Starting zigbee2mqtt..."
+echo "Starting Zigbee2MQTT..."
 sudo systemctl start zigbee2mqtt
 
 echo "Done!"

@@ -1,0 +1,25 @@
+name: Update dependencies
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 0 * * 0"
+
+jobs:
+  update_deps:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: dev
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: 12
+    - run: npm install
+    - run: npm ls --depth 0 --prod --parseable | tail -n +2 | grep -v "zigbee" | xargs -I '{}' basename "{}" | xargs -I '{}' npm install '{}'@latest
+    - run: rm -rf node_modules npm-shrinkwrap.json && npm install && npm shrinkwrap --dev
+    - uses: peter-evans/create-pull-request@v2
+      with:
+        commit-message: Update dependencies
+        branch: "update_deps"
+        title: Update dependencies

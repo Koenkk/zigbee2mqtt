@@ -13,11 +13,11 @@ const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const mockOnEvent = jest.fn();
-const mappedLivolo = zigbeeHerdsmanConverters.findByZigbeeModel(zigbeeHerdsman.devices.LIVOLO.modelID);
+const mappedLivolo = zigbeeHerdsmanConverters.findByDevice(zigbeeHerdsman.devices.LIVOLO);
 mappedLivolo.onEvent = mockOnEvent;
 zigbeeHerdsmanConverters.onEvent = jest.fn();
 
-describe('Device event', () => {
+describe('On event', () => {
     let controller;
     const device = zigbeeHerdsman.devices.LIVOLO;
 

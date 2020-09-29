@@ -1,6 +1,11 @@
 const events = {};
 const assert = require('assert');
 
+function getKeyByValue(object, value, fallback) {
+    const key = Object.keys(object).find((k) => object[k] === value);
+    return key != null ? key : fallback;
+}
+
 class Group {
     constructor(groupID, members) {
         this.groupID = groupID;
@@ -8,6 +13,7 @@ class Group {
         this.meta = {};
         this.members = members;
         this.removeFromDatabase = jest.fn();
+        this.removeFromNetwork = jest.fn();
         this.hasMember = (endpoint) => this.members.includes(endpoint);
     }
 }
@@ -37,6 +43,14 @@ class Endpoint {
         this.unbind = jest.fn();
         this.configureReporting = jest.fn();
         this.binds = binds;
+        this.getInputClusters = () => inputClusters.map((c) => {
+            return {ID: c, name: getKeyByValue(clusters, c)};
+        }).filter((c) => c.name);
+
+        this.getOutputClusters = () => outputClusters.map((c) => {
+            return {ID: c, name: getKeyByValue(clusters, c)};
+        }).filter((c) => c.name);
+
         this.supportsInputCluster = (cluster) => {
             assert(clusters[cluster] !== undefined, `Undefined '${cluster}'`);
             return this.inputClusters.includes(clusters[cluster]);
@@ -47,20 +61,22 @@ class Endpoint {
             return this.outputClusters.includes(clusters[cluster]);
         }
 
-        this.addToGroup = (group) => {
+        this.addToGroup = jest.fn();
+        this.addToGroup.mockImplementation((group) => {
             if (!group.members.includes(this)) group.members.push(this);
-        }
+        })
 
         this.getDevice = () => {
             return Object.values(devices).find(d => d.ieeeAddr === deviceIeeeAddress);
         }
 
-        this.removeFromGroup = (group) => {
+        this.removeFromGroup = jest.fn();
+        this.removeFromGroup.mockImplementation((group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
                 group.members.splice(index, 1);
             }
-        }
+        });
 
         this.removeFromAllGroups = () => {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))
@@ -103,6 +119,7 @@ const returnDevices = [];
 const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020");
 const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020");
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
+const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
 
 const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
@@ -110,7 +127,7 @@ const devices = {
     'bulb_color': bulb_color,
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
-    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0]}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
+    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: new Group(1, []), cluster: {ID: 6, name: 'genOnOff'}}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
@@ -125,7 +142,7 @@ const devices = {
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540, 4151, [new Endpoint(11, [0], [], '0x0017880104e45543'), new Endpoint(13, [0], [], '0x0017880104e45543')], true, "Mains (single phase)", 'GL-C-008'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GL-C-008'),
-    'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),
+    'HGZB04D': new Device('Router', '0x0017880104e45545', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45545')], true, "Mains (single phase)", 'FB56+ZSC05HG1.0'),
     'ZNCLDJ11LM': new Device('Router', '0x0017880104e45547', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'lumi.curtain'),
     'HAMPTON99432':  new Device('Router', '0x0017880104e45548', 6540,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Mains (single phase)", 'HDC52EastwindFan'),
     'HS2WD': new Device('Router', '0x0017880104e45549', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'WarningDevice'),
@@ -146,13 +163,16 @@ const devices = {
     'GL-S-007ZS': new Device('Router', '0x0017880104e45526', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45526')], true, "Mains (single phase)", 'GL-S-007ZS'),
     'U202DST600ZB': new Device('Router', '0x0017880104e43559', 6540,4151, [new Endpoint(10, [0, 6], [], '0x0017880104e43559'), new Endpoint(11, [0, 6], [], '0x0017880104e43559')], true, "Mains (single phase)", 'U202DST600ZB'),
     '3157100': new Device('Router', '0x0017880104e44559', 6542,4151, [new Endpoint(1, [], [], '0x0017880104e44559')], true, "Mains (single phase)", '3157100'),
+    'J1': new Device('Router', '0x0017880104a44559', 6543,4151, [new Endpoint(1, [], [], '0x0017880104a44559')], true, "Mains (single phase)", 'J1 (5502)'),
+    'TS0601_thermostat': TS0601_thermostat,
 }
 
 const groups = {
     'group_1': new Group(1, []),
     'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
     'group/with/slashes': new Group(99, []),
-    'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]])
+    'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
+    'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]])
 }
 
 const mock = {
@@ -175,6 +195,9 @@ const mock = {
     }),
     getDeviceByIeeeAddr: jest.fn().mockImplementation((ieeeAddr) => {
         return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.ieeeAddr === ieeeAddr);
+    }),
+    getDeviceByNetworkAddress: jest.fn().mockImplementation((networkAddress) => {
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.networkAddress)).find((d) => d.networkAddress === networkAddress);
     }),
     getGroups: jest.fn().mockImplementation((query) => {
         return Object.values(groups);

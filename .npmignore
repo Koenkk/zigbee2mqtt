@@ -7,7 +7,6 @@ coverage
 .jenkins.yml
 .codeclimate.yml
 .github
-azure-pipelines.yaml
 
 #linters
 .jscsrc

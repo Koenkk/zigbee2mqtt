@@ -1,0 +1,22 @@
+name: Update zigbee-herdsman-converters
+on:
+  repository_dispatch:
+    types: update_zhc
+
+jobs:
+  update_zhc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: dev
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: 12
+    - run: npm install zigbee-herdsman-converters@${{ github.event.client_payload.version }} --save-exact
+    - uses: peter-evans/create-pull-request@v2
+      with:
+        commit-message: Update zigbee-herdsman-converters to ${{ github.event.client_payload.version }}
+        branch: "update_zhc"
+        title: Update zigbee-herdsman-converters to ${{ github.event.client_payload.version }}

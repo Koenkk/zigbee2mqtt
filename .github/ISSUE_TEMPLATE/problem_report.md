@@ -1,3 +1,12 @@
+---
+name: Problem report
+about: Create a report to help us improve
+title: ''
+labels: problem
+assignees: ''
+
+---
+
 <!--
 Before submitting an issue make sure you've searched for a similar issue and read the documentation: https://www.zigbee2mqtt.io/.
 
@@ -33,14 +42,13 @@ Bug report?
 
 <!--Start your bug report below this line-->
 
-# Bug Report
 ## What happened
 
 ## What did you expect to happen
 
 ## How to reproduce it (minimal and precise)
 
-## Debug Info
+## Debug info
 Zigbee2MQTT version:
-Adapter hardware: CC2531, CC2530, CC26X2R1 or CC1352P-2
+Adapter hardware: CC2531, CC2530, CC26X2R1, CC1352P-2, Conbee II
 Adapter firmware version:

@@ -5,8 +5,8 @@
     <br>
     <br>
     <div style="display: flex;">
-        <a href="https://dev.azure.com/koenkk/zigbee/_build?definitionId=5">
-            <img src="https://dev.azure.com/koenkk/zigbee/_apis/build/status/Koenkk.zigbee2mqtt?branchName=dev">
+        <a href="https://github.com/Koenkk/zigbee2mqtt/actions?query=workflow%3ACI">
+            <img src="https://github.com/koenkk/zigbee2mqtt/workflows/CI/badge.svg">
         </a>
         <a href="https://github.com/Koenkk/zigbee2mqtt/releases">
             <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
@@ -33,7 +33,7 @@
             <img src="https://img.shields.io/npm/v/zigbee2mqtt">
         </a>
     </div>
-    <h1>Zigbee2mqtt  🌉 🐝</h1>
+    <h1>Zigbee2MQTT  🌉 🐝</h1>
     <p>
         Allows you to use your Zigbee devices <b>without</b> the vendors bridge or gateway.
     </p>
@@ -48,12 +48,12 @@ The [documentation](https://www.zigbee2mqtt.io/) provides you all the informatio
 If you aren't familiar with **Zigbee** terminology make sure you [read this](https://www.zigbee2mqtt.io/information/zigbee_network.html) to help you out.
 
 ## [Integrations](https://www.zigbee2mqtt.io/#integration)
-Zigbee2mqtt integrates well with (almost) every home automation solution because it uses MQTT. However the following integrations are worth mentioning:
+Zigbee2MQTT integrates well with (almost) every home automation solution because it uses MQTT. However the following integrations are worth mentioning:
 
 <img align="left" height="100px" width="100px" src="https://user-images.githubusercontent.com/7738048/40914297-49e6e560-6800-11e8-8904-36cce896e5a8.png">
 
 ### [Home Assistant](https://www.home-assistant.io/)
-- [Hassio](https://www.home-assistant.io/hassio/): Using [the official addon](https://github.com/danielwelch/hassio-zigbee2mqtt) from [danielwelch](https://github.com/danielwelch)
+- [Home Assistant](https://www.home-assistant.io/hassio/): Using [the official addon](https://github.com/danielwelch/hassio-zigbee2mqtt) from [danielwelch](https://github.com/danielwelch)
 - Generic install or Hassbian: Using instructions [here](https://www.zigbee2mqtt.io/integration/home_assistant.html)
 
 <img align="left" height="100px" width="100px" src="https://user-images.githubusercontent.com/2734836/47615848-b8dd8700-dabd-11e8-9d77-175002dd8987.png">
@@ -65,6 +65,9 @@ Zigbee2mqtt integrates well with (almost) every home automation solution because
 
 ## Architecture
 ![Architecture](images/architecture.png)
+
+### Internal Architecture
+Zigbee2MQTT is made up of three modules, each developed in its own Github project. Starting from the hardware (adapter) and moving up; [zigbee-herdsman](https://github.com/koenkk/zigbee-herdsman) connects to your Zigbee adapter an makes an API available to the higher levels of the stack. For e.g. Texas Instruments hardware, zigbee-herdsman uses the [TI zStack monitoring and test API](https://github.com/koenkk/zigbee-herdsman/raw/master/docs/Z-Stack%20Monitor%20and%20Test%20API.pdf) to communicate with the adapter. Zigbee-herdsman handles the core Zigbee communication. The module [zigbee-herdsman-converters](https://github.com/koenkk/zigbee-herdsman-converters) handles the mapping from individual device models to the Zigbee clusters they support. [Zigbee clusters](https://github.com/Koenkk/zigbee-herdsman/raw/master/docs/07-5123-06-zigbee-cluster-library-specification.pdf) are the layers of the Zigbee protocol on top of the base protocol that define things like how lights, sensors and switches talk to each other over the Zigbee network.  Finally, the Zigbee2MQTT module drives zigbee-herdsman and maps the zigbee messages to MQTT messages. Zigbee2MQTT also keeps track of the state of the system.  It uses a `database.db` file to store this state; a text file with a JSON database of connected devices and their capabilities.
 
 ## Supported devices
 See [Supported devices](https://www.zigbee2mqtt.io/information/supported_devices.html) to check whether your device is supported. There is quite an extensive list, including devices from vendors like Xiaomi, Ikea, Philips, OSRAM and more.
