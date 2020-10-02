@@ -6,7 +6,7 @@ const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = () => new Promise(setImmediate);
 const tmp = require('tmp');
 const mocksClear = [
@@ -490,12 +490,12 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         await controller.publishEntityState('bulb', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)","dateCode":null}}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"device":{"friendlyName":"bulb","model":"LED1545G12","ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369,"type":"Router","manufacturerID":4476,"powerSource":"Mains (single phase)","dateCode":null, "softwareBuildID": null}}), {"qos": 0, "retain": true}, expect.any(Function));
 
         // Unsupported device should have model "unknown"
         await controller.publishEntityState('unsupported2', {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', stringify({"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null}}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', stringify({"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null, "softwareBuildID": null}}), {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Should publish entity state without retain', async () => {
@@ -549,6 +549,15 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({state: "ON", brightness: 200}), {"qos": 0, "retain": true}, expect.any(Function));
         await controller.stop();
         expect(data.stateExists()).toBeFalsy();
+    });
+
+    it('Shouldnt crash when it cannot save state', async () => {
+        data.removeState();
+        await controller.start();
+        logger.error.mockClear();
+        controller.state.file = "/";
+        await controller.state.save();
+        expect(logger.error).toHaveBeenCalledWith(`Failed to write state to '/' (EISDIR: illegal operation on a directory, open '/')`);
     });
 
     it('Publish should not cache when set', async () => {

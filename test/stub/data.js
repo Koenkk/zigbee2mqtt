@@ -2,7 +2,7 @@ const tmp = require('tmp');
 const yaml = require('../../lib/util/yaml');
 const path = require('path');
 const fs = require('fs');
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 
 const mockDir = tmp.dirSync().name;
 const mockDirStorage = tmp.dirSync().name;

@@ -27,7 +27,8 @@ describe('Availability', () => {
         settings._reRead();
         data.writeEmptyState();
         jest.useFakeTimers();
-        settings.set(['advanced', 'availability_timeout'], 10)
+        settings.set(['advanced', 'availability_timeout'], 10);
+        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         mocksClear.forEach((m) => m.mockClear());
         await controller.start();
@@ -395,6 +396,17 @@ describe('Availability', () => {
           'offline',
           { retain: true, qos: 0 },
           expect.any(Function)
+        );
+    });
+
+    it('Should clear retained availability topic when device is remove', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', 'bulb_color');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            null,
+            {retain: true, qos: 0}, expect.any(Function)
         );
     });
 });

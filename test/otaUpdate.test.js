@@ -6,7 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 
 describe('OTA update', () => {
     let controller;
@@ -82,6 +82,12 @@ describe('OTA update', () => {
             'zigbee2mqtt/bridge/response/device/ota_update/update',
             stringify({"data":{"id": "bulb","from":{"software_build_id":1,"date_code":"20190101"},"to":{"software_build_id":2,"date_code":"20190102"}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/devices',
+            expect.any(String),
+          { retain: true, qos: 0 },
+          expect.any(Function)
         );
     });
 

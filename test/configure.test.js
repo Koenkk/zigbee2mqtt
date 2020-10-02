@@ -6,7 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const stringify = require('json-stable-stringify');
+const stringify = require('json-stable-stringify-without-jsonify');
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
