@@ -282,7 +282,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color: {r: 100, g: 200, b: 10}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
@@ -294,7 +294,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color: {rgb: '100,200,10'}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
@@ -524,7 +524,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set/color', '#64C80A');
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
