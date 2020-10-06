@@ -295,7 +295,6 @@ describe('Networkmap', () => {
         };
 
         const actual = JSON.parse(call[1]);
-        actual.data.value = JSON.parse(actual.data.value);
         expect(actual).toStrictEqual(expected);
     });
 

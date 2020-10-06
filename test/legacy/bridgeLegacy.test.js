@@ -457,22 +457,22 @@ describe('Bridge legacy', () => {
     });
 
     it('Should allow to touchlink factory reset (OK)', async () => {
-        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
 
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(true);
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(true);
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
-        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(logger.info).toHaveBeenCalledWith('Successfully factory reset device through Touchlink');
     });
 
     it('Should allow to touchlink factory reset (FAILS)', async () => {
-        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
 
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(false);
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(false);
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
-        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(logger.warn).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
     });
 });

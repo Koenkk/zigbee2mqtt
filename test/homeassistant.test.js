@@ -26,8 +26,8 @@ describe('HomeAssistant extension', () => {
         const missing = [];
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
 
-        require('zigbee-herdsman-converters').devices.forEach((d) => {
-            if (!ha._getMapping()[d.model]) {
+        require('zigbee-herdsman-converters').definitions.forEach((d) => {
+            if (!d.hasOwnProperty('exposes') && !ha._getMapping()[d.model]) {
                 missing.push(d.model);
             }
         });
