@@ -437,6 +437,9 @@ describe('HomeAssistant extension', () => {
             "action_template":"{% set values = {'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'} %}{{ values[value_json.running_state] }}",
             "action_topic":"zigbee2mqtt/TS0601_thermostat",
             "availability_topic":"zigbee2mqtt/bridge/state",
+            "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
+            "away_mode_state_template":"{{ value_json.away_mode }}",
+            "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "current_temperature_template":"{{ value_json.local_temperature }}",
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
@@ -452,7 +455,6 @@ describe('HomeAssistant extension', () => {
             "hold_modes":[
                "schedule",
                "manual",
-               "away",
                "boost",
                "complex",
                "comfort",
