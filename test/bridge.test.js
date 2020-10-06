@@ -294,6 +294,8 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(settings.get().blocklist).toStrictEqual([]);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
     it('Should allow to remove device by object ID', async () => {
