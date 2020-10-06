@@ -396,6 +396,17 @@ describe('Publish', () => {
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
+    it('Shouldnt publish new state when optimistic = false', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        settings.set(['devices', device.ieeeAddr, 'optimistic'], false);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({brightness: '200'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {"level": 200, "transtime": 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
     it('Should handle non-valid topics', async () => {
         await MQTT.events.message('zigbee2mqtt1/bulb_color/set', stringify({state: 'ON'}));
         await flushPromises();
