@@ -122,9 +122,10 @@ describe('Frontend', () => {
         };
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(9);
+        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(48);
+
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
-        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[8])).toStrictEqual({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}});
+        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[12])).toStrictEqual({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}});
 
         // Message
         MQTT.publish.mockClear();
@@ -152,6 +153,14 @@ describe('Frontend', () => {
         mockWSClient.implementation.readyState = 'close';
         mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}))
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(0);
+
+        // Send last seen on connect
+        mockWSClient.implementation.send.mockClear();
+        mockWSClient.implementation.readyState = 'open';
+        settings.set(['advanced'], {last_seen: 'ISO_8601'});
+        mockWS.implementation.clients.push(mockWSClient.implementation);
+        await mockWS.events.connection(mockWSClient.implementation);
+        expect(JSON.parse(mockWSClient.implementation.send.mock.calls[12])).toStrictEqual({topic:"remote", payload:{brightness:255, last_seen: "1970-01-01T00:00:01.000Z", update:{state: "idle"}, update_available: false}});
     });
 
     it('onReques/onUpgrade', async () => {
