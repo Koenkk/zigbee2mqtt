@@ -13,6 +13,9 @@ mapping.sort((a, b) => {
 });
 
 for (const map of mapping) {
+    map[1].sort((a, b) => {
+        return JSON.stringify(a).localeCompare(JSON.stringify(b));
+    });
     for (const entry of map[1]) {
         if (entry.type === 'light') {
             if (entry.discovery_payload.brightness === false) delete entry.discovery_payload.brightness;
