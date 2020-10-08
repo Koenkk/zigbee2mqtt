@@ -24,12 +24,14 @@ describe('Logger', () => {
 
     it('Create log directory', () => {
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
     });
 
     it('Should cleanup', () => {
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
 
         for (const d of fs.readdirSync(dir.name)) {
             rimraf.sync(path.join(dir.name, d));
@@ -46,6 +48,7 @@ describe('Logger', () => {
 
     it('Should not cleanup when there is no timestamp set', () => {
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         for (let i = 30; i < 40; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
@@ -58,12 +61,14 @@ describe('Logger', () => {
 
     it('Set and get log level', () => {
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
     });
 
     it('Logger should be console and file by default', () => {
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -75,6 +80,7 @@ describe('Logger', () => {
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -86,6 +92,7 @@ describe('Logger', () => {
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
@@ -94,6 +101,7 @@ describe('Logger', () => {
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
@@ -102,6 +110,7 @@ describe('Logger', () => {
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
         const logger = require('../lib/util/logger.js');
+        logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
