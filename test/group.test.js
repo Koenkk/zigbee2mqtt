@@ -300,7 +300,7 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
-    it('onlythis Should publish group state change when a device in it changes state', async () => {
+    it('Should not republish identical optimistic group states', async () => {
         const device1 = zigbeeHerdsman.devices.bulb_2;
         const device2 = zigbeeHerdsman.devices.bulb_color_2;
         const group = zigbeeHerdsman.groups.group_tradfri_remote;
@@ -311,10 +311,11 @@ describe('Groups', () => {
         await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device1, endpoint: device1.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device2, endpoint: device2.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await flushPromises();
-        console.log(MQTT.publish.mock.calls);
-        expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON","linkquality":10}), {"retain": false, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_tradfri_remote", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_2", stringify({"state":"ON","linkquality":10}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color_2", stringify({"state":"ON","linkquality":10}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_with_tradfri", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change of all members when a group changes its state', async () => {
