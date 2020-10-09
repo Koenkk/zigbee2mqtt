@@ -34,7 +34,7 @@ jobs:
     - name: Docker setup
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       run: |
-        sudo wget -O /usr/local/bin/buildx https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
+        sudo wget -O /usr/local/bin/buildx https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64
         sudo chmod a+x /usr/local/bin/buildx
         docker run --rm --privileged hypriot/qemu-register:v2.7.0
         buildx create --use
