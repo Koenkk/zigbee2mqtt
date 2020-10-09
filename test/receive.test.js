@@ -384,10 +384,20 @@ describe('Receive', () => {
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 20};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/power_plug');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({'state': 'ON', linkquality: 20});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/power_plug',
+            stringify({state: 'ON', linkquality: 20}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/switch_group',
+            stringify({'state': 'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+
     });
 
     it('Should not handle messages from coordinator', async () => {
