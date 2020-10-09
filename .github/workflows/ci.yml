@@ -47,7 +47,7 @@ jobs:
       run: |
         docker buildx build \
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
-          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/386 \
           -f docker/Dockerfile \
           --push \
           -t koenkk/zigbee2mqtt:latest-dev \
@@ -58,7 +58,7 @@ jobs:
         TAG="$(git describe --tags)"
         docker buildx build \
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
-          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/386 \
           -f docker/Dockerfile \
           --push \
           -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" \
