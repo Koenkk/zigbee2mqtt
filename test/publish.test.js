@@ -388,10 +388,10 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(5);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
@@ -663,6 +663,35 @@ describe('Publish', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read.mock.calls[0]).toEqual(["genOnOff", ["onOff"]]);
         expect(endpoint.read.mock.calls[1]).toEqual(["lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]]);
+    });
+
+    it('Should also use on/off cluster when controlling group with switch', async () => {
+        const group = zigbeeHerdsman.groups.group_with_switch;
+
+        MQTT.publish.mockClear();
+        group.command.mockClear();
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'ON', brightness: 100}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(2);
+        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 100, transtime: 0}, {});
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/switch_group',
+            stringify({state: 'ON', brightness: 100}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
+        MQTT.publish.mockClear();
+        group.command.mockClear();
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF', brightness: 100}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/switch_group',
+            stringify({state: 'OFF', brightness: 100}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should use transition when brightness with group', async () => {
