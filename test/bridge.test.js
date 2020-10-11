@@ -224,6 +224,34 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should allow permit join via device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({value: true, device: 'bulb'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, device);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{"value":true,"device":"bulb"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
+        // Device does not exist
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({value: true, device: 'bulb_not_existing_woeeee'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{},"status":"error","error":"Device 'bulb_not_existing_woeeee' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should put transaction in response when request is done with transaction', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value": false, "transaction": 22}));
@@ -249,10 +277,10 @@ describe('Bridge', () => {
 
     it('Should put error in response when format is incorrect', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value_not_good": false}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/last_seen', stringify({"value_not_good": false}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/permit_join',
+            'zigbee2mqtt/bridge/response/config/last_seen',
             stringify({"data":{},"status":"error","error": "No value given"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
