@@ -363,6 +363,58 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover devices with overriden user configuration affecting type and object_id', async () => {
+        settings.set(['devices', '0x0017880104e45541'], {
+            friendly_name: 'my_switch',
+            homeassistant: {
+                switch: {
+                    type: 'light',
+                    object_id: 'light'
+                },
+                light: {
+                    type: 'this should be ignored',
+                    name: 'my_light_name_override'
+                }
+
+            },
+        })
+
+        controller = new Controller(false);
+        await controller.start();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            "availability_topic": "zigbee2mqtt/bridge/state",
+            "command_topic": "zigbee2mqtt/my_switch/set",
+            "device": {
+              "identifiers": [
+                "zigbee2mqtt_0x0017880104e45541"
+              ],
+              "manufacturer": "Xiaomi",
+              "model": "Aqara single key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG04LM)",
+              "name": "my_switch",
+              "sw_version": "Zigbee2MQTT 1.15.0-dev"
+            },
+            "json_attributes_topic": "zigbee2mqtt/my_switch",
+            "name": "my_light_name_override",
+            "payload_off": "OFF",
+            "payload_on": "ON",
+            "state_topic": "zigbee2mqtt/my_switch",
+            "unique_id": "0x0017880104e45541_light_zigbee2mqtt",
+            "value_template": "{{ value_json.state }}"
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/0x0017880104e45541/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+    });
+
     it('Shouldnt discover devices when homeassistant null is set in device options', async () => {
         settings.set(['devices', '0x0017880104e45522'], {
             homeassistant: null,
