@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Frontend issues
+    url: https://github.com/nurikk/z2m-frontend/issues
+    about: Issues related to the frontend.
   - name: Home Assistant addon issues
     url: https://github.com/danielwelch/hassio-zigbee2mqtt/issues
     about: Issues related to the Home Assistant addon.
