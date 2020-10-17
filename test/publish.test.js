@@ -282,10 +282,10 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color: {r: 100, g: 200, b: 10}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 157, color: {x: 0.2704, y:  0.6584}});
     });
 
     it('Should publish messages to zigbee devices with color rgb', async () => {
@@ -294,10 +294,10 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color: {rgb: '100,200,10'}}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 157, color: {x: 0.2704, y:  0.6584}});
     });
 
     it('Should publish messages to zigbee devices with color rgb', async () => {
@@ -388,12 +388,23 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(5);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+    });
+
+    it('Shouldnt publish new state when optimistic = false', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        settings.set(['devices', device.ieeeAddr, 'optimistic'], false);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({brightness: '200'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {"level": 200, "transtime": 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Should handle non-valid topics', async () => {
@@ -524,10 +535,10 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set/color', '#64C80A');
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 16764, colory: 40979, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColor", {colorx: 17721, colory: 43148, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 162, color: {x: 0.2558, y: 0.6253}});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({color_temp: 157, color: {x: 0.2704, y: 0.6584}});
     });
 
     it('Should parse set with ieeeAddr topic', async () => {
@@ -652,6 +663,35 @@ describe('Publish', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read.mock.calls[0]).toEqual(["genOnOff", ["onOff"]]);
         expect(endpoint.read.mock.calls[1]).toEqual(["lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]]);
+    });
+
+    it('Should also use on/off cluster when controlling group with switch', async () => {
+        const group = zigbeeHerdsman.groups.group_with_switch;
+
+        MQTT.publish.mockClear();
+        group.command.mockClear();
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'ON', brightness: 100}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(2);
+        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 100, transtime: 0}, {});
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/switch_group',
+            stringify({state: 'ON', brightness: 100}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
+        MQTT.publish.mockClear();
+        group.command.mockClear();
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF', brightness: 100}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/switch_group',
+            stringify({state: 'OFF', brightness: 100}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should use transition when brightness with group', async () => {

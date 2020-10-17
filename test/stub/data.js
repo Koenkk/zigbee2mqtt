@@ -186,6 +186,11 @@ function writeDefaultConfiguration() {
                 friendly_name: 'thermostat_group',
                 retain: false,
                 devices: ['TS0601_thermostat'],
+            },
+            '14': {
+                friendly_name: 'switch_group',
+                retain: false,
+                devices: ['power_plug'],
             }
         },
         external_converters: [],

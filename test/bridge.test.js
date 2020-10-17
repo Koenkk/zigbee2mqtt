@@ -7,12 +7,13 @@ const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const stringify = require('json-stable-stringify-without-jsonify');
 
-const {coordinator, bulb, unsupported, WXKG11LM, remote} = zigbeeHerdsman.devices;
+const {coordinator, bulb, unsupported, WXKG11LM, remote, ZNCZ02LM} = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(bulb.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(unsupported.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(WXKG11LM.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(remote.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(ZNCZ02LM.ieeeAddr);
 
 describe('Bridge', () => {
     let controller;
@@ -41,7 +42,7 @@ describe('Bridge', () => {
         const directory = settings.get().advanced.log_directory;
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
-          stringify({"commit":version.commitHash,"config":{"advanced":{"adapter_concurrent":null,"availability_blacklist":[],"availability_blocklist":[],"availability_passlist":[],"availability_timeout":0,"availability_whitelist":[],"cache_state":true,"cache_state_persistent":true,"cache_state_send_on_startup":true,"channel":11,"elapsed":false,"ext_pan_id":[221,221,221,221,221,221,221,221],"homeassistant_discovery_topic":"homeassistant","homeassistant_legacy_triggers":true,"homeassistant_status_topic":"hass/status","last_seen":"disable","legacy_api":false,"log_directory":directory,"log_file":"log.txt","log_level":"info","log_output":["console","file"],"log_rotation":true,"log_syslog":{},"pan_id":6754,"report":false,"soft_reset_timeout":0,"timestamp_format":"YYYY-MM-DD HH:mm:ss"},"ban":[],"blocklist":[],"device_options":{},"devices":{"0x000b57fffec6a5b2":{"friendly_name":"bulb","retain":true},"0x000b57fffec6a5b3":{"friendly_name":"bulb_color","retain":false},"0x000b57fffec6a5b4":{"friendly_name":"bulb_color_2","retain":false},"0x000b57fffec6a5b7":{"friendly_name":"bulb_2","retain":false},"0x0017880104a44559":{"friendly_name":"J1_cover"},"0x0017880104e43559":{"friendly_name":"U202DST600ZB"},"0x0017880104e44559":{"friendly_name":"3157100_thermostat"},"0x0017880104e45517":{"friendly_name":"remote","retain":true},"0x0017880104e45518":{"friendly_name":"0x0017880104e45518"},"0x0017880104e45520":{"friendly_name":"button","retain":false},"0x0017880104e45521":{"friendly_name":"button_double_key","retain":false},"0x0017880104e45522":{"friendly_name":"weather_sensor","qos":1,"retain":false},"0x0017880104e45523":{"friendly_name":"occupancy_sensor","retain":false},"0x0017880104e45524":{"friendly_name":"power_plug","retain":false},"0x0017880104e45526":{"friendly_name":"GL-S-007ZS"},"0x0017880104e45529":{"friendly_name":"unsupported2","retain":false},"0x0017880104e45530":{"friendly_name":"button_double_key_interviewing","retain":false},"0x0017880104e45540":{"friendly_name":"ikea_onoff"},"0x0017880104e45541":{"friendly_name":"wall_switch","retain":false},"0x0017880104e45542":{"friendly_name":"wall_switch_double","retain":false},"0x0017880104e45543":{"friendly_name":"led_controller_1","retain":false},"0x0017880104e45544":{"friendly_name":"led_controller_2","retain":false},"0x0017880104e45545":{"friendly_name":"dimmer_wall_switch","retain":false},"0x0017880104e45547":{"friendly_name":"curtain","retain":false},"0x0017880104e45548":{"friendly_name":"fan","retain":false},"0x0017880104e45549":{"friendly_name":"siren","retain":false},"0x0017880104e45550":{"friendly_name":"thermostat","retain":false},"0x0017880104e45551":{"friendly_name":"smart vent","retain":false},"0x0017880104e45552":{"friendly_name":"j1","retain":false},"0x0017880104e45553":{"friendly_name":"bulb_enddevice","retain":false},"0x0017880104e45559":{"friendly_name":"cc2530_router","retain":false},"0x0017880104e45560":{"friendly_name":"livolo","retain":false},"0x0017882104a44559":{"friendly_name":"TS0601_thermostat"},"0x90fd9ffffe4b64aa":{"friendly_name":"SP600_OLD"},"0x90fd9ffffe4b64ab":{"friendly_name":"SP600_NEW"},"0x90fd9ffffe4b64ac":{"friendly_name":"MKS-CM-W5"},"0x90fd9ffffe4b64ae":{"friendly_name":"tradfri_remote","retain":false},"0x90fd9ffffe4b64af":{"friendly_name":"roller_shutter"},"0x90fd9ffffe4b64ax":{"friendly_name":"ZNLDP12LM"}},"experimental":{"new_api":true,"output":"json"},"external_converters":[],"groups":{"1":{"friendly_name":"group_1","retain":false},"11":{"devices":["bulb_2"],"friendly_name":"group_with_tradfri","retain":false},"12":{"devices":["TS0601_thermostat"],"friendly_name":"thermostat_group","retain":false},"15071":{"devices":["bulb_color_2","bulb_2"],"friendly_name":"group_tradfri_remote","retain":false},"2":{"friendly_name":"group_2","retain":false}},"homeassistant":false,"map_options":{"graphviz":{"colors":{"fill":{"coordinator":"#e04e5d","enddevice":"#fff8ce","router":"#4ea3e0"},"font":{"coordinator":"#ffffff","enddevice":"#000000","router":"#ffffff"},"line":{"active":"#009900","inactive":"#994444"}}}},"mqtt":{"base_topic":"zigbee2mqtt","include_device_information":false,"server":"mqtt://localhost"},"passlist":[],"permit_join":true,"serial":{"disable_led":false,"port":"/dev/dummy"},"whitelist":[]},"coordinator":{"meta":{"revision":20190425,"version":1},"type":"z-Stack"},"log_level":"info","network":{"channel":15,"extended_pan_id":[0,11,22],"pan_id":5674},"permit_join":false,"version":version.version}),
+          stringify({"commit":version.commitHash,"config":{"advanced":{"adapter_concurrent":null,"availability_blacklist":[],"availability_blocklist":[],"availability_passlist":[],"availability_timeout":0,"availability_whitelist":[],"cache_state":true,"cache_state_persistent":true,"cache_state_send_on_startup":true,"channel":11,"elapsed":false,"ext_pan_id":[221,221,221,221,221,221,221,221],"homeassistant_discovery_topic":"homeassistant","homeassistant_legacy_triggers":true,"homeassistant_status_topic":"hass/status","last_seen":"disable","legacy_api":false,"log_directory":directory,"log_file":"log.txt","log_level":"info","log_output":["console","file"],"log_rotation":true,"log_syslog":{},"pan_id":6754,"report":false,"soft_reset_timeout":0,"timestamp_format":"YYYY-MM-DD HH:mm:ss"},"ban":[],"blocklist":[],"device_options":{},"devices":{"0x000b57fffec6a5b2":{"friendly_name":"bulb","retain":true},"0x000b57fffec6a5b3":{"friendly_name":"bulb_color","retain":false},"0x000b57fffec6a5b4":{"friendly_name":"bulb_color_2","retain":false},"0x000b57fffec6a5b7":{"friendly_name":"bulb_2","retain":false},"0x0017880104a44559":{"friendly_name":"J1_cover"},"0x0017880104e43559":{"friendly_name":"U202DST600ZB"},"0x0017880104e44559":{"friendly_name":"3157100_thermostat"},"0x0017880104e45517":{"friendly_name":"remote","retain":true},"0x0017880104e45518":{"friendly_name":"0x0017880104e45518"},"0x0017880104e45520":{"friendly_name":"button","retain":false},"0x0017880104e45521":{"friendly_name":"button_double_key","retain":false},"0x0017880104e45522":{"friendly_name":"weather_sensor","qos":1,"retain":false},"0x0017880104e45523":{"friendly_name":"occupancy_sensor","retain":false},"0x0017880104e45524":{"friendly_name":"power_plug","retain":false},"0x0017880104e45526":{"friendly_name":"GL-S-007ZS"},"0x0017880104e45529":{"friendly_name":"unsupported2","retain":false},"0x0017880104e45530":{"friendly_name":"button_double_key_interviewing","retain":false},"0x0017880104e45540":{"friendly_name":"ikea_onoff"},"0x0017880104e45541":{"friendly_name":"wall_switch","retain":false},"0x0017880104e45542":{"friendly_name":"wall_switch_double","retain":false},"0x0017880104e45543":{"friendly_name":"led_controller_1","retain":false},"0x0017880104e45544":{"friendly_name":"led_controller_2","retain":false},"0x0017880104e45545":{"friendly_name":"dimmer_wall_switch","retain":false},"0x0017880104e45547":{"friendly_name":"curtain","retain":false},"0x0017880104e45548":{"friendly_name":"fan","retain":false},"0x0017880104e45549":{"friendly_name":"siren","retain":false},"0x0017880104e45550":{"friendly_name":"thermostat","retain":false},"0x0017880104e45551":{"friendly_name":"smart vent","retain":false},"0x0017880104e45552":{"friendly_name":"j1","retain":false},"0x0017880104e45553":{"friendly_name":"bulb_enddevice","retain":false},"0x0017880104e45559":{"friendly_name":"cc2530_router","retain":false},"0x0017880104e45560":{"friendly_name":"livolo","retain":false},"0x0017882104a44559":{"friendly_name":"TS0601_thermostat"},"0x90fd9ffffe4b64aa":{"friendly_name":"SP600_OLD"},"0x90fd9ffffe4b64ab":{"friendly_name":"SP600_NEW"},"0x90fd9ffffe4b64ac":{"friendly_name":"MKS-CM-W5"},"0x90fd9ffffe4b64ae":{"friendly_name":"tradfri_remote","retain":false},"0x90fd9ffffe4b64af":{"friendly_name":"roller_shutter"},"0x90fd9ffffe4b64ax":{"friendly_name":"ZNLDP12LM"}},"experimental":{"new_api":true,"output":"json"},"external_converters":[],"groups":{"1":{"friendly_name":"group_1","retain":false},"11":{"devices":["bulb_2"],"friendly_name":"group_with_tradfri","retain":false},"14":{"devices":["power_plug"],"friendly_name":"switch_group","retain":false},"12":{"devices":["TS0601_thermostat"],"friendly_name":"thermostat_group","retain":false},"15071":{"devices":["bulb_color_2","bulb_2"],"friendly_name":"group_tradfri_remote","retain":false},"2":{"friendly_name":"group_2","retain":false}},"homeassistant":false,"map_options":{"graphviz":{"colors":{"fill":{"coordinator":"#e04e5d","enddevice":"#fff8ce","router":"#4ea3e0"},"font":{"coordinator":"#ffffff","enddevice":"#000000","router":"#ffffff"},"line":{"active":"#009900","inactive":"#994444"}}}},"mqtt":{"base_topic":"zigbee2mqtt","include_device_information":false,"server":"mqtt://localhost"},"passlist":[],"permit_join":true,"serial":{"disable_led":false,"port":"/dev/dummy"},"whitelist":[]},"coordinator":{"meta":{"revision":20190425,"version":1},"type":"z-Stack"},"log_level":"info","network":{"channel":15,"extended_pan_id":[0,11,22],"pan_id":5674},"permit_join":false,"version":version.version}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -50,9 +51,9 @@ describe('Bridge', () => {
     it('Should publish devices on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
-          stringify([{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":[],"output":[]}}},"friendly_name":"Coordinator","ieee_address":"0x00124b00120144ae","interview_completed":false,"interviewing":false,"network_address":0,"power_source":null,"software_build_id":null,"supported":false,"type":"Coordinator"},{"date_code":null,"definition":{"description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","model":"LED1545G12","supports":"on/off, brightness, color temperature","vendor":"IKEA"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic","genScenes","genOnOff","genLevelCtrl","lightingColorCtrl"],"output":["genScenes","genOta"]}}},"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2","interview_completed":true,"interviewing":false,"network_address":40369,"power_source":"Mains (single phase)","software_build_id":null,"supported":true,"type":"Router"},{"date_code":null,"definition":{"description":"Hue dimmer switch","model":"324131092621","supports":"on/off, brightness, up/down/hold/release, click count","vendor":"Philips"},"endpoints":{"1":{"bindings":[{"cluster":"genLevelCtrl","target":{"endpoint":1,"ieee_address":"0x000b57fffec6a5b3","type":"endpoint"}},{"cluster":"genOnOff","target":{"id":1,"type":"group"}}],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}},"2":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genOta","genOnOff"]}}},"friendly_name":"remote","ieee_address":"0x0017880104e45517","interview_completed":true,"interviewing":false,"network_address":6535,"power_source":"Battery","software_build_id":null,"supported":true,"type":"EndDevice"},{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"0x0017880104e45518","ieee_address":"0x0017880104e45518","interview_completed":true,"interviewing":false,"network_address":6536,"power_source":"Battery","software_build_id":null,"supported":false,"type":"EndDevice"},{"date_code":null,"definition":{"description":"Aqara wireless switch","model":"WXKG11LM","supports":"single, double click (and triple, quadruple, hold, release depending on model)","vendor":"Xiaomi"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"button","ieee_address":"0x0017880104e45520","interview_completed":true,"interviewing":false,"network_address":6537,"power_source":"Battery","software_build_id":null,"supported":true,"type":"EndDevice"}]),
-          { retain: true, qos: 0 },
-          expect.any(Function)
+            stringify([{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":[],"output":[]}}},"friendly_name":"Coordinator","ieee_address":"0x00124b00120144ae","interview_completed":false,"interviewing":false,"network_address":0,"power_source":null,"software_build_id":null,"supported":false,"type":"Coordinator"},{"date_code":null,"definition":{"description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","exposes":[{"features":["state","brightness","color_temp"],"type":"light"},{"property":"linkquality","type":"numeric","unit":"lqi"}],"model":"LED1545G12","vendor":"IKEA"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic","genScenes","genOnOff","genLevelCtrl","lightingColorCtrl"],"output":["genScenes","genOta"]}}},"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2","interview_completed":true,"interviewing":false,"network_address":40369,"power_source":"Mains (single phase)","software_build_id":null,"supported":true,"type":"Router"},{"date_code":null,"definition":{"description":"Hue dimmer switch","model":"324131092621","supports":"on/off, brightness, up/down/hold/release, click count","vendor":"Philips"},"endpoints":{"1":{"bindings":[{"cluster":"genLevelCtrl","target":{"endpoint":1,"ieee_address":"0x000b57fffec6a5b3","type":"endpoint"}},{"cluster":"genOnOff","target":{"id":1,"type":"group"}}],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}},"2":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genOta","genOnOff"]}}},"friendly_name":"remote","ieee_address":"0x0017880104e45517","interview_completed":true,"interviewing":false,"network_address":6535,"power_source":"Battery","software_build_id":null,"supported":true,"type":"EndDevice"},{"date_code":null,"definition":null,"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"0x0017880104e45518","ieee_address":"0x0017880104e45518","interview_completed":true,"interviewing":false,"network_address":6536,"power_source":"Battery","software_build_id":null,"supported":false,"type":"EndDevice"},{"date_code":null,"definition":{"description":"Aqara wireless switch","model":"WXKG11LM","supports":"single, double click (and triple, quadruple, hold, release depending on model)","vendor":"Xiaomi"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":["genBasic","genOnOff","genLevelCtrl","genScenes"]}}},"friendly_name":"button","ieee_address":"0x0017880104e45520","interview_completed":true,"interviewing":false,"network_address":6537,"power_source":"Battery","software_build_id":null,"supported":true,"type":"EndDevice"},{"date_code":null,"definition":{"description":"Mi power plug ZigBee","model":"ZNCZ02LM","supports":"on/off, power measurement","vendor":"Xiaomi"},"endpoints":{"1":{"bindings":[],"clusters":{"input":["genBasic"],"output":[]}}},"friendly_name":"power_plug","ieee_address":"0x0017880104e45524","interview_completed":true,"interviewing":false,"network_address":6540,"power_source":"Mains (single phase)","software_build_id":null,"supported":true,"type":"Router"}]),
+            { retain: true, qos: 0 },
+            expect.any(Function)
         );
     });
 
@@ -86,7 +87,7 @@ describe('Bridge', () => {
         logger.setTransportsEnabled(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
-          stringify([{"friendly_name":"group_1","id":1,"members":[]},{"friendly_name":"group_tradfri_remote","id":15071,"members":[]},{"friendly_name":99,"id":99,"members":[]},{"friendly_name":"group_with_tradfri","id":11,"members":[]},{"friendly_name":"thermostat_group","id":12,"members":[]},{"friendly_name":"group_2","id":2,"members":[]}]),
+          stringify([{"friendly_name":"group_1","id":1,"members":[]},{"friendly_name":"group_tradfri_remote","id":15071,"members":[]},{"friendly_name":99,"id":99,"members":[]},{"friendly_name":"group_with_tradfri","id":11,"members":[]},{"friendly_name":"thermostat_group","id":12,"members":[]},{"friendly_name":"switch_group","id":14,"members":[{"endpoint":1,"ieee_address":"0x0017880104e45524"}]},{"friendly_name":"group_2","id":2,"members":[]}]),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -158,7 +159,7 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
-            stringify({"type":"device_interview","data":{"friendly_name":"bulb","status":"successful","ieee_address":"0x000b57fffec6a5b2","supported":true,"definition":{"model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","supports":"on/off, brightness, color temperature"}}}),
+            stringify({"type":"device_interview","data":{"friendly_name":"bulb","status":"successful","ieee_address":"0x000b57fffec6a5b2","supported":true,"definition":{"model":"LED1545G12","vendor":"IKEA","description":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white","exposes":[{"features":["state","brightness","color_temp"],"type":"light"},{"property":"linkquality","type":"numeric","unit":"lqi"}]}}}),
             { retain: false, qos: 0 },
             expect.any(Function)
         );
@@ -221,6 +222,46 @@ describe('Bridge', () => {
             stringify({"data":{"value":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+
+        // Invalid payload
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value_bla": false}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow permit join via device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({value: true, device: 'bulb'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, device);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{"value":true,"device":"bulb"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
+        // Device does not exist
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({value: true, device: 'bulb_not_existing_woeeee'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{},"status":"error","error":"Device 'bulb_not_existing_woeeee' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should put transaction in response when request is done with transaction', async () => {
@@ -248,10 +289,10 @@ describe('Bridge', () => {
 
     it('Should put error in response when format is incorrect', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value_not_good": false}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/config/last_seen', stringify({"value_not_good": false}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/permit_join',
+            'zigbee2mqtt/bridge/response/config/last_seen',
             stringify({"data":{},"status":"error","error": "No value given"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
@@ -294,6 +335,8 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(settings.get().blocklist).toStrictEqual([]);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
     it('Should allow to remove device by object ID', async () => {
@@ -407,6 +450,7 @@ describe('Bridge', () => {
         expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb_new_name", "friendlyName": "bulb_new_name", "retain": true});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '', {retain: true, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name', stringify({"brightness":50,"color_temp":370,"linkquality":99,"state":"ON"}), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
             stringify({"data":{"from":"bulb","to":"bulb_new_name","homeassistant_rename":false},"status":"ok"}),
