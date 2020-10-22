@@ -6467,15 +6467,15 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.13.18",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.18.tgz",
-      "integrity": "sha512-/OKv5ehrhekan5LVaq4pNXiw6tch8dyiOiQLwJRhwzsh1jyh6EBbky6mzopywBJ+zoqwOQDT4H5S+kZbgNNEXA==",
+      "version": "0.13.19",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.19.tgz",
+      "integrity": "sha512-czr+EadCafjbrQVSWSb7P4e3A3XamVAk6Szvh1si+DAfvgbpXm+yQ0i01JMbRdG1jH2w2c0yK0l40/KrPWk+1w==",
       "requires": {
         "debounce": "^1.2.0",
         "debug": "^4.2.0",
         "fast-deep-equal": "^3.1.3",
         "mixin-deep": "^2.0.1",
-        "serialport": "9.0.1",
+        "serialport": "9.0.2",
         "slip": "^1.0.2"
       },
       "dependencies": {
@@ -6510,15 +6510,15 @@
           "integrity": "sha512-725AQupWJZ8ba0jbKceeFblZTY90McUBWMwHhkFQ9q1zKPJ95GUktljFcgcsIVwRnTnRKlcYzfiNImg5G9m6ZQ=="
         },
         "@babel/core": {
-          "version": "7.12.1",
-          "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.12.1.tgz",
-          "integrity": "sha512-6bGmltqzIJrinwRRdczQsMhruSi9Sqty9Te+/5hudn4Izx/JYRhW1QELpR+CIL0gC/c9A7WroH6FmkDGxmWx3w==",
+          "version": "7.12.3",
+          "resolved": "https://registry.npmjs.org/@babel/core/-/core-7.12.3.tgz",
+          "integrity": "sha512-0qXcZYKZp3/6N2jKYVxZv0aNCsxTSVCiK72DTiTYZAu7sjg73W0/aynWjMbiGd87EQL4WyA8reiJVh92AVla9g==",
           "requires": {
             "@babel/code-frame": "^7.10.4",
             "@babel/generator": "^7.12.1",
             "@babel/helper-module-transforms": "^7.12.1",
             "@babel/helpers": "^7.12.1",
-            "@babel/parser": "^7.12.1",
+            "@babel/parser": "^7.12.3",
             "@babel/template": "^7.10.4",
             "@babel/traverse": "^7.12.1",
             "@babel/types": "^7.12.1",
@@ -6745,9 +6745,9 @@
           "integrity": "sha512-YpJabsXlJVWP0USHjnC/AQDTLlZERbON577YUVO/wLpqyj6HAtVYnWaQaN0iUN+1/tWn3c+uKKXjRut5115Y2A=="
         },
         "@babel/helper-wrap-function": {
-          "version": "7.10.4",
-          "resolved": "https://registry.npmjs.org/@babel/helper-wrap-function/-/helper-wrap-function-7.10.4.tgz",
-          "integrity": "sha512-6py45WvEF0MhiLrdxtRjKjufwLL1/ob2qDJgg5JgNdojBAZSAKnAjkyOCNug6n+OBl4VW76XjvgSFTdaMcW0Ug==",
+          "version": "7.12.3",
+          "resolved": "https://registry.npmjs.org/@babel/helper-wrap-function/-/helper-wrap-function-7.12.3.tgz",
+          "integrity": "sha512-Cvb8IuJDln3rs6tzjW3Y8UeelAOdnpB8xtQ4sme2MSZ9wOxrbThporC0y/EtE16VAtoyEfLM404Xr1e0OOp+ow==",
           "requires": {
             "@babel/helper-function-name": "^7.10.4",
             "@babel/template": "^7.10.4",
@@ -6776,9 +6776,9 @@
           }
         },
         "@babel/parser": {
-          "version": "7.12.2",
-          "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.12.2.tgz",
-          "integrity": "sha512-LMN+SqTiZEonUw4hQA0A3zG8DnN0E1F4K107LbDDUnC+0chML1rvWgsHloC9weB4RmZweE0uhFq0eGX7Nr/PBQ=="
+          "version": "7.12.3",
+          "resolved": "https://registry.npmjs.org/@babel/parser/-/parser-7.12.3.tgz",
+          "integrity": "sha512-kFsOS0IbsuhO5ojF8Hc8z/8vEIOkylVBrjiZUbLTE3XFe0Qi+uu6HjzQixkFaqr0ZPAMZcBVxEwmsnsLPZ2Xsw=="
         },
         "@babel/plugin-proposal-async-generator-functions": {
           "version": "7.12.1",
@@ -8638,9 +8638,9 @@
           }
         },
         "@types/node": {
-          "version": "14.11.8",
-          "resolved": "https://registry.npmjs.org/@types/node/-/node-14.11.8.tgz",
-          "integrity": "sha512-KPcKqKm5UKDkaYPTuXSx8wEP7vE9GnuaXIZKijwRYcePpZFDVuy2a57LarFKiORbHOuTOOwYzxVxcUzsh2P2Pw=="
+          "version": "14.11.10",
+          "resolved": "https://registry.npmjs.org/@types/node/-/node-14.11.10.tgz",
+          "integrity": "sha512-yV1nWZPlMFpoXyoknm4S56y2nlTAuFYaJuQtYRAOU7xA/FJ9RY0Xm7QOkaYMMmr8ESdHIuUb6oQgR/0+2NqlyA=="
         },
         "@types/normalize-package-data": {
           "version": "2.4.0",
@@ -8648,9 +8648,9 @@
           "integrity": "sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA=="
         },
         "@types/prettier": {
-          "version": "2.1.2",
-          "resolved": "https://registry.npmjs.org/@types/prettier/-/prettier-2.1.2.tgz",
-          "integrity": "sha512-IiPhNnenzkqdSdQH3ifk9LoX7oQe61ZlDdDO4+MUv6FyWdPGDPr26gCPVs3oguZEMq//nFZZpwUZcVuNJsG+DQ=="
+          "version": "2.1.5",
+          "resolved": "https://registry.npmjs.org/@types/prettier/-/prettier-2.1.5.tgz",
+          "integrity": "sha512-UEyp8LwZ4Dg30kVU2Q3amHHyTn1jEdhCIE59ANed76GaT1Vp76DD3ZWSAxgCrw6wJ0TqeoBpqmfUHiUDPs//HQ=="
         },
         "@types/serialport": {
           "version": "8.0.1",
@@ -8666,9 +8666,9 @@
           "integrity": "sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw=="
         },
         "@types/yargs": {
-          "version": "15.0.8",
-          "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-15.0.8.tgz",
-          "integrity": "sha512-b0BYzFUzBpOhPjpl1wtAHU994jBeKF4TKVlT7ssFv44T617XNcPdRoG4AzHLVshLzlrF7i3lTelH7UbuNYV58Q==",
+          "version": "15.0.9",
+          "resolved": "https://registry.npmjs.org/@types/yargs/-/yargs-15.0.9.tgz",
+          "integrity": "sha512-HmU8SeIRhZCWcnRskCs36Q1Q00KBV6Cqh/ora8WN1+22dY07AZdn6Gel8QZ3t26XYPImtcL8WV/eqjhVmMEw4g==",
           "requires": {
             "@types/yargs-parser": "*"
           }
@@ -9850,9 +9850,9 @@
           "integrity": "sha512-0nCJ7cSqnkMC+kUuPs0YgklFHraWGl/xHqtZWWtOeVtyi+YqkoAOMGuZQad43DscXCQI/yizcTa3u6B5r+BLww=="
         },
         "emittery": {
-          "version": "0.7.1",
-          "resolved": "https://registry.npmjs.org/emittery/-/emittery-0.7.1.tgz",
-          "integrity": "sha512-d34LN4L6h18Bzz9xpoku2nPwKxCPlPMr3EEKTkoEBi+1/+b0lcRkRJ1UVyyZaKNeqGR3swcGl6s390DNO4YVgQ=="
+          "version": "0.7.2",
+          "resolved": "https://registry.npmjs.org/emittery/-/emittery-0.7.2.tgz",
+          "integrity": "sha512-A8OG5SR/ij3SsJdWDJdkkSYUjQdCUx6APQXem0SaEePBSRg4eymGYwBkKo1Y6DU+af/Jn2dBQqDBvjnr9Vi8nQ=="
         },
         "emoji-regex": {
           "version": "7.0.3",
@@ -10918,9 +10918,9 @@
           }
         },
         "highlight.js": {
-          "version": "10.2.1",
-          "resolved": "https://registry.npmjs.org/highlight.js/-/highlight.js-10.2.1.tgz",
-          "integrity": "sha512-A+sckVPIb9zQTUydC9lpRX1qRFO/N0OKEh0NwIr65ckvWA/oMY8v9P3+kGRK3w2ULSh9E8v5MszXafodQ6039g=="
+          "version": "10.3.1",
+          "resolved": "https://registry.npmjs.org/highlight.js/-/highlight.js-10.3.1.tgz",
+          "integrity": "sha512-jeW8rdPdhshYKObedYg5XGbpVgb1/DT4AHvDFXhkU7UnGSIjy9kkJ7zHG7qplhFHMitTSzh5/iClKQk3Kb2RFQ=="
         },
         "hosted-git-info": {
           "version": "2.8.8",
@@ -14658,19 +14658,19 @@
           "integrity": "sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ=="
         },
         "serialport": {
-          "version": "9.0.1",
-          "resolved": "https://registry.npmjs.org/serialport/-/serialport-9.0.1.tgz",
-          "integrity": "sha512-35Ms8dqjtAb73lptfEZG2l/nFZOxHt3hUjCHvl+g3Mu737gzFLDpSBrRywBJw4G4eS5ozZ3YcthwYnop1WO+ng==",
+          "version": "9.0.2",
+          "resolved": "https://registry.npmjs.org/serialport/-/serialport-9.0.2.tgz",
+          "integrity": "sha512-N++EVrc2F3kUJ6aCE6BLxHwTrelFAZM3LFw4lo8TV0fDtfrwTc3+aoDpSsvfQg3DxrRf3shCtA6WYEH4g8kapw==",
           "requires": {
-            "@serialport/binding-mock": "^9.0.1",
-            "@serialport/bindings": "^9.0.1",
+            "@serialport/binding-mock": "^9.0.2",
+            "@serialport/bindings": "^9.0.2",
             "@serialport/parser-byte-length": "^9.0.1",
             "@serialport/parser-cctalk": "^9.0.1",
             "@serialport/parser-delimiter": "^9.0.1",
             "@serialport/parser-readline": "^9.0.1",
             "@serialport/parser-ready": "^9.0.1",
             "@serialport/parser-regex": "^9.0.1",
-            "@serialport/stream": "^9.0.1",
+            "@serialport/stream": "^9.0.2",
             "debug": "^4.1.1"
           }
         },
