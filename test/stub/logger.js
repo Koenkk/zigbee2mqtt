@@ -17,6 +17,7 @@ const mock = {
     error: jest.fn().mockImplementation((msg) => callTransports('error', msg)),
     debug: jest.fn().mockImplementation((msg) => callTransports('debug', msg)),
     cleanup: jest.fn(),
+    logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,

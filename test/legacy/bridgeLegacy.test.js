@@ -188,7 +188,7 @@ describe('Bridge legacy', () => {
         await flushPromises();
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
-        expect(payload).toStrictEqual({"message": [{"ID": 1, "friendly_name": "group_1", "retain": false, 'devices': [], optimistic: true}, {"ID": 2, "friendly_name": "group_2", "retain": false, "devices": [], optimistic: true}, {"ID": 11, "friendly_name": "group_with_tradfri", "retain": false, "devices": ['bulb_2'], optimistic: true}, {"ID": 12, "friendly_name": "thermostat_group", "retain": false, "devices": ['TS0601_thermostat'], optimistic: true}, {"ID": 15071, "friendly_name": "group_tradfri_remote", "retain": false, "devices": ['bulb_color_2', 'bulb_2'], optimistic: true}], "type": "groups"});
+        expect(payload).toStrictEqual({"message":[{"ID":1,"devices":[],"friendly_name":"group_1","optimistic":true,"retain":false},{"ID":2,"devices":[],"friendly_name":"group_2","optimistic":true,"retain":false},{"ID":11,"devices":["bulb_2"],"friendly_name":"group_with_tradfri","optimistic":true,"retain":false},{"ID":12,"devices":["TS0601_thermostat"],"friendly_name":"thermostat_group","optimistic":true,"retain":false},{"ID":14,"devices":["power_plug"],"friendly_name":"switch_group","optimistic":true,"retain":false},{"ID":15071,"devices":["bulb_color_2","bulb_2"],"friendly_name":"group_tradfri_remote","optimistic":true,"retain":false}],"type":"groups"});
     });
 
     it('Should allow rename devices', async () => {
@@ -457,22 +457,22 @@ describe('Bridge legacy', () => {
     });
 
     it('Should allow to touchlink factory reset (OK)', async () => {
-        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
 
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(true);
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(true);
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
-        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(logger.info).toHaveBeenCalledWith('Successfully factory reset device through Touchlink');
     });
 
     it('Should allow to touchlink factory reset (FAILS)', async () => {
-        zigbeeHerdsman.touchlinkFactoryReset.mockClear();
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockClear();
 
-        zigbeeHerdsman.touchlinkFactoryReset.mockReturnValueOnce(false);
+        zigbeeHerdsman.touchlinkFactoryResetFirst.mockReturnValueOnce(false);
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
-        expect(zigbeeHerdsman.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
         expect(logger.warn).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
     });
 });
