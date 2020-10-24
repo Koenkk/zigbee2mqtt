@@ -1073,21 +1073,21 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: "single", linkquality: 10, click: "single"}),
+            stringify({action: "single", click: "single"}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({linkquality: 10, action: ""}),
+            stringify({action: ""}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({linkquality: 10, click: ""}),
+            stringify({click: ""}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -1214,7 +1214,7 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: "single", linkquality: 10}),
+            stringify({action: "single"}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -1260,10 +1260,10 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single', linkquality: 10});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single'});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: '', linkquality: 10});
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: ''});
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
