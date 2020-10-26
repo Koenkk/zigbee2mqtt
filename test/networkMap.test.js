@@ -70,7 +70,7 @@ describe('Networkmap', () => {
         bulb_color.routingTable = () => {return {table: []}};
 
         CC2530_ROUTER.lqi = () => {return {neighbors: [
-            {ieeeAddr: WXKG02LM.ieeeAddr, networkAddress: WXKG02LM.networkAddress, relationship: 1, depth: 2, linkquality: 130},
+            {ieeeAddr: '0x0000000000000000', networkAddress: WXKG02LM.networkAddress, relationship: 1, depth: 2, linkquality: 130},
             {ieeeAddr: bulb_color.ieeeAddr, networkAddress: bulb_color.networkAddress, relationship: 4, depth: 2, linkquality: 130},
         ]}};
         CC2530_ROUTER.routingTable = () => {return {table: []}};
@@ -295,7 +295,6 @@ describe('Networkmap', () => {
         };
 
         const actual = JSON.parse(call[1]);
-        actual.data.value = JSON.parse(actual.data.value);
         expect(actual).toStrictEqual(expected);
     });
 

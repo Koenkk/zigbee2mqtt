@@ -1,4 +1,4 @@
-FROM node:12-alpine as base
+FROM node:12-alpine3.12 as base
 
 WORKDIR /app
 RUN apk add --no-cache tzdata eudev
@@ -10,7 +10,7 @@ FROM base as dependencies
 
 COPY npm-shrinkwrap.json ./
 
-RUN apk add --no-cache --virtual .buildtools make gcc g++ python linux-headers git && \
+RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
     npm ci --production && \
     apk del .buildtools
 

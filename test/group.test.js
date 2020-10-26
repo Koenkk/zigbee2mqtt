@@ -7,6 +7,9 @@ zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b2');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45542');
+zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
+zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
+
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
@@ -293,8 +296,26 @@ describe('Groups', () => {
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON","linkquality":10}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+    });
+
+    it('Should not republish identical optimistic group states', async () => {
+        const device1 = zigbeeHerdsman.devices.bulb_2;
+        const device2 = zigbeeHerdsman.devices.bulb_color_2;
+        const group = zigbeeHerdsman.groups.group_tradfri_remote;
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device1, endpoint: device1.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device2, endpoint: device2.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_tradfri_remote", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_2", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color_2", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_with_tradfri", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change of all members when a group changes its state', async () => {
@@ -346,7 +367,7 @@ describe('Groups', () => {
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON","linkquality":10}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change of another group with shared device when a group changes its state', async () => {
