@@ -662,7 +662,7 @@ describe('Publish', () => {
         expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}, {}]);
         expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read.mock.calls[0]).toEqual(["genOnOff", ["onOff"]]);
-        expect(endpoint.read.mock.calls[1]).toEqual(["lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]]);
+        expect(endpoint.read.mock.calls[1]).toEqual(["lightingColorCtrl", ["currentX", "currentY"]]);
     });
 
     it('Should also use on/off cluster when controlling group with switch', async () => {
