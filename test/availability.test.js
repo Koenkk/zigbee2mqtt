@@ -81,7 +81,7 @@ describe('Availability', () => {
     });
 
     it('Should publish availabilty online and query state on reconnect', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
+        const device = zigbeeHerdsman.devices.E11_G13;
         const endpoint = device.getEndpoint(1);
         device.ping.mockImplementationOnce(() => {throw new Error('failed')});
         jest.advanceTimersByTime(11 * 1000);
@@ -90,16 +90,15 @@ describe('Availability', () => {
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb_color/availability',
+            'zigbee2mqtt/bulb_enddevice/availability',
           'online',
           { retain: true, qos: 0 },
           expect.any(Function)
         );
 
-        expect(endpoint.read).toHaveBeenCalledTimes(3);
+        expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'colorTemperature']);
     });
 
     it('Should fail gracefully when quering state after reconnect fails', async () => {
@@ -173,10 +172,11 @@ describe('Availability', () => {
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
-        expect(endpoint.read).toHaveBeenCalledTimes(3);
+        expect(endpoint.read).toHaveBeenCalledTimes(4);
         expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'colorTemperature']);
+        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY']);
+        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorTemperature']);
     });
 
     it('Should not retrieve the state when device is turned on/off within availability timeout on deviceJoined', async () => {
