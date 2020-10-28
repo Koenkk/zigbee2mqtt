@@ -71,3 +71,6 @@ data/extension
 
 # MacOS indexing file
 .DS_Store
+
+# Ignore config
+data/*.yaml

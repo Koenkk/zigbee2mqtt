@@ -139,7 +139,7 @@ const devices = {
     'WXKG02LM': new Device('EndDevice', '0x0017880104e45521', 6538,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Battery", "lumi.sensor_86sw2.es1"),
     'WSDCGQ11LM': new Device('EndDevice', '0x0017880104e45522', 6539,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.weather"),
     'RTCGQ11LM': new Device('EndDevice', '0x0017880104e45523', 6540,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.sensor_motion.aq2"),
-    'ZNCZ02LM': new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [])], true, "Mains (single phase)", "lumi.plug"),
+    'ZNCZ02LM': new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug"),
     'E1743': new Device('Router', '0x0017880104e45540', 6540,4476, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'TRADFRI on/off switch'),
     'QBKG04LM': new Device('Router', '0x0017880104e45541', 6549,4151, [new Endpoint(1, [0], [25]), new Endpoint(2, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
@@ -175,7 +175,8 @@ const groups = {
     'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
     'group/with/slashes': new Group(99, []),
     'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
-    'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]])
+    'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
+    'group_with_switch': new Group(14, [devices.ZNCZ02LM.endpoints[0]]),
 }
 
 const mock = {
@@ -203,7 +204,7 @@ const mock = {
         return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.ieeeAddr === ieeeAddr);
     }),
     getDeviceByNetworkAddress: jest.fn().mockImplementation((networkAddress) => {
-        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.networkAddress)).find((d) => d.networkAddress === networkAddress);
+        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr)).find((d) => d.networkAddress === networkAddress);
     }),
     getGroups: jest.fn().mockImplementation((query) => {
         return Object.values(groups);
