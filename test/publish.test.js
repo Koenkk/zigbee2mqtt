@@ -440,10 +440,11 @@ describe('Publish', () => {
     it('Should handle get', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
-        await MQTT.events.message('zigbee2mqtt/bulb_color/get', stringify({state: ''}));
+        await MQTT.events.message('zigbee2mqtt/bulb_color/get', stringify({state: '', brightness: ''}));
         await flushPromises();
-        expect(endpoint.read).toHaveBeenCalledTimes(1);
+        expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
+        expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
     });
 
     it('Should handle get with multiple endpoints', async () => {
