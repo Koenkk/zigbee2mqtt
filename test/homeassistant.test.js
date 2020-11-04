@@ -22,19 +22,6 @@ describe('HomeAssistant extension', () => {
         settings.set(['homeassistant'], true);
     });
 
-    it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
-        const missing = [];
-        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
-
-        require('zigbee-herdsman-converters').definitions.forEach((d) => {
-            if (!d.hasOwnProperty('exposes') && !ha._getMapping()[d.model]) {
-                missing.push(d.model);
-            }
-        });
-
-        expect(missing).toHaveLength(0);
-    });
-
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
