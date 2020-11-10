@@ -1203,7 +1203,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/MKS-CM-W5/l3/set', stringify({state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 259, fn: 0, status: 0, transid: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "setData", {data: [1], datatype: 1, dp: 3, length_hi: 0, length_lo: 0, status: 0, transid: 1}, {disableDefaultResponse: true});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/MKS-CM-W5');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_l3: 'ON'});
