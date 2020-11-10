@@ -339,7 +339,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/thermostat_group/set', stringify({child_lock: 'LOCK'}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 263, fn: 0, status: 0, transid: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(group.command).toHaveBeenCalledWith("manuSpecificTuya", "setData", {data: [1], datatype: 1, dp: 7, length_hi: 0, length_lo: 0, status: 0, transid: 0}, {disableDefaultResponse: true});
     });
 
     it('Should publish messages to groups with on and brightness', async () => {
