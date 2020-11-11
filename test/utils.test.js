@@ -1,5 +1,6 @@
 const utils = require('../lib/util/utils.js');
 const version = require('../package.json').version;
+const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').version;
 
 describe('Utils', () => {
     describe('Is xiaomi device', () => {
@@ -36,11 +37,11 @@ describe('Utils', () => {
 
         mockReturnValue = [false, {shortHash: '123'}]
         expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": version});
-        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "123", "version": version});
+        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "123", "version": versionHerdsman});
 
         mockReturnValue = [true, null]
         expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": version});
-        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "unknown", "version": version});        
+        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "unknown", "version": versionHerdsman});        
     })
 
     it('To local iso string', async () => {
