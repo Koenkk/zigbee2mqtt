@@ -36,9 +36,11 @@ describe('Utils', () => {
 
         mockReturnValue = [false, {shortHash: '123'}]
         expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": version});
+        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "123", "version": version});
 
         mockReturnValue = [true, null]
         expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": version});
+        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"commitHash": "unknown", "version": version});        
     })
 
     it('To local iso string', async () => {
