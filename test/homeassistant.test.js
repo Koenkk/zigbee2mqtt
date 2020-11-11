@@ -22,19 +22,6 @@ describe('HomeAssistant extension', () => {
         settings.set(['homeassistant'], true);
     });
 
-    it('Should have mapping for all devices supported by zigbee-herdsman-converters', () => {
-        const missing = [];
-        const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
-
-        require('zigbee-herdsman-converters').definitions.forEach((d) => {
-            if (!d.hasOwnProperty('exposes') && !ha._getMapping()[d.model]) {
-                missing.push(d.model);
-            }
-        });
-
-        expect(missing).toHaveLength(0);
-    });
-
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
         const ha = new HomeAssistant(null, null, null, null, {on: () => {}});
@@ -515,7 +502,7 @@ describe('HomeAssistant extension', () => {
             "hold_state_template":"{{ value_json.preset }}",
             "hold_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "json_attributes_topic":"zigbee2mqtt/TS0601_thermostat",
-            "max_temp":"30",
+            "max_temp":"35",
             "min_temp":"5",
             "mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/system_mode",
             "mode_state_template":"{{ value_json.system_mode }}",
