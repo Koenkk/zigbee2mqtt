@@ -177,6 +177,7 @@ const groups = {
     'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
     'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
     'group_with_switch': new Group(14, [devices.ZNCZ02LM.endpoints[0]]),
+    'default_bind_group': new Group(901, []),
 }
 
 const mock = {

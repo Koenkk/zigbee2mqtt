@@ -87,7 +87,7 @@ describe('Bridge', () => {
         logger.setTransportsEnabled(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
-          stringify([{"friendly_name":"group_1","id":1,"members":[]},{"friendly_name":"group_tradfri_remote","id":15071,"members":[]},{"friendly_name":99,"id":99,"members":[]},{"friendly_name":"group_with_tradfri","id":11,"members":[]},{"friendly_name":"thermostat_group","id":12,"members":[]},{"friendly_name":"switch_group","id":14,"members":[{"endpoint":1,"ieee_address":"0x0017880104e45524"}]},{"friendly_name":"group_2","id":2,"members":[]}]),
+          stringify([{"friendly_name":"group_1","id":1,"members":[]},{"friendly_name":"group_tradfri_remote","id":15071,"members":[]},{"friendly_name":99,"id":99,"members":[]},{"friendly_name":"group_with_tradfri","id":11,"members":[]},{"friendly_name":"thermostat_group","id":12,"members":[]},{"friendly_name":"switch_group","id":14,"members":[{"endpoint":1,"ieee_address":"0x0017880104e45524"}]},{"friendly_name":"default_bind_group","id":901,"members":[]},{"friendly_name":"group_2","id":2,"members":[]}]),
           { retain: true, qos: 0 },
           expect.any(Function)
         );

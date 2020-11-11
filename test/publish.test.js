@@ -388,10 +388,10 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(8);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
