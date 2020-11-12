@@ -6510,9 +6510,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.13.27",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.27.tgz",
-      "integrity": "sha512-oX2j9MGEVgrQXrTZW5FQZq1TfvYTl9PfUA9Rtxi6iONEFiwxAseX6KFwVdLmOYO5etaeSWyIl41n7Te/JUkM1w==",
+      "version": "0.13.29",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.29.tgz",
+      "integrity": "sha512-2sP8Z2Rfp+geUmbWmUkacMQmCYf/sSdsc4QE12itT914HrpJ8Ra5574gzJpMC64bpntj+nIRNTpVel2R7BSmSw==",
       "requires": {
         "debounce": "^1.2.0",
         "debug": "^4.2.0",
@@ -19630,9 +19630,9 @@
       }
     },
     "zigbee2mqtt-frontend": {
-      "version": "0.2.69",
-      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.2.69.tgz",
-      "integrity": "sha512-Az4e5Oh3C+VVGOX15Kyv3GVp39FHCH9AHjVxRD7cg87xWRqz/w9RBtSbLawLZyt+/4Vy0Xxy5Yd7fBnnpO1rqA=="
+      "version": "0.2.78",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.2.78.tgz",
+      "integrity": "sha512-/bJtExUdWT6QfB8/8t8ezkZJ4M6lj1FynE9dFG04ny+o441NdbDzX29v1R4+lpIh5YPx9Hzv4pz16pHmwruv+Q=="
     }
   }
 }
