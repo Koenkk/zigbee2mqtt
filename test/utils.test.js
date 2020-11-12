@@ -44,6 +44,10 @@ describe('Utils', () => {
 //      expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"version": versionHerdsman});      
     })
 
+    it('Check Dependency Version', async () => {
+        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"version": versionHerdsman});
+    })
+    
     it('To local iso string', async () => {
         var date = new Date('August 19, 1975 23:15:30 UTC+00:00');
         var getTimezoneOffset = Date.prototype.getTimezoneOffset;
