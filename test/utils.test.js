@@ -45,7 +45,7 @@ describe('Utils', () => {
     })
 
     it('Check Dependency Version', async () => {
-        expect(await utils.getZigbeeHerdsmanVersion()).toStrictEqual({"version": versionHerdsman});
+        expect(await utils.getDependVersion(zigbee-herdsman)).toStrictEqual({"version": versionHerdsman});
     })
     
     it('To local iso string', async () => {
