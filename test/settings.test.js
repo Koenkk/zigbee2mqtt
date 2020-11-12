@@ -155,7 +155,6 @@ describe('Settings', () => {
             include_device_information: false,
             password: "mysecretpassword",
             server: "my.mqtt.server",
-            retain: true,
             user: "mysecretusername",
         };
 
