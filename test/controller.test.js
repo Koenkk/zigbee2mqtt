@@ -618,4 +618,14 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', { retain: false, qos: 0 }, expect.any(Function));
     });
 
+    it('Should only subscribe to the base_prefix when subscribe_to_whole_prefix is set', async () => {
+        settings.set(['advanced', 'subscribe_to_whole_prefix'], true);
+        MQTT.subscribe.mockClear();
+        await controller.start()
+        await controller.mqtt.subscribe('foo')
+        await controller.mqtt.subscribe('bar')
+        await flushPromises();
+        expect(MQTT.subscribe).toHaveBeenCalledTimes(1);
+        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/#');
+    });
 });
