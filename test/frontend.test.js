@@ -6,6 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = () => new Promise(setImmediate);
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mockHTTP = {
@@ -87,6 +88,11 @@ describe('Frontend', () => {
         settings.set(['experimental'], {new_api: true});
         settings.set(['frontend'], {port: 8081});
         settings.set(['homeassistant'], true);
+        zigbeeHerdsman.devices.bulb.linkquality = 10;
+    });
+
+    afterEach(async() => {
+        delete zigbeeHerdsman.devices.bulb.linkquality;
     });
 
     it('Start/stop', async () => {
