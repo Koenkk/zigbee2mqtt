@@ -39,15 +39,9 @@ class ZStackNvMemEraser {
     async clearAllNvMemItems() {
         let maxNvMemId;
         switch (this.version.product) {
-        case ZnpVersion.zStack12:
-            maxNvMemId = 0x0302;
-            break;
-        case ZnpVersion.zStack30x:
-            maxNvMemId = 0x033F;
-            break;
-        case ZnpVersion.zStack3x0:
-            maxNvMemId = 0x032F;
-            break;
+        case ZnpVersion.zStack12: maxNvMemId = 0x0302; break;
+        case ZnpVersion.zStack30x: maxNvMemId = 0x033F; break;
+        case ZnpVersion.zStack3x0: maxNvMemId = 0x032F; break;
         }
 
         console.log(`Clearing all NVMEM items, from 0 to ${maxNvMemId}`);
