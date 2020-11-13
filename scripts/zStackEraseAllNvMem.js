@@ -54,7 +54,7 @@ class ZStackNvMemEraser {
         for (let id=0; id<=maxNvMemId; id++) {
             const lengthRes = await this.znp.request(Subsystem.SYS, 'osalNvLength',{id: id});
             if (lengthRes.payload['length']!=0) {
-                console.log(`NVMEM item #${id} - need to delete, size; ${lengthRes.payload['length']}`);
+                console.log(`NVMEM item #${id} - need to delete, size: ${lengthRes.payload['length']}`);
                 await this.znp.request(Subsystem.SYS, 'osalNvDelete',
                     {id: id, len: lengthRes.payload['length']},
                     null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
