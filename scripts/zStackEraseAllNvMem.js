@@ -34,6 +34,8 @@ class ZStackNvMemEraser {
         console.log(`Detected znp version '${ZnpVersion[this.version.product]}' (${JSON.stringify(this.version)})`);
 
         await this.clearAllNvMemItems();
+
+        process.exit(0);
     }
 
     async clearAllNvMemItems() {
