@@ -29,7 +29,7 @@ describe('Settings', () => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
     const clearEnvironmentVariables = () => {
-        Object.keys(process.env).forEach((key) => { 
+        Object.keys(process.env).forEach((key) => {
             if(key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
                 delete process.env[key];
             }
@@ -153,6 +153,7 @@ describe('Settings', () => {
 
         const expected = {
             include_device_information: false,
+            force_disable_retain: false,
             password: "mysecretpassword",
             server: "my.mqtt.server",
             user: "mysecretusername",
