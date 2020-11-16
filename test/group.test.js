@@ -127,12 +127,6 @@ describe('Groups', () => {
         expect(group.members).toStrictEqual([endpoint]);
         expect(settings.getGroup('group/with/slashes').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bridge/log", stringify({"type":"device_group_add","message":{"friendly_name":"bulb_color","group":"group/with/slashes"}}), {"retain": false, qos: 0}, expect.any(Function));
-
-        // Test if subscribed to topics with slashes
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/remove');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/remove');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/+/+/+/remove');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/group/+/+/+/+/+/add');
     });
 
     it('Legacy api: Add to group via MQTT with postfix', async () => {
