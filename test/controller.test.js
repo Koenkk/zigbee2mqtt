@@ -598,4 +598,24 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
     });
 
+    it('Start controller with force_disable_retain', async () => {
+        settings.set(['mqtt', 'force_disable_retain'], true);
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.connect).toHaveBeenCalledTimes(1);
+        const expected = {
+            "will": { "payload": "offline", "retain": false, "topic": "zigbee2mqtt/bridge/state" },
+        }
+        expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
+    });
+
+    it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {
+        settings.set(['mqtt', 'force_disable_retain'], true);
+        await controller.mqtt.connect()
+        MQTT.publish.mockClear();
+        await controller.mqtt.publish('fo', 'bar', { retain: true })
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', { retain: false, qos: 0 }, expect.any(Function));
+    });
 });
