@@ -612,6 +612,7 @@ describe('Controller', () => {
     it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {
         settings.set(['advanced', 'force_disable_retain'], true);
         await controller.mqtt.connect()
+        MQTT.publish.mockClear();
         await controller.mqtt.publish('fo', 'bar', { retain: true })
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
