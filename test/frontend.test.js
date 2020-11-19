@@ -86,7 +86,7 @@ describe('Frontend', () => {
         data.writeDefaultState();
         settings._reRead();
         settings.set(['experimental'], {new_api: true});
-        settings.set(['frontend'], {port: 8081, ip: "127.0.0.1"});
+        settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
         zigbeeHerdsman.devices.bulb.linkquality = 10;
     });
