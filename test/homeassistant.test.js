@@ -1277,7 +1277,7 @@ describe('HomeAssistant extension', () => {
                 command_topic: true,
             },
         };
-        expect(ha._getMapping()['external_converters_device']).toStrictEqual([homeassistantSwitch]);
+        expect(ha._getMapping()['external_converters_device']).toEqual([homeassistantSwitch]);
     });
 
     it('Should clear outdated configs', async () => {
