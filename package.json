@@ -75,5 +75,8 @@
     "collectCoverageFrom": [
       "lib/**"
     ]
+  },
+  "bin": {
+    "zigbee2mqtt": "./cli.js"
   }
 }
