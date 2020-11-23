@@ -6,6 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = () => new Promise(setImmediate);
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mockHTTP = {
@@ -85,15 +86,20 @@ describe('Frontend', () => {
         data.writeDefaultState();
         settings._reRead();
         settings.set(['experimental'], {new_api: true});
-        settings.set(['frontend'], {port: 8081});
+        settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
+        zigbeeHerdsman.devices.bulb.linkquality = 10;
+    });
+
+    afterEach(async() => {
+        delete zigbeeHerdsman.devices.bulb.linkquality;
     });
 
     it('Start/stop', async () => {
         controller = new Controller();
         await controller.start();
         expect(mockNodeStatic.variables.path).toBe("my/dummy/path");
-        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081);
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
 
         const mockWSClient = {
             implementation: {
@@ -191,7 +197,7 @@ describe('Frontend', () => {
         controller = new Controller();
         await controller.start();
         expect(mockHTTPProxy.variables.initParameter).toStrictEqual({ws: true});
-        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8080);
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8080, "0.0.0.0");
 
         mockHTTP.variables.onRequest(1, 2);
         expect(mockHTTPProxy.implementation.web).toHaveBeenCalledTimes(1);

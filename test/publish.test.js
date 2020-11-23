@@ -339,7 +339,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/thermostat_group/set', stringify({child_lock: 'LOCK'}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 263, fn: 0, status: 0, transid: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(group.command).toHaveBeenCalledWith("manuSpecificTuya", "setData", {data: [1], datatype: 1, dp: 7, length_hi: 0, length_lo: 1, status: 0, transid: 0}, {disableDefaultResponse: true});
     });
 
     it('Should publish messages to groups with on and brightness', async () => {
@@ -388,10 +388,10 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(6);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(7);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(8);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
@@ -1203,7 +1203,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/MKS-CM-W5/l3/set', stringify({state: 'ON'}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuyaDimmer", "setData", {data: [1,1], dp: 259, fn: 0, status: 0, transid: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "setData", {data: [1], datatype: 1, dp: 3, length_hi: 0, length_lo: 1, status: 0, transid: 1}, {disableDefaultResponse: true});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/MKS-CM-W5');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_l3: 'ON'});

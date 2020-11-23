@@ -31,7 +31,7 @@ describe('Controller', () => {
 
     it('Start controller', async () => {
         await controller.start();
-        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),adapter: {concurrent: null}, "serialPort":{"baudRate":undefined,"rtscts":undefined,"path":"/dev/dummy"}});
+        expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({"network":{"panID":6754,"extendedPanID":[221,221,221,221,221,221,221,221],"channelList":[11],"networkKey":[1,3,5,7,9,11,13,15,0,2,4,6,8,10,12,13]},"databasePath":path.join(data.mockDir, "database.db"), "databaseBackupPath":path.join(data.mockDir, "database.db.backup"),"backupPath":path.join(data.mockDir, "coordinator_backup.json"),"acceptJoiningDeviceHandler": expect.any(Function),adapter: {concurrent: null, delay: null}, "serialPort":{"baudRate":undefined,"rtscts":undefined,"path":"/dev/dummy"}});
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(0);
@@ -598,4 +598,24 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
     });
 
+    it('Start controller with force_disable_retain', async () => {
+        settings.set(['mqtt', 'force_disable_retain'], true);
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.connect).toHaveBeenCalledTimes(1);
+        const expected = {
+            "will": { "payload": "offline", "retain": false, "topic": "zigbee2mqtt/bridge/state" },
+        }
+        expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
+    });
+
+    it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {
+        settings.set(['mqtt', 'force_disable_retain'], true);
+        await controller.mqtt.connect()
+        MQTT.publish.mockClear();
+        await controller.mqtt.publish('fo', 'bar', { retain: true })
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', { retain: false, qos: 0 }, expect.any(Function));
+    });
 });

@@ -27,13 +27,6 @@ describe('OTA update', () => {
         MQTT.publish.mockClear();
     });
 
-    it('Should subscribe to topics', async () => {
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/ota_update/check');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/ota_update/update');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/request/device/ota_update/check');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/request/device/ota_update/update');
-    });
-
     it('Should OTA update a device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
