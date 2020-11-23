@@ -173,6 +173,114 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function),
         );
+
+        payload = {
+            "availability":[
+                {
+                    "topic":"zigbee2mqtt/bridge/state"
+                }
+            ],
+            "command_topic":"zigbee2mqtt/wall_switch_double/left/set",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x0017880104e45542"
+                ],
+                "manufacturer":"Xiaomi",
+                "model":"Aqara double key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG03LM)",
+                "name":"wall_switch_double",
+                "sw_version":this.version
+            },
+            "json_attributes_topic":"zigbee2mqtt/wall_switch_double",
+            "name":"wall_switch_double_left",
+            "payload_off":"OFF",
+            "payload_on":"ON",
+            "state_topic":"zigbee2mqtt/wall_switch_double",
+            "unique_id":"0x0017880104e45542_switch_left_zigbee2mqtt",
+            "value_template":"{{ value_json.state_left }}"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/switch/0x0017880104e45542/switch_left/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            "availability":[
+                {
+                    "topic":"zigbee2mqtt/bridge/state"
+                }
+            ],
+            "command_topic":"zigbee2mqtt/wall_switch_double/right/set",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x0017880104e45542"
+                ],
+                "manufacturer":"Xiaomi",
+                "model":"Aqara double key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG03LM)",
+                "name":"wall_switch_double",
+                "sw_version":this.version
+            },
+            "json_attributes_topic":"zigbee2mqtt/wall_switch_double",
+            "name":"wall_switch_double_right",
+            "payload_off":"OFF",
+            "payload_on":"ON",
+            "state_topic":"zigbee2mqtt/wall_switch_double",
+            "unique_id":"0x0017880104e45542_switch_right_zigbee2mqtt",
+            "value_template":"{{ value_json.state_right }}"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/switch/0x0017880104e45542/switch_right/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            "availability":[
+                {
+                    "topic":"zigbee2mqtt/bridge/state"
+                }
+            ],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_temp":true,
+            "command_topic":"zigbee2mqtt/bulb/set",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x000b57fffec6a5b2"
+                ],
+                "manufacturer":"IKEA",
+                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "name":"bulb",
+                "sw_version":this.version,
+            },
+            "effect":true,
+            "effect_list":[
+                "blink",
+                "breathe",
+                "okay",
+                "channel_change",
+                "finish_effect",
+                "stop_effect"
+            ],
+            "hs":false,
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/bulb",
+            "unique_id":"0x000b57fffec6a5b2_light_zigbee2mqtt",
+            "xy":false
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/0x000b57fffec6a5b2/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
     it('Should discover devices with precision', async () => {
@@ -443,7 +551,7 @@ describe('HomeAssistant extension', () => {
                "smart"
             ],
             "json_attributes_topic":"zigbee2mqtt/fan",
-            "name":"fan_fan",
+            "name":"fan",
             "unique_id":"0x0017880104e45548_fan_zigbee2mqtt",
             "device":{
                "identifiers":[
@@ -510,7 +618,7 @@ describe('HomeAssistant extension', () => {
             "modes":[
                "auto"
             ],
-            "name":"TS0601_thermostat_climate",
+            "name":"TS0601_thermostat",
             "temp_step":0.5,
             "temperature_command_topic":"zigbee2mqtt/TS0601_thermostat/set/current_heating_setpoint",
             "temperature_state_template":"{{ value_json.current_heating_setpoint }}",
@@ -541,7 +649,7 @@ describe('HomeAssistant extension', () => {
             set_position_template: '{ "position": {{ position }} }',
             value_template: '{{ value_json.position }}',
             json_attributes_topic: 'zigbee2mqtt/smart vent',
-            name: 'smart vent cover',
+            name: 'smart vent',
             unique_id: '0x0017880104e45551_cover_zigbee2mqtt',
             device:
             {
