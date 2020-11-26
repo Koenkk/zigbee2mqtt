@@ -2279,11 +2279,6 @@
         "es5-ext": "~0.10.14"
       }
     },
-    "eventemitter3": {
-      "version": "4.0.7",
-      "resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz",
-      "integrity": "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="
-    },
     "exec-sh": {
       "version": "0.3.4",
       "resolved": "https://registry.npmjs.org/exec-sh/-/exec-sh-0.3.4.tgz",
@@ -2714,11 +2709,6 @@
       "resolved": "https://registry.npmjs.org/fn.name/-/fn.name-1.1.0.tgz",
       "integrity": "sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw=="
     },
-    "follow-redirects": {
-      "version": "1.13.0",
-      "resolved": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.13.0.tgz",
-      "integrity": "sha512-aq6gF1BEKje4a9i9+5jimNFIpq4Q1WiwBToeRK5NvZBd/TRsmW8BsJfOEGkr76TbOyPVD3OVDN910EcUNtRYEA=="
-    },
     "for-in": {
       "version": "1.0.2",
       "resolved": "https://registry.npmjs.org/for-in/-/for-in-1.0.2.tgz",
@@ -3040,16 +3030,6 @@
         "setprototypeof": "1.1.1",
         "statuses": ">= 1.5.0 < 2",
         "toidentifier": "1.0.0"
-      }
-    },
-    "http-proxy": {
-      "version": "1.18.1",
-      "resolved": "https://registry.npmjs.org/http-proxy/-/http-proxy-1.18.1.tgz",
-      "integrity": "sha512-7mz/721AbnJwIVbnaSv1Cz3Am0ZLT/UBwkC92VlxhXv/k/BBQfM2fXElQNC27BVGr0uwUpplYPQM9LnaBMR5NQ==",
-      "requires": {
-        "eventemitter3": "^4.0.0",
-        "follow-redirects": "^1.0.0",
-        "requires-port": "^1.0.0"
       }
     },
     "http-signature": {
@@ -5024,11 +5004,6 @@
       "integrity": "sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==",
       "dev": true
     },
-    "requires-port": {
-      "version": "1.0.0",
-      "resolved": "https://registry.npmjs.org/requires-port/-/requires-port-1.0.0.tgz",
-      "integrity": "sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8="
-    },
     "resolve": {
       "version": "1.19.0",
       "resolved": "https://registry.npmjs.org/resolve/-/resolve-1.19.0.tgz",
@@ -6510,9 +6485,9 @@
       }
     },
     "zigbee-herdsman": {
-      "version": "0.13.34",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.34.tgz",
-      "integrity": "sha512-9Sf1/6BlLbX79Wws5Ou7CryOfgILD3RFFXSfepelMB7kSQc4fSJWFYBtPQaCIl2Rb4gss3tjUs78btBxluPbrg==",
+      "version": "0.13.35",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.35.tgz",
+      "integrity": "sha512-H/0Bsm5+GF4EEdj4pAkVdEtlb/opz/Hu9porPo8XP70HpCknMczB/mbf+yLH9N4HjWvBhBfpG/hv+bhVXdkrOg==",
       "requires": {
         "debounce": "^1.2.0",
         "debug": "^4.2.0",
