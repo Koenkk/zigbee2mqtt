@@ -6,6 +6,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = () => new Promise(setImmediate);
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mockHTTP = {
@@ -18,20 +19,17 @@ const mockHTTP = {
     events: {},
 };
 
-const mockHTTPProxy = {
-    implementation: {
-        web: jest.fn(),
-        ws: jest.fn(),
-    },
-    variables: {},
-    events: {},
+const mockWSocket = {
+    close: jest.fn(),
 };
 
 const mockWS = {
     implementation: {
         clients: [],
         on: (event, handler) => {mockWS.events[event] = handler},
-        handleUpgrade: jest.fn(),
+        handleUpgrade: jest.fn().mockImplementation((request, socket, head, cb) => {
+            cb(mockWSocket)
+        }),
         emit: jest.fn(),
     },
     variables: {},
@@ -48,13 +46,6 @@ jest.mock('http', () => ({
     createServer: jest.fn().mockImplementation((onRequest) => {
         mockHTTP.variables.onRequest = onRequest;
         return mockHTTP.implementation;
-    }),
-}));
-
-jest.mock('http-proxy', () => ({
-    createProxyServer: jest.fn().mockImplementation((initParameter) => {
-        mockHTTPProxy.variables.initParameter = initParameter;
-        return mockHTTPProxy.implementation;
     }),
 }));
 
@@ -85,15 +76,20 @@ describe('Frontend', () => {
         data.writeDefaultState();
         settings._reRead();
         settings.set(['experimental'], {new_api: true});
-        settings.set(['frontend'], {port: 8081});
+        settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
+        zigbeeHerdsman.devices.bulb.linkquality = 10;
+    });
+
+    afterEach(async() => {
+        delete zigbeeHerdsman.devices.bulb.linkquality;
     });
 
     it('Start/stop', async () => {
         controller = new Controller();
         await controller.start();
         expect(mockNodeStatic.variables.path).toBe("my/dummy/path");
-        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081);
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
 
         const mockWSClient = {
             implementation: {
@@ -176,32 +172,44 @@ describe('Frontend', () => {
         mockWS.implementation.handleUpgrade.mock.calls[0][3](99);
         expect(mockWS.implementation.emit).toHaveBeenCalledWith('connection', 99, {"url": "http://localhost:8080/api"});
 
-        mockWS.implementation.handleUpgrade.mockClear();
-        mockHTTP.events.upgrade({url: 'http://localhost:8080/unkown'}, mockSocket, 3);
-        expect(mockWS.implementation.handleUpgrade).toHaveBeenCalledTimes(0);
-        expect(mockSocket.destroy).toHaveBeenCalledTimes(1);
-
         mockHTTP.variables.onRequest(1, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
         expect(mockNodeStatic.implementation).toHaveBeenCalledWith(1, 2, expect.any(Function));
     });
 
-    it('Development server', async () => {
-        settings.set(['frontend'], {development_server: 'localhost:3001'});
+    it('Static server', async () => {
         controller = new Controller();
         await controller.start();
-        expect(mockHTTPProxy.variables.initParameter).toStrictEqual({ws: true});
-        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8080);
 
-        mockHTTP.variables.onRequest(1, 2);
-        expect(mockHTTPProxy.implementation.web).toHaveBeenCalledTimes(1);
-        expect(mockHTTPProxy.implementation.web).toHaveBeenCalledWith(1, 2, {"target": "http://localhost:3001"});
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
+    });
+
+    it('Authentification', async () => {
+        const authToken = 'sample-secure-token'
+        settings.set(['frontend'], {auth_token: authToken});
+        controller = new Controller();
+        await controller.start();
 
         const mockSocket = {destroy: jest.fn()};
-        mockHTTPProxy.implementation.ws.mockClear();
-        mockHTTP.events.upgrade({url: 'http://localhost:8080/sockjs-node'}, mockSocket, 3);
-        expect(mockHTTPProxy.implementation.ws).toHaveBeenCalledTimes(1);
+        mockWS.implementation.handleUpgrade.mockClear();
+        mockHTTP.events.upgrade({url: '/api'}, mockSocket, mockWSocket);
+        expect(mockWS.implementation.handleUpgrade).toHaveBeenCalledTimes(1);
         expect(mockSocket.destroy).toHaveBeenCalledTimes(0);
-        expect(mockHTTPProxy.implementation.ws).toHaveBeenCalledWith({"url": "http://localhost:8080/sockjs-node"}, mockSocket, 3, {"target": "ws://localhost:3001"});
+        expect(mockWS.implementation.handleUpgrade).toHaveBeenCalledWith({"url": "/api"}, mockSocket, mockWSocket, expect.any(Function));
+        expect(mockWSocket.close).toHaveBeenCalledWith(4401, "Unauthorized");
+
+        mockWSocket.close.mockClear();
+        mockWS.implementation.emit.mockClear();
+
+        const url = `/api?token=${authToken}`;
+        mockWS.implementation.handleUpgrade.mockClear();
+        mockHTTP.events.upgrade({url: url}, mockSocket, 3);
+        expect(mockWS.implementation.handleUpgrade).toHaveBeenCalledTimes(1);
+        expect(mockSocket.destroy).toHaveBeenCalledTimes(0);
+        expect(mockWS.implementation.handleUpgrade).toHaveBeenCalledWith({url}, mockSocket, 3, expect.any(Function));
+        expect(mockWSocket.close).toHaveBeenCalledTimes(0);
+        mockWS.implementation.handleUpgrade.mock.calls[0][3](mockWSocket);
+        expect(mockWS.implementation.emit).toHaveBeenCalledWith('connection', mockWSocket, {url});
+
     });
 });

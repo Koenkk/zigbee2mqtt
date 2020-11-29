@@ -131,7 +131,7 @@ const devices = {
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
     'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: new Group(1, []), cluster: {ID: 6, name: 'genOnOff'}}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
-    'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
+    'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID", false, "notSupportedMfg"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
     'notInSettings': new Device('EndDevice', '0x0017880104e45519', 6537, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "lumi.sensor_switch.aq2"),
@@ -177,6 +177,7 @@ const groups = {
     'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
     'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
     'group_with_switch': new Group(14, [devices.ZNCZ02LM.endpoints[0]]),
+    'default_bind_group': new Group(901, []),
 }
 
 const mock = {

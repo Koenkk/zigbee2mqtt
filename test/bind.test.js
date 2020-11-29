@@ -33,12 +33,6 @@ describe('Bind', () => {
         MQTT.publish.mockClear();
     });
 
-    it('Should subscribe to topics', async () => {
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/request/device/bind');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/request/device/unbind');
-        expect(MQTT.subscribe).toHaveBeenCalledWith('zigbee2mqtt/bridge/bind/#');
-    });
-
     it('Should bind', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);

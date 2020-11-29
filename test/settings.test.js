@@ -6,6 +6,7 @@ const settings = require('../lib/util/settings.js');
 const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
 const devicesFile = data.joinPath('devices.yaml');
+const devicesFile2 = data.joinPath('devices2.yaml');
 const groupsFile = data.joinPath('groups.yaml');
 const secretFile = data.joinPath('secret.yaml');
 const yaml = require('js-yaml');
@@ -29,7 +30,7 @@ describe('Settings', () => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
     const clearEnvironmentVariables = () => {
-        Object.keys(process.env).forEach((key) => { 
+        Object.keys(process.env).forEach((key) => {
             if(key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
                 delete process.env[key];
             }
@@ -153,6 +154,7 @@ describe('Settings', () => {
 
         const expected = {
             include_device_information: false,
+            force_disable_retain: false,
             password: "mysecretpassword",
             server: "my.mqtt.server",
             user: "mysecretusername",
@@ -196,6 +198,32 @@ describe('Settings', () => {
         expect(device).toStrictEqual(expected);
     });
 
+    it('Should read devices form 2 separate files', () => {
+        const contentConfiguration = {
+            devices: ['devices.yaml', 'devices2.yaml']
+        };
+
+        const contentDevices = {
+            '0x12345678': {
+                friendly_name: '0x12345678',
+                retain: false,
+            },
+        };
+
+        const contentDevices2 = {
+            '0x87654321': {
+                friendly_name: '0x87654321',
+                retain: false,
+            },
+        };
+
+        write(configurationFile, contentConfiguration);
+        write(devicesFile, contentDevices);
+        write(devicesFile2, contentDevices2);
+        expect(settings.getDevice('0x12345678').friendly_name).toStrictEqual('0x12345678');
+        expect(settings.getDevice('0x87654321').friendly_name).toStrictEqual('0x87654321');
+    });
+
     it('Should add devices to a separate file', () => {
         const contentConfiguration = {
             devices: 'devices.yaml',
@@ -226,6 +254,47 @@ describe('Settings', () => {
         };
 
         expect(read(devicesFile)).toStrictEqual(expected);
+    });
+
+    it('Should add devices for first file when using 2 separates file', () => {
+        const contentConfiguration = {
+            devices: ['devices.yaml', 'devices2.yaml']
+        };
+
+        const contentDevices = {
+            '0x12345678': {
+                friendly_name: '0x12345678',
+                retain: false,
+            },
+        };
+
+        const contentDevices2 = {
+            '0x87654321': {
+                friendly_name: '0x87654321',
+                retain: false,
+            },
+        };
+
+        write(configurationFile, contentConfiguration);
+        write(devicesFile, contentDevices);
+        write(devicesFile2, contentDevices2);
+
+        settings.addDevice('0x1234');
+
+        expect(read(configurationFile)).toStrictEqual({devices: ['devices.yaml', 'devices2.yaml']});
+
+        const expected = {
+            '0x12345678': {
+                friendly_name: '0x12345678',
+                retain: false,
+            },
+            '0x1234': {
+                friendly_name: '0x1234',
+            },
+        };
+
+        expect(read(devicesFile)).toStrictEqual(expected);
+        expect(read(devicesFile2)).toStrictEqual(contentDevices2);
     });
 
     it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
