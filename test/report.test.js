@@ -267,7 +267,7 @@ describe('Report', () => {
         expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
 
         // Should only call Hue bulb, not e.g. tradfri
-        expect(zigbeeHerdsman.devices.bulb.getEndpoint(1).read).toHaveBeenCalledTimes(0);
+        expect(zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read).toHaveBeenCalledTimes(0);
     });
 
     it('Should not configure reporting for the ZNLDP12LM closuresWindowCovering as it is ignored', async () => {
