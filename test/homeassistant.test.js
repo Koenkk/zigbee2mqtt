@@ -779,8 +779,6 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
-        // 1 publish is from device_removed
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
@@ -797,13 +795,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update":{"state":"idle"},"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false}),
+            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -823,13 +821,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false,"update":{"state":"idle"}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false}),
+            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -948,7 +946,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should refresh discovery when device is renamed', async () => {
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
@@ -1014,7 +1011,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt refresh discovery when device is renamed and homeassistant_rename is false', async () => {
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller(false);
         await controller.start();
         await flushPromises();

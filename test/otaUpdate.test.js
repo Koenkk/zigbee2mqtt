@@ -19,7 +19,6 @@ describe('OTA update', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings._reRead();
-        settings.set(['experimental', 'new_api'], true);
         data.writeEmptyState();
         controller = new Controller();
         await controller.start();

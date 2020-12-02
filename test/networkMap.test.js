@@ -31,7 +31,6 @@ describe('Networkmap', () => {
         data.writeEmptyState();
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
         settings.set(['external_converters'], ['mock-external-converter.js']);
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
