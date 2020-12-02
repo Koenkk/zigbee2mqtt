@@ -168,6 +168,7 @@ const devices = {
     '3157100': new Device('Router', '0x0017880104e44559', 6542,4151, [new Endpoint(1, [], [], '0x0017880104e44559')], true, "Mains (single phase)", '3157100'),
     'J1': new Device('Router', '0x0017880104a44559', 6543,4151, [new Endpoint(1, [], [], '0x0017880104a44559')], true, "Mains (single phase)", 'J1 (5502)'),
     'TS0601_thermostat': TS0601_thermostat,
+    'external_converter_device': new Device('EndDevice', '0x0017880104e45511', 1114, 'external', [], false, null, 'external_converter_device' ),
 }
 
 const groups = {

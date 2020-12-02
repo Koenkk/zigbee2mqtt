@@ -67,7 +67,13 @@ describe('Loads external converters', () => {
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledWith({
-            mock: true
+            mock: true,
+            zigbeeModel: ['external_converter_device'],
+            vendor: 'external',
+            model: ['external_converter_device'],
+            definition: {
+                foo: 'bar'
+            }
         });
     });
 
