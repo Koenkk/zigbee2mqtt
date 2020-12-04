@@ -195,6 +195,21 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish messages to zigbee devices to non default-ep with brightness_[EP]', async () => {
+        const device = zigbeeHerdsman.devices.QS_Zigbee_D02_TRIAC_2C_LN;
+        const endpoint = device.getEndpoint(2);
+        await MQTT.events.message('zigbee2mqtt/0x0017882194e45543/set', stringify({state_l2: 'ON', brightness_l2: 50}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/QS-Zigbee-D02-TRIAC-2C-LN',
+            stringify({brightness_l2: 50, state_l2: 'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+    });
+
     it('Should publish messages to zigbee devices with color xy', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);

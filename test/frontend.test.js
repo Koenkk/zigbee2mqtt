@@ -117,7 +117,6 @@ describe('Frontend', () => {
         };
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(49);
 
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[12])).toStrictEqual({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}});
