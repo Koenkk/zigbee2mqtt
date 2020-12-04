@@ -616,7 +616,7 @@ describe('HomeAssistant extension', () => {
             "mode_state_template":"{{ value_json.system_mode }}",
             "mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "modes":[
-               "auto"
+               "heat"
             ],
             "name":"TS0601_thermostat",
             "temp_step":0.5,
