@@ -1063,7 +1063,7 @@ describe('HomeAssistant extension', () => {
             "value_template":"{{ value_json.update_available}}",
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
-            "name":"bulb_update_available",
+            "name":"bulb update available",
             "unique_id":"0x000b57fffec6a5b2_update_available_zigbee2mqtt",
             "device":{
                 "identifiers":[
