@@ -10,6 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const HomeAssistant = require('../lib/extension/homeassistant');
 
+const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
+
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
@@ -1432,5 +1434,22 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2_not_existing/action_button_3_single/config', stringify({topic: 'zigbee2mqtt_different/0x000b57fffec6a5b2_not_existing/availability'}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Device was flagged to be excluded from homeassistant discovery
+        await controller.stop();
+        await flushPromises();
+        settings.set(['devices', '0x000b57fffec6a5b2', 'homeassistant'], null);
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        await MQTT.events.message('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 0, retain: true}, expect.any(Function));
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', null, {qos: 0, retain: true}, expect.any(Function));
     });
 });
