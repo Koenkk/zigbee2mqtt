@@ -1,4 +1,4 @@
-const {ZnpCommandStatus,NvSystemIds} = require('zigbee-herdsman/dist/adapter/z-stack/constants/common');
+const {ZnpCommandStatus, NvSystemIds} = require('zigbee-herdsman/dist/adapter/z-stack/constants/common');
 const {ZnpVersion} = require('zigbee-herdsman/dist/adapter/z-stack/adapter/tstype');
 const {Subsystem} = require('zigbee-herdsman/dist/adapter/z-stack/unpi/constants');
 const {Znp} = require('zigbee-herdsman/dist/adapter/z-stack/znp');
