@@ -10,8 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const HomeAssistant = require('../lib/extension/homeassistant');
 
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
-
 describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
@@ -781,6 +779,8 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
+        // 1 publish is from device_removed
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
@@ -797,13 +797,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update":{"state":"idle"},"update_available":false}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
+            stringify({"brightness":255,"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -823,13 +823,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false,"update":{"state":"idle"}}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
+            stringify({"brightness":255,"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -948,6 +948,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should refresh discovery when device is renamed', async () => {
+        settings.set(['experimental', 'new_api'], true);
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
@@ -1013,6 +1014,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt refresh discovery when device is renamed and homeassistant_rename is false', async () => {
+        settings.set(['experimental', 'new_api'], true);
         controller = new Controller(false);
         await controller.start();
         await flushPromises();
@@ -1063,7 +1065,7 @@ describe('HomeAssistant extension', () => {
             "value_template":"{{ value_json.update_available}}",
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
-            "name":"bulb update available",
+            "name":"bulb_update_available",
             "unique_id":"0x000b57fffec6a5b2_update_available_zigbee2mqtt",
             "device":{
                 "identifiers":[
@@ -1434,22 +1436,5 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2_not_existing/action_button_3_single/config', stringify({topic: 'zigbee2mqtt_different/0x000b57fffec6a5b2_not_existing/availability'}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
-
-        // Device was flagged to be excluded from homeassistant discovery
-        await controller.stop();
-        await flushPromises();
-        settings.set(['devices', '0x000b57fffec6a5b2', 'homeassistant'], null);
-        controller = new Controller(false);
-        await controller.start();
-        await flushPromises();
-        MQTT.publish.mockClear();
-
-        await MQTT.events.message('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 0, retain: true}, expect.any(Function));
-        MQTT.publish.mockClear();
-        await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', null, {qos: 0, retain: true}, expect.any(Function));
     });
 });
