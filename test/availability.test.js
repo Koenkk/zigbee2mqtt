@@ -28,7 +28,6 @@ describe('Availability', () => {
         data.writeEmptyState();
         jest.useFakeTimers();
         settings.set(['advanced', 'availability_timeout'], 10);
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         mocksClear.forEach((m) => m.mockClear());
         await controller.start();

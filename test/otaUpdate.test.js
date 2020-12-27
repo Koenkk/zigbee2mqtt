@@ -19,7 +19,7 @@ describe('OTA update', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings._reRead();
-        settings.set(['experimental', 'new_api'], true);
+        settings.set(['advanced', 'ikea_ota_use_test_url'], true);
         data.writeEmptyState();
         controller = new Controller();
         await controller.start();

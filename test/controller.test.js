@@ -256,6 +256,17 @@ describe('Controller', () => {
         expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'")
     });
 
+    it('Skip MQTT messages on topic we published to', async () => {
+        await controller.start();
+        logger.debug.mockClear();
+        await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
+        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'")
+        logger.debug.mockClear();
+        await controller.mqtt.publish('skip-this-topic', '', {});
+        await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
+        expect(logger.debug).toHaveBeenCalledTimes(0);
+    });
+
     it('On zigbee event message', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.bulb;

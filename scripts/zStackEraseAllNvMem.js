@@ -1,4 +1,4 @@
-const {ZnpCommandStatus} = require('zigbee-herdsman/dist/adapter/z-stack/constants/common');
+const {ZnpCommandStatus, NvSystemIds} = require('zigbee-herdsman/dist/adapter/z-stack/constants/common');
 const {ZnpVersion} = require('zigbee-herdsman/dist/adapter/z-stack/adapter/tstype');
 const {Subsystem} = require('zigbee-herdsman/dist/adapter/z-stack/unpi/constants');
 const {Znp} = require('zigbee-herdsman/dist/adapter/z-stack/znp');
@@ -46,19 +46,34 @@ class ZStackNvMemEraser {
         case ZnpVersion.zStack3x0: maxNvMemId = 0x032F; break;
         }
 
+        let deletedCount = 0;
         console.log(`Clearing all NVMEM items, from 0 to ${maxNvMemId}`);
         for (let id=0; id<=maxNvMemId; id++) {
-            const lengthRes = await this.znp.request(Subsystem.SYS, 'osalNvLength',{id: id});
-            if (lengthRes.payload['length']!=0) {
-                console.log(`NVMEM item #${id} - need to delete, size: ${lengthRes.payload['length']}`);
-                await this.znp.request(Subsystem.SYS, 'osalNvDelete',
-                    {id: id, len: lengthRes.payload['length']},
-                    null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+            let len;
+            const needOsal = !(this.version.product == ZnpVersion.zStack3x0 && id <= 7);
+            if (needOsal) {
+                const lengthRes = await this.znp.request(Subsystem.SYS, 'osalNvLength', {id: id});
+                len = lengthRes.payload['length'];
             } else {
-                console.log(`NVMEM item #${id} - is free`);
+                const lengthRes = await this.znp.request(Subsystem.SYS, 'nvLength',
+                    {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0});
+                len = lengthRes.payload['len'];
+            }
+            if (len != 0) {
+                console.log(`NVMEM item #${id} - deleting, size: ${len}`);
+                if (needOsal) {
+                    await this.znp.request(Subsystem.SYS, 'osalNvDelete',
+                        {id: id, len: len},
+                        null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+                } else {
+                    await this.znp.request(Subsystem.SYS, 'nvDelete',
+                        {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0},
+                        null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+                }
+                deletedCount++;
             }
         }
-        console.log('Clearing all NVMEM items finished');
+        console.log(`Clearing all NVMEM items finished, deleted ${deletedCount} items`);
     }
 }
 const processArgs = process.argv.slice(2);

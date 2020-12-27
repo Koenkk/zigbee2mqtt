@@ -20,7 +20,6 @@ describe('Groups', () => {
 
     beforeEach(() => {
         data.writeEmptyState();
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         Object.values(zigbeeHerdsman.groups).forEach((g) => g.members = []);
         data.writeDefaultConfiguration();

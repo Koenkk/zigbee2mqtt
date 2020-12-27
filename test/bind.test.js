@@ -25,7 +25,6 @@ describe('Bind', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeEmptyState();
-        settings.set(['experimental', 'new_api'], true);
         controller = new Controller();
         await controller.start();
         await flushPromises();

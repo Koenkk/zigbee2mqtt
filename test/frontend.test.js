@@ -75,7 +75,6 @@ describe('Frontend', () => {
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings._reRead();
-        settings.set(['experimental'], {new_api: true});
         settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
         zigbeeHerdsman.devices.bulb.linkquality = 10;
@@ -118,7 +117,6 @@ describe('Frontend', () => {
         };
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(48);
 
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[0])).toStrictEqual({topic: 'bridge/state', payload: 'online'});
         expect(JSON.parse(mockWSClient.implementation.send.mock.calls[12])).toStrictEqual({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}});
