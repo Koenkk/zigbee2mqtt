@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions/discussion
+    url: https://github.com/Koenkk/zigbee2mqtt/discussions/new
+    about: Ask questions, discuss about devices or show things you made
   - name: Frontend issues
     url: https://github.com/nurikk/z2m-frontend/issues
     about: Issues related to the frontend.
