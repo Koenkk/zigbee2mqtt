@@ -1,5 +1,6 @@
 const data = require('./stub/data');
 const logger = require('./stub/logger');
+const stringify = require('json-stable-stringify-without-jsonify');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
@@ -407,5 +408,35 @@ describe('Availability', () => {
             null,
             {retain: true, qos: 0}, expect.any(Function)
         );
+    });
+
+    it('Should clear retained availability topic when device is renamed', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "bulb_color", "to": "bulb_color_new_name"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            null,
+            {retain: true, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should clear retained availability topic when device does not exist', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/not_existing_hahaha/availability', 'offline');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/not_existing_hahaha/availability', null, {retain: true, qos: 0}, expect.any(Function));
+
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/0x000b57fffec6a5b3/availability', 'offline');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/0x000b57fffec6a5b3/availability', null, {retain: true, qos: 0}, expect.any(Function));
+
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bulb_color/availability', 'offline');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 });
