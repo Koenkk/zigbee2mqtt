@@ -343,7 +343,7 @@ describe('Availability', () => {
     });
 
     it('Should publish availability when end device joins', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const payload = {device};
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceJoined(payload);

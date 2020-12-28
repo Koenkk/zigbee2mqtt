@@ -35,7 +35,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message which uses ep (left)', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {onOff: 1}
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -47,7 +47,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message which uses ep (right)', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {onOff: 1}
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(2), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -259,7 +259,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message with voltage 3010', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {'65281': {'1': 3010}}
         const payload = {data, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -271,7 +271,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message with voltage 2850', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {'65281': {'1': 2850}}
         const payload = {data, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -283,7 +283,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message with voltage 2650', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {'65281': {'1': 2650}}
         const payload = {data, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -295,7 +295,7 @@ describe('Receive', () => {
     });
 
     it('Should handle a zigbee message with voltage 2000', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {'65281': {'1': 2000}}
         const payload = {data, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -328,7 +328,7 @@ describe('Receive', () => {
     });
 
     it('Should publish last_seen epoch', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         settings.set(['advanced', 'last_seen'], 'epoch');
         const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -341,7 +341,7 @@ describe('Receive', () => {
     });
 
     it('Should publish last_seen ISO_8601', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         settings.set(['advanced', 'last_seen'], 'ISO_8601');
         const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -354,7 +354,7 @@ describe('Receive', () => {
     });
 
     it('Should publish last_seen ISO_8601_local', async () => {
-        const device = zigbeeHerdsman.devices.WXKG02LM;
+        const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         settings.set(['advanced', 'last_seen'], 'ISO_8601_local');
         const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
