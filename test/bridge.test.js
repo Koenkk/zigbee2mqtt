@@ -819,4 +819,43 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('Should allow to configure reporting', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: 'bulb', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(1);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 10, "minimumReportInterval": 1, "reportableChange": 1}]);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{id: 'bulb', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/devices',
+          expect.any(String),
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
+    });
+
+    it('Should throw error when configure reporting is called with misformed payload', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: 'bulb', cluster: 'genLevelCtrl', attribute_lala: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
 });
