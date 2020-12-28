@@ -29,7 +29,7 @@ const clusters = {
 }
 
 class Endpoint {
-    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}) {
+    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}, configuredReportings=[]) {
         this.deviceIeeeAddress = deviceIeeeAddress;
         this.clusterValues = clusterValues;
         this.ID = ID;
@@ -45,6 +45,7 @@ class Endpoint {
         this.configureReporting = jest.fn();
         this.meta = {};
         this.binds = binds;
+        this.configuredReportings = configuredReportings;
         this.getInputClusters = () => inputClusters.map((c) => {
             return {ID: c, name: getKeyByValue(clusters, c)};
         }).filter((c) => c.name);
@@ -126,7 +127,7 @@ const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,41
 
 const devices = {
     'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
-    'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2', [], {lightingColorCtrl: {colorCapabilities: 17}})], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
+    'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2', [], {lightingColorCtrl: {colorCapabilities: 17}}, [{cluster: {name: 'genOnOff'}, attribute: {name: 'onOff'}, minimumReportInterval: 1, maximumReportInterval: 10, reportableChange: 20}])], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
     'bulb_color': bulb_color,
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
