@@ -195,7 +195,7 @@ describe('Report', () => {
     });
 
     it('Should configure reporting when deviceAnnounce message from IKEA device', async () => {
-        const device = zigbeeHerdsman.devices.bulb;
+        const device = zigbeeHerdsman.devices.bulb_2;
         const endpoint = device.getEndpoint(1);
         mockClear(device);
         const payload = {device};
@@ -287,6 +287,8 @@ describe('Report', () => {
         const device = zigbeeHerdsman.devices.bulb;
         const coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
         const endpoint = device.getEndpoint(1);
+        const configuredReportings = endpoint.configuredReportings;
+        endpoint.configuredReportings = [];
         delete device.meta.reporting;
         mockClear(device);
         endpoint.getClusterAttributeValue = jest.fn();
@@ -308,5 +310,6 @@ describe('Report', () => {
         expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorCapabilities'])
         expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
+        endpoint.configuredReportings = configuredReportings;
     });
 });
