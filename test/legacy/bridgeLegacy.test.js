@@ -123,12 +123,12 @@ describe('Bridge legacy', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/permit_join', 'true');
         await flushPromises();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, undefined, undefined);
         zigbeeHerdsman.permitJoin.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/permit_join', 'false');
         await flushPromises();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
     });
 
     it('Should allow to reset', async () => {

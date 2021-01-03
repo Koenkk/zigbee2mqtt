@@ -201,8 +201,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', 'true');
         await flushPromises();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, undefined, undefined);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/permit_join',
             stringify({"data":{"value":true},"status":"ok"}),
@@ -214,8 +213,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value": false}));
         await flushPromises();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/permit_join',
             stringify({"data":{"value":false},"status":"ok"}),
@@ -235,6 +233,27 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should allow permit join for certain time', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value": false, "time": 10}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, 10);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{"value":false,"time": 10},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should republish bridge info when permit join changes', async () => {
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.permitJoinChanged({permitted: false, time: 10});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+    });
+
     it('Should allow permit join via device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         zigbeeHerdsman.permitJoin.mockClear();
@@ -242,8 +261,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({value: true, device: 'bulb'}));
         await flushPromises();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, device);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, device, undefined);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/permit_join',
             stringify({"data":{"value":true,"device":"bulb"},"status":"ok"}),
