@@ -181,7 +181,7 @@ describe('Availability', () => {
 
     it('Should not retrieve the state when device is turned on/off within availability timeout on deviceJoined', async () => {
         MQTT.publish.mockClear();
-        const device = zigbeeHerdsman.devices.bulb_color;
+        const device = zigbeeHerdsman.devices.E11_G13;
         const endpoint = device.getEndpoint(1);
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceJoined({device});

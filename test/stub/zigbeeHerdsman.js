@@ -86,6 +86,7 @@ class Endpoint {
         }
 
         this.getClusterAttributeValue = (cluster, value) => {
+            if (!(cluster in this.clusterValues)) return undefined;
             return this.clusterValues[cluster][value];
         }
     }
