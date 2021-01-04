@@ -8,6 +8,7 @@ zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45559');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45524');
 zigbeeHerdsman.returnDevices.push('0x90fd9ffffe4b64ax');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');

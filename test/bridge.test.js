@@ -96,7 +96,6 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceJoined({device: zigbeeHerdsman.devices.bulb});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
           stringify({"type":"device_joined","data":{"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2"}}),
