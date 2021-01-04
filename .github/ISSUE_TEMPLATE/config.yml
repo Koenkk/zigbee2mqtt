@@ -7,7 +7,7 @@ contact_links:
     url: https://github.com/nurikk/z2m-frontend/issues
     about: Issues related to the frontend.
   - name: Home Assistant addon issues
-    url: https://github.com/danielwelch/hassio-zigbee2mqtt/issues
+    url: https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/issues
     about: Issues related to the Home Assistant addon.
   - name: FAQ
     url: https://www.zigbee2mqtt.io/information/FAQ.html
