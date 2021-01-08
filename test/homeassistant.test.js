@@ -1256,6 +1256,28 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
+    it('Should not discover device_automtation when disabled', async () => {
+        settings.set(['device_options'], {
+            homeassistant: {device_automation: null},
+        })
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload1);
+        await flushPromises();
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45520/action_single/config',
+            expect.any(String),
+            expect.any(Object),
+            expect.any(Function),
+        );
+    });
+
     it('Should not discover sensor_click when legacy: false is set', async () => {
         settings.set(['devices', '0x0017880104e45520'], {
             legacy: false,
