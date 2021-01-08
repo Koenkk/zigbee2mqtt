@@ -474,6 +474,17 @@ describe('Bridge', () => {
         );
     });
 
+    it('Shouldnt allow rename device with to now allowed name', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'living_room/blinds/center'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/rename',
+            stringify({"data":{},"status":"error","error":"friendly_name is not allowed to end with: '/center'"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow rename group', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({from: 'group_1', to: 'group_new_name'}));
