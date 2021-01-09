@@ -737,7 +737,7 @@ describe('Settings', () => {
 
         settings._reRead();
 
-        const error = `friendly_name is not allowed to end with /`;
+        const error = `friendly_name is not allowed to end or start with /`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
