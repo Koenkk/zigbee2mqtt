@@ -717,6 +717,42 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
+    it('Configuration friendly name cannot be empty', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: '', retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name shoud atleast be 1 char long`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Configuration friendly name cannot end with /', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: 'blaa/', retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name is not allowed to end with /`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Configuration friendly name cannot contain null char', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: 'blaa/blaa' + String.fromCharCode(0), retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name is not allowed to contain null char`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
     it('Configuration shouldnt be valid when friendly_name ends with /DIGIT', async () => {
         write(configurationFile, {
             ...minimalConfig,
