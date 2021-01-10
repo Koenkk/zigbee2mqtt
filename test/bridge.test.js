@@ -219,6 +219,18 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
 
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/permit_join', stringify({"value": "False"}));
+        await flushPromises();
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/permit_join',
+            stringify({"data":{"value":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
         // Invalid payload
         zigbeeHerdsman.permitJoin.mockClear();
         MQTT.publish.mockClear();
