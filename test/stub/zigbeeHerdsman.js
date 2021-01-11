@@ -85,10 +85,11 @@ class Endpoint {
             Object.values(groups).forEach((g) => this.removeFromGroup(g))
         }
 
-        this.getClusterAttributeValue = (cluster, value) => {
+        this.getClusterAttributeValue = jest.fn();
+        this.getClusterAttributeValue.mockImplementation((cluster, value) => {
             if (!(cluster in this.clusterValues)) return undefined;
             return this.clusterValues[cluster][value];
-        }
+        });
     }
 }
 
@@ -125,14 +126,25 @@ const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new 
 const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7', [], {lightingColorCtrl: {colorCapabilities: 17}})], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
 const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
+const ZNCZ02LM = new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug");
+
+const groups = {
+    'group_1': new Group(1, []),
+    'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
+    'group/with/slashes': new Group(99, []),
+    'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
+    'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
+    'group_with_switch': new Group(14, [ZNCZ02LM.endpoints[0]]),
+    'default_bind_group': new Group(901, []),
+}
 
 const devices = {
-    'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [])], false),
+    'coordinator': new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [], '0x00124b00120144ae')], false),
     'bulb': new Device('Router', '0x000b57fffec6a5b2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b2', [], {lightingColorCtrl: {colorCapabilities: 17}}, [{cluster: {name: 'genOnOff'}, attribute: {name: 'onOff'}, minimumReportInterval: 1, maximumReportInterval: 10, reportableChange: 20}])], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm"),
     'bulb_color': bulb_color,
     'bulb_2': bulb_2,
     'bulb_color_2': bulb_color_2,
-    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: new Group(1, []), cluster: {ID: 6, name: 'genOnOff'}}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
+    'remote': new Device('EndDevice', '0x0017880104e45517', 6535, 4107, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45517', [{target: bulb_color.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: bulb_color.endpoints[0], cluster: {ID: 768, name: 'lightingColorCtrl'}}, {target: groups.group_1, cluster: {ID: 6, name: 'genOnOff'}}, {target: groups.group_1, cluster: {ID: 6, name: 'genLevelCtrl'}}]), new Endpoint(2, [0,1,3,15,64512], [25, 6])], true, "Battery", "RWL021"),
     'unsupported': new Device('EndDevice', '0x0017880104e45518', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID", false, "notSupportedMfg"),
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
@@ -141,7 +153,7 @@ const devices = {
     'WXKG02LM_rev1': new Device('EndDevice', '0x0017880104e45521', 6538,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Battery", "lumi.sensor_86sw2.es1"),
     'WSDCGQ11LM': new Device('EndDevice', '0x0017880104e45522', 6539,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.weather"),
     'RTCGQ11LM': new Device('EndDevice', '0x0017880104e45523', 6540,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.sensor_motion.aq2"),
-    'ZNCZ02LM': new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug"),
+    'ZNCZ02LM': ZNCZ02LM,
     'E1743': new Device('Router', '0x0017880104e45540', 6540,4476, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'TRADFRI on/off switch'),
     'QBKG04LM': new Device('Router', '0x0017880104e45541', 6549,4151, [new Endpoint(1, [0], [25]), new Endpoint(2, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
     'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
@@ -172,16 +184,6 @@ const devices = {
     'TS0601_thermostat': TS0601_thermostat,
     'external_converter_device': new Device('EndDevice', '0x0017880104e45511', 1114, 'external', [], false, null, 'external_converter_device' ),
     'QS_Zigbee_D02_TRIAC_2C_LN':new Device('Router', '0x0017882194e45543', 6549,4151, [new Endpoint(1, [0], [], '0x0017882194e45543'), new Endpoint(2, [0, 6], [], '0x0017882194e45543')], true, "Mains (single phase)", 'TS110F', false, '_TYZB01_v8gtiaed'),
-}
-
-const groups = {
-    'group_1': new Group(1, []),
-    'group_tradfri_remote': new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
-    'group/with/slashes': new Group(99, []),
-    'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
-    'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
-    'group_with_switch': new Group(14, [devices.ZNCZ02LM.endpoints[0]]),
-    'default_bind_group': new Group(901, []),
 }
 
 const mock = {
