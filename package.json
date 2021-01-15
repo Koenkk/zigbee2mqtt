@@ -53,7 +53,7 @@
     "ws": "^7.3.1",
     "zigbee-herdsman": "0.13.54",
     "zigbee-herdsman-converters": "14.0.20",
-    "zigbee2mqtt-frontend": "0.3.4"
+    "zigbee2mqtt-frontend": "^0.3.7"
   },
   "devDependencies": {
     "eslint": "*",
@@ -72,10 +72,10 @@
       }
     },
     "collectCoverageFrom": [
-      "lib/**"
+      "lib/**/*.js"
     ]
   },
   "bin": {
-    "zigbee2mqtt": "./cli.js"
+    "zigbee2mqtt": "cli.js"
   }
 }
