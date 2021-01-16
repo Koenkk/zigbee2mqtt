@@ -16,6 +16,7 @@
     },
     "external_converters": {
       "type": "array",
+      "title": "External converters",
       "items": {
         "type": "string"
       }
@@ -83,12 +84,14 @@
       }
     },
     "blocklist": {
+      "title": "Blocklist",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "passlist": {
+      "title": "Passlist",
       "type": "array",
       "items": {
         "type": "string"
@@ -96,12 +99,14 @@
     },
     "whitelist": {
       "type": "array",
+      "title": "Whitelist",
       "items": {
         "type": "string"
       }
     },
     "ban": {
       "type": "array",
+      "title": "Ban",
       "items": {
         "type": "string"
       }
