@@ -7,10 +7,12 @@
     "homeassistant": {
       "title": "Homeassistant integration",
       "type": "boolean",
-      "description": "Home Assistant integration (MQTT discovery)"
+      "description": "Home Assistant integration (MQTT discovery)",
+      "default": false
     },
     "permit_join": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "external_converters": {
       "type": "array",
@@ -366,5 +368,5 @@
       }
     }
   },
-  "required": ["homeassistant", "permit_join", "mqtt"]
+  "required": ["mqtt"]
 }
