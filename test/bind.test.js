@@ -6,6 +6,8 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const stringify = require('json-stable-stringify-without-jsonify');
+jest.mock('debounce', () => jest.fn(fn => fn));
+const debounce = require('debounce');
 
 describe('Bind', () => {
     let controller;
@@ -28,6 +30,8 @@ describe('Bind', () => {
         zigbeeHerdsman.groups.group_1.members = [];
         zigbeeHerdsman.devices.bulb_color.getEndpoint(1).configureReporting.mockClear();
         zigbeeHerdsman.devices.bulb_color.getEndpoint(1).bind.mockClear();
+        zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read.mockClear();
+        debounce.mockClear();
         controller = new Controller();
         await controller.start();
         await flushPromises();
@@ -475,5 +479,37 @@ describe('Bind', () => {
           { retain: true, qos: 0 },
           expect.any(Function)
         );
+    });
+
+    it('Should poll bounded Hue bulb when receiving message from Hue dimmer', async () => {
+        const remote = zigbeeHerdsman.devices.remote;
+        const data = {"button":3,"unknown1":3145728,"type":2,"unknown2":0,"time":1};
+        const payload = {data, cluster: 'manuSpecificPhilips', device: remote, endpoint: remote.getEndpoint(2), type: 'commandHueNotification', linkquality: 10, groupID: 0};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(debounce).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb_color.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+    });
+
+    it('Should poll grouped Hue bulb when receiving message from TRADFRI remote', async () => {
+        zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read.mockClear();
+        zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read.mockClear();
+        const remote = zigbeeHerdsman.devices.tradfri_remote;
+        const data = {"stepmode":0,"stepsize":43,"transtime":5};
+        const payload = {data, cluster: 'genLevelCtrl', device: remote, endpoint: remote.getEndpoint(1), type: 'commandStepWithOnOff', linkquality: 10, groupID: 15071};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(debounce).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+
+        // Should also only debounce once
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(debounce).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
+
+        // Should only call Hue bulb, not e.g. tradfri
+        expect(zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read).toHaveBeenCalledTimes(0);
     });
 });
