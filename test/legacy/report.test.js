@@ -1,6 +1,6 @@
-const data = require('./stub/data');
-const logger = require('./stub/logger');
-const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const data = require('../stub/data');
+const logger = require('../stub/logger');
+const zigbeeHerdsman = require('../stub/zigbeeHerdsman');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b2');
@@ -10,9 +10,9 @@ zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45524');
 zigbeeHerdsman.returnDevices.push('0x90fd9ffffe4b64ax');
-const MQTT = require('./stub/mqtt');
-const settings = require('../lib/util/settings');
-const Controller = require('../lib/controller');
+const MQTT = require('../stub/mqtt');
+const settings = require('../../lib/util/settings');
+const Controller = require('../../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
