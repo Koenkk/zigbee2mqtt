@@ -72,10 +72,10 @@
       }
     },
     "collectCoverageFrom": [
-      "lib/**"
+      "lib/**/*.js"
     ]
   },
   "bin": {
-    "zigbee2mqtt": "./cli.js"
+    "zigbee2mqtt": "cli.js"
   }
 }
