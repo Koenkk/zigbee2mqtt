@@ -26,19 +26,35 @@
       "title": "MQTT settings",
       "properties": {
         "base_topic": {
-          "type": "string"
+          "type": "string",
+          "title": "Base topic",
+          "description": "MQTT base topic for Zigbee2MQTT MQTT messages",
+          "examples": ["zigbee2mqtt"]
         },
         "server": {
-          "type": "string"
+          "type": "string",
+          "title": "MQTT server",
+          "description": "MQTT server URL (use mqtts:// for SSL/TLS connection)",
+          "examples": ["mqtt://localhost:1883"]
         },
         "keepalive": {
-          "type": "number"
+          "type": "number",
+          "title": "Keepalive",
+          "description": "MQTT keepalive in second",
+          "default": 60
         },
         "ca": {
-          "type": "string"
+          "type": "string",
+          "title": "Certificate authority",
+          "description": "Absolute path to SSL/TLS certificate of CA used to sign server and client certificates",
+          "examples": ["/etc/ssl/mqtt-ca.crt"]
         },
         "key": {
-          "type": "string"
+          "type": "string",
+          "title": "SSL/TLS key",
+          "description": "Absolute paths to SSL/TLS key and certificate for client-authentication",
+          "examples": ["/etc/ssl/mqtt-client.key"]
+
         },
         "cert": {
           "type": "string"
