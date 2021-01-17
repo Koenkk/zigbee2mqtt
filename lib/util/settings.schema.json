@@ -445,28 +445,7 @@
       },
       "patternProperties": {
         "^.*$": {
-          "type": "object",
-          "properties": {
-            "friendly_name": {
-              "type": "string"
-            },
-            "retain": {
-              "type": "boolean"
-            },
-            "retention": {
-              "type": "number"
-            },
-            "qos": {
-              "type": "number"
-            },
-            "filtered_attributes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": ["friendly_name"]
+          "$ref": "#/definitions/device"
         }
       }
     },
@@ -477,37 +456,77 @@
       },
       "patternProperties": {
         "^.*$": {
-          "type": "object",
-          "properties": {
-            "friendly_name": {
-              "type": "string"
-            },
-            "retain": {
-              "type": "boolean"
-            },
-            "devices": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "optimistic": {
-              "type": "boolean"
-            },
-            "qos": {
-              "type": "number"
-            },
-            "filtered_attributes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": ["friendly_name"]
+          "$ref": "#/definitions/group"
         }
       }
     }
   },
-  "required": ["mqtt"]
+  "required": ["mqtt"],
+  "definitions": {
+    "device": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string",
+          "title": "Friendly name",
+          "description": "Used in the MQTT topic of a device. By default this is the device ID"
+        },
+        "retain": {
+          "type": "boolean",
+          "title": "Retain",
+          "description": "Retain MQTT messages of this device"
+        },
+        "retention": {
+          "type": "number",
+          "title": "Retention",
+          "description": "Sets the MQTT Message Expiry in seconds"
+        },
+        "qos": {
+          "type": "number",
+          "title": "QoS",
+          "descritption": "QoS level for MQTT messages of this device"
+        },
+        "filtered_attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["temperature", "battery", "action"],
+          "title": "Filtered attributes",
+          "description": "Allows to prevent certain attributes from being published"
+        }
+      },
+      "required": ["friendly_name"]
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "retain": {
+          "type": "boolean"
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optimistic": {
+          "type": "boolean"
+        },
+        "qos": {
+          "type": "number"
+        },
+        "filtered_attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["friendly_name"]
+    }
+  }
 }
