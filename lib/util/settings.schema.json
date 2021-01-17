@@ -254,8 +254,7 @@
           "type": "string",
           "title": "Log directory",
           "description": "Location of log directory",
-          "examples": ["data/log/%TIMESTAMP%"],
-          "default": "data/log/%TIMESTAMP%"
+          "examples": ["data/log/%TIMESTAMP%"]
         },
         "log_file": {
           "type": "string",
@@ -356,21 +355,18 @@
         "homeassistant_discovery_topic": {
           "type": "string",
           "title": "Homeassistant discovery topic",
-          "examples": ["homeassistant"],
-          "default": ["homeassistant"]
+          "examples": ["homeassistant"]
         },
         "homeassistant_status_topic": {
           "type": "string",
           "title": "Home Assistant status topic",
-          "examples": ["homeassistant/status"],
-          "default": ["homeassistant/status"]
+          "examples": ["homeassistant/status"]
         },
         "timestamp_format": {
           "type": "string",
           "title": "Timestamp format",
           "description": "Log timestamp format",
-          "examples": ["YYYY-MM-DD HH:mm:ss"],
-          "default": ["YYYY-MM-DD HH:mm:ss"]
+          "examples": ["YYYY-MM-DD HH:mm:ss"]
         },
         "adapter_concurrent": {
           "title": "Adapter concurrency",
@@ -479,7 +475,7 @@
         "retention": {
           "type": "number",
           "title": "Retention",
-          "description": "Sets the MQTT Message Expiry in seconds"
+          "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
         },
         "qos": {
           "type": "number",
