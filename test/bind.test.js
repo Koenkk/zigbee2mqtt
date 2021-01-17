@@ -107,12 +107,21 @@ describe('Bind', () => {
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
         const endpoint = device.getEndpoint(1);
         mockClear(device);
+        delete zigbeeHerdsman.devices.bulb_color.meta.configured;
+        expect(zigbeeHerdsman.devices.bulb_color.meta.configured).toBe(undefined);
         MQTT.events.message('zigbee2mqtt/bridge/request/device/unbind', stringify({from: 'remote', to: 'bulb_color'}));
         await flushPromises();
         expect(endpoint.unbind).toHaveBeenCalledTimes(3);
         expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", target);
         expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", target);
         expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", target);
+
+        // Disable reporting
+        expect(target.configureReporting).toHaveBeenCalledTimes(3);
+        expect(target.configureReporting).toHaveBeenCalledWith("genOnOff",[{"attribute": "onOff", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 0, "reportableChange": 0}]);
+        expect(target.configureReporting).toHaveBeenCalledWith("genLevelCtrl",[{"attribute": "currentLevel", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 5, "reportableChange": 1}]);
+        expect(target.configureReporting).toHaveBeenCalledWith("lightingColorCtrl",[{"attribute":"colorTemperature","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1},{"attribute":"currentX","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1},{"attribute":"currentY","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1}]);
+        expect(zigbeeHerdsman.devices.bulb_color.meta.configured).toBe(2);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/unbind',
             stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),
@@ -325,7 +334,6 @@ describe('Bind', () => {
         expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", target);
         expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", target);
         expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", target);
-        expect(MQTT.publish).toHaveBeenCalledTimes(5);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'bulb_color', cluster: 'genScenes'}});
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/log');
