@@ -190,7 +190,15 @@
           "default": true
         },
         "pan_id": {
-          "type": "number",
+          "oneOf": [{
+              "type": "string",
+              "title": "Pan ID (string)"
+            },
+            {
+              "type": "number",
+              "title": "Pan ID (number)"
+            }
+          ],
           "title": "Pan ID",
           "description": "ZigBee pan ID"
         },
