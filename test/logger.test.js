@@ -66,6 +66,14 @@ describe('Logger', () => {
         expect(logger.getLevel()).toBe('debug');
     });
 
+    it('Set and get log level warn <-> warning', () => {
+        const logger = require('../lib/util/logger.js');
+        logger.logOutput();
+        logger.setLevel('warn');
+        expect(logger.transports[0].level).toBe('warning');
+        expect(logger.getLevel()).toBe('warn');
+    });
+
     it('Logger should be console and file by default', () => {
         const logger = require('../lib/util/logger.js');
         logger.logOutput();
