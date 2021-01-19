@@ -490,6 +490,30 @@
           "title": "QoS",
           "descritption": "QoS level for MQTT messages of this device"
         },
+        "debounce": {
+          "type": "number",
+          "title": "Debounce",
+          "description": "Debounces messages of this device"
+        },
+        "debounce_ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["action"],
+          "title": "Ignore debounce",
+          "description": "Protects unique payload values of specified payload properties from overriding within debounce time"
+        },
+        "retrieve_state": {
+          "type": "boolean",
+          "title": "Retrieve State",
+          "description": "Retrieves the state after setting it (Should only be enabled when the reporting feature does not work for this device)"
+        },
+        "optimistic": {
+          "type": "boolean",
+          "title": "Optimistic",
+          "description": "Publish optimistic state after set (default true)"
+        },
         "filtered_attributes": {
           "type": "array",
           "items": {
