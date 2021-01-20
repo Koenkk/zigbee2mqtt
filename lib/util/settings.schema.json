@@ -190,7 +190,15 @@
           "default": true
         },
         "pan_id": {
-          "type": "number",
+          "oneOf": [{
+              "type": "string",
+              "title": "Pan ID (string)"
+            },
+            {
+              "type": "number",
+              "title": "Pan ID (number)"
+            }
+          ],
           "title": "Pan ID",
           "description": "ZigBee pan ID"
         },
@@ -254,8 +262,7 @@
           "type": "string",
           "title": "Log directory",
           "description": "Location of log directory",
-          "examples": ["data/log/%TIMESTAMP%"],
-          "default": "data/log/%TIMESTAMP%"
+          "examples": ["data/log/%TIMESTAMP%"]
         },
         "log_file": {
           "type": "string",
@@ -356,21 +363,18 @@
         "homeassistant_discovery_topic": {
           "type": "string",
           "title": "Homeassistant discovery topic",
-          "examples": ["homeassistant"],
-          "default": ["homeassistant"]
+          "examples": ["homeassistant"]
         },
         "homeassistant_status_topic": {
           "type": "string",
           "title": "Home Assistant status topic",
-          "examples": ["homeassistant/status"],
-          "default": ["homeassistant/status"]
+          "examples": ["homeassistant/status"]
         },
         "timestamp_format": {
           "type": "string",
           "title": "Timestamp format",
           "description": "Log timestamp format",
-          "examples": ["YYYY-MM-DD HH:mm:ss"],
-          "default": ["YYYY-MM-DD HH:mm:ss"]
+          "examples": ["YYYY-MM-DD HH:mm:ss"]
         },
         "adapter_concurrent": {
           "title": "Adapter concurrency",
@@ -445,28 +449,7 @@
       },
       "patternProperties": {
         "^.*$": {
-          "type": "object",
-          "properties": {
-            "friendly_name": {
-              "type": "string"
-            },
-            "retain": {
-              "type": "boolean"
-            },
-            "retention": {
-              "type": "number"
-            },
-            "qos": {
-              "type": "number"
-            },
-            "filtered_attributes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": ["friendly_name"]
+          "$ref": "#/definitions/device"
         }
       }
     },
@@ -477,37 +460,101 @@
       },
       "patternProperties": {
         "^.*$": {
-          "type": "object",
-          "properties": {
-            "friendly_name": {
-              "type": "string"
-            },
-            "retain": {
-              "type": "boolean"
-            },
-            "devices": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "optimistic": {
-              "type": "boolean"
-            },
-            "qos": {
-              "type": "number"
-            },
-            "filtered_attributes": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": ["friendly_name"]
+          "$ref": "#/definitions/group"
         }
       }
     }
   },
-  "required": ["mqtt"]
+  "required": ["mqtt"],
+  "definitions": {
+    "device": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string",
+          "title": "Friendly name",
+          "description": "Used in the MQTT topic of a device. By default this is the device ID"
+        },
+        "retain": {
+          "type": "boolean",
+          "title": "Retain",
+          "description": "Retain MQTT messages of this device"
+        },
+        "retention": {
+          "type": "number",
+          "title": "Retention",
+          "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
+        },
+        "qos": {
+          "type": "number",
+          "title": "QoS",
+          "descritption": "QoS level for MQTT messages of this device"
+        },
+        "debounce": {
+          "type": "number",
+          "title": "Debounce",
+          "description": "Debounces messages of this device"
+        },
+        "debounce_ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["action"],
+          "title": "Ignore debounce",
+          "description": "Protects unique payload values of specified payload properties from overriding within debounce time"
+        },
+        "retrieve_state": {
+          "type": "boolean",
+          "title": "Retrieve State",
+          "description": "Retrieves the state after setting it (Should only be enabled when the reporting feature does not work for this device)"
+        },
+        "optimistic": {
+          "type": "boolean",
+          "title": "Optimistic",
+          "description": "Publish optimistic state after set (default true)"
+        },
+        "filtered_attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["temperature", "battery", "action"],
+          "title": "Filtered attributes",
+          "description": "Allows to prevent certain attributes from being published"
+        }
+      },
+      "required": ["friendly_name"]
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "friendly_name": {
+          "type": "string"
+        },
+        "retain": {
+          "type": "boolean"
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optimistic": {
+          "type": "boolean"
+        },
+        "qos": {
+          "type": "number"
+        },
+        "filtered_attributes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["friendly_name"]
+    }
+  }
 }

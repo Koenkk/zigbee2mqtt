@@ -622,6 +622,18 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
+    it('Should not allow any string values for pan_id', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            advanced: {pan_id: 'NOT_GENERATE'},
+        });
+
+        settings._reRead();
+
+        const error = `advanced.pan_id: should be number or 'GENERATE' (is 'NOT_GENERATE')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
     it('Should allow retention configuration with MQTT v5', () => {
         write(configurationFile, {
             ...minimalConfig,
