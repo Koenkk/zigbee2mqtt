@@ -6,6 +6,7 @@ const path = require('path');
 const data = require('./stub/data');
 let stdOutWriteOriginal;
 const rimraf = require('rimraf');
+const Transport = require('winston-transport');
 
 describe('Logger', () => {
     beforeEach(async () => {
@@ -64,6 +65,26 @@ describe('Logger', () => {
         logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
+    });
+
+    it('Add transport', () => {
+        class DummyTransport extends Transport {
+            log(info, callback) {
+            }
+        }
+
+        const logger = require('../lib/util/logger.js');
+        expect(logger.transports.length).toBe(2);
+        logger.addTransport(new DummyTransport());
+        expect(logger.transports.length).toBe(3);
+    });
+
+    it('Set and get log level warn <-> warning', () => {
+        const logger = require('../lib/util/logger.js');
+        logger.logOutput();
+        logger.setLevel('warn');
+        expect(logger.transports[0].level).toBe('warning');
+        expect(logger.getLevel()).toBe('warn');
     });
 
     it('Logger should be console and file by default', () => {
