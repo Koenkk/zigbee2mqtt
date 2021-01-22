@@ -17,10 +17,10 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 Date.now = jest.fn()
 Date.now.mockReturnValue(10000);
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
+const setTimeoutNative = setTimeout;
 
 describe('Networkmap', () => {
     let controller;
@@ -43,6 +43,11 @@ describe('Networkmap', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.lastSeen = 1000;
         external_converter_device.lastSeen = 1000;
+        global.setTimeout = (r) => r();
+    });
+
+    afterEach(async () => {
+        global.setTimeout = setTimeoutNative;
     });
 
     function mock() {
