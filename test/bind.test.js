@@ -43,22 +43,31 @@ describe('Bind', () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
         const endpoint = device.getEndpoint(1);
+
+        // Setup
+        const originalDeviceOutputClusters = device.getEndpoint(1).outputClusters;
+        device.getEndpoint(1).outputClusters = [...device.getEndpoint(1).outputClusters, 768];
+        const originalTargetBinds = target.binds;
+        target.binds = [{cluster: {name: 'genLevelCtrl'}, target: zigbeeHerdsman.devices.coordinator.getEndpoint(1)}];
         target.getClusterAttributeValue.mockImplementationOnce((cluster, value) =>  undefined);
         mockClear(device);
+        target.configureReporting.mockImplementationOnce(() => {throw new Error("timeout")});
+
         MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'remote', to: 'bulb_color'}));
         await flushPromises();
         expect(target.read).toHaveBeenCalledWith('lightingColorCtrl', [ 'colorCapabilities' ]);
-        expect(endpoint.bind).toHaveBeenCalledTimes(3);
+        expect(endpoint.bind).toHaveBeenCalledTimes(4);
         expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
         expect(endpoint.bind).toHaveBeenCalledWith("genLevelCtrl", target);
         expect(endpoint.bind).toHaveBeenCalledWith("genScenes", target);
+        expect(endpoint.bind).toHaveBeenCalledWith("lightingColorCtrl", target);
         expect(target.configureReporting).toHaveBeenCalledTimes(3);
         expect(target.configureReporting).toHaveBeenCalledWith("genOnOff",[{"attribute": "onOff", "maximumReportInterval": 3600, "minimumReportInterval": 0, "reportableChange": 0}]);
         expect(target.configureReporting).toHaveBeenCalledWith("genLevelCtrl",[{"attribute": "currentLevel", "maximumReportInterval": 3600, "minimumReportInterval": 5, "reportableChange": 1}]);
         expect(target.configureReporting).toHaveBeenCalledWith("lightingColorCtrl",[{"attribute":"colorTemperature","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentX","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentY","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1}]);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
-            stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),
+            stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl", "lightingColorCtrl"],"failed":[]},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
 
@@ -68,6 +77,10 @@ describe('Bind', () => {
           { retain: true, qos: 0 },
           expect.any(Function)
         );
+
+        // Teardown
+        target.binds = originalTargetBinds;
+        device.getEndpoint(1).outputClusters = originalDeviceOutputClusters;
     });
 
     it('Should bind only specifief clusters', async () => {
@@ -104,6 +117,18 @@ describe('Bind', () => {
     it('Should unbind', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+
+        // setup
+        target.configureReporting.mockImplementationOnce(() => {throw new Error("timeout")});
+        const originalRemoteBinds = device.getEndpoint(1).binds;
+        device.getEndpoint(1).binds = [];
+        const originalTargetBinds = target.binds;
+        target.binds = [
+            {cluster: {name: 'genOnOff'}, target: zigbeeHerdsman.devices.coordinator.getEndpoint(1)},
+            {cluster: {name: 'genLevelCtrl'}, target: zigbeeHerdsman.devices.coordinator.getEndpoint(1)},
+            {cluster: {name: 'lightingColorCtrl'}, target: zigbeeHerdsman.devices.coordinator.getEndpoint(1)}
+        ];
+
         const endpoint = device.getEndpoint(1);
         mockClear(device);
         delete zigbeeHerdsman.devices.bulb_color.meta.configured;
@@ -126,6 +151,10 @@ describe('Bind', () => {
             stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+
+        // Teardown
+        target.binds = originalTargetBinds;
+        device.getEndpoint(1).binds = originalRemoteBinds;
     });
 
     it('Should unbind coordinator', async () => {
@@ -177,6 +206,27 @@ describe('Bind', () => {
         expect(target1Member.configureReporting).toHaveBeenCalledTimes(2);
         expect(target1Member.configureReporting).toHaveBeenCalledWith("genOnOff",[{"attribute": "onOff", "maximumReportInterval": 3600, "minimumReportInterval": 0, "reportableChange": 0}]);
         expect(target1Member.configureReporting).toHaveBeenCalledWith("genLevelCtrl",[{"attribute": "currentLevel", "maximumReportInterval": 3600, "minimumReportInterval": 5, "reportableChange": 1}]);
+    });
+
+    it('Should unbind from group', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.groups.group_1;
+        const target1Member = zigbeeHerdsman.devices.bulb.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        target.members.push(target1Member);
+        target1Member.configureReporting.mockClear();
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/unbind', stringify({from: 'remote', to: 'group_1'}));
+        await flushPromises();
+        expect(endpoint.unbind).toHaveBeenCalledTimes(3);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", target);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", target);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", target);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/unbind',
+            stringify({"data":{"from":"remote","to":"group_1","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should bind to group by number', async () => {
@@ -449,37 +499,6 @@ describe('Bind', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genOnOff'}});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genLevelCtrl'}});
-    });
-
-    it('Shouldnt configure again', async () => {
-        const device = zigbeeHerdsman.devices.remote;
-        const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
-        const endpoint = device.getEndpoint(1);
-        mockClear(device);
-        target.binds.push({cluster: {name: 'genOnOff'}, target: zigbeeHerdsman.devices.coordinator.getEndpoint(1)});
-        target.configureReporting.mockImplementationOnce(() => {throw new Error('')});
-        target.configuredReportings.push({cluster: {name: 'genOnOff'}, attribute: {name: 'onOff'}, maximumReportInterval: 3600, minimumReportInterval: 0, reportableChange: 0});
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'remote', to: 'bulb_color'}));
-        await flushPromises();
-        expect(endpoint.bind).toHaveBeenCalledTimes(3);
-        expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
-        expect(endpoint.bind).toHaveBeenCalledWith("genLevelCtrl", target);
-        expect(endpoint.bind).toHaveBeenCalledWith("genScenes", target);
-        expect(target.configureReporting).toHaveBeenCalledTimes(2);
-        expect(target.configureReporting).toHaveBeenCalledWith("genLevelCtrl",[{"attribute": "currentLevel", "maximumReportInterval": 3600, "minimumReportInterval": 5, "reportableChange": 1}]);
-        expect(target.configureReporting).toHaveBeenCalledWith("lightingColorCtrl",[{"attribute":"colorTemperature","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentX","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentY","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1}]);
-        expect(logger.warn).toHaveBeenCalledWith("Failed to setup reporting for 'bulb_color/1' cluster 'genLevelCtrl'")
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/device/bind',
-            stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),
-            {retain: false, qos: 0}, expect.any(Function)
-        );
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/devices',
-            expect.any(String),
-          { retain: true, qos: 0 },
-          expect.any(Function)
-        );
     });
 
     it('Should poll bounded Hue bulb when receiving message from Hue dimmer', async () => {
