@@ -98,6 +98,17 @@ describe('Groups', () => {
         expect(logger.error).toHaveBeenCalledWith("Cannot find 'not_existing_bla' of group 'group_1'");
     });
 
+    it('Should resolve device friendly names', async () => {
+        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'friendly_name'], 'bulb_friendly_name');
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['bulb_friendly_name', 'bulb_color']}});
+        await controller.start();
+        await flushPromises();
+        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([
+            zigbeeHerdsman.devices.bulb.getEndpoint(1),
+            zigbeeHerdsman.devices.bulb_color.getEndpoint(1)
+        ]);
+    });
+
     it('Legacy api: Add to group via MQTT', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
