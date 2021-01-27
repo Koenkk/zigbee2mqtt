@@ -70,10 +70,11 @@ describe('Loads external converters', () => {
             mock: true,
             zigbeeModel: ['external_converter_device'],
             vendor: 'external',
-            model: ['external_converter_device'],
-            definition: {
-                foo: 'bar'
-            }
+            model: 'external_converter_device',
+            description: 'external',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
     });
 
@@ -87,10 +88,23 @@ describe('Loads external converters', () => {
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(1, {
             mock: 1,
-            model: 'external_converters_device',
+            model: 'external_converters_device_1',
+            zigbeeModel: ['external_converter_device_1'],
+            vendor: 'external_1',
+            description: 'external_1',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(2, {
-            mock: 2
+            mock: 2,
+            model: 'external_converters_device_2',
+            zigbeeModel: ['external_converter_device_2'],
+            vendor: 'external_2',
+            description: 'external_2',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
     });
 
