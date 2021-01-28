@@ -19,7 +19,7 @@ FROM base as release
 
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY lib ./lib
-COPY index.js data/configuration.yaml ./
+COPY LICENSE index.js data/configuration.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
