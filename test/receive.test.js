@@ -6,6 +6,7 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
+const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
@@ -99,7 +100,7 @@ describe('Receive', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button', stringify({action: 'single'}), {retain: false, qos: 0}, expect.any(Function));
     });
 
-    it('Should debounce messages', async () => {
+    it('Should debounce messages (settings)', async () => {
         jest.useFakeTimers();
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
@@ -122,6 +123,34 @@ describe('Receive', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
+
+    it('Should debounce messages (converter meta)', async () => {
+        jest.useFakeTimers();
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        const converter = zigbeeHerdsmanConverters.findByDevice(device);
+        converter.meta.debounce = 0.1;
+        const data1 = {measuredValue: 8}
+        const payload1 = {data: data1, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload1);
+        const data2 = {measuredValue: 1}
+        const payload2 = {data: data2, cluster: 'msRelativeHumidity', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload2);
+        const data3 = {measuredValue: 2}
+        const payload3 = {data: data3, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload3);
+        await flushPromises();
+        jest.advanceTimersByTime(50);
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        jest.runAllTimers();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
+
+        delete converter.meta.debounce;
+    });
+
 
     it('Should debounce and retain messages when set via device_options', async () => {
         jest.useFakeTimers();
