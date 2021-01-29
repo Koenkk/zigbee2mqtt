@@ -1404,14 +1404,11 @@ describe('HomeAssistant extension', () => {
 
     it('Load Home Assistant mapping from external converters', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
-        const beforeCount = Object.entries((new HomeAssistant(null, null, null, null, {on: () => {}}))._getMapping()).length;
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
         controller = new Controller();
         const ha = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
         await controller.start();
         await flushPromises();
-        const afterCount = Object.entries(ha._getMapping()).length;
-        expect(beforeCount + 1).toStrictEqual(afterCount);
 
         const homeassistantSwitch = {
             type: 'switch',
@@ -1423,7 +1420,7 @@ describe('HomeAssistant extension', () => {
                 command_topic: true,
             },
         };
-        expect(ha._getMapping()['external_converters_device']).toEqual([homeassistantSwitch]);
+        expect(ha._getMapping()['external_converters_device_1']).toEqual([homeassistantSwitch]);
     });
 
     it('Should clear outdated configs', async () => {
