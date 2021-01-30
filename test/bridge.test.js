@@ -607,6 +607,17 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should throw not implemented erron on bridge/request/options', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{},"status":"error","error":"Saving settings is not yet implemented"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to add group by string', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/add', 'group_193');
