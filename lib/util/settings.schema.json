@@ -287,7 +287,8 @@
           "type": "number",
           "minimum": 0,
           "title": "Soft reset timeout (deprecated)",
-          "description": "Soft reset ZNP after timeout"
+          "description": "Soft reset ZNP after timeout",
+          "readOnly": true
         },
         "network_key": {
           "oneOf": [{
@@ -473,7 +474,8 @@
         "friendly_name": {
           "type": "string",
           "title": "Friendly name",
-          "description": "Used in the MQTT topic of a device. By default this is the device ID"
+          "description": "Used in the MQTT topic of a device. By default this is the device ID",
+          "readOnly": true
         },
         "retain": {
           "type": "boolean",
