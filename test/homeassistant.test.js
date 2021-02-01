@@ -529,6 +529,24 @@ describe('HomeAssistant extension', () => {
         expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/temperature/config')
     });
 
+    it('Shouldnt discover sensor when set to null', async () => {
+        logger.error.mockClear();
+        settings.set(['devices', '0x0017880104e45522'], {
+            homeassistant: {humidity: null},
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
+
+        controller = new Controller(false);
+        await controller.start();
+
+        await flushPromises();
+
+        const topics = MQTT.publish.mock.calls.map((c) => c[0]);
+        expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config')
+        expect(topics).toContain('homeassistant/sensor/0x0017880104e45522/temperature/config')
+    });
+
     it('Should discover devices with fan', async () => {
         controller = new Controller(false);
         await controller.start();
@@ -1238,6 +1256,28 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
     });
 
+    it('Should not discover device_automtation when disabled', async () => {
+        settings.set(['device_options'], {
+            homeassistant: {device_automation: null},
+        })
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        const device = zigbeeHerdsman.devices.WXKG11LM;
+        const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload1);
+        await flushPromises();
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'homeassistant/device_automation/0x0017880104e45520/action_single/config',
+            expect.any(String),
+            expect.any(Object),
+            expect.any(Function),
+        );
+    });
+
     it('Should not discover sensor_click when legacy: false is set', async () => {
         settings.set(['devices', '0x0017880104e45520'], {
             legacy: false,
@@ -1364,14 +1404,11 @@ describe('HomeAssistant extension', () => {
 
     it('Load Home Assistant mapping from external converters', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
-        const beforeCount = Object.entries((new HomeAssistant(null, null, null, null, {on: () => {}}))._getMapping()).length;
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
         controller = new Controller();
         const ha = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
         await controller.start();
         await flushPromises();
-        const afterCount = Object.entries(ha._getMapping()).length;
-        expect(beforeCount + 1).toStrictEqual(afterCount);
 
         const homeassistantSwitch = {
             type: 'switch',
@@ -1383,7 +1420,7 @@ describe('HomeAssistant extension', () => {
                 command_topic: true,
             },
         };
-        expect(ha._getMapping()['external_converters_device']).toEqual([homeassistantSwitch]);
+        expect(ha._getMapping()['external_converters_device_1']).toEqual([homeassistantSwitch]);
     });
 
     it('Should clear outdated configs', async () => {

@@ -36,7 +36,7 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.setLED).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(0);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, undefined, undefined);
         expect(logger.info).toHaveBeenCalledWith(`Currently ${Object.values(zigbeeHerdsman.devices).length - 1} devices are joined:`)
         expect(logger.info).toHaveBeenCalledWith('bulb (0x000b57fffec6a5b2): LED1545G12 - IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (Router)');
         expect(logger.info).toHaveBeenCalledWith('remote (0x0017880104e45517): 324131092621 - Philips Hue dimmer switch (EndDevice)');
@@ -93,12 +93,15 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
-    it('Should generate network_key when set to GENERATE', async () => {
+    it('Should generate network_key and pan_id when set to GENERATE', async () => {
         settings.set(['advanced', 'network_key'], 'GENERATE');
+        settings.set(['advanced', 'pan_id'], 'GENERATE');
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
+        expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.panID).toStrictEqual(expect.any(Number));
         expect(data.read().advanced.network_key.length).toStrictEqual(16);
+        expect(data.read().advanced.pan_id).toStrictEqual(expect.any(Number));
     });
 
     it('Start controller should publish cached states', async () => {
@@ -202,7 +205,7 @@ describe('Controller', () => {
         settings.set(['permit_join'], false);
         await controller.start();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
     });
 
     it('Start controller with disable_led', async () => {
