@@ -175,7 +175,7 @@ describe('Availability', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(4);
         expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY']);
+        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'currentHue', 'currentSaturation']);
         expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorTemperature']);
     });
 
