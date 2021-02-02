@@ -737,7 +737,7 @@ describe('Settings', () => {
 
         settings._reRead();
 
-        const error = `friendly_name shoud atleast be 1 char long`;
+        const error = `friendly_name must be at least 1 char long`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
