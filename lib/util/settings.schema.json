@@ -506,11 +506,6 @@
           "title": "Ignore debounce",
           "description": "Protects unique payload values of specified payload properties from overriding within debounce time"
         },
-        "retrieve_state": {
-          "type": "boolean",
-          "title": "Retrieve State",
-          "description": "Retrieves the state after setting it (Should only be enabled when the reporting feature does not work for this device)"
-        },
         "optimistic": {
           "type": "boolean",
           "title": "Optimistic",
