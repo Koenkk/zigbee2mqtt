@@ -644,6 +644,17 @@ describe('Bridge', () => {
         );
     });
 
+    it('Shouldnt allow to add group with empty name', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/add', stringify({friendly_name: "", id: 9}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/add',
+            stringify({"data":{},"status":"error","error":"friendly_name must be at least 1 char long"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should throw error when add with invalid payload', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/add', stringify({friendly_name9: "group_193"}));
