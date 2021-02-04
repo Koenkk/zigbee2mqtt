@@ -5,7 +5,7 @@
       "type": "object"
     },
     "homeassistant": {
-      "title": "Homeassistant integration",
+      "title": "Home Assistant integration",
       "type": "boolean",
       "description": "Home Assistant integration (MQTT discovery)",
       "default": false
@@ -14,7 +14,7 @@
       "type": "boolean",
       "default": false,
       "title": "Permit join",
-      "description": "Allow new devices to join. WARNING: Disable this after all devices have been paired!"
+      "description": "Allow new devices to join (re-applied at restart)"
     },
     "external_converters": {
       "type": "array",
@@ -57,7 +57,6 @@
           "title": "SSL/TLS key",
           "description": "Absolute paths to SSL/TLS key and certificate for client-authentication",
           "examples": ["/etc/ssl/mqtt-client.key"]
-
         },
         "cert": {
           "type": "string",
@@ -126,7 +125,7 @@
           "default": false
         },
         "adapter": {
-          "type": "string",
+          "type": ["string", "null"],
           "enum": ["deconz", "zstack", "zigate"],
           "title": "Adapter",
           "description": "Adapter type, not needed unless you are experiencing problems"
@@ -150,15 +149,17 @@
       }
     },
     "whitelist": {
+      "readOnly": true,
       "type": "array",
-      "title": "Whitelist (deprecated)",
+      "title": "Whitelist (deprecated, use passlist)",
       "items": {
         "type": "string"
       }
     },
     "ban": {
+      "readOnly": true,
       "type": "array",
-      "title": "Ban (deprecated)",
+      "title": "Ban (deprecated, use blocklist)",
       "items": {
         "type": "string"
       }
@@ -169,7 +170,8 @@
       "properties": {
         "transmit_power": {
           "type": ["number", "null"],
-          "title": "Transmit power"
+          "title": "Transmit power",
+          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters"
         },
         "output": {
           "type": "string",
@@ -200,7 +202,7 @@
             }
           ],
           "title": "Pan ID",
-          "description": "ZigBee pan ID"
+          "description": "ZigBee pan ID, changing requires repairing all devices!"
         },
         "ext_pan_id": {
           "type": "array",
@@ -208,7 +210,7 @@
             "type": "number"
           },
           "title": "Ext Pan ID",
-          "description": "Zigbee extended pan ID"
+          "description": "Zigbee extended pan ID, changing requires repairing all devices!"
         },
         "channel": {
           "type": "number",
@@ -216,7 +218,7 @@
           "maximum": 26,
           "default": 11,
           "title": "ZigBee channel",
-          "description": "Changing requires re-pairing of all devices. (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)"
+          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)"
         },
         "cache_state": {
           "type": "boolean",
@@ -227,13 +229,13 @@
         "cache_state_persistent": {
           "type": "boolean",
           "title": "Chache state persistent",
-          "description": "Persist cached state, only used when Cache state(cache_state: true)",
+          "description": "Persist cached state, only used when cache_state: true",
           "default": true
         },
         "cache_state_send_on_startup": {
           "type": "boolean",
           "title": "Cache state send on startup",
-          "description": "Cache state send on startup, only used when Cache state(cache_state: true)",
+          "description": "Cache state send on startup, only used when cache_state: true",
           "default": true
         },
         "log_rotation": {
@@ -304,7 +306,7 @@
             }
           ],
           "title": "Network key",
-          "description": "Network encryption key, will improve security (Note: changing requires repairing of all devices)"
+          "description": "Network encryption key, changing requires repairing all devices!"
         },
         "last_seen": {
           "type": "string",
@@ -324,7 +326,7 @@
           "minimum": 0,
           "default": 0,
           "title": "Availability Timeout",
-          "description": "Availability timeout in seconds When enabled, devices will be checked if they are still online. Only AC powered routers are checked for availability"
+          "description": "Availability timeout in seconds when enabled, devices will be checked if they are still online. Only AC powered routers are checked for availability"
         },
         "availability_blocklist": {
           "type": "array",
@@ -344,22 +346,25 @@
         },
         "availability_blacklist": {
           "type": "array",
-          "title": "Availability blacklist (deprecated)",
+          "readOnly": true,
+          "title": "Availability blacklist (deprecated, use availability_blocklist)",
           "items": {
             "type": "string"
           }
         },
         "availability_whitelist": {
           "type": "array",
+          "readOnly": true,
           "items": {
             "type": "string"
           },
-          "title": "Availability whitelist (deprecated)"
+          "title": "Availability whitelist (deprecated, use passlist)"
         },
         "report": {
           "type": "boolean",
           "title": "Reporting",
-          "description": "Enables report feature"
+          "readOnly": true,
+          "description": "Enables report feature (deprecated)"
         },
         "homeassistant_discovery_topic": {
           "type": "string",
