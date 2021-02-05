@@ -8,6 +8,7 @@
       "title": "Home Assistant integration",
       "type": "boolean",
       "description": "Home Assistant integration (MQTT discovery)",
+      "requiresRestart": true,
       "default": false
     },
     "permit_join": {
