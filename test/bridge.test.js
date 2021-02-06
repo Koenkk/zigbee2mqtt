@@ -995,6 +995,20 @@ describe('Bridge', () => {
         );
     });
 
+    it('Change options array', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        expect(settings.get().advanced.ext_pan_id).toStrictEqual([221, 221, 221, 221, 221, 221, 221, 221])
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {ext_pan_id: [220, 221, 221, 221, 221, 221, 221, 221]}}}));
+        await flushPromises();
+        expect(settings.get().advanced.ext_pan_id).toStrictEqual([220, 221, 221, 221, 221, 221, 221, 221]);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Change options invalid payload', async () => {
         zigbeeHerdsman.permitJoin.mockClear();
         MQTT.publish.mockClear();
