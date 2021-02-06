@@ -85,7 +85,7 @@ describe('Frontend', () => {
     });
 
     it('Start/stop', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         expect(mockNodeStatic.variables.path).toBe("my/dummy/path");
         expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
@@ -103,7 +103,7 @@ describe('Frontend', () => {
     });
 
     it('Websocket interaction', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
         // Connect
@@ -158,7 +158,7 @@ describe('Frontend', () => {
     });
 
     it('onReques/onUpgrade', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
         const mockSocket = {destroy: jest.fn()};
@@ -176,7 +176,7 @@ describe('Frontend', () => {
     });
 
     it('Static server', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
         expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
@@ -185,7 +185,7 @@ describe('Frontend', () => {
     it('Authentification', async () => {
         const authToken = 'sample-secure-token'
         settings.set(['frontend'], {auth_token: authToken});
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
         const mockSocket = {destroy: jest.fn()};

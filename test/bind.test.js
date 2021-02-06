@@ -32,7 +32,7 @@ describe('Bind', () => {
         zigbeeHerdsman.devices.bulb_color.getEndpoint(1).bind.mockClear();
         zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read.mockClear();
         debounce.mockClear();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);

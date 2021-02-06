@@ -21,7 +21,7 @@ describe('OTA update', () => {
         settings._reRead();
         settings.set(['advanced', 'ikea_ota_use_test_url'], true);
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
