@@ -313,8 +313,7 @@
           "type": "boolean",
           "title": "RTS / CTS",
           "requiresRestart": true,
-          "description": "RTS / CTS Hardware Flow Control for serial port",
-          "default": false
+          "description": "RTS / CTS Hardware Flow Control for serial port"
         },
         "soft_reset_timeout": {
           "type": "number",

@@ -940,7 +940,7 @@ describe('Bridge', () => {
         zigbeeHerdsman.permitJoin.mockClear();
         settings.apply({permit_join: false});
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({permit_join: true}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {permit_join: true}}));
         await flushPromises();
         expect(settings.get().permit_join).toBe(true);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
@@ -956,7 +956,7 @@ describe('Bridge', () => {
     it('Change options and apply - homeassistant', async () => {
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({homeassistant: true}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: true}}));
         await flushPromises();
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
@@ -970,7 +970,7 @@ describe('Bridge', () => {
     it('Change options and apply - log_level', async () => {
         logger.setLevel('info');
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({advanced: {log_level: 'debug'}}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_level: 'debug'}}}));
         await flushPromises();
         expect(logger.getLevel()).toBe('debug');
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
@@ -985,7 +985,7 @@ describe('Bridge', () => {
         zigbeeHerdsman.permitJoin.mockClear();
         settings.apply({serial: {port: '123'}});
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({serial: {port: '/dev/newport'}}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {serial: {port: '/dev/newport'}}}));
         await flushPromises();
         expect(settings.get().serial.port).toBe('/dev/newport');
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1010,7 +1010,7 @@ describe('Bridge', () => {
     it('Change options not valid against schema', async () => {
         zigbeeHerdsman.permitJoin.mockClear();
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({permit_join: 'true'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {permit_join: 'true'}}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
