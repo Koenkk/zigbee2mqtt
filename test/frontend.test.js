@@ -93,6 +93,7 @@ describe('Frontend', () => {
         const mockWSClient = {
             implementation: {
                 close: jest.fn(),
+                send: jest.fn(),
             },
             events: {},
         };
