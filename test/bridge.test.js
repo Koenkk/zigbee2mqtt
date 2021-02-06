@@ -17,6 +17,7 @@ zigbeeHerdsman.returnDevices.push(ZNCZ02LM.ieeeAddr);
 
 describe('Bridge', () => {
     let controller;
+    let mockRestart;
 
     beforeEach(async () => {
         MQTT.mock.reconnecting = false;
@@ -31,7 +32,8 @@ describe('Bridge', () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.removeFromDatabase.mockClear();
         device.removeFromNetwork.mockClear();
-        controller = new Controller();
+        mockRestart = jest.fn();
+        controller = new Controller(mockRestart, jest.fn());
         await controller.start();
         await flushPromises();
     });
@@ -41,7 +43,7 @@ describe('Bridge', () => {
         const directory = settings.get().advanced.log_directory;
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
-            stringify({ "commit": version.commitHash, "config": { "advanced": { "adapter_concurrent": null, "adapter_delay": null, "availability_blacklist": [], "availability_blocklist": [], "availability_passlist": [], "availability_timeout": 0, "availability_whitelist": [], "cache_state": true, "cache_state_persistent": true, "cache_state_send_on_startup": true, "channel": 11, "elapsed": false, "ext_pan_id": [221, 221, 221, 221, 221, 221, 221, 221], "homeassistant_discovery_topic": "homeassistant", "homeassistant_legacy_triggers": true, "homeassistant_status_topic": "hass/status", "last_seen": "disable", "legacy_api": false, "log_directory": directory, "log_file": "log.txt", "log_level": "info", "log_output": ["console", "file"], "log_rotation": true, "log_syslog": {}, "pan_id": 6754, "report": false, "soft_reset_timeout": 0, "timestamp_format": "YYYY-MM-DD HH:mm:ss" }, "ban": [], "blocklist": [], "device_options": {}, "devices": { "0x000b57fffec6a5b2": { "friendly_name": "bulb", "retain": true }, "0x000b57fffec6a5b3": { "friendly_name": "bulb_color", "retain": false }, "0x000b57fffec6a5b4": { "friendly_name": "bulb_color_2", "retain": false }, "0x000b57fffec6a5b7": { "friendly_name": "bulb_2", "retain": false }, "0x0017880104a44559": { "friendly_name": "J1_cover" }, "0x0017880104e43559": { "friendly_name": "U202DST600ZB" }, "0x0017880104e44559": { "friendly_name": "3157100_thermostat" }, "0x0017880104e45517": { "friendly_name": "remote", "retain": true }, "0x0017880104e45518": { "friendly_name": "0x0017880104e45518" }, "0x0017880104e45520": { "friendly_name": "button", "retain": false }, "0x0017880104e45521": { "friendly_name": "button_double_key", "retain": false }, "0x0017880104e45522": { "friendly_name": "weather_sensor", "qos": 1, "retain": false }, "0x0017880104e45523": { "friendly_name": "occupancy_sensor", "retain": false }, "0x0017880104e45524": { "friendly_name": "power_plug", "retain": false }, "0x0017880104e45526": { "friendly_name": "GL-S-007ZS" }, "0x0017880104e45529": { "friendly_name": "unsupported2", "retain": false }, "0x0017880104e45530": { "friendly_name": "button_double_key_interviewing", "retain": false }, "0x0017880104e45540": { "friendly_name": "ikea_onoff" }, "0x0017880104e45541": { "friendly_name": "wall_switch", "retain": false }, "0x0017880104e45542": { "friendly_name": "wall_switch_double", "retain": false }, "0x0017880104e45543": { "friendly_name": "led_controller_1", "retain": false }, "0x0017880104e45544": { "friendly_name": "led_controller_2", "retain": false }, "0x0017880104e45545": { "friendly_name": "dimmer_wall_switch", "retain": false }, "0x0017880104e45547": { "friendly_name": "curtain", "retain": false }, "0x0017880104e45548": { "friendly_name": "fan", "retain": false }, "0x0017880104e45549": { "friendly_name": "siren", "retain": false }, "0x0017880104e45550": { "friendly_name": "thermostat", "retain": false }, "0x0017880104e45551": { "friendly_name": "smart vent", "retain": false }, "0x0017880104e45552": { "friendly_name": "j1", "retain": false }, "0x0017880104e45553": { "friendly_name": "bulb_enddevice", "retain": false }, "0x0017880104e45559": { "friendly_name": "cc2530_router", "retain": false }, "0x0017880104e45560": { "friendly_name": "livolo", "retain": false }, "0x0017882104a44559": { "friendly_name": "TS0601_thermostat" }, "0x0017882194e45543": { "friendly_name": "QS-Zigbee-D02-TRIAC-2C-LN" }, "0x90fd9ffffe4b64aa": { "friendly_name": "SP600_OLD" }, "0x90fd9ffffe4b64ab": { "friendly_name": "SP600_NEW" }, "0x90fd9ffffe4b64ac": { "friendly_name": "MKS-CM-W5" }, "0x90fd9ffffe4b64ae": { "friendly_name": "tradfri_remote", "retain": false }, "0x90fd9ffffe4b64af": { "friendly_name": "roller_shutter" }, "0x90fd9ffffe4b64ax": { "friendly_name": "ZNLDP12LM" } }, "experimental": { "output": "json" }, "external_converters": [], "groups": { "1": { "friendly_name": "group_1", "retain": false }, "11": { "devices": ["bulb_2"], "friendly_name": "group_with_tradfri", "retain": false }, "14": { "devices": ["power_plug"], "friendly_name": "switch_group", "retain": false }, "12": { "devices": ["TS0601_thermostat"], "friendly_name": "thermostat_group", "retain": false }, "15071": { "devices": ["bulb_color_2", "bulb_2"], "friendly_name": "group_tradfri_remote", "retain": false }, "2": { "friendly_name": "group_2", "retain": false } }, "homeassistant": false, "map_options": { "graphviz": { "colors": { "fill": { "coordinator": "#e04e5d", "enddevice": "#fff8ce", "router": "#4ea3e0" }, "font": { "coordinator": "#ffffff", "enddevice": "#000000", "router": "#ffffff" }, "line": { "active": "#009900", "inactive": "#994444" } } } }, "mqtt": { "base_topic": "zigbee2mqtt", "include_device_information": false, "server": "mqtt://localhost", "force_disable_retain": false,  }, "passlist": [], "permit_join": true, "serial": { "disable_led": false, "port": "/dev/dummy" }, "whitelist": [] }, "coordinator": { "meta": { "revision": 20190425, "version": 1 }, "type": "z-Stack" }, "log_level": "info", "network": { "channel": 15, "extended_pan_id": [0, 11, 22], "pan_id": 5674 }, "permit_join": false, "version": version.version, config_schema: settings.schema }),
+            stringify({ "restart_required": false, "commit": version.commitHash, "config": { "advanced": { "adapter_concurrent": null, "adapter_delay": null, "availability_blacklist": [], "availability_blocklist": [], "availability_passlist": [], "availability_timeout": 0, "availability_whitelist": [], "cache_state": true, "cache_state_persistent": true, "cache_state_send_on_startup": true, "channel": 11, "elapsed": false, "ext_pan_id": [221, 221, 221, 221, 221, 221, 221, 221], "homeassistant_discovery_topic": "homeassistant", "homeassistant_legacy_triggers": true, "homeassistant_status_topic": "hass/status", "last_seen": "disable", "legacy_api": false, "log_directory": directory, "log_file": "log.txt", "log_level": "info", "log_output": ["console", "file"], "log_rotation": true, "log_syslog": {}, "pan_id": 6754, "report": false, "soft_reset_timeout": 0, "timestamp_format": "YYYY-MM-DD HH:mm:ss" }, "ban": [], "blocklist": [], "device_options": {}, "devices": { "0x000b57fffec6a5b2": { "friendly_name": "bulb", "retain": true }, "0x000b57fffec6a5b3": { "friendly_name": "bulb_color", "retain": false }, "0x000b57fffec6a5b4": { "friendly_name": "bulb_color_2", "retain": false }, "0x000b57fffec6a5b7": { "friendly_name": "bulb_2", "retain": false }, "0x0017880104a44559": { "friendly_name": "J1_cover" }, "0x0017880104e43559": { "friendly_name": "U202DST600ZB" }, "0x0017880104e44559": { "friendly_name": "3157100_thermostat" }, "0x0017880104e45517": { "friendly_name": "remote", "retain": true }, "0x0017880104e45518": { "friendly_name": "0x0017880104e45518" }, "0x0017880104e45520": { "friendly_name": "button", "retain": false }, "0x0017880104e45521": { "friendly_name": "button_double_key", "retain": false }, "0x0017880104e45522": { "friendly_name": "weather_sensor", "qos": 1, "retain": false }, "0x0017880104e45523": { "friendly_name": "occupancy_sensor", "retain": false }, "0x0017880104e45524": { "friendly_name": "power_plug", "retain": false }, "0x0017880104e45526": { "friendly_name": "GL-S-007ZS" }, "0x0017880104e45529": { "friendly_name": "unsupported2", "retain": false }, "0x0017880104e45530": { "friendly_name": "button_double_key_interviewing", "retain": false }, "0x0017880104e45540": { "friendly_name": "ikea_onoff" }, "0x0017880104e45541": { "friendly_name": "wall_switch", "retain": false }, "0x0017880104e45542": { "friendly_name": "wall_switch_double", "retain": false }, "0x0017880104e45543": { "friendly_name": "led_controller_1", "retain": false }, "0x0017880104e45544": { "friendly_name": "led_controller_2", "retain": false }, "0x0017880104e45545": { "friendly_name": "dimmer_wall_switch", "retain": false }, "0x0017880104e45547": { "friendly_name": "curtain", "retain": false }, "0x0017880104e45548": { "friendly_name": "fan", "retain": false }, "0x0017880104e45549": { "friendly_name": "siren", "retain": false }, "0x0017880104e45550": { "friendly_name": "thermostat", "retain": false }, "0x0017880104e45551": { "friendly_name": "smart vent", "retain": false }, "0x0017880104e45552": { "friendly_name": "j1", "retain": false }, "0x0017880104e45553": { "friendly_name": "bulb_enddevice", "retain": false }, "0x0017880104e45559": { "friendly_name": "cc2530_router", "retain": false }, "0x0017880104e45560": { "friendly_name": "livolo", "retain": false }, "0x0017882104a44559": { "friendly_name": "TS0601_thermostat" }, "0x0017882194e45543": { "friendly_name": "QS-Zigbee-D02-TRIAC-2C-LN" }, "0x90fd9ffffe4b64aa": { "friendly_name": "SP600_OLD" }, "0x90fd9ffffe4b64ab": { "friendly_name": "SP600_NEW" }, "0x90fd9ffffe4b64ac": { "friendly_name": "MKS-CM-W5" }, "0x90fd9ffffe4b64ae": { "friendly_name": "tradfri_remote", "retain": false }, "0x90fd9ffffe4b64af": { "friendly_name": "roller_shutter" }, "0x90fd9ffffe4b64ax": { "friendly_name": "ZNLDP12LM" } }, "experimental": { "output": "json" }, "external_converters": [], "groups": { "1": { "friendly_name": "group_1", "retain": false }, "11": { "devices": ["bulb_2"], "friendly_name": "group_with_tradfri", "retain": false }, "14": { "devices": ["power_plug"], "friendly_name": "switch_group", "retain": false }, "12": { "devices": ["TS0601_thermostat"], "friendly_name": "thermostat_group", "retain": false }, "15071": { "devices": ["bulb_color_2", "bulb_2"], "friendly_name": "group_tradfri_remote", "retain": false }, "2": { "friendly_name": "group_2", "retain": false } }, "homeassistant": false, "map_options": { "graphviz": { "colors": { "fill": { "coordinator": "#e04e5d", "enddevice": "#fff8ce", "router": "#4ea3e0" }, "font": { "coordinator": "#ffffff", "enddevice": "#000000", "router": "#ffffff" }, "line": { "active": "#009900", "inactive": "#994444" } } } }, "mqtt": { "base_topic": "zigbee2mqtt", "include_device_information": false, "server": "mqtt://localhost", "force_disable_retain": false,  }, "passlist": [], "permit_join": true, "serial": { "disable_led": false, "port": "/dev/dummy" }, "whitelist": [] }, "coordinator": { "meta": { "revision": 20190425, "version": 1 }, "type": "z-Stack" }, "log_level": "info", "network": { "channel": 15, "extended_pan_id": [0, 11, 22], "pan_id": 5674 }, "permit_join": false, "version": version.version, config_schema: settings.schema }),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -263,6 +265,14 @@ describe('Bridge', () => {
         await zigbeeHerdsman.events.permitJoinChanged({permitted: false, time: 10});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+    });
+
+    it('Shouldnt republish bridge info when permit join changes and hersman is stopping', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.isStopping.mockImplementationOnce(() => true);
+        await zigbeeHerdsman.events.permitJoinChanged({permitted: false, time: 10});
+        await flushPromises();
+        expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
     });
 
     it('Should allow permit join via device', async () => {
@@ -607,17 +617,6 @@ describe('Bridge', () => {
         );
     });
 
-    it('Should throw not implemented erron on bridge/request/options', async () => {
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({}));
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/options',
-            stringify({"data":{},"status":"error","error":"Saving settings is not yet implemented"}),
-            {retain: false, qos: 0}, expect.any(Function)
-        );
-    });
-
     it('Should allow to add group by string', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/add', 'group_193');
@@ -917,6 +916,119 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to restart', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        jest.useFakeTimers();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/restart', '');
+        await flushPromises();
+        jest.runAllTimers();
+        expect(mockRestart).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/restart',
+            stringify({"data":{},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        jest.useRealTimers();
+    });
+
+    it('Change options', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        settings.apply({permit_join: false});
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {permit_join: true}}));
+        await flushPromises();
+        expect(settings.get().permit_join).toBe(true);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, undefined, undefined);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options and apply - homeassistant', async () => {
+        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: true}}));
+        await flushPromises();
+        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options and apply - log_level', async () => {
+        logger.setLevel('info');
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_level: 'debug'}}}));
+        await flushPromises();
+        expect(logger.getLevel()).toBe('debug');
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options restart required', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        settings.apply({serial: {port: '123'}});
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {serial: {port: '/dev/newport'}}}));
+        await flushPromises();
+        expect(settings.get().serial.port).toBe('/dev/newport');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options array', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        expect(settings.get().advanced.ext_pan_id).toStrictEqual([221, 221, 221, 221, 221, 221, 221, 221])
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {ext_pan_id: [220, 221, 221, 221, 221, 221, 221, 221]}}}));
+        await flushPromises();
+        expect(settings.get().advanced.ext_pan_id).toStrictEqual([220, 221, 221, 221, 221, 221, 221, 221]);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options invalid payload', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', 'I am invalid');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{},"error": "Invalid payload", "status":"error"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options not valid against schema', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {permit_join: 'true'}}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{},"error": "permit_join should be boolean", "status":"error"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });

@@ -790,7 +790,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt discover when device leaves', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
@@ -804,7 +804,7 @@ describe('HomeAssistant extension', () => {
     it('Should send all status when home assistant comes online (default topic)', async () => {
         jest.useFakeTimers();
         data.writeDefaultState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         expect(MQTT.subscribe).toHaveBeenCalledWith('homeassistant/status');
         await flushPromises();
@@ -830,7 +830,7 @@ describe('HomeAssistant extension', () => {
     it('Should send all status when home assistant comes online', async () => {
         jest.useFakeTimers();
         data.writeDefaultState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(MQTT.subscribe).toHaveBeenCalledWith('hass/status');
@@ -856,7 +856,7 @@ describe('HomeAssistant extension', () => {
     it('Shouldnt send all status when home assistant comes offline', async () => {
         jest.useFakeTimers();
         data.writeDefaultState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
@@ -870,7 +870,7 @@ describe('HomeAssistant extension', () => {
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
         jest.useFakeTimers();
         data.writeDefaultState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
@@ -1405,7 +1405,7 @@ describe('HomeAssistant extension', () => {
     it('Load Home Assistant mapping from external converters', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         const ha = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
         await controller.start();
         await flushPromises();
@@ -1424,7 +1424,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should clear outdated configs', async () => {
-        controller = new Controller(false);
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
 

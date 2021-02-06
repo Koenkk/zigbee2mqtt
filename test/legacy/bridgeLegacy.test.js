@@ -15,7 +15,7 @@ describe('Bridge legacy', () => {
 
     beforeAll(async () => {
         this.version = await require('../../lib/util/utils').getZigbee2mqttVersion();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
     })
 
@@ -251,7 +251,7 @@ describe('Bridge legacy', () => {
     });
 
     it('Shouldnt rename when no device has been joined', async () => {
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(settings.getDevice('0x000b57fffec6a5b2').friendlyName).toStrictEqual('bulb');
