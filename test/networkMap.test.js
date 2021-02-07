@@ -31,7 +31,7 @@ describe('Networkmap', () => {
         data.writeEmptyState();
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
         settings.set(['external_converters'], ['mock-external-converter.js']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         await flushPromises();

@@ -46,7 +46,7 @@ describe('Configure', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         await flushPromises();
