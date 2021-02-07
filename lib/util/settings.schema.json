@@ -433,6 +433,13 @@
           "type": ["number", "null"],
           "requiresRestart": true,
           "title": "Adapter delay"
+        },
+        "ikea_ota_use_test_url": {
+          "type": "boolean",
+          "title": "IKEA TRADFRI OTA use test url",
+          "requiresRestart": true,
+          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
+          "default": false
         }
       }
     },
