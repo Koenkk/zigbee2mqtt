@@ -253,14 +253,14 @@
         },
         "cache_state_persistent": {
           "type": "boolean",
-          "title": "Cache state persistent",
+          "title": "Persist cache state",
           "description": "Persist cached state, only used when cache_state: true",
           "default": true
         },
         "cache_state_send_on_startup": {
           "type": "boolean",
-          "title": "Cache state send on startup",
-          "description": "Cache state send on startup, only used when cache_state: true",
+          "title": "Send cached state on startup",
+          "description": "Send cached state on startup, only used when cache_state: true",
           "default": true
         },
         "log_rotation": {
