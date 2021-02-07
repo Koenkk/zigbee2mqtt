@@ -253,7 +253,7 @@
         },
         "cache_state_persistent": {
           "type": "boolean",
-          "title": "Chache state persistent",
+          "title": "Cache state persistent",
           "description": "Persist cached state, only used when cache_state: true",
           "default": true
         },
