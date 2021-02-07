@@ -436,9 +436,9 @@
         },
         "ikea_ota_use_test_url": {
           "type": "boolean",
-          "title": "Ikea ota use test url",
+          "title": "IKEA TRADFRI OTA use test url",
           "requiresRestart": true,
-          "description": "use IKEA TRADFRI OTA test server, see OTA updates documentation",
+          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
           "default": false
         }
       }
