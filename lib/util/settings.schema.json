@@ -27,7 +27,7 @@
     },
     "mqtt": {
       "type": "object",
-      "title": "MQTT settings",
+      "title": "MQTT",
       "properties": {
         "base_topic": {
           "type": "string",
@@ -123,7 +123,7 @@
     },
     "serial": {
       "type": "object",
-      "title": "Serial settings",
+      "title": "Serial",
       "properties": {
         "port": {
           "type": ["string", "null"],
@@ -186,7 +186,7 @@
     },
     "experimental": {
       "type": "object",
-      "title": "Experimental options",
+      "title": "Experimental",
       "properties": {
         "transmit_power": {
           "type": ["number", "null"],
@@ -204,7 +204,7 @@
     },
     "advanced": {
       "type": "object",
-      "title": "Advanced settings",
+      "title": "Advanced",
       "properties": {
         "legacy_api": {
           "type": "boolean",
@@ -438,7 +438,7 @@
     },
     "map_options": {
       "type": "object",
-      "title": "Networkmap options",
+      "title": "Networkmap",
       "properties": {
         "graphviz": {
           "type": "object",
