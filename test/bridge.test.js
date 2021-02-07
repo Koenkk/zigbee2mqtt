@@ -1009,6 +1009,20 @@ describe('Bridge', () => {
         );
     });
 
+    it('Change options with null', async () => {
+        zigbeeHerdsman.permitJoin.mockClear();
+        expect(settings.get().serial).toStrictEqual({"disable_led": false, "port": "/dev/dummy"})
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"serial":{"disable_led":false,"port":null}}}));
+        await flushPromises();
+        expect(settings.get().serial).toStrictEqual({"disable_led": false, "port": null});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":true},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Change options invalid payload', async () => {
         zigbeeHerdsman.permitJoin.mockClear();
         MQTT.publish.mockClear();
