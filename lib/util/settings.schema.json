@@ -512,6 +512,31 @@
           "$ref": "#/definitions/group"
         }
       }
+    },
+    "frontend": {
+      "type": "object",
+      "title": "Frontend",
+      "properties": {
+        "port": {
+          "type": "number",
+          "title": "Port",
+          "description": "Frontend binding port",
+          "default": 8080,
+          "requiresRestart": true
+        },
+        "host": {
+          "type": "string",
+          "title": "Bind host",
+          "default":" 0.0.0.0",
+          "requiresRestart": true
+        },
+        "auth_token": {
+          "type": ["string", "null"],
+          "title": "Auth token",
+          "description": "Enables authentication, disabled by default",
+          "requiresRestart": true
+        }
+      }
     }
   },
   "required": ["mqtt"],
