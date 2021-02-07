@@ -16,5 +16,7 @@ mqtt:
 
 # Serial settings
 serial:
+  # Support ConBee II adaper deconz
+  adapter: deconz
   # Location of CC2531 USB sniffer
   port: /dev/ttyACM0
