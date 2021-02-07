@@ -17,7 +17,7 @@ describe('Receive', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         delete zigbeeHerdsman.devices.WXKG11LM.linkquality;

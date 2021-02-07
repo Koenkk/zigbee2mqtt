@@ -20,7 +20,7 @@ describe('Groups', () => {
 
     beforeEach(() => {
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         Object.values(zigbeeHerdsman.groups).forEach((g) => g.members = []);
         data.writeDefaultConfiguration();
         settings._reRead();
