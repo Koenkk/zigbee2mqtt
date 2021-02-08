@@ -19,6 +19,7 @@
     "external_converters": {
       "type": "array",
       "title": "External converters",
+      "description": "You can define external converters to e.g. add support for a DiY device",
       "requiresRestart": true,
       "items": {
         "type": "string"
@@ -61,12 +62,13 @@
           "type": "string",
           "title": "SSL/TLS key",
           "requiresRestart": true,
-          "description": "Absolute paths to SSL/TLS key and certificate for client-authentication",
+          "description": "Absolute path to SSL/TLS key for client-authentication",
           "examples": ["/etc/ssl/mqtt-client.key"]
         },
         "cert": {
           "type": "string",
           "title": "SSL/TLS certificate",
+          "description": "Absolute path to SSL/TLS certificate for client-authentication",
           "requiresRestart": true,
           "examples": ["/etc/ssl/mqtt-client.crt"]
         },
@@ -407,12 +409,14 @@
         "homeassistant_discovery_topic": {
           "type": "string",
           "title": "Homeassistant discovery topic",
+          "description": "Home Assistant discovery topic",
           "requiresRestart": true,
           "examples": ["homeassistant"]
         },
         "homeassistant_status_topic": {
           "type": "string",
           "title": "Home Assistant status topic",
+          "description": "Home Assistant status topic",
           "requiresRestart": true,
           "examples": ["homeassistant/status"]
         },
@@ -432,7 +436,8 @@
         "adapter_delay": {
           "type": ["number", "null"],
           "requiresRestart": true,
-          "title": "Adapter delay"
+          "title": "Adapter delay",
+          "description": "Adapter delay"
         },
         "ikea_ota_use_test_url": {
           "type": "boolean",
