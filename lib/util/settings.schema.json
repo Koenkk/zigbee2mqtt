@@ -437,7 +437,7 @@
           "type": ["number", "null"],
           "requiresRestart": true,
           "title": "Adapter delay",
-          "description": "???"
+          "description": "Adapter delay"
         },
         "ikea_ota_use_test_url": {
           "type": "boolean",
