@@ -445,6 +445,12 @@
           "requiresRestart": true,
           "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
           "default": false
+        },
+        "homeassistant_legacy_triggers": {
+          "type": "boolean",
+          "title": "Home Assistant legacy triggers",
+          "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
+          "default": true
         }
       }
     },
