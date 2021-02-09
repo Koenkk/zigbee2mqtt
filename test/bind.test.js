@@ -519,15 +519,16 @@ describe('Bind', () => {
         const payload = {data, cluster: 'genLevelCtrl', device: remote, endpoint: remote.getEndpoint(1), type: 'commandStepWithOnOff', linkquality: 10, groupID: 15071};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(1);
+        expect(debounce).toHaveBeenCalledTimes(2);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
 
         // Should also only debounce once
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
+        expect(debounce).toHaveBeenCalledTimes(2);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(4);
 
         // Should only call Hue bulb, not e.g. tradfri
         expect(zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read).toHaveBeenCalledTimes(0);
