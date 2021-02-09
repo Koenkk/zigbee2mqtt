@@ -1109,7 +1109,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
-        expect(discovered.length).toBe(4);
+        expect(discovered.length).toBe(5);
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/click/config');
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/action/config');
 
@@ -1289,7 +1289,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
-        expect(discovered.length).toBe(3);
+        expect(discovered.length).toBe(4);
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/action/config');
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/battery/config');
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/linkquality/config');
@@ -1302,7 +1302,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
-        expect(discovered.length).toBe(2);
+        expect(discovered.length).toBe(3);
         expect(discovered).not.toContain('homeassistant/sensor/0x0017880104e45520/click/config');
         expect(discovered).not.toContain('homeassistant/sensor/0x0017880104e45520/action/config');
 
