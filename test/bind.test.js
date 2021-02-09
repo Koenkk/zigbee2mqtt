@@ -519,7 +519,7 @@ describe('Bind', () => {
         const payload = {data, cluster: 'genLevelCtrl', device: remote, endpoint: remote.getEndpoint(1), type: 'commandStepWithOnOff', linkquality: 10, groupID: 15071};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
+        expect(debounce).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
 
