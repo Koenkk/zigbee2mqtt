@@ -527,8 +527,8 @@ describe('Bind', () => {
         // Should also only debounce once
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
+        expect(debounce).toHaveBeenCalledTimes(2);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(4);
 
         // Should only call Hue bulb, not e.g. tradfri
         expect(zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read).toHaveBeenCalledTimes(0);
