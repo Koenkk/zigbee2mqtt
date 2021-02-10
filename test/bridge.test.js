@@ -889,6 +889,8 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: 'bulb', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
         await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinator.endpoints[0]);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(1);
         expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 10, "minimumReportInterval": 1, "reportableChange": 1}]);
         expect(MQTT.publish).toHaveBeenCalledWith(
