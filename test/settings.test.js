@@ -622,6 +622,18 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
+    it('Should not allow any string values for pan_id', () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            advanced: {pan_id: 'NOT_GENERATE'},
+        });
+
+        settings._reRead();
+
+        const error = `advanced.pan_id: should be number or 'GENERATE' (is 'NOT_GENERATE')`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
     it('Should allow retention configuration with MQTT v5', () => {
         write(configurationFile, {
             ...minimalConfig,
@@ -714,6 +726,42 @@ describe('Settings', () => {
         settings._reRead();
 
         const error = `Duplicate friendly_name 'myname' found`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Configuration friendly name cannot be empty', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: '', retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name must be at least 1 char long`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Configuration friendly name cannot end with /', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: 'blaa/', retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name is not allowed to end or start with /`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it('Configuration friendly name cannot contain null char', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: 'blaa/blaa' + String.fromCharCode(0), retain: false}},
+        });
+
+        settings._reRead();
+
+        const error = `friendly_name is not allowed to contain null char`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 

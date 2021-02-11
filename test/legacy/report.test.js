@@ -1,6 +1,6 @@
-const data = require('./stub/data');
-const logger = require('./stub/logger');
-const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const data = require('../stub/data');
+const logger = require('../stub/logger');
+const zigbeeHerdsman = require('../stub/zigbeeHerdsman');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b2');
@@ -8,16 +8,15 @@ zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45559');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45524');
 zigbeeHerdsman.returnDevices.push('0x90fd9ffffe4b64ax');
-const MQTT = require('./stub/mqtt');
-const settings = require('../lib/util/settings');
-const Controller = require('../lib/controller');
+const MQTT = require('../stub/mqtt');
+const settings = require('../../lib/util/settings');
+const Controller = require('../../lib/controller');
 const flushPromises = () => new Promise(setImmediate);
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-jest.mock('debounce', () => jest.fn(fn => fn));
-const debounce = require('debounce');
 
-const mocksClear = [MQTT.publish, logger.warn, logger.debug, debounce];
+const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
 describe('Report', () => {
     let controller;
@@ -80,7 +79,7 @@ describe('Report', () => {
             delete device.meta.reporting;
         }
 
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         await flushPromises();
@@ -98,7 +97,7 @@ describe('Report', () => {
         mockClear(device);
         delete device.meta.report;
         settings.set(['advanced', 'report'], false);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(device.meta.reporting).toBe(undefined);
@@ -111,7 +110,7 @@ describe('Report', () => {
         const endpoint = device.getEndpoint(1);
         settings.set(['advanced', 'report'], false);
         mockClear(device);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expectOnOffBrightnessColorReportDisabled(endpoint, true);
@@ -238,36 +237,6 @@ describe('Report', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
-    });
-
-    it('Should poll bounded Hue bulb when receiving message from Hue dimmer', async () => {
-        const remote = zigbeeHerdsman.devices.remote;
-        const data = {"button":3,"unknown1":3145728,"type":2,"unknown2":0,"time":1};
-        const payload = {data, cluster: 'manuSpecificPhilips', device: remote, endpoint: remote.getEndpoint(2), type: 'commandHueNotification', linkquality: 10, groupID: 0};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
-    });
-
-    it('Should poll grouped Hue bulb when receiving message from TRADFRI remote and should', async () => {
-        const remote = zigbeeHerdsman.devices.tradfri_remote;
-        const data = {"stepmode":0,"stepsize":43,"transtime":5};
-        const payload = {data, cluster: 'genLevelCtrl', device: remote, endpoint: remote.getEndpoint(1), type: 'commandStepWithOnOff', linkquality: 10, groupID: 15071};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
-
-        // Should also only debounce once
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(debounce).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledTimes(2);
-
-        // Should only call Hue bulb, not e.g. tradfri
-        expect(zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read).toHaveBeenCalledTimes(0);
     });
 
     it('Should not configure reporting for the ZNLDP12LM closuresWindowCovering as it is ignored', async () => {

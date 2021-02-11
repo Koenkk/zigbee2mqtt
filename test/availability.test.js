@@ -29,7 +29,7 @@ describe('Availability', () => {
         data.writeEmptyState();
         jest.useFakeTimers();
         settings.set(['advanced', 'availability_timeout'], 10);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         mocksClear.forEach((m) => m.mockClear());
         await controller.start();
         await flushPromises();
@@ -175,13 +175,13 @@ describe('Availability', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(4);
         expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY']);
+        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'currentHue', 'currentSaturation']);
         expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorTemperature']);
     });
 
     it('Should not retrieve the state when device is turned on/off within availability timeout on deviceJoined', async () => {
         MQTT.publish.mockClear();
-        const device = zigbeeHerdsman.devices.bulb_color;
+        const device = zigbeeHerdsman.devices.E11_G13;
         const endpoint = device.getEndpoint(1);
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceJoined({device});
@@ -203,7 +203,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_blocklist'], ['bulb_color'])
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -217,7 +217,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_blacklist'], ['bulb_color'])
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -231,7 +231,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_blocklist'], [device.ieeeAddr]);
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -258,7 +258,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_passlist'], ['bulb_color']);
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -272,7 +272,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_whitelist'], ['bulb_color']);
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -286,7 +286,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_passlist'], [device.ieeeAddr]);
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         device.ping.mockClear();
@@ -301,7 +301,7 @@ describe('Availability', () => {
         settings.set(['advanced', 'availability_passlist'], ['0x000b57fffec6a5b3'])
         await controller.stop();
         await flushPromises();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         jest.advanceTimersByTime(11 * 1000);
@@ -387,7 +387,7 @@ describe('Availability', () => {
         await controller.stop();
         await flushPromises();
         MQTT.publish.mockClear();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         getExtension().state[device.ieeeAddr] = false;
         await controller.start();
         await flushPromises();

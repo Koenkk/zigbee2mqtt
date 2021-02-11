@@ -46,7 +46,7 @@ describe('Configure', () => {
         data.writeDefaultConfiguration();
         settings._reRead();
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         mocksClear.forEach((m) => m.mockClear());
         await flushPromises();
@@ -137,11 +137,11 @@ describe('Configure', () => {
     });
 
     it('Fail to configure via MQTT when device has no configure', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: "bulb", transaction: 20}));
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: "bulb_enddevice", transaction: 20}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            stringify({"data":{"id": "bulb"},"status":"error","error": "Device 'bulb' cannot be configured","transaction":20}),
+            stringify({"data":{"id": "bulb_enddevice"},"status":"error","error": "Device 'bulb_enddevice' cannot be configured","transaction":20}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -161,9 +161,9 @@ describe('Configure', () => {
     });
 
     it('Legacy api: Should skip reconfigure when device does not require this', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'bulb');
+        await MQTT.events.message('zigbee2mqtt/bridge/configure', '0x0017880104e45553');
         await flushPromises();
-        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb', device does not require this.`)
+        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb_enddevice', device does not require this.`)
     });
 
     it('Should not configure when interviewing', async () => {

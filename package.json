@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.17.0-dev",
+  "version": "1.17.1-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -35,6 +35,7 @@
   "dependencies": {
     "ajv": "^6.12.4",
     "debounce": "^1.2.0",
+    "deep-object-diff": "^1.1.0",
     "fast-deep-equal": "^3.1.3",
     "finalhandler": "^1.1.2",
     "git-last-commit": "^1.0.0",
@@ -51,9 +52,9 @@
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
     "ws": "^7.3.1",
-    "zigbee-herdsman": "0.13.47",
-    "zigbee-herdsman-converters": "14.0.6",
-    "zigbee2mqtt-frontend": "0.3.1"
+    "zigbee-herdsman": "0.13.68",
+    "zigbee-herdsman-converters": "14.0.55",
+    "zigbee2mqtt-frontend": "0.3.45"
   },
   "devDependencies": {
     "eslint": "*",
@@ -72,10 +73,10 @@
       }
     },
     "collectCoverageFrom": [
-      "lib/**"
+      "lib/**/*.js"
     ]
   },
   "bin": {
-    "zigbee2mqtt": "./cli.js"
+    "zigbee2mqtt": "cli.js"
   }
 }

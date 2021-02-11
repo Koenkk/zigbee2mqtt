@@ -19,6 +19,7 @@ const mock = {
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
+    addTransport: (transport) => transports.push(transport),
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
     setTransportsEnabled: (value) => {transportsEnabled = value},

@@ -52,7 +52,7 @@ describe('Loads external converters', () => {
 
     it('Does not load external converters', async () => {
         settings.set(['external_converters'], []);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(0);
@@ -62,7 +62,7 @@ describe('Loads external converters', () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
         const devicesCount = zigbeeHerdsman.devices.lenght;
         settings.set(['external_converters'], ['mock-external-converter.js']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(1);
@@ -70,10 +70,11 @@ describe('Loads external converters', () => {
             mock: true,
             zigbeeModel: ['external_converter_device'],
             vendor: 'external',
-            model: ['external_converter_device'],
-            definition: {
-                foo: 'bar'
-            }
+            model: 'external_converter_device',
+            description: 'external',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
     });
 
@@ -81,22 +82,35 @@ describe('Loads external converters', () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
         const devicesCount = zigbeeHerdsman.devices.lenght;
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(1, {
             mock: 1,
-            model: 'external_converters_device',
+            model: 'external_converters_device_1',
+            zigbeeModel: ['external_converter_device_1'],
+            vendor: 'external_1',
+            description: 'external_1',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenNthCalledWith(2, {
-            mock: 2
+            mock: 2,
+            model: 'external_converters_device_2',
+            zigbeeModel: ['external_converter_device_2'],
+            vendor: 'external_2',
+            description: 'external_2',
+            fromZigbee: [],
+            toZigbee: [],
+            exposes: []
         });
     });
 
     it('Loads external converters from package', async () => {
         settings.set(['external_converters'], ['mock-external-converter-module']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(1);
@@ -107,7 +121,7 @@ describe('Loads external converters', () => {
 
     it('Loads multiple external converters from package', async () => {
         settings.set(['external_converters'], ['mock-multiple-external-converter-module']);
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(2);
