@@ -249,6 +249,8 @@ describe('HomeAssistant extension', () => {
             "brightness":true,
             "brightness_scale":254,
             "color_temp":true,
+            "min_mireds": 250,
+            "max_mireds": 454,
             "command_topic":"zigbee2mqtt/bulb/set",
             "device":{
                 "identifiers":[
