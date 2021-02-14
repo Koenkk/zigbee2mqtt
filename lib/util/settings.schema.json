@@ -245,7 +245,8 @@
           "default": 11,
           "title": "ZigBee channel",
           "requiresRestart": true,
-          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)"
+          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
+          "examples": [11, 15, 20, 25]
         },
         "cache_state": {
           "type": "boolean",
