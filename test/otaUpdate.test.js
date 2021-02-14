@@ -250,6 +250,20 @@ describe('OTA update', () => {
         );
     });
 
+    it('Should not check for update when device requests it and disable_automatic_update_check is set to true', async () => {
+        settings.set(['ota', 'disable_automatic_update_check'], true);
+        const device = zigbeeHerdsman.devices.bulb;
+        const data = {imageType: 12382};
+        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        mockClear(mapped);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.info.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
+    });
+
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
         const device = zigbeeHerdsman.devices.QBKG04LM;
         const data = {imageType: 12382};
