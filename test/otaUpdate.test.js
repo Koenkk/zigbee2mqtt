@@ -21,7 +21,7 @@ describe('OTA update', () => {
         settings._reRead();
         settings.set(['advanced', 'ikea_ota_use_test_url'], true);
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
@@ -248,6 +248,20 @@ describe('OTA update', () => {
             stringify({"update_available":true,"update":{"state":"available"}}),
             {retain: true, qos: 0}, expect.any(Function)
         );
+    });
+
+    it('Should not check for update when device requests it and disable_automatic_update_check is set to true', async () => {
+        settings.set(['ota', 'disable_automatic_update_check'], true);
+        const device = zigbeeHerdsman.devices.bulb;
+        const data = {imageType: 12382};
+        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        mockClear(mapped);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.info.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
     });
 
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
