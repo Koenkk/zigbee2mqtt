@@ -172,11 +172,9 @@ describe('Availability', () => {
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
-        expect(endpoint.read).toHaveBeenCalledTimes(4);
+        expect(endpoint.read).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['currentX', 'currentY', 'currentHue', 'currentSaturation']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorTemperature']);
     });
 
     it('Should not retrieve the state when device is turned on/off within availability timeout on deviceJoined', async () => {
