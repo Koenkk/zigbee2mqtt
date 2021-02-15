@@ -98,7 +98,8 @@
           "type": ["number", "null"],
           "title": "Version",
           "description": "MQTT protocol version",
-          "default": 4
+          "default": 4,
+          "examples": [4, 5]
         },
         "force_disable_retain": {
           "type": "boolean",
