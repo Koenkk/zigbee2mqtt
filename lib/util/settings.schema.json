@@ -453,7 +453,7 @@
           "title": "Home Assistant legacy triggers",
           "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
           "default": true
-        }.
+        },
       "log_syslog": {
           "type": "object",
           "title": "syslog",
