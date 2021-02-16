@@ -195,7 +195,7 @@
           "type": ["number", "null"],
           "title": "Transmit power",
           "requiresRestart": true,
-          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters"
+          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
         },
         "output": {
           "type": "string",
