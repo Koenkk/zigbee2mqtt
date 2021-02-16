@@ -453,6 +453,77 @@
           "title": "Home Assistant legacy triggers",
           "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
           "default": true
+        },
+        "log_syslog": {
+          "type": "object",
+          "title": "syslog",
+          "properties": {
+            "host": {
+              "type": "string",
+              "title": "Host",
+              "description": "The host running syslogd, defaults to localhost.",
+              "default": "localhost"
+            },
+            "port": {
+              "type": "number",
+              "title": "Port",
+              "description": "The port on the host that syslog is running on, defaults to syslogd's default port.",
+              "default": 123
+            },
+            "protocol": {
+              "type": "string",
+              "title": "Protocol",
+              "description": "The network protocol to log over (e.g. tcp4, udp4, tls4, unix, unix-connect, etc).",
+              "default": "tcp4",
+              "examples": [
+                "tcp4",
+                "udp4",
+                "tls4",
+                "unix",
+                "unix-connect"
+              ]
+            },
+            "path": {
+              "type": "string",
+              "title": "Path",
+              "description": "The path to the syslog dgram socket (i.e. /dev/log or /var/run/syslog for OS X).",
+              "default": "/dev/log",
+              "examples": [
+                "/dev/log",
+                "/var/run/syslog"
+              ]
+            },
+            "pid": {
+              "type": "string",
+              "title": "PID",
+              "description": "PID of the process that log messages are coming from (Default process.pid).",
+              "default": "process.pid"
+            },
+            "localhost": {
+              "type": "string",
+              "title": "Localhost",
+              "description": "Host to indicate that log messages are coming from (Default: localhost).",
+              "default": "localhost"
+            },
+            "type": {
+              "type": "string",
+              "title": "Type",
+              "description": "The type of the syslog protocol to use (Default: BSD, also valid: 5424).",
+              "default": "5424"
+            },
+            "app_name": {
+              "type": "string",
+              "title": "Localhost",
+              "description": "The name of the application (Default: Zigbee2MQTT).",
+              "default": "Zigbee2MQTT"
+            },
+            "eol": {
+              "type": "string",
+              "title": "eol",
+              "description": "The end of line character to be added to the end of the message (Default: Message without modifications).",
+              "default": "/n"
+            }
+          }
         }
       }
     },
