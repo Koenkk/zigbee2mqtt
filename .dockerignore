@@ -3,6 +3,7 @@
 .git
 .github
 .gitignore
+.idea
 .npmrc
 .travis*
 .travis.yml

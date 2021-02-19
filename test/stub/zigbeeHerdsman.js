@@ -193,6 +193,7 @@ const mock = {
     touchlinkScan: jest.fn(),
     touchlinkIdentify: jest.fn(),
     start: jest.fn(),
+    isStopping: jest.fn(),
     permitJoin: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     getNetworkParameters: jest.fn().mockReturnValue({panID: 0x162a, extendedPanID: [0, 11, 22], channel: 15}),

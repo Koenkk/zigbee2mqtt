@@ -28,7 +28,7 @@ describe('Publish', () => {
 
     beforeAll(async () => {
         data.writeEmptyState();
-        controller = new Controller();
+        controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
     });
