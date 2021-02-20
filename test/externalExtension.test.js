@@ -30,6 +30,10 @@ describe('User extensions', () => {
         settings._reRead();
         data.writeDefaultState();
     });
+    afterEach(() => {
+        const extensionPath = path.join(data.mockDir, 'extension');
+        fs.rmdirSync(extensionPath, {recursive: true});
+    })
 
     it('Load user extension', async () => {
         const extensionPath = path.join(data.mockDir, 'extension');
@@ -46,8 +50,6 @@ describe('User extensions', () => {
         await flushPromises();
         const expectedResponse = {"data": {"name": "exampleExtension.js", "content": extensionCode}, "status":"ok"};
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/extension/response/read', stringify(expectedResponse), { retain: false, qos: 0 }, expect.any(Function));
-
-        fs.unlinkSync(path.join(extensionPath, 'exampleExtension.js'));
     });
 
     it('Load user extension from api call', async () => {
@@ -75,6 +77,5 @@ describe('User extensions', () => {
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/extension/response/save', stringify({"data":{},"error":"Unexpected identifier","status":"error"}), { retain: false, qos: 0 }, expect.any(Function));
-        expect(mkdirSyncSpy).toHaveBeenCalledWith(extensionPath);
     });
 });
