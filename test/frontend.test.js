@@ -119,8 +119,8 @@ describe('Frontend', () => {
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
 
-        expect(mockWSClient.implementation.send).toHaveBeenNthCalledWith(1, stringify({topic: 'bridge/state', payload: 'online'}));
-        expect(mockWSClient.implementation.send).toHaveBeenNthCalledWith(3, stringify({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: 'online'}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}}));
 
         // Message
         MQTT.publish.mockClear();
@@ -155,7 +155,7 @@ describe('Frontend', () => {
         settings.set(['advanced'], {last_seen: 'ISO_8601'});
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenNthCalledWith(14, stringify({topic:"remote", payload:{brightness:255, last_seen: "1970-01-01T00:00:01.000Z", update:{state: "idle"}, update_available: false}}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255, last_seen: "1970-01-01T00:00:01.000Z", update:{state: "idle"}, update_available: false}}));
     });
 
     it('onReques/onUpgrade', async () => {
