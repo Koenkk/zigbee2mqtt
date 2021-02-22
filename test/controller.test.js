@@ -603,16 +603,6 @@ describe('Controller', () => {
         expect(controller.state.state).toStrictEqual({});
     });
 
-    it('Load user extension', async () => {
-        const extensionPath = path.join(data.mockDir, 'extension');
-        fs.mkdirSync(extensionPath);
-        fs.copyFileSync(path.join(__dirname, 'assets', 'exampleExtension.js'), path.join(extensionPath, 'exampleExtension.js'))
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
-    });
-
     it('Start controller with force_disable_retain', async () => {
         settings.set(['mqtt', 'force_disable_retain'], true);
         await controller.start();
