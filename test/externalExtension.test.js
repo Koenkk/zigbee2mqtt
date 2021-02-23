@@ -44,7 +44,7 @@ describe('User extensions', () => {
         await controller.start();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify({"exampleExtension.js": extensionCode}), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([{"name": "exampleExtension.js", "code": extensionCode}]), { retain: true, qos: 0 }, expect.any(Function));
     });
 
     it('Load user extension from api call', async () => {
@@ -56,7 +56,7 @@ describe('User extensions', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/extension/request/save', stringify({"name": "foo.js", "code": extensionCode}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify({"foo.js": extensionCode}), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([{"name": "foo.js", "code": extensionCode}]), { retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from constructor', { retain: false, qos: 0 }, expect.any(Function));
         expect(mkdirSyncSpy).toHaveBeenCalledWith(extensionPath);
     });
