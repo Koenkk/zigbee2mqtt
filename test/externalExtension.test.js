@@ -16,6 +16,7 @@ const mocksClear = [
 
 const fs = require('fs');
 const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync');
+const unlinkSyncSpy = jest.spyOn(fs, 'unlinkSync');
 
 describe('User extensions', () => {
     let controller;
@@ -72,5 +73,30 @@ describe('User extensions', () => {
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/extension/save', stringify({"data":{},"error":"Unexpected identifier","status":"error"}), { retain: false, qos: 0 }, expect.any(Function));
+    });
+
+    it('Removes user extension', async () => {
+        const extensionPath = path.join(data.mockDir, 'extension');
+        const extensionCode = fs.readFileSync(path.join(__dirname, 'assets', 'exampleExtension.js'), 'utf-8');
+        fs.mkdirSync(extensionPath);
+        const extensionFilePath = path.join(extensionPath, 'exampleExtension.js')
+        fs.copyFileSync(path.join(__dirname, 'assets', 'exampleExtension.js'), extensionFilePath)
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'test', { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([{"name": "exampleExtension.js", "code": extensionCode}]), { retain: true, qos: 0 }, expect.any(Function));
+
+        MQTT.events.message('zigbee2mqtt/bridge/request/extension/remove', stringify({"name": "exampleExtension.js"}));
+        await flushPromises();
+        expect(unlinkSyncSpy).toHaveBeenCalledWith(extensionFilePath);
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/extension/remove', stringify({"name": "non existing.js"}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/extension/remove',
+            stringify({"data":{},"status":"error","error":"Extension non existing.js doesn't exists"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
     });
 });
