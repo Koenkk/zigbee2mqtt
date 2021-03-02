@@ -589,8 +589,8 @@
         "update_check_interval": {
           "type": "number",
           "title": "Update check interval",
-          "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 10.",
-          "default": 10
+          "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
+          "default": 1440
         },
         "disable_automatic_update_check": {
           "type": "boolean",
