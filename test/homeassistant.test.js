@@ -669,7 +669,7 @@ describe('HomeAssistant extension', () => {
             position_topic: 'zigbee2mqtt/smart vent',
             set_position_topic: 'zigbee2mqtt/smart vent/set',
             set_position_template: '{ "position": {{ position }} }',
-            value_template: '{{ value_json.position }}',
+            position_template: '{{ value_json.position }}',
             json_attributes_topic: 'zigbee2mqtt/smart vent',
             name: 'smart vent',
             unique_id: '0x0017880104e45551_cover_zigbee2mqtt',
