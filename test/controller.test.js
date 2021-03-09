@@ -26,7 +26,7 @@ describe('Controller', () => {
         controller = new Controller(jest.fn(), mockExit);
         mocksClear.forEach((m) => m.mockClear());
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeDefaultState();
     });
 

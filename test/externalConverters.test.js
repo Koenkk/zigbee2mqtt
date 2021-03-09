@@ -47,7 +47,7 @@ describe('Loads external converters', () => {
         mocksClear.forEach((m) => m.mockClear());
         data.writeDefaultConfiguration();
         data.writeEmptyState();
-        settings._reRead();
+        settings.reRead();
     });
 
     it('Does not load external converters', async () => {

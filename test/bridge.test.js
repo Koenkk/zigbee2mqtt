@@ -22,7 +22,7 @@ describe('Bridge', () => {
     beforeEach(async () => {
         MQTT.mock.reconnecting = false;
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         settings.set(['advanced', 'legacy_api'], false);
         data.writeDefaultState();
         logger.info.mockClear();

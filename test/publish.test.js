@@ -38,7 +38,7 @@ describe('Publish', () => {
         await flushPromises();
         data.writeDefaultConfiguration();
         controller.state.state = {};
-        settings._reRead();
+        settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
         Object.values(zigbeeHerdsman.devices).forEach((d) => {
             d.endpoints.forEach((e) => {

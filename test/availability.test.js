@@ -25,7 +25,7 @@ describe('Availability', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         jest.useFakeTimers();
         settings.set(['advanced', 'availability_timeout'], 10);

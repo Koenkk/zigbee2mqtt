@@ -23,7 +23,7 @@ describe('Groups', () => {
         controller = new Controller(jest.fn(), jest.fn());
         Object.values(zigbeeHerdsman.groups).forEach((g) => g.members = []);
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         MQTT.publish.mockClear();
         zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
     })

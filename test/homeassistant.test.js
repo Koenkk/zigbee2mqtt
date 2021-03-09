@@ -18,7 +18,7 @@ describe('HomeAssistant extension', () => {
         this.version = `Zigbee2MQTT ${this.version.version}`;
         jest.useRealTimers();
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         MQTT.publish.mockClear();
         settings.set(['homeassistant'], true);
