@@ -514,6 +514,105 @@ describe('HomeAssistant extension', () => {
 
     });
 
+    it('Should discover devices with unique names', async () => {
+        settings.set(['devices', '0x0017880104e45541'], {
+            retain: false,
+            friendly_name: 'my_switch',
+            homeassistant: {
+                name: 'my_switch_name_override'
+            },
+        })
+
+        controller = new Controller(false);
+        await controller.start();
+
+        const basePayload = {
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            "device": {
+              "identifiers": [
+                "zigbee2mqtt_0x0017880104e45541"
+              ],
+              "manufacturer": "Xiaomi",
+              "model": "Aqara single key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG04LM)",
+              "name": "my_switch",
+              "sw_version": this.version
+            },
+            "json_attributes_topic": "zigbee2mqtt/my_switch",
+        };
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            ...basePayload,
+            "command_topic": "zigbee2mqtt/my_switch/set",
+            "name": "my_switch_name_override",
+            "payload_off": "OFF",
+            "payload_on": "ON",
+            "state_topic": "zigbee2mqtt/my_switch",
+            "unique_id": "0x0017880104e45541_switch_zigbee2mqtt",
+            "value_template": "{{ value_json.state }}"
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/switch/0x0017880104e45541/switch/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            ...basePayload,
+            icon: "mdi:toggle-switch",
+            name: "my_switch_name_override_click",
+            state_topic: "zigbee2mqtt/my_switch",
+            unique_id: "0x0017880104e45541_click_zigbee2mqtt",
+            value_template: "{{ value_json.click }}",
+          }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45541/click/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            ...basePayload,
+            icon: "mdi:gesture-double-tap",
+            name: "my_switch_name_override_action",
+            state_topic: "zigbee2mqtt/my_switch",
+            unique_id: "0x0017880104e45541_action_zigbee2mqtt",
+            value_template: "{{ value_json.action }}",
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45541/action/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            ...basePayload,
+            icon: "mdi:signal",
+            name: "my_switch_name_override_linkquality",
+            state_topic: "zigbee2mqtt/my_switch",
+            unique_id: "0x0017880104e45541_linkquality_zigbee2mqtt",
+            unit_of_measurement: "lqi",
+            value_template: "{{ value_json.linkquality }}",
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45541/linkquality/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        
+    });
+
     it('Shouldnt discover devices when homeassistant null is set in device options', async () => {
         settings.set(['devices', '0x0017880104e45522'], {
             homeassistant: null,
