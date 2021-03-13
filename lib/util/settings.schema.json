@@ -704,6 +704,10 @@
           "description": "Allows to prevent certain attributes from being published"
         }
       },
+      "additionalProperties": {
+        "type": "string",
+        "title": "Device specific property"
+      },
       "required": ["friendly_name"]
     },
     "group": {
