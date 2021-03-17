@@ -1377,12 +1377,12 @@ describe('Publish', () => {
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(4,
             'zigbee2mqtt/bulb_2',
-            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(5,
             'zigbee2mqtt/group_with_tradfri',
-            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
