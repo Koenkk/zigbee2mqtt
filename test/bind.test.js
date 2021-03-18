@@ -25,7 +25,7 @@ describe('Bind', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         zigbeeHerdsman.groups.group_1.members = [];
         zigbeeHerdsman.devices.bulb_color.getEndpoint(1).configureReporting.mockClear();

@@ -71,7 +71,7 @@ describe('Report', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         settings.set(['advanced', 'report'], true);
         for (const device of Object.values(zigbeeHerdsman.devices)) {

@@ -21,7 +21,7 @@ describe('Bridge legacy', () => {
 
     beforeEach(() => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeDefaultState();
         logger.info.mockClear();
         logger.warn.mockClear();

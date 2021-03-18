@@ -149,7 +149,7 @@ const devices = {
     'unsupported2': new Device('EndDevice', '0x0017880104e45529', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "notSupportedModelID"),
     'interviewing': new Device('EndDevice', '0x0017880104e45530', 6536, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", undefined, true),
     'notInSettings': new Device('EndDevice', '0x0017880104e45519', 6537, 0, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "lumi.sensor_switch.aq2"),
-    'WXKG11LM': new Device('EndDevice', '0x0017880104e45520', 6537,4151, [new Endpoint(1, [0], [0,3,4,6,8,5])], true, "Battery", "lumi.sensor_switch.aq2"),
+    'WXKG11LM': new Device('EndDevice', '0x0017880104e45520', 6537,4151, [new Endpoint(1, [0], [0,3,4,6,8,5], '0x0017880104e45520', [], {}, [{cluster: {name: 'genOnOff'}, attribute: {name: undefined, ID: 1337}, minimumReportInterval: 1, maximumReportInterval: 10, reportableChange: 20}])], true, "Battery", "lumi.sensor_switch.aq2"),
     'WXKG02LM_rev1': new Device('EndDevice', '0x0017880104e45521', 6538,4151, [new Endpoint(1, [0], []), new Endpoint(2, [0], [])], true, "Battery", "lumi.sensor_86sw2.es1"),
     'WSDCGQ11LM': new Device('EndDevice', '0x0017880104e45522', 6539,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.weather"),
     'RTCGQ11LM': new Device('EndDevice', '0x0017880104e45523', 6540,4151, [new Endpoint(1, [0], [])], true, "Battery", "lumi.sensor_motion.aq2"),
