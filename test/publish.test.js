@@ -1362,7 +1362,7 @@ describe('Publish', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(5);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/group_tradfri_remote',
-            stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            stringify({"brightness":50,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON","color_mode": "color_temp"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(2,
@@ -1372,7 +1372,7 @@ describe('Publish', () => {
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(3,
             'zigbee2mqtt/group_tradfri_remote',
-            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON"}),
+            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"color_temp":290,"state":"ON","color_mode": "color_temp"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(4,
