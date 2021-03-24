@@ -569,14 +569,14 @@ describe('Groups', () => {
         await controller.start();
         await flushPromises();
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'bulb_color'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({transaction: "123", group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
         expect(settings.getGroup('group_1').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
-            stringify({"data":{"device":"bulb_color","group":"group_1"},"status":"ok"}),
+            stringify({"data":{"device":"bulb_color","group":"group_1"},"transaction": "123", "status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
