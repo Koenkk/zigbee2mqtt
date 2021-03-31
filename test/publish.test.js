@@ -343,10 +343,10 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({brightness_percent: 50}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
-        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 127, transtime: 0}, {});
+        expect(group.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 128, transtime: 0}, {});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/group_1');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 127});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON', brightness: 128});
     });
 
     it('Should publish messages to groups when converter is not in the default list but device in it supports it', async () => {
@@ -910,7 +910,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "enhancedMoveToHueAndSaturation", {"direction": 0, "enhancehue": 44891.475, "saturation": 199.21474, "transtime": 0,}, {}]);
+        expect(endpoint.command.mock.calls[0]).toEqual(["lightingColorCtrl", "enhancedMoveToHueAndSaturation", {"direction": 0, "enhancehue": 44891, "saturation": 199, "transtime": 0,}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bulb_color');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({"color":{"hue":250,"saturation":50}, "color_mode": "hs"});
