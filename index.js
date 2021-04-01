@@ -24,6 +24,7 @@ async function start() {
 
     // Validate settings
     const settings = require('./lib/util/settings');
+    settings.reRead();
     const errors = settings.validate();
     if (errors.length > 0) {
         console.log(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);

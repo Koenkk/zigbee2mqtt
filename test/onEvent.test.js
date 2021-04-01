@@ -23,7 +23,7 @@ describe('On event', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();

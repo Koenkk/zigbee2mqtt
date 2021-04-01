@@ -74,7 +74,7 @@ describe('Frontend', () => {
         mockWS.implementation.clients = [];
         data.writeDefaultConfiguration();
         data.writeDefaultState();
-        settings._reRead();
+        settings.reRead();
         settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
         zigbeeHerdsman.devices.bulb.linkquality = 10;

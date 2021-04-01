@@ -25,7 +25,7 @@ describe('Bind', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        settings._reRead();
+        settings.reRead();
         data.writeEmptyState();
         zigbeeHerdsman.groups.group_1.members = [];
         zigbeeHerdsman.devices.bulb_color.getEndpoint(1).configureReporting.mockClear();
@@ -53,7 +53,7 @@ describe('Bind', () => {
         mockClear(device);
         target.configureReporting.mockImplementationOnce(() => {throw new Error("timeout")});
 
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'remote', to: 'bulb_color'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', stringify({transaction: "1234", from: 'remote', to: 'bulb_color'}));
         await flushPromises();
         expect(target.read).toHaveBeenCalledWith('lightingColorCtrl', [ 'colorCapabilities' ]);
         expect(endpoint.bind).toHaveBeenCalledTimes(4);
@@ -67,7 +67,7 @@ describe('Bind', () => {
         expect(target.configureReporting).toHaveBeenCalledWith("lightingColorCtrl",[{"attribute":"colorTemperature","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentX","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1},{"attribute":"currentY","minimumReportInterval":5,"maximumReportInterval":3600,"reportableChange":1}]);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
-            stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl", "lightingColorCtrl"],"failed":[]},"status":"ok"}),
+            stringify({"transaction": "1234","data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl", "lightingColorCtrl"],"failed":[]},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
 

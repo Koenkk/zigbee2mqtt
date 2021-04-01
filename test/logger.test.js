@@ -14,7 +14,7 @@ describe('Logger', () => {
         jest.resetModules();
         settings = require('../lib/util/settings');
         settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
-        settings._reRead();
+        settings.reRead();
         stdOutWriteOriginal = console._stdout.write;
         console._stdout.write = () => {};
     });
