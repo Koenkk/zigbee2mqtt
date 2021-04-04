@@ -165,6 +165,9 @@ function writeDefaultConfiguration() {
             '0x0017882194e45543': {
                 friendly_name: 'QS-Zigbee-D02-TRIAC-2C-LN',
             },
+            '0x0017880104e45724': {
+                friendly_name: 'GLEDOPTO_2ID',
+            }
         },
         groups: {
             '1': {
@@ -194,6 +197,10 @@ function writeDefaultConfiguration() {
                 friendly_name: 'switch_group',
                 retain: false,
                 devices: ['power_plug'],
+            },
+            '21': {
+                friendly_name: 'gledopto_group',
+                devices: ['GLEDOPTO_2ID/cct'],
             }
         },
         external_converters: [],

@@ -9,6 +9,7 @@ zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b2');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45542');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b7');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45724');
 
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
@@ -369,6 +370,21 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+    });
+
+    it('Should publish state of device with endpoint name', async () => {
+        const group = zigbeeHerdsman.groups.gledopto_group;
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/gledopto_group/set', stringify({state: 'ON'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/GLEDOPTO_2ID", stringify({"state_cct":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
     it('Should publish state change of all members when a group changes its state, filtered', async () => {
