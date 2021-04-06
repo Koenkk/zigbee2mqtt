@@ -166,11 +166,11 @@ describe('OTA update', () => {
     });
 
     it('Should not check for OTA when device does not support it', async () => {
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "ZNLDP12LM");
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "dimmer_wall_switch");
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({"data":{"id": "ZNLDP12LM"},"status":"error","error": `Device 'ZNLDP12LM' does not support OTA updates`}),
+            stringify({"data":{"id": "dimmer_wall_switch"},"status":"error","error": `Device 'dimmer_wall_switch' does not support OTA updates`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -265,7 +265,7 @@ describe('OTA update', () => {
     });
 
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
-        const device = zigbeeHerdsman.devices.QBKG04LM;
+        const device = zigbeeHerdsman.devices.HGZB04D;
         const data = {imageType: 12382};
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
@@ -275,7 +275,7 @@ describe('OTA update', () => {
     });
 
     it('Shouldnt respond with NO_IMAGE_AVAILABLE when not supporting OTA and device has no OTA endpoint', async () => {
-        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const device = zigbeeHerdsman.devices.SV01;
         const data = {imageType: 12382};
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         logger.error.mockClear();
@@ -374,9 +374,9 @@ describe('OTA update', () => {
     });
 
     it('Legacy api: Should not check for OTA when device does not support it', async () => {
-        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'ZNLDP12LM');
+        MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'dimmer_wall_switch');
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith(`Device 'ZNLDP12LM' does not support OTA updates`);
+        expect(logger.error).toHaveBeenCalledWith(`Device 'dimmer_wall_switch' does not support OTA updates`);
     });
 
     it('Legacy api: Shouldnt crash when read modelID after OTA update fails', async () => {
