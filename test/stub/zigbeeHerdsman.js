@@ -189,6 +189,7 @@ const devices = {
     'TS0601_thermostat': TS0601_thermostat,
     'external_converter_device': new Device('EndDevice', '0x0017880104e45511', 1114, 'external', [new Endpoint(1, [], [], '0x0017880104e45511')], false, null, 'external_converter_device' ),
     'QS_Zigbee_D02_TRIAC_2C_LN':new Device('Router', '0x0017882194e45543', 6549,4151, [new Endpoint(1, [0], [], '0x0017882194e45543'), new Endpoint(2, [0, 6], [], '0x0017882194e45543')], true, "Mains (single phase)", 'TS110F', false, '_TYZB01_v8gtiaed'),
+    'unknown': new Device('Router', '0x0017980134e45545', 6540,4151, [], true, "Mains (single phase)"),
 }
 
 const mock = {
