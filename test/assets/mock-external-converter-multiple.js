@@ -4,7 +4,7 @@ const homeassistantSwitch = {
     discovery_payload: {
         payload_off: 'OFF',
         payload_on: 'ON',
-        value_template: '{{ value_json.state }}',
+        value_template: "{{ value_json.state | default('', true) }}",
         command_topic: true,
     },
 };
