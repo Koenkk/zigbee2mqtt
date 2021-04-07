@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const HomeAssistant = require('../lib/extension/homeassistant');
 
-const safeDefault = "| default('', true)";
+const safeDefault = `| default('', true)`;
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 describe('HomeAssistant extension', () => {
