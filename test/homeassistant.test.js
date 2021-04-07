@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const HomeAssistant = require('../lib/extension/homeassistant');
 
+const safeDefault = "| default('', true)";
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 describe('HomeAssistant extension', () => {
@@ -54,7 +55,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -79,7 +80,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
-            'value_template': '{{ value_json.humidity }}',
+            'value_template': `{{ value_json.humidity ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
@@ -104,7 +105,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
-            'value_template': '{{ value_json.pressure }}',
+            'value_template': `{{ value_json.pressure ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
@@ -129,7 +130,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'battery',
-            'value_template': '{{ value_json.battery }}',
+            'value_template': `{{ value_json.battery ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_battery',
@@ -154,7 +155,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'icon': 'mdi:signal',
             'unit_of_measurement': 'lqi',
-            'value_template': '{{ value_json.linkquality }}',
+            'value_template': `{{ value_json.linkquality ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_linkquality',
@@ -198,7 +199,7 @@ describe('HomeAssistant extension', () => {
             "payload_on":"ON",
             "state_topic":"zigbee2mqtt/wall_switch_double",
             "unique_id":"0x0017880104e45542_switch_left_zigbee2mqtt",
-            "value_template":"{{ value_json.state_left }}"
+            "value_template":`{{ value_json.state_left ${safeDefault} }}`
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -230,7 +231,7 @@ describe('HomeAssistant extension', () => {
             "payload_on":"ON",
             "state_topic":"zigbee2mqtt/wall_switch_double",
             "unique_id":"0x0017880104e45542_switch_right_zigbee2mqtt",
-            "value_template":"{{ value_json.state_right }}"
+            "value_template":`{{ value_json.state_right ${safeDefault} }}`
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -305,7 +306,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': "{{ value_json.temperature }}",
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -330,7 +331,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
-            'value_template': '{{ value_json.humidity }}',
+            'value_template': `{{ value_json.humidity ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
@@ -355,7 +356,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': 'hPa',
             'device_class': 'pressure',
-            'value_template': '{{ value_json.pressure }}',
+            'value_template': `{{ value_json.pressure ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
@@ -411,7 +412,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -438,7 +439,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '%',
             'device_class': 'humidity',
-            'value_template': '{{ value_json.humidity }}',
+            'value_template': `{{ value_json.humidity ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
@@ -502,7 +503,7 @@ describe('HomeAssistant extension', () => {
             "payload_on": "ON",
             "state_topic": "zigbee2mqtt/my_switch",
             "unique_id": "0x0017880104e45541_light_zigbee2mqtt",
-            "value_template": "{{ value_json.state }}"
+            "value_template": `{{ value_json.state ${safeDefault} }}`
         }
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -558,11 +559,11 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             "state_topic":"zigbee2mqtt/fan",
-            "state_value_template":"{{ value_json.fan_state }}",
+            "state_value_template":`{{ value_json.fan_state ${safeDefault} }}`,
             "command_topic":"zigbee2mqtt/fan/set/fan_state",
             "speed_state_topic":"zigbee2mqtt/fan",
             "speed_command_topic":"zigbee2mqtt/fan/set/fan_mode",
-            "speed_value_template":"{{ value_json.fan_mode }}",
+            "speed_value_template":`{{ value_json.fan_mode ${safeDefault} }}`,
             "speeds":[
                "off",
                "low",
@@ -603,13 +604,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         payload = {
-            "action_template":"{% set values = {'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'} %}{{ values[value_json.running_state] }}",
+            "action_template":`{% set values = {'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'} %}{{ values[value_json.running_state ${safeDefault}] }}`,
             "action_topic":"zigbee2mqtt/TS0601_thermostat",
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
             "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
-            "away_mode_state_template":"{{ value_json.away_mode }}",
+            "away_mode_state_template":`{{ value_json.away_mode ${safeDefault} }}`,
             "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
-            "current_temperature_template":"{{ value_json.local_temperature }}",
+            "current_temperature_template":`{{ value_json.local_temperature ${safeDefault} }}`,
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
                "identifiers":[
@@ -629,13 +630,13 @@ describe('HomeAssistant extension', () => {
                "comfort",
                "eco"
             ],
-            "hold_state_template":"{{ value_json.preset }}",
+            "hold_state_template":`{{ value_json.preset ${safeDefault} }}`,
             "hold_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "json_attributes_topic":"zigbee2mqtt/TS0601_thermostat",
             "max_temp":"35",
             "min_temp":"5",
             "mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/system_mode",
-            "mode_state_template":"{{ value_json.system_mode }}",
+            "mode_state_template":`{{ value_json.system_mode ${safeDefault} }}`,
             "mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "modes":[
                "heat", "auto", "off"
@@ -643,7 +644,7 @@ describe('HomeAssistant extension', () => {
             "name":"TS0601_thermostat",
             "temp_step":0.5,
             "temperature_command_topic":"zigbee2mqtt/TS0601_thermostat/set/current_heating_setpoint",
-            "temperature_state_template":"{{ value_json.current_heating_setpoint }}",
+            "temperature_state_template":`{{ value_json.current_heating_setpoint ${safeDefault} }}`,
             "temperature_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "temperature_unit":"C",
             "unique_id":"0x0017882104a44559_climate_zigbee2mqtt"
@@ -669,7 +670,7 @@ describe('HomeAssistant extension', () => {
             position_topic: 'zigbee2mqtt/smart vent',
             set_position_topic: 'zigbee2mqtt/smart vent/set',
             set_position_template: '{ "position": {{ position }} }',
-            position_template: '{{ value_json.position }}',
+            position_template: `{{ value_json.position ${safeDefault} }}`,
             json_attributes_topic: 'zigbee2mqtt/smart vent',
             name: 'smart vent',
             unique_id: '0x0017880104e45551_cover_zigbee2mqtt',
@@ -703,7 +704,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -768,7 +769,7 @@ describe('HomeAssistant extension', () => {
         const payloadHA = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -894,7 +895,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
@@ -980,7 +981,7 @@ describe('HomeAssistant extension', () => {
         const payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'name': 'weather_sensor_renamed_temperature',
@@ -1050,7 +1051,7 @@ describe('HomeAssistant extension', () => {
         const payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
-            'value_template': '{{ value_json.temperature }}',
+            'value_template': `{{ value_json.temperature ${safeDefault} }}`,
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'name': 'weather_sensor_renamed_temperature',
@@ -1080,7 +1081,7 @@ describe('HomeAssistant extension', () => {
         const payload = {
             "payload_on":true,
             "payload_off":false,
-            "value_template":"{{ value_json.update_available}}",
+            "value_template":`{{ value_json.update_available ${safeDefault} }}`,
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
             "name":"bulb update available",
@@ -1418,7 +1419,7 @@ describe('HomeAssistant extension', () => {
             discovery_payload: {
                 payload_off: 'OFF',
                 payload_on: 'ON',
-                value_template: '{{ value_json.state }}',
+                value_template: `{{ value_json.state ${safeDefault} }}`,
                 command_topic: true,
             },
         };
