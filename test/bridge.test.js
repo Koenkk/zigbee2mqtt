@@ -1048,4 +1048,46 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('Icon link handling', async () => {
+        const bridge = controller.extensions.find((e) => e.constructor.name === 'Bridge');
+        expect(bridge).not.toBeUndefined();
+
+        const definition = {'model': 'lumi.plug'};
+        const device = zigbeeHerdsman.devices.ZNCZ02LM;
+        const icon_link =  'https://www.zigbee2mqtt.io/images/devices/ZNCZ02LM.jpg';
+        definition.icon = icon_link;
+        let payload = bridge.getDefinitionPayload(definition, {device: device});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe(icon_link);
+
+        definition.icon = '_${model}_';
+        payload = bridge.getDefinitionPayload(definition, {device: device});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe('_lumi.plug_');
+
+        definition.icon = '_${model}_${zigbeeModel}_';
+        payload = bridge.getDefinitionPayload(definition, {device: device});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe('_lumi.plug_lumi.plug_');
+
+        const svg_icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo';
+        definition.icon = svg_icon;
+        payload = bridge.getDefinitionPayload(definition, {device: device});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe(svg_icon);
+
+
+        device.modelID = '?._Z\\NC+Z02*LM';
+        definition.model = '&&&&*+';
+        definition.icon = '_${model}_${zigbeeModel}_';
+        payload = bridge.getDefinitionPayload(definition, {device: device});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe('_------_-._Z-NC-Z02-LM_');
+    });
 });
