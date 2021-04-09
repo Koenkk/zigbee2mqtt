@@ -1064,12 +1064,10 @@ describe('Bridge', () => {
         expect(payload.icon).toBe(icon_link);
 
         definition.icon = icon_link;
-        device.settings = {icon: svg_icon};
-        payload = bridge.getDefinitionPayload(definition, {device: device});
+        payload = bridge.getDefinitionPayload(definition, {device: device, icon: svg_icon});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(svg_icon);
-        delete device.settings;
 
         definition.icon = '_${model}_';
         payload = bridge.getDefinitionPayload(definition, {device: device});
