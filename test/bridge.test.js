@@ -1055,12 +1055,19 @@ describe('Bridge', () => {
 
         const definition = {'model': 'lumi.plug'};
         const device = zigbeeHerdsman.devices.ZNCZ02LM;
+        const svg_icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo';
         const icon_link =  'https://www.zigbee2mqtt.io/images/devices/ZNCZ02LM.jpg';
         definition.icon = icon_link;
         let payload = bridge.getDefinitionPayload(definition, {device: device});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(icon_link);
+
+        definition.icon = icon_link;
+        payload = bridge.getDefinitionPayload(definition, {device: device, settings: {icon: svg_icon}});
+        expect(payload).not.toBeUndefined()
+        expect(payload['icon']).not.toBeUndefined()
+        expect(payload.icon).toBe(svg_icon);
 
         definition.icon = '_${model}_';
         payload = bridge.getDefinitionPayload(definition, {device: device});
@@ -1074,7 +1081,6 @@ describe('Bridge', () => {
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_lumi.plug_lumi.plug_');
 
-        const svg_icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo';
         definition.icon = svg_icon;
         payload = bridge.getDefinitionPayload(definition, {device: device});
         expect(payload).not.toBeUndefined()
