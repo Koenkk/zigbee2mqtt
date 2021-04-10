@@ -740,6 +740,26 @@ describe('HomeAssistant extension', () => {
         expect(logger.warn).toHaveBeenCalledWith("In order for HomeAssistant integration to work properly set `cache_state: true");
     });
 
+    it('Should set missing values to null', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/6987
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
+        const data = {measuredValue: -85}
+        const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/weather_sensor',
+            stringify({"battery":null,"humidity":null,"linkquality":null,"pressure":null,"temperature":-0.85,"voltage":null}),
+            { retain: false, qos: 1 },
+            expect.any(Function),
+        );
+    });
+
     it('Shouldt discover when already discovered', async () => {
         controller = new Controller(false);
         await controller.start();
@@ -823,7 +843,7 @@ describe('HomeAssistant extension', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
+            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null,"update":{"state":"idle"},"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -849,7 +869,7 @@ describe('HomeAssistant extension', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"brightness":255,"update_available":false,"update":{"state":"idle"}}),
+            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null,"update":{"state":"idle"},"update_available":false}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -1186,21 +1206,21 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: "single", click: "single"}),
+            stringify({action: "single", click: "single", battery: null, linkquality: null, voltage: null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: ""}),
+            stringify({action: "", battery: null, linkquality: null, voltage: null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({click: ""}),
+            stringify({click: "", action: null, battery: null, linkquality: null, voltage: null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -1349,7 +1369,7 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: "single"}),
+            stringify({action: "single", "battery":null,"linkquality":null,"voltage":null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -1365,9 +1385,9 @@ describe('HomeAssistant extension', () => {
 
         await MQTT.events.message('zigbee2mqtt/U202DST600ZB/l2/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20, linkquality: null, state_l1: null}), {"qos": 0, "retain": false}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l2', stringify({state:"ON", brightness:20}), {"qos": 0, "retain": false}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null}), {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
@@ -1395,10 +1415,10 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single'});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single', battery: null, linkquality: null, voltage: null});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: ''});
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: '', battery: null, linkquality: null, voltage: null});
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
