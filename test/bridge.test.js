@@ -593,6 +593,20 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should allow to remove device option', async () => {
+        MQTT.publish.mockClear();
+        settings.set(['devices', '0x000b57fffec6a5b2', 'qos'], 1);
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "qos": 1, "retain": true});
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {qos: null}, id: 'bulb'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "retain": true});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/options',
+            stringify({"data":{"from":{"retain": true, "qos": 1},"to":{"retain": true}, "id":"bulb"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow change group options', async () => {
         MQTT.publish.mockClear();
         expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false, "friendlyName": "group_1", "optimistic": true});
