@@ -167,6 +167,12 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45724': {
                 friendly_name: 'GLEDOPTO_2ID',
+            },
+            '0x0017880104e45561': {
+                friendly_name: 'temperature_sensor',
+            },
+            '0x0017880104e45562': {
+                friendly_name: 'heating_actuator',
             }
         },
         groups: {

@@ -279,6 +279,22 @@ describe('Bind', () => {
         );
     });
 
+    it('Should bind server clusters to client clusters', async () => {
+        const device = zigbeeHerdsman.devices.temperature_sensor;
+        const target = zigbeeHerdsman.devices.heating_actuator.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'temperature_sensor', to: 'heating_actuator'}));
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith("msTemperatureMeasurement", target);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/bind',
+            stringify({"data":{"from":"temperature_sensor","to":"heating_actuator","clusters":["msTemperatureMeasurement"],"failed":[]},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should bind to default endpoint returned by endpoints()', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.QBKG04LM.getEndpoint(2);
