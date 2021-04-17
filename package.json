@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.18.2",
+  "version": "1.18.2-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -52,9 +52,9 @@
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
     "ws": "^7.3.1",
-    "zigbee-herdsman": "0.13.88",
-    "zigbee-herdsman-converters": "14.0.102",
-    "zigbee2mqtt-frontend": "0.3.114"
+    "zigbee-herdsman": "0.13.90",
+    "zigbee-herdsman-converters": "14.0.110",
+    "zigbee2mqtt-frontend": "0.3.119"
   },
   "devDependencies": {
     "eslint": "*",
