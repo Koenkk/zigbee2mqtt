@@ -26,6 +26,8 @@ const clusters = {
     'genLevelCtrl': 8,
     'lightingColorCtrl': 768,
     'closuresWindowCovering': 258,
+    'hvacThermostat': 513,
+    'msTemperatureMeasurement': 1026,
 }
 
 class Endpoint {
@@ -190,6 +192,8 @@ const devices = {
     'external_converter_device': new Device('EndDevice', '0x0017880104e45511', 1114, 'external', [new Endpoint(1, [], [], '0x0017880104e45511')], false, null, 'external_converter_device' ),
     'QS_Zigbee_D02_TRIAC_2C_LN':new Device('Router', '0x0017882194e45543', 6549,4151, [new Endpoint(1, [0], [], '0x0017882194e45543'), new Endpoint(2, [0, 6], [], '0x0017882194e45543')], true, "Mains (single phase)", 'TS110F', false, '_TYZB01_v8gtiaed'),
     'unknown': new Device('Router', '0x0017980134e45545', 6540,4151, [], true, "Mains (single phase)"),
+    'temperature_sensor': new Device('EndDevice', '0x0017880104e45561', 6544,4151, [new Endpoint(1, [0,3,4,1026], [])], true, "Battery", "temperature.sensor"),
+    'heating_actuator': new Device('Router', '0x0017880104e45562', 6545,4151, [new Endpoint(1, [0,3,4,513], [1026])], true, "Mains (single phase)", "heating.actuator"),
 }
 
 const mock = {
