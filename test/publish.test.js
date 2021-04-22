@@ -1282,6 +1282,25 @@ describe('Publish', () => {
         expect(logger.error).toHaveBeenCalledWith("No converter available for 'get' 'brightness_move' (20)");
     });
 
+    it('Should restore brightness when its turned on with transition, Z2M is restarted and turned on again', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/7106
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        endpoint.command.mockClear();
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
+        await flushPromises();
+
+        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({"state": "ON", "transition": 1.0}));
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command).toHaveBeenCalledWith('genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith('genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 10}, {});
+    });
+
     it('Should restore brightness when its turned off without transition and is turned on with', async () => {
         // https://github.com/Koenkk/zigbee-herdsman-converters/issues/1097
         const device = zigbeeHerdsman.devices.bulb_color;
