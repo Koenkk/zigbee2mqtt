@@ -1064,6 +1064,7 @@ describe('Publish', () => {
     it('Home Assistant: should not set state when color temperature is also set and device is already on', async () => {
         settings.set(['homeassistant'], true);
         const device = zigbeeHerdsman.devices.bulb_color;
+        controller.state.remove(device.ieeeAddr);
         controller.state.set(device.ieeeAddr, {state: 'ON'})
         const endpoint = device.getEndpoint(1);
         const payload = {state: 'ON', color_temp: 100};
@@ -1079,6 +1080,7 @@ describe('Publish', () => {
     it('Home Assistant: should set state when color temperature is also set and device is off', async () => {
         settings.set(['homeassistant'], true);
         const device = zigbeeHerdsman.devices.bulb_color;
+        controller.state.remove(device.ieeeAddr);
         controller.state.set(device.ieeeAddr, {state: 'OFF'})
         const endpoint = device.getEndpoint(1);
         const payload = {state: 'ON', color_temp: 100};
@@ -1097,6 +1099,7 @@ describe('Publish', () => {
     it('Home Assistant: should not set state when color is also set', async () => {
         settings.set(['homeassistant'], true);
         const device = zigbeeHerdsman.devices.bulb_color;
+        controller.state.remove(device.ieeeAddr);
         controller.state.set(device.ieeeAddr, {state: 'ON'})
         const endpoint = device.getEndpoint(1);
         const payload = {state: 'ON', color: {x: 0.41, y: 0.25}};
@@ -1282,6 +1285,25 @@ describe('Publish', () => {
         expect(logger.error).toHaveBeenCalledWith("No converter available for 'get' 'brightness_move' (20)");
     });
 
+    it('Should restore brightness when its turned on with transition, Z2M is restarted and turned on again', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/7106
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        endpoint.command.mockClear();
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
+        await flushPromises();
+
+        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({"state": "ON", "transition": 1.0}));
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command).toHaveBeenCalledWith('genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith('genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 10}, {});
+    });
+
     it('Should restore brightness when its turned off without transition and is turned on with', async () => {
         // https://github.com/Koenkk/zigbee-herdsman-converters/issues/1097
         const device = zigbeeHerdsman.devices.bulb_color;
@@ -1377,12 +1399,12 @@ describe('Publish', () => {
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(4,
             'zigbee2mqtt/bulb_2',
-            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"state":"ON"}),
+            stringify({"brightness":100,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(5,
             'zigbee2mqtt/group_with_tradfri',
-            stringify({"brightness":100,"color":{"x":0.408707336668894,"y":0.39239142575868},"state":"ON"}),
+            stringify({"brightness":100,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
