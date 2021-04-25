@@ -30,4 +30,4 @@ ARG COMMIT
 RUN echo "{\"hash\": \"$COMMIT\"}" > .hash.json
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["npm", "start"]
+CMD ["node", "index.js"]
