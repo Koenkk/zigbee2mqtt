@@ -248,7 +248,8 @@ describe('HomeAssistant extension', () => {
             ],
             "brightness":true,
             "brightness_scale":254,
-            "color_temp":true,
+            "color_mode": true,
+            "supported_color_modes": ["color_temp"],
             "min_mireds": 250,
             "max_mireds": 454,
             "command_topic":"zigbee2mqtt/bulb/set",
@@ -270,13 +271,11 @@ describe('HomeAssistant extension', () => {
                 "finish_effect",
                 "stop_effect"
             ],
-            "hs":false,
             "json_attributes_topic":"zigbee2mqtt/bulb",
             "name":"bulb",
             "schema":"json",
             "state_topic":"zigbee2mqtt/bulb",
             "unique_id":"0x000b57fffec6a5b2_light_zigbee2mqtt",
-            "xy":false
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
