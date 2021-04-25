@@ -26,6 +26,7 @@ describe('Groups', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         MQTT.publish.mockClear();
+        zigbeeHerdsman.groups.gledopto_group.command.mockClear();
         zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
     })
 
@@ -385,6 +386,20 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+    });
+
+    it('Should publish state of group when specific state of specific endpoint is changed', async () => {
+        const group = zigbeeHerdsman.groups.gledopto_group;
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/GLEDOPTO_2ID/set', stringify({state_cct: 'ON'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/GLEDOPTO_2ID", stringify({"state_cct":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(group.command).toHaveBeenCalledTimes(0);
     });
 
     it('Should publish state change of all members when a group changes its state, filtered', async () => {
