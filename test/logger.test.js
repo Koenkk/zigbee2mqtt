@@ -138,4 +138,14 @@ describe('Logger', () => {
         expect(pipes[1].tailable).toBeFalsy();
         expect(pipes[1].maxsize).toBeNull();
     });
+
+    it('Should allow to symlink logs to current directory', () => {
+        settings.set(['advanced', 'log_symlink_current'], true);
+        let logger = require('../lib/util/logger.js');
+        logger.logOutput();
+        expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
+
+        jest.resetModules();
+        logger = require('../lib/util/logger.js');
+    });
 });

@@ -274,6 +274,13 @@
           "description": "Log rotation",
           "default": true
         },
+        "log_symlink_current": {
+          "type": "boolean",
+          "title": "Log symlink current",
+          "requiresRestart": true,
+          "description": "Create symlink to current logs in the log directory",
+          "default": false
+        },
         "log_level": {
           "type": "string",
           "enum": ["info", "warn", "error", "debug"],
