@@ -29,6 +29,7 @@ describe('Configure', () => {
     expectBulbConfigured = () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint1 = device.getEndpoint(1);
+        console.log(endpoint1.read.mock.calls);
         expect(endpoint1.read).toHaveBeenCalledTimes(2);
         expect(endpoint1.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorCapabilities']);
         expect(endpoint1.read).toHaveBeenCalledWith('lightingColorCtrl', [ 'colorTempPhysicalMin', 'colorTempPhysicalMax' ]);
@@ -37,6 +38,7 @@ describe('Configure', () => {
     expectBulbNotConfigured = () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint1 = device.getEndpoint(1);
+        console.log(endpoint1.read.mock.calls);
         expect(endpoint1.read).toHaveBeenCalledTimes(0);
     }
 
