@@ -602,8 +602,6 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         payload = {
-            "action_template":"{% set values = {'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'} %}{{ values[value_json.running_state] }}",
-            "action_topic":"zigbee2mqtt/TS0601_thermostat",
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
             "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
             "away_mode_state_template":"{{ value_json.away_mode }}",
