@@ -120,14 +120,14 @@ describe('Frontend', () => {
         await mockWS.events.connection(mockWSClient.implementation);
 
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: 'online'}));
-        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255, update:{state: "idle"}, update_available: false}}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255}}));
 
         // Message
         MQTT.publish.mockClear();
         mockWSClient.implementation.send.mockClear();
         mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}))
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON', linkquality: null}),
@@ -140,7 +140,7 @@ describe('Frontend', () => {
         await flushPromises();
 
         // Received message on socket
-        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(4);
+        expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(1);
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: {state: 'ON', linkquality: null}}));
 
         // Shouldnt set when not ready
@@ -155,7 +155,7 @@ describe('Frontend', () => {
         settings.set(['advanced'], {last_seen: 'ISO_8601'});
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255, last_seen: "1970-01-01T00:00:01.000Z", update:{state: "idle"}, update_available: false}}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255, last_seen: "1970-01-01T00:00:01.000Z"}}));
     });
 
     it('onReques/onUpgrade', async () => {
