@@ -559,9 +559,9 @@ describe('Groups', () => {
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({color_temp: 300}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"color_mode": "color_temp", "color":{"x":0.415211980162654,"y":0.395434886759171},"color_temp":300,"state":"OFF"}), {"retain": false, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"color_mode": "color_temp", "color":{"x":0.415211980162654,"y":0.395434886759171},"color_temp":300,"state":"ON"}), {"retain": true, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"color_mode": "color_temp", "color":{"x":0.415211980162654,"y":0.395434886759171},"color_temp":300,"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"color_mode": "color_temp", "color":{"x":0.4152,"y":0.3954},"color_temp":300,"state":"OFF"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"color_mode": "color_temp", "color":{"x":0.4152,"y":0.3954},"color_temp":300,"state":"ON"}), {"retain": true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"color_mode": "color_temp", "color":{"x":0.4152,"y":0.3954},"color_temp":300,"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change off even when missing current state', async () => {
