@@ -8,7 +8,7 @@
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "engines": {
-    "node": "^10 || ^12 || ^14 || ^15"
+    "node": "^10 || ^12 || ^14 || ^15 || ^16"
   },
   "keywords": [
     "xiaomi",
