@@ -357,7 +357,7 @@ describe('Bridge', () => {
 
     it('Should allow to remove device by string', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['0x999b57fffec6a5b9/1', '0x000b57fffec6a5b2/1', 'bulb', 'bulb/right', 'other_bulb', 'bulb_1', '0x000b57fffec6a5b2', 'bulb/room/2']}});
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', 'bulb');
         await flushPromises();
@@ -373,6 +373,7 @@ describe('Bridge', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(settings.get().blocklist).toStrictEqual([]);
+        expect(settings.getGroup('group_1').devices).toStrictEqual(['0x999b57fffec6a5b9/1', 'other_bulb', 'bulb_1', 'bulb/room/2']);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
     });
