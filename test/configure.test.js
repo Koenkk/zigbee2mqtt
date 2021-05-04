@@ -154,11 +154,11 @@ describe('Configure', () => {
     });
 
     it('Fail to configure via MQTT when device has no configure', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: "bulb_enddevice", transaction: 20}));
+        await MQTT.events.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: "0x90fd9ffffe4b64ax", transaction: 20}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            stringify({"data":{"id": "bulb_enddevice"},"status":"error","error": "Device 'bulb_enddevice' cannot be configured","transaction":20}),
+            stringify({"data":{"id": "0x90fd9ffffe4b64ax"},"status":"error","error": "Device 'ZNLDP12LM' cannot be configured","transaction":20}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -178,9 +178,9 @@ describe('Configure', () => {
     });
 
     it('Legacy api: Should skip reconfigure when device does not require this', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/configure', '0x0017880104e45553');
+        await MQTT.events.message('zigbee2mqtt/bridge/configure', '0x90fd9ffffe4b64ax');
         await flushPromises();
-        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'bulb_enddevice', device does not require this.`)
+        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'ZNLDP12LM', device does not require this.`)
     });
 
     it('Should not configure when interviewing', async () => {
