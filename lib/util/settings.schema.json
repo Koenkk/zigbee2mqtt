@@ -143,8 +143,8 @@
           "default": false
         },
         "adapter": {
-          "type": ["string", "null"],
-          "enum": ["deconz", "zstack", "zigate", "ezsp", null],
+          "type": ["string"],
+          "enum": ["deconz", "zstack", "zigate", "ezsp", "auto"],
           "title": "Adapter",
           "requiresRestart": true,
           "description": "Adapter type, not needed unless you are experiencing problems"
