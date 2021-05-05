@@ -146,6 +146,7 @@
           "type": ["string"],
           "enum": ["deconz", "zstack", "zigate", "ezsp", "auto"],
           "title": "Adapter",
+          "default": "auto",
           "requiresRestart": true,
           "description": "Adapter type, not needed unless you are experiencing problems"
         }
