@@ -28091,9 +28091,9 @@
       }
     },
     "zigbee2mqtt-frontend": {
-      "version": "0.4.2",
-      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.4.2.tgz",
-      "integrity": "sha512-wBvz+01TuMgqGQUG7Y+dUTaQWtnMw5s2MSiqCEj5maUUJbc45xCIdOcgkqfIjrfC3ifGhxji3KMfrz5qbHOBkw=="
+      "version": "0.4.3",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.4.3.tgz",
+      "integrity": "sha512-k57u8wpSpfSEjMjCuGfH2ahZZ2WmGVTq3TvjuVQACfpAJ00R/P1dqCRS2IvRaZZ2zeCMPq2L4wJuuyfNzOGABQ=="
     }
   }
 }
