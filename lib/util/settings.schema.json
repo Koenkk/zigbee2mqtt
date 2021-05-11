@@ -112,7 +112,7 @@
           "requiresRestart": true,
           "description": "MQTT protocol version",
           "default": 4,
-          "examples": [4, 5]
+          "examples": [5]
         },
         "force_disable_retain": {
           "type": "boolean",
@@ -248,7 +248,7 @@
           "title": "ZigBee channel",
           "requiresRestart": true,
           "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
-          "examples": [11, 15, 20, 25]
+          "examples": [15, 20, 25]
         },
         "cache_state": {
           "type": "boolean",
@@ -484,7 +484,6 @@
               "description": "The network protocol to log over (e.g. tcp4, udp4, tls4, unix, unix-connect, etc).",
               "default": "tcp4",
               "examples": [
-                "tcp4",
                 "udp4",
                 "tls4",
                 "unix",
@@ -497,7 +496,6 @@
               "description": "The path to the syslog dgram socket (i.e. /dev/log or /var/run/syslog for OS X).",
               "default": "/dev/log",
               "examples": [
-                "/dev/log",
                 "/var/run/syslog"
               ]
             },
@@ -700,7 +698,8 @@
         "optimistic": {
           "type": "boolean",
           "title": "Optimistic",
-          "description": "Publish optimistic state after set (default true)"
+          "description": "Publish optimistic state after set",
+          "default": true
         },
         "filtered_attributes": {
           "type": "array",
