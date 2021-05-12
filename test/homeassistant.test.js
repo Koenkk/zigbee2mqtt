@@ -563,12 +563,10 @@ describe('HomeAssistant extension', () => {
             "speed_command_topic":"zigbee2mqtt/fan/set/fan_mode",
             "speed_value_template":"{{ value_json.fan_mode }}",
             "speeds":[
-               "off",
                "low",
                "medium",
                "high",
                "on",
-               "auto",
                "smart"
             ],
             "json_attributes_topic":"zigbee2mqtt/fan",
