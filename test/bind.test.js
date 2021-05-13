@@ -229,7 +229,7 @@ describe('Bind', () => {
         );
     });
 
-    it('onlythis Should unbind from group with skip_disable_reporting=true', async () => {
+    it('Should unbind from group with skip_disable_reporting=true', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.groups.group_1;
         const target1Member = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
@@ -251,7 +251,7 @@ describe('Bind', () => {
         endpoint.binds = originalBinds;
     });
 
-    it('onlythis Should unbind from group with skip_disable_reporting=false', async () => {
+    it('Should unbind from group with skip_disable_reporting=false', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.groups.group_1;
         const target1Member = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
@@ -563,7 +563,7 @@ describe('Bind', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({type: 'device_unbind', message: {from: 'remote', to: 'default_bind_group', cluster: 'genLevelCtrl'}});
     });
 
-    it('onlythis Should poll bounded Hue bulb when receiving message from Hue dimmer', async () => {
+    it('Should poll bounded Hue bulb when receiving message from Hue dimmer', async () => {
         const remote = zigbeeHerdsman.devices.remote;
         const data = {"button":3,"unknown1":3145728,"type":2,"unknown2":0,"time":1};
         const payload = {data, cluster: 'manuSpecificPhilips', device: remote, endpoint: remote.getEndpoint(2), type: 'commandHueNotification', linkquality: 10, groupID: 0};
