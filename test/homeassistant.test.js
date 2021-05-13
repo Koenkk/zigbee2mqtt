@@ -755,6 +755,63 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should copy hue/saturtion to h/s if present', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const data = {currentHue: 0, currentSaturation: 254}
+        const payload = {data, cluster: 'lightingColorCtrl', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color',
+            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "linkquality": null, "state": null}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should not copy hue/saturtion if properties are missing', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const data = {currentX: 29991, currentY: 26872};
+        const payload = {data, cluster: 'lightingColorCtrl', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color',
+            stringify({"color": {"x": 0.4576,"y": 0.41}, "linkquality": null,"state": null}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should not copy hue/saturtion if color is missing', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const data = {onOff: 1}
+        const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color',
+            stringify({"linkquality": null,"state": "ON"}),
+            { retain: false, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Shouldt discover when already discovered', async () => {
         controller = new Controller(false);
         await controller.start();
