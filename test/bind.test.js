@@ -229,6 +229,36 @@ describe('Bind', () => {
         );
     });
 
+    it('Should unbind from group with skip_disable_reporting=true', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.groups.group_1;
+        const target1Member = zigbeeHerdsman.devices.bulb.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        target.members.push(target1Member);
+        target1Member.configureReporting.mockClear();
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/unbind', stringify({from: 'remote', to: 'group_1', skip_disable_reporting: true}));
+        await flushPromises();
+        expect(endpoint.unbind).toHaveBeenCalledTimes(3);
+        // with skip_disable_reporting set, we expect it to not reconfigure reporting
+        expect(target1Member.configureReporting).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should unbind from group with skip_disable_reporting=false', async () => {
+        const device = zigbeeHerdsman.devices.remote;
+        const target = zigbeeHerdsman.groups.group_1;
+        const target1Member = zigbeeHerdsman.devices.bulb.getEndpoint(1);
+        const endpoint = device.getEndpoint(1);
+        target.members.push(target1Member);
+        target1Member.configureReporting.mockClear();
+        mockClear(device);
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/unbind', stringify({from: 'remote', to: 'group_1', skip_disable_reporting: false}));
+        await flushPromises();
+        expect(endpoint.unbind).toHaveBeenCalledTimes(3);
+        // with skip_disable_reporting set, we expect it to reconfigure reporting
+        expect(target1Member.configureReporting).toHaveBeenCalledTimes(2);
+    });
+
     it('Should bind to group by number', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.groups.group_1;
