@@ -352,7 +352,6 @@ describe('Settings', () => {
             friendlyName: '123',
             friendly_name: '123',
             devices: [],
-            optimistic: true,
         };
 
         expect(group).toStrictEqual(expected);
@@ -378,7 +377,6 @@ describe('Settings', () => {
             friendlyName: '123',
             friendly_name: '123',
             devices: [],
-            optimistic: true,
         };
 
         expect(group).toStrictEqual(expected);
@@ -420,7 +418,6 @@ describe('Settings', () => {
 
         const group = settings.getGroup('1');
         const expectedGroup = {
-            optimistic: true,
             ID: 1,
             friendlyName: '123',
             friendly_name: '123',

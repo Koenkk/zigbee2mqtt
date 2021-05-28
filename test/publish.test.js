@@ -422,6 +422,13 @@ describe('Publish', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
+    it('Shouldnt publish new state when optimistic = false for group', async () => {
+        settings.set(['groups', '2', 'optimistic'], false);
+        await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({brightness: '200'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
     it('Should handle non-valid topics', async () => {
         await MQTT.events.message('zigbee2mqtt1/bulb_color/set', stringify({state: 'ON'}));
         await flushPromises();
