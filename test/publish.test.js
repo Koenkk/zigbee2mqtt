@@ -422,6 +422,18 @@ describe('Publish', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
+    it('Shouldnt publish new brightness state when filtered_optimistic is used', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        settings.set(['devices', device.ieeeAddr, 'filtered_optimistic'], ["brightness"]);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({brightness: '200'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {"level": 200, "transtime": 0}, {});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state: 'ON'});
+    });
+
     it('Shouldnt publish new state when optimistic = false for group', async () => {
         settings.set(['groups', '2', 'optimistic'], false);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({brightness: '200'}));
