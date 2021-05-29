@@ -137,18 +137,18 @@ describe('Networkmap', () => {
 
         const expected = `digraph G {
             node[shape=record];
-              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0)|0 seconds ago}"];
-              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (40369)|IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)|9 seconds ago}"];
+              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0x0000)|0 seconds ago}"];
+              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (0x9db1)|IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)|9 seconds ago}"];
               "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 6540)"]
-              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (40399)|Philips Hue Go (7146060PH)|unknown}"];
+              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go (7146060PH)|unknown}"];
               "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
               "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
-              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (6538)|Xiaomi Aqara double key wireless wall switch (2016 model) (WXKG02LM_rev1)|9 seconds ago}"];
+              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (0x198a)|Xiaomi Aqara double key wireless wall switch (2016 model) (WXKG02LM_rev1)|9 seconds ago}"];
               "0x0017880104e45521" -> "0x0017880104e45559" [penwidth=1, weight=0, color="#994444", label="130"]
-              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (6536)failed: lqi,routingTable|Boef notSupportedModelID|9 seconds ago}"];
-              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (6540)|Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)|9 seconds ago}"];
+              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (0x1988)failed: lqi,routingTable|Boef notSupportedModelID|9 seconds ago}"];
+              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (0x198c)|Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)|9 seconds ago}"];
               "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
-              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (1114)|external external (external_converter_device)|9 seconds ago}"];
+              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external (external_converter_device)|9 seconds ago}"];
               "0x0017880104e45511" -> "0x00124b00120144ae" [penwidth=1, weight=0, color="#994444", label="92"]
             }`;
 
@@ -180,7 +180,7 @@ describe('Networkmap', () => {
         card 0x0017880104e45511 [
         0x0017880104e45511
         ---
-        0x0017880104e45511 (1114)
+        0x0017880104e45511 (0x045a)
         ---
         external external (external_converter_device)
         ---
@@ -190,7 +190,7 @@ describe('Networkmap', () => {
         card 0x0017880104e45525 [
         0x0017880104e45525
         ---
-        0x0017880104e45525 (6536) failed: lqi,routingTable
+        0x0017880104e45525 (0x1988) failed: lqi,routingTable
         ---
         Boef notSupportedModelID
         ---
@@ -200,7 +200,7 @@ describe('Networkmap', () => {
         card 0x000b57fffec6a5b2 [
         bulb
         ---
-        0x000b57fffec6a5b2 (40369)
+        0x000b57fffec6a5b2 (0x9db1)
         ---
         IKEA TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)
         ---
@@ -210,7 +210,7 @@ describe('Networkmap', () => {
         card 0x000b57fffec6a5b3 [
         bulb_color
         ---
-        0x000b57fffec6a5b3 (40399)
+        0x000b57fffec6a5b3 (0x9dcf)
         ---
         Philips Hue Go (7146060PH)
         ---
@@ -220,7 +220,7 @@ describe('Networkmap', () => {
         card 0x0017880104e45521 [
         button_double_key
         ---
-        0x0017880104e45521 (6538)
+        0x0017880104e45521 (0x198a)
         ---
         Xiaomi Aqara double key wireless wall switch (2016 model) (WXKG02LM_rev1)
         ---
@@ -230,7 +230,7 @@ describe('Networkmap', () => {
         card 0x0017880104e45559 [
         cc2530_router
         ---
-        0x0017880104e45559 (6540)
+        0x0017880104e45559 (0x198c)
         ---
         Custom devices (DiY) [CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/) (CC2530.ROUTER)
         ---
@@ -240,7 +240,7 @@ describe('Networkmap', () => {
         card 0x00124b00120144ae [
         Coordinator
         ---
-        0x00124b00120144ae (0)
+        0x00124b00120144ae (0x0000)
         ---
         0 seconds ago
         ]
