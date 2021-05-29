@@ -106,6 +106,18 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should publish event when device joined', async () => {
+        MQTT.publish.mockClear();
+        await zigbeeHerdsman.events.deviceNetworkAddressChanged({device: zigbeeHerdsman.devices.bulb});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/devices',
+          expect.any(String),
+          { retain: true, qos: 0 },
+          expect.any(Function)
+        );
+    });
+
     it('Should publish event when device announces', async () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device: zigbeeHerdsman.devices.bulb});
