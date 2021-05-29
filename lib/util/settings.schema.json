@@ -701,6 +701,15 @@
           "description": "Publish optimistic state after set",
           "default": true
         },
+        "filtered_optimistic": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["color_mode", "color_temp", "color"],
+          "title": "Filtered attributes",
+          "description": "Skip optimistic state after set for certain attributes, this has no effect if optimistic is set to false."
+        },
         "filtered_attributes": {
           "type": "array",
           "items": {
