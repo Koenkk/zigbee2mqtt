@@ -717,7 +717,7 @@
           },
           "examples": ["temperature", "battery", "action"],
           "title": "Filtered publish attributes",
-          "description": "Filter attributes from publish payload.
+          "description": "Filter attributes from publish payload."
         },
         "icon": {
           "type": "string",
