@@ -707,8 +707,8 @@
             "type": "string"
           },
           "examples": ["color_mode", "color_temp", "color"],
-          "title": "Filtered attributes",
-          "description": "Skip optimistic state after set for certain attributes, this has no effect if optimistic is set to false."
+          "title": "Filtered optimistic attributes",
+          "description": "Filter attributes from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
         },
         "filtered_attributes": {
           "type": "array",
@@ -716,8 +716,8 @@
             "type": "string"
           },
           "examples": ["temperature", "battery", "action"],
-          "title": "Filtered attributes",
-          "description": "Allows to prevent certain attributes from being published"
+          "title": "Filtered publish attributes",
+          "description": "Filter attributes from publish payload.
         },
         "icon": {
           "type": "string",
