@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.18.3-dev",
+  "version": "1.18.3",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
