@@ -157,6 +157,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'icon': 'mdi:signal',
+            'enabled_by_default': false,
             'unit_of_measurement': 'lqi',
             'state_class': 'measurement',
             'value_template': '{{ value_json.linkquality }}',
@@ -1168,6 +1169,7 @@ describe('HomeAssistant extension', () => {
             "payload_on":true,
             "payload_off":false,
             "value_template":"{{ value_json.update_available}}",
+            "enabled_by_default": false,
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
             "name":"bulb update available",
