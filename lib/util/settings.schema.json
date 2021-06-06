@@ -373,6 +373,15 @@
           "title": "Availability Timeout",
           "description": "Availability timeout in seconds when enabled, devices will be checked if they are still online. Only AC powered routers are checked for availability"
         },
+        "availability_jitter": {
+          "type": "number",
+          "minimum": -1,
+          "default": 0.1,
+          "maximum": 1,
+          "requiresRestart": true,
+          "title": "Availability Jitter",
+          "description": "Percentage jitter applied to the availability_timeout setting."
+        },
         "availability_blocklist": {
           "type": "array",
           "items": {
