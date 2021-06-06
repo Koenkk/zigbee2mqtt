@@ -380,7 +380,7 @@
           "maximum": 1,
           "requiresRestart": true,
           "title": "Availability Jitter",
-          "description": "Percentage jitter applied to the availability_timeout setting."
+          "description": "Percentage jitter applied to the availability_timeout setting. Jitter can be positive (useful if you're intending to spread out load), or negative (if you want to maintain a maximum upper bound on availability)."
         },
         "availability_blocklist": {
           "type": "array",
