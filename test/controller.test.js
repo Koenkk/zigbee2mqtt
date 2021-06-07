@@ -623,4 +623,11 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', { retain: false, qos: 0 }, expect.any(Function));
     });
+
+    it('Should disable legacy options on new network start', async () => {
+        expect(settings.get().advanced.legacy_api).toBeTruthy();
+        zigbeeHerdsman.start.mockReturnValueOnce('reset');
+        await controller.start();
+        expect(settings.get().advanced.legacy_api).toBeFalsy();
+    });
 });
