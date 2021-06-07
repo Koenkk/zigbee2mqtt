@@ -426,8 +426,8 @@
         "homeassistant_legacy_entity_attributes": {
           "type": "boolean",
           "title": "Home Assistant legacy entity attributes",
-          "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will state attributes to each entity additional to the separate entities and devices it already creates",
-          "default": false
+          "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
+          "default": true
         },
         "homeassistant_status_topic": {
           "type": "string",

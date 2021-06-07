@@ -625,9 +625,11 @@ describe('Controller', () => {
     });
 
     it('Should disable legacy options on new network start', async () => {
+        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeTruthy();
         expect(settings.get().advanced.legacy_api).toBeTruthy();
         zigbeeHerdsman.start.mockReturnValueOnce('reset');
         await controller.start();
+        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeFalsy();
         expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
 });
