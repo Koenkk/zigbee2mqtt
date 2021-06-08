@@ -196,7 +196,7 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
-          stringify({"type":"device_leave","data":{"ieee_address":"0x000b57fffec6a5b2"}}),
+          stringify({"type":"device_leave","data":{"ieee_address":"0x000b57fffec6a5b2","friendly_name":"bulb"}}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );
