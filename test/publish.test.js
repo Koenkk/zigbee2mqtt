@@ -176,10 +176,10 @@ describe('Publish', () => {
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/wall_switch_double');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({state_right: 'OFF'});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/wall_switch_double');
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({state_right: 'OFF'});
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
     it('Should publish messages to zigbee devices to non default-ep with state_[EP]', async () => {
@@ -403,10 +403,10 @@ describe('Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(8);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(9);
         await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(9);
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(10);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
@@ -1400,7 +1400,7 @@ describe('Publish', () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
-        expect(MQTT.publish).toHaveBeenCalledTimes(5);
+        expect(MQTT.publish).toHaveBeenCalledTimes(7);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/group_tradfri_remote',
             stringify({"brightness":50,"color_temp":290,"state":"ON","color_mode": "color_temp"}),
@@ -1422,7 +1422,17 @@ describe('Publish', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(5,
+            'zigbee2mqtt/ha_discovery_group',
+            stringify({"brightness":50,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(6,
             'zigbee2mqtt/group_with_tradfri',
+            stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(7,
+            'zigbee2mqtt/ha_discovery_group',
             stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
