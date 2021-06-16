@@ -207,7 +207,11 @@ function writeDefaultConfiguration() {
             '21': {
                 friendly_name: 'gledopto_group',
                 devices: ['GLEDOPTO_2ID/cct'],
-            }
+            },
+            '9': {
+                friendly_name: 'ha_discovery_group',
+                devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right']
+            },
         },
         external_converters: [],
     };

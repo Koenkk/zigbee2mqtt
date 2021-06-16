@@ -44,12 +44,67 @@ describe('HomeAssistant extension', () => {
         expect(duplicated).toHaveLength(0);
     });
 
-    it('Should discover devices', async () => {
+    it('Should discover devices and groups', async () => {
         controller = new Controller(false);
         await controller.start();
 
         let payload;
         await flushPromises();
+
+        payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/ha_discovery_group/set",
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_9"
+               ],
+               "name":"ha_discovery_group",
+               "sw_version":this.version,
+            },
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
+            "name":"ha_discovery_group",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/ha_discovery_group",
+            "supported_color_modes":[
+               "xy",
+               "color_temp"
+            ],
+            "unique_id":"9_light_zigbee2mqtt"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/9/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "command_topic":"zigbee2mqtt/ha_discovery_group/set",
+            "device":{
+               "identifiers":["zigbee2mqtt_9"],
+               "name":"ha_discovery_group",
+               "sw_version":this.version,
+            },
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
+            "name":"ha_discovery_group",
+            "payload_off":"OFF",
+            "payload_on":"ON",
+            "state_topic":"zigbee2mqtt/ha_discovery_group",
+            "unique_id":"9_switch_zigbee2mqtt",
+            "value_template":"{{ value_json.state }}"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/switch/9/switch/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
 
         payload = {
             'unit_of_measurement': '°C',
@@ -1609,6 +1664,46 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should rediscover group when device is added to it', async () => {
+        controller = new Controller(false);
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'ha_discovery_group', device: 'wall_switch_double/left'}));
+        await flushPromises();
+
+        const payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/ha_discovery_group/set",
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_9"
+               ],
+               "name":"ha_discovery_group",
+               "sw_version":this.version,
+            },
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
+            "name":"ha_discovery_group",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/ha_discovery_group",
+            "supported_color_modes":[
+               "xy",
+               "color_temp"
+            ],
+            "unique_id":"9_light_zigbee2mqtt"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/9/light/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),

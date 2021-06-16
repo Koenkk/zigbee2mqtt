@@ -132,6 +132,7 @@ const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new End
 const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
 const ZNCZ02LM = new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug");
 const GLEDOPTO_2ID = new Device('Router', '0x0017880104e45724', 6540,4151, [new Endpoint(11, [0,3,4,5,6,8,768], [], '0x0017880104e45724', [], {}, [], 49246, 528), new Endpoint(12, [0, 3, 4, 5, 6, 8, 768], [], '0x0017880104e45724', [], {}, [], 260, 258), new Endpoint(13, [4096], [4096], '0x0017880104e45724', [], {}, [], 49246, 57694), new Endpoint(15, [0, 3, 4, 5, 6, 8, 768], [], '0x0017880104e45724', [], {}, [], 49246, 256)], true, "Mains (single phase)", 'GL-C-007', false, 'GLEDOPTO');
+const QBKG03LM = new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2');
 
 const groups = {
     'group_1': new Group(1, []),
@@ -142,6 +143,7 @@ const groups = {
     'group_with_switch': new Group(14, [ZNCZ02LM.endpoints[0]]),
     'gledopto_group': new Group(21, [GLEDOPTO_2ID.endpoints[3]]),
     'default_bind_group': new Group(901, []),
+    'ha_discovery_group': new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[1]]),
 }
 
 const devices = {
@@ -162,7 +164,7 @@ const devices = {
     'ZNCZ02LM': ZNCZ02LM,
     'E1743': new Device('Router', '0x0017880104e45540', 6540,4476, [new Endpoint(1, [0], [])], true, "Mains (single phase)", 'TRADFRI on/off switch'),
     'QBKG04LM': new Device('Router', '0x0017880104e45541', 6549,4151, [new Endpoint(1, [0], [25]), new Endpoint(2, [0, 6], [])], true, "Mains (single phase)", 'lumi.ctrl_neutral1'),
-    'QBKG03LM':new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2'),
+    'QBKG03LM':QBKG03LM,
     'GLEDOPTO1112': new Device('Router', '0x0017880104e45543', 6540, 4151, [new Endpoint(11, [0], [], '0x0017880104e45543'), new Endpoint(13, [0], [], '0x0017880104e45543')], true, "Mains (single phase)", 'GL-C-008'),
     'GLEDOPTO111213': new Device('Router', '0x0017880104e45544', 6540,4151, [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])], true, "Mains (single phase)", 'GL-C-008'),
     'GLEDOPTO_2ID': GLEDOPTO_2ID,
