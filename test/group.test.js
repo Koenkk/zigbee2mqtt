@@ -874,4 +874,31 @@ describe('Groups', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('onlythis Should only include relevant properties when publishing member states', async () => {
+        const bulbColor = zigbeeHerdsman.devices.bulb_color;
+        const bulbColorTemp = zigbeeHerdsman.devices.bulb;
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(bulbColor.getEndpoint(1));
+        group.members.push(bulbColorTemp.getEndpoint(1));
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [bulbColor.ieeeAddr, bulbColorTemp.ieeeAddr]}});
+        await controller.start();
+        await flushPromises();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({color_temp: 50}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(3);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"color_mode":"color_temp","color_temp":50}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"color_mode":"color_temp","color_temp":50}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"color_mode":"color_temp","color_temp":50}), {"retain": true, qos: 0}, expect.any(Function));
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({color: {x: 0.5, y: 0.3}}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(3);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({"color":{"x":0.5,"y":0.3},"color_mode":"xy","color_temp":548}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"color":{"x":0.5,"y":0.3},"color_mode":"xy","color_temp":548}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"color_mode":"color_temp","color_temp":548}), {"retain": true, qos: 0}, expect.any(Function));
+    });
 });
