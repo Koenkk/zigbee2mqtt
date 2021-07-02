@@ -716,7 +716,7 @@ describe('Publish', () => {
 
         MQTT.publish.mockClear();
         group.command.mockClear();
-        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF', brightness: 100}));
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF'}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
@@ -1400,7 +1400,7 @@ describe('Publish', () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
-        expect(MQTT.publish).toHaveBeenCalledTimes(7);
+        expect(MQTT.publish).toHaveBeenCalledTimes(8);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/group_tradfri_remote',
             stringify({"brightness":50,"color_temp":290,"state":"ON","color_mode": "color_temp"}),
@@ -1432,6 +1432,11 @@ describe('Publish', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(7,
+            'zigbee2mqtt/switch_group',
+            stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(8,
             'zigbee2mqtt/ha_discovery_group',
             stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)

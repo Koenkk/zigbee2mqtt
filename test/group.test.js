@@ -317,12 +317,13 @@ describe('Groups', () => {
         await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device1, endpoint: device1.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await zigbeeHerdsman.events.message({data: {onOff: 1}, cluster: 'genOnOff', device: device2, endpoint: device2.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(5);
+        expect(MQTT.publish).toHaveBeenCalledTimes(6);
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_tradfri_remote", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_2", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb_color_2", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_with_tradfri", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/ha_discovery_group", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
     it('Should publish state change of all members when a group changes its state', async () => {

@@ -202,7 +202,7 @@ function writeDefaultConfiguration() {
             '14': {
                 friendly_name: 'switch_group',
                 retain: false,
-                devices: ['power_plug'],
+                devices: ['power_plug', 'bulb_2'],
             },
             '21': {
                 friendly_name: 'gledopto_group',

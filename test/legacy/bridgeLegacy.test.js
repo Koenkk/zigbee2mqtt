@@ -188,7 +188,7 @@ describe('Bridge legacy', () => {
         await flushPromises();
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/log');
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
-        expect(payload).toStrictEqual({"message":[{"ID":1,"devices":[],"friendly_name":"group_1","retain":false},{"ID":2,"devices":[],"friendly_name":"group_2","retain":false},{"ID":9,"devices":["bulb_color_2","bulb_2","wall_switch_double/right"],"friendly_name":"ha_discovery_group"},{"ID":11,"devices":["bulb_2"],"friendly_name":"group_with_tradfri","retain":false},{"ID":12,"devices":["TS0601_thermostat"],"friendly_name":"thermostat_group","retain":false},{"ID":14,"devices":["power_plug"],"friendly_name":"switch_group","retain":false},{"ID":21,"devices":["GLEDOPTO_2ID/cct"],"friendly_name":"gledopto_group"},{"ID":15071,"devices":["bulb_color_2","bulb_2"],"friendly_name":"group_tradfri_remote","retain":false}],"type":"groups"});
+        expect(payload).toStrictEqual({"message":[{"ID":1,"devices":[],"friendly_name":"group_1","retain":false},{"ID":2,"devices":[],"friendly_name":"group_2","retain":false},{"ID":9,"devices":["bulb_color_2","bulb_2","wall_switch_double/right"],"friendly_name":"ha_discovery_group"},{"ID":11,"devices":["bulb_2"],"friendly_name":"group_with_tradfri","retain":false},{"ID":12,"devices":["TS0601_thermostat"],"friendly_name":"thermostat_group","retain":false},{"ID":14,"devices":["power_plug","bulb_2"],"friendly_name":"switch_group","retain":false},{"ID":21,"devices":["GLEDOPTO_2ID/cct"],"friendly_name":"gledopto_group"},{"ID":15071,"devices":["bulb_color_2","bulb_2"],"friendly_name":"group_tradfri_remote","retain":false}],"type":"groups"});
     });
 
     it('Should allow rename devices', async () => {

@@ -140,7 +140,7 @@ const groups = {
     'group/with/slashes': new Group(99, []),
     'group_with_tradfri': new Group(11, [bulb_2.endpoints[0]]),
     'thermostat_group': new Group(12, [TS0601_thermostat.endpoints[0]]),
-    'group_with_switch': new Group(14, [ZNCZ02LM.endpoints[0]]),
+    'group_with_switch': new Group(14, [ZNCZ02LM.endpoints[0], bulb_2.endpoints[0]]),
     'gledopto_group': new Group(21, [GLEDOPTO_2ID.endpoints[3]]),
     'default_bind_group': new Group(901, []),
     'ha_discovery_group': new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[1]]),
