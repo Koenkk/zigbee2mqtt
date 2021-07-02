@@ -76,7 +76,7 @@ describe('HomeAssistant extension', () => {
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/9/light/config',
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
@@ -100,7 +100,7 @@ describe('HomeAssistant extension', () => {
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/switch/9/switch/config',
+            'homeassistant/switch/1221051039810110150109113116116_9/switch/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
@@ -1703,7 +1703,7 @@ describe('HomeAssistant extension', () => {
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/9/light/config',
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
