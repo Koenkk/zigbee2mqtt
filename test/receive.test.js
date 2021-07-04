@@ -334,7 +334,6 @@ describe('Receive', () => {
         const payload = {data, cluster: 'genRssiLocation', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        console.log(MQTT.publish.mock.calls);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button_double_key');
         expect(typeof JSON.parse(MQTT.publish.mock.calls[0][1]).last_seen).toBe('number')
