@@ -15,9 +15,9 @@ jobs:
     - uses: actions/setup-node@v2-beta
       with:
         node-version: 12
-    - run: npm install
-    - run: npm ls --depth 0 --prod --parseable | tail -n +2 | grep -v "zigbee" | xargs -I '{}' basename "{}" | xargs -I '{}' npm install '{}'@latest
-    - run: rm -rf node_modules npm-shrinkwrap.json && npm install && npm shrinkwrap --dev
+    - run: rm -rf npm-shrinkwrap.json
+    - run: npx npm-check-updates -u
+    - run: npm install && npm shrinkwrap --dev
     - uses: peter-evans/create-pull-request@v3
       with:
         commit-message: Update dependencies
