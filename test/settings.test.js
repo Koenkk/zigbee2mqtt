@@ -676,7 +676,7 @@ describe('Settings', () => {
 
         settings.reRead();
 
-        const error = `advanced should be object`;
+        const error = `advanced must be object`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
