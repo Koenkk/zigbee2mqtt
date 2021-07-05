@@ -3,7 +3,7 @@ const settings = require('../lib/util/settings');
 const stringify = require('json-stable-stringify-without-jsonify');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
 const fs = require('fs');
@@ -16,12 +16,19 @@ describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
         this.version = `Zigbee2MQTT ${this.version.version}`;
-        jest.useRealTimers();
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
         MQTT.publish.mockClear();
         settings.set(['homeassistant'], true);
+    });
+
+    beforeAll(async () => {
+        jest.useFakeTimers();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     it('Should not have duplicate type/object_ids in a mapping', () => {
@@ -946,7 +953,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -972,7 +978,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should send all status when home assistant comes online', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -998,7 +1003,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt send all status when home assistant comes offline', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -1012,7 +1016,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();

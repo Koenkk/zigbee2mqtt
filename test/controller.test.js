@@ -6,7 +6,7 @@ const path = require('path');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const tmp = require('tmp');
 const mocksClear = [
     zigbeeHerdsman.permitJoin, MQTT.end, zigbeeHerdsman.stop, logger.debug,
@@ -20,6 +20,10 @@ describe('Controller', () => {
     let controller;
     let mockExit;
 
+    beforeAll(async () => {
+        jest.useFakeTimers();
+    });
+
     beforeEach(() => {
         zigbeeHerdsman.returnDevices.splice(0);
         mockExit = jest.fn();
@@ -29,6 +33,10 @@ describe('Controller', () => {
         settings.reRead();
         data.writeDefaultState();
     });
+
+    afterAll(async () => {
+        jest.useRealTimers();
+    })
 
     it('Start controller', async () => {
         await controller.start();
@@ -132,14 +140,12 @@ describe('Controller', () => {
     });
 
     it('Log when MQTT client is unavailable', async () => {
-        jest.useFakeTimers();
         await controller.start();
         await flushPromises();
         logger.error.mockClear();
         controller.mqtt.client.reconnecting = true;
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledTimes(1);
         expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
         controller.mqtt.client.reconnecting = false;
     });

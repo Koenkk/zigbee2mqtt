@@ -13,13 +13,14 @@ zigbeeHerdsman.returnDevices.push('0x90fd9ffffe4b64ax');
 const MQTT = require('../stub/mqtt');
 const settings = require('../../lib/util/settings');
 const Controller = require('../../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('../lib/flushPromises');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
 describe('Report', () => {
     let controller;
+    let extension;
 
     function expectOnOffBrightnessColorReport(endpoint, colorXY) {
         const coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
@@ -69,23 +70,34 @@ describe('Report', () => {
         }
     }
 
+    beforeAll(async () => {
+        jest.useFakeTimers();
+        settings.set(['advanced', 'report'], true);
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        extension = controller.extensions.find((e) => e.constructor.name === 'Report');
+    });
+
     beforeEach(async () => {
+        extension.enabled = true;
         data.writeDefaultConfiguration();
         settings.reRead();
-        data.writeEmptyState();
-        settings.set(['advanced', 'report'], true);
         for (const device of Object.values(zigbeeHerdsman.devices)) {
             mockClear(device);
             delete device.meta.reporting;
         }
-
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
         mocksClear.forEach((m) => m.mockClear());
-        await flushPromises();
+        extension.queue = new Set();
+        extension.failed = new Set();
+        await extension.onZigbeeStarted();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     it('Should configure reporting on startup', async () => {
+        await extension.onZigbeeStarted();
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         expectOnOffBrightnessColorReport(endpoint, true);
@@ -96,10 +108,8 @@ describe('Report', () => {
         const endpoint = device.getEndpoint(1);
         mockClear(device);
         delete device.meta.report;
-        settings.set(['advanced', 'report'], false);
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        extension.enabled = false;
+        await extension.onZigbeeStarted();
         expect(device.meta.reporting).toBe(undefined);
         expect(endpoint.bind).toHaveBeenCalledTimes(0);
     });
@@ -108,11 +118,9 @@ describe('Report', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.meta.reporting = 1;
         const endpoint = device.getEndpoint(1);
-        settings.set(['advanced', 'report'], false);
+        extension.enabled = false;
         mockClear(device);
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await extension.onZigbeeStarted();
         expectOnOffBrightnessColorReportDisabled(endpoint, true);
     });
 
@@ -131,7 +139,6 @@ describe('Report', () => {
     });
 
     it('Should not configure reporting when still configuring', async () => {
-        jest.useFakeTimers();
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
         endpoint.bind.mockImplementationOnce(async () => await wait(1000));
@@ -143,8 +150,6 @@ describe('Report', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
-        jest.runAllTimers();
-        jest.useRealTimers();
     });
 
     it('Should not mark as configured when reporting setup fails', async () => {

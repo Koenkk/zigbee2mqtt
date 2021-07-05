@@ -7,13 +7,14 @@ const path = require('path');
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 const settings = require('../../lib/util/settings');
 const Controller = require('../../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('../lib/flushPromises');
 
 
 describe('Bridge legacy', () => {
     let controller;
 
     beforeAll(async () => {
+        jest.useFakeTimers();
         this.version = await require('../../lib/util/utils').getZigbee2mqttVersion();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -22,9 +23,12 @@ describe('Bridge legacy', () => {
     beforeEach(() => {
         data.writeDefaultConfiguration();
         settings.reRead();
-        data.writeDefaultState();
         logger.info.mockClear();
         logger.warn.mockClear();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     it('Should publish bridge configuration on startup', async () => {

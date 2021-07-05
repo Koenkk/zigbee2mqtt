@@ -233,20 +233,24 @@ function stateExists() {
     return fs.existsSync(stateFile);
 }
 
-function writeDefaultState() {
-    const state = {
-        "0x000b57fffec6a5b2": {
-            "state": "ON",
-            "brightness": 50,
-            "color_temp": 370,
-            "linkquality": 99,
-        },
-        "0x0017880104e45517": {
-            "brightness": 255
-        },
-    }
+const defaultState = {
+    "0x000b57fffec6a5b2": {
+        "state": "ON",
+        "brightness": 50,
+        "color_temp": 370,
+        "linkquality": 99,
+    },
+    "0x0017880104e45517": {
+        "brightness": 255
+    },
+}
 
-    fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(state));
+function getDefaultState() {
+    return defaultState;
+}
+
+function writeDefaultState() {
+    fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(defaultState));
 }
 
 jest.mock('../../lib/util/data', () => ({
@@ -265,4 +269,5 @@ module.exports = {
     removeState,
     writeEmptyState,
     stateExists,
+    getDefaultState,
 };

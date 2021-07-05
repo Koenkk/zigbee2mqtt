@@ -4,7 +4,7 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const stringify = require('json-stable-stringify-without-jsonify');
 
@@ -15,15 +15,33 @@ describe('OTA update', () => {
         mapped.ota.updateToLatest = jest.fn();
         mapped.ota.isUpdateAvailable = jest.fn();
     }
-
-    beforeEach(async () => {
+    
+    beforeAll(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
+        data.writeDefaultConfiguration();
         settings.set(['advanced', 'ikea_ota_use_test_url'], true);
-        data.writeEmptyState();
+        settings.reRead();
+        jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
+    });
+
+    afterEach(async () => {
+        settings.set(['ota', 'disable_automatic_update_check'], false);
+        jest.runOnlyPendingTimers();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
+    });
+
+    beforeEach(async () => {
+        const extension = controller.extensions.find((e) => e.constructor.name === 'OTAUpdate');
+        extension.lastChecked = {};
+        extension.inProgress = new Set();
+        controller.state.state = {};
         MQTT.publish.mockClear();
     });
 
@@ -176,7 +194,6 @@ describe('OTA update', () => {
     });
 
     it('Should refuse to check/update when already in progress', async () => {
-        jest.useFakeTimers();
         const device = zigbeeHerdsman.devices.bulb;
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
@@ -189,7 +206,7 @@ describe('OTA update', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "bulb");
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
-        jest.runAllTimers();
+        jest.runOnlyPendingTimers();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
@@ -201,7 +218,6 @@ describe('OTA update', () => {
     it('Shouldnt crash when read modelID before/after OTA update fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
-        let count = 0;
         endpoint.read.mockImplementation(() => {throw new Error('Failed!')});
 
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
@@ -217,6 +233,7 @@ describe('OTA update', () => {
 
     it('Should check for update when device requests it', async () => {
         const device = zigbeeHerdsman.devices.bulb;
+        device.endpoints[0].commandResponse.mockClear();
         const data = {imageType: 12382};
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
@@ -236,8 +253,6 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
 
-        const extension = controller.extensions.find((e) => e.constructor.name === 'OTAUpdate');
-        extension.lastChecked = {};
         logger.info.mockClear();
         mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
         await zigbeeHerdsman.events.message(payload);
@@ -246,6 +261,28 @@ describe('OTA update', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":true,"update":{"state":"available"}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should check for update when device requests it and it is not available', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        device.endpoints[0].commandResponse.mockClear();
+        const data = {imageType: 12382};
+        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        mockClear(mapped);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.info.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x95});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            stringify({"update_available":false,"update":{"state":"idle"}}),
             {retain: true, qos: 0}, expect.any(Function)
         );
     });
