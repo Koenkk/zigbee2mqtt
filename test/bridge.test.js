@@ -1085,7 +1085,7 @@ describe('Bridge', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
-            stringify({"data":{},"error": "permit_join should be boolean", "status":"error"}),
+            stringify({"data":{},"error": "permit_join must be boolean", "status":"error"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
