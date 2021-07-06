@@ -1579,6 +1579,26 @@ describe('HomeAssistant extension', () => {
         await controller.start();
         await flushPromises();
 
+        // Non-existing group -> clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_91231/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_91231/light/config', null, {qos: 0, retain: true}, expect.any(Function));
+
+        // Existing group -> dont clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Existing group, non existing config ->  clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_9/switch/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/switch/config', null, {qos: 0, retain: true}, expect.any(Function));
+
         // Non-existing device -> clear
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
