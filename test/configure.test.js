@@ -4,7 +4,7 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const stringify = require('json-stable-stringify-without-jsonify');
 
@@ -55,17 +55,29 @@ describe('Configure', () => {
         }
     }
 
-    beforeEach(async () => {
-        jest.useRealTimers();
-        data.writeDefaultConfiguration();
-        settings.reRead();
-        data.writeEmptyState();
+    let resetExtension = async () => {
+        await controller.enableDisableExtension(false, 'Configure');
+        await controller.enableDisableExtension(true, 'Configure');
+    }
+
+    beforeAll(async () => {
+        jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
-        mocksClear.forEach((m) => m.mockClear());
         await flushPromises();
-        this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
     });
+
+    beforeEach(async () => {
+        data.writeDefaultConfiguration();
+        settings.reRead();
+        mocksClear.forEach((m) => m.mockClear());
+        this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+        await resetExtension();
+    });
+    
+    afterAll(async () => {
+        jest.useRealTimers();
+    })
 
     it('Should configure Router on startup', async () => {
         expectBulbConfigured();

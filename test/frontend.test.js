@@ -5,7 +5,7 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
@@ -70,6 +70,10 @@ jest.mock('ws', () => ({
 describe('Frontend', () => {
     let controller;
 
+    beforeAll(async () => {
+        jest.useFakeTimers();
+    });
+
     beforeEach(async () => {
         mockWS.implementation.clients = [];
         data.writeDefaultConfiguration();
@@ -78,6 +82,10 @@ describe('Frontend', () => {
         settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
         settings.set(['homeassistant'], true);
         zigbeeHerdsman.devices.bulb.linkquality = 10;
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     afterEach(async() => {

@@ -6,38 +6,41 @@ zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45517');
-
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
-
-const mocksClear = [MQTT.publish, logger.warn, logger.debug];
+const mocks = [MQTT.publish, logger.warn, logger.debug];
 
 describe('Availability', () => {
     let controller;
+    let extension;
 
-    function getExtension() {
-        return controller.extensions.find((e) => e.constructor.name === 'Availability');
+    let resetExtension = async () => {
+        await controller.enableDisableExtension(false, 'Availability');
+        await controller.enableDisableExtension(true, 'Availability');
+        extension = controller.extensions.find((e) => e.constructor.name === 'Availability');
     }
 
-    beforeEach(async () => {
-        data.writeDefaultConfiguration();
-        settings.reRead();
-        data.writeEmptyState();
+    beforeAll(async () => {
         jest.useFakeTimers();
-        settings.set(['advanced', 'availability_timeout'], 10);
         controller = new Controller(jest.fn(), jest.fn());
-        mocksClear.forEach((m) => m.mockClear());
         await controller.start();
         await flushPromises();
     });
 
-    afterEach(async () => {
-        await controller.stop();
-        await flushPromises();
+    beforeEach(async () => {
+        data.writeDefaultConfiguration();
+        settings.reRead();
+        settings.set(['advanced', 'availability_timeout'], 10);
+        mocks.forEach((m) => m.mockClear());
+        await resetExtension();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     })
 
     it('Should publish availabilty on startup', async () => {
@@ -153,7 +156,7 @@ describe('Availability', () => {
 
     it('Should retrieve the state when device is turned on/off within availability timeout', async () => {
         MQTT.publish.mockClear();
-        getExtension().state = {};
+        extension.state = {};
         const payload = {device: zigbeeHerdsman.devices.bulb_color};
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
@@ -199,11 +202,7 @@ describe('Availability', () => {
     it('Should not ping devices on blocklist by friendly name', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_blocklist'], ['bulb_color'])
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -213,11 +212,7 @@ describe('Availability', () => {
     it('Should not ping devices on blacklist by friendly name', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_blacklist'], ['bulb_color'])
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -227,11 +222,7 @@ describe('Availability', () => {
     it('Should not ping devices on blocklist by IEEE address', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_blocklist'], [device.ieeeAddr]);
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -254,11 +245,7 @@ describe('Availability', () => {
     it('Should ping devices on passlist by friendly name if availability_passlist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_passlist'], ['bulb_color']);
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -268,11 +255,7 @@ describe('Availability', () => {
     it('Should ping devices on whitelist by friendly name if availability_whitelist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_whitelist'], ['bulb_color']);
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -282,11 +265,7 @@ describe('Availability', () => {
     it('Should ping devices on passlist by IEEE address if availability_passlist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['advanced', 'availability_passlist'], [device.ieeeAddr]);
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         device.ping.mockClear();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
@@ -295,13 +274,9 @@ describe('Availability', () => {
 
     it('Should not ping devices not in passlist if availability_passlist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        getExtension().state[device.ieeeAddr] = false;
+        extension.state[device.ieeeAddr] = false;
         settings.set(['advanced', 'availability_passlist'], ['0x000b57fffec6a5b3'])
-        await controller.stop();
-        await flushPromises();
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
         expect(device.ping).toHaveBeenCalledTimes(0);
@@ -311,7 +286,7 @@ describe('Availability', () => {
 
     it('Should not read when device has no modelID and reconnects', async () => {
         const device = zigbeeHerdsman.devices.nomodel;
-        getExtension().state[device.ieeeAddr] = true;
+        extension.state[device.ieeeAddr] = true;
         const endpoint = device.getEndpoint(1);
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
@@ -320,7 +295,7 @@ describe('Availability', () => {
 
     it('Should not read when device has is unsupported', async () => {
         const device = zigbeeHerdsman.devices.unsupported_router;
-        getExtension().state[device.ieeeAddr] = true;
+        extension.state[device.ieeeAddr] = true;
         const endpoint = device.getEndpoint(1);
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
@@ -382,13 +357,9 @@ describe('Availability', () => {
 
     it('Should republish existing state on MQTT connected', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
-        await controller.stop();
-        await flushPromises();
         MQTT.publish.mockClear();
-        controller = new Controller(jest.fn(), jest.fn());
-        getExtension().state[device.ieeeAddr] = false;
-        await controller.start();
-        await flushPromises();
+        extension.state[device.ieeeAddr] = false;
+        await extension.onMQTTConnected();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
           'offline',

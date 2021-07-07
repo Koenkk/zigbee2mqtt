@@ -6,7 +6,7 @@ const stringify = require('json-stable-stringify-without-jsonify');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
@@ -27,6 +27,7 @@ describe('Publish', () => {
     let controller;
 
     beforeAll(async () => {
+        jest.useFakeTimers();
         data.writeEmptyState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -34,8 +35,6 @@ describe('Publish', () => {
     });
 
     beforeEach(async () => {
-        jest.useRealTimers();
-        await flushPromises();
         data.writeDefaultConfiguration();
         controller.state.state = {};
         settings.reRead();
@@ -52,6 +51,11 @@ describe('Publish', () => {
         });
 
         zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+    });
+
+    afterAll(async () => {
+        jest.runOnlyPendingTimers();
+        jest.useRealTimers();
     });
 
     it('Should publish messages to zigbee devices', async () => {
@@ -682,14 +686,13 @@ describe('Publish', () => {
     });
 
     it('Should read after write when enabled', async () => {
-        jest.useFakeTimers();
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['devices', device.ieeeAddr, 'retrieve_state'], true);
         const endpoint = device.getEndpoint(1);
         const payload = {'state': 'ON', 'color': {'x': 0.701, 'y': 0.299}};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify(payload));
         await flushPromises();
-        jest.runAllTimers();
+        jest.runOnlyPendingTimers();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
         expect(endpoint.command.mock.calls[0]).toEqual(["genOnOff", "on", {}, {}]);
         expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 0}, {}]);
@@ -716,7 +719,7 @@ describe('Publish', () => {
 
         MQTT.publish.mockClear();
         group.command.mockClear();
-        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF', brightness: 100}));
+        await MQTT.events.message('zigbee2mqtt/switch_group/set', stringify({state: 'OFF'}));
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
@@ -1278,19 +1281,17 @@ describe('Publish', () => {
 
     it('Should publish separate genOnOff to GL-S-007ZS when setting state and brightness as bulb doesnt turn on with moveToLevelWithOnOff', async () => {
         // https://github.com/Koenkk/zigbee2mqtt/issues/2757
-        jest.useFakeTimers();
         const device = zigbeeHerdsman.devices['GL-S-007ZS'];
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/GL-S-007ZS/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        jest.runAllTimers();
+        jest.runOnlyPendingTimers();
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
         expect(endpoint.command.mock.calls[0]).toEqual([ 'genOnOff', 'on', {}, {} ]);
         expect(endpoint.command.mock.calls[1]).toEqual([ 'genLevelCtrl', 'moveToLevelWithOnOff', { level: 20, transtime: 0 }, {} ]);
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0]).toEqual([ 'zigbee2mqtt/GL-S-007ZS', stringify({"state":"ON","brightness":20}), { qos: 0, retain: false }, expect.any(Function)]);
-        jest.useRealTimers();
     });
 
     it('Should log as error when setting property with no defined converter', async () => {
@@ -1400,7 +1401,7 @@ describe('Publish', () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
-        expect(MQTT.publish).toHaveBeenCalledTimes(7);
+        expect(MQTT.publish).toHaveBeenCalledTimes(8);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/group_tradfri_remote',
             stringify({"brightness":50,"color_temp":290,"state":"ON","color_mode": "color_temp"}),
@@ -1432,6 +1433,11 @@ describe('Publish', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(7,
+            'zigbee2mqtt/switch_group',
+            stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(8,
             'zigbee2mqtt/ha_discovery_group',
             stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)

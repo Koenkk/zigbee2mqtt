@@ -16,9 +16,7 @@ zigbeeHerdsman.returnDevices.push(external_converter_device.ieeeAddr)
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
-const flushPromises = () => new Promise(setImmediate);
-Date.now = jest.fn()
-Date.now.mockReturnValue(10000);
+const flushPromises = require('./lib/flushPromises');
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 const setTimeoutNative = setTimeout;
 
@@ -26,6 +24,9 @@ describe('Networkmap', () => {
     let controller;
 
     beforeAll(async () => {
+        jest.useFakeTimers();
+        Date.now = jest.fn()
+        Date.now.mockReturnValue(10000);
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
@@ -48,6 +49,10 @@ describe('Networkmap', () => {
 
     afterEach(async () => {
         global.setTimeout = setTimeoutNative;
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     function mock() {

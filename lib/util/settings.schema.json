@@ -685,7 +685,7 @@
         "qos": {
           "type": "number",
           "title": "QoS",
-          "descritption": "QoS level for MQTT messages of this device"
+          "description": "QoS level for MQTT messages of this device"
         },
         "debounce": {
           "type": "number",

@@ -20,12 +20,12 @@ const minimalConfig = {
 
 describe('Settings', () => {
     const write = (file, json, reread=true) => {
-        fs.writeFileSync(file, yaml.safeDump(json))
+        fs.writeFileSync(file, yaml.dump(json))
         if (reread) {
             settings.reRead();
         }
     };
-    const read = (file) => yaml.safeLoad(fs.readFileSync(file, 'utf8'));
+    const read = (file) => yaml.load(fs.readFileSync(file, 'utf8'));
     const remove = (file) => {
         if (fs.existsSync(file)) fs.unlinkSync(file);
     }
@@ -676,7 +676,7 @@ describe('Settings', () => {
 
         settings.reRead();
 
-        const error = `advanced should be object`;
+        const error = `advanced must be object`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 

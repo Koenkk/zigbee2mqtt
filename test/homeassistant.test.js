@@ -3,7 +3,7 @@ const settings = require('../lib/util/settings');
 const stringify = require('json-stable-stringify-without-jsonify');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
-const flushPromises = () => new Promise(setImmediate);
+const flushPromises = require('./lib/flushPromises');
 const MQTT = require('./stub/mqtt');
 const Controller = require('../lib/controller');
 const fs = require('fs');
@@ -16,12 +16,19 @@ describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         this.version = await require('../lib/util/utils').getZigbee2mqttVersion();
         this.version = `Zigbee2MQTT ${this.version.version}`;
-        jest.useRealTimers();
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
         MQTT.publish.mockClear();
         settings.set(['homeassistant'], true);
+    });
+
+    beforeAll(async () => {
+        jest.useFakeTimers();
+    });
+
+    afterAll(async () => {
+        jest.useRealTimers();
     });
 
     it('Should not have duplicate type/object_ids in a mapping', () => {
@@ -76,7 +83,7 @@ describe('HomeAssistant extension', () => {
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/9/light/config',
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
@@ -100,7 +107,7 @@ describe('HomeAssistant extension', () => {
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/switch/9/switch/config',
+            'homeassistant/switch/1221051039810110150109113116116_9/switch/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
@@ -625,16 +632,18 @@ describe('HomeAssistant extension', () => {
             "state_topic":"zigbee2mqtt/fan",
             "state_value_template":"{{ value_json.fan_state }}",
             "command_topic":"zigbee2mqtt/fan/set/fan_state",
-            "speed_state_topic":"zigbee2mqtt/fan",
-            "speed_command_topic":"zigbee2mqtt/fan/set/fan_mode",
-            "speed_value_template":"{{ value_json.fan_mode }}",
-            "speeds":[
-               "low",
-               "medium",
-               "high",
-               "on",
+            "percentage_state_topic":"zigbee2mqtt/fan",
+            "percentage_command_topic":"zigbee2mqtt/fan/set/fan_mode",
+            "percentage_value_template":"{{ {'off':0, 'low':1, 'medium':2, 'high':3, 'on':4}[value_json.fan_mode] | default('None') }}",
+            "percentage_command_template":"{{ {0:'off', 1:'low', 2:'medium', 3:'high', 4:'on'}[value] | default('') }}",
+            "preset_mode_state_topic":"zigbee2mqtt/fan",
+            "preset_mode_command_topic":"zigbee2mqtt/fan/set/fan_mode",
+            "preset_mode_value_template":"{{ value_json.fan_mode if value_json.fan_mode in ['smart'] else 'None' | default('None') }}",
+            "preset_modes":[
                "smart"
             ],
+            "speed_range_min":1,
+            "speed_range_max":4,
             "json_attributes_topic":"zigbee2mqtt/fan",
             "name":"fan",
             "unique_id":"0x0017880104e45548_fan_zigbee2mqtt",
@@ -944,7 +953,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -970,7 +978,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should send all status when home assistant comes online', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -996,7 +1003,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt send all status when home assistant comes offline', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -1010,7 +1016,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
-        jest.useFakeTimers();
         data.writeDefaultState();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -1574,6 +1579,26 @@ describe('HomeAssistant extension', () => {
         await controller.start();
         await flushPromises();
 
+        // Non-existing group -> clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_91231/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_91231/light/config', null, {qos: 0, retain: true}, expect.any(Function));
+
+        // Existing group -> dont clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+
+        // Existing group, non existing config ->  clear
+        MQTT.publish.mockClear();
+        await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_9/switch/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/switch/config', null, {qos: 0, retain: true}, expect.any(Function));
+
         // Non-existing device -> clear
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
@@ -1703,7 +1728,7 @@ describe('HomeAssistant extension', () => {
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/9/light/config',
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),
