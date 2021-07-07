@@ -65,9 +65,7 @@ describe('HomeAssistant extension', () => {
             "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
-               "identifiers":[
-                  "zigbee2mqtt_9"
-               ],
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version":this.version,
             },
@@ -93,7 +91,7 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
-               "identifiers":["zigbee2mqtt_9"],
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version":this.version,
             },
@@ -1710,9 +1708,7 @@ describe('HomeAssistant extension', () => {
             "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
-               "identifiers":[
-                  "zigbee2mqtt_9"
-               ],
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version":this.version,
             },
