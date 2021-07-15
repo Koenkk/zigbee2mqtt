@@ -54,7 +54,7 @@
     "ws": "^7.5.2",
     "zigbee-herdsman": "0.13.119",
     "zigbee-herdsman-converters": "14.0.195",
-    "zigbee2mqtt-frontend": "0.4.39"
+    "zigbee2mqtt-frontend": "0.4.40"
   },
   "devDependencies": {
     "eslint": "*",
