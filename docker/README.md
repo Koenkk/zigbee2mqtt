@@ -1,1 +1,0 @@
-qemu-aarch64-static and qemu-arm-static are taken from https://github.com/resin-io/qemu/releases/tag/v2.9.0%2Bresin1

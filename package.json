@@ -20,9 +20,11 @@
     "cc2531"
   ],
   "scripts": {
-    "test-with-coverage": "jest test --coverage",
-    "eslint": "node_modules/.bin/eslint lib/",
+    "build": "node_modules/.bin/tsc && node index.js writehash",
+    "eslint": "node_modules/.bin/eslint lib/ --max-warnings=0",
     "start": "node index.js",
+    "start-tsnode": "ts-node --transpile-only --project tsconfig.json index.js",
+    "test-with-coverage": "jest test --coverage",
     "test": "jest test",
     "test-watch": "jest test --watch"
   },
@@ -41,7 +43,7 @@
     "git-last-commit": "^1.0.0",
     "humanize-duration": "^3.27.0",
     "js-yaml": "^4.1.0",
-    "json-stable-stringify-without-jsonify": "=1.0.1",
+    "json-stable-stringify-without-jsonify": "^1.0.1",
     "mkdir-recursive": "^0.4.0",
     "moment": "^2.29.1",
     "mqtt": "4.2.8",
@@ -57,11 +59,22 @@
     "zigbee2mqtt-frontend": "0.4.40"
   },
   "devDependencies": {
-    "eslint": "*",
-    "eslint-config-google": "*",
-    "eslint-plugin-jest": "*",
-    "jest": "*",
-    "tmp": "*"
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.7",
+    "@babel/preset-typescript": "^7.14.5",
+    "@types/jest": "^26.0.24",
+    "@types/js-yaml": "^4.0.2",
+    "@types/ws": "^7.4.6",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "babel-jest": "^27.0.6",
+    "eslint": "^7.30.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-jest": "^24.3.6",
+    "jest": "^27.0.6",
+    "tmp": "^0.2.1",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   },
   "jest": {
     "coverageThreshold": {

@@ -11,11 +11,11 @@ const stringify = require('json-stable-stringify-without-jsonify');
 describe('OTA update', () => {
     let controller;
 
-    mockClear = (mapped) => {
+    const mockClear = (mapped) => {
         mapped.ota.updateToLatest = jest.fn();
         mapped.ota.isUpdateAvailable = jest.fn();
     }
-    
+
     beforeAll(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();

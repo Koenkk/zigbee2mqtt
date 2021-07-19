@@ -12,7 +12,7 @@ const debounce = require('debounce');
 describe('Bind', () => {
     let controller;
 
-    mockClear = (device) => {
+    const mockClear = (device) => {
         for (const endpoint of device.endpoints) {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
@@ -33,7 +33,6 @@ describe('Bind', () => {
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
-        this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
     });
 
     beforeEach(async () => {
@@ -47,7 +46,7 @@ describe('Bind', () => {
         await resetExtension();
         MQTT.publish.mockClear();
     });
-    
+
     afterAll(async () => {
         jest.useRealTimers();
     })

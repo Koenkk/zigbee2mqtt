@@ -8,6 +8,10 @@ const mockDir = tmp.dirSync().name;
 const mockDirStorage = tmp.dirSync().name;
 const stateFile = path.join(mockDir, 'state.json');
 
+function mockGetRoot() {
+    return path.resolve(path.join(__dirname, '..', '..'));
+}
+
 function writeDefaultConfiguration() {
     const config = {
         homeassistant: false,
@@ -256,6 +260,7 @@ function writeDefaultState() {
 jest.mock('../../lib/util/data', () => ({
     joinPath: (file) => require('path').join(mockDir, file),
     getPath: () => mockDir,
+    getRoot: mockGetRoot,
 }));
 
 writeDefaultConfiguration();

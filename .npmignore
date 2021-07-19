@@ -7,6 +7,7 @@ coverage
 .jenkins.yml
 .codeclimate.yml
 .github
+babel.config.js
 
 #linters
 .jscsrc
@@ -14,11 +15,13 @@ coverage
 .eslintrc*
 .dockerignore
 .eslintignore
+.gitignore
 
 #editor settings
 .vscode
 
 #src
+lib
 docs
 docker
 images

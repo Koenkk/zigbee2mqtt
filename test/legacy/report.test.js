@@ -60,7 +60,7 @@ describe('Report', () => {
         }
     }
 
-    mockClear = (device) => {
+    const mockClear = (device) => {
         for (const endpoint of device.endpoints) {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
