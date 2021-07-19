@@ -1,5 +1,5 @@
 .eslintignore
-.eslintrc.json
+.eslintrc.js
 .git
 .github
 .gitignore
@@ -13,4 +13,5 @@ images
 node_modules
 scripts
 test
+coverage
 update.sh

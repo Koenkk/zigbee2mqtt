@@ -12,10 +12,11 @@ const flushPromises = require('../lib/flushPromises');
 
 describe('Bridge legacy', () => {
     let controller;
+    let version;
 
     beforeAll(async () => {
         jest.useFakeTimers();
-        this.version = await require('../../lib/util/utils').getZigbee2mqttVersion();
+        version = await require('../../lib/util/utils').getZigbee2mqttVersion();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
     })
@@ -34,7 +35,7 @@ describe('Bridge legacy', () => {
     it('Should publish bridge configuration on startup', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/config',
-          stringify({"version":this.version.version,"commit":this.version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1, "revision": 20190425}},"network":{"panID":5674,"extendedPanID":[0,11,22],"channel":15},"log_level":'info',"permit_join":false}),
+          stringify({"version":version.version,"commit":version.commitHash,"coordinator":{"type":"z-Stack","meta":{"version":1, "revision": 20190425}},"network":{"panID":5674,"extendedPanID":[0,11,22],"channel":15},"log_level":'info',"permit_join":false}),
           { retain: true, qos: 0 },
           expect.any(Function)
         );

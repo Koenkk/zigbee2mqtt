@@ -57,10 +57,9 @@ describe('Loads external converters', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
-        this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
         await resetExtension();
     });
-    
+
     afterAll(async () => {
         jest.useRealTimers();
     });

@@ -20,6 +20,9 @@ git pull
 echo "Installing dependencies..."
 npm ci
 
+echo "Building..."
+npm run build
+
 echo "Restore configuration..."
 cp -R data-backup/* data
 rm -rf data-backup
