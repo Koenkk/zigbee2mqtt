@@ -39,7 +39,7 @@ describe('Utils', () => {
         expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "123", "version": version});
 
         mockReturnValue = [true, null]
-        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": "unknown", "version": version});
+        expect(await utils.getZigbee2mqttVersion()).toStrictEqual({"commitHash": expect.any(String), "version": version});
     })
 
     it('Check dependency version', async () => {
