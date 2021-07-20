@@ -4,12 +4,13 @@ const indexJsRestart = 'indexjs.restart';
 const fs = require('fs');
 const path = require('path');
 const {exec} = require('child_process');
+const rimraf = require('rimraf');
 
 let controller;
 let stopping = false;
 
 const runningAsTsnode = !!process[Symbol.for('ts-node.register.instance')];
-const modulePath = runningAsTsnode ? '.' : './dist';
+const modulePath = runningAsTsnode ? './lib' : './dist';
 const hashFile = path.join('dist', '.hash');
 
 async function restart() {
@@ -36,6 +37,7 @@ async function currentHash() {
 async function build(reason) {
     return new Promise((resolve, reject) => {
         process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
+        rimraf.sync('dist');
         exec('npm run build', {cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
@@ -73,7 +75,7 @@ async function start() {
     }
 
     // Validate settings
-    const settings = require(modulePath + '/lib/util/settings');
+    const settings = require(modulePath + '/util/settings');
     settings.reRead();
     const errors = settings.validate();
     if (errors.length > 0) {
@@ -88,7 +90,7 @@ async function start() {
         exit(1);
     }
 
-    const Controller = require(modulePath + '/lib/controller');
+    const Controller = require(modulePath + '/controller');
     controller = new Controller(restart, exit);
     await controller.start();
 }
