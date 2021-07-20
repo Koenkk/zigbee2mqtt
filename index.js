@@ -3,6 +3,7 @@ const engines = require('./package.json').engines;
 const indexJsRestart = 'indexjs.restart';
 const fs = require('fs');
 const path = require('path');
+const {exec} = require('child_process');
 
 let controller;
 let stopping = false;
@@ -22,32 +23,42 @@ async function exit(code, reason) {
     }
 }
 
-async function writeCurrentHash() {
-    const hash = await currentHash();
-    fs.writeFileSync(hashFile, hash);
-}
-
 async function currentHash() {
     const git = require('git-last-commit');
     return new Promise((resolve) => {
         git.getLastCommit((err, commit) => {
-            if (err) resolve('');
+            if (err) resolve('unknown');
             else resolve(commit.shortHash);
         });
     });
 }
 
+async function build(reason) {
+    return new Promise((resolve, reject) => {
+        process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
+        exec('npm run build', {cwd: __dirname}, async (err, stdout, stderr) => {
+            if (err) {
+                process.stdout.write(', failed\n');
+                reject(err);
+            } else {
+                process.stdout.write(', finished\n');
+                const hash = await currentHash();
+                fs.writeFileSync(hashFile, hash);
+                resolve();
+            }
+        });
+    });
+}
+
 async function checkDist() {
-    if (!fs.existsSync('dist') || !fs.existsSync(hashFile)) {
-        console.log(`You need to build Zigbee2MQTT first by running 'npm run build'`);
-        exit(1);
+    if (!fs.existsSync(hashFile)) {
+        await build('initial build');
     }
 
     const distHash = fs.readFileSync(hashFile, 'utf-8');
-    const current = await currentHash();
-    if (current && distHash !== current) {
-        console.log(`Build is outdated, rebuild Zigbee2MQTT by running 'npm run build'`);
-        exit(1);
+    const hash = await currentHash();
+    if (hash !== 'unknown' && distHash !== hash) {
+        await build('hash changed');
     }
 }
 
@@ -93,10 +104,6 @@ async function handleQuit() {
     }
 }
 
-if (process.argv.length >= 3 && process.argv[2] === 'writehash') {
-    writeCurrentHash();
-} else {
-    process.on('SIGINT', handleQuit);
-    process.on('SIGTERM', handleQuit);
-    start();
-}
+process.on('SIGINT', handleQuit);
+process.on('SIGTERM', handleQuit);
+start();
