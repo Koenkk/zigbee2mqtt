@@ -9,8 +9,6 @@ const rimraf = require('rimraf');
 let controller;
 let stopping = false;
 
-const runningAsTsnode = !!process[Symbol.for('ts-node.register.instance')];
-const modulePath = runningAsTsnode ? './lib' : './dist';
 const hashFile = path.join('dist', '.hash');
 
 async function restart() {
@@ -65,9 +63,7 @@ async function checkDist() {
 }
 
 async function start() {
-    if (!runningAsTsnode) {
-        await checkDist();
-    }
+    await checkDist();
 
     const version = engines.node;
     if (!semver.satisfies(process.version, version)) {
@@ -75,7 +71,7 @@ async function start() {
     }
 
     // Validate settings
-    const settings = require(modulePath + '/util/settings');
+    const settings = require('./dist/util/settings');
     settings.reRead();
     const errors = settings.validate();
     if (errors.length > 0) {
@@ -90,7 +86,7 @@ async function start() {
         exit(1);
     }
 
-    const Controller = require(modulePath + '/controller');
+    const Controller = require('./dist/controller');
     controller = new Controller(restart, exit);
     await controller.start();
 }
@@ -108,4 +104,5 @@ async function handleQuit() {
 
 process.on('SIGINT', handleQuit);
 process.on('SIGTERM', handleQuit);
+
 start();

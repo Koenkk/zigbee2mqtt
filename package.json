@@ -21,9 +21,9 @@
   ],
   "scripts": {
     "build": "node_modules/.bin/tsc",
+    "build-watch": "node_modules/.bin/tsc --watch",
     "eslint": "node_modules/.bin/eslint lib/ --max-warnings=0",
     "start": "node index.js",
-    "start-tsnode": "ts-node --transpile-only --project tsconfig.json index.js",
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
     "test-watch": "jest test --watch"
@@ -73,7 +73,6 @@
     "eslint-plugin-jest": "^24.3.6",
     "jest": "^27.0.6",
     "tmp": "^0.2.1",
-    "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },
   "jest": {
