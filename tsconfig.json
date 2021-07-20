@@ -7,13 +7,13 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "moduleResolution": "node",
-        "sourceMap": true,
         "declaration": true,
         "declarationMap": true,
         "outDir": "dist",
         "baseUrl": ".",
         "allowJs": true,
         "rootDir": "lib",
+        "inlineSourceMap": true,
         "resolveJsonModule": true,
         "paths": {
             "*": [

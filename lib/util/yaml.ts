@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
+import 'source-map-support/register';
 
 function read(file: string): Record<string, unknown> {
     try {
