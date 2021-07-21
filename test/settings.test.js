@@ -2,7 +2,7 @@ require('./stub/logger');
 require('./stub/data');
 const data = require('../lib/util/data.js');
 const utils = require('../lib/util/utils.js');
-const settings = require('../lib/util/settings.js');
+const settings = require('../lib/util/settings.ts');
 const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
 const devicesFile = data.joinPath('devices.yaml');
@@ -47,7 +47,7 @@ describe('Settings', () => {
     it('Should return default settings', () => {
         write(configurationFile, {});
         const s = settings.get();
-        const expected = settings._getDefaults();
+        const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
         expect(s).toStrictEqual(expected);
@@ -56,7 +56,7 @@ describe('Settings', () => {
     it('Should return settings', () => {
         write(configurationFile, {permit_join: true});
         const s = settings.get();
-        const expected = settings._getDefaults();
+        const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
         expected.permit_join = true;
@@ -73,7 +73,7 @@ describe('Settings', () => {
 
         write(configurationFile, {});
         const s = settings.get();
-        const expected = objectAssignDeep.noMutate({}, settings._getDefaults());
+        const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
         expected.serial.disable_led = true;
@@ -163,7 +163,7 @@ describe('Settings', () => {
         expect(settings.get().mqtt).toStrictEqual(expected);
         expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
 
-        settings._write();
+        settings.testing.write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
         expect(read(secretFile)).toStrictEqual(contentSecret);
 
@@ -493,7 +493,7 @@ describe('Settings', () => {
         settings.addGroup('test123', 123);
         expect(() => {
             settings.addGroup('test_id_123', 123);
-        }).toThrow(new Error("group id '123' is already in use"));
+        }).toThrow(new Error("Group ID '123' is already in use"));
         const expected = {
             '123': {
                 friendly_name: 'test123',
@@ -702,13 +702,13 @@ describe('Settings', () => {
              \t wrong
         `)
 
-        settings._clear();
+        settings.testing.clear();
         const error = `Your YAML file: '${configurationFile}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
     it('Should throw error when yaml file does not exist', () => {
-        settings._clear();
+        settings.testing.clear();
         const error = `ENOENT: no such file or directory, open '${configurationFile}'`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });

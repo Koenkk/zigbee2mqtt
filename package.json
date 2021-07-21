@@ -65,6 +65,7 @@
     "@babel/preset-typescript": "^7.14.5",
     "@types/jest": "^26.0.24",
     "@types/js-yaml": "^4.0.2",
+    "@types/object-assign-deep": "^0.4.0",
     "@types/ws": "^7.4.6",
     "@typescript-eslint/eslint-plugin": "^4.28.3",
     "@typescript-eslint/parser": "^4.28.3",

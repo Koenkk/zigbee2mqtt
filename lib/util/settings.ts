@@ -1,17 +1,19 @@
-const data = require('./data');
-const utils = require('./utils');
+import data from './data';
+import utils from './utils';
+import objectAssignDeep from 'object-assign-deep';
+import path from 'path';
+import * as yaml from './yaml';
+import Ajv from 'ajv';
+import schemaJson from './settings.schema.json';
+export const schema = schemaJson;
+
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
-const file = process.env.ZIGBEE2MQTT_CONFIG || data.joinPath('configuration.yaml');
-const objectAssignDeep = require(`object-assign-deep`);
-const path = require('path');
-const yaml = require('./yaml');
-const Ajv = require('ajv');
-const schema = require('./settings.schema.json');
+const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schema);
 const ajvRestartRequired = new Ajv({allErrors: true})
-    .addKeyword({keyword: 'requiresRestart', validate: (schema, data) => !schema}).compile(schema);
+    .addKeyword({keyword: 'requiresRestart', validate: (schema: unknown) => !schema}).compile(schema);
 
-const defaults = {
+const defaults: Settings = {
     passlist: [],
     blocklist: [],
     // Deprecated: use block/passlist
@@ -161,11 +163,12 @@ const defaults = {
     external_converters: [],
 };
 
-let _settings;
-let _settingsWithDefaults;
+let _settings: Partial<Settings>;
+let _settingsWithDefaults: Settings;
 
-function write() {
-    const settings = get();
+function write(): void {
+    const settings = getInternalSettings();
+    /* eslint-disable-line */ // @ts-ignore
     const toWrite = objectAssignDeep.noMutate(settings);
 
     // Read settings to check if we have to split devices/groups into separate file.
@@ -188,17 +191,18 @@ function write() {
     }
 
     // Write devices/groups to separate file if required.
-    const writeDevicesOrGroups = (type) => {
+    const writeDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof actual[type] === 'string' || Array.isArray(actual[type])) {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
+            /* eslint-disable-line */ // @ts-ignore
             const content = objectAssignDeep.noMutate(settings[type]);
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
-                actual[type].filter((f, i) => i !== 0)
-                    .map((f) => yaml.readIfExists(data.joinPath(f), {}))
-                    .map((c) => Object.keys(c))
-                    .forEach((k) => delete content[k]);
+                actual[type].filter((f: string, i: number) => i !== 0)
+                    .map((f: string) => yaml.readIfExists(data.joinPath(f), {}))
+                    .map((c: KeyValue) => Object.keys(c))
+                    .forEach((k: string) => delete content[k]);
             }
 
             yaml.writeIfChanged(data.joinPath(fileToWrite), content);
@@ -212,12 +216,13 @@ function write() {
     yaml.writeIfChanged(file, toWrite);
 
     _settings = read();
-    _settingsWithDefaults = objectAssignDeep.noMutate(defaults, get());
+    /* eslint-disable-line */ // @ts-ignore
+    _settingsWithDefaults = objectAssignDeep.noMutate(defaults, getInternalSettings());
 }
 
-function validate() {
+export function validate(): string[] {
     try {
-        get();
+        getInternalSettings();
     } catch (error) {
         if (error.name === 'YAMLException') {
             return [
@@ -245,14 +250,14 @@ function validate() {
     }
 
     // Verify that all friendly names are unique
-    const names = [];
-    const check = (name) => {
+    const names: string[] = [];
+    const check = (name: string): void => {
         if (names.includes(name)) errors.push(`Duplicate friendly_name '${name}' found`);
         errors.push(...utils.validateFriendlyName(name));
         names.push(name);
     };
 
-    const settingsWithDefaults = getWithDefaults();
+    const settingsWithDefaults = get();
     Object.values(settingsWithDefaults.devices).forEach((d) => check(d.friendly_name));
     Object.values(settingsWithDefaults.groups).forEach((g) => check(g.friendly_name));
 
@@ -264,7 +269,7 @@ function validate() {
         }
     }
 
-    const checkAvailabilityList = (list, type) => {
+    const checkAvailabilityList = (list: string[], type: string): void => {
         list.forEach((e) => {
             if (!getEntity(e)) {
                 errors.push(`Non-existing entity '${e}' specified in '${type}'`);
@@ -280,11 +285,12 @@ function validate() {
     return errors;
 }
 
-function read() {
-    const s = yaml.read(file);
+function read(): Settings {
+    const s = yaml.read(file) as Settings;
 
     // Read !secret MQTT username and password if set
-    const interpetValue = (value) => {
+    // eslint-disable-next-line
+    const interpetValue = (value: any): any => {
         const re = /!(.*) (.*)/g;
         const match = re.exec(value);
         if (match) {
@@ -296,26 +302,28 @@ function read() {
         }
     };
 
-    if (s.mqtt && s.mqtt.user && s.mqtt.password) {
+    if (s.mqtt?.user && s.mqtt?.password) {
         s.mqtt.user = interpetValue(s.mqtt.user);
         s.mqtt.password = interpetValue(s.mqtt.password);
     }
 
-    if (s.advanced && s.advanced.network_key) {
+    if (s.advanced?.network_key) {
         s.advanced.network_key = interpetValue(s.advanced.network_key);
     }
 
-    if (s.frontend && s.frontend.auth_token) {
+    if (s.frontend?.auth_token) {
         s.frontend.auth_token = interpetValue(s.frontend.auth_token);
     }
 
     // Read devices/groups configuration from separate file if specified.
-    const readDevicesOrGroups = (type) => {
+    const readDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof s[type] === 'string' || Array.isArray(s[type])) {
-            const files = Array.isArray(s[type]) ? s[type] : [s[type]];
+            /* eslint-disable-line */ // @ts-ignore
+            const files: string[] = Array.isArray(s[type]) ? s[type] : [s[type]];
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file), {});
+                /* eslint-disable-line */ // @ts-ignore
                 s[type] = objectAssignDeep.noMutate(s[type], content);
             }
         }
@@ -327,8 +335,8 @@ function read() {
     return s;
 }
 
-function applyEnvironmentVariables(settings) {
-    const iterate = (obj, path) => {
+function applyEnvironmentVariables(settings: Partial<Settings>): void {
+    const iterate = (obj: KeyValue, path: string[]): void => {
         Object.keys(obj).forEach((key) => {
             if (key !== 'type') {
                 if (key !== 'properties' && obj[key]) {
@@ -336,14 +344,17 @@ function applyEnvironmentVariables(settings) {
                     const envPart = path.reduce((acc, val) => `${acc}${val}_`, '');
                     const envVariableName = (`ZIGBEE2MQTT_CONFIG_${envPart}${key}`).toUpperCase();
                     if (process.env[envVariableName]) {
-                        const setting = path.reduce((acc, val, index) => {
+                        const setting = path.reduce((acc, val) => {
+                            /* eslint-disable-line */ // @ts-ignore
                             acc[val] = acc[val] || {};
+                            /* eslint-disable-line */ // @ts-ignore
                             return acc[val];
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             setting[key] = JSON.parse(process.env[envVariableName]);
                         } else if (type.indexOf('number') >= 0) {
+                            /* eslint-disable-line */ // @ts-ignore
                             setting[key] = process.env[envVariableName] * 1;
                         } else if (type.indexOf('boolean') >= 0) {
                             setting[key] = process.env[envVariableName].toLowerCase() === 'true';
@@ -369,7 +380,7 @@ function applyEnvironmentVariables(settings) {
     iterate(schema.properties, []);
 }
 
-function get() {
+function getInternalSettings(): Partial<Settings> {
     if (!_settings) {
         _settings = read();
         applyEnvironmentVariables(_settings);
@@ -378,9 +389,10 @@ function get() {
     return _settings;
 }
 
-function getWithDefaults() {
+export function get(): Settings {
     if (!_settingsWithDefaults) {
-        _settingsWithDefaults = objectAssignDeep.noMutate(defaults, get());
+        /* eslint-disable-line */ // @ts-ignore
+        _settingsWithDefaults = objectAssignDeep.noMutate(defaults, getInternalSettings());
     }
 
     if (!_settingsWithDefaults.devices) {
@@ -394,8 +406,9 @@ function getWithDefaults() {
     return _settingsWithDefaults;
 }
 
-function set(path, value) {
-    let settings = get();
+export function set(path: string[], value: string | number): void {
+    /* eslint-disable-next-line */
+    let settings: any = getInternalSettings();
 
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
@@ -413,7 +426,7 @@ function set(path, value) {
     write();
 }
 
-function apply(newSettings) {
+export function apply(newSettings: Record<string, unknown>): boolean {
     ajvSetting(newSettings);
     const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
     if (errors.length) {
@@ -421,7 +434,8 @@ function apply(newSettings) {
         throw new Error(`${error.instancePath.substring(1)} ${error.message}`);
     }
 
-    get(); // Ensure _settings is intialized.
+    getInternalSettings(); // Ensure _settings is intialized.
+    /* eslint-disable-line */ // @ts-ignore
     _settings = objectAssignDeep.noMutate(_settings, newSettings);
     write();
 
@@ -431,8 +445,8 @@ function apply(newSettings) {
     return restartRequired;
 }
 
-function getGroup(IDorName) {
-    const settings = getWithDefaults();
+export function getGroup(IDorName: string): GroupSettings {
+    const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
         return {devices: [], ...byID, ID: Number(IDorName), friendlyName: byID.friendly_name};
@@ -447,14 +461,14 @@ function getGroup(IDorName) {
     return null;
 }
 
-function getGroups() {
-    const settings = getWithDefaults();
+export function getGroups(): GroupSettings[] {
+    const settings = get();
     return Object.entries(settings.groups).map(([ID, group]) => {
         return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
     });
 }
 
-function getGroupThrowIfNotExists(IDorName) {
+function getGroupThrowIfNotExists(IDorName: string): GroupSettings {
     const group = getGroup(IDorName);
     if (!group) {
         throw new Error(`Group '${IDorName}' does not exist`);
@@ -463,8 +477,8 @@ function getGroupThrowIfNotExists(IDorName) {
     return group;
 }
 
-function getDevice(IDorName) {
-    const settings = getWithDefaults();
+export function getDevice(IDorName: string): DeviceSettings {
+    const settings = get();
     const byID = settings.devices[IDorName];
     if (byID) {
         return {...byID, ID: IDorName, friendlyName: byID.friendly_name};
@@ -479,7 +493,7 @@ function getDevice(IDorName) {
     return null;
 }
 
-function getDeviceThrowIfNotExists(IDorName) {
+function getDeviceThrowIfNotExists(IDorName: string): DeviceSettings {
     const device = getDevice(IDorName);
     if (!device) {
         throw new Error(`Device '${IDorName}' does not exist`);
@@ -488,7 +502,7 @@ function getDeviceThrowIfNotExists(IDorName) {
     return device;
 }
 
-function getEntity(IDorName) {
+export function getEntity(IDorName: string): EntitySettings {
     const device = getDevice(IDorName);
     if (device) {
         return {...device, type: 'device'};
@@ -502,12 +516,12 @@ function getEntity(IDorName) {
     return null;
 }
 
-function addDevice(ID) {
+export function addDevice(ID: string): DeviceSettings {
     if (getDevice(ID)) {
         throw new Error(`Device '${ID}' already exists`);
     }
 
-    const settings = get();
+    const settings = getInternalSettings();
 
     if (!settings.devices) {
         settings.devices = {};
@@ -518,9 +532,8 @@ function addDevice(ID) {
     return getDevice(ID);
 }
 
-// Legacy: can be removed after bridgeLegacy has been removed
-function whitelistDevice(ID) {
-    const settings = get();
+export function whitelistDevice(ID: string): void {
+    const settings = getInternalSettings();
     if (!settings.whitelist) {
         settings.whitelist = [];
     }
@@ -533,8 +546,8 @@ function whitelistDevice(ID) {
     write();
 }
 
-function blockDevice(ID) {
-    const settings = get();
+export function blockDevice(ID: string): void {
+    const settings = getInternalSettings();
     if (!settings.blocklist) {
         settings.blocklist = [];
     }
@@ -543,8 +556,8 @@ function blockDevice(ID) {
     write();
 }
 
-function banDevice(ID) {
-    const settings = get();
+export function banDevice(ID: string): void {
+    const settings = getInternalSettings();
     if (!settings.ban) {
         settings.ban = [];
     }
@@ -553,15 +566,15 @@ function banDevice(ID) {
     write();
 }
 
-function removeDevice(IDorName) {
+export function removeDevice(IDorName: string): void {
     const device = getDeviceThrowIfNotExists(IDorName);
-    const settings = get();
+    const settings = getInternalSettings();
     delete settings.devices[device.ID];
 
     // Remove device from groups
     if (settings.groups) {
         const regex =
-            new RegExp(`^(${device.friendly_name}|${device.ID})(/(\\d|${utils.getEndpointNames().join('|')}))?$`);
+            new RegExp(`^(${device.friendlyName}|${device.ID})(/(\\d|${utils.getEndpointNames().join('|')}))?$`);
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
             group.devices = group.devices.filter((device) => !device.match(regex));
         }
@@ -570,13 +583,13 @@ function removeDevice(IDorName) {
     write();
 }
 
-function addGroup(name, ID=null) {
+export function addGroup(name: string, ID?: string): GroupSettings {
     utils.validateFriendlyName(name, true);
     if (getGroup(name) || getDevice(name)) {
         throw new Error(`friendly_name '${name}' is already in use`);
     }
 
-    const settings = get();
+    const settings = getInternalSettings();
     if (!settings.groups) {
         settings.groups = {};
     }
@@ -591,7 +604,7 @@ function addGroup(name, ID=null) {
         // ensure provided ID is not in use
         ID = ID.toString();
         if (settings.groups.hasOwnProperty(ID)) {
-            throw new Error(`group id '${ID}' is already in use`);
+            throw new Error(`Group ID '${ID}' is already in use`);
         }
     }
 
@@ -601,56 +614,50 @@ function addGroup(name, ID=null) {
     return getGroup(ID);
 }
 
-function groupHasDevice(group, keys) {
-    for (const device of group.devices) {
-        const index = keys.indexOf(device);
-        if (index != -1) {
-            return keys[index];
-        }
+function groupGetDevice(group: {devices?: string[]}, keys: string[]): string {
+    for (const device of group.devices ?? []) {
+        if (keys.includes(device)) return device;
     }
 
-    return false;
+    return null;
 }
 
-function addDeviceToGroup(groupIDorName, keys) {
-    const groupID = getGroupThrowIfNotExists(groupIDorName).ID;
-    const settings = get();
+export function addDeviceToGroup(IDorName: string, keys: string[]): void {
+    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+    const settings = getInternalSettings();
 
     const group = settings.groups[groupID];
-    if (!group.devices) {
-        group.devices = [];
-    }
-
-    if (!groupHasDevice(group, keys)) {
+    if (!groupGetDevice(group, keys)) {
+        if (!group.devices) group.devices = [];
         group.devices.push(keys[0]);
         write();
     }
 }
 
-function removeDeviceFromGroup(groupIDorName, keys) {
-    const groupID = getGroupThrowIfNotExists(groupIDorName).ID;
-    const settings = get();
+export function removeDeviceFromGroup(IDorName: string, keys: string[]): void {
+    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+    const settings = getInternalSettings();
     const group = settings.groups[groupID];
     if (!group.devices) {
-        group.devices = [];
+        return;
     }
 
-    const key = groupHasDevice(group, keys);
+    const key = groupGetDevice(group, keys);
     if (key) {
         group.devices = group.devices.filter((d) => d != key);
         write();
     }
 }
 
-function removeGroup(groupIDorName) {
-    const groupID = getGroupThrowIfNotExists(groupIDorName).ID;
-    const settings = get();
+export function removeGroup(IDorName: string): void {
+    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+    const settings = getInternalSettings();
     delete settings.groups[groupID];
     write();
 }
 
-function changeEntityOptions(IDorName, newOptions) {
-    const settings = get();
+export function changeEntityOptions(IDorName: string, newOptions: KeyValue): void {
+    const settings = getInternalSettings();
     delete newOptions.friendly_name;
     delete newOptions.devices;
     if (getDevice(IDorName)) {
@@ -666,13 +673,13 @@ function changeEntityOptions(IDorName, newOptions) {
     write();
 }
 
-function changeFriendlyName(IDorName, newName) {
+export function changeFriendlyName(IDorName: string, newName: string): void {
     utils.validateFriendlyName(newName, true);
     if (getGroup(newName) || getDevice(newName)) {
         throw new Error(`friendly_name '${newName}' is already in use`);
     }
 
-    const settings = get();
+    const settings = getInternalSettings();
     if (getDevice(IDorName)) {
         settings.devices[getDevice(IDorName).ID].friendly_name = newName;
     } else if (getGroup(IDorName)) {
@@ -684,39 +691,18 @@ function changeFriendlyName(IDorName, newName) {
     write();
 }
 
-module.exports = {
-    validate,
-    get: getWithDefaults,
-    set,
-    apply,
-    getDevice,
-    getGroup,
-    getGroups,
-    getEntity,
-    whitelistDevice,
-    banDevice,
-    blockDevice,
-    addDevice,
-    removeDevice,
-    addGroup,
-    removeGroup,
-    addDeviceToGroup,
-    removeDeviceFromGroup,
-    changeEntityOptions,
-    changeFriendlyName,
-    schema,
-    reRead: () => {
-        _settings = null;
-        get();
-        _settingsWithDefaults = null;
-        getWithDefaults();
-    },
+export function reRead(): void {
+    _settings = null;
+    getInternalSettings();
+    _settingsWithDefaults = null;
+    get();
+}
 
-    // For tests only
-    _write: write,
-    _clear: () => {
+export const testing = {
+    write,
+    clear: (): void => {
         _settings = null;
         _settingsWithDefaults = null;
     },
-    _getDefaults: () => defaults,
+    defaults,
 };

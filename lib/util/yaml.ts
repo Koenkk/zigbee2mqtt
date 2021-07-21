@@ -3,10 +3,9 @@ import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
 import 'source-map-support/register';
 
-function read(file: string): Record<string, unknown> {
+export function read(file: string): KeyValue {
     try {
-        // eslint-disable-next-line
-        // @ts-ignore
+        /* eslint-disable-line */ // @ts-ignore
         return yaml.load(fs.readFileSync(file, 'utf8'));
     } catch (error) {
         if (error.name === 'YAMLException') {
@@ -17,23 +16,21 @@ function read(file: string): Record<string, unknown> {
     }
 }
 
-function readIfExists(file: string, default_?: Record<string, unknown>): Record<string, unknown> {
+export function readIfExists(file: string, default_?: KeyValue): KeyValue {
     return fs.existsSync(file) ? read(file) : default_;
 }
 
-function writeIfChanged(file: string, content: Record<string, unknown>): void {
+export function writeIfChanged(file: string, content: KeyValue): void {
     const before = readIfExists(file);
     if (!equals(before, content)) {
         fs.writeFileSync(file, yaml.dump(content));
     }
 }
 
-function updateIfChanged(file: string, key: string, value: unknown): void {
+export function updateIfChanged(file: string, key: string, value: KeyValue): void {
     const content = read(file);
     if (content[key] !== value) {
         content[key] = value;
         writeIfChanged(file, content);
     }
 }
-
-module.exports = {read, readIfExists, writeIfChanged, updateIfChanged};
