@@ -12,13 +12,14 @@ const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
 describe('Configure', () => {
     let controller;
+    let coordinatorEndpoint;
 
-    expectRemoteConfigured = () => {
+    const expectRemoteConfigured = () => {
         const device = zigbeeHerdsman.devices.remote;
         const endpoint1 = device.getEndpoint(1);
         expect(endpoint1.bind).toHaveBeenCalledTimes(2);
-        expect(endpoint1.bind).toHaveBeenCalledWith('genOnOff', this.coordinatorEndoint);
-        expect(endpoint1.bind).toHaveBeenCalledWith('genLevelCtrl', this.coordinatorEndoint);
+        expect(endpoint1.bind).toHaveBeenCalledWith('genOnOff', coordinatorEndpoint);
+        expect(endpoint1.bind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
 
         const endpoint2 = device.getEndpoint(2);
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
@@ -26,7 +27,7 @@ describe('Configure', () => {
         expect(device.meta.configured).toBe(1);
     }
 
-    expectBulbConfigured = () => {
+    const expectBulbConfigured = () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint1 = device.getEndpoint(1);
         expect(endpoint1.read).toHaveBeenCalledTimes(2);
@@ -34,19 +35,19 @@ describe('Configure', () => {
         expect(endpoint1.read).toHaveBeenCalledWith('lightingColorCtrl', [ 'colorTempPhysicalMin', 'colorTempPhysicalMax' ]);
     }
 
-    expectBulbNotConfigured = () => {
+    const expectBulbNotConfigured = () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint1 = device.getEndpoint(1);
         expect(endpoint1.read).toHaveBeenCalledTimes(0);
     }
 
-    expectRemoteNotConfigured = () => {
+    const expectRemoteNotConfigured = () => {
         const device = zigbeeHerdsman.devices.remote;
         const endpoint1 = device.getEndpoint(1);
         expect(endpoint1.bind).toHaveBeenCalledTimes(0);
     }
 
-    mockClear = (device) => {
+    const mockClear = (device) => {
         for (const endpoint of device.endpoints) {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
@@ -71,10 +72,10 @@ describe('Configure', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
-        this.coordinatorEndoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+     coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
         await resetExtension();
     });
-    
+
     afterAll(async () => {
         jest.useRealTimers();
     })
