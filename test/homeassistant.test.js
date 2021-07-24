@@ -803,14 +803,14 @@ describe('HomeAssistant extension', () => {
         settings.set(['experimental', 'output'], 'attribute')
         expect(() => {
             const controller = new Controller(false);
-        }).toThrowError('Home Assitant integration is not possible with attribute output!');
+        }).toThrowError('Home Assistant integration is not possible with attribute output!');
     });
 
     it('Should warn when starting with cache_state false', async () => {
         settings.set(['advanced', 'cache_state'], false);
         logger.warn.mockClear();
         const controller = new Controller(false);
-        expect(logger.warn).toHaveBeenCalledWith("In order for HomeAssistant integration to work properly set `cache_state: true");
+        expect(logger.warn).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
     });
 
     it('Should set missing values to null', async () => {
