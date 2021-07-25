@@ -2352,9 +2352,9 @@
       "dev": true
     },
     "@types/node": {
-      "version": "16.4.0",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-16.4.0.tgz",
-      "integrity": "sha512-HrJuE7Mlqcjj+00JqMWpZ3tY8w7EUd+S0U3L1+PQSWiXZbOgyQDvi+ogoUxaHApPJq5diKxYBQwA3iIlNcPqOg==",
+      "version": "16.4.2",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-16.4.2.tgz",
+      "integrity": "sha512-vxyhOzFCm+jC/T5KugbVsYy1DbQM0h3NCFUrVbu0+pYa/nr+heeucpqxpa8j4pUmIGLPYzboY9zIdOF0niFAjQ==",
       "dev": true
     },
     "@types/object-assign-deep": {
@@ -2982,9 +2982,9 @@
       "dev": true
     },
     "caniuse-lite": {
-      "version": "1.0.30001246",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001246.tgz",
-      "integrity": "sha512-Tc+ff0Co/nFNbLOrziBXmMVtpt9S2c2Y+Z9Nk9Khj09J+0zR9ejvIW5qkZAErCbOrVODCx/MN+GpB5FNBs5GFA==",
+      "version": "1.0.30001247",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001247.tgz",
+      "integrity": "sha512-4rS7co+7+AoOSPRPOPUt5/GdaqZc0EsUpWk66ofE3HJTAajUK2Ss2VwoNzVN69ghg8lYYlh0an0Iy4LIHHo9UQ==",
       "dev": true
     },
     "chalk": {
@@ -3340,9 +3340,9 @@
       "integrity": "sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0="
     },
     "electron-to-chromium": {
-      "version": "1.3.782",
-      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.782.tgz",
-      "integrity": "sha512-6AI2se1NqWA1SBf/tlD6tQD/6ZOt+yAhqmrTlh4XZw4/g0Mt3p6JhTQPZxRPxPZiOg0o7ss1EBP/CpYejfnoIA==",
+      "version": "1.3.786",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.3.786.tgz",
+      "integrity": "sha512-AmvbLBj3hepRk8v/DHrFF8gINxOFfDbrn6Ts3PcK46/FBdQb5OMmpamSpZQXSkfi77FfBzYtQtAk+00LCLYMVw==",
       "dev": true
     },
     "emittery": {
@@ -3666,9 +3666,9 @@
       "dev": true
     },
     "eslint-plugin-jest": {
-      "version": "24.3.7",
-      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-24.3.7.tgz",
-      "integrity": "sha512-pXED2NA4q2M/5mxlN6GyuUXAFJndT0uosOkQCHaUED9pqgBPd89ZzpcZEU6c5HtZNahC00M36FkwLdDHMDqaHw==",
+      "version": "24.4.0",
+      "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-24.4.0.tgz",
+      "integrity": "sha512-8qnt/hgtZ94E9dA6viqfViKBfkJwFHXgJmTWlMGDgunw1XJEGqm3eiPjDsTanM3/u/3Az82nyQM9GX7PM/QGmg==",
       "dev": true,
       "requires": {
         "@typescript-eslint/experimental-utils": "^4.0.1"
@@ -7543,9 +7543,9 @@
       }
     },
     "regenerator-runtime": {
-      "version": "0.13.7",
-      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.7.tgz",
-      "integrity": "sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==",
+      "version": "0.13.9",
+      "resolved": "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.9.tgz",
+      "integrity": "sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==",
       "dev": true
     },
     "regenerator-transform": {
