@@ -32,6 +32,11 @@ async function currentHash() {
     });
 }
 
+async function writeHash() {
+    const hash = await currentHash();
+    fs.writeFileSync(hashFile, hash);
+}
+
 async function build(reason) {
     return new Promise((resolve, reject) => {
         process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
@@ -42,8 +47,6 @@ async function build(reason) {
                 reject(err);
             } else {
                 process.stdout.write(', finished\n');
-                const hash = await currentHash();
-                fs.writeFileSync(hashFile, hash);
                 resolve();
             }
         });
@@ -102,7 +105,10 @@ async function handleQuit() {
     }
 }
 
-process.on('SIGINT', handleQuit);
-process.on('SIGTERM', handleQuit);
-
-start();
+if (process.argv.length === 3 && process.argv[2] === 'writehash') {
+    writeHash();
+} else {
+    process.on('SIGINT', handleQuit);
+    process.on('SIGTERM', handleQuit);
+    start();
+}
