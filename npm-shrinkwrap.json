@@ -8472,9 +8472,9 @@
       "dev": true
     },
     "zigbee-herdsman": {
-      "version": "0.13.123",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.123.tgz",
-      "integrity": "sha512-NepxdjQe02R+T4xUQhW7334IKJMf7YeOmgxP8AnuBLFl7hKu0LAiZopGX6gt5ejKuztov9WQHlMbdr5hXrjysw==",
+      "version": "0.13.124",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.124.tgz",
+      "integrity": "sha512-yXjvFii3Es/BFZakuAMPxcHdnFV8n5Q1DaIhXUs44US55hna1PaQpaaDDaM4DJdIXhPXed1BT10N9KDZzvqTDQ==",
       "requires": {
         "@serialport/bindings": "9.2.0",
         "debounce": "^1.2.1",
