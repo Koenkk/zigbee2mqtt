@@ -427,7 +427,8 @@ describe('Receive', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
-    it('Should not handle messages from unsupported devices and link to docs', async () => {
+    it('Should NOT handle messages from unsupported devices and link to docs if advanced.publish_raw_data == false', async () => {
+        settings.set(['advanced', 'publish_raw_data'], false);
         const device = zigbeeHerdsman.devices.unsupported;
         const data = {onOff: 1};
         logger.warn.mockClear();
@@ -437,6 +438,19 @@ describe('Receive', () => {
         expect(logger.warn).toHaveBeenCalledWith(`Received message from unsupported device with Zigbee model 'notSupportedModelID' and manufacturer name 'notSupportedMfg'`);
         expect(logger.warn).toHaveBeenCalledWith(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should handle raw messages from unsupported devices and link to docs if advanced.publish_raw_data == true', async () => {
+        settings.set(['advanced', 'publish_raw_data'], true);
+        const device = zigbeeHerdsman.devices.unsupported;
+        const data = {onOff: 1};
+        logger.warn.mockClear();
+        const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(logger.warn).toHaveBeenCalledWith(`Received message from unsupported device with Zigbee model 'notSupportedModelID' and manufacturer name 'notSupportedMfg'`);
+        expect(logger.warn).toHaveBeenCalledWith(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
     });
 
     it('Should not handle messages from still interviewing devices with unknown definition', async () => {
