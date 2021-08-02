@@ -9,7 +9,7 @@ const rimraf = require('rimraf');
 let controller;
 let stopping = false;
 
-const hashFile = path.join('dist', '.hash');
+const hashFile = path.join('./dist', '.hash');
 
 async function restart() {
     await stop(indexJsRestart);
