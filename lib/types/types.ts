@@ -106,3 +106,16 @@ type EntitySettings = {
     ID: number | string,
     friendlyName: string,
 }
+
+interface ResolvedEntity {
+    type: 'device' | 'group',
+    definition?: {model: string},
+    name: string,
+    device?: {
+        ieeeAddr: string,
+        lastSeen: number,
+        type: 'Router' | 'EndDevice',
+        powerSource: 'Battery' | 'Mains (single phase)',
+        ping: () => Promise<void>,
+    },
+}
