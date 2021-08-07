@@ -44,9 +44,10 @@ describe('Bridge', () => {
         device.removeFromDatabase.mockClear();
         device.removeFromNetwork.mockClear();
         extension.lastJoinedDeviceIeeeAddr = null;
+        extension.restartRequired = false;
         controller.state.state = {[zigbeeHerdsman.devices.bulb.ieeeAddr]: {brightness: 50}};
     });
-    
+
     afterAll(async () => {
         jest.useRealTimers();
     })
@@ -482,6 +483,27 @@ describe('Bridge', () => {
             stringify({"data":{"id": "group_1", "force": true},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+    });
+
+    it('Should allow to add and remove from blocklist', async () => {
+        expect(settings.get().blocklist).toStrictEqual([]);
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"blocklist":["0x123","0x1234"]}}));
+        await flushPromises();
+        expect(settings.get().blocklist).toStrictEqual(["0x123","0x1234"]);
+
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"blocklist":["0x123"]}}));
+        await flushPromises();
+        expect(settings.get().blocklist).toStrictEqual(["0x123"]);
+    });
+
+    it('Should allow to add and remove from availabliltiy blocklist', async () => {
+        expect(settings.get().blocklist).toStrictEqual([]);
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"advanced":{"availability_blocklist": ["0x123","0x1234"]}}}));
+        await flushPromises();
+        expect(settings.get().advanced.availability_blocklist).toStrictEqual(["0x123","0x1234"]);
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"advanced":{"availability_blocklist": ["0x123"]}}}));
+        await flushPromises();
+        expect(settings.get().advanced.availability_blocklist).toStrictEqual(["0x123"]);
     });
 
     it('Should throw error on removing non-existing device', async () => {
