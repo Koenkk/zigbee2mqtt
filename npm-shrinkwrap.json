@@ -17661,9 +17661,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "14.0.217",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.217.tgz",
-      "integrity": "sha512-4GXfT+fqhaUerMMPh1e9f0Z4F8eZzavy3Dk0z1i9rFL8GgRFptHX91ng2mUAH5Gn7x0wxJKkzWr1jxSjdSHKqQ==",
+      "version": "14.0.218",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.218.tgz",
+      "integrity": "sha512-IrvbjgwrNvlRo7thNzEz6v34jokmgSCm2+nG3dJ78sq2jjIvb7nrIQKLoGKGX4nTl/wMOeNDGxx2qVTRUDY1Sg==",
       "requires": {
         "axios": "^0.21.1",
         "buffer-crc32": "^0.2.13",
