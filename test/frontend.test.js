@@ -31,6 +31,7 @@ const mockWS = {
             cb(mockWSocket)
         }),
         emit: jest.fn(),
+        close: jest.fn(),
     },
     variables: {},
     events: {},
@@ -100,15 +101,16 @@ describe('Frontend', () => {
 
         const mockWSClient = {
             implementation: {
-                close: jest.fn(),
+                terminate: jest.fn(),
                 send: jest.fn(),
             },
             events: {},
         };
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await controller.stop();
-        expect(mockWSClient.implementation.close).toHaveBeenCalledTimes(1);
+        expect(mockWSClient.implementation.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.implementation.close).toHaveBeenCalledTimes(1);
+        expect(mockWS.implementation.close).toHaveBeenCalledTimes(1);
     });
 
     it('Websocket interaction', async () => {
@@ -133,7 +135,7 @@ describe('Frontend', () => {
         // Message
         MQTT.publish.mockClear();
         mockWSClient.implementation.send.mockClear();
-        mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}))
+        mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false)
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -142,9 +144,9 @@ describe('Frontend', () => {
             { retain: false, qos: 0 },
             expect.any(Function)
         );
-        mockWSClient.events.message(undefined);
-        mockWSClient.events.message("");
-        mockWSClient.events.message(null);
+        mockWSClient.events.message(undefined, false);
+        mockWSClient.events.message("", false);
+        mockWSClient.events.message(null, false);
         await flushPromises();
 
         // Received message on socket
@@ -154,7 +156,7 @@ describe('Frontend', () => {
         // Shouldnt set when not ready
         mockWSClient.implementation.send.mockClear();
         mockWSClient.implementation.readyState = 'close';
-        mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}))
+        mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false)
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(0);
 
         // Send last seen on connect
