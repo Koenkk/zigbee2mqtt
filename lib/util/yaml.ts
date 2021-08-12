@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
-import 'source-map-support/register';
+// import 'source-map-support/register';
 
 export function read(file: string): KeyValue {
     try {

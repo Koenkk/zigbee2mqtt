@@ -1,67 +1,96 @@
-import Extension from './extension';
+import ExtensionTS from './extensionts';
 import logger from '../util/logger';
 
-const msToMinute = 1000 * 60;
-const msToHour = msToMinute * 60;
-const Hours25 = 25 * msToHour;
-const Minutes5 = 5 * msToMinute;
+const Seconds1 = 1000;
+const Minutes1 = 1000 * 60;
+const Hours1 = Minutes1 * 60;
+const Hours25 = 25 * Hours1;
+const Minutes10 = 10 * Minutes1;
 
-class Availability extends Extension {
+class Availability extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
-    private availability: {[s: string]: boolean} = {};
+    private lastSeenHandlers: {[s: string]: {handler: () => void, device: Device}} = {};
+    private availabilityCache: {[s: string]: boolean} = {};
 
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
+    private isActiveDevice(re: ResolvedEntity): boolean {
+        return (re.device.type === 'Router' && re.device.powerSource !== 'Battery') ||
+            re.device.powerSource === 'Mains (single phase)';
     }
 
-    isRouter(re: ResolvedEntity): boolean {
-        // Some should be treated as routers: https://github.com/Koenkk/zigbee2mqtt/issues/775#issuecomment-453683846
-        if (['E11-G13', 'E11-N1EA', '53170161'].includes(re.definition?.model)) {
-            return true;
-        }
-
-        // Device is a mains powered router
-        return re.device.type === 'Router' && re.device.powerSource !== 'Battery';
-    }
-
-    timer(re: ResolvedEntity): void {
-        clearTimeout(this.timers[re.device.ieeeAddr]);
+    private isAvailable(re: ResolvedEntity): boolean {
         const ago = Date.now() - re.device.lastSeen;
+        if (this.isActiveDevice(re)) {
+            logger.debug(`Active device '${re.name}' was last seen '${(ago / Minutes1).toFixed(2)}' minutes ago.`);
+            return ago < Minutes10;
+        } else {
+            logger.debug(`Passive device '${re.name}' was last seen '${(ago / Hours1).toFixed(2)}' hours ago.`);
+            return ago < Hours25;
+        }
+    }
 
-        if (this.isRouter(re)) {
-            logger.debug(`Router '${re.name}' was last seen '${(ago / msToMinute).toFixed(2)}' minutes ago.`);
-            this.publishAvailability(re, ago > Minutes5);
+    private lastSeenChanged(re: ResolvedEntity) {
+        this.resetTimer(re);
+        this.publishAvailability(re);
+    }
+
+    private initLastSeenHandlers(re: ResolvedEntity): void {
+        if (this.lastSeenHandlers[re.device.ieeeAddr]) return;
+        const handler = (): void => this.lastSeenChanged(re);
+        this.lastSeenHandlers[re.device.ieeeAddr] = {handler, device: re.device};
+        // TODO implement in zigbee-herdsman
+        re.device.on('lastSeenChanged', handler);
+    }
+
+    private resetTimer(re: ResolvedEntity): void {
+        clearTimeout(this.timers[re.device.ieeeAddr]);
+
+        // If the timer triggers, the device is not avaiable anymore otherwise resetTimer already have been called
+        if (this.isActiveDevice(re)) {
             this.timers[re.device.ieeeAddr] = setTimeout(async () => {
+                // Device did not check in, ping it
                 try {
                     await re.device.ping();
                     logger.debug(`Succesfully pinged '${re.name}'`);
                 } catch (error) {
                     logger.error(`Failed to ping '${re.name}'`);
                 }
-            }, Minutes5 * 0.75);
+
+                this.publishAvailability(re);
+                this.resetTimer(re);
+            }, Minutes10 + Seconds1);
         } else {
-            logger.debug(`EndDevice '${re.name}' was last seen '${(ago / msToHour).toFixed(2)}' hours ago.`);
-            this.publishAvailability(re, ago > Hours25);
-            this.timers[re.device.ieeeAddr] = setTimeout(() => this.timer(re), msToHour);
+            this.timers[re.device.ieeeAddr] = setTimeout(() => this.publishAvailability(re), Hours25 + Seconds1);
         }
     }
 
     onMQTTConnected(): void {
         for (const device of this.zigbee.getClients()) {
-            const re: ResolvedEntity = this.zigbee.resolvedEntity(device);
-            this.timer(re);
+            const re: ResolvedEntity = this.zigbee.resolveEntity(device);
+            this.initLastSeenHandlers(re);
+            this.resetTimer(re);
+
+            // Publish initial availablility
+            this.publishAvailability(re);
+            // TODO: if a active device is initially unavaiable, ping it.
         }
     }
 
-    publishAvailability(re: ResolvedEntity, available: boolean): void {
-        if (this.availability[re.device.ieeeAddr] == available) {
+    private publishAvailability(re: ResolvedEntity): void {
+        const available = this.isAvailable(re);
+        if (this.availabilityCache[re.device.ieeeAddr] == available) {
             return;
         }
 
         const topic = `${re.name}/availability`;
         const payload = available ? 'online' : 'offline';
-        this.availability[re.device.ieeeAddr] = available;
+        this.availabilityCache[re.device.ieeeAddr] = available;
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
+    }
+
+    public stop() {
+        // TODO implement in zigbee-herdsman
+        Object.values(this.lastSeenHandlers).forEach((e) => e.device.removeListener(e.handler));
+        super.stop();
     }
 }
 
