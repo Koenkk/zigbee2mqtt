@@ -125,4 +125,18 @@ describe('Availability', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });
+
+    it('Should immediately mark device as online when it lastSeen changes', async () => {
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(15));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
+
+        devices.bulb_color.lastSeen = Date.now();
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
+    });
 });

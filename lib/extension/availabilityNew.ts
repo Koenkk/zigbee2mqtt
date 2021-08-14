@@ -1,17 +1,25 @@
 import ExtensionTS from './extensionts';
 import logger from '../util/logger';
 
-const Seconds1 = 1000;
-const Minutes1 = 1000 * 60;
-const Hours1 = Minutes1 * 60;
-const Hours25 = 25 * Hours1;
-const Minutes10 = 10 * Minutes1;
+const hours = (hours: number): number => 1000 * 60 * 60 * hours;
+const minutes = (minutes: number): number => 1000 * 60 * minutes;
+const seconds = (seconds: number): number => 1000 * seconds;
+
+const ActiveTimeout = minutes(10);
+const PassiveTimeout = hours(25);
 
 class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private pingQueue: ResolvedEntity[] = [];
     private pingQueueExecuting = false;
+
+    constructor(zigbee: TempZigbee, mqtt: TempMQTT, state: TempState,
+        publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
+        super(zigbee, mqtt, state, publishEntityState, eventBus);
+        this.lastSeenChanged = this.lastSeenChanged.bind(this);
+        logger.warn('Using experimental new availability feature');
+    }
 
     private isActiveDevice(re: ResolvedEntity): boolean {
         return (re.device.type === 'Router' && re.device.powerSource !== 'Battery') ||
@@ -21,11 +29,11 @@ class AvailabilityNew extends ExtensionTS {
     private isAvailable(re: ResolvedEntity): boolean {
         const ago = Date.now() - re.device.lastSeen;
         if (this.isActiveDevice(re)) {
-            logger.debug(`Active device '${re.name}' was last seen '${(ago / Minutes1).toFixed(2)}' minutes ago.`);
-            return ago < Minutes10;
+            logger.debug(`Active device '${re.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
+            return ago < ActiveTimeout;
         } else {
-            logger.debug(`Passive device '${re.name}' was last seen '${(ago / Hours1).toFixed(2)}' hours ago.`);
-            return ago < Hours25;
+            logger.debug(`Passive device '${re.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
+            return ago < PassiveTimeout;
         }
     }
 
@@ -35,9 +43,11 @@ class AvailabilityNew extends ExtensionTS {
         // If the timer triggers, the device is not avaiable anymore otherwise resetTimer already have been called
         if (this.isActiveDevice(re)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
-            this.timers[re.device.ieeeAddr] = setTimeout(() => this.addToPingQueue(re), Minutes10 + Seconds1);
+            this.timers[re.device.ieeeAddr] = setTimeout(
+                () => this.addToPingQueue(re), ActiveTimeout + seconds(1));
         } else {
-            this.timers[re.device.ieeeAddr] = setTimeout(() => this.publishAvailability(re), Hours25 + Seconds1);
+            this.timers[re.device.ieeeAddr] = setTimeout(
+                () => this.publishAvailability(re), PassiveTimeout + seconds(1));
         }
     }
 
@@ -86,7 +96,6 @@ class AvailabilityNew extends ExtensionTS {
     }
 
     override onZigbeeStarted(): void {
-        this.lastSeenChanged = this.lastSeenChanged.bind(this);
         this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
     }
 
