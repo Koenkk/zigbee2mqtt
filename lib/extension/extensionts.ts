@@ -26,12 +26,12 @@ abstract class ExtensionTS {
     /**
      * This method is called by the controller once Zigbee has been started.
      */
-    abstract onZigbeeStarted(): void;
+    onZigbeeStarted(): void {}
 
     /**
      * This method is called by the controller once connected to the MQTT server.
      */
-    abstract onMQTTConnected(): void;
+    onMQTTConnected(): void {}
 
     /**
      * Is called when a Zigbee message from a device is received.
@@ -40,7 +40,8 @@ abstract class ExtensionTS {
      * @param {Object?} resolvedEntity Resolved entity returned from this.zigbee.resolveEntity()
      * @param {Object?} settingsDevice Device settings
      */
-    abstract onZigbeeEvent(type: string, data: unknown, resolvedEntity: ResolvedEntity): void;
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    onZigbeeEvent(type: string, data: unknown, resolvedEntity: ResolvedEntity): void {}
 
     /**
      * Is called when a MQTT message is received
@@ -48,7 +49,10 @@ abstract class ExtensionTS {
      * @param {Object} message The received message
      * @return {boolean} if the message was handled
      */
-    abstract onMQTTMessage(topic: string, message: string): void;
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+    onMQTTMessage(topic: string, message: string): boolean {
+        return false;
+    }
 
     /**
      * Is called once the extension has to stop

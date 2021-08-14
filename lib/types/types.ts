@@ -119,8 +119,12 @@ declare global {
         device?: Device,
     }
 
+    type lastSeenChangedHandler = (data: {device: Device}) => void;
+
     interface TempZigbee {
         getClients: () => Device[];
+        on: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
+        removeListener: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
         resolveEntity: (device: Device) => ResolvedEntity;
     }
 
