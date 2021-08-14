@@ -7,7 +7,7 @@ const Hours1 = Minutes1 * 60;
 const Hours25 = 25 * Hours1;
 const Minutes10 = 10 * Minutes1;
 
-class Availability extends ExtensionTS {
+class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private lastSeenHandlers: {[s: string]: {handler: () => void, device: Device}} = {};
     private availabilityCache: {[s: string]: boolean} = {};
@@ -94,4 +94,4 @@ class Availability extends ExtensionTS {
     }
 }
 
-module.exports = Availability;
+module.exports = AvailabilityNew;
