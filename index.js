@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const {exec} = require('child_process');
 const rimraf = require('rimraf');
+require('source-map-support').install();
 
 let controller;
 let stopping = false;
