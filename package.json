@@ -87,7 +87,8 @@
       }
     },
     "collectCoverageFrom": [
-      "lib/**/*.js"
+      "lib/**/*.js",
+      "lib/**/*.ts"
     ]
   },
   "bin": {

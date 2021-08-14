@@ -26,11 +26,13 @@ abstract class ExtensionTS {
     /**
      * This method is called by the controller once Zigbee has been started.
      */
+    /* istanbul ignore next */
     onZigbeeStarted(): void {}
 
     /**
      * This method is called by the controller once connected to the MQTT server.
      */
+    /* istanbul ignore next */
     onMQTTConnected(): void {}
 
     /**
@@ -40,6 +42,7 @@ abstract class ExtensionTS {
      * @param {Object?} resolvedEntity Resolved entity returned from this.zigbee.resolveEntity()
      * @param {Object?} settingsDevice Device settings
      */
+    /* istanbul ignore next */
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     onZigbeeEvent(type: string, data: unknown, resolvedEntity: ResolvedEntity): void {}
 
@@ -49,6 +52,7 @@ abstract class ExtensionTS {
      * @param {Object} message The received message
      * @return {boolean} if the message was handled
      */
+    /* istanbul ignore next */
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     onMQTTMessage(topic: string, message: string): boolean {
         return false;

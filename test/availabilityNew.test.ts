@@ -3,6 +3,7 @@ const logger = require('./stub/logger');
 const stringify = require('json-stable-stringify-without-jsonify');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
+zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45517');
 const MQTT = require('./stub/mqtt');
@@ -12,49 +13,50 @@ const flushPromises = require('./lib/flushPromises');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const mocks = [MQTT.publish, logger.warn, logger.debug];
 
-const Minutes1 = 1000 * 60;
-const msToHour = Minutes1 * 60;
-const Hours25 = 25 * msToHour;
-const Minutes10 = 10 * Minutes1;
+const hours = (hours) => 1000 * 60 * 60 * hours;
+const minutes = (minutes) => 1000 * 60 * minutes;
 
-describe('onlythis Availability', () => {
+describe('Availability', () => {
     let controller;
     let extension;
-    let devices = {
-        remote: zigbeeHerdsman.devices.remote,
-        bulb_color: zigbeeHerdsman.devices.bulb_color
-    };
+    let devices = zigbeeHerdsman.devices;
 
     let resetExtension = async () => {
-        await controller.enableDisableExtension(false, 'Availability');
-        await controller.enableDisableExtension(true, 'Availability');
-        extension = controller.extensions.find((e) => e.constructor.name === 'Availability');
+        await controller.enableDisableExtension(false, 'AvailabilityNew');
+        await controller.enableDisableExtension(true, 'AvailabilityNew');
+        extension = controller.extensions.find((e) => e.constructor.name === 'AvailabilityNew');
     }
 
-    // @ts-ignore
-    const mockDateReturnValue = (value): void => Date.now.mockReturnValue(3000);
+    const advancedTime = async (value) => {
+        jest.setSystemTime(Date.now() + value);
+        jest.advanceTimersByTime(value);
+        await flushPromises();
+    }
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        jest.useFakeTimers('modern');
+        settings.reRead();
+        settings.set(['availability'], true);
+        settings.set(['experimental', 'availability_new'], true);
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
-        Date.now = jest.fn()
-        mockDateReturnValue(3000);
     });
 
     beforeEach(async () => {
+        jest.useFakeTimers('modern').setSystemTime(minutes(1));
         data.writeDefaultConfiguration();
-        settings.reRead();
-        settings.set(['availability'], true);
+        // @ts-ignore
+        Object.values(zigbeeHerdsman.devices).forEach(d => d.lastSeen = minutes(1));
         mocks.forEach((m) => m.mockClear());
-        Object.values(devices).forEach((d) => d.ping.mockClear());
         await resetExtension();
+        // @ts-ignore
+        Object.values(devices).forEach((d) => d.ping.mockClear());
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         // @ts-ignore
-        Object.values(zigbeeHerdsman.devices).forEach(d => d.lastSeen = 1000);
+        Object.values(zigbeeHerdsman.devices).forEach(d => d.lastSeen = minutes(1));
     })
 
     afterAll(async () => {
@@ -70,12 +72,11 @@ describe('onlythis Availability', () => {
 
     it('Should publish offline for active device when not seen for 10 minutes', async () => {
         MQTT.publish.mockClear();
-        mockDateReturnValue(Minutes1 * 5);
-        jest.advanceTimersByTime(Minutes1 * 5);
+
+        await advancedTime(minutes(5));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
-        mockDateReturnValue(Minutes1 * 12);
-        jest.advanceTimersByTime(Minutes1 * 6);
+        await advancedTime(minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
@@ -83,8 +84,44 @@ describe('onlythis Availability', () => {
 
     it('Should publish offline for passive device when not seen for 25 hours', async () => {
         MQTT.publish.mockClear();
-        mockDateReturnValue(Hours25 + Minutes10);
-        jest.advanceTimersByTime(Hours25 + Minutes10);
+        await advancedTime(hours(26));
+        expect(devices.remote.ping).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Should reset ping timer when device last seen changes for active device', async () => {
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(5));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
+
+        await advancedTime(minutes(7));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        devices.bulb_color.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        await advancedTime(minutes(10));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Should reset ping timer when device last seen changes for passive device', async () => {
+        MQTT.publish.mockClear();
+
+        await advancedTime(hours(24));
+        expect(devices.remote.ping).toHaveBeenCalledTimes(0);
+
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.remote});
+
+        await advancedTime(hours(25));
+        expect(devices.remote.ping).toHaveBeenCalledTimes(0);
+
+        devices.remote.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        await advancedTime(hours(3));
+        expect(devices.remote.ping).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });

@@ -10,7 +10,8 @@ const Minutes10 = 10 * Minutes1;
 class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
-    private pingQueue: {ieeAddr: string, handler: () => void}[] = [];
+    private pingQueue: ResolvedEntity[] = [];
+    private pingQueueExecuting = false;
 
     private isActiveDevice(re: ResolvedEntity): boolean {
         return (re.device.type === 'Router' && re.device.powerSource !== 'Battery') ||
@@ -34,31 +35,39 @@ class AvailabilityNew extends ExtensionTS {
         // If the timer triggers, the device is not avaiable anymore otherwise resetTimer already have been called
         if (this.isActiveDevice(re)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
-            this.timers[re.device.ieeeAddr] = setTimeout(() => this.ping(re), Minutes10 + Seconds1);
+            this.timers[re.device.ieeeAddr] = setTimeout(() => this.addToPingQueue(re), Minutes10 + Seconds1);
         } else {
             this.timers[re.device.ieeeAddr] = setTimeout(() => this.publishAvailability(re), Hours25 + Seconds1);
         }
     }
 
-    private ping(re: ResolvedEntity): void {
-        if (this.pingQueue.find((r) => r.ieeAddr === re.device.ieeeAddr)) {
-            logger.debug(`Device '${re.name}' already in ping queue, skipping...`);
-            return;
+    private addToPingQueue(re: ResolvedEntity): void {
+        this.pingQueue.push(re);
+        this.pingQueueExecuteNext();
+    }
+
+    private removeFromPingQueue(re: ResolvedEntity): void {
+        const index = this.pingQueue.findIndex((r) => r.device.ieeeAddr === re.device.ieeeAddr);
+        index != -1 && this.pingQueue.splice(index, 1);
+    }
+
+    private async pingQueueExecuteNext(): Promise<void> {
+        if (this.pingQueue.length === 0 || this.pingQueueExecuting) return;
+        this.pingQueueExecuting = true;
+
+        const re = this.pingQueue[0];
+        try {
+            await re.device.ping();
+            logger.debug(`Succesfully pinged '${re.name}'`);
+        } catch {
+            logger.error(`Failed to ping '${re.name}'`);
         }
 
-        const handler = (): void => {
-            re.device.ping()
-                .then(() => logger.debug(`Succesfully pinged '${re.name}'`))
-                .catch(() => logger.error(`Failed to ping '${re.name}'`))
-                .finally(() => {
-                    this.publishAvailability(re);
-                    this.resetTimer(re);
-                    this.pingQueue = this.pingQueue.filter((e) => e.ieeAddr !== re.device.ieeeAddr);
-                });
-        };
-
-        this.pingQueue.push({ieeAddr: re.device.ieeeAddr, handler});
-        // TODO: take elements from ping queue
+        this.publishAvailability(re);
+        this.resetTimer(re);
+        this.removeFromPingQueue(re);
+        this.pingQueueExecuting = false;
+        this.pingQueueExecuteNext();
     }
 
     override onMQTTConnected(): void {
@@ -68,11 +77,16 @@ class AvailabilityNew extends ExtensionTS {
 
             // Publish initial availablility
             this.publishAvailability(re);
-            // TODO: if a active device is initially unavaiable, ping it.
+
+            // If an active device is initially unavailable, ping it.
+            if (this.isActiveDevice(re) && !this.isAvailable(re)) {
+                this.addToPingQueue(re);
+            }
         }
     }
 
     override onZigbeeStarted(): void {
+        this.lastSeenChanged = this.lastSeenChanged.bind(this);
         this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
     }
 
@@ -90,11 +104,15 @@ class AvailabilityNew extends ExtensionTS {
 
     private lastSeenChanged(data: {device: Device}): void {
         const re = this.zigbee.resolveEntity(data.device);
+
+        // Remove from ping queue, not necessary anymore since we know the device is online.
+        this.removeFromPingQueue(re);
         this.resetTimer(re);
         this.publishAvailability(re);
     }
 
     override stop(): void {
+        Object.values(this.timers).forEach((t) => clearTimeout(t));
         this.zigbee.removeListener('lastSeenChanged', this.lastSeenChanged);
         super.stop();
     }
