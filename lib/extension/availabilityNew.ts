@@ -29,13 +29,7 @@ class AvailabilityNew extends ExtensionTS {
 
     private isAvailable(re: ResolvedEntity): boolean {
         const ago = Date.now() - re.device.lastSeen;
-        if (this.isActiveDevice(re)) {
-            logger.debug(`Active device '${re.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
-            return ago < ActiveTimeout;
-        } else {
-            logger.debug(`Passive device '${re.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
-            return ago < PassiveTimeout;
-        }
+        return this.isActiveDevice(re) ? ago < ActiveTimeout : ago < PassiveTimeout;
     }
 
     private resetTimer(re: ResolvedEntity): void {
@@ -48,7 +42,7 @@ class AvailabilityNew extends ExtensionTS {
                 () => this.addToPingQueue(re), ActiveTimeout + seconds(1));
         } else {
             this.timers[re.device.ieeeAddr] = setTimeout(
-                () => this.publishAvailability(re), PassiveTimeout + seconds(1));
+                () => this.publishAvailability(re, true), PassiveTimeout + seconds(1));
         }
     }
 
@@ -67,10 +61,12 @@ class AvailabilityNew extends ExtensionTS {
         this.pingQueueExecuting = true;
 
         const re = this.pingQueue[0];
+        let pingedSuccessfully = false;
         const attempts = 2;
         for (let i = 0; i < attempts; i++) {
             try {
                 await re.device.ping();
+                pingedSuccessfully = true;
                 logger.debug(`Succesfully pinged '${re.name}' (attempt ${i + 1})`);
                 break;
             } catch (error) {
@@ -81,7 +77,7 @@ class AvailabilityNew extends ExtensionTS {
             }
         }
 
-        this.publishAvailability(re);
+        this.publishAvailability(re, !pingedSuccessfully);
         this.resetTimer(re);
         this.removeFromPingQueue(re);
 
@@ -97,7 +93,7 @@ class AvailabilityNew extends ExtensionTS {
             this.resetTimer(re);
 
             // Publish initial availablility
-            this.publishAvailability(re);
+            this.publishAvailability(re, true);
 
             // If an active device is initially unavailable, ping it.
             if (this.isActiveDevice(re) && !this.isAvailable(re)) {
@@ -110,7 +106,17 @@ class AvailabilityNew extends ExtensionTS {
         this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
     }
 
-    private publishAvailability(re: ResolvedEntity): void {
+    private publishAvailability(re: ResolvedEntity, logLastSeen: boolean): void {
+        if (logLastSeen) {
+            const ago = Date.now() - re.device.lastSeen;
+            if (this.isActiveDevice(re)) {
+                logger.debug(
+                    `Active device '${re.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
+            } else {
+                logger.debug(`Passive device '${re.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
+            }
+        }
+
         const available = this.isAvailable(re);
         if (this.availabilityCache[re.device.ieeeAddr] == available) {
             return;
@@ -128,7 +134,7 @@ class AvailabilityNew extends ExtensionTS {
         // Remove from ping queue, not necessary anymore since we know the device is online.
         this.removeFromPingQueue(re);
         this.resetTimer(re);
-        this.publishAvailability(re);
+        this.publishAvailability(re, false);
     }
 
     override stop(): void {
