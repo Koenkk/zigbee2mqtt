@@ -7,10 +7,10 @@ zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b4');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45517');
 const MQTT = require('./stub/mqtt');
+const utils = require('../lib/util/utils');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const mocks = [MQTT.publish, logger.warn, logger.debug];
 
 const hours = (hours) => 1000 * 60 * 60 * hours;
@@ -34,6 +34,7 @@ describe('Availability', () => {
     }
 
     beforeAll(async () => {
+        jest.spyOn(utils, 'sleep').mockImplementation(() => {});
         jest.useFakeTimers('modern');
         settings.reRead();
         settings.set(['availability'], true);
@@ -101,9 +102,26 @@ describe('Availability', () => {
         await advancedTime(minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
-        devices.bulb_color.ping.mockImplementationOnce(() => {throw new Error('failed')});
         await advancedTime(minutes(10));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Should ping again when first ping fails', async () => {
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(5));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
+
+        await advancedTime(minutes(7));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        devices.bulb_color.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        await advancedTime(minutes(10));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });

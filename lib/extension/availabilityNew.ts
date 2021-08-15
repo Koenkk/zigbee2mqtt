@@ -1,5 +1,6 @@
 import ExtensionTS from './extensionts';
 import logger from '../util/logger';
+import {sleep} from '../util/utils';
 
 const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 const minutes = (minutes: number): number => 1000 * 60 * minutes;
@@ -66,16 +67,26 @@ class AvailabilityNew extends ExtensionTS {
         this.pingQueueExecuting = true;
 
         const re = this.pingQueue[0];
-        try {
-            await re.device.ping();
-            logger.debug(`Succesfully pinged '${re.name}'`);
-        } catch {
-            logger.error(`Failed to ping '${re.name}'`);
+        const attempts = 2;
+        for (let i = 0; i < attempts; i++) {
+            try {
+                await re.device.ping();
+                logger.debug(`Succesfully pinged '${re.name}' (attempt ${i + 1})`);
+                break;
+            } catch (error) {
+                logger.error(`Failed to ping '${re.name}' (attempt ${i + 1}, ${error.message})`);
+                // Try again in 3 seconds.
+                const lastAttempt = i - 1 === attempts;
+                !lastAttempt && await sleep(seconds(3));
+            }
         }
 
         this.publishAvailability(re);
         this.resetTimer(re);
         this.removeFromPingQueue(re);
+
+        // Sleep 2 seconds before executing next ping
+        await sleep(seconds(2));
         this.pingQueueExecuting = false;
         this.pingQueueExecuteNext();
     }
