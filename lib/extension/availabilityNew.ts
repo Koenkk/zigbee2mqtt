@@ -73,7 +73,7 @@ class AvailabilityNew extends ExtensionTS {
                 logger.error(`Failed to ping '${re.name}' (attempt ${i + 1}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
-                !lastAttempt && await sleep(seconds(3));
+                !lastAttempt && await sleep(3);
             }
         }
 
@@ -82,7 +82,7 @@ class AvailabilityNew extends ExtensionTS {
         this.removeFromPingQueue(re);
 
         // Sleep 2 seconds before executing next ping
-        await sleep(seconds(2));
+        await sleep(2);
         this.pingQueueExecuting = false;
         this.pingQueueExecuteNext();
     }
