@@ -5,11 +5,12 @@ const fs = require('fs');
 const path = require('path');
 const {exec} = require('child_process');
 const rimraf = require('rimraf');
+require('source-map-support').install();
 
 let controller;
 let stopping = false;
 
-const hashFile = path.join('dist', '.hash');
+const hashFile = path.join(__dirname, 'dist', '.hash');
 
 async function restart() {
     await stop(indexJsRestart);
