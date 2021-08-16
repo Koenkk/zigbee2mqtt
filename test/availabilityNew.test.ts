@@ -120,6 +120,7 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         devices.bulb_color.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        devices.bulb_color.lastSeen = Date.now() + minutes(10);
         await advancedTime(minutes(10));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
