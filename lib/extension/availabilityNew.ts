@@ -67,10 +67,10 @@ class AvailabilityNew extends ExtensionTS {
             try {
                 await re.device.ping();
                 pingedSuccessfully = true;
-                logger.debug(`Succesfully pinged '${re.name}' (attemp ${i + 1}/${attempts})`);
+                logger.debug(`Succesfully pinged '${re.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
-                logger.error(`Failed to ping '${re.name}' (attemp ${i + 1}/${attempts}, ${error.message})`);
+                logger.error(`Failed to ping '${re.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await sleep(3);
