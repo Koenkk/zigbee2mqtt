@@ -79,6 +79,7 @@ describe('Availability', () => {
 
         await advancedTime(minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });
@@ -104,6 +105,7 @@ describe('Availability', () => {
 
         await advancedTime(minutes(10));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });
@@ -123,6 +125,8 @@ describe('Availability', () => {
         devices.bulb_color.lastSeen = Date.now() + minutes(10);
         await advancedTime(minutes(10));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(2, false);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });

@@ -62,10 +62,13 @@ class AvailabilityNew extends ExtensionTS {
 
         const re = this.pingQueue[0];
         let pingedSuccessfully = false;
-        const attempts = this.isAvailable(re) ? 3 : 1;
+        const available = this.availabilityCache[re.device.ieeeAddr] || this.isAvailable(re);
+        const attempts = available ? 2 : 1;
         for (let i = 0; i < attempts; i++) {
             try {
-                await re.device.ping();
+                // Enable recovery if device is marked as available and first ping fails.
+                const disableRecovery = !(i == 1 && available);
+                await re.device.ping(disableRecovery);
                 pingedSuccessfully = true;
                 logger.debug(`Succesfully pinged '${re.name}' (attempt ${i + 1}/${attempts})`);
                 break;
