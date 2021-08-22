@@ -1,14 +1,16 @@
 import ExtensionTS from './extensionts';
 import logger from '../util/logger';
 import {sleep} from '../util/utils';
+import * as settings from '../util/settings';
 
 const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 const minutes = (minutes: number): number => 1000 * 60 * minutes;
 const seconds = (seconds: number): number => 1000 * seconds;
 
-const ActiveTimeout = minutes(10);
-const PassiveTimeout = hours(25);
-
+// TODO
+// - State retrieval
+// - Home Assistant add availability mode
+// - Honour legacy availability_timeout, availability_blocklist and availability_passlist options.
 class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
@@ -22,6 +24,24 @@ class AvailabilityNew extends ExtensionTS {
         logger.warn('Using experimental new availability feature');
     }
 
+    private isEnabledForDevice(re: ResolvedEntity): boolean {
+        return re.settings.hasOwnProperty('availability') ? !!re.settings.availability : !!settings.get().availability;
+    }
+
+    private getTimeout(re: ResolvedEntity): number {
+        if (typeof re.settings.availability === 'object' && re.settings.availability?.timeout != null) {
+            return minutes(re.settings.availability.timeout);
+        }
+
+        const key = this.isActiveDevice(re) ? 'active' : 'passive';
+        const availabilitySettings = settings.get().availability;
+        if (typeof availabilitySettings === 'object' && availabilitySettings[key]?.timeout != null) {
+            return minutes(availabilitySettings[key]?.timeout);
+        }
+
+        return key === 'active' ? minutes(10) : hours(25);
+    }
+
     private isActiveDevice(re: ResolvedEntity): boolean {
         return (re.device.type === 'Router' && re.device.powerSource !== 'Battery') ||
             re.device.powerSource === 'Mains (single phase)';
@@ -29,7 +49,7 @@ class AvailabilityNew extends ExtensionTS {
 
     private isAvailable(re: ResolvedEntity): boolean {
         const ago = Date.now() - re.device.lastSeen;
-        return this.isActiveDevice(re) ? ago < ActiveTimeout : ago < PassiveTimeout;
+        return ago < this.getTimeout(re);
     }
 
     private resetTimer(re: ResolvedEntity): void {
@@ -39,10 +59,10 @@ class AvailabilityNew extends ExtensionTS {
         if (this.isActiveDevice(re)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
             this.timers[re.device.ieeeAddr] = setTimeout(
-                () => this.addToPingQueue(re), ActiveTimeout + seconds(1));
+                () => this.addToPingQueue(re), this.getTimeout(re) + seconds(1));
         } else {
             this.timers[re.device.ieeeAddr] = setTimeout(
-                () => this.publishAvailability(re, true), PassiveTimeout + seconds(1));
+                () => this.publishAvailability(re, true), this.getTimeout(re) + seconds(1));
         }
     }
 
@@ -93,14 +113,17 @@ class AvailabilityNew extends ExtensionTS {
     override onMQTTConnected(): void {
         for (const device of this.zigbee.getClients()) {
             const re: ResolvedEntity = this.zigbee.resolveEntity(device);
-            this.resetTimer(re);
 
             // Publish initial availablility
             this.publishAvailability(re, true);
 
-            // If an active device is initially unavailable, ping it.
-            if (this.isActiveDevice(re) && !this.isAvailable(re)) {
-                this.addToPingQueue(re);
+            if (this.isEnabledForDevice(re)) {
+                this.resetTimer(re);
+
+                // If an active device is initially unavailable, ping it.
+                if (this.isActiveDevice(re) && !this.isAvailable(re)) {
+                    this.addToPingQueue(re);
+                }
             }
         }
     }
@@ -110,7 +133,8 @@ class AvailabilityNew extends ExtensionTS {
     }
 
     private publishAvailability(re: ResolvedEntity, logLastSeen: boolean): void {
-        if (logLastSeen) {
+        const enabled = this.isEnabledForDevice(re);
+        if (enabled && logLastSeen) {
             const ago = Date.now() - re.device.lastSeen;
             if (this.isActiveDevice(re)) {
                 logger.debug(
@@ -120,7 +144,7 @@ class AvailabilityNew extends ExtensionTS {
             }
         }
 
-        const available = this.isAvailable(re);
+        const available = enabled ? this.isAvailable(re) : true;
         if (this.availabilityCache[re.device.ieeeAddr] == available) {
             return;
         }
@@ -133,11 +157,12 @@ class AvailabilityNew extends ExtensionTS {
 
     private lastSeenChanged(data: {device: Device}): void {
         const re = this.zigbee.resolveEntity(data.device);
-
-        // Remove from ping queue, not necessary anymore since we know the device is online.
-        this.removeFromPingQueue(re);
-        this.resetTimer(re);
-        this.publishAvailability(re, false);
+        if (this.isEnabledForDevice(re)) {
+            // Remove from ping queue, not necessary anymore since we know the device is online.
+            this.removeFromPingQueue(re);
+            this.resetTimer(re);
+            this.publishAvailability(re, false);
+        }
     }
 
     override stop(): void {

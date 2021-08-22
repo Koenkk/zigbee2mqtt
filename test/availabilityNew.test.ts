@@ -47,6 +47,8 @@ describe('Availability', () => {
     beforeEach(async () => {
         jest.useFakeTimers('modern').setSystemTime(minutes(1));
         data.writeDefaultConfiguration();
+        settings.set(['devices', '0x000b57fffec6a5b4', 'availability'], false);
+        settings.set(['devices', '0x000b57fffec6a5b3', 'availability'], true);
         // @ts-ignore
         Object.values(zigbeeHerdsman.devices).forEach(d => d.lastSeen = minutes(1));
         mocks.forEach((m) => m.mockClear());
@@ -69,6 +71,8 @@ describe('Availability', () => {
             'online', {retain: true, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color_2/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
     });
 
     it('Should publish offline for active device when not seen for 10 minutes', async () => {
@@ -82,6 +86,14 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'offline', {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Shouldnt do anything for a device when availability: false is set', async () => {
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(12));
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color_2});
+        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(0);
     });
 
     it('Should publish offline for passive device when not seen for 25 hours', async () => {
@@ -161,5 +173,29 @@ describe('Availability', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Should allow to change availability timeout via device options', async () => {
+        settings.set(['devices', '0x000b57fffec6a5b3', 'availability'], {timeout: 40});
+        await resetExtension();
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(25));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await advancedTime(minutes(17));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should allow to change availability timeout via avaiability options', async () => {
+        settings.set(['availability'], {active: {timeout: 30}});
+        await resetExtension();
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(25));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await advancedTime(minutes(7));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
 });

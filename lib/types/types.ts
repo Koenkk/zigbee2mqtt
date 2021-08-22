@@ -16,6 +16,10 @@ declare global {
         blocklist: string[],
         whitelist: string[],
         ban: string[],
+        availability?: boolean | {
+            active?: {timeout?: number},
+            passive?: {timeout?: number}
+        },
         permit_join: boolean,
         frontend?: {
             auth_token?: string,
@@ -117,6 +121,10 @@ declare global {
         definition?: {model: string},
         name: string,
         device?: Device,
+        settings: {
+            friendlyName: string,
+            availability?: {timeout?: number} | boolean,
+        }
     }
 
     type lastSeenChangedHandler = (data: {device: Device}) => void;
