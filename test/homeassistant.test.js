@@ -62,6 +62,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "brightness":true,
             "brightness_scale":254,
             "color_mode":true,
@@ -93,6 +94,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -132,6 +134,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -158,6 +161,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -184,6 +188,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -210,6 +215,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -237,6 +243,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -247,11 +254,8 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "command_topic":"zigbee2mqtt/wall_switch_double/left/set",
             "device":{
                 "identifiers":[
@@ -279,11 +283,8 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "command_topic":"zigbee2mqtt/wall_switch_double/right/set",
             "device":{
                 "identifiers":[
@@ -311,11 +312,8 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "brightness":true,
             "brightness_scale":254,
             "color_mode": true,
@@ -388,6 +386,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -414,6 +413,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -440,6 +440,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -497,6 +498,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'From Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
             'expire_after': 90,
             'icon': 'mdi:test',
         };
@@ -524,6 +526,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Not from Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
             'expire_after': 30,
             'icon': 'mdi:test',
         };
@@ -560,6 +563,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
             "command_topic": "zigbee2mqtt/my_switch/set",
             "device": {
               "identifiers": [
@@ -659,6 +663,7 @@ describe('HomeAssistant extension', () => {
                "manufacturer":"Hampton Bay"
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -678,6 +683,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
             "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
             "away_mode_state_template":"{{ value_json.away_mode }}",
             "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
@@ -754,6 +760,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Keen Home'
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -789,6 +796,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -932,6 +940,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1055,6 +1064,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}, {topic: 'zigbee2mqtt/weather_sensor/availability'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1142,6 +1152,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1213,6 +1224,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1246,6 +1258,7 @@ describe('HomeAssistant extension', () => {
                 "manufacturer":"IKEA"
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1694,6 +1707,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1714,6 +1728,7 @@ describe('HomeAssistant extension', () => {
 
         const payload = {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "availability_mode": "all",
             "brightness":true,
             "brightness_scale":254,
             "color_mode":true,
