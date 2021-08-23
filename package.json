@@ -20,9 +20,9 @@
     "cc2531"
   ],
   "scripts": {
-    "build": "node_modules/.bin/tsc && node index.js writehash",
-    "build-watch": "node_modules/.bin/tsc --watch",
-    "eslint": "node_modules/.bin/eslint lib/ --max-warnings=0",
+    "build": "tsc && node index.js writehash",
+    "build-watch": "tsc --watch",
+    "eslint": "eslint lib/ --max-warnings=0",
     "start": "node index.js",
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
