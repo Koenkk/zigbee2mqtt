@@ -11,6 +11,7 @@ const seconds = (seconds: number): number => 1000 * seconds;
 // - State retrieval
 // - Home Assistant add availability mode
 // - Honour legacy availability_timeout, availability_blocklist and availability_passlist options.
+// - Enable for HA addon
 class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
