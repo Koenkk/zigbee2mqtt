@@ -71,8 +71,6 @@ describe('Availability', () => {
             'online', {retain: true, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color_2/availability',
-            'online', {retain: true, qos: 0}, expect.any(Function));
     });
 
     it('Should publish offline for active device when not seen for 10 minutes', async () => {
