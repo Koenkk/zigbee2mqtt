@@ -1,11 +1,7 @@
 import ExtensionTS from './extensionts';
 import logger from '../util/logger';
-import {sleep, isAvailabilityNewEnabledForDevice} from '../util/utils';
+import {sleep, isAvailabilityNewEnabledForDevice, hours, minutes, seconds} from '../util/utils';
 import * as settings from '../util/settings';
-
-const hours = (hours: number): number => 1000 * 60 * 60 * hours;
-const minutes = (minutes: number): number => 1000 * 60 * minutes;
-const seconds = (seconds: number): number => 1000 * seconds;
 
 // TODO
 // - State retrieval
@@ -110,7 +106,7 @@ class AvailabilityNew extends ExtensionTS {
     override onMQTTConnected(): void {
         for (const device of this.zigbee.getClients()) {
             const re: ResolvedEntity = this.zigbee.resolveEntity(device);
-            if (isAvailabilityNewEnabledForDevice(re, settings)) {
+            if (isAvailabilityNewEnabledForDevice(re, settings.get())) {
                 // Publish initial availablility
                 this.publishAvailability(re, true);
 
@@ -161,7 +157,7 @@ class AvailabilityNew extends ExtensionTS {
 
     private lastSeenChanged(data: {device: Device}): void {
         const re = this.zigbee.resolveEntity(data.device);
-        if (isAvailabilityNewEnabledForDevice(re, settings)) {
+        if (isAvailabilityNewEnabledForDevice(re, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(re);
             this.resetTimer(re);

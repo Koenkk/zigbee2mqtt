@@ -16,7 +16,7 @@ describe('HomeAssistant extension', () => {
     let version;
 
     beforeEach(async () => {
-        version = await require('../lib/util/utils').getZigbee2mqttVersion();
+        version = await require('../lib/util/utils').getZigbee2MQTTVersion();
         version = `Zigbee2MQTT ${version.version}`;
         data.writeDefaultConfiguration();
         settings.reRead();

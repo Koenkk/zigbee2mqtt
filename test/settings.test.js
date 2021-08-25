@@ -1,7 +1,7 @@
 require('./stub/logger');
 require('./stub/data');
 const data = require('../lib/util/data.js');
-const utils = require('../lib/util/utils.js');
+const utils = require('../lib/util/utils');
 const settings = require('../lib/util/settings.ts');
 const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
@@ -794,7 +794,7 @@ describe('Settings', () => {
 
         settings.reRead();
 
-        const error = `Following friendly_name are not allowed: '${utils.getEndpointNames()}'`;
+        const error = `Following friendly_name are not allowed: '${utils.endpointNames}'`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 

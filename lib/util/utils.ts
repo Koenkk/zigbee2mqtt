@@ -1,37 +1,33 @@
-const equals = require('fast-deep-equal/es6');
-const humanizeDuration = require('humanize-duration');
-const data = require('./data');
-const vm = require('vm');
-const fs = require('fs');
-const path = require('path');
-
-// Xiaomi uses 4151 and 4447 (lumi.plug) as manufacturer ID.
-const xiaomiManufacturerID = [4151, 4447];
-const ikeaTradfriManufacturerID = [4476];
+import equals from 'fast-deep-equal/es6';
+import humanizeDuration from 'humanize-duration';
+import data from './data';
+import vm from 'vm';
+import fs from 'fs';
+import path from 'path';
 
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:
 //  - ISO8601 (UTC) = 2019-03-01T15:32:45.941+0000
 //  - ISO8601 (local) = 2019-03-01T16:32:45.941+0100 (for timezone GMT+1)
-function toLocalISOString(dDate) {
-    const tzOffset = -dDate.getTimezoneOffset();
+function toLocalISOString(date: Date): string {
+    const tzOffset = -date.getTimezoneOffset();
     const plusOrMinus = tzOffset >= 0 ? '+' : '-';
-    const pad = function(num) {
+    const pad = (num: number): string => {
         const norm = Math.floor(Math.abs(num));
         return (norm < 10 ? '0' : '') + norm;
     };
 
-    return dDate.getFullYear() +
-        '-' + pad(dDate.getMonth() + 1) +
-        '-' + pad(dDate.getDate()) +
-        'T' + pad(dDate.getHours()) +
-        ':' + pad(dDate.getMinutes()) +
-        ':' + pad(dDate.getSeconds()) +
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes()) +
+        ':' + pad(date.getSeconds()) +
         plusOrMinus + pad(tzOffset / 60) +
         ':' + pad(tzOffset % 60);
 }
 
-const endpointNames = [
+export const endpointNames = [
     'left', 'right', 'center', 'bottom_left', 'bottom_right', 'default',
     'top_left', 'top_right', 'white', 'rgb', 'cct', 'system', 'top', 'bottom', 'center_left', 'center_right',
     'ep1', 'ep2', 'row_1', 'row_2', 'row_3', 'row_4', 'relay', 'usb',
@@ -45,17 +41,18 @@ const endpointNames = [
     'heat', 'cool', 'water', 'meter', 'wifi',
 ];
 
-function capitalize(s) {
+export function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2mqttVersion() {
-    return new Promise((resolve, reject) => {
-        const git = require('git-last-commit');
-        const packageJSON = require('../..' + '/package.json');
+export async function getZigbee2MQTTVersion(): Promise<{commitHash: string, version: string}> {
+    const git = await import('git-last-commit');
+    const packageJSON = await import('../..' + '/package.json');
+
+    return new Promise((resolve) => {
         const version = packageJSON.version;
 
-        git.getLastCommit((err, commit) => {
+        git.getLastCommit((err: Error, commit: {shortHash: string}) => {
             let commitHash = null;
 
             if (err) {
@@ -74,39 +71,22 @@ async function getZigbee2mqttVersion() {
     });
 }
 
-async function getDependencyVersion(depend) {
-    return new Promise((resolve, reject) => {
-        const packageJSON = require(path.join(__dirname, '..', '..', 'node_modules', depend, 'package.json'));
-        const version = packageJSON.version;
-        resolve({version});
-    });
+export async function getDependencyVersion(depend: string): Promise<{version: string}> {
+    const packageJSON = await import(path.join(__dirname, '..', '..', 'node_modules', depend, 'package.json'));
+    const version = packageJSON.version;
+    return {version};
 }
 
-function formatDate(date, type) {
-    let result;
-
-    switch (type) {
-    case 'ISO_8601':
-        result = new Date(date).toISOString();
-        break;
-    case 'ISO_8601_local':
-        result = toLocalISOString(new Date(date));
-        break;
-    case 'epoch':
-        result = date;
-        break;
-    case 'relative':
-        // https://github.com/EvanHahn/HumanizeDuration.js#options
-        result = humanizeDuration(Date.now() - date, {language: 'en', largest: 2, round: true}) + ' ago';
-        break;
-    default:
-        throw new Error(`Unsupported type '${type}'`);
+export function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' | 'relative'): string | number {
+    if (type === 'ISO_8601') return new Date(time).toISOString();
+    else if (type === 'ISO_8601_local') return toLocalISOString(new Date(time));
+    else if (type === 'epoch') return time;
+    else { // relative
+        return humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true}) + ' ago';
     }
-
-    return result;
 }
 
-function objectHasProperties(object, properties) {
+export function objectHasProperties(object: {[s: string]: unknown}, properties: string[]): boolean {
     for (const property of properties) {
         if (!object.hasOwnProperty(property)) {
             return false;
@@ -116,7 +96,7 @@ function objectHasProperties(object, properties) {
     return true;
 }
 
-function equalsPartial(object, expected) {
+export function equalsPartial(object: {[s: string]: unknown}, expected: {[s: string]: unknown}): boolean {
     for (const [key, value] of Object.entries(expected)) {
         if (!equals(object[key], value)) {
             return false;
@@ -126,12 +106,14 @@ function equalsPartial(object, expected) {
     return true;
 }
 
-function getObjectProperty(object, key, defaultValue) {
+export function getObjectProperty(object: {[s: string]: unknown}, key: string, defaultValue: unknown): unknown {
     return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
 }
 
-function getResponse(request, data, error) {
-    const response = {data, status: error ? 'error' : 'ok'};
+export function getResponse(request: {transaction: string}, data: unknown, error: string):
+    {data: unknown, status: string, error?: string, transaction?: string} {
+    const response: {data: unknown, status: string, error?: string, transaction?: string} =
+        {data, status: error ? 'error' : 'ok'};
     if (error) response.error = error;
     if (typeof request === 'object' && request.hasOwnProperty('transaction')) {
         response.transaction = request.transaction;
@@ -139,7 +121,7 @@ function getResponse(request, data, error) {
     return response;
 }
 
-function parseJSON(value, failedReturnValue) {
+export function parseJSON(value: string, failedReturnValue: unknown): unknown {
     try {
         return JSON.parse(value);
     } catch (e) {
@@ -147,7 +129,7 @@ function parseJSON(value, failedReturnValue) {
     }
 }
 
-function loadModuleFromText(moduleCode) {
+export function loadModuleFromText(moduleCode: string): unknown {
     const moduleFakePath = path.join(__dirname, 'externally-loaded.js');
     const sandbox = {
         require: require,
@@ -161,15 +143,17 @@ function loadModuleFromText(moduleCode) {
         clearImmediate,
     };
     vm.runInNewContext(moduleCode, sandbox, moduleFakePath);
+    /* eslint-disable-line */ // @ts-ignore
     return sandbox.module.exports;
 }
 
-function loadModuleFromFile(modulePath) {
+export function loadModuleFromFile(modulePath: string): unknown {
     const moduleCode = fs.readFileSync(modulePath, {encoding: 'utf8'});
     return loadModuleFromText(moduleCode);
 }
 
-function* getExternalConvertersDefinitions(settings) {
+/* eslint-disable-next-line */
+export function* getExternalConvertersDefinitions(settings: any): any {
     const externalConverters = settings.get().external_converters;
 
     for (const moduleName of externalConverters) {
@@ -191,7 +175,7 @@ function* getExternalConvertersDefinitions(settings) {
     }
 }
 
-function removeNullPropertiesFromObject(obj) {
+export function removeNullPropertiesFromObject(obj: KeyValue): void {
     for (const key of Object.keys(obj)) {
         const value = obj[key];
         if (value == null) {
@@ -202,7 +186,8 @@ function removeNullPropertiesFromObject(obj) {
     }
 }
 
-function getKey(object, value, fallback, convertTo) {
+export function getKey(
+    object: KeyValue, value: unknown, fallback: unknown, convertTo: (v: unknown) => unknown): unknown {
     for (const key in object) {
         if (object[key]===value) {
             return convertTo ? convertTo(key) : key;
@@ -212,12 +197,13 @@ function getKey(object, value, fallback, convertTo) {
     return fallback;
 }
 
-function toNetworkAddressHex(value) {
+export function toNetworkAddressHex(value: number): string {
     const hex = value.toString(16);
     return `0x${'0'.repeat(4 - hex.length)}${hex}`;
 }
 
-function toSnakeCase(value) {
+// eslint-disable-next-line
+export function toSnakeCase(value: string | KeyValue): any {
     if (typeof value === 'object') {
         value = {...value};
         for (const key of Object.keys(value)) {
@@ -233,7 +219,7 @@ function toSnakeCase(value) {
     }
 }
 
-function validateFriendlyName(name, throwFirstError=false) {
+export function validateFriendlyName(name: string, throwFirstError=false): string[] {
     const errors = [];
     for (const endpointName of endpointNames) {
         if (name.toLowerCase().endsWith('/' + endpointName)) {
@@ -256,48 +242,32 @@ function validateFriendlyName(name, throwFirstError=false) {
 
     return errors;
 }
-function sleep(seconds) {
+
+export function sleep(seconds: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-function sanitizeImageParameter(parameter) {
+export function sanitizeImageParameter(parameter: string): string {
     const replaceByDash = [/\?/g, /&/g, /[^a-z\d\- _./:]/gi];
     let sanitized = parameter;
     replaceByDash.forEach((r) => sanitized = sanitized.replace(r, '-'));
     return sanitized;
 }
 
-function isAvailabilityNewEnabledForDevice(re, settings) {
-    return re.settings.hasOwnProperty('availability') ? !!re.settings.availability : !!settings.get().availability;
+export function isAvailabilityNewEnabledForDevice(re: ResolvedEntity, settings: Settings): boolean {
+    return re.settings.hasOwnProperty('availability') ? !!re.settings.availability : !!settings.availability;
 }
 
-module.exports = {
-    millisecondsToSeconds: (milliseconds) => milliseconds / 1000,
-    secondsToMilliseconds: (seconds) => seconds * 1000,
-    getZigbee2mqttVersion,
-    getDependencyVersion,
-    objectHasProperties,
-    toSnakeCase,
-    sleep,
-    getObjectProperty,
-    getEndpointNames: () => endpointNames,
-    isXiaomiDevice: (device) => {
-        return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
-            (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
-    },
-    isIkeaTradfriDevice: (device) => ikeaTradfriManufacturerID.includes(device.manufacturerID),
-    formatDate: (date, type) => formatDate(date, type),
-    equalsPartial,
-    getResponse,
-    capitalize,
-    toNetworkAddressHex,
-    parseJSON,
-    getExternalConvertersDefinitions,
-    validateFriendlyName,
-    loadModuleFromFile,
-    loadModuleFromText,
-    isAvailabilityNewEnabledForDevice,
-    getKey,
-    sanitizeImageParameter,
-    removeNullPropertiesFromObject,
-};
+export function isXiaomiDevice(device: Device): boolean {
+    const xiaomiManufacturerID = [4151, 4447];
+    return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
+        (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
+}
+
+export function isIkeaTradfriDevice(device: Device): boolean {
+    return [4476].includes(device.manufacturerID);
+}
+
+export const hours = (hours: number): number => 1000 * 60 * 60 * hours;
+export const minutes = (minutes: number): number => 1000 * 60 * minutes;
+export const seconds = (seconds: number): number => 1000 * seconds;

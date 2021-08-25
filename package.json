@@ -63,6 +63,7 @@
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-typescript": "^7.15.0",
+    "@types/humanize-duration": "^3.25.1",
     "@types/jest": "^27.0.1",
     "@types/js-yaml": "^4.0.3",
     "@types/object-assign-deep": "^0.4.0",

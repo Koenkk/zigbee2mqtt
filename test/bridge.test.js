@@ -54,7 +54,7 @@ describe('Bridge', () => {
 
     it('Should publish bridge info on startup', async () => {
         await extension.onMQTTConnected();
-        const version = await require('../lib/util/utils').getZigbee2mqttVersion();
+        const version = await require('../lib/util/utils').getZigbee2MQTTVersion();
         const directory = settings.get().advanced.log_directory;
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
