@@ -196,4 +196,18 @@ describe('Availability', () => {
         await advancedTime(minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
+
+    it('Should stop pinging device when it leaves', async () => {
+        await resetExtension();
+        MQTT.publish.mockClear();
+
+        await advancedTime(minutes(9));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await zigbeeHerdsman.events.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
+        await flushPromises();
+
+        await advancedTime(minutes(3));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+    });
 });

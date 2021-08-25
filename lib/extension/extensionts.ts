@@ -44,7 +44,7 @@ abstract class ExtensionTS {
      */
     /* istanbul ignore next */
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    onZigbeeEvent(type: string, data: unknown, resolvedEntity: ResolvedEntity): void {}
+    onZigbeeEvent(type: ZigbeeEventType, data: ZigbeeEventData, resolvedEntity: ResolvedEntity): void {}
 
     /**
      * Is called when a MQTT message is received

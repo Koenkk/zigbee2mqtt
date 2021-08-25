@@ -3,6 +3,12 @@ import type {Device as ZHDevice} from 'zigbee-herdsman/dist/controller/model';
 declare global {
     type Device = ZHDevice;
 
+    type ZigbeeEventType = 'deviceLeave';
+
+    interface ZigbeeEventData {
+        ieeeAddr: string;
+    }
+
     /* eslint-disable */
     // Controller
     interface KeyValue {

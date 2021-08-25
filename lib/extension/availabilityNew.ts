@@ -128,6 +128,15 @@ class AvailabilityNew extends ExtensionTS {
         this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
     }
 
+    override onZigbeeEvent(type: ZigbeeEventType, data: ZigbeeEventData, resolvedEntity: ResolvedEntity): void {
+        resolvedEntity;
+
+        /* istanbul ignore else */
+        if (type === 'deviceLeave') {
+            clearTimeout(this.timers[data.ieeeAddr]);
+        }
+    }
+
     private publishAvailability(re: ResolvedEntity, logLastSeen: boolean): void {
         if (logLastSeen) {
             const ago = Date.now() - re.device.lastSeen;
