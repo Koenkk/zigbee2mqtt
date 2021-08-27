@@ -154,7 +154,9 @@ declare global {
         publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
     }
 
-    interface TempState {}
+    interface TempState {
+        get: (ID: string) => {} | null;
+    }
 
     interface TempEventBus {
         removeListenersExtension: (extension: string) => void;

@@ -182,15 +182,16 @@ class AvailabilityNew extends ExtensionTS {
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (!rd.definition && !rd.device.interviewing) return;
-
-        if (!this.retrieveStateDebouncers[rd.device.ieeeAddr]) {
+        if (rd.definition && !rd.device.interviewing && !this.retrieveStateDebouncers[rd.device.ieeeAddr]) {
             this.retrieveStateDebouncers[rd.device.ieeeAddr] = debounce(async () => {
                 try {
                     logger.debug(`Retrieving state of '${rd.name}' after reconnect`);
-                    for (const key of ['state', 'brightness', 'color', 'color_temp']) {
-                        const converter = rd.definition.toZigbee.find((tz) => tz.key.includes(key));
-                        await converter?.convertGet?.(rd.endpoint, key, {});
+                    // Color and color temperature converters do both, only needs to be called once.
+                    const keySet = [['state'], ['brightness'], ['color', 'color_temp']];
+                    for (const keys of keySet) {
+                        const converter = rd.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
+                        await converter?.convertGet?.(rd.endpoint, keys[0],
+                            {message: this.state.get(rd.device.ieeeAddr) || {}});
                     }
                 } catch (error) {
                     logger.error(`Failed to read state of '${rd.name}' after reconnect`);
