@@ -254,8 +254,22 @@ export function sanitizeImageParameter(parameter: string): string {
     return sanitized;
 }
 
-export function isAvailabilityNewEnabledForDevice(re: ResolvedEntity, settings: Settings): boolean {
-    return re.settings.hasOwnProperty('availability') ? !!re.settings.availability : !!settings.availability;
+export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Settings): boolean {
+    if (rd.settings.hasOwnProperty('availability')) {
+        return !!rd.settings.availability;
+    }
+
+    // availability_timeout = deprecated
+    const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
+    if (!enabledGlobal) return false;
+
+    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
+    if (passlist.length > 0) {
+        return passlist.includes(rd.name) || passlist.includes(rd.device.ieeeAddr);
+    }
+
+    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
+    return !blocklist.includes(rd.name) && !blocklist.includes(rd.device.ieeeAddr);
 }
 
 export function isXiaomiDevice(device: Device): boolean {

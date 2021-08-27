@@ -1,9 +1,9 @@
-import type {Device as ZHDevice} from 'zigbee-herdsman/dist/controller/model';
+import type {Device as ZHDevice, Endpoint} from 'zigbee-herdsman/dist/controller/model';
 
 declare global {
     type Device = ZHDevice;
 
-    type ZigbeeEventType = 'deviceLeave';
+    type ZigbeeEventType = 'deviceLeave' | 'deviceAnnounce';
 
     interface ZigbeeEventData {
         ieeeAddr: string;
@@ -124,9 +124,17 @@ declare global {
 
     interface ResolvedEntity {
         type: 'device' | 'group',
-        definition?: {model: string},
+    }
+
+    interface ResolvedDevice {
+        type: 'device',
+        definition?: {
+            model: string
+            toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {}) => Promise<void>}[]
+        },
         name: string,
-        device?: Device,
+        endpoint: Endpoint,
+        device: Device,
         settings: {
             friendlyName: string,
             availability?: {timeout?: number} | boolean,

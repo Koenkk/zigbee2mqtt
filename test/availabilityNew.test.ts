@@ -47,8 +47,10 @@ describe('Availability', () => {
     beforeEach(async () => {
         jest.useFakeTimers('modern').setSystemTime(minutes(1));
         data.writeDefaultConfiguration();
-        settings.set(['devices', '0x000b57fffec6a5b4', 'availability'], false);
-        settings.set(['devices', '0x000b57fffec6a5b3', 'availability'], true);
+        settings.reRead();
+        settings.set(['availability'], true);
+        settings.set(['experimental', 'availability_new'], true);
+        settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], false);
         // @ts-ignore
         Object.values(zigbeeHerdsman.devices).forEach(d => d.lastSeen = minutes(1));
         mocks.forEach((m) => m.mockClear());
@@ -66,10 +68,12 @@ describe('Availability', () => {
         jest.useRealTimers();
     })
 
-    it('Should publish availabilty on startup', async () => {
+    it('Should publish availabilty on startup for device where it is enabled for', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bulb_color_2/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
     });
 
@@ -86,7 +90,7 @@ describe('Availability', () => {
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });
 
-    it('Shouldnt do anything for a device when availability: false is set', async () => {
+    it('Shouldnt do anything for a device when availability: false is set for device', async () => {
         MQTT.publish.mockClear();
 
         await advancedTime(minutes(12));
@@ -209,5 +213,40 @@ describe('Availability', () => {
 
         await advancedTime(minutes(3));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+    });
+
+    it('Should allow to be disabled', async () => {
+        settings.set(['availability'], false);
+        await resetExtension();
+
+        await advancedTime(minutes(12));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+    });
+
+    it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {
+        settings.set(['advanced', 'availability_blocklist'], [devices.bulb_color.ieeeAddr]);
+        await resetExtension();
+
+        await advancedTime(minutes(12));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+    });
+
+    it('Deprecated - should allow to pass certain devices via availability_passlist', async () => {
+        settings.set(['advanced', 'availability_passlist'], [devices.bulb_color_2.ieeeAddr]);
+        settings.changeEntityOptions(devices.bulb_color_2.ieeeAddr, {availability: null});
+        await resetExtension();
+
+        await advancedTime(minutes(12));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(1);
+    });
+
+    it('Deprecated - should allow to enable via availability_timeout', async () => {
+        settings.set(['availability'], false);
+        settings.set(['advanced', 'availability_timeout'], 60);
+        await resetExtension();
+
+        await advancedTime(minutes(12));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
 });
