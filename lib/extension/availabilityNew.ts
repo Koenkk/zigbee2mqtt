@@ -199,7 +199,7 @@ class AvailabilityNew extends ExtensionTS {
             }, seconds(2));
         }
 
-        this.retrieveStateDebouncers[rd.device.ieeeAddr]();
+        this.retrieveStateDebouncers[rd.device.ieeeAddr]?.();
     }
 }
 
