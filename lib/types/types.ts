@@ -63,6 +63,7 @@ declare global {
         },
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
+            availability_new?: boolean,
         },
         advanced: {
             legacy_api: boolean,

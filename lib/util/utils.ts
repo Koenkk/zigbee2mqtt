@@ -255,6 +255,8 @@ export function sanitizeImageParameter(parameter: string): string {
 }
 
 export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Settings): boolean {
+    if (!settings.experimental.availability_new) return false;
+
     if (rd.settings.hasOwnProperty('availability')) {
         return !!rd.settings.availability;
     }
