@@ -126,12 +126,14 @@ declare global {
         type: 'device' | 'group',
     }
 
+    interface Definition  {
+        model: string
+        toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>}[]
+    }
+
     interface ResolvedDevice {
         type: 'device',
-        definition?: {
-            model: string
-            toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {}) => Promise<void>}[]
-        },
+        definition?: Definition,
         name: string,
         endpoint: Endpoint,
         device: Device,

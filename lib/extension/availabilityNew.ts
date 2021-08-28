@@ -191,10 +191,10 @@ class AvailabilityNew extends ExtensionTS {
                     for (const keys of keySet) {
                         const converter = rd.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
                         await converter?.convertGet?.(rd.endpoint, keys[0],
-                            {message: this.state.get(rd.device.ieeeAddr) || {}});
+                            {message: this.state.get(rd.device.ieeeAddr) || {}, mapped: rd.definition});
                     }
                 } catch (error) {
-                    logger.error(`Failed to read state of '${rd.name}' after reconnect`);
+                    logger.error(`Failed to read state of '${rd.name}' after reconnect (${error.message})`);
                 }
             }, seconds(2));
         }
