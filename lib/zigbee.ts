@@ -1,23 +1,27 @@
-const ZigbeeHerdsman = require('zigbee-herdsman');
-const logger = require('./util/logger');
-const settings = require('./util/settings');
-const data = require('./util/data');
-const assert = require('assert');
-const utils = require('./util/utils');
-const events = require('events');
-const objectAssignDeep = require('object-assign-deep');
-const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const stringify = require('json-stable-stringify-without-jsonify');
+import {Controller} from 'zigbee-herdsman';
+import logger from './util/logger';
+import * as settings from './util/settings';
+import data from './util/data';
+import assert from 'assert';
+import * as utils from './util/utils';
+import events from 'events';
+import objectAssignDeep from 'object-assign-deep';
+/* eslint-disable-line */ // @ts-ignore
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+/* eslint-disable-line */ // @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
 
 const keyEndpointByNumber = new RegExp(`.*/([0-9]*)$`);
 
-class Zigbee extends events.EventEmitter {
+export default class Zigbee extends events.EventEmitter {
+    private herdsman: Controller;
+
     constructor() {
         super();
         this.acceptJoiningDeviceHandler = this.acceptJoiningDeviceHandler.bind(this);
     }
 
-    async start() {
+    async start(): Promise<'reset' | 'resumed' | 'restored'> {
         const infoHerdsman = await utils.getDependencyVersion('zigbee-herdsman');
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
         const herdsmanSettings = {
@@ -43,16 +47,19 @@ class Zigbee extends events.EventEmitter {
             },
         };
 
+        /* eslint-disable-line */ // @ts-ignore
         const herdsmanSettingsLog = objectAssignDeep.noMutate(herdsmanSettings);
         herdsmanSettingsLog.network.networkKey = 'HIDDEN';
         logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
 
+        /* eslint-disable-line */ // @ts-ignore
         if (herdsmanSettings.network.networkKey === 'GENERATE') {
             const newKey = Array.from({length: 16}, () => Math.floor(Math.random() * 255));
             settings.set(['advanced', 'network_key'], newKey);
             herdsmanSettings.network.networkKey = newKey;
         }
 
+        /* eslint-disable-line */ // @ts-ignore
         if (herdsmanSettings.network.panID === 'GENERATE') {
             const newPanID = Math.floor(Math.random() * (0xFFFF - 2)) + 1;
             settings.set(['advanced', 'pan_id'], newPanID);
@@ -61,8 +68,10 @@ class Zigbee extends events.EventEmitter {
 
         let startResult;
         try {
+            /* eslint-disable-line */ // @ts-ignore
             herdsmanSettings.acceptJoiningDeviceHandler = this.acceptJoiningDeviceHandler;
-            this.herdsman = new ZigbeeHerdsman.Controller(herdsmanSettings, logger);
+            /* eslint-disable-line */ // @ts-ignore
+            this.herdsman = new Controller(herdsmanSettings, logger);
             startResult = await this.herdsman.start();
         } catch (error) {
             logger.error(`Error while starting zigbee-herdsman`);
@@ -114,29 +123,29 @@ class Zigbee extends events.EventEmitter {
         return startResult;
     }
 
-    async getCoordinatorVersion() {
+    async getCoordinatorVersion(): Promise<CoordinatorVersion> {
         return this.herdsman.getCoordinatorVersion();
     }
 
-    isStopping() {
+    isStopping(): boolean {
         return this.herdsman.isStopping();
     }
 
-    async getNetworkParameters() {
+    async getNetworkParameters(): Promise<NetworkParameters> {
         return this.herdsman.getNetworkParameters();
     }
 
-    async reset(type) {
+    async reset(type: 'soft' | 'hard'): Promise<void> {
         await this.herdsman.reset(type);
     }
 
-    async stop() {
+    async stop(): Promise<void> {
         logger.info('Stopping zigbee-herdsman...');
         await this.herdsman.stop();
         logger.info('Stopped zigbee-herdsman');
     }
 
-    async permitJoin(permit, resolvedEntity, time=undefined) {
+    async permitJoin(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
         permit ?
             logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`) :
             logger.info('Zigbee: disabling joining new devices.');
@@ -148,31 +157,31 @@ class Zigbee extends events.EventEmitter {
         }
     }
 
-    getPermitJoin() {
+    getPermitJoin(): boolean {
         return this.herdsman.getPermitJoin();
     }
 
-    getPermitJoinTimeout() {
+    getPermitJoinTimeout(): number {
         return this.herdsman.getPermitJoinTimeout();
     }
 
-    getClients() {
+    getClients(): Device[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
     }
 
-    getDevices() {
+    getDevices(): Device[] {
         return this.herdsman.getDevices();
     }
 
-    getDeviceByIeeeAddr(ieeeAddr) {
+    getDeviceByIeeeAddr(ieeeAddr: string): Device {
         return this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
     }
 
-    getDeviceByNetworkAddress(networkAddress) {
+    getDeviceByNetworkAddress(networkAddress: number): Device {
         return this.herdsman.getDeviceByNetworkAddress(networkAddress);
     }
 
-    getDevicesByType(type) {
+    getDevicesByType(type: 'Coordinator' | 'Router' | 'EndDevice'): Device[] {
         return this.herdsman.getDevicesByType(type);
     }
 
@@ -187,7 +196,9 @@ class Zigbee extends events.EventEmitter {
      *      definition: zigbee-herdsman-converters definition (only if type === device)
      * }
      */
-    resolveEntity(key) {
+    // TODO remove
+    /* eslint-disable-next-line */
+    resolveEntityLegacy(key: any): any {
         assert(
             typeof key === 'string' || typeof key === 'number' ||
             key.constructor.name === 'Device' || key.constructor.name === 'Group' ||
@@ -195,7 +206,8 @@ class Zigbee extends events.EventEmitter {
             `Wrong type '${typeof key}'`,
         );
 
-        const getEndpointName = (endpointNames, endpoint) => {
+        /* eslint-disable-next-line */
+        const getEndpointName = (endpointNames: any, endpoint: any) => {
             return endpoint ?
                 utils.getKey(endpointNames, endpoint.ID, null, ((v) => v === 'default' ? null : v)) : null;
         };
@@ -218,7 +230,8 @@ class Zigbee extends events.EventEmitter {
                 };
             }
 
-            let endpointKey = utils.endpointNames.find((p) => key.endsWith(`/${p}`));
+            /* eslint-disable-next-line */
+            let endpointKey: any = utils.endpointNames.find((p) => key.endsWith(`/${p}`));
             const endpointByNumber = key.match(keyEndpointByNumber);
             if (!endpointKey && endpointByNumber) {
                 endpointKey = Number(endpointByNumber[1]);
@@ -231,6 +244,7 @@ class Zigbee extends events.EventEmitter {
             if (!entity) {
                 return null;
             } else if (entity.type === 'device') {
+                /* eslint-disable-line */ // @ts-ignore
                 const device = this.getDeviceByIeeeAddr(entity.ID);
                 if (!device) {
                     return null;
@@ -262,7 +276,9 @@ class Zigbee extends events.EventEmitter {
                     endpointName: getEndpointName(endpointNames, endpoint),
                 };
             } else {
+                /* eslint-disable-line */ // @ts-ignore
                 let group = this.getGroupByID(entity.ID);
+                /* eslint-disable-line */ // @ts-ignore
                 if (!group) group = this.createGroup(entity.ID);
                 return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
             }
@@ -294,19 +310,19 @@ class Zigbee extends events.EventEmitter {
         }
     }
 
-    getGroupByID(ID) {
+    getGroupByID(ID: number): Group {
         return this.herdsman.getGroupByID(ID);
     }
 
-    getGroups() {
+    getGroups(): Group[] {
         return this.herdsman.getGroups();
     }
 
-    createGroup(groupID) {
+    createGroup(groupID: number): Group {
         return this.herdsman.createGroup(groupID);
     }
 
-    acceptJoiningDeviceHandler(ieeeAddr) {
+    private acceptJoiningDeviceHandler(ieeeAddr: string): boolean {
         // If passlist is set, all devices not on passlist will be rejected to join the network
         const passlist = settings.get().passlist.concat(settings.get().whitelist);
         const blocklist = settings.get().blocklist.concat(settings.get().ban);
@@ -331,21 +347,19 @@ class Zigbee extends events.EventEmitter {
         }
     }
 
-    async touchlinkFactoryResetFirst() {
+    async touchlinkFactoryResetFirst(): Promise<boolean> {
         return this.herdsman.touchlinkFactoryResetFirst();
     }
 
-    async touchlinkFactoryReset(ieeeAddr, channel) {
+    async touchlinkFactoryReset(ieeeAddr: string, channel: number): Promise<boolean> {
         return this.herdsman.touchlinkFactoryReset(ieeeAddr, channel);
     }
 
-    async touchlinkIdentify(ieeeAddr, channel) {
+    async touchlinkIdentify(ieeeAddr: string, channel: number): Promise<void> {
         await this.herdsman.touchlinkIdentify(ieeeAddr, channel);
     }
 
-    async touchlinkScan() {
+    async touchlinkScan(): Promise<{ieeeAddr: string, channel: number}[]> {
         return this.herdsman.touchlinkScan();
     }
 }
-
-module.exports = Zigbee;

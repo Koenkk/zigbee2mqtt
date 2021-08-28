@@ -7,12 +7,12 @@ import * as utils from '../lib/util/utils';
 import * as settings from '../lib/util/settings';
 import Controller from '../lib/controller';
 import flushPromises from './lib/flushPromises';
+import stringify from 'json-stable-stringify-without-jsonify';
 
-const devices = zigbeeHerdsman.devices;
 const mocks = [MQTT.publish, logger.warn, logger.debug];
-
-zigbeeHerdsman.returnDevices.concat(
-    [devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote])
+const devices = zigbeeHerdsman.devices;
+zigbeeHerdsman.returnDevices.push(
+    ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr])
 
 describe('Availability', () => {
     let controller;
@@ -246,6 +246,20 @@ describe('Availability', () => {
         endpoint.read.mockImplementationOnce(() => {throw new Error('')});
         await advancedTime(utils.seconds(3));
         expect(endpoint.read).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should republish availability when device is renamed', async () => {
+        MQTT.publish.mockClear();
+
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb_color', to: 'bulb_new_name'}));
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
+        await advancedTime(utils.hours(12));
+        // TODO enable
+        // expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability',
+        //     'offline', {retain: true, qos: 0}, expect.any(Function));
     });
 
     it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {

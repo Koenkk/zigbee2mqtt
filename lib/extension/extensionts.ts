@@ -1,5 +1,5 @@
 abstract class ExtensionTS {
-    protected zigbee: TempZigbee;
+    protected zigbee: Zigbee;
     protected mqtt: TempMQTT;
     protected state: TempState;
     protected publishEntityState: TempPublishEntityState;
@@ -14,7 +14,7 @@ abstract class ExtensionTS {
      * @param {Function} publishEntityState Method to publish device state to MQTT.
      * @param {EventBus} eventBus The event bus
      */
-    constructor(zigbee: TempZigbee, mqtt: TempMQTT, state: TempState,
+    constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
         publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
@@ -39,7 +39,7 @@ abstract class ExtensionTS {
      * Is called when a Zigbee message from a device is received.
      * @param {string} type Type of the message
      * @param {Object} data Data of the message
-     * @param {Object?} resolvedEntity Resolved entity returned from this.zigbee.resolveEntity()
+     * @param {Object?} resolvedEntity Resolved entity returned from this.zigbee.resolveEntityLegacy()
      * @param {Object?} settingsDevice Device settings
      */
     /* istanbul ignore next */

@@ -14,11 +14,19 @@ class AvailabilityNew extends ExtensionTS {
     private pingQueue: ResolvedDevice[] = [];
     private pingQueueExecuting = false;
 
-    constructor(zigbee: TempZigbee, mqtt: TempMQTT, state: TempState,
+    constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
         publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
         super(zigbee, mqtt, state, publishEntityState, eventBus);
         this.lastSeenChanged = this.lastSeenChanged.bind(this);
+        this.onDeviceRenamed = this.onDeviceRenamed.bind(this);
+        this.eventBus.on('deviceRenamed', this.onDeviceRenamed, this.constructor.name);
+
         logger.warn('Using experimental new availability feature');
+    }
+
+    private onDeviceRenamed(data: {device: Device}): void {
+        const rd = this.zigbee.resolveEntityLegacy(data.device) as ResolvedDevice;
+        this.publishAvailability(rd, false, true);
     }
 
     private getTimeout(rd: ResolvedDevice): number {
@@ -105,7 +113,7 @@ class AvailabilityNew extends ExtensionTS {
 
     override onMQTTConnected(): void {
         for (const device of this.zigbee.getClients()) {
-            const rd = this.zigbee.resolveEntity(device) as ResolvedDevice;
+            const rd = this.zigbee.resolveEntityLegacy(device) as ResolvedDevice;
             if (isAvailabilityEnabledForDevice(rd, settings.get())) {
                 // Publish initial availablility
                 this.publishAvailability(rd, true);
@@ -133,7 +141,7 @@ class AvailabilityNew extends ExtensionTS {
         }
     }
 
-    private publishAvailability(rd: ResolvedDevice, logLastSeen: boolean): void {
+    private publishAvailability(rd: ResolvedDevice, logLastSeen: boolean, forcePublish=false): void {
         if (logLastSeen) {
             const ago = Date.now() - rd.device.lastSeen;
             if (this.isActiveDevice(rd)) {
@@ -145,7 +153,7 @@ class AvailabilityNew extends ExtensionTS {
         }
 
         const available = this.isAvailable(rd);
-        if (this.availabilityCache[rd.device.ieeeAddr] == available) {
+        if (!forcePublish && this.availabilityCache[rd.device.ieeeAddr] == available) {
             return;
         }
 
@@ -162,7 +170,7 @@ class AvailabilityNew extends ExtensionTS {
     }
 
     private lastSeenChanged(data: {device: Device}): void {
-        const rd = this.zigbee.resolveEntity(data.device) as ResolvedDevice;
+        const rd = this.zigbee.resolveEntityLegacy(data.device) as ResolvedDevice;
         if (isAvailabilityEnabledForDevice(rd, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(rd);

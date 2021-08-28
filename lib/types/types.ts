@@ -1,7 +1,26 @@
-import type {Device as ZHDevice, Endpoint} from 'zigbee-herdsman/dist/controller/model';
+import type {
+    Device as ZHDevice,
+    Group as ZHGroup,
+    Endpoint,
+} from 'zigbee-herdsman/dist/controller/model';
+
+import {
+    NetworkParameters as ZHNetworkParameters,
+    CoordinatorVersion as ZHCoordinatorVersion,
+} from 'zigbee-herdsman/dist/adapter/tstype';
+
+import * as Z from 'lib/zigbee';
 
 declare global {
+    type Zigbee = Z.default;
+
     type Device = ZHDevice;
+
+    type Group = ZHGroup;
+
+    type CoordinatorVersion = ZHCoordinatorVersion;
+
+    type NetworkParameters = ZHNetworkParameters;
 
     type ZigbeeEventType = 'deviceLeave' | 'deviceAnnounce';
 
@@ -38,7 +57,9 @@ declare global {
             password?: string,
         },
         serial: {
-            disable_led: boolean,
+            disable_led?: boolean,
+            port?: string,
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
         },
         device_options: {[s: string]: unknown},
         map_options: {
@@ -64,6 +85,7 @@ declare global {
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
             availability_new?: boolean,
+            transmit_power?: number,
         },
         advanced: {
             legacy_api: boolean,
@@ -97,6 +119,8 @@ declare global {
             homeassistant_legacy_entity_attributes: boolean,
             homeassistant_legacy_triggers: boolean,
             timestamp_format: string,
+            baudrate?: number,
+            rtscts?: boolean,
         },
         ota: {
             update_check_interval: number,
@@ -146,13 +170,6 @@ declare global {
 
     type lastSeenChangedHandler = (data: {device: Device}) => void;
 
-    interface TempZigbee {
-        getClients: () => Device[];
-        on: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
-        removeListener: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
-        resolveEntity: (device: Device) => ResolvedEntity;
-    }
-
     interface TempMQTT {
         publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
     }
@@ -163,6 +180,7 @@ declare global {
 
     interface TempEventBus {
         removeListenersExtension: (extension: string) => void;
+        on: (event: 'deviceRenamed', callback: (data: {device: Device}) => void, extension: string) => void;
     }
 
     type TempPublishEntityState = () => void;
