@@ -1916,6 +1916,12 @@
         "@babel/types": "^7.3.0"
       }
     },
+    "@types/debounce": {
+      "version": "1.2.0",
+      "resolved": "https://registry.npmjs.org/@types/debounce/-/debounce-1.2.0.tgz",
+      "integrity": "sha512-bWG5wapaWgbss9E238T0R6bfo5Fh3OkeoSt245CM7JJwVwpw6MEBCbIxLq5z8KzsE3uJhzcIuQkyiZmzV3M/Dw==",
+      "dev": true
+    },
     "@types/graceful-fs": {
       "version": "4.1.5",
       "resolved": "https://registry.npmjs.org/@types/graceful-fs/-/graceful-fs-4.1.5.tgz",

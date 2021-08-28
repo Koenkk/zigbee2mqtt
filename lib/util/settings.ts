@@ -406,7 +406,7 @@ export function get(): Settings {
     return _settingsWithDefaults;
 }
 
-export function set(path: string[], value: string | number): void {
+export function set(path: string[], value: string | number | boolean | KeyValue): void {
     /* eslint-disable-next-line */
     let settings: any = getInternalSettings();
 
