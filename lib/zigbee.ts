@@ -10,11 +10,14 @@ import objectAssignDeep from 'object-assign-deep';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 /* eslint-disable-line */ // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
+import Device from './model/device';
+import {Device as ZHDevice} from 'zigbee-herdsman/dist/controller/model';
 
 const keyEndpointByNumber = new RegExp(`.*/([0-9]*)$`);
 
 export default class Zigbee extends events.EventEmitter {
     private herdsman: Controller;
+    private resolvedEntitiesLookup: {[s: string]: Device} = {};
 
     constructor() {
         super();
@@ -93,7 +96,7 @@ export default class Zigbee extends events.EventEmitter {
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
         logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
 
-        for (const device of this.getClients()) {
+        for (const device of this.getClientsLegacy()) {
             // If a passlist is used, all other device will be removed from the network.
             const passlist = settings.get().passlist.concat(settings.get().whitelist);
             const blocklist = settings.get().blocklist.concat(settings.get().ban);
@@ -165,23 +168,23 @@ export default class Zigbee extends events.EventEmitter {
         return this.herdsman.getPermitJoinTimeout();
     }
 
-    getClients(): Device[] {
+    getClientsLegacy(): ZHDevice[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
     }
 
-    getDevices(): Device[] {
+    getDevices(): ZHDevice[] {
         return this.herdsman.getDevices();
     }
 
-    getDeviceByIeeeAddr(ieeeAddr: string): Device {
+    getDeviceByIeeeAddr(ieeeAddr: string): ZHDevice {
         return this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
     }
 
-    getDeviceByNetworkAddress(networkAddress: number): Device {
+    getDeviceByNetworkAddress(networkAddress: number): ZHDevice {
         return this.herdsman.getDeviceByNetworkAddress(networkAddress);
     }
 
-    getDevicesByType(type: 'Coordinator' | 'Router' | 'EndDevice'): Device[] {
+    getDevicesByType(type: 'Coordinator' | 'Router' | 'EndDevice'): ZHDevice[] {
         return this.herdsman.getDevicesByType(type);
     }
 
@@ -310,16 +313,35 @@ export default class Zigbee extends events.EventEmitter {
         }
     }
 
-    getGroupByID(ID: number): Group {
+    getGroupByID(ID: number): ZHGroup {
         return this.herdsman.getGroupByID(ID);
     }
 
-    getGroups(): Group[] {
+    getGroups(): ZHGroup[] {
         return this.herdsman.getGroups();
     }
 
-    createGroup(groupID: number): Group {
+    createGroup(groupID: number): ZHGroup {
         return this.herdsman.createGroup(groupID);
+    }
+
+    resolveEntity(key: ZHDevice): Device {
+        let ID: string;
+        if (typeof key === 'object' && key.ieeeAddr) ID = key.ieeeAddr;
+
+        if (!(ID in this.resolvedEntitiesLookup)) {
+            const zhDevice = this.herdsman.getDeviceByIeeeAddr(ID);
+            const entity = new Device(zhDevice);
+            this.resolvedEntitiesLookup[ID] = entity;
+        }
+
+        return this.resolvedEntitiesLookup[ID];
+    }
+
+    getClients(): Device[] {
+        return this.herdsman.getDevices()
+            .filter((device) => device.type !== 'Coordinator')
+            .map((d) => this.resolveEntity(d));
     }
 
     private acceptJoiningDeviceHandler(ieeeAddr: string): boolean {

@@ -1,7 +1,7 @@
 import type {
-    Device as ZHDevice,
-    Group as ZHGroup,
-    Endpoint,
+    Device as ZZHDevice,
+    Group as ZZHGroup,
+    Endpoint as ZHEndpoint,
 } from 'zigbee-herdsman/dist/controller/model';
 
 import {
@@ -9,14 +9,19 @@ import {
     CoordinatorVersion as ZHCoordinatorVersion,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 
+import * as D from 'lib/model/device';
 import * as Z from 'lib/zigbee';
 
 declare global {
     type Zigbee = Z.default;
 
-    type Device = ZHDevice;
+    type Device = D.default;
 
-    type Group = ZHGroup;
+    type Endpoint = ZHEndpoint;
+
+    type ZHDevice = ZZHDevice;
+
+    type ZHGroup = ZZHGroup;
 
     type CoordinatorVersion = ZHCoordinatorVersion;
 
@@ -133,6 +138,7 @@ declare global {
         friendlyName: string,
         ID: string,
         retention?: number,
+        availability: boolean | {timeout: number},
     }
 
     interface GroupSettings {
@@ -153,6 +159,7 @@ declare global {
 
     interface Definition  {
         model: string
+        endpoint?: (device: ZHDevice) => {[s: string]: number}
         toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>}[]
     }
 
@@ -161,14 +168,14 @@ declare global {
         definition?: Definition,
         name: string,
         endpoint: Endpoint,
-        device: Device,
+        device: ZHDevice,
         settings: {
             friendlyName: string,
             availability?: {timeout?: number} | boolean,
         }
     }
 
-    type lastSeenChangedHandler = (data: {device: Device}) => void;
+    type lastSeenChangedHandler = (data: {device: ZHDevice}) => void;
 
     interface TempMQTT {
         publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
@@ -180,7 +187,7 @@ declare global {
 
     interface TempEventBus {
         removeListenersExtension: (extension: string) => void;
-        on: (event: 'deviceRenamed', callback: (data: {device: Device}) => void, extension: string) => void;
+        on: (event: 'deviceRenamed', callback: (data: {device: ZHDevice}) => void, extension: string) => void;
     }
 
     type TempPublishEntityState = () => void;

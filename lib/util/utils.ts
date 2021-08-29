@@ -254,7 +254,27 @@ export function sanitizeImageParameter(parameter: string): string {
     return sanitized;
 }
 
-export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Settings): boolean {
+export function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
+    if (!settings.experimental.availability_new) return false;
+
+    if (device.settings.hasOwnProperty('availability')) {
+        return !!device.settings.availability;
+    }
+
+    // availability_timeout = deprecated
+    const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
+    if (!enabledGlobal) return false;
+
+    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
+    if (passlist.length > 0) {
+        return passlist.includes(device.name) || passlist.includes(device.ieeeAddr);
+    }
+
+    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
+    return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
+}
+
+export function isAvailabilityEnabledForDeviceLegacy(rd: ResolvedDevice, settings: Settings): boolean {
     if (!settings.experimental.availability_new) return false;
 
     if (rd.settings.hasOwnProperty('availability')) {
@@ -274,13 +294,13 @@ export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Set
     return !blocklist.includes(rd.name) && !blocklist.includes(rd.device.ieeeAddr);
 }
 
-export function isXiaomiDevice(device: Device): boolean {
+export function isXiaomiDevice(device: ZHDevice): boolean {
     const xiaomiManufacturerID = [4151, 4447];
     return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
         (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
 }
 
-export function isIkeaTradfriDevice(device: Device): boolean {
+export function isIkeaTradfriDevice(device: ZHDevice): boolean {
     return [4476].includes(device.manufacturerID);
 }
 

@@ -257,9 +257,8 @@ describe('Availability', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability',
             'online', {retain: true, qos: 0}, expect.any(Function));
         await advancedTime(utils.hours(12));
-        // TODO enable
-        // expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability',
-        //     'offline', {retain: true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
     });
 
     it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {

@@ -1,6 +1,6 @@
 import ExtensionTS from './extensionts';
 import logger from '../util/logger';
-import {sleep, isAvailabilityEnabledForDevice, hours, minutes, seconds} from '../util/utils';
+import {sleep, hours, minutes, seconds, isAvailabilityEnabledForDevice} from '../util/utils';
 import * as settings from '../util/settings';
 import debounce from 'debounce';
 
@@ -11,7 +11,7 @@ class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private retrieveStateDebouncers: {[s: string]: () => void} = {};
-    private pingQueue: ResolvedDevice[] = [];
+    private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
 
     constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
@@ -20,21 +20,21 @@ class AvailabilityNew extends ExtensionTS {
         this.lastSeenChanged = this.lastSeenChanged.bind(this);
         this.onDeviceRenamed = this.onDeviceRenamed.bind(this);
         this.eventBus.on('deviceRenamed', this.onDeviceRenamed, this.constructor.name);
-
+        this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
         logger.warn('Using experimental new availability feature');
     }
 
-    private onDeviceRenamed(data: {device: Device}): void {
-        const rd = this.zigbee.resolveEntityLegacy(data.device) as ResolvedDevice;
-        this.publishAvailability(rd, false, true);
+    private onDeviceRenamed(data: {device: ZHDevice}): void {
+        const device = this.zigbee.resolveEntity(data.device);
+        this.publishAvailability(device, false, true);
     }
 
-    private getTimeout(rd: ResolvedDevice): number {
-        if (typeof rd.settings.availability === 'object' && rd.settings.availability?.timeout != null) {
-            return minutes(rd.settings.availability.timeout);
+    private getTimeout(device: Device): number {
+        if (typeof device.settings.availability === 'object' && device.settings.availability?.timeout != null) {
+            return minutes(device.settings.availability.timeout);
         }
 
-        const key = this.isActiveDevice(rd) ? 'active' : 'passive';
+        const key = this.isActiveDevice(device) ? 'active' : 'passive';
         const availabilitySettings = settings.get().availability;
         if (typeof availabilitySettings === 'object' && availabilitySettings[key]?.timeout != null) {
             return minutes(availabilitySettings[key]?.timeout);
@@ -43,37 +43,37 @@ class AvailabilityNew extends ExtensionTS {
         return key === 'active' ? minutes(10) : hours(25);
     }
 
-    private isActiveDevice(rd: ResolvedDevice): boolean {
-        return (rd.device.type === 'Router' && rd.device.powerSource !== 'Battery') ||
-            rd.device.powerSource === 'Mains (single phase)';
+    private isActiveDevice(device: Device): boolean {
+        return (device.type === 'Router' && device.powerSource !== 'Battery') ||
+            device.powerSource === 'Mains (single phase)';
     }
 
-    private isAvailable(rd: ResolvedDevice): boolean {
-        const ago = Date.now() - rd.device.lastSeen;
-        return ago < this.getTimeout(rd);
+    private isAvailable(device: Device): boolean {
+        const ago = Date.now() - device.lastSeen;
+        return ago < this.getTimeout(device);
     }
 
-    private resetTimer(rd: ResolvedDevice): void {
-        clearTimeout(this.timers[rd.device.ieeeAddr]);
+    private resetTimer(device: Device): void {
+        clearTimeout(this.timers[device.ieeeAddr]);
 
         // If the timer triggers, the device is not avaiable anymore otherwise resetTimer already have been called
-        if (this.isActiveDevice(rd)) {
+        if (this.isActiveDevice(device)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
-            this.timers[rd.device.ieeeAddr] = setTimeout(
-                () => this.addToPingQueue(rd), this.getTimeout(rd) + seconds(1));
+            this.timers[device.ieeeAddr] = setTimeout(
+                () => this.addToPingQueue(device), this.getTimeout(device) + seconds(1));
         } else {
-            this.timers[rd.device.ieeeAddr] = setTimeout(
-                () => this.publishAvailability(rd, true), this.getTimeout(rd) + seconds(1));
+            this.timers[device.ieeeAddr] = setTimeout(
+                () => this.publishAvailability(device, true), this.getTimeout(device) + seconds(1));
         }
     }
 
-    private addToPingQueue(rd: ResolvedDevice): void {
-        this.pingQueue.push(rd);
+    private addToPingQueue(device: Device): void {
+        this.pingQueue.push(device);
         this.pingQueueExecuteNext();
     }
 
-    private removeFromPingQueue(rd: ResolvedDevice): void {
-        const index = this.pingQueue.findIndex((r) => r.device.ieeeAddr === rd.device.ieeeAddr);
+    private removeFromPingQueue(device: Device): void {
+        const index = this.pingQueue.findIndex((d) => d.ieeeAddr === device.ieeeAddr);
         index != -1 && this.pingQueue.splice(index, 1);
     }
 
@@ -81,29 +81,29 @@ class AvailabilityNew extends ExtensionTS {
         if (this.pingQueue.length === 0 || this.pingQueueExecuting) return;
         this.pingQueueExecuting = true;
 
-        const rd = this.pingQueue[0];
+        const device = this.pingQueue[0];
         let pingedSuccessfully = false;
-        const available = this.availabilityCache[rd.device.ieeeAddr] || this.isAvailable(rd);
+        const available = this.availabilityCache[device.ieeeAddr] || this.isAvailable(device);
         const attempts = available ? 2 : 1;
         for (let i = 0; i < attempts; i++) {
             try {
                 // Enable recovery if device is marked as available and first ping fails.
                 const disableRecovery = !(i == 1 && available);
-                await rd.device.ping(disableRecovery);
+                await device.ping(disableRecovery);
                 pingedSuccessfully = true;
-                logger.debug(`Succesfully pinged '${rd.name}' (attempt ${i + 1}/${attempts})`);
+                logger.debug(`Succesfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
-                logger.error(`Failed to ping '${rd.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
+                logger.error(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await sleep(3);
             }
         }
 
-        this.publishAvailability(rd, !pingedSuccessfully);
-        this.resetTimer(rd);
-        this.removeFromPingQueue(rd);
+        this.publishAvailability(device, !pingedSuccessfully);
+        this.resetTimer(device);
+        this.removeFromPingQueue(device);
 
         // Sleep 2 seconds before executing next ping
         await sleep(2);
@@ -113,69 +113,65 @@ class AvailabilityNew extends ExtensionTS {
 
     override onMQTTConnected(): void {
         for (const device of this.zigbee.getClients()) {
-            const rd = this.zigbee.resolveEntityLegacy(device) as ResolvedDevice;
-            if (isAvailabilityEnabledForDevice(rd, settings.get())) {
+            if (isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
-                this.publishAvailability(rd, true);
+                this.publishAvailability(device, true);
 
-                this.resetTimer(rd);
+                this.resetTimer(device);
 
                 // If an active device is initially unavailable, ping it.
-                if (this.isActiveDevice(rd) && !this.isAvailable(rd)) {
-                    this.addToPingQueue(rd);
+                if (this.isActiveDevice(device) && !this.isAvailable(device)) {
+                    this.addToPingQueue(device);
                 }
             }
         }
     }
 
-    override onZigbeeStarted(): void {
-        this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
-    }
-
     override onZigbeeEvent(type: ZigbeeEventType, data: ZigbeeEventData, re: ResolvedEntity): void {
-        /* istanbul ignore else */
         if (type === 'deviceLeave') {
             clearTimeout(this.timers[data.ieeeAddr]);
         } else if (type === 'deviceAnnounce') {
-            this.retrieveState(re as ResolvedDevice);
+            const device = this.zigbee.resolveEntity((re as ResolvedDevice).device);
+            this.retrieveState(device);
         }
     }
 
-    private publishAvailability(rd: ResolvedDevice, logLastSeen: boolean, forcePublish=false): void {
+    private publishAvailability(device: Device, logLastSeen: boolean, forcePublish=false): void {
         if (logLastSeen) {
-            const ago = Date.now() - rd.device.lastSeen;
-            if (this.isActiveDevice(rd)) {
+            const ago = Date.now() - device.lastSeen;
+            if (this.isActiveDevice(device)) {
                 logger.debug(
-                    `Active device '${rd.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
+                    `Active device '${device.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
             } else {
-                logger.debug(`Passive device '${rd.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
+                logger.debug(
+                    `Passive device '${device.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
             }
         }
 
-        const available = this.isAvailable(rd);
-        if (!forcePublish && this.availabilityCache[rd.device.ieeeAddr] == available) {
+        const available = this.isAvailable(device);
+        if (!forcePublish && this.availabilityCache[device.ieeeAddr] == available) {
             return;
         }
 
-        if (rd.device.ieeeAddr in this.availabilityCache && available &&
-            this.availabilityCache[rd.device.ieeeAddr] === false) {
-            logger.debug(`Device '${rd.name}' reconnected`);
-            this.retrieveState(rd);
+        if (device.ieeeAddr in this.availabilityCache && available &&
+            this.availabilityCache[device.ieeeAddr] === false) {
+            logger.debug(`Device '${device.name}' reconnected`);
+            this.retrieveState(device);
         }
 
-        const topic = `${rd.name}/availability`;
+        const topic = `${device.name}/availability`;
         const payload = available ? 'online' : 'offline';
-        this.availabilityCache[rd.device.ieeeAddr] = available;
+        this.availabilityCache[device.ieeeAddr] = available;
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
     }
 
-    private lastSeenChanged(data: {device: Device}): void {
-        const rd = this.zigbee.resolveEntityLegacy(data.device) as ResolvedDevice;
-        if (isAvailabilityEnabledForDevice(rd, settings.get())) {
+    private lastSeenChanged(data: {device: ZHDevice}): void {
+        const device = this.zigbee.resolveEntity(data.device);
+        if (isAvailabilityEnabledForDevice(device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
-            this.removeFromPingQueue(rd);
-            this.resetTimer(rd);
-            this.publishAvailability(rd, false);
+            this.removeFromPingQueue(device);
+            this.resetTimer(device);
+            this.publishAvailability(device, false);
         }
     }
 
@@ -185,29 +181,29 @@ class AvailabilityNew extends ExtensionTS {
         super.stop();
     }
 
-    private retrieveState(rd: ResolvedDevice): void {
+    private retrieveState(device: Device): void {
         /**
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (rd.definition && !rd.device.interviewing && !this.retrieveStateDebouncers[rd.device.ieeeAddr]) {
-            this.retrieveStateDebouncers[rd.device.ieeeAddr] = debounce(async () => {
+        if (device.definition && !device.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
+            this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
                 try {
-                    logger.debug(`Retrieving state of '${rd.name}' after reconnect`);
+                    logger.debug(`Retrieving state of '${device.name}' after reconnect`);
                     // Color and color temperature converters do both, only needs to be called once.
                     const keySet = [['state'], ['brightness'], ['color', 'color_temp']];
                     for (const keys of keySet) {
-                        const converter = rd.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
-                        await converter?.convertGet?.(rd.endpoint, keys[0],
-                            {message: this.state.get(rd.device.ieeeAddr) || {}, mapped: rd.definition});
+                        const converter = device.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
+                        await converter?.convertGet?.(device.endpoint(), keys[0],
+                            {message: this.state.get(device.ieeeAddr) || {}, mapped: device.definition});
                     }
                 } catch (error) {
-                    logger.error(`Failed to read state of '${rd.name}' after reconnect (${error.message})`);
+                    logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);
                 }
             }, seconds(2));
         }
 
-        this.retrieveStateDebouncers[rd.device.ieeeAddr]?.();
+        this.retrieveStateDebouncers[device.ieeeAddr]?.();
     }
 }
 
