@@ -2,6 +2,7 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
 
+// TODO: check all
 export function read(file: string): KeyValue {
     try {
         /* eslint-disable-line */ // @ts-ignore

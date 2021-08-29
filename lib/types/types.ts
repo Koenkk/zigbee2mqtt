@@ -12,6 +12,8 @@ import {
 import * as D from 'lib/model/device';
 import * as Z from 'lib/zigbee';
 
+// TODO: check all
+
 declare global {
     type Zigbee = Z.default;
 
@@ -138,7 +140,7 @@ declare global {
         friendlyName: string,
         ID: string,
         retention?: number,
-        availability: boolean | {timeout: number},
+        availability?: boolean | {timeout: number},
     }
 
     interface GroupSettings {
@@ -185,10 +187,17 @@ declare global {
         get: (ID: string) => {} | null;
     }
 
-    interface TempEventBus {
-        removeListenersExtension: (extension: string) => void;
-        on: (event: 'deviceRenamed', callback: (data: {device: ZHDevice}) => void, extension: string) => void;
-    }
-
     type TempPublishEntityState = () => void;
+
+    namespace eventbus {
+        interface DeviceRenamedData {device: Device, homeAssisantRename: boolean, from: string, to: string}
+
+        type Data = DeviceRenamedData;
+
+        interface EventBus {
+            on(event: 'deviceRenamed', callback: (data: DeviceRenamedData) => void, extension: string): void;
+            emit(event: 'deviceRenamed', data: DeviceRenamedData): void;
+            removeListeners(extension: string): void;
+        }
+    }
 }

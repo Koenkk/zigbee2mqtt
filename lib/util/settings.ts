@@ -7,6 +7,8 @@ import Ajv from 'ajv';
 import schemaJson from './settings.schema.json';
 export const schema = schemaJson;
 
+// TODO: check all
+
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schema);

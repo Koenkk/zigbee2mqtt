@@ -15,6 +15,7 @@ import {Device as ZHDevice} from 'zigbee-herdsman/dist/controller/model';
 
 const keyEndpointByNumber = new RegExp(`.*/([0-9]*)$`);
 
+// TODO: check all
 export default class Zigbee extends events.EventEmitter {
     private herdsman: Controller;
     private resolvedEntitiesLookup: {[s: string]: Device} = {};

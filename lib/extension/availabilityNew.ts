@@ -7,6 +7,7 @@ import debounce from 'debounce';
 // TODO
 // - Enable for HA addon
 // - Add to setting schema (when old availability is removed)
+// - Rename to Availability
 class AvailabilityNew extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
@@ -15,7 +16,7 @@ class AvailabilityNew extends ExtensionTS {
     private pingQueueExecuting = false;
 
     constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
-        publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
+        publishEntityState: TempPublishEntityState, eventBus: eventbus.EventBus) {
         super(zigbee, mqtt, state, publishEntityState, eventBus);
         this.lastSeenChanged = this.lastSeenChanged.bind(this);
         this.onDeviceRenamed = this.onDeviceRenamed.bind(this);
@@ -24,9 +25,8 @@ class AvailabilityNew extends ExtensionTS {
         logger.warn('Using experimental new availability feature');
     }
 
-    private onDeviceRenamed(data: {device: ZHDevice}): void {
-        const device = this.zigbee.resolveEntity(data.device);
-        this.publishAvailability(device, false, true);
+    private onDeviceRenamed(data: eventbus.DeviceRenamedData): void {
+        this.publishAvailability(data.device, false, true);
     }
 
     private getTimeout(device: Device): number {
@@ -176,9 +176,9 @@ class AvailabilityNew extends ExtensionTS {
     }
 
     override stop(): void {
+        super.stop();
         Object.values(this.timers).forEach((t) => clearTimeout(t));
         this.zigbee.removeListener('lastSeenChanged', this.lastSeenChanged);
-        super.stop();
     }
 
     private retrieveState(device: Device): void {
@@ -207,4 +207,5 @@ class AvailabilityNew extends ExtensionTS {
     }
 }
 
+// TODO_finished: : change class to export default
 module.exports = AvailabilityNew;

@@ -1,9 +1,10 @@
+// TODO: check all
 abstract class ExtensionTS {
     protected zigbee: Zigbee;
     protected mqtt: TempMQTT;
     protected state: TempState;
     protected publishEntityState: TempPublishEntityState;
-    protected eventBus: TempEventBus;
+    protected eventBus: eventbus.EventBus;
 
     /**
      * Besides intializing variables, the constructor should do nothing!
@@ -15,7 +16,7 @@ abstract class ExtensionTS {
      * @param {EventBus} eventBus The event bus
      */
     constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
-        publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
+        publishEntityState: TempPublishEntityState, eventBus: eventbus.EventBus) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
         this.state = state;
@@ -62,7 +63,7 @@ abstract class ExtensionTS {
      * Is called once the extension has to stop
      */
     stop(): void {
-        this.eventBus.removeListenersExtension(this.constructor.name);
+        this.eventBus.removeListeners(this.constructor.name);
     }
 }
 

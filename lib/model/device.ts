@@ -3,6 +3,7 @@ import * as settings from '../util/settings';
 // @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
 
+// TODO: check all
 export default class Device {
     private device: ZHDevice;
     private _definition: Definition;
