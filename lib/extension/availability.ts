@@ -7,8 +7,7 @@ import debounce from 'debounce';
 // TODO
 // - Enable for HA addon
 // - Add to setting schema (when old availability is removed)
-// - Rename to Availability
-class AvailabilityNew extends ExtensionTS {
+class Availability extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private retrieveStateDebouncers: {[s: string]: () => void} = {};
@@ -208,4 +207,4 @@ class AvailabilityNew extends ExtensionTS {
 }
 
 // TODO_finished: : change class to export default
-module.exports = AvailabilityNew;
+module.exports = Availability;

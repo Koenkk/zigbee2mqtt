@@ -19,9 +19,9 @@ describe('Availability', () => {
     let extension;
 
     let resetExtension = async () => {
-        await controller.enableDisableExtension(false, 'Availability');
-        await controller.enableDisableExtension(true, 'Availability');
-        extension = controller.extensions.find((e) => e.constructor.name === 'Availability');
+        await controller.enableDisableExtension(false, 'AvailabilityLegacy');
+        await controller.enableDisableExtension(true, 'AvailabilityLegacy');
+        extension = controller.extensions.find((e) => e.constructor.name === 'AvailabilityLegacy');
     }
 
     beforeAll(async () => {

@@ -18,8 +18,8 @@ describe('Availability', () => {
     let controller;
 
     let resetExtension = async () => {
-        await controller.enableDisableExtension(false, 'AvailabilityNew');
-        await controller.enableDisableExtension(true, 'AvailabilityNew');
+        await controller.enableDisableExtension(false, 'Availability');
+        await controller.enableDisableExtension(true, 'Availability');
     }
 
     const advancedTime = async (value) => {
