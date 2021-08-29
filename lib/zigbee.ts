@@ -13,8 +13,6 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import Device from './model/device';
 import {Device as ZHDevice} from 'zigbee-herdsman/dist/controller/model';
 
-const keyEndpointByNumber = new RegExp(`.*/([0-9]*)$`);
-
 // TODO: check all
 export default class Zigbee extends events.EventEmitter {
     private herdsman: Controller;
@@ -30,10 +28,12 @@ export default class Zigbee extends events.EventEmitter {
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
         const herdsmanSettings = {
             network: {
-                panID: settings.get().advanced.pan_id,
+                panID: settings.get().advanced.pan_id === 'GENERATE' ?
+                    this.generatePanID() : settings.get().advanced.pan_id as number,
                 extendedPanID: settings.get().advanced.ext_pan_id,
                 channelList: [settings.get().advanced.channel],
-                networkKey: settings.get().advanced.network_key,
+                networkKey: settings.get().advanced.network_key === 'GENERATE' ?
+                    this.generateNetworkKey() : settings.get().advanced.network_key as number[],
             },
             databasePath: data.joinPath('database.db'),
             databaseBackupPath: data.joinPath('database.db.backup'),
@@ -49,32 +49,16 @@ export default class Zigbee extends events.EventEmitter {
                 delay: settings.get().advanced.adapter_delay,
                 disableLED: settings.get().serial.disable_led,
             },
+            acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
-        /* eslint-disable-line */ // @ts-ignore
-        const herdsmanSettingsLog = objectAssignDeep.noMutate(herdsmanSettings);
+        const herdsmanSettingsLog = objectAssignDeep({}, herdsmanSettings);
+        // @ts-ignore
         herdsmanSettingsLog.network.networkKey = 'HIDDEN';
         logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
 
-        /* eslint-disable-line */ // @ts-ignore
-        if (herdsmanSettings.network.networkKey === 'GENERATE') {
-            const newKey = Array.from({length: 16}, () => Math.floor(Math.random() * 255));
-            settings.set(['advanced', 'network_key'], newKey);
-            herdsmanSettings.network.networkKey = newKey;
-        }
-
-        /* eslint-disable-line */ // @ts-ignore
-        if (herdsmanSettings.network.panID === 'GENERATE') {
-            const newPanID = Math.floor(Math.random() * (0xFFFF - 2)) + 1;
-            settings.set(['advanced', 'pan_id'], newPanID);
-            herdsmanSettings.network.panID = newPanID;
-        }
-
         let startResult;
         try {
-            /* eslint-disable-line */ // @ts-ignore
-            herdsmanSettings.acceptJoiningDeviceHandler = this.acceptJoiningDeviceHandler;
-            /* eslint-disable-line */ // @ts-ignore
             this.herdsman = new Controller(herdsmanSettings, logger);
             startResult = await this.herdsman.start();
         } catch (error) {
@@ -127,6 +111,18 @@ export default class Zigbee extends events.EventEmitter {
         return startResult;
     }
 
+    private generateNetworkKey(): number[] {
+        const key = Array.from({length: 16}, () => Math.floor(Math.random() * 255));
+        settings.set(['advanced', 'network_key'], key);
+        return key;
+    }
+
+    private generatePanID(): number {
+        const panID = Math.floor(Math.random() * (0xFFFF - 2)) + 1;
+        settings.set(['advanced', 'pan_id'], panID);
+        return panID;
+    }
+
     async getCoordinatorVersion(): Promise<CoordinatorVersion> {
         return this.herdsman.getCoordinatorVersion();
     }
@@ -149,181 +145,12 @@ export default class Zigbee extends events.EventEmitter {
         logger.info('Stopped zigbee-herdsman');
     }
 
-    async permitJoin(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
-        permit ?
-            logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`) :
-            logger.info('Zigbee: disabling joining new devices.');
-
-        if (resolvedEntity && permit) {
-            await this.herdsman.permitJoin(permit, resolvedEntity.device, time);
-        } else {
-            await this.herdsman.permitJoin(permit, undefined, time);
-        }
-    }
-
     getPermitJoin(): boolean {
         return this.herdsman.getPermitJoin();
     }
 
     getPermitJoinTimeout(): number {
         return this.herdsman.getPermitJoinTimeout();
-    }
-
-    getClientsLegacy(): ZHDevice[] {
-        return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
-    }
-
-    getDevices(): ZHDevice[] {
-        return this.herdsman.getDevices();
-    }
-
-    getDeviceByIeeeAddr(ieeeAddr: string): ZHDevice {
-        return this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
-    }
-
-    getDeviceByNetworkAddress(networkAddress: number): ZHDevice {
-        return this.herdsman.getDeviceByNetworkAddress(networkAddress);
-    }
-
-    getDevicesByType(type: 'Coordinator' | 'Router' | 'EndDevice'): ZHDevice[] {
-        return this.herdsman.getDevicesByType(type);
-    }
-
-    /**
-     * @param {string} key
-     * @return {object} {
-     *      type: device | coordinator
-     *      device|group: zigbee-herdsman entity
-     *      endpoint: selected endpoint (only if type === device)
-     *      settings: from configuration.yaml
-     *      name: name of the entity
-     *      definition: zigbee-herdsman-converters definition (only if type === device)
-     * }
-     */
-    // TODO remove
-    /* eslint-disable-next-line */
-    resolveEntityLegacy(key: any): any {
-        assert(
-            typeof key === 'string' || typeof key === 'number' ||
-            key.constructor.name === 'Device' || key.constructor.name === 'Group' ||
-            key.constructor.name === 'Endpoint',
-            `Wrong type '${typeof key}'`,
-        );
-
-        /* eslint-disable-next-line */
-        const getEndpointName = (endpointNames: any, endpoint: any) => {
-            return endpoint ?
-                utils.getKey(endpointNames, endpoint.ID, null, ((v) => v === 'default' ? null : v)) : null;
-        };
-
-        const deviceOptions = settings.get().device_options;
-        if (typeof key === 'string' || typeof key === 'number') {
-            if (typeof key === 'number') {
-                key = key.toString();
-            }
-
-            if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
-                const coordinator = this.getDevicesByType('Coordinator')[0];
-                return {
-                    type: 'device',
-                    device: coordinator,
-                    endpoint: coordinator.getEndpoint(1),
-                    settings: {friendlyName: 'Coordinator'},
-                    name: 'Coordinator',
-                    endpointName: null,
-                };
-            }
-
-            /* eslint-disable-next-line */
-            let endpointKey: any = utils.endpointNames.find((p) => key.endsWith(`/${p}`));
-            const endpointByNumber = key.match(keyEndpointByNumber);
-            if (!endpointKey && endpointByNumber) {
-                endpointKey = Number(endpointByNumber[1]);
-            }
-            if (endpointKey) {
-                key = key.replace(`/${endpointKey}`, '');
-            }
-
-            const entity = settings.getEntity(key);
-            if (!entity) {
-                return null;
-            } else if (entity.type === 'device') {
-                /* eslint-disable-line */ // @ts-ignore
-                const device = this.getDeviceByIeeeAddr(entity.ID);
-                if (!device) {
-                    return null;
-                }
-
-                const definition = zigbeeHerdsmanConverters.findByDevice(device);
-                const endpointNames = definition && definition.endpoint ? definition.endpoint(device) : null;
-                let endpoint;
-                if (endpointKey) {
-                    if (endpointByNumber) {
-                        endpoint = device.getEndpoint(endpointKey);
-                    } else {
-                        assert(definition != null, `Endpoint name '${endpointKey}' is given but device is unsupported`);
-                        assert(endpointNames != null,
-                            `Endpoint name '${endpointKey}' is given but no endpoints defined`);
-                        const endpointID = endpointNames[endpointKey];
-                        assert(endpointID, `Endpoint name '${endpointKey}' is given but device has no such endpoint`);
-                        endpoint = device.getEndpoint(endpointID);
-                    }
-                } else if (endpointNames && endpointNames['default']) {
-                    endpoint = device.getEndpoint(endpointNames['default']);
-                } else {
-                    endpoint = device.endpoints[0];
-                }
-
-                return {
-                    type: 'device', device, endpoint, settings: {...deviceOptions, ...entity},
-                    name: entity.friendlyName, definition,
-                    endpointName: getEndpointName(endpointNames, endpoint),
-                };
-            } else {
-                /* eslint-disable-line */ // @ts-ignore
-                let group = this.getGroupByID(entity.ID);
-                /* eslint-disable-line */ // @ts-ignore
-                if (!group) group = this.createGroup(entity.ID);
-                return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
-            }
-        } else if (key.constructor.name === 'Device' || key.constructor.name === 'Endpoint') {
-            const device = key.constructor.name === 'Endpoint' ? key.getDevice() : key;
-            const setting = settings.getEntity(device.ieeeAddr);
-            const definition = zigbeeHerdsmanConverters.findByDevice(device);
-            const name = setting ? setting.friendlyName :
-                (device.type === 'Coordinator' ? 'Coordinator' : device.ieeeAddr);
-            const endpointNames = definition && definition.endpoint ? definition.endpoint(device) : null;
-
-            let endpoint;
-            if (key.constructor.name === 'Endpoint') endpoint = key;
-            else if (endpointNames && endpointNames['default']) endpoint = device.getEndpoint(endpointNames['default']);
-            else endpoint = device.endpoints[0];
-
-            return {
-                type: 'device', definition, name, device, endpoint, settings: {...deviceOptions, ...(setting || {})},
-                endpointName: getEndpointName(endpointNames, endpoint),
-            };
-        } else { // Group
-            const setting = settings.getEntity(key.groupID);
-            return {
-                type: 'group',
-                group: key,
-                settings: {...deviceOptions, ...(setting || {})},
-                name: setting ? setting.friendlyName : key.groupID,
-            };
-        }
-    }
-
-    getGroupByID(ID: number): ZHGroup {
-        return this.herdsman.getGroupByID(ID);
-    }
-
-    getGroups(): ZHGroup[] {
-        return this.herdsman.getGroups();
-    }
-
-    createGroup(groupID: number): ZHGroup {
-        return this.herdsman.createGroup(groupID);
     }
 
     resolveEntity(key: ZHDevice): Device {
@@ -345,7 +172,7 @@ export default class Zigbee extends events.EventEmitter {
             .map((d) => this.resolveEntity(d));
     }
 
-    private acceptJoiningDeviceHandler(ieeeAddr: string): boolean {
+    private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
         // If passlist is set, all devices not on passlist will be rejected to join the network
         const passlist = settings.get().passlist.concat(settings.get().whitelist);
         const blocklist = settings.get().blocklist.concat(settings.get().ban);
@@ -384,5 +211,154 @@ export default class Zigbee extends events.EventEmitter {
 
     async touchlinkScan(): Promise<{ieeeAddr: string, channel: number}[]> {
         return this.herdsman.touchlinkScan();
+    }
+
+    // TODO remove all legacy below
+    createGroupLegacy(groupID: number): ZHGroup {
+        return this.herdsman.createGroup(groupID);
+    }
+    getGroupsLegacy(): ZHGroup[] {
+        return this.herdsman.getGroups();
+    }
+    getGroupByIDLegacy(ID: number): ZHGroup {
+        return this.herdsman.getGroupByID(ID);
+    }
+    getDeviceByNetworkAddressLegacy(networkAddress: number): ZHDevice {
+        return this.herdsman.getDeviceByNetworkAddress(networkAddress);
+    }
+    getDevicesByTypeLegacy(type: 'Coordinator' | 'Router' | 'EndDevice'): ZHDevice[] {
+        return this.herdsman.getDevicesByType(type);
+    }
+    getClientsLegacy(): ZHDevice[] {
+        return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
+    }
+    getDevicesLegacy(): ZHDevice[] {
+        return this.herdsman.getDevices();
+    }
+    async permitJoinLegacy(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
+        if (permit) {
+            logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`);
+        } else {
+            logger.info('Zigbee: disabling joining new devices.');
+        }
+
+        if (resolvedEntity && permit) {
+            await this.herdsman.permitJoin(permit, resolvedEntity.device, time);
+        } else {
+            await this.herdsman.permitJoin(permit, undefined, time);
+        }
+    }
+    /* eslint-disable-next-line */
+    resolveEntityLegacy(key: any): any {
+        assert(
+            typeof key === 'string' || typeof key === 'number' ||
+            key.constructor.name === 'Device' || key.constructor.name === 'Group' ||
+            key.constructor.name === 'Endpoint',
+            `Wrong type '${typeof key}'`,
+        );
+
+        /* eslint-disable-next-line */
+        const getEndpointName = (endpointNames: any, endpoint: any) => {
+            return endpoint ?
+                utils.getKey(endpointNames, endpoint.ID, null, ((v) => v === 'default' ? null : v)) : null;
+        };
+
+        const deviceOptions = settings.get().device_options;
+        if (typeof key === 'string' || typeof key === 'number') {
+            if (typeof key === 'number') {
+                key = key.toString();
+            }
+
+            if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
+                const coordinator = this.getDevicesByTypeLegacy('Coordinator')[0];
+                return {
+                    type: 'device',
+                    device: coordinator,
+                    endpoint: coordinator.getEndpoint(1),
+                    settings: {friendlyName: 'Coordinator'},
+                    name: 'Coordinator',
+                    endpointName: null,
+                };
+            }
+
+            /* eslint-disable-next-line */
+            let endpointKey: any = utils.endpointNames.find((p) => key.endsWith(`/${p}`));
+            const keyEndpointByNumber = new RegExp(`.*/([0-9]*)$`);
+            const endpointByNumber = key.match(keyEndpointByNumber);
+            if (!endpointKey && endpointByNumber) {
+                endpointKey = Number(endpointByNumber[1]);
+            }
+            if (endpointKey) {
+                key = key.replace(`/${endpointKey}`, '');
+            }
+
+            const entity = settings.getEntity(key);
+            if (!entity) {
+                return null;
+            } else if (entity.type === 'device') {
+                /* eslint-disable-line */ // @ts-ignore
+                const device = this.herdsman.getDeviceByIeeeAddr(entity.ID);
+                if (!device) {
+                    return null;
+                }
+
+                const definition = zigbeeHerdsmanConverters.findByDevice(device);
+                const endpointNames = definition && definition.endpoint ? definition.endpoint(device) : null;
+                let endpoint;
+                if (endpointKey) {
+                    if (endpointByNumber) {
+                        endpoint = device.getEndpoint(endpointKey);
+                    } else {
+                        assert(definition != null, `Endpoint name '${endpointKey}' is given but device is unsupported`);
+                        assert(endpointNames != null,
+                            `Endpoint name '${endpointKey}' is given but no endpoints defined`);
+                        const endpointID = endpointNames[endpointKey];
+                        assert(endpointID, `Endpoint name '${endpointKey}' is given but device has no such endpoint`);
+                        endpoint = device.getEndpoint(endpointID);
+                    }
+                } else if (endpointNames && endpointNames['default']) {
+                    endpoint = device.getEndpoint(endpointNames['default']);
+                } else {
+                    endpoint = device.endpoints[0];
+                }
+
+                return {
+                    type: 'device', device, endpoint, settings: {...deviceOptions, ...entity},
+                    name: entity.friendlyName, definition,
+                    endpointName: getEndpointName(endpointNames, endpoint),
+                };
+            } else {
+                /* eslint-disable-line */ // @ts-ignore
+                let group = this.getGroupByIDLegacy(entity.ID);
+                /* eslint-disable-line */ // @ts-ignore
+                if (!group) group = this.createGroupLegacy(entity.ID);
+                return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
+            }
+        } else if (key.constructor.name === 'Device' || key.constructor.name === 'Endpoint') {
+            const device = key.constructor.name === 'Endpoint' ? key.getDevice() : key;
+            const setting = settings.getEntity(device.ieeeAddr);
+            const definition = zigbeeHerdsmanConverters.findByDevice(device);
+            const name = setting ? setting.friendlyName :
+                (device.type === 'Coordinator' ? 'Coordinator' : device.ieeeAddr);
+            const endpointNames = definition && definition.endpoint ? definition.endpoint(device) : null;
+
+            let endpoint;
+            if (key.constructor.name === 'Endpoint') endpoint = key;
+            else if (endpointNames && endpointNames['default']) endpoint = device.getEndpoint(endpointNames['default']);
+            else endpoint = device.endpoints[0];
+
+            return {
+                type: 'device', definition, name, device, endpoint, settings: {...deviceOptions, ...(setting || {})},
+                endpointName: getEndpointName(endpointNames, endpoint),
+            };
+        } else { // Group
+            const setting = settings.getEntity(key.groupID);
+            return {
+                type: 'group',
+                group: key,
+                settings: {...deviceOptions, ...(setting || {})},
+                name: setting ? setting.friendlyName : key.groupID,
+            };
+        }
     }
 }
