@@ -7,26 +7,12 @@ import debounce from 'debounce';
 // TODO
 // - Enable for HA addon
 // - Add to setting schema (when old availability is removed)
-class Availability extends ExtensionTS {
+export default class Availability extends ExtensionTS {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private retrieveStateDebouncers: {[s: string]: () => void} = {};
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
-
-    constructor(zigbee: Zigbee, mqtt: TempMQTT, state: TempState,
-        publishEntityState: TempPublishEntityState, eventBus: eventbus.EventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
-        this.lastSeenChanged = this.lastSeenChanged.bind(this);
-        this.onDeviceRenamed = this.onDeviceRenamed.bind(this);
-        this.eventBus.on('deviceRenamed', this.onDeviceRenamed, this.constructor.name);
-        this.zigbee.on('lastSeenChanged', this.lastSeenChanged);
-        logger.warn('Using experimental new availability feature');
-    }
-
-    private onDeviceRenamed(data: eventbus.DeviceRenamedData): void {
-        this.publishAvailability(data.device, false, true);
-    }
 
     private getTimeout(device: Device): number {
         if (typeof device.settings.availability === 'object' && device.settings.availability?.timeout != null) {
@@ -110,7 +96,17 @@ class Availability extends ExtensionTS {
         this.pingQueueExecuteNext();
     }
 
-    override onMQTTConnected(): void {
+    start(): void {
+        logger.warn('Using experimental new availability feature');
+
+        this.eventBus.onDeviceRenamed(this, (data: EventDeviceRenamed) =>
+            this.publishAvailability(data.device, false, true));
+        this.eventBus.onDeviceLeave(this, (data: EventDeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.retrieveState(data.device));
+
+        this.onLastSeenChanged = this.onLastSeenChanged.bind(this);
+        this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
+
         for (const device of this.zigbee.getClients()) {
             if (isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
@@ -123,15 +119,6 @@ class Availability extends ExtensionTS {
                     this.addToPingQueue(device);
                 }
             }
-        }
-    }
-
-    override onZigbeeEvent(type: ZigbeeEventType, data: ZigbeeEventData, re: ResolvedEntity): void {
-        if (type === 'deviceLeave') {
-            clearTimeout(this.timers[data.ieeeAddr]);
-        } else if (type === 'deviceAnnounce') {
-            const device = this.zigbee.resolveEntity((re as ResolvedDevice).device);
-            this.retrieveState(device);
         }
     }
 
@@ -164,20 +151,18 @@ class Availability extends ExtensionTS {
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
     }
 
-    private lastSeenChanged(data: {device: ZHDevice}): void {
-        const device = this.zigbee.resolveEntity(data.device);
-        if (isAvailabilityEnabledForDevice(device, settings.get())) {
+    private onLastSeenChanged(data: EventLastSeenChanged): void {
+        if (isAvailabilityEnabledForDevice(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
-            this.removeFromPingQueue(device);
-            this.resetTimer(device);
-            this.publishAvailability(device, false);
+            this.removeFromPingQueue(data.device);
+            this.resetTimer(data.device);
+            this.publishAvailability(data.device, false);
         }
     }
 
     override stop(): void {
         super.stop();
         Object.values(this.timers).forEach((t) => clearTimeout(t));
-        this.zigbee.removeListener('lastSeenChanged', this.lastSeenChanged);
     }
 
     private retrieveState(device: Device): void {

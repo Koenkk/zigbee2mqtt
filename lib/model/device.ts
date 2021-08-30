@@ -27,6 +27,7 @@ export default class Device {
     }
 
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
+    async removeFromNetwork(): Promise<void> {await this.device.removeFromNetwork();}
 
     endpoint(key: 'default' = 'default'): Endpoint {
         let endpoint: Endpoint;

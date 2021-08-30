@@ -11,10 +11,15 @@ import {
 
 import * as D from 'lib/model/device';
 import * as Z from 'lib/zigbee';
-
+import * as E from 'lib/eventBus';
+import * as M from 'lib/mqtt';
 // TODO: check all
 
 declare global {
+    type EventBus = E.default;
+
+    type MQTT = M.default;
+
     type Zigbee = Z.default;
 
     type Device = D.default;
@@ -57,11 +62,19 @@ declare global {
             auth_token?: string,
         },
         mqtt: {
+            base_topic: string,
             include_device_information: boolean,
             force_disable_retain: boolean
             version?: number,
             user?: string,
             password?: string,
+            server: string,
+            ca?: string,
+            keepalive?: number,
+            key?: string,
+            cert?: string,
+            client_id?: string,
+            reject_unauthorized?: boolean,
         },
         serial: {
             disable_led?: boolean,
@@ -176,9 +189,7 @@ declare global {
             availability?: {timeout?: number} | boolean,
         }
     }
-
-    type lastSeenChangedHandler = (data: {device: ZHDevice}) => void;
-
+    
     interface TempMQTT {
         publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
     }
@@ -187,17 +198,5 @@ declare global {
         get: (ID: string) => {} | null;
     }
 
-    type TempPublishEntityState = () => void;
-
-    namespace eventbus {
-        interface DeviceRenamedData {device: Device, homeAssisantRename: boolean, from: string, to: string}
-
-        type Data = DeviceRenamedData;
-
-        interface EventBus {
-            on(event: 'deviceRenamed', callback: (data: DeviceRenamedData) => void, extension: string): void;
-            emit(event: 'deviceRenamed', data: DeviceRenamedData): void;
-            removeListeners(extension: string): void;
-        }
-    }
+    type PublishEntityState = () => void;
 }
