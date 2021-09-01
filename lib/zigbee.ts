@@ -175,6 +175,8 @@ export default class Zigbee {
 
     resolveEntity(key: ZHDevice): Device {
         let ID: string;
+
+        /* istanbul ignore else */
         if (typeof key === 'object' && key.ieeeAddr) ID = key.ieeeAddr;
 
         if (!(ID in this.resolvedEntitiesLookup)) {

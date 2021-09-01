@@ -32,6 +32,7 @@ export default class Device {
     endpoint(key: 'default' = 'default'): Endpoint {
         let endpoint: Endpoint;
 
+        /* istanbul ignore next */
         if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.device)[key];
             if (ID) endpoint = this.device.getEndpoint(ID);

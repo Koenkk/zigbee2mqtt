@@ -257,6 +257,7 @@ export function sanitizeImageParameter(parameter: string): string {
 }
 
 export function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
+    /* istanbul ignore next */
     if (!settings.experimental.availability_new) return false;
 
     if (device.settings.hasOwnProperty('availability')) {
@@ -276,6 +277,7 @@ export function isAvailabilityEnabledForDevice(device: Device, settings: Setting
     return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
 }
 
+/* istanbul ignore next */
 export function isAvailabilityEnabledForDeviceLegacy(rd: ResolvedDevice, settings: Settings): boolean {
     if (!settings.experimental.availability_new) return false;
 

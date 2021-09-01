@@ -27,13 +27,14 @@ abstract class ExtensionTS {
     /**
      * Is called once the extension has to start
      */
+    /* istanbul ignore next */
     start(): void {}
 
     /**
      * Is called once the extension has to stop
      */
     stop(): void {
-        this.eventBus.removeListeners(this.constructor.name);
+        this.eventBus.removeListeners(this);
     }
 }
 
