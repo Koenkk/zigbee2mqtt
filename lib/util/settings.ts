@@ -1,4 +1,4 @@
-import data from './data';
+import * as data from './data';
 import * as utils from './utils';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
@@ -15,7 +15,7 @@ const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').comp
 const ajvRestartRequired = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (schema: unknown) => !schema}).compile(schema);
 
-const defaults: Settings = {
+const defaults: RecursivePartial<Settings> = {
     passlist: [],
     blocklist: [],
     // Deprecated: use block/passlist

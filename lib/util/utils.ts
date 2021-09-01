@@ -1,6 +1,6 @@
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
-import data from './data';
+import * as data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';

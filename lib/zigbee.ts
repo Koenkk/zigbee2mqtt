@@ -1,7 +1,7 @@
 import {Controller} from 'zigbee-herdsman';
 import logger from './util/logger';
 import * as settings from './util/settings';
-import data from './util/data';
+import * as data from './util/data';
 import assert from 'assert';
 import * as utils from './util/utils';
 import objectAssignDeep from 'object-assign-deep';

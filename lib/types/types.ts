@@ -16,6 +16,10 @@ import * as M from 'lib/mqtt';
 // TODO: check all
 
 declare global {
+    type RecursivePartial<T> = {
+        [P in keyof T]?: RecursivePartial<T[P]>;
+    };
+
     type EventBus = E.default;
 
     type MQTT = M.default;
@@ -189,7 +193,7 @@ declare global {
             availability?: {timeout?: number} | boolean,
         }
     }
-    
+
     interface TempMQTT {
         publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
     }
