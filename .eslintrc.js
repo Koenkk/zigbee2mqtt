@@ -29,7 +29,7 @@ module.exports = {
         },
         rules: {
             '@typescript-eslint/await-thenable': 'error',
-            '@typescript-eslint/ban-ts-ignore': 'off',
+            '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/explicit-function-return-type': 'error',
             '@typescript-eslint/no-empty-function': 'off',
             '@typescript-eslint/no-explicit-any': 'error',

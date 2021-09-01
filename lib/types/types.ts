@@ -1,7 +1,42 @@
-import type {Device as ZHDevice, Endpoint} from 'zigbee-herdsman/dist/controller/model';
+import type {
+    Device as ZZHDevice,
+    Group as ZZHGroup,
+    Endpoint as ZHEndpoint,
+} from 'zigbee-herdsman/dist/controller/model';
+
+import {
+    NetworkParameters as ZHNetworkParameters,
+    CoordinatorVersion as ZHCoordinatorVersion,
+} from 'zigbee-herdsman/dist/adapter/tstype';
+
+import * as D from 'lib/model/device';
+import * as Z from 'lib/zigbee';
+import * as E from 'lib/eventBus';
+import * as M from 'lib/mqtt';
+// TODO: check all
 
 declare global {
-    type Device = ZHDevice;
+    type RecursivePartial<T> = {
+        [P in keyof T]?: RecursivePartial<T[P]>;
+    };
+
+    type EventBus = E.default;
+
+    type MQTT = M.default;
+
+    type Zigbee = Z.default;
+
+    type Device = D.default;
+
+    type Endpoint = ZHEndpoint;
+
+    type ZHDevice = ZZHDevice;
+
+    type ZHGroup = ZZHGroup;
+
+    type CoordinatorVersion = ZHCoordinatorVersion;
+
+    type NetworkParameters = ZHNetworkParameters;
 
     type ZigbeeEventType = 'deviceLeave' | 'deviceAnnounce';
 
@@ -31,14 +66,24 @@ declare global {
             auth_token?: string,
         },
         mqtt: {
+            base_topic: string,
             include_device_information: boolean,
             force_disable_retain: boolean
             version?: number,
             user?: string,
             password?: string,
+            server: string,
+            ca?: string,
+            keepalive?: number,
+            key?: string,
+            cert?: string,
+            client_id?: string,
+            reject_unauthorized?: boolean,
         },
         serial: {
-            disable_led: boolean,
+            disable_led?: boolean,
+            port?: string,
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
         },
         device_options: {[s: string]: unknown},
         map_options: {
@@ -64,6 +109,7 @@ declare global {
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
             availability_new?: boolean,
+            transmit_power?: number,
         },
         advanced: {
             legacy_api: boolean,
@@ -75,7 +121,7 @@ declare global {
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: {},
             soft_reset_timeout: number,
-            pan_id: number,
+            pan_id: number | 'GENERATE',
             ext_pan_id: number[],
             channel: number,
             adapter_concurrent: number | null,
@@ -90,13 +136,15 @@ declare global {
             cache_state_send_on_startup: boolean,
             last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' |  'epoch',
             elapsed: boolean,
-            network_key: number[],
+            network_key: number[] | 'GENERATE',
             report: boolean,
             homeassistant_discovery_topic: string,
             homeassistant_status_topic: string,
             homeassistant_legacy_entity_attributes: boolean,
             homeassistant_legacy_triggers: boolean,
             timestamp_format: string,
+            baudrate?: number,
+            rtscts?: boolean,
         },
         ota: {
             update_check_interval: number,
@@ -109,6 +157,7 @@ declare global {
         friendlyName: string,
         ID: string,
         retention?: number,
+        availability?: boolean | {timeout: number},
     }
 
     interface GroupSettings {
@@ -129,6 +178,7 @@ declare global {
 
     interface Definition  {
         model: string
+        endpoint?: (device: ZHDevice) => {[s: string]: number}
         toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>}[]
     }
 
@@ -137,20 +187,11 @@ declare global {
         definition?: Definition,
         name: string,
         endpoint: Endpoint,
-        device: Device,
+        device: ZHDevice,
         settings: {
             friendlyName: string,
             availability?: {timeout?: number} | boolean,
         }
-    }
-
-    type lastSeenChangedHandler = (data: {device: Device}) => void;
-
-    interface TempZigbee {
-        getClients: () => Device[];
-        on: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
-        removeListener: (event: 'lastSeenChanged', handler: lastSeenChangedHandler) => void;
-        resolveEntity: (device: Device) => ResolvedEntity;
     }
 
     interface TempMQTT {
@@ -161,9 +202,5 @@ declare global {
         get: (ID: string) => {} | null;
     }
 
-    interface TempEventBus {
-        removeListenersExtension: (extension: string) => void;
-    }
-
-    type TempPublishEntityState = () => void;
+    type PublishEntityState = () => void;
 }

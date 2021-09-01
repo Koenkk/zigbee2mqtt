@@ -1,6 +1,6 @@
 require('./stub/logger');
 require('./stub/data');
-const data = require('../lib/util/data.js');
+const data = require('../lib/util/data');
 const utils = require('../lib/util/utils');
 const settings = require('../lib/util/settings.ts');
 const fs = require('fs');

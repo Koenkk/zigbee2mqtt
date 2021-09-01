@@ -1,9 +1,10 @@
+// TODO: tempState -> State, rename to extension
 abstract class ExtensionTS {
-    protected zigbee: TempZigbee;
-    protected mqtt: TempMQTT;
+    protected zigbee: Zigbee;
+    protected mqtt: MQTT;
     protected state: TempState;
-    protected publishEntityState: TempPublishEntityState;
-    protected eventBus: TempEventBus;
+    protected publishEntityState: PublishEntityState;
+    protected eventBus: EventBus;
 
     /**
      * Besides intializing variables, the constructor should do nothing!
@@ -14,8 +15,8 @@ abstract class ExtensionTS {
      * @param {Function} publishEntityState Method to publish device state to MQTT.
      * @param {EventBus} eventBus The event bus
      */
-    constructor(zigbee: TempZigbee, mqtt: TempMQTT, state: TempState,
-        publishEntityState: TempPublishEntityState, eventBus: TempEventBus) {
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState,
+        publishEntityState: PublishEntityState, eventBus: EventBus) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
         this.state = state;
@@ -24,45 +25,16 @@ abstract class ExtensionTS {
     }
 
     /**
-     * This method is called by the controller once Zigbee has been started.
+     * Is called once the extension has to start
      */
     /* istanbul ignore next */
-    onZigbeeStarted(): void {}
-
-    /**
-     * This method is called by the controller once connected to the MQTT server.
-     */
-    /* istanbul ignore next */
-    onMQTTConnected(): void {}
-
-    /**
-     * Is called when a Zigbee message from a device is received.
-     * @param {string} type Type of the message
-     * @param {Object} data Data of the message
-     * @param {Object?} resolvedEntity Resolved entity returned from this.zigbee.resolveEntity()
-     * @param {Object?} settingsDevice Device settings
-     */
-    /* istanbul ignore next */
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    onZigbeeEvent(type: ZigbeeEventType, data: ZigbeeEventData, resolvedEntity: ResolvedEntity): void {}
-
-    /**
-     * Is called when a MQTT message is received
-     * @param {string} topic Topic on which the message was received
-     * @param {Object} message The received message
-     * @return {boolean} if the message was handled
-     */
-    /* istanbul ignore next */
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    onMQTTMessage(topic: string, message: string): boolean {
-        return false;
-    }
+    start(): void {}
 
     /**
      * Is called once the extension has to stop
      */
     stop(): void {
-        this.eventBus.removeListenersExtension(this.constructor.name);
+        this.eventBus.removeListeners(this);
     }
 }
 
