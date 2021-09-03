@@ -6734,10 +6734,11 @@
       "dev": true
     },
     "zigbee-herdsman": {
-      "version": "0.13.139",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.139.tgz",
-      "integrity": "sha512-n1a8VwuDVsLnIiHhS3GsrmBuli/CZqlZz/0waVSklVIDLp2j0U5FBILfa2BI5EaTzpSSKc0OvsdzrQWkWLo3cQ==",
+      "version": "0.13.140",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.140.tgz",
+      "integrity": "sha512-DOXmU6OedbIOh1rBlxR58KbO/49gjVtazU7/Gr5BipWEoRJ4PwIY6785DbhsyfwbRGRRAE+K1TKiZEeVg7rP4Q==",
       "requires": {
+        "@serialport/bindings": "9.0.4",
         "debounce": "^1.2.1",
         "debug": "^4.3.2",
         "fast-deep-equal": "^3.1.3",
@@ -8412,16 +8413,16 @@
           }
         },
         "@serialport/bindings": {
-          "version": "9.2.1",
-          "resolved": "https://registry.npmjs.org/@serialport/bindings/-/bindings-9.2.1.tgz",
-          "integrity": "sha512-e1CvbvkuMptSjCKc/YwIGjEsSod7kGRpS5TciACQMOi2QQTD8XwVPim0izqVCBZko4n4b0dC6sG3EBkTkQIwnw==",
+          "version": "9.0.4",
+          "resolved": "https://registry.npmjs.org/@serialport/bindings/-/bindings-9.0.4.tgz",
+          "integrity": "sha512-6dlE1vm5c1xk667f1Zm7D+msbHJ9jdnUr9l8DResKpj2iCBzbCNsW+yCYq26WxzXWc1L2HUaS3/aL+k0wm5amg==",
           "requires": {
-            "@serialport/binding-abstract": "^9.0.7",
-            "@serialport/parser-readline": "^9.0.7",
+            "@serialport/binding-abstract": "^9.0.2",
+            "@serialport/parser-readline": "^9.0.1",
             "bindings": "^1.5.0",
             "debug": "^4.3.1",
             "nan": "^2.14.2",
-            "prebuild-install": "^6.0.1"
+            "prebuild-install": "^6.0.0"
           }
         },
         "@serialport/parser-byte-length": {
