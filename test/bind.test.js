@@ -585,6 +585,19 @@ describe('Bind', () => {
         expect(zigbeeHerdsman.devices.bulb_color.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
     });
 
+    it('Should poll bounded Hue bulb when receiving message from scene controller', async () => {
+        const remote = zigbeeHerdsman.devices.bj_scene_switch;
+        const data = {"action": "recall_2_row_1"};
+        const payload = {data, cluster: 'genScenes', device: remote, endpoint: remote.getEndpoint(10), type: 'commandRecall', linkquality: 10, groupID: 0};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        // Calls to three clusters are expected in this case
+        expect(debounce).toHaveBeenCalledTimes(3);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
+        expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+	expect(zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read).toHaveBeenCalledWith("lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]);
+    });
+
     it('Should poll grouped Hue bulb when receiving message from TRADFRI remote', async () => {
         zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1).read.mockClear();
         zigbeeHerdsman.devices.bulb_2.getEndpoint(1).read.mockClear();
