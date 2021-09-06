@@ -14,15 +14,10 @@
         "allowJs": true,
         "rootDir": "lib",
         "inlineSourceMap": true,
-        "resolveJsonModule": true,
-        "paths": {
-            "*": [
-                "node_modules/*",
-                "lib/types/*"
-            ]
-        },
+        "resolveJsonModule": true
     },
     "include": [
-        "lib/**/*"
+        "lib/**/*",
+        "lib/util/settings.schema.json"
     ],
 }

@@ -16,7 +16,7 @@ describe('HomeAssistant extension', () => {
     let version;
 
     beforeEach(async () => {
-        version = await require('../lib/util/utils').getZigbee2mqttVersion();
+        version = await require('../lib/util/utils').getZigbee2MQTTVersion();
         version = `Zigbee2MQTT ${version.version}`;
         data.writeDefaultConfiguration();
         settings.reRead();
@@ -247,11 +247,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "command_topic":"zigbee2mqtt/wall_switch_double/left/set",
             "device":{
                 "identifiers":[
@@ -279,11 +275,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "command_topic":"zigbee2mqtt/wall_switch_double/right/set",
             "device":{
                 "identifiers":[
@@ -311,11 +303,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            "availability":[
-                {
-                    "topic":"zigbee2mqtt/bridge/state"
-                }
-            ],
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
             "color_mode": true,

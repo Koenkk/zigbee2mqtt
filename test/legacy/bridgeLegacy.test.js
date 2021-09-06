@@ -16,7 +16,7 @@ describe('Bridge legacy', () => {
 
     beforeAll(async () => {
         jest.useFakeTimers();
-        version = await require('../../lib/util/utils').getZigbee2mqttVersion();
+        version = await require('../../lib/util/utils').getZigbee2MQTTVersion();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
     })

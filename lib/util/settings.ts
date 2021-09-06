@@ -1,5 +1,5 @@
 import data from './data';
-import utils from './utils';
+import * as utils from './utils';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
 import * as yaml from './yaml';
@@ -406,7 +406,7 @@ export function get(): Settings {
     return _settingsWithDefaults;
 }
 
-export function set(path: string[], value: string | number): void {
+export function set(path: string[], value: string | number | boolean | KeyValue): void {
     /* eslint-disable-next-line */
     let settings: any = getInternalSettings();
 
@@ -574,7 +574,7 @@ export function removeDevice(IDorName: string): void {
     // Remove device from groups
     if (settings.groups) {
         const regex =
-            new RegExp(`^(${device.friendlyName}|${device.ID})(/(\\d|${utils.getEndpointNames().join('|')}))?$`);
+            new RegExp(`^(${device.friendlyName}|${device.ID})(/(\\d|${utils.endpointNames.join('|')}))?$`);
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
             group.devices = group.devices.filter((device) => !device.match(regex));
         }

@@ -1217,7 +1217,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 22, "warningduration": 100, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E emergency warning', async () => {
@@ -1226,7 +1226,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 51, "warningduration": 10, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E emergency without level', async () => {
@@ -1235,7 +1235,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 49, "warningduration": 10, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
     it('HS2WD-E wrong payload (should use defaults)', async () => {
@@ -1244,7 +1244,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/siren/set', stringify(payload));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
     it('Shouldnt do anythign when device is not supported', async () => {
