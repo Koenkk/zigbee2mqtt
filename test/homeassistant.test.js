@@ -53,7 +53,7 @@ describe('HomeAssistant extension', () => {
         expect(duplicated).toHaveLength(0);
     });
 
-    it('Should discover devices and groups', async () => {
+    it('onlythisShould discover devices and groups', async () => {
         const controller = new Controller(false);
         await controller.start();
 
@@ -132,6 +132,7 @@ describe('HomeAssistant extension', () => {
                 'manufacturer': 'Xiaomi',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'enabled_by_default': true,
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -150,6 +151,7 @@ describe('HomeAssistant extension', () => {
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
             'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
@@ -176,6 +178,7 @@ describe('HomeAssistant extension', () => {
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
             'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
@@ -202,6 +205,7 @@ describe('HomeAssistant extension', () => {
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_battery',
             'unique_id': '0x0017880104e45522_battery_zigbee2mqtt',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
