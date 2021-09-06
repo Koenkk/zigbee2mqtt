@@ -17,6 +17,7 @@
         "resolveJsonModule": true
     },
     "include": [
-        "lib/**/*"
+        "lib/**/*",
+        "lib/util/settings.schema.json"
     ],
 }
