@@ -53,7 +53,7 @@ describe('HomeAssistant extension', () => {
         expect(duplicated).toHaveLength(0);
     });
 
-    it('onlythisShould discover devices and groups', async () => {
+    it('Should discover devices and groups', async () => {
         const controller = new Controller(false);
         await controller.start();
 
@@ -367,6 +367,7 @@ describe('HomeAssistant extension', () => {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'state_class': 'measurement',
+            'enabled_by_default': true,
             'value_template': "{{ value_json.temperature }}",
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
@@ -398,6 +399,7 @@ describe('HomeAssistant extension', () => {
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
             'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
@@ -423,6 +425,7 @@ describe('HomeAssistant extension', () => {
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_pressure',
+            'enabled_by_default': true,
             'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -480,6 +483,7 @@ describe('HomeAssistant extension', () => {
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
+            'enabled_by_default': true,
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -508,6 +512,7 @@ describe('HomeAssistant extension', () => {
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_humidity',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
@@ -771,6 +776,7 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'enabled_by_default': true,
             'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
@@ -910,6 +916,7 @@ describe('HomeAssistant extension', () => {
         const payloadHA = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
+            'enabled_by_default': true,
             'state_class': 'measurement',
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
@@ -1033,6 +1040,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
+            'enabled_by_default': true,
             'state_class': 'measurement',
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
@@ -1121,6 +1129,7 @@ describe('HomeAssistant extension', () => {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'state_class': 'measurement',
+            'enabled_by_default': true,
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
@@ -1192,6 +1201,7 @@ describe('HomeAssistant extension', () => {
             'unit_of_measurement': '°C',
             'device_class': 'temperature',
             'state_class': 'measurement',
+            'enabled_by_default': true,
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
@@ -1678,6 +1688,7 @@ describe('HomeAssistant extension', () => {
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
