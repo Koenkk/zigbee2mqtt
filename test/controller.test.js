@@ -51,7 +51,7 @@ describe('Controller', () => {
         expect(logger.info).toHaveBeenCalledWith('remote (0x0017880104e45517): 324131092621 - Philips Hue dimmer switch (EndDevice)');
         expect(logger.info).toHaveBeenCalledWith('0x0017880104e45518 (0x0017880104e45518): Not supported (EndDevice)');
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
-        expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", {"will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"}});
+        expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", {"will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state", "qos": 1}});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}),{ retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({"brightness":255}), { retain: true, qos: 0 }, expect.any(Function));
     });
@@ -87,7 +87,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            "will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state"},
+            "will": {"payload": "offline", "retain": true, "topic": "zigbee2mqtt/bridge/state", "qos": 1},
             keepalive: 30,
             ca: Buffer.from([99, 97]),
             key: Buffer.from([107, 101, 121]),
@@ -615,7 +615,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            "will": { "payload": "offline", "retain": false, "topic": "zigbee2mqtt/bridge/state" },
+            "will": { "payload": "offline", "retain": false, "topic": "zigbee2mqtt/bridge/state", "qos": 1 },
         }
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
