@@ -1,33 +1,40 @@
 
-const settings = require('../util/settings');
-const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const logger = require('../util/logger');
-const utils = require('../util/utils');
-const assert = require('assert');
-const Extension = require('./extension');
-const stringify = require('json-stable-stringify-without-jsonify');
+import * as settings from '../util/settings';
+// @ts-ignore
+import zhc from 'zigbee-herdsman-converters';
+import logger from '../util/logger';
+import * as utils from '../util/utils';
+import assert from 'assert';
+import ExtensionTS from './extensionts';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
 
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 
 const defaultGroupConverters = [
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_onoff_brightness,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_color_colortemp,
-    zigbeeHerdsmanConverters.toZigbeeConverters.effect,
-    zigbeeHerdsmanConverters.toZigbeeConverters.ignore_transition,
-    zigbeeHerdsmanConverters.toZigbeeConverters.cover_position_tilt,
-    zigbeeHerdsmanConverters.toZigbeeConverters.thermostat_occupied_heating_setpoint,
-    zigbeeHerdsmanConverters.toZigbeeConverters.tint_scene,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_step,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_step,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_step,
+    zhc.toZigbeeConverters.light_onoff_brightness,
+    zhc.toZigbeeConverters.light_color_colortemp,
+    zhc.toZigbeeConverters.effect,
+    zhc.toZigbeeConverters.ignore_transition,
+    zhc.toZigbeeConverters.cover_position_tilt,
+    zhc.toZigbeeConverters.thermostat_occupied_heating_setpoint,
+    zhc.toZigbeeConverters.tint_scene,
+    zhc.toZigbeeConverters.light_brightness_move,
+    zhc.toZigbeeConverters.light_brightness_step,
+    zhc.toZigbeeConverters.light_colortemp_step,
+    zhc.toZigbeeConverters.light_colortemp_move,
+    zhc.toZigbeeConverters.light_hue_saturation_move,
+    zhc.toZigbeeConverters.light_hue_saturation_step,
 ];
 
-class EntityPublish extends Extension {
-    parseTopic(topic) {
+class Publish extends ExtensionTS {
+    start(): void {
+        this.onMQTTMessage_ = this.onMQTTMessage_.bind(this);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+    }
+
+    parseTopic(topic: string): {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'} | null {
         const match = topic.match(topicRegex);
         if (!match) {
             return null;
@@ -39,29 +46,23 @@ class EntityPublish extends Extension {
             return null;
         }
 
-        return {ID: ID, endpointName: match[2] || '', type: match[3], attribute: match[4]};
+        return {ID: ID, endpoint: match[2] || '', type: match[3] as 'get' | 'set', attribute: match[4]};
     }
 
-    async onMQTTMessage(topic, message) {
-        topic = this.parseTopic(topic);
-        if (!topic) {
-            return false;
-        }
+    // TODO remove trailing _
+    async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+        const parsedTopic = this.parseTopic(data.topic);
+        if (!parsedTopic) return;
 
-        const entityKey = `${topic.ID}` + (topic.endpointName ? `/${topic.endpointName}` : '');
-        const resolvedEntity = this.zigbee.resolveEntityLegacy(entityKey);
-
-        if (!resolvedEntity) {
+        const re = this.zigbee.resolveEntity(parsedTopic.ID);
+        if (re == null) {
             /* istanbul ignore else */
             if (settings.get().advanced.legacy_api) {
-                const message = {friendly_name: entityKey};
-                this.mqtt.publish(
-                    'bridge/log',
-                    stringify({type: `entity_not_found`, message}),
-                );
+                const message = {friendly_name: parsedTopic.ID};
+                this.mqtt.publish('bridge/log', stringify({type: `entity_not_found`, message}));
             }
 
-            logger.error(`Entity '${entityKey}' is unknown`);
+            logger.error(`Entity '${parsedTopic.ID}' is unknown`);
             return;
         }
 
@@ -73,7 +74,6 @@ class EntityPublish extends Extension {
         let definition = null;
         let membersState = null;
 
-        assert(resolvedEntity.type === 'device' || resolvedEntity.type === 'group');
         if (resolvedEntity.type === 'device') {
             if (!resolvedEntity.definition) {
                 logger.warn(`Device with modelID '${resolvedEntity.device.modelID}' is not supported.`);
@@ -90,7 +90,7 @@ class EntityPublish extends Extension {
             target = resolvedEntity.group;
             options = resolvedEntity.settings;
             definition = resolvedEntity.group.members
-                .map((e) => zigbeeHerdsmanConverters.findByDevice(e.getDevice())).filter((d) => d);
+                .map((e) => zhc.findByDevice(e.getDevice())).filter((d) => d);
             converters = new Set();
             definition.forEach((d) => d.toZigbee.forEach(converters.add, converters));
             converters = converters.size ? [...converters] : defaultGroupConverters;
@@ -302,4 +302,5 @@ class EntityPublish extends Extension {
     }
 }
 
-module.exports = EntityPublish;
+// TODO_finished: : change class to export default
+module.exports = Publish;

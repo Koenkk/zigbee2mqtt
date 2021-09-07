@@ -3,7 +3,6 @@ import * as settings from '../util/settings';
 // @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
 
-// TODO: check all
 export default class Device {
     private device: ZHDevice;
     private _definition: Definition;
@@ -22,8 +21,8 @@ export default class Device {
         return this._definition;
     }
 
-    constructor(zhDevice: ZHDevice) {
-        this.device = zhDevice;
+    constructor(device: ZHDevice) {
+        this.device = device;
     }
 
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
@@ -32,7 +31,6 @@ export default class Device {
     endpoint(key: 'default' = 'default'): Endpoint {
         let endpoint: Endpoint;
 
-        /* istanbul ignore next */
         if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.device)[key];
             if (ID) endpoint = this.device.getEndpoint(ID);

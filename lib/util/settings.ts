@@ -447,7 +447,7 @@ export function apply(newSettings: Record<string, unknown>): boolean {
     return restartRequired;
 }
 
-export function getGroup(IDorName: string): GroupSettings {
+export function getGroup(IDorName: string | number): GroupSettings {
     const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
