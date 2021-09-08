@@ -68,7 +68,7 @@ class ZStackNvMemEraser {
                 } else {
                     await this.znp.request(Subsystem.SYS, 'nvDelete',
                         {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0},
-                        null, null,[ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+                        null, null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
                 }
                 deletedCount++;
             }
