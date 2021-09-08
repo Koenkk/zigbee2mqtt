@@ -4,10 +4,10 @@ import * as settings from '../util/settings';
 import zhc from 'zigbee-herdsman-converters';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
-import assert from 'assert';
 import ExtensionTS from './extensionts';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
+import Device from 'lib/model/device';
 
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
@@ -28,13 +28,15 @@ const defaultGroupConverters = [
     zhc.toZigbeeConverters.light_hue_saturation_step,
 ];
 
+interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
+
 class Publish extends ExtensionTS {
     start(): void {
         this.onMQTTMessage_ = this.onMQTTMessage_.bind(this);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }
 
-    parseTopic(topic: string): {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'} | null {
+    parseTopic(topic: string): ParsedTopic | null {
         const match = topic.match(topicRegex);
         if (!match) {
             return null;
@@ -47,6 +49,26 @@ class Publish extends ExtensionTS {
         }
 
         return {ID: ID, endpoint: match[2] || '', type: match[3] as 'get' | 'set', attribute: match[4]};
+    }
+
+    parseMessage(parsedTopic: ParsedTopic, data: EventMQTTMessage): KeyValue | null {
+        if (parsedTopic.attribute) {
+            try {
+                return {[parsedTopic.attribute]: JSON.parse(data.message)};
+            } catch (e) {
+                return {[parsedTopic.attribute]: data.message};
+            }
+        } else {
+            try {
+                return JSON.parse(data.message);
+            } catch (e) {
+                if (stateValues.includes(data.message.toLowerCase())) {
+                    return {state: data.message};
+                } else {
+                    return null;
+                }
+            }
+        }
     }
 
     // TODO remove trailing _
@@ -74,10 +96,9 @@ class Publish extends ExtensionTS {
         let definition = null;
         let membersState = null;
 
-        if (resolvedEntity.type === 'device') {
-            if (!resolvedEntity.definition) {
-                logger.warn(`Device with modelID '${resolvedEntity.device.modelID}' is not supported.`);
-                logger.warn(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html`);
+        if (re instanceof Device) {
+            if (!re.definition) {
+                logger.error(`Cannot publish to unsupported device '${re.name}'`);
                 return;
             }
 
@@ -102,27 +123,9 @@ class Publish extends ExtensionTS {
         }
 
         // Convert the MQTT message to a Zigbee message.
-        let json = {};
-        if (topic.hasOwnProperty('attribute') && topic.attribute) {
-            try {
-                json[topic.attribute] = JSON.parse(message);
-            } catch (e) {
-                json[topic.attribute] = message;
-            }
-        } else {
-            try {
-                json = JSON.parse(message);
-            } catch (e) {
-                if (stateValues.includes(message.toLowerCase())) {
-                    json = {state: message};
-                } else {
-                    logger.error(`Invalid JSON '${message}', skipping...`);
-                    return false;
-                }
-            }
-        }
-        if (!json) {
-            logger.error(`Invalid JSON '${message}', skipping...`);
+        const message = this.parseMessage(parsedTopic, data);
+        if (message == null) {
+            logger.error(`Invalid message '${message}', skipping...`);
             return;
         }
 
@@ -133,12 +136,12 @@ class Publish extends ExtensionTS {
          */
         const entityState = this.state.get(resolvedEntity.settings.ID) || {};
         if (settings.get().homeassistant) {
-            const hasColorTemp = json.hasOwnProperty('color_temp');
-            const hasColor = json.hasOwnProperty('color');
-            const hasBrightness = json.hasOwnProperty('brightness');
+            const hasColorTemp = message.hasOwnProperty('color_temp');
+            const hasColor = message.hasOwnProperty('color');
+            const hasBrightness = message.hasOwnProperty('brightness');
             const isOn = entityState && entityState.state === 'ON' ? true : false;
             if (isOn && (hasColorTemp || hasColor) && !hasBrightness) {
-                delete json.state;
+                delete message.state;
                 logger.debug('Skipping state because of Home Assistant');
             }
         }
@@ -297,8 +300,6 @@ class Publish extends ExtensionTS {
         for (const [ID, payload] of Object.entries(toPublish)) {
             this.publishEntityState(ID, payload);
         }
-
-        return true;
     }
 }
 

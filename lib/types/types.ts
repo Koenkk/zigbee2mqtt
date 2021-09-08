@@ -51,6 +51,7 @@ declare global {
     }
 
     interface Settings {
+        homeassistant?: boolean,
         devices?: {[s: string]: {friendly_name: string, retention?: number}},
         groups?: {[s: string]: {friendly_name: string, devices?: string[]}},
         passlist: string[],
