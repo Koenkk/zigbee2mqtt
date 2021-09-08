@@ -1,7 +1,7 @@
 import type {
     Device as ZZHDevice,
     Group as ZZHGroup,
-    Endpoint as ZHEndpoint,
+    Endpoint as ZZHEndpoint,
 } from 'zigbee-herdsman/dist/controller/model';
 
 import {
@@ -28,7 +28,7 @@ declare global {
 
     type Device = D.default;
 
-    type Endpoint = ZHEndpoint;
+    type ZHEndpoint = ZZHEndpoint;
 
     type ZHDevice = ZZHDevice;
 
@@ -159,12 +159,16 @@ declare global {
         ID: string,
         retention?: number,
         availability?: boolean | {timeout: number},
+        optimistic?: boolean,
+        filtered_optimistic?: string[],
     }
 
     interface GroupSettings {
         friendlyName: string,
         devices: string[],
         ID: number,
+        optimistic?: boolean,
+        filtered_optimistic?: string[],
     }
 
     type EntitySettings = {
@@ -177,17 +181,23 @@ declare global {
         type: 'device' | 'group',
     }
 
+    interface ToZigbee {
+        key: string[], 
+        convertGet?: (entity: ZHEndpoint | ZHGroup, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>
+        convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<{state: KeyValue}>
+    }
+
     interface Definition  {
         model: string
         endpoint?: (device: ZHDevice) => {[s: string]: number}
-        toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>}[]
+        toZigbee: ToZigbee[]
     }
 
     interface ResolvedDevice {
         type: 'device',
         definition?: Definition,
         name: string,
-        endpoint: Endpoint,
+        endpoint: ZHEndpoint,
         device: ZHDevice,
         settings: {
             friendlyName: string,
@@ -200,7 +210,7 @@ declare global {
     }
 
     interface TempState {
-        get: (ID: string) => {} | null;
+        get: (ID: string | number) => KeyValue | null;
     }
 
     type PublishEntityState = () => void;

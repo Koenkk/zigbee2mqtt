@@ -7,7 +7,9 @@ export default class Device {
     private device: ZHDevice;
     private _definition: Definition;
 
+    get zhDevice(): ZHDevice {return this.device;}
     get ieeeAddr(): string {return this.device.ieeeAddr;}
+    get ID(): string {return this.device.ieeeAddr;}
     get settings(): DeviceSettings {return settings.getDevice(this.ieeeAddr);}
     get name(): string {return this.settings.friendlyName;}
     get lastSeen(): number {return this.device.lastSeen;}
@@ -28,15 +30,17 @@ export default class Device {
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
     async removeFromNetwork(): Promise<void> {await this.device.removeFromNetwork();}
 
-    endpoint(key: 'default' = 'default'): Endpoint {
-        let endpoint: Endpoint;
+    endpoint(key?: string): ZHEndpoint {
+        let endpoint: ZHEndpoint;
+        if (key == null) key = 'default';
 
         if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.device)[key];
             if (ID) endpoint = this.device.getEndpoint(ID);
             else if (key === 'default') endpoint = this.device.endpoints[0];
-            else throw new Error(`Device '${this.name}' has no endpoint '${key}'`);
+            else return null;
         } else {
+            if (key !== 'default') return null;
             endpoint = this.device.endpoints[0];
         }
 
