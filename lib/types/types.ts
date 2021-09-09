@@ -160,6 +160,7 @@ declare global {
         retention?: number,
         availability?: boolean | {timeout: number},
         optimistic?: boolean,
+        retrieve_state?: boolean,
         filtered_optimistic?: string[],
     }
 
@@ -169,6 +170,7 @@ declare global {
         ID: number,
         optimistic?: boolean,
         filtered_optimistic?: string[],
+        retrieve_state?: boolean,
     }
 
     type EntitySettings = {
@@ -181,16 +183,20 @@ declare global {
         type: 'device' | 'group',
     }
 
-    interface ToZigbee {
-        key: string[], 
-        convertGet?: (entity: ZHEndpoint | ZHGroup, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>
-        convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<{state: KeyValue}>
+    interface ToZigbeeConverterGetMeta {message: {}, mapped: Definition | Definition[]}
+
+    interface ToZigbeeConverterResult {state: KeyValue, membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
+
+    interface ToZigbeeConverter {
+        key: string[],
+        convertGet?: (entity: ZHEndpoint | ZHGroup, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
+        convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
     }
 
     interface Definition  {
         model: string
         endpoint?: (device: ZHDevice) => {[s: string]: number}
-        toZigbee: ToZigbee[]
+        toZigbee: ToZigbeeConverter[]
     }
 
     interface ResolvedDevice {
@@ -213,5 +219,5 @@ declare global {
         get: (ID: string | number) => KeyValue | null;
     }
 
-    type PublishEntityState = () => void;
+    type PublishEntityState = (ID: string | number, payload: KeyValue) => void;
 }

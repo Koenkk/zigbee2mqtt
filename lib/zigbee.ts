@@ -189,7 +189,8 @@ export default class Zigbee {
                 this.resolvedEntitiesLookup[ID] = new Device(device);
             } else {
                 const group = this.herdsman.getGroupByID(Number(ID));
-                this.resolvedEntitiesLookup[ID] = new Group(group);
+                if (!group) this.createGroup(Number(ID));
+                else this.resolvedEntitiesLookup[ID] = new Group(group);
             }
         }
 
@@ -198,7 +199,7 @@ export default class Zigbee {
 
     getClients(): Device[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator')
-            .map((d) => this.resolveEntity(d) as Device);
+            .map((d) => this.resolveEntity(d) as Device).filter((d) => d);
     }
 
     private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
@@ -240,6 +241,12 @@ export default class Zigbee {
 
     async touchlinkScan(): Promise<{ieeeAddr: string, channel: number}[]> {
         return this.herdsman.touchlinkScan();
+    }
+
+    createGroup(groupID: number): Group {
+        const group = new Group(this.herdsman.createGroup(groupID));
+        this.resolvedEntitiesLookup[groupID] = group;
+        return group;
     }
 
     // TODO remove all legacy below

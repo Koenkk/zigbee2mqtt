@@ -7,8 +7,8 @@ import * as utils from '../util/utils';
 import ExtensionTS from './extensionts';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-import Group from 'lib/model/group';
-import Device from 'lib/model/device';
+import Group from '../model/group';
+import Device from '../model/device';
 
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
 const propertyEndpointRegex = new RegExp(`^(.*)_(${utils.endpointNames.join('|')})$`);
@@ -51,7 +51,7 @@ class Publish extends ExtensionTS {
             return null;
         }
 
-        return {ID: ID, endpoint: match[2] || '', type: match[3] as 'get' | 'set', attribute: match[4]};
+        return {ID: ID, endpoint: match[2], type: match[3] as 'get' | 'set', attribute: match[4]};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: EventMQTTMessage): KeyValue | null {
@@ -74,6 +74,47 @@ class Publish extends ExtensionTS {
         }
     }
 
+    legacyLog(payload: KeyValue): void {
+        if (settings.get().advanced.legacy_api) {
+            this.mqtt.publish('bridge/log', stringify(payload));
+        }
+    }
+
+    legacyRetrieveState(re: Device | Group, converter: ToZigbeeConverter, result: ToZigbeeConverterResult,
+        target: ZHEndpoint | ZHGroup, key: string, meta: ToZigbeeConverterGetMeta): void {
+        // It's possible for devices to get out of sync when writing an attribute that's not reportable.
+        // So here we re-read the value after a specified timeout, this timeout could for example be the
+        // transition time of a color change or for forcing a state read for devices that don't
+        // automatically report a new state when set.
+        // When reporting is requested for a device (report: true in device-specific settings) we won't
+        // ever issue a read here, as we assume the device will properly report changes.
+        // Only do this when the retrieve_state option is enabled for this device.
+        // retrieve_state == decprecated
+        if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') &&
+            re.settings.retrieve_state
+        ) {
+            setTimeout(() => converter.convertGet(target, key, meta), result.readAfterWriteTime);
+        }
+    }
+
+    updateMessageHomeAssistant(message: KeyValue, entityState: KeyValue): void {
+        /**
+         * Home Assistant always publishes 'state', even when e.g. only setting
+         * the color temperature. This would lead to 2 zigbee publishes, where the first one
+         * (state) is probably unecessary.
+         */
+        if (settings.get().homeassistant) {
+            const hasColorTemp = message.hasOwnProperty('color_temp');
+            const hasColor = message.hasOwnProperty('color');
+            const hasBrightness = message.hasOwnProperty('brightness');
+            const isOn = entityState.state === 'ON' ? true : false;
+            if (isOn && (hasColorTemp || hasColor) && !hasBrightness) {
+                delete message.state;
+                logger.debug('Skipping state because of Home Assistant');
+            }
+        }
+    }
+
     // TODO remove trailing _
     async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
         const parsedTopic = this.parseTopic(data.topic);
@@ -81,29 +122,28 @@ class Publish extends ExtensionTS {
 
         const re = this.zigbee.resolveEntity(parsedTopic.ID);
         if (re == null) {
-            /* istanbul ignore else */
-            if (settings.get().advanced.legacy_api) {
-                const message = {friendly_name: parsedTopic.ID};
-                this.mqtt.publish('bridge/log', stringify({type: `entity_not_found`, message}));
-            }
-
+            this.legacyLog({type: `entity_not_found`, message: {friendly_name: parsedTopic.ID}});
             logger.error(`Entity '${parsedTopic.ID}' is unknown`);
             return;
         }
 
         // Get entity details
         const definition = re instanceof Device ? re.definition : re.membersDefinitions();
-        if (definition == null) {logger.error(`Cannot publish to unsupported device '${re.name}'`); return;}
+        if (definition == null) {
+            logger.error(`Cannot publish to unsupported device '${re.name}'`);
+            return;
+        }
         const target = re instanceof Group ? re.zhGroup : re.endpoint(parsedTopic.endpoint);
-        if (target == null) {logger.error(`Device has no endpoint '${parsedTopic.endpoint}'`); return;}
+        if (target == null) {
+            logger.error(`Device has no endpoint '${parsedTopic.endpoint}'`);
+            return;
+        }
         const device = re instanceof Device ? re.zhDevice : null;
-        const options = re.settings;
+        const entitySettings = re.settings;
         const entityState = this.state.get(re.ID) || {};
         const membersState = re instanceof Group ?
             Object.fromEntries(re.membersIeeeAddr().map((e) => [e, this.state.get(e)])) : null;
-        const toZigbee = Array.isArray(definition) ? new Set(definition.map((d) => d.toZigbee).flat()) :
-            definition.toZigbee;
-        let converters: ToZigbee[];
+        let converters: ToZigbeeConverter[];
         {
             if (Array.isArray(definition)) {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
@@ -120,23 +160,7 @@ class Publish extends ExtensionTS {
             logger.error(`Invalid message '${message}', skipping...`);
             return;
         }
-
-        /**
-         * Home Assistant always publishes 'state', even when e.g. only setting
-         * the color temperature. This would lead to 2 zigbee publishes, where the first one
-         * (state) is probably unecessary.
-         */
-        const state = this.state.get(re.ID) || {};
-        if (settings.get().homeassistant) {
-            const hasColorTemp = message.hasOwnProperty('color_temp');
-            const hasColor = message.hasOwnProperty('color');
-            const hasBrightness = message.hasOwnProperty('brightness');
-            const isOn = state?.state === 'ON' ? true : false;
-            if (isOn && (hasColorTemp || hasColor) && !hasBrightness) {
-                delete message.state;
-                logger.debug('Skipping state because of Home Assistant');
-            }
-        }
+        this.updateMessageHomeAssistant(message, entityState);
 
         /**
          * Order state & brightness based on current bulb state
@@ -148,13 +172,13 @@ class Publish extends ExtensionTS {
          * bulb off => move state & brightness to the front
          */
         const entries = Object.entries(message);
-        const sorter = message.state?.toLowerCase() === 'off' ? 1 : -1;
+        const sorter = typeof message.state === 'string' && message.state.toLowerCase() === 'off' ? 1 : -1;
         entries.sort((a) => (['state', 'brightness', 'brightness_percent'].includes(a[0]) ? sorter : sorter * -1));
 
         // For each attribute call the corresponding converter
-        const usedConverters: {[s: number]: ToZigbee[]} = {};
-        const toPublish = {};
-        const addToToPublish = (ID, payload) => {
+        const usedConverters: {[s: number]: ToZigbeeConverter[]} = {};
+        const toPublish: {[s: number | string]: KeyValue} = {};
+        const addToToPublish = (ID: number | string, payload: KeyValue): void => {
             if (!(ID in toPublish)) toPublish[ID] = {};
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
@@ -162,7 +186,8 @@ class Publish extends ExtensionTS {
         for (let [key, value] of entries) {
             let endpointName = parsedTopic.endpoint;
             let localTarget = target;
-            let endpointOrGroupID: number = re instanceof Group ? target.ID : target.
+            // @ts-ignore TODO fix
+            let endpointOrGroupID = target.constructor.name === 'Endpoint' ? target.ID : target.groupID;
 
             // When the key has a endpointName included (e.g. state_right), this will override the target.
             const propertyEndpointMatch = key.match(propertyEndpointRegex);
@@ -170,7 +195,10 @@ class Publish extends ExtensionTS {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
                 localTarget = re.endpoint(endpointName);
-                if (localTarget == null) {logger.error(`Device has no endpoint '${endpointName}'`); return;}
+                if (localTarget == null) {
+                    logger.error(`Device '${re.name}' has no endpoint '${endpointName}'`);
+                    continue;
+                }
                 endpointOrGroupID = localTarget.ID;
             }
 
@@ -189,7 +217,7 @@ class Publish extends ExtensionTS {
             }
 
             // Converter didn't return a result, skip
-            const meta = {endpoint_name: endpointName, options, message: {...message}, logger, device,
+            const meta = {endpoint_name: endpointName, options: entitySettings, message: {...message}, logger, device,
                 state: entityState, membersState, mapped: definition};
 
             // Strip endpoint name from meta.message properties.
@@ -207,7 +235,7 @@ class Publish extends ExtensionTS {
                 if (parsedTopic.type === 'set' && converter.convertSet) {
                     logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     const result = await converter.convertSet(localTarget, key, value, meta);
-                    const optimistic = !options.hasOwnProperty('optimistic') || options.optimistic;
+                    const optimistic = !entitySettings.hasOwnProperty('optimistic') || entitySettings.optimistic;
                     if (result && result.state && optimistic) {
                         const msg = result.state;
 
@@ -219,10 +247,8 @@ class Publish extends ExtensionTS {
                         }
 
                         // filter out attribute listed in filtered_optimistic
-                        options.filtered_optimistic?.forEach((a) => delete msg[a]);
-                        if (Object.keys(msg).length != 0) {
-                            addToToPublish(resolvedEntity.settings.ID, msg);
-                        }
+                        entitySettings.filtered_optimistic?.forEach((a) => delete msg[a]);
+                        addToToPublish(re.ID, msg);
                     }
 
                     if (result && result.membersState && optimistic) {
@@ -231,48 +257,29 @@ class Publish extends ExtensionTS {
                         }
                     }
 
-                    // It's possible for devices to get out of sync when writing an attribute that's not reportable.
-                    // So here we re-read the value after a specified timeout, this timeout could for example be the
-                    // transition time of a color change or for forcing a state read for devices that don't
-                    // automatically report a new state when set.
-                    // When reporting is requested for a device (report: true in device-specific settings) we won't
-                    // ever issue a read here, as we assume the device will properly report changes.
-                    // Only do this when the retrieve_state option is enabled for this device.
-                    // retrieve_state == decprecated
-                    if (
-                        resolvedEntity.type === 'device' && result && result.hasOwnProperty('readAfterWriteTime') &&
-                        resolvedEntity.settings.retrieve_state
-                    ) {
-                        setTimeout(() => converter.convertGet(actualTarget, key, meta), result.readAfterWriteTime);
-                    }
-                } else if (topic.type === 'get' && converter.convertGet) {
-                    logger.debug(`Publishing get '${topic.type}' '${key}' to '${resolvedEntity.name}'`);
-                    await converter.convertGet(actualTarget, key, meta);
+                    this.legacyRetrieveState(re, converter, result, localTarget, key, meta);
+                } else if (parsedTopic.type === 'get' && converter.convertGet) {
+                    logger.debug(`Publishing get '${parsedTopic.type}' '${key}' to '${re.name}'`);
+                    await converter.convertGet(localTarget, key, meta);
                 } else {
-                    logger.error(`No converter available for '${topic.type}' '${key}' (${json[key]})`);
+                    logger.error(`No converter available for '${parsedTopic.type}' '${key}' (${message[key]})`);
                     continue;
                 }
             } catch (error) {
                 const message =
-                    `Publish '${topic.type}' '${key}' to '${re.name}' failed: '${error}'`;
+                    `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
                 logger.debug(error.stack);
-
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    const meta = {friendly_name: re.name};
-                    this.mqtt.publish(
-                        'bridge/log',
-                        stringify({type: `zigbee_publish_error`, message, meta}),
-                    );
-                }
+                this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
             }
 
             usedConverters[endpointOrGroupID].push(converter);
         }
 
         for (const [ID, payload] of Object.entries(toPublish)) {
-            this.publishEntityState(ID, payload);
+            if (Object.keys(payload).length != 0) {
+                this.publishEntityState(ID, payload);
+            }
         }
     }
 }

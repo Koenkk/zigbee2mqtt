@@ -10,7 +10,7 @@ export default class Device {
     get zhDevice(): ZHDevice {return this.device;}
     get ieeeAddr(): string {return this.device.ieeeAddr;}
     get ID(): string {return this.device.ieeeAddr;}
-    get settings(): DeviceSettings {return settings.getDevice(this.ieeeAddr);}
+    get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
     get name(): string {return this.settings.friendlyName;}
     get lastSeen(): number {return this.device.lastSeen;}
     get interviewing(): boolean {return this.device.interviewing;}
