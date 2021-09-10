@@ -135,7 +135,7 @@ class Publish extends ExtensionTS {
         }
         const target = re instanceof Group ? re.zhGroup : re.endpoint(parsedTopic.endpoint);
         if (target == null) {
-            logger.error(`Device has no endpoint '${parsedTopic.endpoint}'`);
+            logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
             return;
         }
         const device = re instanceof Device ? re.zhDevice : null;

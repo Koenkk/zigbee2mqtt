@@ -174,27 +174,35 @@ export default class Zigbee {
         return this.herdsman.getPermitJoinTimeout();
     }
 
+    private addDeviceToResolvedEntitiesLookup(ieeeAddr: string): Device {
+        if (!this.resolvedEntitiesLookup[ieeeAddr]) {
+            const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
+            this.resolvedEntitiesLookup[ieeeAddr] = new Device(device);
+        }
+
+        return this.resolvedEntitiesLookup[ieeeAddr] as Device;
+    }
+
+    private addGroupToResolvedEntitiesLookup(groupID: number): Group {
+        if (!this.resolvedEntitiesLookup[groupID]) {
+            const group = this.herdsman.getGroupByID(groupID);
+            this.resolvedEntitiesLookup[groupID] = new Group(group);
+        }
+
+        return this.resolvedEntitiesLookup[groupID] as Group;
+    }
+
     resolveEntity(key: ZHDevice | string): Device | Group {
         if (typeof key === 'object') key = key.ieeeAddr;
 
         const entitySettings = settings.getEntity(key);
         if (entitySettings == null) {
             return undefined;
+        } else if (entitySettings.type === 'device') {
+            return this.addDeviceToResolvedEntitiesLookup(entitySettings.ID as string);
+        } else { // group
+            return this.addGroupToResolvedEntitiesLookup(entitySettings.ID as number);
         }
-
-        const ID = entitySettings.ID.toString();
-        if (!(ID in this.resolvedEntitiesLookup)) {
-            if (entitySettings.type === 'device') {
-                const device = this.herdsman.getDeviceByIeeeAddr(ID);
-                this.resolvedEntitiesLookup[ID] = new Device(device);
-            } else {
-                const group = this.herdsman.getGroupByID(Number(ID));
-                if (!group) this.createGroup(Number(ID));
-                else this.resolvedEntitiesLookup[ID] = new Group(group);
-            }
-        }
-
-        return this.resolvedEntitiesLookup[ID];
     }
 
     getClients(): Device[] {
@@ -244,9 +252,13 @@ export default class Zigbee {
     }
 
     createGroup(groupID: number): Group {
-        const group = new Group(this.herdsman.createGroup(groupID));
-        this.resolvedEntitiesLookup[groupID] = group;
-        return group;
+        this.herdsman.createGroup(groupID);
+        return this.addGroupToResolvedEntitiesLookup(groupID);
+    }
+
+    deviceByNetworkAddress(networkAddress: number): Device {
+        const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
+        return this.addDeviceToResolvedEntitiesLookup(device.ieeeAddr);
     }
 
     // TODO remove all legacy below
@@ -366,7 +378,7 @@ export default class Zigbee {
             } else {
                 /* eslint-disable-line */ // @ts-ignore
                 let group = this.getGroupByIDLegacy(entity.ID);
-                /* eslint-disable-line */ // @ts-ignore
+                /* eslint-disable-line */ // @ts-ignore /* istanbul ignore if */
                 if (!group) group = this.createGroupLegacy(entity.ID);
                 return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
             }

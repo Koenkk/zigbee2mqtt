@@ -13,6 +13,8 @@ export default class Device {
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
     get name(): string {return this.settings.friendlyName;}
     get lastSeen(): number {return this.device.lastSeen;}
+    get modelID(): string {return this.device.modelID;}
+    get manufacturerName(): string {return this.device.manufacturerName;}
     get interviewing(): boolean {return this.device.interviewing;}
     get type(): 'Coordinator' | 'Router' | 'EndDevice' | 'Unknown' | 'GreenPower' {return this.device.type;}
     get powerSource(): string {return this.device.powerSource;}
@@ -40,10 +42,20 @@ export default class Device {
             else if (key === 'default') endpoint = this.device.endpoints[0];
             else return null;
         } else {
+            /* istanbul ignore next */
             if (key !== 'default') return null;
             endpoint = this.device.endpoints[0];
         }
 
         return endpoint;
     }
+
+    isXiaomiDevice(): boolean {
+        const xiaomiManufacturerID = [4151, 4447];
+        /* istanbul ignore next */
+        return this.zhDevice.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(this.zhDevice.manufacturerID) &&
+            (!this.zhDevice.manufacturerName || !this.zhDevice.manufacturerName.startsWith('Trust'));
+    }
+
+    isRouter(): boolean {return this.zhDevice.type === 'Router';}
 }

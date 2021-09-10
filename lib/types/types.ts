@@ -161,6 +161,8 @@ declare global {
         availability?: boolean | {timeout: number},
         optimistic?: boolean,
         retrieve_state?: boolean,
+        debounce?: number,
+        debounce_ignore?: string[],
         filtered_optimistic?: string[],
     }
 
@@ -193,10 +195,25 @@ declare global {
         convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
     }
 
+    // interface Logger {
+    //     error: (message: string) => void;
+    //     warn: (message: string) => void;
+    //     debug: (message: string) => void;
+    //     info: (message: string) => void;
+    // }
+
+    interface FromZigbeeConverter {
+        cluster: string,
+        type: string[] | string,
+        convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
+            meta: {state: KeyValue, logger: any, device: ZHDevice}) => KeyValue,
+    }
+
     interface Definition  {
         model: string
         endpoint?: (device: ZHDevice) => {[s: string]: number}
         toZigbee: ToZigbeeConverter[]
+        fromZigbee: FromZigbeeConverter[]
     }
 
     interface ResolvedDevice {
@@ -219,5 +236,5 @@ declare global {
         get: (ID: string | number) => KeyValue | null;
     }
 
-    type PublishEntityState = (ID: string | number, payload: KeyValue) => void;
+    type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce') => void;
 }
