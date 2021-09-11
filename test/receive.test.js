@@ -330,6 +330,7 @@ describe('Receive', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
+    // TODO
     // it('Should publish last_seen for unhandled messages', async () => {
     //     const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
     //     settings.set(['advanced', 'last_seen'], 'epoch');
