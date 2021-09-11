@@ -185,7 +185,10 @@ export default class Zigbee {
 
     private addGroupToResolvedEntitiesLookup(groupID: number): Group {
         if (!this.resolvedEntitiesLookup[groupID]) {
-            const group = this.herdsman.getGroupByID(groupID);
+            let group = this.herdsman.getGroupByID(groupID);
+            // Legacy: previously zigbee-herdsman did not keep track of groups, therefore create it when published to
+            // note that the group is in the configuration.yaml already.
+            if (group == null) group = this.herdsman.createGroup(groupID);
             this.resolvedEntitiesLookup[groupID] = new Group(group);
         }
 
@@ -251,10 +254,10 @@ export default class Zigbee {
         return this.herdsman.touchlinkScan();
     }
 
-    createGroup(groupID: number): Group {
-        this.herdsman.createGroup(groupID);
-        return this.addGroupToResolvedEntitiesLookup(groupID);
-    }
+    // createGroup(groupID: number): Group {
+    //     this.herdsman.createGroup(groupID);
+    //     return this.addGroupToResolvedEntitiesLookup(groupID);
+    // }
 
     deviceByNetworkAddress(networkAddress: number): Device {
         const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
@@ -378,7 +381,7 @@ export default class Zigbee {
             } else {
                 /* eslint-disable-line */ // @ts-ignore
                 let group = this.getGroupByIDLegacy(entity.ID);
-                /* eslint-disable-line */ // @ts-ignore /* istanbul ignore if */
+                /* istanbul ignore if */ // @ts-ignore
                 if (!group) group = this.createGroupLegacy(entity.ID);
                 return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
             }

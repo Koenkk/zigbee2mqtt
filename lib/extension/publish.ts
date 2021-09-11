@@ -75,6 +75,7 @@ class Publish extends ExtensionTS {
     }
 
     legacyLog(payload: KeyValue): void {
+        /* istanbul ignore else */
         if (settings.get().advanced.legacy_api) {
             this.mqtt.publish('bridge/log', stringify(payload));
         }
