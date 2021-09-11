@@ -10,12 +10,13 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Device from './model/device';
+import Group from './model/group';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
-    private resolvedEntitiesLookup: {[s: string]: Device} = {};
+    private resolvedEntitiesLookup: {[s: string]: Device | Group} = {};
 
     constructor(eventBus: EventBus) {
         this.acceptJoiningDeviceHandler = this.acceptJoiningDeviceHandler.bind(this);
@@ -67,26 +68,26 @@ export default class Zigbee {
 
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
-            this.eventBus.emitLastSeenChanged({device: this.resolveEntity(data.device)});
+            this.eventBus.emitLastSeenChanged({device: this.resolveEntity(data.device) as Device});
         });
         this.herdsman.on('permitJoinChanged', (data: ZHEvents.PermitJoinChangedPayload) => {
             this.eventBus.emitPermitJoinChanged(data);
         });
         this.herdsman.on('deviceNetworkAddressChanged', (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
             this.eventBus.emit('event', 'deviceNetworkAddressChanged', data); // TODO remove this event
-            this.eventBus.emitDeviceNetworkAddressChanged({device: this.resolveEntity(data.device)});
+            this.eventBus.emitDeviceNetworkAddressChanged({device: this.resolveEntity(data.device) as Device});
         });
         this.herdsman.on('deviceAnnounce', (data: ZHEvents.DeviceAnnouncePayload) => {
             this.eventBus.emit('event', 'deviceAnnounce', data); // TODO remove this event
-            this.eventBus.emitDeviceAnnounce({device: this.resolveEntity(data.device)});
+            this.eventBus.emitDeviceAnnounce({device: this.resolveEntity(data.device) as Device});
         });
         this.herdsman.on('deviceInterview', (data: ZHEvents.DeviceInterviewPayload) => {
             this.eventBus.emit('event', 'deviceInterview', data); // TODO remove this event
-            this.eventBus.emitDeviceInterview({device: this.resolveEntity(data.device), status: data.status});
+            this.eventBus.emitDeviceInterview({device: this.resolveEntity(data.device) as Device, status: data.status});
         });
         this.herdsman.on('deviceJoined', (data: ZHEvents.DeviceJoinedPayload) => {
             this.eventBus.emit('event', 'deviceJoined', data); // TODO remove this event
-            this.eventBus.emitDeviceJoined({device: this.resolveEntity(data.device)});
+            this.eventBus.emitDeviceJoined({device: this.resolveEntity(data.device) as Device});
         });
         this.herdsman.on('deviceLeave', (data: ZHEvents.DeviceLeavePayload) => {
             this.eventBus.emit('event', 'deviceLeave', data); // TODO remove this event
@@ -94,7 +95,7 @@ export default class Zigbee {
         });
         this.herdsman.on('message', (data: ZHEvents.MessagePayload) => {
             this.eventBus.emit('event', 'message', data); // TODO remove this event
-            this.eventBus.emitDeviceMessage({...data, device: this.resolveEntity(data.device)});
+            this.eventBus.emitDeviceMessage({...data, device: this.resolveEntity(data.device) as Device});
         });
 
         logger.info(`zigbee-herdsman started (${startResult})`);
@@ -173,25 +174,43 @@ export default class Zigbee {
         return this.herdsman.getPermitJoinTimeout();
     }
 
-    resolveEntity(key: ZHDevice): Device {
-        let ID: string;
-
-        /* istanbul ignore else */
-        if (typeof key === 'object' && key.ieeeAddr) ID = key.ieeeAddr;
-
-        if (!(ID in this.resolvedEntitiesLookup)) {
-            const zhDevice = this.herdsman.getDeviceByIeeeAddr(ID);
-            const entity = new Device(zhDevice);
-            this.resolvedEntitiesLookup[ID] = entity;
+    private addDeviceToResolvedEntitiesLookup(ieeeAddr: string): Device {
+        if (!this.resolvedEntitiesLookup[ieeeAddr]) {
+            const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
+            this.resolvedEntitiesLookup[ieeeAddr] = new Device(device);
         }
 
-        return this.resolvedEntitiesLookup[ID];
+        return this.resolvedEntitiesLookup[ieeeAddr] as Device;
+    }
+
+    private addGroupToResolvedEntitiesLookup(groupID: number): Group {
+        if (!this.resolvedEntitiesLookup[groupID]) {
+            let group = this.herdsman.getGroupByID(groupID);
+            // Legacy: previously zigbee-herdsman did not keep track of groups, therefore create it when published to
+            // note that the group is in the configuration.yaml already.
+            if (group == null) group = this.herdsman.createGroup(groupID);
+            this.resolvedEntitiesLookup[groupID] = new Group(group);
+        }
+
+        return this.resolvedEntitiesLookup[groupID] as Group;
+    }
+
+    resolveEntity(key: ZHDevice | string): Device | Group {
+        if (typeof key === 'object') key = key.ieeeAddr;
+
+        const entitySettings = settings.getEntity(key);
+        if (entitySettings == null) {
+            return undefined;
+        } else if (entitySettings.type === 'device') {
+            return this.addDeviceToResolvedEntitiesLookup(entitySettings.ID as string);
+        } else { // group
+            return this.addGroupToResolvedEntitiesLookup(entitySettings.ID as number);
+        }
     }
 
     getClients(): Device[] {
-        return this.herdsman.getDevices()
-            .filter((device) => device.type !== 'Coordinator')
-            .map((d) => this.resolveEntity(d));
+        return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator')
+            .map((d) => this.resolveEntity(d) as Device).filter((d) => d);
     }
 
     private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
@@ -233,6 +252,16 @@ export default class Zigbee {
 
     async touchlinkScan(): Promise<{ieeeAddr: string, channel: number}[]> {
         return this.herdsman.touchlinkScan();
+    }
+
+    // createGroup(groupID: number): Group {
+    //     this.herdsman.createGroup(groupID);
+    //     return this.addGroupToResolvedEntitiesLookup(groupID);
+    // }
+
+    deviceByNetworkAddress(networkAddress: number): Device {
+        const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
+        return this.addDeviceToResolvedEntitiesLookup(device.ieeeAddr);
     }
 
     // TODO remove all legacy below
@@ -352,7 +381,7 @@ export default class Zigbee {
             } else {
                 /* eslint-disable-line */ // @ts-ignore
                 let group = this.getGroupByIDLegacy(entity.ID);
-                /* eslint-disable-line */ // @ts-ignore
+                /* istanbul ignore if */ // @ts-ignore
                 if (!group) group = this.createGroupLegacy(entity.ID);
                 return {type: 'group', group, settings: {...deviceOptions, ...entity}, name: entity.friendlyName};
             }

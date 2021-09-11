@@ -1,7 +1,7 @@
 import type {
     Device as ZZHDevice,
     Group as ZZHGroup,
-    Endpoint as ZHEndpoint,
+    Endpoint as ZZHEndpoint,
 } from 'zigbee-herdsman/dist/controller/model';
 
 import {
@@ -28,7 +28,7 @@ declare global {
 
     type Device = D.default;
 
-    type Endpoint = ZHEndpoint;
+    type ZHEndpoint = ZZHEndpoint;
 
     type ZHDevice = ZZHDevice;
 
@@ -51,6 +51,7 @@ declare global {
     }
 
     interface Settings {
+        homeassistant?: boolean,
         devices?: {[s: string]: {friendly_name: string, retention?: number}},
         groups?: {[s: string]: {friendly_name: string, devices?: string[]}},
         passlist: string[],
@@ -158,12 +159,20 @@ declare global {
         ID: string,
         retention?: number,
         availability?: boolean | {timeout: number},
+        optimistic?: boolean,
+        retrieve_state?: boolean,
+        debounce?: number,
+        debounce_ignore?: string[],
+        filtered_optimistic?: string[],
     }
 
     interface GroupSettings {
         friendlyName: string,
         devices: string[],
         ID: number,
+        optimistic?: boolean,
+        filtered_optimistic?: string[],
+        retrieve_state?: boolean,
     }
 
     type EntitySettings = {
@@ -176,17 +185,42 @@ declare global {
         type: 'device' | 'group',
     }
 
+    interface ToZigbeeConverterGetMeta {message: {}, mapped: Definition | Definition[]}
+
+    interface ToZigbeeConverterResult {state: KeyValue, membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
+
+    interface ToZigbeeConverter {
+        key: string[],
+        convertGet?: (entity: ZHEndpoint | ZHGroup, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
+        convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
+    }
+
+    // interface Logger {
+    //     error: (message: string) => void;
+    //     warn: (message: string) => void;
+    //     debug: (message: string) => void;
+    //     info: (message: string) => void;
+    // }
+
+    interface FromZigbeeConverter {
+        cluster: string,
+        type: string[] | string,
+        convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
+            meta: {state: KeyValue, logger: any, device: ZHDevice}) => KeyValue,
+    }
+
     interface Definition  {
         model: string
         endpoint?: (device: ZHDevice) => {[s: string]: number}
-        toZigbee: {key: string[], convertGet?: (entity: Endpoint, key: string, meta: {message: {}, mapped: Definition}) => Promise<void>}[]
+        toZigbee: ToZigbeeConverter[]
+        fromZigbee: FromZigbeeConverter[]
     }
 
     interface ResolvedDevice {
         type: 'device',
         definition?: Definition,
         name: string,
-        endpoint: Endpoint,
+        endpoint: ZHEndpoint,
         device: ZHDevice,
         settings: {
             friendlyName: string,
@@ -199,8 +233,8 @@ declare global {
     }
 
     interface TempState {
-        get: (ID: string) => {} | null;
+        get: (ID: string | number) => KeyValue | null;
     }
 
-    type PublishEntityState = () => void;
+    type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce') => void;
 }

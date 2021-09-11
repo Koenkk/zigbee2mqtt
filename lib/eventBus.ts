@@ -14,10 +14,15 @@ declare global {
     type EventDeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
     type EventDeviceJoined = { device: Device };
     type EventDeviceLeave = { ieeeAddr: string };
+    type EventPublishEntityState = {
+        // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
+        messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
+        ieeeAddr: string,
+    };
     type EventDeviceMessage = {
         type: ZHEvents.MessagePayloadType;
         device: Device;
-        endpoint: Endpoint;
+        endpoint: ZHEndpoint;
         linkquality: number;
         groupID: number;
         cluster: string | number;
@@ -74,8 +79,8 @@ export default class EventBus {
         this.on('deviceLeave', callback, key);}
 
     public emitDeviceMessage(data: EventDeviceMessage): void {this.emitter.emit('deviceMessage', data);}
-    // public onDeviceMessage(key: ListenerKey, callback: (data: EventDeviceMessage) => void): void {
-    //     this.on('deviceMessage', callback, key);}
+    public onDeviceMessage(key: ListenerKey, callback: (data: EventDeviceMessage) => void): void {
+        this.on('deviceMessage', callback, key);}
 
     public emitMQTTMessage(data: EventMQTTMessage): void {this.emitter.emit('mqttMessage', data);}
     public onMQTTMessage(key: ListenerKey, callback: (data: EventMQTTMessage) => void): void {
@@ -85,6 +90,11 @@ export default class EventBus {
         this.emitter.emit('mqttMessagePublished', data);}
     public onMQTTMessagePublished(key: ListenerKey, callback: (data: EventMQTTMessagePublished) => void): void {
         this.on('mqttMessagePublished', callback, key);}
+
+    // public emitPublishEntityState(data: EventPublishEntityState): void {
+    //     this.emitter.emit('publishEntityState', data);}
+    public onPublishEntityState(key: ListenerKey, callback: (data: EventPublishEntityState) => void): void {
+        this.on('publishEntityState', callback, key);}
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private on(event: string, callback: (...args: any[]) => void, key: ListenerKey): void {

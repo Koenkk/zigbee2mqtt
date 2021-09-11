@@ -117,7 +117,7 @@ export default class MQTT {
         return this.client && !this.client.reconnecting;
     }
 
-    async publish(topic: string, payload: string, options: {qos?: mqtt.QoS, retain?: boolean},
+    async publish(topic: string, payload: string, options: {qos?: mqtt.QoS, retain?: boolean}={},
         base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
     ): Promise<void> {
         const defaultOptions: {qos: mqtt.QoS, retain: boolean} = {qos: 0, retain: false};
