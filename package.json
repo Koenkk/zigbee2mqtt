@@ -51,17 +51,17 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "serve-static": "^1.14.1",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "^0.5.20",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
-    "ws": "^8.2.1",
+    "ws": "^8.2.2",
     "zigbee-herdsman": "0.13.143",
     "zigbee-herdsman-converters": "14.0.244",
     "zigbee2mqtt-frontend": "0.6.6"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.15.4",
+    "@babel/preset-env": "^7.15.6",
     "@babel/preset-typescript": "^7.15.0",
     "@types/debounce": "^1.2.0",
     "@types/humanize-duration": "^3.25.1",
@@ -69,15 +69,15 @@
     "@types/js-yaml": "^4.0.3",
     "@types/object-assign-deep": "^0.4.0",
     "@types/ws": "^7.4.7",
-    "@typescript-eslint/eslint-plugin": "^4.30.0",
-    "@typescript-eslint/parser": "^4.30.0",
-    "babel-jest": "^27.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "babel-jest": "^27.1.1",
     "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jest": "^24.4.0",
-    "jest": "^27.1.0",
+    "jest": "^27.1.1",
     "tmp": "^0.2.1",
-    "typescript": "^4.4.2"
+    "typescript": "^4.4.3"
   },
   "jest": {
     "coverageThreshold": {
