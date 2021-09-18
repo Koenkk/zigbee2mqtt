@@ -6,6 +6,10 @@ zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b3');
 zigbeeHerdsman.returnDevices.push('0x00124b00120144ae');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45553');
 zigbeeHerdsman.returnDevices.push('0x0017880104e45517');
+zigbeeHerdsman.returnDevices.push('0x000b57fffec6a5b2');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45535');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45521');
+zigbeeHerdsman.returnDevices.push('0x0017880104e45525');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
@@ -72,7 +76,6 @@ describe('Availability', () => {
         device.ping.mockImplementationOnce(() => {throw new Error('failed')});
         jest.advanceTimersByTime(11 * 1000);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledTimes(3);
         expect(logger.debug).toHaveBeenCalledWith("Failed to ping 'bulb_color'");
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
@@ -336,10 +339,9 @@ describe('Availability', () => {
         device.lastSeen = Date.now();
         MQTT.publish.mockClear();
         jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
-        expect(MQTT.publish).toHaveBeenCalledTimes(0);
         device.lastSeen = device.lastSeen - (1000 * 60 * 60 * 25);
         jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote/availability',
           'offline',
@@ -350,7 +352,7 @@ describe('Availability', () => {
         // Shouldn't do anything more when device is removed
         settings.removeDevice(device.ieeeAddr);
         jest.advanceTimersByTime(1000 * 60 * 60 * 1); // 1 hours
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
 
         device.lastSeen = defaultLastSeen;
     });

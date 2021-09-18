@@ -112,8 +112,7 @@ export function getObjectProperty(object: {[s: string]: unknown}, key: string, d
     return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
 }
 
-export function getResponse(request: {transaction: string}, data: unknown, error: string):
-    {data: unknown, status: string, error?: string, transaction?: string} {
+export function getResponse(request: KeyValue | string, data: KeyValue, error: string): MQTTResponse {
     const response: {data: unknown, status: string, error?: string, transaction?: string} =
         {data, status: error ? 'error' : 'ok'};
     if (error) response.error = error;
@@ -123,7 +122,7 @@ export function getResponse(request: {transaction: string}, data: unknown, error
     return response;
 }
 
-export function parseJSON(value: string, failedReturnValue: unknown): unknown {
+export function parseJSON(value: string, failedReturnValue: string): KeyValue | string {
     try {
         return JSON.parse(value);
     } catch (e) {
@@ -306,6 +305,13 @@ export function isXiaomiDevice(device: ZHDevice): boolean {
 
 export function isIkeaTradfriDevice(device: ZHDevice): boolean {
     return [4476].includes(device.manufacturerID);
+}
+
+const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}))?$`);
+export function parseEntityID(ID: string): {ID: string, endpoint: string} {
+    const match = ID.match(entityIDRegex);
+    if (match) return {ID: match[1], endpoint: match[2]};
+    else return null;
 }
 
 export const hours = (hours: number): number => 1000 * 60 * 60 * hours;

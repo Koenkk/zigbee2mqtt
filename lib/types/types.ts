@@ -164,6 +164,7 @@ declare global {
         debounce?: number,
         debounce_ignore?: string[],
         filtered_optimistic?: string[],
+        icon?: string,
     }
 
     interface GroupSettings {
@@ -214,6 +215,11 @@ declare global {
         endpoint?: (device: ZHDevice) => {[s: string]: number}
         toZigbee: ToZigbeeConverter[]
         fromZigbee: FromZigbeeConverter[]
+        icon?: string
+        description: string
+        vendor: string
+        exposes: unknown[] // TODO
+        ota: unknown // TODO
     }
 
     interface ResolvedDevice {
@@ -234,7 +240,10 @@ declare global {
 
     interface TempState {
         get: (ID: string | number) => KeyValue | null;
+        remove: (ID: string | number) => void;
     }
+
+    interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
 
     type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce') => void;
 }

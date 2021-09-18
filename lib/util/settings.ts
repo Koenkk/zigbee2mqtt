@@ -651,8 +651,8 @@ export function removeDeviceFromGroup(IDorName: string, keys: string[]): void {
     }
 }
 
-export function removeGroup(IDorName: string): void {
-    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+export function removeGroup(IDorName: string | number): void {
+    const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID;
     const settings = getInternalSettings();
     delete settings.groups[groupID];
     write();

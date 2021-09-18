@@ -3,13 +3,13 @@ import * as settings from '../util/settings';
 // @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
 
-export default class Device {
+export default class Group {
     private group: ZHGroup;
 
     get zhGroup(): ZHGroup {return this.group;}
     get ID(): number {return this.group.groupID;}
     get settings(): GroupSettings {return settings.getGroup(this.ID);}
-    get name(): string {return this.settings.friendlyName;}
+    get name(): string {return this.settings?.friendlyName || this.ID.toString();}
     get members(): ZHEndpoint[] {return this.group.members;}
 
     constructor(group: ZHGroup) {

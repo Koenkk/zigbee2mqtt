@@ -404,13 +404,14 @@ describe('Publish', () => {
     });
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
-        delete zigbeeHerdsman.groups.group_2;
-        expect(Object.values(zigbeeHerdsman.groups).length).toBe(9);
-        await MQTT.events.message('zigbee2mqtt/group_2/set', stringify({state: 'ON'}));
-        await flushPromises();
+        settings.addGroup('group_12312', 12312);
         expect(Object.values(zigbeeHerdsman.groups).length).toBe(10);
-        expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.groups.group_2.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        await MQTT.events.message('zigbee2mqtt/group_12312/set', stringify({state: 'ON'}));
+        await flushPromises();
+        expect(Object.values(zigbeeHerdsman.groups).length).toBe(11);
+        expect(zigbeeHerdsman.groups.group_12312.command).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.groups.group_12312.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+        delete zigbeeHerdsman.groups.group_12312;
     });
 
     it('Shouldnt publish new state when optimistic = false', async () => {
