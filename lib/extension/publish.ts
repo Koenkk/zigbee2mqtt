@@ -9,6 +9,7 @@ import ExtensionTS from './extensionts';
 import stringify from 'json-stable-stringify-without-jsonify';
 import Group from '../model/group';
 import Device from '../model/device';
+import bind from 'bind-decorator';
 
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
 const propertyEndpointRegex = new RegExp(`^(.*)_(${utils.endpointNames.join('|')})$`);
@@ -34,8 +35,7 @@ const defaultGroupConverters = [
 interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
 
 class Publish extends ExtensionTS {
-    start(): void {
-        this.onMQTTMessage_ = this.onMQTTMessage_.bind(this);
+    async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }
 
@@ -117,7 +117,7 @@ class Publish extends ExtensionTS {
     }
 
     // TODO remove trailing _
-    async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
         const parsedTopic = this.parseTopic(data.topic);
         if (!parsedTopic) return;
 

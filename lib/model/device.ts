@@ -7,13 +7,19 @@ export default class Device {
     private device: ZHDevice;
     private _definition: Definition;
 
+    get endpoints(): ZHEndpoint[] {return this.device.endpoints;}
     get zhDevice(): ZHDevice {return this.device;}
     get ieeeAddr(): string {return this.device.ieeeAddr;}
     get ID(): string {return this.device.ieeeAddr;}
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
-    get name(): string {return this.settings.friendlyName;}
+    get name(): string {
+        return this.type === 'Coordinator' ? 'Coordinator' : this.settings?.friendlyName || this.ieeeAddr;}
     get lastSeen(): number {return this.device.lastSeen;}
     get modelID(): string {return this.device.modelID;}
+    get softwareBuildID(): string {return this.device.softwareBuildID;}
+    get dateCode(): string {return this.device.dateCode;}
+    get interviewCompleted(): boolean {return this.device.interviewCompleted;}
+    get networkAddress(): number {return this.device.networkAddress;}
     get manufacturerName(): string {return this.device.manufacturerName;}
     get interviewing(): boolean {return this.device.interviewing;}
     get type(): 'Coordinator' | 'Router' | 'EndDevice' | 'Unknown' | 'GreenPower' {return this.device.type;}

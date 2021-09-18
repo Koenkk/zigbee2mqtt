@@ -174,10 +174,25 @@ export default class Zigbee {
         return this.herdsman.getPermitJoinTimeout();
     }
 
+    async permitJoin(permit: boolean, device?: Device, time: number=undefined): Promise<void> {
+        if (permit) {
+            logger.info(`Zigbee: allowing new devices to join${device ? ` via ${device.name}` : ''}.`);
+        } else {
+            logger.info('Zigbee: disabling joining new devices.');
+        }
+
+        if (device && permit) {
+            await this.herdsman.permitJoin(permit, device.zhDevice, time);
+        } else {
+            await this.herdsman.permitJoin(permit, undefined, time);
+        }
+    }
+
     private addDeviceToResolvedEntitiesLookup(ieeeAddr: string): Device {
         if (!this.resolvedEntitiesLookup[ieeeAddr]) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
-            this.resolvedEntitiesLookup[ieeeAddr] = new Device(device);
+            /* istanbul ignore else */
+            if (device) this.resolvedEntitiesLookup[ieeeAddr] = new Device(device);
         }
 
         return this.resolvedEntitiesLookup[ieeeAddr] as Device;
@@ -196,21 +211,35 @@ export default class Zigbee {
     }
 
     resolveEntity(key: ZHDevice | string): Device | Group {
-        if (typeof key === 'object') key = key.ieeeAddr;
+        const ID = typeof key === 'string' ? key : key.ieeeAddr;
+        const entitySettings = settings.getEntity(ID);
+        if (!entitySettings) return undefined;
 
-        const entitySettings = settings.getEntity(key);
-        if (entitySettings == null) {
-            return undefined;
-        } else if (entitySettings.type === 'device') {
-            return this.addDeviceToResolvedEntitiesLookup(entitySettings.ID as string);
-        } else { // group
-            return this.addGroupToResolvedEntitiesLookup(entitySettings.ID as number);
+        if (typeof key === 'object') {
+            return this.addDeviceToResolvedEntitiesLookup(key.ieeeAddr);
+        } else {
+            return entitySettings.type === 'device' ?
+                this.addDeviceToResolvedEntitiesLookup(entitySettings.ID as string) :
+                this.addGroupToResolvedEntitiesLookup(entitySettings.ID as number);
         }
     }
 
     getClients(): Device[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator')
             .map((d) => this.resolveEntity(d) as Device).filter((d) => d);
+    }
+
+    getFirstCoordinatorEndpoint(): ZHEndpoint {
+        return this.herdsman.getDevicesByType('Coordinator')[0].endpoints[0];
+    }
+
+    getGroups(): Group[] {
+        return this.herdsman.getGroups().map((g) => this.addGroupToResolvedEntitiesLookup(g.groupID)).filter((g) => g);
+    }
+
+    getDevices(): Device[] {
+        return this.herdsman.getDevices()
+            .map((d) => this.addDeviceToResolvedEntitiesLookup(d.ieeeAddr)).filter((d) => d);
     }
 
     private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
@@ -254,10 +283,10 @@ export default class Zigbee {
         return this.herdsman.touchlinkScan();
     }
 
-    // createGroup(groupID: number): Group {
-    //     this.herdsman.createGroup(groupID);
-    //     return this.addGroupToResolvedEntitiesLookup(groupID);
-    // }
+    createGroup(groupID: number): Group {
+        this.herdsman.createGroup(groupID);
+        return this.addGroupToResolvedEntitiesLookup(groupID);
+    }
 
     deviceByNetworkAddress(networkAddress: number): Device {
         const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
@@ -288,12 +317,15 @@ export default class Zigbee {
     }
     async permitJoinLegacy(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
         if (permit) {
+            /* istanbul ignore next */
             logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`);
         } else {
             logger.info('Zigbee: disabling joining new devices.');
         }
 
+        /* istanbul ignore next */
         if (resolvedEntity && permit) {
+            /* istanbul ignore next */
             await this.herdsman.permitJoin(permit, resolvedEntity.device, time);
         } else {
             await this.herdsman.permitJoin(permit, undefined, time);

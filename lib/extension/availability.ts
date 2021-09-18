@@ -3,6 +3,7 @@ import logger from '../util/logger';
 import {sleep, hours, minutes, seconds, isAvailabilityEnabledForDevice} from '../util/utils';
 import * as settings from '../util/settings';
 import debounce from 'debounce';
+import bind from 'bind-decorator';
 
 // TODO
 // - Enable for HA addon
@@ -96,15 +97,13 @@ export default class Availability extends ExtensionTS {
         this.pingQueueExecuteNext();
     }
 
-    start(): void {
+    override async start(): Promise<void> {
         logger.warn('Using experimental new availability feature');
 
         this.eventBus.onDeviceRenamed(this, (data: EventDeviceRenamed) =>
             this.publishAvailability(data.device, false, true));
         this.eventBus.onDeviceLeave(this, (data: EventDeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.retrieveState(data.device));
-
-        this.onLastSeenChanged = this.onLastSeenChanged.bind(this);
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
         for (const device of this.zigbee.getClients()) {
@@ -151,7 +150,7 @@ export default class Availability extends ExtensionTS {
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
     }
 
-    private onLastSeenChanged(data: EventLastSeenChanged): void {
+    @bind private onLastSeenChanged(data: EventLastSeenChanged): void {
         if (isAvailabilityEnabledForDevice(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(data.device);
@@ -160,7 +159,7 @@ export default class Availability extends ExtensionTS {
         }
     }
 
-    override stop(): void {
+    override async stop(): Promise<void> {
         super.stop();
         Object.values(this.timers).forEach((t) => clearTimeout(t));
     }

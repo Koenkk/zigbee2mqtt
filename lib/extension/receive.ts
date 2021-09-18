@@ -4,20 +4,19 @@ import debounce from 'debounce';
 import ExtensionTS from './extensionts';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
+import bind from 'bind-decorator';
 
 class Receive extends ExtensionTS {
     private elapsed: {[s: string]: number} = {};
     // eslint-disable-next-line
     private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type
 
-    start(): void {
-        this.onPublishEntityState = this.onPublishEntityState.bind(this);
+    async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
-        this.onDeviceMessage = this.onDeviceMessage.bind(this);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
+    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
@@ -85,7 +84,7 @@ class Receive extends ExtensionTS {
         return true;
     }
 
-    onDeviceMessage(data: EventDeviceMessage): void {
+    @bind onDeviceMessage(data: EventDeviceMessage): void {
         if (!data.device) return;
 
         /**
