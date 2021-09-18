@@ -191,6 +191,7 @@ export default class Zigbee {
     private addDeviceToResolvedEntitiesLookup(ieeeAddr: string): Device {
         if (!this.resolvedEntitiesLookup[ieeeAddr]) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
+            /* istanbul ignore else */
             if (device) this.resolvedEntitiesLookup[ieeeAddr] = new Device(device);
         }
 
@@ -316,12 +317,15 @@ export default class Zigbee {
     }
     async permitJoinLegacy(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
         if (permit) {
+            /* istanbul ignore next */
             logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`);
         } else {
             logger.info('Zigbee: disabling joining new devices.');
         }
 
+        /* istanbul ignore next */
         if (resolvedEntity && permit) {
+            /* istanbul ignore next */
             await this.herdsman.permitJoin(permit, resolvedEntity.device, time);
         } else {
             await this.herdsman.permitJoin(permit, undefined, time);

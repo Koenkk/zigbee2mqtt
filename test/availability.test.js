@@ -277,6 +277,7 @@ describe('Availability', () => {
 
     it('Should not ping devices not in passlist if availability_passlist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb;
+        device.ping.mockClear();
         extension.state[device.ieeeAddr] = false;
         settings.set(['advanced', 'availability_passlist'], ['0x000b57fffec6a5b3'])
         await resetExtension();
@@ -319,6 +320,7 @@ describe('Availability', () => {
     });
 
     it('Should publish availability when end device joins', async () => {
+        delete extension.state[zigbeeHerdsman.devices.WXKG02LM_rev1.ieeeAddr];
         const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const payload = {device};
         MQTT.publish.mockClear();

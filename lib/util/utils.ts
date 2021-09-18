@@ -4,6 +4,7 @@ import * as data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
+import {Endpoint} from 'zigbee-herdsman/dist/controller/model';
 
 // TODO: check all
 
@@ -310,8 +311,11 @@ export function isIkeaTradfriDevice(device: ZHDevice): boolean {
 const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}))?$`);
 export function parseEntityID(ID: string): {ID: string, endpoint: string} {
     const match = ID.match(entityIDRegex);
-    if (match) return {ID: match[1], endpoint: match[2]};
-    else return null;
+    return match && {ID: match[1], endpoint: match[2]};
+}
+
+export function isEndpoint(obj: unknown): obj is Endpoint {
+    return obj.constructor.name.toLowerCase() === 'endpoint';
 }
 
 export const hours = (hours: number): number => 1000 * 60 * 60 * hours;

@@ -11,7 +11,6 @@ import {detailedDiff} from 'deep-object-diff';
 import ExtensionTS from './extensionts';
 import Device from '../model/device';
 import Group from '../model/group';
-import {Endpoint} from 'zigbee-herdsman/dist/controller/model';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
@@ -595,7 +594,7 @@ class Bridge extends ExtensionTS {
                 };
 
                 for (const bind of endpoint.binds) {
-                    const target = bind.target instanceof Endpoint ?
+                    const target = utils.isEndpoint(bind.target) ?
                         {type: 'endpoint', ieee_address: bind.target.getDevice().ieeeAddr, endpoint: bind.target.ID} :
                         {type: 'group', id: bind.target.groupID};
                     data.bindings.push({cluster: bind.cluster.name, target});
