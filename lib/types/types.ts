@@ -221,6 +221,7 @@ declare global {
         exposes: unknown[] // TODO
         ota: unknown // TODO
         configure?: (device: ZHDevice, coordinatorEndpoint: ZZHEndpoint, logger: unknown) => Promise<void>;
+        onEvent?: (type: string, data: KeyValue, device: ZHDevice, settings: KeyValue) => Promise<void>;
     }
 
     interface ResolvedDevice {

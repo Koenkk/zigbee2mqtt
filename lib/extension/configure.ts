@@ -87,7 +87,7 @@ class Configure extends ExtensionTS {
     }
 
     private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
-        force=false, thowError=false): Promise<boolean> {
+        force=false, thowError=false): Promise<void> {
         if (!force) {
             if (!device.definition?.configure || device.zhDevice.interviewing) {
                 return;
@@ -105,7 +105,7 @@ class Configure extends ExtensionTS {
         }
 
         if (this.configuring.has(device.ieeeAddr) || (this.attempts[device.ieeeAddr] >= 3 && !force)) {
-            return false;
+            return;
         }
 
         this.configuring.add(device.ieeeAddr);

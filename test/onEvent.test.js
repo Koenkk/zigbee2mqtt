@@ -66,10 +66,7 @@ describe('On event', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
-        const call = mockOnEvent.mock.calls[0];
-        expect(call[0]).toBe('deviceAnnounce')
-        expect(call[1]).toStrictEqual({device})
-        expect(call[2]).toBe(device);
+        expect(mockOnEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device, settings.getDevice(device.ieeeAddr));
     });
 
     it('Should call index onEvent with zigbee event', async () => {
@@ -77,9 +74,6 @@ describe('On event', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledTimes(1);
-        const call = zigbeeHerdsmanConverters.onEvent.mock.calls[0];
-        expect(call[0]).toBe('deviceAnnounce')
-        expect(call[1]).toStrictEqual({device})
-        expect(call[2]).toBe(device);
+        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device, settings.getDevice(device.ieeeAddr));
     });
 });
