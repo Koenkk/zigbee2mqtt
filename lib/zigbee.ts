@@ -213,7 +213,7 @@ export default class Zigbee {
     resolveEntity(key: ZHDevice | string): Device | Group {
         const ID = typeof key === 'string' ? key : key.ieeeAddr;
         const entitySettings = settings.getEntity(ID);
-        if (!entitySettings) return undefined;
+        if (!entitySettings && !(typeof key === 'object' && key.type === 'Coordinator')) return undefined;
 
         if (typeof key === 'object') {
             return this.addDeviceToResolvedEntitiesLookup(key.ieeeAddr);

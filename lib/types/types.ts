@@ -220,6 +220,7 @@ declare global {
         vendor: string
         exposes: unknown[] // TODO
         ota: unknown // TODO
+        configure?: (device: ZHDevice, coordinatorEndpoint: ZZHEndpoint, logger: unknown) => Promise<void>;
     }
 
     interface ResolvedDevice {

@@ -13,9 +13,9 @@ declare global {
     type EventDeviceAnnounce = { device: Device };
     type EventDeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
     type EventDeviceJoined = { device: Device };
+    type EventReportingDisabled = { device: ZHDevice }; // TODO zhdevice -> device
     type EventDeviceLeave = { ieeeAddr: string };
     type EventGroupMembersChanged = unknown; // TODO fill
-    type EventDevicesChanged = unknown; // TODO fill
     type EventPublishEntityState = {
         // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
         messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
@@ -103,10 +103,13 @@ export default class EventBus {
     public onGroupMembersChanged(key: ListenerKey, callback: (data: EventGroupMembersChanged) => void): void {
         this.on('groupMembersChanged', callback, key);}
 
-    // public emitDevicesChanged(data: EventDevicesChanged): void {
-    //     this.emitter.emit('devicesChanged', data);}
-    public onDevicesChanged(key: ListenerKey, callback: (data: EventDevicesChanged) => void): void {
-        this.on('devicesChanged', callback, key);}
+    public emitDevicesChanged(): void {this.emitter.emit('devicesChanged');}
+    public onDevicesChanged(key: ListenerKey, callback: () => void): void {this.on('devicesChanged', callback, key);}
+
+    // public emitReportingDisabled(data: EventReportingDisabled): void {
+    //     this.emitter.emit('reportingDisabled', data);}
+    public onReportingDisabled(key: ListenerKey, callback: (data: EventReportingDisabled) => void): void {
+        this.on('reportingDisabled', callback, key);}
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private on(event: string, callback: (...args: any[]) => void, key: ListenerKey): void {

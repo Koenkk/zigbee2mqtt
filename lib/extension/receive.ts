@@ -85,6 +85,7 @@ class Receive extends ExtensionTS {
     }
 
     @bind onDeviceMessage(data: EventDeviceMessage): void {
+        /* istanbul ignore next */
         if (!data.device) return;
 
         /**
