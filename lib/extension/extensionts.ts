@@ -7,7 +7,7 @@ abstract class ExtensionTS {
     protected eventBus: EventBus;
     protected enableDisableExtension: (enable: boolean, name: string) => void;
     protected restartCallback: () => void;
-    protected addExtension: (extension: ExtensionTS) => void;
+    protected addExtension: (extension: ExternalConverterClass) => void;
 
     /**
      * Besides intializing variables, the constructor should do nothing!
@@ -23,7 +23,7 @@ abstract class ExtensionTS {
      */
     constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => void,
-        restartCallback: () => void, addExtension: (extension: ExtensionTS) => void) {
+        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
         this.state = state;

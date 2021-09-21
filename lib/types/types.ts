@@ -7,6 +7,9 @@ import type {
 import {
     NetworkParameters as ZHNetworkParameters,
     CoordinatorVersion as ZHCoordinatorVersion,
+    LQI as ZHLQI,
+    RoutingTable as ZHRoutingTable,
+    RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 
 import * as D from 'lib/model/device';
@@ -31,6 +34,9 @@ declare global {
     type ZHEndpoint = ZZHEndpoint;
 
     type ZHDevice = ZZHDevice;
+    type LQI = ZHLQI;
+    type RoutingTable = ZHRoutingTable;
+    type RoutingTableEntry = ZHRoutingTableEntry;
 
     type ZHGroup = ZZHGroup;
 
@@ -146,6 +152,7 @@ declare global {
             timestamp_format: string,
             baudrate?: number,
             rtscts?: boolean,
+            ikea_ota_use_test_url?: boolean,
         },
         ota: {
             update_check_interval: number,
@@ -218,10 +225,13 @@ declare global {
         icon?: string
         description: string
         vendor: string
-        exposes: unknown[] // TODO
-        ota: unknown // TODO
+        exposes: {type: string, name?: string, features?: {name: string}[]}[] // TODO
         configure?: (device: ZHDevice, coordinatorEndpoint: ZZHEndpoint, logger: unknown) => Promise<void>;
         onEvent?: (type: string, data: KeyValue, device: ZHDevice, settings: KeyValue) => Promise<void>;
+        ota?: {
+            isUpdateAvailable: (device: ZHDevice, logger: unknown, data?: KeyValue) => Promise<boolean>;
+            updateToLatest: (device: ZHDevice, logger: unknown, onProgress: (progress: number, remaining: number) => void) => Promise<void>;
+        }
     }
 
     interface ResolvedDevice {
@@ -243,6 +253,12 @@ declare global {
     interface TempState {
         get: (ID: string | number) => KeyValue | null;
         remove: (ID: string | number) => void;
+        removeKey: (ID: string, keys: string[]) => void; 
+    }
+
+    interface ExternalConverterClass {
+        new(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+            eventBus: EventBus, settings: unknown, logger: unknown): ExternalConverterClass;
     }
 
     interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}

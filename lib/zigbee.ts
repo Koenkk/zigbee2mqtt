@@ -303,9 +303,6 @@ export default class Zigbee {
     getGroupByIDLegacy(ID: number): ZHGroup {
         return this.herdsman.getGroupByID(ID);
     }
-    getDeviceByNetworkAddressLegacy(networkAddress: number): ZHDevice {
-        return this.herdsman.getDeviceByNetworkAddress(networkAddress);
-    }
     getDevicesByTypeLegacy(type: 'Coordinator' | 'Router' | 'EndDevice'): ZHDevice[] {
         return this.herdsman.getDevicesByType(type);
     }

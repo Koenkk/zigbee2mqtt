@@ -64,4 +64,6 @@ export default class Device {
     }
 
     isRouter(): boolean {return this.zhDevice.type === 'Router';}
+    lqi(): Promise<LQI> {return this.zhDevice.lqi();}
+    routingTable(): Promise<RoutingTable> {return this.zhDevice.routingTable();}
 }
