@@ -68,7 +68,6 @@ class NetworkMap extends ExtensionTS {
                     stringify(utils.getResponse(message, {routes, type, value}, null)),
                 );
             } catch (error) {
-                logger.debug(error.stack);
                 await this.mqtt.publish(
                     'bridge/response/networkmap',
                     stringify(utils.getResponse(message, {}, error.message)),
