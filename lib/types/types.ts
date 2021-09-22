@@ -71,6 +71,8 @@ declare global {
         permit_join: boolean,
         frontend?: {
             auth_token?: string,
+            host?: string,
+            port?: number,
         },
         mqtt: {
             base_topic: string,
@@ -262,7 +264,7 @@ declare global {
     interface TempState {
         get: (ID: string | number) => KeyValue | null;
         remove: (ID: string | number) => void;
-        removeKey: (ID: string, keys: string[]) => void; 
+        removeKey: (ID: string, keys: string[]) => void;
         exists: (ID: string) => boolean;
     }
 

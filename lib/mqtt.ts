@@ -106,7 +106,7 @@ export default class MQTT {
         this.client.subscribe(topic);
     }
 
-    private onMessage(topic: string, message: string): void {
+    public onMessage(topic: string, message: string): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
             this.eventBus.emitMQTTMessage({topic, message: message + ''});
