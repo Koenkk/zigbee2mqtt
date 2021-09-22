@@ -290,7 +290,7 @@ export default class Zigbee {
 
     deviceByNetworkAddress(networkAddress: number): Device {
         const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
-        return this.addDeviceToResolvedEntitiesLookup(device.ieeeAddr);
+        return device && this.addDeviceToResolvedEntitiesLookup(device.ieeeAddr);
     }
 
     // TODO remove all legacy below
