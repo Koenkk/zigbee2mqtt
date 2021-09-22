@@ -5,6 +5,8 @@ import ExtensionTS from './extension/extensionts';
 
 declare global {
     interface EventDeviceRenamed { device: Device, homeAssisantRename: boolean, from: string, to: string }
+    // TODO: remove resolved entity, replace by Device
+    interface EventDeviceRemoved { resolvedEntity: ResolvedEntity}
     type EventMQTTMessage = { topic: string, message: string };
     type EventMQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
     type EventPermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
@@ -15,7 +17,8 @@ declare global {
     type EventDeviceJoined = { device: Device };
     type EventReportingDisabled = { device: ZHDevice }; // TODO zhdevice -> device
     type EventDeviceLeave = { ieeeAddr: string };
-    type EventGroupMembersChanged = unknown; // TODO fill
+    // TODO: remove resolved entity, replace by Group
+    type EventGroupMembersChanged = { group: ResolvedEntity }; // TODO fill
     type EventPublishEntityState = {
         // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
         messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
@@ -53,6 +56,10 @@ export default class EventBus {
     // public emitDeviceRenamed(data: EventDeviceRenamed): void {this.emitter.emit('deviceRenamed', data);}
     public onDeviceRenamed(key: ListenerKey, callback: (data: EventDeviceRenamed) => void): void {
         this.on('deviceRenamed', callback, key);}
+
+    // public emitDeviceRemoved(data: EventDeviceRemoved): void {this.emitter.emit('deviceRemoved', data);}
+    public onDeviceRemoved(key: ListenerKey, callback: (data: EventDeviceRemoved) => void): void {
+        this.on('deviceRemoved', callback, key);}
 
     public emitLastSeenChanged(data: EventLastSeenChanged): void {this.emitter.emit('lastSeenChanged', data);}
     public onLastSeenChanged(key: ListenerKey, callback: (data: EventLastSeenChanged) => void): void {

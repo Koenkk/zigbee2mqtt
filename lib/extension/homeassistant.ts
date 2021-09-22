@@ -1,11 +1,18 @@
-const settings = require('../util/settings');
-const logger = require('../util/logger');
-const utils = require('../util/utils');
-const zigbee2mqttVersion = require('../..' + '/package.json').version;
-const Extension = require('./extension');
-const stringify = require('json-stable-stringify-without-jsonify');
-const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const assert = require('assert');
+import * as settings from '../util/settings';
+import logger from '../util/logger';
+import * as utils from '../util/utils';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
+// @ts-ignore
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import assert from 'assert';
+import ExtensionTS from './extensionts';
+import bind from 'bind-decorator';
+import Device from '../model/device';
+import Group from '../model/group';
+
+// eslint-disable-next-line camelcase
+interface DiscoveryEntry {type: string, object_id: string, discovery_payload: KeyValue}
 
 const sensorClick = {
     type: 'sensor',
@@ -21,7 +28,7 @@ const ACCESS_SET = 0b010;
 const groupSupportedTypes = ['light', 'switch', 'lock', 'cover'];
 const defaultStatusTopic = 'homeassistant/status';
 
-const featurePropertyWithoutEndpoint = (feature) => {
+const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
     } else {
@@ -32,39 +39,58 @@ const featurePropertyWithoutEndpoint = (feature) => {
 /**
  * This extensions handles integration with HomeAssistant
  */
-class HomeAssistant extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
+class HomeAssistant extends ExtensionTS {
+    private discovered: {[s: string]: string[]} = {};
+    private mapping: {[s: string]: DiscoveryEntry[]} = {};
+    private discoveredTriggers : {[s: string]: Set<string>}= {};
+    private legacyApi = settings.get().advanced.legacy_api;
+    private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
+    private statusTopic = settings.get().advanced.homeassistant_status_topic;
+    private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
+    private zigbee2MQTTVersion: string;
 
-        // A map of all discoverd devices
-        this.discovered = {};
-        this.mapping = {};
-        this.discoveredTriggers = {};
-        this.legacyApi = settings.get().advanced.legacy_api;
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+        eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
+        if (settings.get().experimental.output === 'attribute') {
+            throw new Error('Home Assistant integration is not possible with attribute output!');
+        }
+    }
 
+    override async start(): Promise<void> {
         if (!settings.get().advanced.cache_state) {
             logger.warn('In order for Home Assistant integration to work properly set `cache_state: true');
         }
 
-        if (settings.get().experimental.output === 'attribute') {
-            throw new Error('Home Assistant integration is not possible with attribute output!');
-        }
-
-        this.discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
-        this.statusTopic = settings.get().advanced.homeassistant_status_topic;
-        this.entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
-
-        this.eventBus.on('deviceRemoved', (data) => this.onDeviceRemoved(data.resolvedEntity), this.constructor.name);
-        this.eventBus.on('publishEntityState', (data) => this.onPublishEntityState(data), this.constructor.name);
-        this.eventBus.on('deviceRenamed', (data) =>
-            this.onDeviceRenamed(data.device, data.homeAssisantRename), this.constructor.name,
-        );
-        this.eventBus.on(`groupMembersChanged`, (d) => this.groupMembersChanged(d), this.constructor.name);
-
+        this.zigbee2MQTTVersion = await utils.getZigbee2MQTTVersionSimple();
         this.populateMapping();
+
+        this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
+        this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
+        this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
+        /* istanbul ignore next TODO */
+        this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        /* istanbul ignore next TODO */
+        this.eventBus.onDeviceJoined(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        /* istanbul ignore next TODO */
+        this.eventBus.onDeviceInterview(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceMessage(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+
+        this.mqtt.subscribe(this.statusTopic);
+        this.mqtt.subscribe(defaultStatusTopic);
+        this.mqtt.subscribe(`${this.discoveryTopic}/#`);
+
+        // MQTT discovery of all paired devices on startup.
+        for (const entity of [...this.zigbee.getClients(), ...this.zigbee.getGroups()]) {
+            this.discover(entity, true);
+        }
     }
 
-    exposeToConfig(exposes, entityType, definition) {
+    private exposeToConfig(
+        exposes: DefinitionExpose[], entityType: 'device' | 'group', definition?: Definition): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -74,7 +100,7 @@ class HomeAssistant extends Extension {
 
         const discoveryEntries = [];
         const endpoint = entityType === 'device' ? exposes[0].endpoint : undefined;
-        const getProperty = (feature) => entityType === 'group' ?
+        const getProperty = (feature: DefinitionExposeFeature): string => entityType === 'group' ?
             featurePropertyWithoutEndpoint(feature) : feature.property;
 
         /* istanbul ignore else */
@@ -84,7 +110,7 @@ class HomeAssistant extends Extension {
             const hasBrightness = exposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
             const hasColorTemp = exposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
 
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'light',
                 object_id: endpoint ? `light_${endpoint}` : 'light',
                 discovery_payload: {
@@ -127,7 +153,7 @@ class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'switch') {
             const state = firstExpose.features.find((f) => f.name === 'state');
             const property = getProperty(state);
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'switch',
                 object_id: endpoint ? `switch_${endpoint}` : 'switch',
                 discovery_payload: {
@@ -159,7 +185,7 @@ class HomeAssistant extends Extension {
             const temperature = firstExpose.features.find((f) => f.name === 'local_temperature');
             assert(temperature, 'No temperature found');
 
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'climate',
                 object_id: endpoint ? `climate_${endpoint}` : 'climate',
                 discovery_payload: {
@@ -246,7 +272,7 @@ class HomeAssistant extends Extension {
             assert(!endpoint, `Endpoint not supported for lock type`);
             const state = firstExpose.features.find((f) => f.name === 'state');
             assert(state, 'No state found');
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'lock',
                 object_id: 'lock',
                 discovery_payload: {
@@ -283,7 +309,7 @@ class HomeAssistant extends Extension {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const hasTilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
 
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
                 object_id: endpoint ? `cover_${endpoint}` : 'cover',
                 discovery_payload: {},
@@ -325,7 +351,7 @@ class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'fan') {
             assert(!endpoint, `Endpoint not supported for fan type`);
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'fan',
                 object_id: 'fan',
                 discovery_payload: {
@@ -387,7 +413,7 @@ class HomeAssistant extends Extension {
 
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'binary') {
-            const lookup = {
+            const lookup: {[s: string]: KeyValue}= {
                 occupancy: {device_class: 'motion'},
                 battery_low: {device_class: 'battery'},
                 water_leak: {device_class: 'moisture'},
@@ -406,7 +432,7 @@ class HomeAssistant extends Extension {
              * https://github.com/Koenkk/zigbee2mqtt/issues/7740
              */
             if (firstExpose.access & ACCESS_SET) {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'switch',
                     object_id: endpoint ?
                         `switch_${firstExpose.name}_${endpoint}` :
@@ -438,7 +464,7 @@ class HomeAssistant extends Extension {
                 discoveryEntries.push(discoveryEntry);
             }
         } else if (firstExpose.type === 'numeric') {
-            const lookup = {
+            const lookup: {[s: string]: KeyValue} = {
                 battery: {device_class: 'battery', state_class: 'measurement'},
                 temperature: {device_class: 'temperature', state_class: 'measurement'},
                 humidity: {device_class: 'humidity', state_class: 'measurement'},
@@ -518,7 +544,7 @@ class HomeAssistant extends Extension {
                 discoveryEntries.push(discoveryEntry);
             }
         } else if (firstExpose.type === 'enum') {
-            const lookup = {
+            const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
                 backlight_auto_dim: {enabled_by_default: false, icon: 'mdi:brightness-auto'},
                 backlight_mode: {enabled_by_default: false, icon: 'mdi:lightbulb'},
@@ -572,7 +598,7 @@ class HomeAssistant extends Extension {
             }
         } else if (firstExpose.type === 'text' || firstExpose.type === 'composite') {
             if (firstExpose.access & ACCESS_STATE) {
-                const lookup = {
+                const lookup: {[s: string]: KeyValue} = {
                     action: {icon: 'mdi:gesture-double-tap'},
                 };
 
@@ -593,7 +619,7 @@ class HomeAssistant extends Extension {
         return discoveryEntries;
     }
 
-    populateMapping() {
+    private populateMapping(): void {
         for (const def of zigbeeHerdsmanConverters.definitions) {
             this.mapping[def.model] = [];
 
@@ -632,20 +658,21 @@ class HomeAssistant extends Extension {
         }
     }
 
-    onDeviceRemoved(resolvedEntity) {
-        logger.debug(`Clearing Home Assistant discovery topic for '${resolvedEntity.name}'`);
-        delete this.discovered[resolvedEntity.device.ieeeAddr];
-        for (const config of this.getConfigs(resolvedEntity)) {
-            const topic = this.getDiscoveryTopic(config, resolvedEntity);
+    @bind onDeviceRemoved(data: EventDeviceRemoved): void {
+        logger.debug(`Clearing Home Assistant discovery topic for '${data.resolvedEntity.name}'`);
+        this.discovered[data.resolvedEntity.device.ieeeAddr]?.forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
-        }
+        });
+
+        delete this.discovered[data.resolvedEntity.device.ieeeAddr];
     }
 
-    groupMembersChanged(data) {
-        this.discover(data.group, true);
+    @bind onGroupMembersChanged(data: EventGroupMembersChanged): void {
+        const group = this.zigbee.resolveEntity(data.group.name);
+        this.discover(group, true);
     }
 
-    async onPublishEntityState(data) {
+    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
         /**
          * In case we deal with a lightEndpoint configuration Zigbee2MQTT publishes
          * e.g. {state_l1: ON, brightness_l1: 250} to zigbee2mqtt/mydevice.
@@ -654,13 +681,14 @@ class HomeAssistant extends Extension {
          * Here we retrieve all the attributes with the _l1 values and republish them on
          * zigbee2mqtt/mydevice/l1.
          */
-        if (data.entity.definition && this.mapping[data.entity.definition.model]) {
-            for (const config of this.mapping[data.entity.definition.model]) {
+        const entity = this.zigbee.resolveEntity(data.entity.name);
+        if (entity instanceof Device && this.mapping[entity.definition?.model]) {
+            for (const config of this.mapping[entity.definition.model]) {
                 const match = /light_(.*)/.exec(config['object_id']);
                 if (match) {
                     const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
-                    const payload = {};
+                    const payload: KeyValue = {};
                     for (const key of Object.keys(data.messagePayload)) {
                         const keyMatch = endpointRegExp.exec(key);
                         if (keyMatch) {
@@ -693,84 +721,71 @@ class HomeAssistant extends Extension {
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_devic/action
          */
-        if (data.entity.definition) {
+        if (entity instanceof Device && entity.definition) {
             const keys = ['action', 'click'].filter((k) => data.messagePayload[k]);
             for (const key of keys) {
                 const value = data.messagePayload[key].toString();
-                await this.publishDeviceTriggerDiscover(data.entity, key, value);
+                await this.publishDeviceTriggerDiscover(entity, key, value);
                 await this.mqtt.publish(`${data.entity.name}/${key}`, value, {});
             }
         }
     }
 
-    onDeviceRenamed(device, homeAssisantRename) {
-        logger.debug(`Refreshing Home Assistant discovery topic for '${device.ieeeAddr}'`);
-        const resolvedEntity = this.zigbee.resolveEntityLegacy(device.ieeeAddr);
+    @bind onDeviceRenamed(data: EventDeviceRenamed): void {
+        logger.debug(`Refreshing Home Assistant discovery topic for '${data.device.ieeeAddr}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
-        if (homeAssisantRename) {
-            for (const config of this.getConfigs(resolvedEntity)) {
-                const topic = this.getDiscoveryTopic(config, resolvedEntity);
+        if (data.homeAssisantRename) {
+            for (const config of this.getConfigs(data.device)) {
+                const topic = this.getDiscoveryTopic(config, data.device);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
         }
 
-        this.discover(resolvedEntity, true);
+        this.discover(data.device, true);
 
-        if (this.discoveredTriggers[device.ieeeAddr]) {
-            for (const config of this.discoveredTriggers[device.ieeeAddr]) {
+        if (this.discoveredTriggers[data.device.ieeeAddr]) {
+            for (const config of this.discoveredTriggers[data.device.ieeeAddr]) {
                 const key = config.substring(0, config.indexOf('_'));
                 const value = config.substring(config.indexOf('_') + 1);
-                this.publishDeviceTriggerDiscover(resolvedEntity, key, value, true);
+                this.publishDeviceTriggerDiscover(data.device, key, value, true);
             }
         }
     }
 
-    async onMQTTConnected() {
-        this.mqtt.subscribe(this.statusTopic);
-        this.mqtt.subscribe(defaultStatusTopic);
-        this.mqtt.subscribe(`${this.discoveryTopic}/#`);
+    private getConfigs(entity: Device | Group): DiscoveryEntry[] {
+        const isDevice = entity instanceof Device;
+        /* istanbul ignore next */
+        if (!entity || (isDevice && !entity.definition) ||
+            (isDevice && !this.mapping[entity.definition.model])) return [];
 
-        // MQTT discovery of all paired devices on startup.
-        for (const entity of [...this.zigbee.getClientsLegacy(), ...this.zigbee.getGroupsLegacy()]) {
-            const resolvedEntity = this.zigbee.resolveEntityLegacy(entity);
-            this.discover(resolvedEntity, true);
-        }
-    }
-
-    getConfigs(resolvedEntity) {
-        if (!resolvedEntity || (resolvedEntity.type === 'device' && !resolvedEntity.definition) ||
-            (resolvedEntity.type === 'device' && !this.mapping[resolvedEntity.definition.model])) return [];
-
-        const isDevice = resolvedEntity.type === 'device';
-        let configs;
+        let configs: DiscoveryEntry[];
         if (isDevice) {
-            configs = this.mapping[resolvedEntity.definition.model].slice();
+            configs = this.mapping[entity.definition.model].slice();
         } else { // group
-            const exposesByType = {};
+            const exposesByType: {[s: string]: DefinitionExpose[]} = {};
 
-            resolvedEntity.group.members.map((m) => zigbeeHerdsmanConverters.findByDevice(m.getDevice()))
-                .filter((m) => m != null).forEach((definition) => {
-                    for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
-                        let key = expose.type;
-                        if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
-                            // A device can have multiple of these types which have to discovered seperately.
-                            // e.g. switch with property state and valve_detection.
-                            const state = expose.features.find((f) => f.name === 'state');
-                            key += featurePropertyWithoutEndpoint(state.property);
-                        }
-
-                        if (!exposesByType[key]) exposesByType[key] = [];
-                        exposesByType[key].push(expose);
+            entity.membersDefinitions().forEach((definition) => {
+                for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
+                    let key = expose.type;
+                    if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
+                        // A device can have multiple of these types which have to discovered seperately.
+                        // e.g. switch with property state and valve_detection.
+                        const state = expose.features.find((f) => f.name === 'state');
+                        key += featurePropertyWithoutEndpoint(state);
                     }
-                });
+
+                    if (!exposesByType[key]) exposesByType[key] = [];
+                    exposesByType[key].push(expose);
+                }
+            });
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group')));
         }
 
-        if (isDevice && resolvedEntity.definition.hasOwnProperty('ota')) {
+        if (isDevice && entity.definition.hasOwnProperty('ota')) {
             const updateStateSensor = {
                 type: 'sensor',
                 object_id: 'update_state',
@@ -797,7 +812,7 @@ class HomeAssistant extends Extension {
             }
         }
 
-        if (isDevice && resolvedEntity.settings.hasOwnProperty('legacy') && !resolvedEntity.settings.legacy) {
+        if (isDevice && entity.settings.hasOwnProperty('legacy') && !entity.settings.legacy) {
             configs = configs.filter((c) => c !== sensorClick);
         }
 
@@ -808,8 +823,8 @@ class HomeAssistant extends Extension {
         // deep clone of the config objects
         configs = JSON.parse(JSON.stringify(configs));
 
-        if (resolvedEntity.settings.homeassistant) {
-            const s = resolvedEntity.settings.homeassistant;
+        if (entity.settings.homeassistant) {
+            const s = entity.settings.homeassistant;
             configs = configs.filter((config) => !s.hasOwnProperty(config.object_id) || s[config.object_id] != null);
             configs.forEach((config) => {
                 const configOverride = s[config.object_id];
@@ -823,23 +838,22 @@ class HomeAssistant extends Extension {
         return configs;
     }
 
-    discover(resolvedEntity, force=false) {
+    private discover(entity: Device | Group, force=false): void {
         // Check if already discoverd and check if there are configs.
-        const {device, definition, group} = resolvedEntity;
-        const discoverKey = resolvedEntity.type === 'device' ? device.ieeeAddr : group.groupID;
+        const discoverKey = entity instanceof Device ? entity.ieeeAddr : entity.ID;
         const discover = force || !this.discovered[discoverKey];
 
-        if (group) {
-            if (!discover || group.members.length === 0) return;
-        } else if (!discover || !device || !definition || !this.mapping[definition.model] || device.interviewing ||
-            (resolvedEntity.settings.hasOwnProperty('homeassistant') && !resolvedEntity.settings.homeassistant)) {
+        if (entity instanceof Group) {
+            if (!discover || entity.zhGroup.members.length === 0) return;
+        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] || entity.interviewing ||
+            (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant)) {
             return;
         }
 
-        const friendlyName = resolvedEntity.settings.friendlyName;
-        this.getConfigs(resolvedEntity).forEach((config) => {
+        this.discovered[discoverKey] = [];
+        this.getConfigs(entity).forEach((config) => {
             const payload = {...config.discovery_payload};
-            let stateTopic = `${settings.get().mqtt.base_topic}/${friendlyName}`;
+            let stateTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             if (payload.state_topic_postfix) {
                 stateTopic += `/${payload.state_topic_postfix}`;
                 delete payload.state_topic_postfix;
@@ -867,8 +881,8 @@ class HomeAssistant extends Extension {
             }
 
             // Set (unique) name, separate by space if friendlyName contains space.
-            const nameSeparator = friendlyName.includes('_') ? '_' : ' ';
-            payload.name = friendlyName;
+            const nameSeparator = entity.name.includes('_') ? '_' : ' ';
+            payload.name = entity.name;
             if (config.object_id.startsWith(config.type) && config.object_id.includes('_')) {
                 payload.name += `${nameSeparator}${config.object_id.split(/_(.+)/)[1]}`;
             } else if (!config.object_id.startsWith(config.type)) {
@@ -876,28 +890,28 @@ class HomeAssistant extends Extension {
             }
 
             // Set unique_id
-            payload.unique_id = `${resolvedEntity.settings.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
+            payload.unique_id = `${entity.settings.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
             // Attributes for device registry
-            payload.device = this.getDevicePayload(resolvedEntity);
+            payload.device = this.getDevicePayload(entity);
 
             // Availability payload
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
+            const availabilityEnabled =
+                entity instanceof Device && utils.isAvailabilityEnabledForDevice(entity, settings.get());
             /* istanbul ignore next */
-            if (utils.isAvailabilityEnabledForDeviceLegacy(resolvedEntity, settings.get())) {
+            if (availabilityEnabled) {
                 payload.availability_mode = 'all';
             }
 
             /* istanbul ignore next */
-            const availabilityEnabled = utils.isAvailabilityEnabledForDeviceLegacy(resolvedEntity, settings.get()) ||
-                settings.get().advanced.availability_timeout;
-            if (resolvedEntity.type === 'device' && availabilityEnabled) {
-                payload.availability.push({topic: `${settings.get().mqtt.base_topic}/${friendlyName}/availability`});
+            if (availabilityEnabled || settings.get().advanced.availability_timeout) {
+                payload.availability.push({topic: `${settings.get().mqtt.base_topic}/${entity.name}/availability`});
             }
 
             if (payload.command_topic) {
-                payload.command_topic = `${settings.get().mqtt.base_topic}/${friendlyName}/`;
+                payload.command_topic = `${settings.get().mqtt.base_topic}/${entity.name}/`;
 
                 if (payload.command_topic_prefix) {
                     payload.command_topic += `${payload.command_topic_prefix}/`;
@@ -1003,8 +1017,8 @@ class HomeAssistant extends Extension {
             }
 
             // Override configuration with user settings.
-            if (resolvedEntity.settings.hasOwnProperty('homeassistant')) {
-                const add = (obj) => {
+            if (entity.settings.hasOwnProperty('homeassistant')) {
+                const add = (obj: KeyValue): void => {
                     Object.keys(obj).forEach((key) => {
                         if (['type', 'object_id'].includes(key)) {
                             return;
@@ -1020,28 +1034,28 @@ class HomeAssistant extends Extension {
                     });
                 };
 
-                add(resolvedEntity.settings.homeassistant);
+                add(entity.settings.homeassistant);
 
-                if (resolvedEntity.settings.homeassistant.hasOwnProperty(config.object_id)) {
-                    add(resolvedEntity.settings.homeassistant[config.object_id]);
+                if (entity.settings.homeassistant.hasOwnProperty(config.object_id)) {
+                    add(entity.settings.homeassistant[config.object_id]);
                 }
             }
 
-            const topic = this.getDiscoveryTopic(config, resolvedEntity);
+            const topic = this.getDiscoveryTopic(config, entity);
             this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
+            this.discovered[discoverKey].push(topic);
         });
-
-        this.discovered[discoverKey] = true;
     }
 
-    onMQTTMessage(topic, message) {
+    @bind private onMQTTMessage_(data: EventMQTTMessage): void {
         const discoveryRegex = new RegExp(`${this.discoveryTopic}/(.*)/(.*)/(.*)/config`);
-        const discoveryMatch = topic.match(discoveryRegex);
+        const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
             // Clear outdated discovery configs and remember already discoverd device_automations
+            let message: KeyValue = null;
             try {
-                message = JSON.parse(message);
+                message = JSON.parse(data.message);
                 const baseTopic = settings.get().mqtt.base_topic + '/';
                 if (isDeviceAutomation && (!message.topic || !message.topic.startsWith(baseTopic))) {
                     return;
@@ -1057,13 +1071,13 @@ class HomeAssistant extends Extension {
 
             // Group discovery topic uses "ENCODEDBASETOPIC_GROUPID", device use ieeeAddr
             const ID = discoveryMatch[2].includes('_') ? discoveryMatch[2].split('_')[1] : discoveryMatch[2];
-            const resolvedEntity = this.zigbee.resolveEntityLegacy(ID);
-            let clear = !resolvedEntity || resolvedEntity.type === 'device' && !resolvedEntity.definition;
+            const entity = this.zigbee.resolveEntity(ID);
+            let clear = !entity || entity instanceof Device && !entity.definition;
 
             // Only save when topic matches otherwise config is not updated when renamed by editing configuration.yaml
-            if (resolvedEntity) {
+            if (entity) {
                 const key = `${discoveryMatch[3].substring(0, discoveryMatch[3].indexOf('_'))}`;
-                const triggerTopic = `${settings.get().mqtt.base_topic}/${resolvedEntity.name}/${key}`;
+                const triggerTopic = `${settings.get().mqtt.base_topic}/${entity.name}/${key}`;
                 if (isDeviceAutomation && message.topic === triggerTopic) {
                     if (!this.discoveredTriggers[ID]) {
                         this.discoveredTriggers[ID] = new Set();
@@ -1075,23 +1089,23 @@ class HomeAssistant extends Extension {
             if (!clear && !isDeviceAutomation) {
                 const type = discoveryMatch[1];
                 const objectID = discoveryMatch[3];
-                clear = !this.getConfigs(resolvedEntity)
+                clear = !this.getConfigs(entity)
                     .find((c) => c.type === type && c.object_id === objectID &&
-                    `${this.discoveryTopic}/${this.getDiscoveryTopic(c, resolvedEntity)}` === topic);
+                    `${this.discoveryTopic}/${this.getDiscoveryTopic(c, entity)}` === data.topic);
             }
             // Device was flagged to be excluded from homeassistant discovery
-            clear = clear || (resolvedEntity.settings.hasOwnProperty('homeassistant') &&
-                                !resolvedEntity.settings.homeassistant);
+            clear = clear || (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant);
 
             if (clear) {
-                logger.debug(`Clearing Home Assistant config '${topic}'`);
-                topic = topic.substring(this.discoveryTopic.length + 1);
+                logger.debug(`Clearing Home Assistant config '${data.topic}'`);
+                const topic = data.topic.substring(this.discoveryTopic.length + 1);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
-        } else if ((topic === this.statusTopic || topic === defaultStatusTopic) && message.toLowerCase() === 'online') {
+        } else if ((data.topic === this.statusTopic || data.topic === defaultStatusTopic) &&
+            data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.getClientsLegacy()) {
+                for (const device of this.zigbee.getClients()) {
                     if (this.state.exists(device.ieeeAddr)) {
                         this.publishEntityState(device.ieeeAddr, this.state.get(device.ieeeAddr));
                     }
@@ -1102,40 +1116,38 @@ class HomeAssistant extends Extension {
         }
     }
 
-    onZigbeeEvent(type, data, resolvedEntity) {
-        if (resolvedEntity && type !== 'deviceLeave' && this.mqtt.isConnected()) {
-            this.discover(resolvedEntity);
-        }
+    @bind onZigbeeEvent(device: Device): void {
+        this.discover(device);
     }
 
-    getDevicePayload(resolvedEntity) {
-        const identifierPostfix = resolvedEntity.type === 'group' ?
+    private getDevicePayload(entity: Device | Group): KeyValue {
+        const identifierPostfix = entity instanceof Group ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
-        const payload = {
-            identifiers: [`${identifierPostfix}_${resolvedEntity.settings.ID}`],
-            name: resolvedEntity.settings.friendlyName,
-            sw_version: `Zigbee2MQTT ${zigbee2mqttVersion}`,
+        const payload: KeyValue = {
+            identifiers: [`${identifierPostfix}_${entity.settings.ID}`],
+            name: entity.name,
+            sw_version: `Zigbee2MQTT ${this.zigbee2MQTTVersion}`,
         };
 
-        if (resolvedEntity.type === 'device') {
-            payload.model = `${resolvedEntity.definition.description} (${resolvedEntity.definition.model})`;
-            payload.manufacturer = resolvedEntity.definition.vendor;
+        if (entity instanceof Device) {
+            payload.model = `${entity.definition.description} (${entity.definition.model})`;
+            payload.manufacturer = entity.definition.vendor;
         }
 
         return payload;
     }
 
-    adjustMessagePayloadBeforePublish(resolvedEntity, messagePayload) {
+    private adjustMessagePayloadBeforePublish(device: Device, messagePayload: KeyValue): void {
         // Set missing values of state to 'null': https://github.com/Koenkk/zigbee2mqtt/issues/6987
-        if (!resolvedEntity || !resolvedEntity.definition) return null;
+        if (!device.definition) return null;
 
-        const add = (expose) => {
+        const add = (expose: DefinitionExpose | DefinitionExposeFeature): void => {
             if (!messagePayload.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
                 messagePayload[expose.property] = null;
             }
         };
 
-        for (const expose of resolvedEntity.definition.exposes) {
+        for (const expose of device.definition.exposes) {
             if (expose.hasOwnProperty('features')) {
                 for (const feature of expose.features) {
                     if (feature.name === 'state') {
@@ -1158,25 +1170,23 @@ class HomeAssistant extends Extension {
         }
     }
 
-    getEncodedBaseTopic() {
+    private getEncodedBaseTopic(): string {
         return settings.get().mqtt.base_topic.split('').map((s) => s.charCodeAt(0).toString()).join('');
     }
 
-    getDiscoveryTopic(config, resolvedEntity) {
-        const key = resolvedEntity.type === 'device' ?
-            resolvedEntity.device.ieeeAddr :
-            `${this.getEncodedBaseTopic()}_${resolvedEntity.group.groupID}`;
+    private getDiscoveryTopic(config: DiscoveryEntry, entity: Device | Group): string {
+        const key = entity instanceof Device ? entity.ieeeAddr : `${this.getEncodedBaseTopic()}_${entity.ID}`;
         return `${config.type}/${key}/${config.object_id}/config`;
     }
 
-    async publishDeviceTriggerDiscover(entity, key, value, force=false) {
-        const haConfig = entity.settings.homeassistant;
-        if (entity.settings.hasOwnProperty('homeassistant') && (haConfig == null ||
-                (haConfig.hasOwnProperty('device_automation') && haConfig.device_automation == null))) {
+    private async publishDeviceTriggerDiscover(device: Device, key: string, value: string, force=false): Promise<void> {
+        const haConfig = device.settings.homeassistant;
+        if (device.settings.hasOwnProperty('homeassistant') && (haConfig == null ||
+                (haConfig.hasOwnProperty('device_automation') && typeof haConfig === 'object' &&
+                    haConfig.device_automation == null))) {
             return;
         }
 
-        const device = entity.device;
         if (!this.discoveredTriggers[device.ieeeAddr]) {
             this.discoveredTriggers[device.ieeeAddr] = new Set();
         }
@@ -1186,7 +1196,7 @@ class HomeAssistant extends Extension {
             return;
         }
 
-        const config = {
+        const config: DiscoveryEntry = {
             type: 'device_automation',
             object_id: `${key}_${value}`,
             discovery_payload: {
@@ -1195,13 +1205,13 @@ class HomeAssistant extends Extension {
             },
         };
 
-        const topic = this.getDiscoveryTopic(config, entity);
+        const topic = this.getDiscoveryTopic(config, device);
         const payload = {
             ...config.discovery_payload,
             subtype: value,
             payload: value,
-            topic: `${settings.get().mqtt.base_topic}/${entity.name}/${key}`,
-            device: this.getDevicePayload(entity),
+            topic: `${settings.get().mqtt.base_topic}/${device.name}/${key}`,
+            device: this.getDevicePayload(device),
         };
 
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
@@ -1209,12 +1219,12 @@ class HomeAssistant extends Extension {
     }
 
     // Only for homeassistant.test.js
-    _getMapping() {
+    _getMapping(): {[s: string]: DiscoveryEntry[]} {
         return this.mapping;
     }
 
-    _clearDiscoveredTrigger() {
-        this.discoveredTriggers = new Set();
+    _clearDiscoveredTrigger(): void {
+        this.discoveredTriggers = {};
     }
 }
 

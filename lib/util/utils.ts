@@ -48,6 +48,11 @@ export function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
+export async function getZigbee2MQTTVersionSimple(): Promise<string> {
+    const packageJSON = await import('../..' + '/package.json');
+    return packageJSON.version;
+}
+
 export async function getZigbee2MQTTVersion(): Promise<{commitHash: string, version: string}> {
     const git = await import('git-last-commit');
     const packageJSON = await import('../..' + '/package.json');

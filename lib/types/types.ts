@@ -172,6 +172,8 @@ declare global {
         debounce_ignore?: string[],
         filtered_optimistic?: string[],
         icon?: string,
+        homeassistant?: KeyValue,
+        legacy?: boolean,
     }
 
     interface GroupSettings {
@@ -181,6 +183,7 @@ declare global {
         optimistic?: boolean,
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
+        homeassistant?: KeyValue,
     }
 
     type EntitySettings = {
@@ -191,6 +194,8 @@ declare global {
 
     interface ResolvedEntity {
         type: 'device' | 'group',
+        device: ZHDevice,
+        name: string,
     }
 
     interface ToZigbeeConverterGetMeta {message: {}, mapped: Definition | Definition[]}
@@ -217,6 +222,10 @@ declare global {
             meta: {state: KeyValue, logger: any, device: ZHDevice}) => KeyValue,
     }
 
+    interface DefinitionExposeFeature {name: string, endpoint?: string, property: string, value_max?: number, value_min?: number, value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
+
+    interface DefinitionExpose {type: string, name?: string, features?: DefinitionExposeFeature[], endpoint?: string, values?: string[], value_off?: string, value_on?: string, access: number, property: string, unit?: string, value_min?: number, value_max?: number}
+
     interface Definition  {
         model: string
         endpoint?: (device: ZHDevice) => {[s: string]: number}
@@ -225,7 +234,7 @@ declare global {
         icon?: string
         description: string
         vendor: string
-        exposes: {type: string, name?: string, features?: {name: string}[]}[] // TODO
+        exposes: DefinitionExpose[] // TODO
         configure?: (device: ZHDevice, coordinatorEndpoint: ZZHEndpoint, logger: unknown) => Promise<void>;
         onEvent?: (type: string, data: KeyValue, device: ZHDevice, settings: KeyValue) => Promise<void>;
         ota?: {
@@ -254,6 +263,7 @@ declare global {
         get: (ID: string | number) => KeyValue | null;
         remove: (ID: string | number) => void;
         removeKey: (ID: string, keys: string[]) => void; 
+        exists: (ID: string) => boolean;
     }
 
     interface ExternalConverterClass {

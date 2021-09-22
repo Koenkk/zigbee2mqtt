@@ -5,7 +5,7 @@ abstract class ExtensionTS {
     protected state: TempState;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
-    protected enableDisableExtension: (enable: boolean, name: string) => void;
+    protected enableDisableExtension: (enable: boolean, name: string) => Promise<void>;
     protected restartCallback: () => void;
     protected addExtension: (extension: ExternalConverterClass) => void;
 
@@ -22,7 +22,7 @@ abstract class ExtensionTS {
      * @param {addExtension} addExtension Add an extension
      */
     constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
-        eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => void,
+        eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;

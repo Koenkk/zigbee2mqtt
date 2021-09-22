@@ -175,7 +175,7 @@ class Bridge extends ExtensionTS {
         }
 
         if (newSettings.hasOwnProperty('homeassistant')) {
-            this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
+            await this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
         }
 
         if (newSettings.hasOwnProperty('advanced') && newSettings.advanced.hasOwnProperty('log_level')) {
@@ -283,7 +283,7 @@ class Bridge extends ExtensionTS {
             throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
         }
 
-        this.enableDisableExtension(value, 'HomeAssistant');
+        await this.enableDisableExtension(value, 'HomeAssistant');
         settings.set(['homeassistant'], value);
         this.publishInfo();
         return utils.getResponse(message, {value}, null);

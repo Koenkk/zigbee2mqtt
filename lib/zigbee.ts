@@ -344,6 +344,7 @@ export default class Zigbee {
         };
 
         const deviceOptions = settings.get().device_options;
+        /* istanbul ignore else */
         if (typeof key === 'string' || typeof key === 'number') {
             if (typeof key === 'number') {
                 key = key.toString();
