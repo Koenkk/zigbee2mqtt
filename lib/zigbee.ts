@@ -210,8 +210,8 @@ export default class Zigbee {
         return this.resolvedEntitiesLookup[groupID] as Group;
     }
 
-    resolveEntity(key: ZHDevice | string): Device | Group {
-        const ID = typeof key === 'string' ? key : key.ieeeAddr;
+    resolveEntity(key: ZHDevice | string | number): Device | Group {
+        const ID = typeof key === 'string' || typeof key === 'number' ? key.toString() : key.ieeeAddr;
         const entitySettings = settings.getEntity(ID);
         if (!entitySettings && !(typeof key === 'object' && key.type === 'Coordinator')) return undefined;
 
@@ -297,9 +297,6 @@ export default class Zigbee {
     createGroupLegacy(groupID: number): ZHGroup {
         return this.herdsman.createGroup(groupID);
     }
-    getGroupsLegacy(): ZHGroup[] {
-        return this.herdsman.getGroups();
-    }
     getGroupByIDLegacy(ID: number): ZHGroup {
         return this.herdsman.getGroupByID(ID);
     }
@@ -328,7 +325,7 @@ export default class Zigbee {
             await this.herdsman.permitJoin(permit, undefined, time);
         }
     }
-    /* eslint-disable-next-line */
+    /* istanbul ignore next */ /* eslint-disable-next-line */
     resolveEntityLegacy(key: any): any {
         assert(
             typeof key === 'string' || typeof key === 'number' ||

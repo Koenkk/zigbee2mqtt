@@ -18,8 +18,8 @@ declare global {
     type EventDeviceJoined = { device: Device };
     type EventReportingDisabled = { device: ZHDevice }; // TODO zhdevice -> device
     type EventDeviceLeave = { ieeeAddr: string };
-    // TODO: remove resolved entity, replace by Group
-    type EventGroupMembersChanged = { group: ResolvedEntity }; // TODO fill
+    type EventGroupMembersChanged = {
+        group: Group, action: 'remove' | 'add' | 'remove_all', endpoint: ZHEndpoint, skipDisableReporting: boolean };
     type EventPublishEntityState = {
         // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
         messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
@@ -106,8 +106,8 @@ export default class EventBus {
     public onPublishEntityState(key: ListenerKey, callback: (data: EventPublishEntityState) => void): void {
         this.on('publishEntityState', callback, key);}
 
-    // public emitGroupMembersChanged(data: EventGroupMembersChanged): void {
-    //     this.emitter.emit('groupMembersChanged', data);}
+    public emitGroupMembersChanged(data: EventGroupMembersChanged): void {
+        this.emitter.emit('groupMembersChanged', data);}
     public onGroupMembersChanged(key: ListenerKey, callback: (data: EventGroupMembersChanged) => void): void {
         this.on('groupMembersChanged', callback, key);}
 
@@ -119,8 +119,8 @@ export default class EventBus {
     public onReportingDisabled(key: ListenerKey, callback: (data: EventReportingDisabled) => void): void {
         this.on('reportingDisabled', callback, key);}
 
-    public emitStateChange(data: EventStateChange): void {
-        this.emitter.emit('stateChange', data);}
+    // public emitStateChange(data: EventStateChange): void {
+    //     this.emitter.emit('stateChange', data);}
     public onStateChange(key: ListenerKey, callback: (data: EventStateChange) => void): void {
         this.on('stateChange', callback, key);}
 

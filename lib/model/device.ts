@@ -38,11 +38,13 @@ export default class Device {
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
     async removeFromNetwork(): Promise<void> {await this.device.removeFromNetwork();}
 
-    endpoint(key?: string): ZHEndpoint {
+    endpoint(key?: string | number): ZHEndpoint {
         let endpoint: ZHEndpoint;
-        if (key == null) key = 'default';
+        if (key == null || key == '') key = 'default';
 
-        if (this.definition?.endpoint) {
+        if (!isNaN(Number(key))) {
+            endpoint = this.zhDevice.getEndpoint(Number(key));
+        } else if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.device)[key];
             if (ID) endpoint = this.device.getEndpoint(ID);
             else if (key === 'default') endpoint = this.device.endpoints[0];
@@ -61,6 +63,7 @@ export default class Device {
         if (this.definition?.endpoint) {
             name = Object.entries(this.definition?.endpoint(this.device)).find((e) => e[1] == endpoint.ID)[0];
         }
+        /* istanbul ignore next */
         return name === 'default' ? null : name;
     }
 

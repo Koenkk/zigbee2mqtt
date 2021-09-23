@@ -1,33 +1,35 @@
 /* istanbul ignore file */
 // DEPRECATED
-const settings = require('../../util/settings');
-const logger = require('../../util/logger');
-const utils = require('../../util/utils');
-const Extension = require('../extension');
+import * as settings from '../../util/settings';
+import logger from '../../util/logger';
+import * as utils from '../../util/utils';
+import ExtensionTS from '../extensionts';
 
 /**
  * This extensions soft resets the ZNP after a certain timeout.
  */
-class SoftReset extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
-        this.timer = null;
-        this.timeout = utils.seconds(settings.get().advanced.soft_reset_timeout);
-    }
+class SoftReset extends ExtensionTS {
+    private timer: NodeJS.Timer = null;
+    private timeout = utils.seconds(settings.get().advanced.soft_reset_timeout);
 
-    onZigbeeStarted() {
+    override async start(): Promise<void> {
         logger.debug(`Soft reset timeout set to ${this.timeout / 1000} seconds`);
         this.resetTimer();
+        this.eventBus.onDeviceMessage(this, () => this.resetTimer());
+        this.eventBus.onDeviceAnnounce(this, () => this.resetTimer());
+        this.eventBus.onDeviceNetworkAddressChanged(this, () => this.resetTimer());
+        this.eventBus.onDeviceJoined(this, () => this.resetTimer());
+        this.eventBus.onDeviceInterview(this, () => this.resetTimer());
     }
 
-    clearTimer() {
+    private clearTimer(): void {
         if (this.timer) {
             clearTimeout(this.timer);
             this.timer = null;
         }
     }
 
-    resetTimer() {
+    private resetTimer(): void {
         if (this.timeout === 0) {
             return;
         }
@@ -36,7 +38,7 @@ class SoftReset extends Extension {
         this.timer = setTimeout(() => this.handleTimeout(), this.timeout);
     }
 
-    async handleTimeout() {
+    private async handleTimeout(): Promise<void> {
         logger.warn('Soft reset timeout triggered');
 
         try {
@@ -55,10 +57,6 @@ class SoftReset extends Extension {
             }
         }
 
-        this.resetTimer();
-    }
-
-    onZigbeeEvent() {
         this.resetTimer();
     }
 }

@@ -31,8 +31,8 @@ const stateProperties: {[s: string]: (value: string, definition: Definition) => 
 
 interface ParsedMQTTMessage {
     type: 'remove' | 'add' | 'remove_all', resolvedEntityGroup: Group, resolvedEntityDevice: Device,
-    endpointName: string, error: string, groupKey: string, deviceKey: string, triggeredViaLegacyApi: boolean,
-    skipDisableReporting: boolean,
+    error: string, groupKey: string, deviceKey: string, triggeredViaLegacyApi: boolean,
+    skipDisableReporting: boolean, resolvedEntityEndpoint: ZHEndpoint,
 }
 
 class Groups extends ExtensionTS {
@@ -67,22 +67,23 @@ class Groups extends ExtensionTS {
         for (const settingGroup of settingsGroups) {
             const groupID = settingGroup.ID;
             const zigbeeGroup = zigbeeGroups.find((g) => g.ID === groupID) || this.zigbee.createGroup(groupID);
-            const settingsEntity = settingGroup.devices.map((d) => {
-                const entity = this.zigbee.resolveEntity(d);
+            const settingsEndpoint = settingGroup.devices.map((d) => {
+                const parsed = utils.parseEntityID(d);
+                const entity = this.zigbee.resolveEntity(parsed.ID) as Device;
                 if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendlyName}'`);
-                return entity;
-            }).filter((e) => e != null) as Device[];
+                return {'endpoint': entity?.endpoint(parsed.endpoint), 'name': entity?.name};
+            }).filter((e) => e.endpoint != null);
 
             // In settings but not in zigbee
-            for (const entity of settingsEntity) {
-                if (!zigbeeGroup.zhGroup.hasMember(entity.endpoint())) {
-                    addRemoveFromGroup('add', entity.name, settingGroup.friendlyName, entity.endpoint(), zigbeeGroup);
+            for (const entity of settingsEndpoint) {
+                if (!zigbeeGroup.zhGroup.hasMember(entity.endpoint)) {
+                    addRemoveFromGroup('add', entity.name, settingGroup.friendlyName, entity.endpoint, zigbeeGroup);
                 }
             }
 
             // In zigbee but not in settings
             for (const endpoint of zigbeeGroup.members) {
-                if (!settingsEntity.find((e) => e.endpoint() === endpoint)) {
+                if (!settingsEndpoint.find((e) => e.endpoint === endpoint)) {
                     const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendlyName;
                     addRemoveFromGroup('remove', deviceName, settingGroup.friendlyName, endpoint, zigbeeGroup);
                 }
@@ -150,7 +151,7 @@ class Groups extends ExtensionTS {
                         }
                     });
 
-                    const endpointName = device.endpointName;
+                    const endpointName = device.endpointName(member);
                     if (endpointName) {
                         Object.keys(memberPayload).forEach((key) => {
                             memberPayload[`${key}_${endpointName}`] = memberPayload[key];
@@ -192,7 +193,7 @@ class Groups extends ExtensionTS {
         let type: 'remove' | 'add' | 'remove_all' = null;
         let resolvedEntityGroup: Group = null;
         let resolvedEntityDevice: Device = null;
-        let endpointName: string = null;
+        let resolvedEntityEndpoint: ZHEndpoint = null;
         let error: string = null;
         let groupKey: string = null;
         let deviceKey: string = null;
@@ -230,7 +231,8 @@ class Groups extends ExtensionTS {
                 type = 'remove_all';
             }
 
-            resolvedEntityDevice = this.zigbee.resolveEntityLegacy(data.message) as Device;
+            const parsedEntity = utils.parseEntityID(data.message);
+            resolvedEntityDevice = this.zigbee.resolveEntity(parsedEntity.ID) as Device;
             if (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device)) {
                 logger.error(`Device '${data.message}' does not exist`);
 
@@ -247,8 +249,7 @@ class Groups extends ExtensionTS {
 
                 return null;
             }
-
-            endpointName = utils.endpointNames.find((p) => data.message.endsWith(`/${p}`));
+            resolvedEntityEndpoint = resolvedEntityDevice.endpoint(parsedEntity.endpoint);
         } else if (topicRegexMatch) {
             // @ts-ignore
             type = topicRegexMatch[1];
@@ -258,32 +259,34 @@ class Groups extends ExtensionTS {
 
             if (type !== 'remove_all') {
                 groupKey = message.group;
-                resolvedEntityGroup = this.zigbee.resolveEntityLegacy(message.group);
+                resolvedEntityGroup = this.zigbee.resolveEntity(message.group) as Group;
                 if (!resolvedEntityGroup || !(resolvedEntityGroup instanceof Group)) {
                     error = `Group '${message.group}' does not exist`;
                 }
             }
 
-            resolvedEntityDevice = this.zigbee.resolveEntity(message.device) as Device;
+            const parsed = utils.parseEntityID(message.device);
+            resolvedEntityDevice = this.zigbee.resolveEntity(parsed.ID) as Device;
             if (!error && (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device))) {
                 error = `Device '${message.device}' does not exist`;
             }
-
-            endpointName = utils.endpointNames.find((p) => message.device.endsWith(`/${p}`));
+            if (!error) {
+                resolvedEntityEndpoint = resolvedEntityDevice.endpoint(parsed.endpoint);
+            }
         }
 
         return {
-            resolvedEntityGroup, resolvedEntityDevice, type, endpointName, error, groupKey, deviceKey,
-            triggeredViaLegacyApi, skipDisableReporting,
+            resolvedEntityGroup, resolvedEntityDevice, type, error, groupKey, deviceKey,
+            triggeredViaLegacyApi, skipDisableReporting, resolvedEntityEndpoint,
         };
     }
 
     @bind private async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
         const parsed = this.parseMQTTMessage(data);
-        if (!parsed) return;
+        if (!parsed || !parsed.type) return;
         let {
-            resolvedEntityGroup, resolvedEntityDevice, type, endpointName, error, triggeredViaLegacyApi,
-            groupKey, deviceKey, skipDisableReporting,
+            resolvedEntityGroup, resolvedEntityDevice, type, error, triggeredViaLegacyApi,
+            groupKey, deviceKey, skipDisableReporting, resolvedEntityEndpoint,
         } = parsed;
         const message = utils.parseJSON(data.message, data.message);
 
@@ -294,26 +297,25 @@ class Groups extends ExtensionTS {
 
         if (!error) {
             try {
-                const endpoint = resolvedEntityDevice.endpoint(endpointName);
                 const keys = [
-                    `${resolvedEntityDevice.ieeeAddr}/${endpoint.ID}`,
-                    `${resolvedEntityDevice.name}/${endpoint.ID}`,
+                    `${resolvedEntityDevice.ieeeAddr}/${resolvedEntityEndpoint.ID}`,
+                    `${resolvedEntityDevice.name}/${resolvedEntityEndpoint.ID}`,
                 ];
 
-                const endpointNameLocal = resolvedEntityDevice.endpointName(endpoint);
+                const endpointNameLocal = resolvedEntityDevice.endpointName(resolvedEntityEndpoint);
                 if (endpointNameLocal) {
                     keys.push(`${resolvedEntityDevice.ieeeAddr}/${endpointNameLocal}`);
                     keys.push(`${resolvedEntityDevice.name}/${endpointNameLocal}`);
                 }
 
-                if (!endpointName) {
+                if (!endpointNameLocal) {
                     keys.push(resolvedEntityDevice.name);
                     keys.push(resolvedEntityDevice.ieeeAddr);
                 }
 
                 if (type === 'add') {
                     logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
-                    await endpoint.addToGroup(resolvedEntityGroup.zhGroup);
+                    await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zhGroup);
                     settings.addDeviceToGroup(resolvedEntityGroup.ID.toString(), keys);
 
                     /* istanbul ignore else */
@@ -326,7 +328,7 @@ class Groups extends ExtensionTS {
                     }
                 } else if (type === 'remove') {
                     logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
-                    await endpoint.removeFromGroup(resolvedEntityGroup.zhGroup);
+                    await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zhGroup);
                     settings.removeDeviceFromGroup(resolvedEntityGroup.ID.toString(), keys);
 
                     /* istanbul ignore else */
@@ -339,7 +341,7 @@ class Groups extends ExtensionTS {
                     }
                 } else { // remove_all
                     logger.info(`Removing '${resolvedEntityDevice.name}' from all groups`);
-                    await endpoint.removeFromAllGroups();
+                    await resolvedEntityEndpoint.removeFromAllGroups();
                     for (const settingsGroup of settings.getGroups()) {
                         settings.removeDeviceFromGroup(settingsGroup.ID.toString(), keys);
 
@@ -367,9 +369,8 @@ class Groups extends ExtensionTS {
         if (error) {
             logger.error(error);
         } else {
-            this.eventBus.emit('groupMembersChanged',
-                {group: resolvedEntityGroup, action: type, endpoint: resolvedEntityDevice.endpoint,
-                    skipDisableReporting: skipDisableReporting});
+            this.eventBus.emitGroupMembersChanged({
+                group: resolvedEntityGroup, action: type, endpoint: resolvedEntityEndpoint, skipDisableReporting});
         }
     }
 }

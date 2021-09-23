@@ -668,8 +668,7 @@ class HomeAssistant extends ExtensionTS {
     }
 
     @bind onGroupMembersChanged(data: EventGroupMembersChanged): void {
-        const group = this.zigbee.resolveEntity(data.group.name);
-        this.discover(group, true);
+        this.discover(data.group, true);
     }
 
     @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
