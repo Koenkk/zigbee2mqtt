@@ -293,6 +293,11 @@ export default class Zigbee {
         return device && this.addDeviceToResolvedEntitiesLookup(device.ieeeAddr);
     }
 
+    groupByID(ID: number): Group {
+        const group = this.herdsman.getGroupByID(ID);
+        return group && this.addGroupToResolvedEntitiesLookup(group.groupID);
+    }
+
     // TODO remove all legacy below
     createGroupLegacy(groupID: number): ZHGroup {
         return this.herdsman.createGroup(groupID);

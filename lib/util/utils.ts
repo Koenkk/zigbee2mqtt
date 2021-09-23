@@ -104,7 +104,7 @@ export function objectHasProperties(object: {[s: string]: unknown}, properties: 
     return true;
 }
 
-export function equalsPartial(object: {[s: string]: unknown}, expected: {[s: string]: unknown}): boolean {
+export function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
     for (const [key, value] of Object.entries(expected)) {
         if (!equals(object[key], value)) {
             return false;
