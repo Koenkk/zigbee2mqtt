@@ -9,6 +9,7 @@ declare global {
     interface EventDeviceRemoved { resolvedEntity: ResolvedEntity}
     type EventMQTTMessage = { topic: string, message: string };
     type EventMQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
+    type EventStateChange = { ID: string, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
     type EventPermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
     type EventLastSeenChanged = { device: Device };
     type EventDeviceNetworkAddressChanged = { device: Device };
@@ -117,6 +118,11 @@ export default class EventBus {
     //     this.emitter.emit('reportingDisabled', data);}
     public onReportingDisabled(key: ListenerKey, callback: (data: EventReportingDisabled) => void): void {
         this.on('reportingDisabled', callback, key);}
+
+    public emitStateChange(data: EventStateChange): void {
+        this.emitter.emit('stateChange', data);}
+    public onStateChange(key: ListenerKey, callback: (data: EventStateChange) => void): void {
+        this.on('stateChange', callback, key);}
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private on(event: string, callback: (...args: any[]) => void, key: ListenerKey): void {

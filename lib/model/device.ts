@@ -56,6 +56,14 @@ export default class Device {
         return endpoint;
     }
 
+    endpointName(endpoint: ZHEndpoint): string {
+        let name = null;
+        if (this.definition?.endpoint) {
+            name = Object.entries(this.definition?.endpoint(this.device)).find((e) => e[1] == endpoint.ID)[0];
+        }
+        return name === 'default' ? null : name;
+    }
+
     isXiaomiDevice(): boolean {
         const xiaomiManufacturerID = [4151, 4447];
         /* istanbul ignore next */

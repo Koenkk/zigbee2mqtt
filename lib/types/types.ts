@@ -13,6 +13,7 @@ import {
 } from 'zigbee-herdsman/dist/adapter/tstype';
 
 import * as D from 'lib/model/device';
+import * as G from 'lib/model/group';
 import * as Z from 'lib/zigbee';
 import * as E from 'lib/eventBus';
 import * as M from 'lib/mqtt';
@@ -30,6 +31,7 @@ declare global {
     type Zigbee = Z.default;
 
     type Device = D.default;
+    type Group = G.default;
 
     type ZHEndpoint = ZZHEndpoint;
 
@@ -275,5 +277,5 @@ declare global {
 
     interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
 
-    type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce') => void;
+    type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce' | 'group_optimistic') => Promise<void>;
 }
