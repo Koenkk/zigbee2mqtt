@@ -16,7 +16,7 @@ const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 const settings = require('../lib/util/settings');
 
-describe('onlythisGroups', () => {
+describe('Groups', () => {
     let controller;
 
     let resetExtension = async () => {
