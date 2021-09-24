@@ -24,14 +24,14 @@ describe('Logger', () => {
     });
 
     it('Create log directory', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
     });
 
     it('Should cleanup', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
 
         for (const d of fs.readdirSync(dir.name)) {
@@ -48,7 +48,7 @@ describe('Logger', () => {
     })
 
     it('Should not cleanup when there is no timestamp set', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         for (let i = 30; i < 40; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
@@ -61,7 +61,7 @@ describe('Logger', () => {
     })
 
     it('Set and get log level', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
@@ -73,14 +73,14 @@ describe('Logger', () => {
             }
         }
 
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         expect(logger.transports.length).toBe(2);
         logger.addTransport(new DummyTransport());
         expect(logger.transports.length).toBe(3);
     });
 
     it('Set and get log level warn <-> warning', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         logger.setLevel('warn');
         expect(logger.transports[0].level).toBe('warning');
@@ -88,7 +88,7 @@ describe('Logger', () => {
     });
 
     it('Logger should be console and file by default', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.length).toBe(2);
@@ -100,7 +100,7 @@ describe('Logger', () => {
 
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.length).toBe(2);
@@ -112,7 +112,7 @@ describe('Logger', () => {
 
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
@@ -121,7 +121,7 @@ describe('Logger', () => {
 
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
@@ -130,7 +130,7 @@ describe('Logger', () => {
 
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger');
         logger.logOutput();
         const pipes = logger._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
@@ -141,11 +141,11 @@ describe('Logger', () => {
 
     it('Should allow to symlink logs to current directory', () => {
         settings.set(['advanced', 'log_symlink_current'], true);
-        let logger = require('../lib/util/logger.js');
+        let logger = require('../lib/util/logger');
         logger.logOutput();
         expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
 
         jest.resetModules();
-        logger = require('../lib/util/logger.js');
+        logger = require('../lib/util/logger');
     });
 });

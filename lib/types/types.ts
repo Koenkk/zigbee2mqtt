@@ -136,7 +136,7 @@ declare global {
             legacy_api: boolean,
             log_rotation: boolean,
             log_symlink_current: boolean,
-            log_output: ('console' | 'file')[],
+            log_output: ('console' | 'file' | 'syslog')[],
             log_directory: string,
             log_file: string,
             log_level: 'debug' | 'info' | 'error' | 'warn',
