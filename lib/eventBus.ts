@@ -46,6 +46,10 @@ export default class EventBus {
     private callbacksByExtension: { [s: string]: { event: string, callback: (...args: any[]) => void }[] } = {};
     private emitter = new events.EventEmitter();
 
+    constructor() {
+        this.emitter.setMaxListeners(100);
+    }
+
     public emitAdapterDisconnected(): void {this.emitter.emit('adapterDisconnected');}
     public onAdapterDisconnected(key: ListenerKey, callback: () => void): void {
         this.on('adapterDisconnected', callback, key);}

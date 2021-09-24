@@ -323,6 +323,18 @@ export function isEndpoint(obj: unknown): obj is Endpoint {
     return obj.constructor.name.toLowerCase() === 'endpoint';
 }
 
+export function isDevice(obj: unknown): obj is Device {
+    return obj.constructor.name.toLowerCase() === 'device';
+}
+
+export function isGroup(obj: unknown): obj is Group {
+    return obj.constructor.name.toLowerCase() === 'group';
+}
+
+export function isZHGroup(obj: unknown): obj is ZHGroup {
+    return obj.constructor.name.toLowerCase() === 'group';
+}
+
 export const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 export const minutes = (minutes: number): number => 1000 * 60 * minutes;
 export const seconds = (seconds: number): number => 1000 * seconds;

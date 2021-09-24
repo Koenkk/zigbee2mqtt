@@ -12,11 +12,16 @@ import {
     RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 
+import {
+    Cluster as ZHCluster,
+} from 'zigbee-herdsman/dist/zcl/tstype';
+
 import * as D from 'lib/model/device';
 import * as G from 'lib/model/group';
 import * as Z from 'lib/zigbee';
 import * as E from 'lib/eventBus';
 import * as M from 'lib/mqtt';
+
 // TODO: check all
 
 declare global {
@@ -56,6 +61,11 @@ declare global {
     // Controller
     interface KeyValue {
         [s: string]: any,
+    }
+
+    interface ZHBind {
+        cluster: ZHCluster;
+        target: ZHEndpoint | ZHGroup;
     }
 
     interface Settings {
@@ -202,7 +212,7 @@ declare global {
         name: string,
     }
 
-    interface ToZigbeeConverterGetMeta {message: {}, mapped: Definition | Definition[]}
+    interface ToZigbeeConverterGetMeta {message?: {}, mapped?: Definition | Definition[]}
 
     interface ToZigbeeConverterResult {state: KeyValue, membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
 

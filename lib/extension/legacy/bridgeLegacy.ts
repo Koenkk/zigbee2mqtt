@@ -1,41 +1,23 @@
-const settings = require('../../util/settings');
-const logger = require('../../util/logger');
-const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const utils = require('../../util/utils');
-const assert = require('assert');
-const Extension = require('../extension');
-const stringify = require('json-stable-stringify-without-jsonify');
+import * as settings from '../../util/settings';
+import logger from '../../util/logger';
+// @ts-ignore
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import * as utils from '../../util/utils';
+import assert from 'assert';
+import ExtensionTS from '../extensionts';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
+import bind from 'bind-decorator';
 
 const configRegex =
     new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
 const allowedLogLevels = ['error', 'warn', 'info', 'debug'];
 
-class BridgeLegacy extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
+class BridgeLegacy extends ExtensionTS {
+    private lastJoinedDeviceName: string = null;
+    private supportedOptions: {[s: string]: (topic: string, message: string) => Promise<void> | void};
 
-        // Bind functions
-        this.permitJoin = this.permitJoin.bind(this);
-        this.lastSeen = this.lastSeen.bind(this);
-        this.elapsed = this.elapsed.bind(this);
-        this.reset = this.reset.bind(this);
-        this.logLevel = this.logLevel.bind(this);
-        this.devices = this.devices.bind(this);
-        this.groups = this.groups.bind(this);
-        this.rename = this.rename.bind(this);
-        this.renameLast = this.renameLast.bind(this);
-        this.remove = this.remove.bind(this);
-        this.forceRemove = this.forceRemove.bind(this);
-        this.ban = this.ban.bind(this);
-        this.deviceOptions = this.deviceOptions.bind(this);
-        this.addGroup = this.addGroup.bind(this);
-        this.removeGroup = this.removeGroup.bind(this);
-        this.whitelist = this.whitelist.bind(this);
-        this.touchlinkFactoryReset = this.touchlinkFactoryReset.bind(this);
-
-        this.lastJoinedDeviceName = null;
-
-        // Set supported options
+    override async start(): Promise<void> {
         this.supportedOptions = {
             'permit_join': this.permitJoin,
             'last_seen': this.lastSeen,
@@ -57,13 +39,21 @@ class BridgeLegacy extends Extension {
             'whitelist': this.whitelist,
             'touchlink/factory_reset': this.touchlinkFactoryReset,
         };
+
+        this.eventBus.onDeviceJoined(this, (data) => this.onZigbeeEvent_('deviceJoined', data, data.device));
+        this.eventBus.onDeviceInterview(this, (data) => this.onZigbeeEvent_('deviceInterview', data, data.device));
+        this.eventBus.onDeviceAnnounce(this, (data) => this.onZigbeeEvent_('deviceAnnounce', data, data.device));
+        this.eventBus.onDeviceLeave(this, (data) => this.onZigbeeEvent_('deviceLeave', data, null));
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+
+        await this.publish();
     }
 
-    whitelist(topic, message) {
+    @bind whitelist(topic: string, message: string): void {
         try {
             const entity = settings.getEntity(message);
             assert(entity, `Entity '${message}' does not exist`);
-            settings.whitelistDevice(entity.ID);
+            settings.whitelistDevice(entity.ID.toString());
             logger.info(`Whitelisted '${entity.friendlyName}'`);
             this.mqtt.publish(
                 'bridge/log',
@@ -74,7 +64,7 @@ class BridgeLegacy extends Extension {
         }
     }
 
-    deviceOptions(topic, message) {
+    @bind deviceOptions(topic: string, message: string): void {
         let json = null;
         try {
             json = JSON.parse(message);
@@ -90,16 +80,16 @@ class BridgeLegacy extends Extension {
 
         const entity = settings.getEntity(json.friendly_name);
         assert(entity, `Entity '${json.friendly_name}' does not exist`);
-        settings.changeEntityOptions(entity.ID, json.options);
+        settings.changeEntityOptions(entity.ID.toString(), json.options);
         logger.info(`Changed device specific options of '${json.friendly_name}' (${stringify(json.options)})`);
     }
 
-    async permitJoin(topic, message) {
-        await this.zigbee.permitJoinLegacy(message.toLowerCase() === 'true');
+    @bind async permitJoin(topic: string, message: string): Promise<void> {
+        await this.zigbee.permitJoin(message.toLowerCase() === 'true');
         this.publish();
     }
 
-    async reset(topic, message) {
+    @bind async reset(): Promise<void> {
         try {
             await this.zigbee.reset('soft');
             logger.info('Soft resetted ZNP');
@@ -108,7 +98,7 @@ class BridgeLegacy extends Extension {
         }
     }
 
-    lastSeen(topic, message) {
+    @bind lastSeen(topic: string, message: string): void {
         const allowed = ['disable', 'ISO_8601', 'epoch', 'ISO_8601_local'];
         if (!allowed.includes(message)) {
             logger.error(`${message} is not an allowed value, possible: ${allowed}`);
@@ -119,7 +109,7 @@ class BridgeLegacy extends Extension {
         logger.info(`Set last_seen to ${message}`);
     }
 
-    elapsed(topic, message) {
+    @bind elapsed(topic: string, message: string): void {
         const allowed = ['true', 'false'];
         if (!allowed.includes(message)) {
             logger.error(`${message} is not an allowed value, possible: ${allowed}`);
@@ -130,10 +120,11 @@ class BridgeLegacy extends Extension {
         logger.info(`Set elapsed to ${message}`);
     }
 
-    logLevel(topic, message) {
+    @bind logLevel(topic: string, message: string): void {
         const level = message.toLowerCase();
         if (allowedLogLevels.includes(level)) {
             logger.info(`Switching log level to '${level}'`);
+            // @ts-ignore
             logger.setLevel(level);
         } else {
             logger.error(`Could not set log level to '${level}'. Allowed level: '${allowedLogLevels.join(',')}'`);
@@ -142,27 +133,27 @@ class BridgeLegacy extends Extension {
         this.publish();
     }
 
-    async devices(topic, message) {
+    @bind async devices(topic: string): Promise<void> {
         const coordinator = await this.zigbee.getCoordinatorVersion();
-        const devices = this.zigbee.getDevicesLegacy().map((device) => {
-            const payload = {
+        const devices = this.zigbee.getDevices().map((device) => {
+            const payload: KeyValue = {
                 ieeeAddr: device.ieeeAddr,
                 type: device.type,
                 networkAddress: device.networkAddress,
             };
 
             if (device.type !== 'Coordinator') {
-                const definition = zigbeeHerdsmanConverters.findByDevice(device);
+                const definition = zigbeeHerdsmanConverters.findByDevice(device.zhDevice);
                 const friendlyDevice = settings.getDevice(device.ieeeAddr);
                 payload.model = definition ? definition.model : device.modelID;
                 payload.vendor = definition ? definition.vendor : '-';
                 payload.description = definition ? definition.description : '-';
-                payload.friendly_name = friendlyDevice ? friendlyDevice.friendly_name : device.ieeeAddr;
-                payload.manufacturerID = device.manufacturerID;
+                payload.friendly_name = friendlyDevice ? device.name : device.ieeeAddr;
+                payload.manufacturerID = device.zhDevice.manufacturerID;
                 payload.manufacturerName = device.manufacturerName;
                 payload.powerSource = device.powerSource;
                 payload.modelID = device.modelID;
-                payload.hardwareVersion = device.hardwareVersion;
+                payload.hardwareVersion = device.zhDevice.hardwareVersion;
                 payload.softwareBuildID = device.softwareBuildID;
                 payload.dateCode = device.dateCode;
                 payload.lastSeen = device.lastSeen;
@@ -185,7 +176,7 @@ class BridgeLegacy extends Extension {
         }
     }
 
-    groups(topic, message) {
+    @bind groups(): void {
         const payload = settings.getGroups().map((g) => {
             const group = {...g};
             delete group.friendlyName;
@@ -195,7 +186,7 @@ class BridgeLegacy extends Extension {
         this.mqtt.publish('bridge/log', stringify({type: 'groups', message: payload}));
     }
 
-    rename(topic, message) {
+    @bind rename(topic: string, message: string): void {
         const invalid =
             `Invalid rename message format expected {"old": "friendly_name", "new": "new_name"} got ${message}`;
 
@@ -216,7 +207,7 @@ class BridgeLegacy extends Extension {
         this._renameInternal(json.old, json.new);
     }
 
-    renameLast(topic, message) {
+    @bind renameLast(topic: string, message: string): void {
         if (!this.lastJoinedDeviceName) {
             logger.error(`Cannot rename last joined device, no device has joined during this session`);
             return;
@@ -225,14 +216,14 @@ class BridgeLegacy extends Extension {
         this._renameInternal(this.lastJoinedDeviceName, message);
     }
 
-    _renameInternal(from, to) {
+    _renameInternal(from: string, to: string): void {
         try {
             const isGroup = settings.getGroup(from) !== null;
             settings.changeFriendlyName(from, to);
             logger.info(`Successfully renamed - ${from} to ${to} `);
-            const entity = this.zigbee.resolveEntityLegacy(to);
-            const eventData = isGroup ? {group: entity.group} : {device: entity.device, from, to};
-            eventData.homeAssisantRename = false;
+            const entity = this.zigbee.resolveEntity(to);
+            const eventData = utils.isGroup(entity) ? {group: entity.zhGroup, homeAssisantRename: false} :
+                {device: entity.zhDevice, from, to, homeAssisantRename: false};
             this.eventBus.emit(`${isGroup ? 'group' : 'device'}Renamed`, eventData);
 
             this.mqtt.publish(
@@ -244,7 +235,7 @@ class BridgeLegacy extends Extension {
         }
     }
 
-    addGroup(topic, message) {
+    @bind addGroup(topic: string, message: string): void {
         let id = null;
         let name = null;
         try {
@@ -268,20 +259,20 @@ class BridgeLegacy extends Extension {
         }
 
         const group = settings.addGroup(name, id);
-        this.zigbee.createGroupLegacy(group.ID);
+        this.zigbee.createGroup(group.ID);
         this.mqtt.publish('bridge/log', stringify({type: `group_added`, message: name}));
         logger.info(`Added group '${name}'`);
     }
 
-    removeGroup(topic, message) {
+    @bind removeGroup(topic: string, message: string): void {
         const name = message;
-        const entity = this.zigbee.resolveEntityLegacy(message);
-        assert(entity && entity.type === 'group', `Group '${message}' does not exist`);
+        const entity = this.zigbee.resolveEntity(message) as Group;
+        assert(entity && utils.isGroup(entity), `Group '${message}' does not exist`);
 
         if (topic.includes('force')) {
-            entity.group.removeFromDatabase();
+            entity.zhGroup.removeFromDatabase();
         } else {
-            entity.group.removeFromNetwork();
+            entity.zhGroup.removeFromNetwork();
         }
         settings.removeGroup(message);
 
@@ -289,21 +280,21 @@ class BridgeLegacy extends Extension {
         logger.info(`Removed group '${name}'`);
     }
 
-    async forceRemove(topic, message) {
+    @bind async forceRemove(topic: string, message: string): Promise<void> {
         await this.removeForceRemoveOrBan('force_remove', message);
     }
 
-    async remove(topic, message) {
+    @bind async remove(topic: string, message: string): Promise<void> {
         await this.removeForceRemoveOrBan('remove', message);
     }
 
-    async ban(topic, message) {
+    @bind async ban(topic: string, message: string): Promise<void> {
         await this.removeForceRemoveOrBan('ban', message);
     }
 
-    async removeForceRemoveOrBan(action, message) {
-        const entity = this.zigbee.resolveEntityLegacy(message.trim());
-        const lookup = {
+    @bind async removeForceRemoveOrBan(action: string, message: string): Promise<void> {
+        const entity = this.zigbee.resolveEntity(message.trim()) as Device;
+        const lookup: KeyValue = {
             ban: ['banned', 'Banning', 'ban'],
             force_remove: ['force_removed', 'Force removing', 'force remove'],
             remove: ['removed', 'Removing', 'remove'],
@@ -316,26 +307,28 @@ class BridgeLegacy extends Extension {
             return;
         }
 
-        const cleanup = () => {
+        const cleanup = (): void => {
             // Fire event
             this.eventBus.emit('deviceRemoved', {resolvedEntity: entity});
 
             // Remove from configuration.yaml
-            settings.removeDevice(entity.settings.ID);
+            settings.removeDevice(entity.ieeeAddr);
 
             // Remove from state
-            this.state.remove(entity.settings.ID);
+            this.state.remove(entity.ieeeAddr);
 
             logger.info(`Successfully ${lookup[action][0]} ${entity.settings.friendlyName}`);
             this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}`, message}));
         };
 
+        const ieeeAddr = entity.ieeeAddr;
+
         try {
             logger.info(`${lookup[action][1]} '${entity.settings.friendlyName}'`);
             if (action === 'force_remove') {
-                await entity.device.removeFromDatabase();
+                await entity.zhDevice.removeFromDatabase();
             } else {
-                await entity.device.removeFromNetwork();
+                await entity.zhDevice.removeFromNetwork();
             }
 
             cleanup();
@@ -348,31 +341,28 @@ class BridgeLegacy extends Extension {
         }
 
         if (action === 'ban') {
-            settings.banDevice(entity.settings.ID);
+            settings.banDevice(ieeeAddr);
         }
     }
 
-    async onMQTTConnected() {
-        await this.publish();
-    }
-
-    async onMQTTMessage(topic, message) {
+    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+        const {topic, message} = data;
         if (!topic.match(configRegex)) {
-            return false;
+            return;
         }
 
         const option = topic.match(configRegex)[1];
 
         if (!this.supportedOptions.hasOwnProperty(option)) {
-            return false;
+            return;
         }
 
         await this.supportedOptions[option](topic, message);
 
-        return true;
+        return;
     }
 
-    async publish() {
+    async publish(): Promise<void> {
         const info = await utils.getZigbee2MQTTVersion();
         const coordinator = await this.zigbee.getCoordinatorVersion();
         const topic = `bridge/config`;
@@ -381,6 +371,7 @@ class BridgeLegacy extends Extension {
             commit: info.commitHash,
             coordinator,
             network: await this.zigbee.getNetworkParameters(),
+            // @ts-ignore
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
         };
@@ -388,7 +379,7 @@ class BridgeLegacy extends Extension {
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0});
     }
 
-    onZigbeeEvent(type, data, resolvedEntity) {
+    onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device): void {
         if (type === 'deviceJoined' && resolvedEntity) {
             this.lastJoinedDeviceName = resolvedEntity.name;
         }
@@ -436,7 +427,7 @@ class BridgeLegacy extends Extension {
         } else {
             /* istanbul ignore else */
             if (type === 'deviceLeave') {
-                const name = resolvedEntity ? resolvedEntity.name : data.ieeeAddr;
+                const name = data.ieeeAddr;
                 const meta = {friendly_name: name};
                 this.mqtt.publish(
                     'bridge/log',
@@ -446,7 +437,7 @@ class BridgeLegacy extends Extension {
         }
     }
 
-    async touchlinkFactoryReset() {
+    @bind async touchlinkFactoryReset(): Promise<void> {
         logger.info('Starting touchlink factory reset...');
         this.mqtt.publish(
             'bridge/log',

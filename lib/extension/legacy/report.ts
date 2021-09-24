@@ -1,37 +1,42 @@
-const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
-const logger = require('../../util/logger');
-const settings = require('../../util/settings');
-const ZNLDP12LM = zigbeeHerdsmanConverters.devices.find((d) => d.model === 'ZNLDP12LM');
-const utils = require('../../util/utils');
-const Extension = require('../extension');
+// @ts-ignore
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import logger from '../../util/logger';
+import * as settings from '../../util/settings';
+import * as utils from '../../util/utils';
+import ExtensionTS from '../extensionts';
 
 const defaultConfiguration = {
     minimumReportInterval: 3, maximumReportInterval: 300, reportableChange: 1,
 };
 
+const ZNLDP12LM = zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'ZNLDP12LM');
+
 const devicesNotSupportingReporting = [
-    zigbeeHerdsmanConverters.devices.find((d) => d.model === 'CC2530.ROUTER'),
-    zigbeeHerdsmanConverters.devices.find((d) => d.model === 'BASICZBR3'),
-    zigbeeHerdsmanConverters.devices.find((d) => d.model === 'ZM-CSW032-D'),
-    zigbeeHerdsmanConverters.devices.find((d) => d.model === 'TS0001'),
-    zigbeeHerdsmanConverters.devices.find((d) => d.model === 'TS0115'),
+    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'CC2530.ROUTER'),
+    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'BASICZBR3'),
+    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'ZM-CSW032-D'),
+    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'TS0001'),
+    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'TS0115'),
 ];
 
 const reportKey = 1;
 
-const getColorCapabilities = async (endpoint) => {
+const getColorCapabilities = async (endpoint: ZHEndpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
     if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') === undefined) {
         await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
     }
 
-    const value = endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities');
+    const value = endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') as number;
     return {
         colorTemperature: (value & 1<<4) > 0,
         colorXY: (value & 1<<3) > 0,
     };
 };
 
-const clusters = {
+const clusters: {[s: string]:
+    {attribute: string, minimumReportInterval: number, maximumReportInterval: number, reportableChange: number
+        condition?: (endpoint: ZHEndpoint) => Promise<boolean>}[]} =
+{
     'genOnOff': [
         {attribute: 'onOff', ...defaultConfiguration, minimumReportInterval: 0, reportableChange: 0},
     ],
@@ -41,15 +46,15 @@ const clusters = {
     'lightingColorCtrl': [
         {
             attribute: 'colorTemperature', ...defaultConfiguration,
-            condition: async (endpoint) => (await getColorCapabilities(endpoint)).colorTemperature,
+            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
         },
         {
             attribute: 'currentX', ...defaultConfiguration,
-            condition: async (endpoint) => (await getColorCapabilities(endpoint)).colorXY,
+            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
         {
             attribute: 'currentY', ...defaultConfiguration,
-            condition: async (endpoint) => (await getColorCapabilities(endpoint)).colorXY,
+            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
     ],
     'closuresWindowCovering': [
@@ -58,15 +63,12 @@ const clusters = {
     ],
 };
 
-class Report extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
-        this.queue = new Set();
-        this.failed = new Set();
-        this.enabled = settings.get().advanced.report;
-    }
+class Report extends ExtensionTS {
+    private queue: Set<string> = new Set();
+    private failed: Set<string> = new Set();
+    private enabled = settings.get().advanced.report;
 
-    shouldIgnoreClusterForDevice(cluster, definition) {
+    shouldIgnoreClusterForDevice(cluster: string, definition: Definition): boolean {
         if (definition === ZNLDP12LM && cluster === 'closuresWindowCovering') {
             // Device announces it but doesn't support it
             // https://github.com/Koenkk/zigbee2mqtt/issues/2611
@@ -76,9 +78,7 @@ class Report extends Extension {
         return false;
     }
 
-    async setupReporting(resolvedEntity) {
-        const {device, definition} = resolvedEntity;
-
+    async setupReporting(device: Device): Promise<void> {
         if (this.queue.has(device.ieeeAddr) || this.failed.has(device.ieeeAddr)) return;
         this.queue.add(device.ieeeAddr);
 
@@ -88,7 +88,8 @@ class Report extends Extension {
         try {
             for (const ep of device.endpoints) {
                 for (const [cluster, configuration] of Object.entries(clusters)) {
-                    if (ep.supportsInputCluster(cluster) && !this.shouldIgnoreClusterForDevice(cluster, definition)) {
+                    if (ep.supportsInputCluster(cluster) &&
+                        !this.shouldIgnoreClusterForDevice(cluster, device.definition)) {
                         logger.debug(`${term1} reporting for '${device.ieeeAddr}' - ${ep.ID} - ${cluster}`);
 
                         const items = [];
@@ -102,8 +103,8 @@ class Report extends Extension {
                         }
 
                         this.enabled ?
-                            await ep.bind(cluster, this.coordinatorEndpoint) :
-                            await ep.unbind(cluster, this.coordinatorEndpoint);
+                            await ep.bind(cluster, this.zigbee.getFirstCoordinatorEndpoint()) :
+                            await ep.unbind(cluster, this.zigbee.getFirstCoordinatorEndpoint());
 
                         await ep.configureReporting(cluster, items);
                         logger.info(
@@ -114,9 +115,9 @@ class Report extends Extension {
             }
 
             if (this.enabled) {
-                device.meta.reporting = reportKey;
+                device.zhDevice.meta.reporting = reportKey;
             } else {
-                delete device.meta.reporting;
+                delete device.zhDevice.meta.reporting;
                 this.eventBus.emit('reportingDisabled', {device});
             }
 
@@ -129,15 +130,13 @@ class Report extends Extension {
             this.failed.add(device.ieeeAddr);
         }
 
-        device.save();
+        device.zhDevice.save();
         this.queue.delete(device.ieeeAddr);
     }
 
-    shouldSetupReporting(resolvedEntity, messageType) {
-        if (!resolvedEntity || !resolvedEntity.device || !resolvedEntity.definition ||
-            messageType === 'deviceLeave') return false;
+    shouldSetupReporting(device: Device, messageType: string): boolean {
+        if (!device || !device.zhDevice || !device.definition) return false;
 
-        const {device, definition} = resolvedEntity;
         // Handle messages of type endDeviceAnnce and devIncoming.
         // This message is typically send when a device comes online after being powered off
         // Ikea TRADFRI tend to forget their reporting after powered off.
@@ -146,7 +145,7 @@ class Report extends Extension {
         // else reconfigure is done in zigbee-herdsman-converters ikea.js/bulbOnEvent
         // configuredReportings are saved since Zigbee2MQTT 1.17.0
         // https://github.com/Koenkk/zigbee2mqtt/issues/966
-        if (this.enabled && messageType === 'deviceAnnounce' && utils.isIkeaTradfriDevice(device) &&
+        if (this.enabled && messageType === 'deviceAnnounce' && utils.isIkeaTradfriDevice(device.zhDevice) &&
             device.endpoints.filter((e) => e.configuredReportings.length === 0).length === device.endpoints.length) {
             return true;
         }
@@ -156,36 +155,40 @@ class Report extends Extension {
         const philipsIgnoreSw = ['5.127.1.26581', '5.130.1.30000'];
         if (device.manufacturerName === 'Philips' && philipsIgnoreSw.includes(device.softwareBuildID)) return false;
 
-        if (resolvedEntity.device.interviewing === true) return false;
+        if (device.zhDevice.interviewing === true) return false;
         if (device.type !== 'Router' || device.powerSource === 'Battery') return false;
         // Gledopto devices don't support reporting.
-        if (devicesNotSupportingReporting.includes(definition) || definition.vendor === 'Gledopto') return false;
+        if (devicesNotSupportingReporting.includes(device.definition) ||
+            device.definition.vendor === 'Gledopto') return false;
 
-        if (this.enabled && device.meta.hasOwnProperty('reporting') && device.meta.reporting === reportKey) {
+        if (this.enabled && device.zhDevice.meta.hasOwnProperty('reporting') &&
+            device.zhDevice.meta.reporting === reportKey) {
             return false;
         }
 
-        if (!this.enabled && !device.meta.hasOwnProperty('reporting')) {
+        if (!this.enabled && !device.zhDevice.meta.hasOwnProperty('reporting')) {
             return false;
         }
 
         return true;
     }
 
-    async onZigbeeStarted() {
-        this.coordinatorEndpoint = this.zigbee.getDevicesByTypeLegacy('Coordinator')[0].getEndpoint(1);
-
-        for (const device of this.zigbee.getClientsLegacy()) {
-            const resolvedEntity = this.zigbee.resolveEntityLegacy(device);
-            if (this.shouldSetupReporting(resolvedEntity, null)) {
-                await this.setupReporting(resolvedEntity);
+    override async start(): Promise<void> {
+        for (const device of this.zigbee.getClients()) {
+            if (this.shouldSetupReporting(device, null)) {
+                await this.setupReporting(device);
             }
         }
+
+        this.eventBus.onDeviceAnnounce(this, (data) => this.onZigbeeEvent_('deviceAnnounce', data.device));
+        this.eventBus.onDeviceMessage(this, (data) => this.onZigbeeEvent_('dummy', data.device));
+        this.eventBus.onDeviceJoined(this, (data) => this.onZigbeeEvent_('dummy', data.device));
+        this.eventBus.onDeviceNetworkAddressChanged(this, (data) => this.onZigbeeEvent_('dummy', data.device));
     }
 
-    async onZigbeeEvent(type, data, resolvedEntity) {
-        if (this.shouldSetupReporting(resolvedEntity, type)) {
-            await this.setupReporting(resolvedEntity);
+    async onZigbeeEvent_(type: string, device: Device): Promise<void> {
+        if (this.shouldSetupReporting(device, type)) {
+            await this.setupReporting(device);
         }
     }
 }

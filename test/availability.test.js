@@ -159,7 +159,7 @@ describe('Availability', () => {
 
     it('Should retrieve the state when device is turned on/off within availability timeout', async () => {
         MQTT.publish.mockClear();
-        extension.state = {};
+        extension.stateLookup = {};
         const payload = {device: zigbeeHerdsman.devices.bulb_color};
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
@@ -278,7 +278,7 @@ describe('Availability', () => {
     it('Should not ping devices not in passlist if availability_passlist is set', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.ping.mockClear();
-        extension.state[device.ieeeAddr] = false;
+        extension.stateLookup[device.ieeeAddr] = false;
         settings.set(['advanced', 'availability_passlist'], ['0x000b57fffec6a5b3'])
         await resetExtension();
         jest.advanceTimersByTime(11 * 1000);
@@ -290,7 +290,7 @@ describe('Availability', () => {
 
     it('Should not read when device has no modelID and reconnects', async () => {
         const device = zigbeeHerdsman.devices.nomodel;
-        extension.state[device.ieeeAddr] = true;
+        extension.stateLookup[device.ieeeAddr] = true;
         const endpoint = device.getEndpoint(1);
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
@@ -299,28 +299,15 @@ describe('Availability', () => {
 
     it('Should not read when device has is unsupported', async () => {
         const device = zigbeeHerdsman.devices.unsupported_router;
-        extension.state[device.ieeeAddr] = true;
+        extension.stateLookup[device.ieeeAddr] = true;
         const endpoint = device.getEndpoint(1);
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(endpoint.read).toHaveBeenCalledTimes(0);
     });
 
-    it('Should stop pinging device when removed', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.ping.mockClear();
-        const endpoint = device.getEndpoint(1);
-        jest.advanceTimersByTime(11 * 1000);
-        await flushPromises();
-        expect(device.ping).toHaveBeenCalledTimes(1);
-        settings.removeDevice(device.ieeeAddr);
-        jest.advanceTimersByTime(11 * 1000);
-        await flushPromises();
-        expect(device.ping).toHaveBeenCalledTimes(1);
-    });
-
     it('Should publish availability when end device joins', async () => {
-        delete extension.state[zigbeeHerdsman.devices.WXKG02LM_rev1.ieeeAddr];
+        delete extension.stateLookup[zigbeeHerdsman.devices.WXKG02LM_rev1.ieeeAddr];
         const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const payload = {device};
         MQTT.publish.mockClear();
@@ -362,8 +349,9 @@ describe('Availability', () => {
     it('Should republish existing state on MQTT connected', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         MQTT.publish.mockClear();
-        extension.state[device.ieeeAddr] = false;
-        await extension.onMQTTConnected();
+        extension.stateLookup[device.ieeeAddr] = false;
+        await extension.start();
+        await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
           'offline',

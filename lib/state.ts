@@ -1,8 +1,8 @@
-const logger = require('./util/logger');
-const data = require('./util/data');
-const settings = require('./util/settings');
-const fs = require('fs');
-const objectAssignDeep = require('object-assign-deep');
+import logger from './util/logger';
+import * as data from './util/data';
+import * as settings from './util/settings';
+import fs from 'fs';
+import objectAssignDeep from 'object-assign-deep';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
 
@@ -13,14 +13,16 @@ const dontCacheProperties = [
 ];
 
 class State {
-    constructor(eventBus) {
-        this.state = {};
-        this.file = data.joinPath('state.json');
-        this.timer = null;
+    private state: {[s: string | number]: KeyValue} = {};
+    private file = data.joinPath('state.json');
+    private timer: NodeJS.Timer = null;
+    private eventBus: EventBus;
+
+    constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
     }
 
-    start() {
+    start(): void {
         this._load();
 
         // Save the state on every interval
@@ -28,19 +30,19 @@ class State {
         this.timer = setInterval(() => this.save(), saveInterval);
     }
 
-    clearTimer() {
+    clearTimer(): void {
         if (this.timer) {
             clearTimeout(this.timer);
             this.timer = null;
         }
     }
 
-    stop() {
+    stop(): void {
         this.clearTimer();
         this.save();
     }
 
-    _load() {
+    _load(): void {
         if (fs.existsSync(this.file)) {
             try {
                 this.state = JSON.parse(fs.readFileSync(this.file, 'utf8'));
@@ -53,7 +55,7 @@ class State {
         }
     }
 
-    save() {
+    save(): void {
         if (settings.get().advanced.cache_state_persistent) {
             logger.debug(`Saving state to file ${this.file}`);
             const json = JSON.stringify(this.state, null, 4);
@@ -67,17 +69,17 @@ class State {
         }
     }
 
-    exists(ID) {
+    exists(ID: string | number): boolean {
         return this.state.hasOwnProperty(ID);
     }
 
-    get(ID) {
+    get(ID: string | number): KeyValue {
         return this.state[ID];
     }
 
-    set(ID, update, reason=null) {
+    set(ID: string | number, update: KeyValue, reason: string=null): KeyValue {
         const fromState = this.state[ID] || {};
-        const toState = objectAssignDeep.noMutate(fromState, update);
+        const toState = objectAssignDeep({}, fromState, update);
         const result = {...toState};
 
         for (const property of Object.keys(toState)) {
@@ -91,7 +93,7 @@ class State {
         return result;
     }
 
-    removeKey(ID, path) {
+    removeKey(ID: string | number, path: string[]): void {
         if (this.exists(ID)) {
             let state = this.state[ID];
             for (let i = 0; i < path.length; i++) {
@@ -109,7 +111,7 @@ class State {
         }
     }
 
-    remove(ID) {
+    remove(ID: string | number): void {
         if (this.exists(ID)) {
             delete this.state[ID];
         }

@@ -7,6 +7,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
 import zigbeeHersdman from 'zigbee-herdsman';
 import bind from 'bind-decorator';
+import Device from '../model/device';
 
 const legacyApi = settings.get().advanced.legacy_api;
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
@@ -15,7 +16,7 @@ const clusterCandidates = ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingCol
     'hvacThermostat', 'msTemperatureMeasurement'];
 
 // See zigbee-herdsman-converters
-const defaultBindGroup = {type: 'group_number', ID: 901};
+const defaultBindGroup = {type: 'group_number', ID: 901, name: 'default_bind_group'};
 
 const defaultReportConfiguration = {
     minimumReportInterval: 5, maximumReportInterval: 3600, reportableChange: 1,
@@ -158,31 +159,34 @@ const pollOnMessage: PollOnMessage = [
     },
 ];
 
+interface ParsedMQTTMessage {
+    type: 'bind' | 'unbind', sourceKey: string, targetKey: string, clusters: string[], skipDisableReporting: boolean
+}
+
 class Bind extends ExtensionTS {
     private pollDebouncers: {[s: string]: () => void} = {};
 
     override async start(): Promise<void> {
         this.eventBus.onDeviceMessage(this, this.poll);
-
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
-        this.eventBus.on(`groupMembersChanged`, (d) => this.groupMembersChanged(d), this.constructor.name);
     }
 
-    parseMQTTMessage(topic, message) {
-        let type = null;
+    private parseMQTTMessage(data: EventMQTTMessage): ParsedMQTTMessage {
+        let type: 'bind' | 'unbind' = null;
         let sourceKey = null;
         let targetKey = null;
         let clusters = null;
         let skipDisableReporting = false;
 
-        if (legacyApi && topic.match(legacyTopicRegex)) {
-            topic = topic.replace(`${settings.get().mqtt.base_topic}/bridge/`, '');
-            type = topic.split('/')[0];
+        if (legacyApi && data.topic.match(legacyTopicRegex)) {
+            const topic = data.topic.replace(`${settings.get().mqtt.base_topic}/bridge/`, '');
+            type = topic.split('/')[0] as 'bind' | 'unbind';
             sourceKey = topic.replace(`${type}/`, '');
-            targetKey = message;
-        } else if (topic.match(topicRegex)) {
-            type = topic.endsWith('unbind') ? 'unbind' : 'bind';
-            message = JSON.parse(message);
+            targetKey = data.message;
+        } else if (data.topic.match(topicRegex)) {
+            type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
+            const message = JSON.parse(data.message);
             sourceKey = message.from;
             targetKey = message.to;
             clusters = message.clusters;
@@ -192,32 +196,33 @@ class Bind extends ExtensionTS {
         return {type, sourceKey, targetKey, clusters, skipDisableReporting};
     }
 
-    async onMQTTMessage(topic, message) {
-        const {type, sourceKey, targetKey, clusters, skipDisableReporting} = this.parseMQTTMessage(topic, message);
+    @bind private async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+        const {type, sourceKey, targetKey, clusters, skipDisableReporting} = this.parseMQTTMessage(data);
         if (!type) return null;
-        message = utils.parseJSON(message, message);
+        const message = utils.parseJSON(data.message, data.message);
 
         let error = null;
-        const source = this.zigbee.resolveEntityLegacy(sourceKey);
+        const parsedSource = utils.parseEntityID(sourceKey);
+        const parsedTarget = utils.parseEntityID(targetKey);
+        const source = this.zigbee.resolveEntity(parsedSource.ID);
         const target = targetKey === 'default_bind_group' ?
-            defaultBindGroup : this.zigbee.resolveEntityLegacy(targetKey);
-        const responseData = {from: sourceKey, to: targetKey};
+            defaultBindGroup : this.zigbee.resolveEntity(parsedTarget.ID);
+        const responseData: KeyValue = {from: sourceKey, to: targetKey};
 
-        if (!source || source.type !== 'device') {
+        if (!source || !(source instanceof Device)) {
             error = `Source device '${sourceKey}' does not exist`;
         } else if (!target) {
             error = `Target device or group '${targetKey}' does not exist`;
         } else {
-            const sourceName = source.settings.friendlyName;
-            const targetName = targetKey === 'default_bind_group' ? targetKey : target.settings.friendlyName;
-            const successfulClusters = [];
+            const successfulClusters: string[] = [];
             const failedClusters = [];
             const attemptedClusters = [];
 
-            let bindTarget = null;
-            if (target.type === 'group') bindTarget = target.group;
-            else if (target.type === 'group_number') bindTarget = target.ID;
-            else bindTarget = target.endpoint;
+            const bindSource: ZHEndpoint = source.endpoint(parsedSource.endpoint);
+            let bindTarget: number | ZHGroup | ZHEndpoint = null;
+            if (utils.isGroup(target)) bindTarget = target.zhGroup;
+            else if (utils.isDevice(target)) bindTarget = target.endpoint(parsedTarget.endpoint);
+            else bindTarget = target.ID;
 
             // Find which clusters are supported by both the source and target.
             // Groups are assumed to support all clusters.
@@ -225,34 +230,34 @@ class Bind extends ExtensionTS {
                 if (clusters && !clusters.includes(cluster)) continue;
                 let matchingClusters = false;
 
-                const anyClusterValid = target.type === 'group' || target.type === 'group_number' ||
-                    target.device.type === 'Coordinator';
+                const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' ||
+                    (target as Device).type === 'Coordinator';
 
-                if (!anyClusterValid) {
-                    matchingClusters = ((target.endpoint.supportsInputCluster(cluster) &&
-                            source.endpoint.supportsOutputCluster(cluster)) ||
-                            (source.endpoint.supportsInputCluster(cluster) &&
-                            target.endpoint.supportsOutputCluster(cluster)) );
+                if (!anyClusterValid && utils.isEndpoint(bindTarget)) {
+                    matchingClusters = ((bindTarget.supportsInputCluster(cluster) &&
+                            bindSource.supportsOutputCluster(cluster)) ||
+                            (bindSource.supportsInputCluster(cluster) &&
+                            bindTarget.supportsOutputCluster(cluster)) );
                 }
 
-                const sourceValid = source.endpoint.supportsInputCluster(cluster) ||
-                source.endpoint.supportsOutputCluster(cluster);
+                const sourceValid = bindSource.supportsInputCluster(cluster) ||
+                bindSource.supportsOutputCluster(cluster);
 
                 if ( sourceValid && (anyClusterValid || matchingClusters)) {
-                    logger.debug(`${type}ing cluster '${cluster}' from '${sourceName}' to '${targetName}'`);
+                    logger.debug(`${type}ing cluster '${cluster}' from '${source.name}' to '${target.name}'`);
                     attemptedClusters.push(cluster);
 
                     try {
                         if (type === 'bind') {
-                            await source.endpoint.bind(cluster, bindTarget);
+                            await bindSource.bind(cluster, bindTarget);
                         } else {
-                            await source.endpoint.unbind(cluster, bindTarget);
+                            await bindSource.unbind(cluster, bindTarget);
                         }
 
                         successfulClusters.push(cluster);
                         logger.info(
                             `Successfully ${type === 'bind' ? 'bound' : 'unbound'} cluster '${cluster}' from ` +
-                            `'${sourceName}' to '${targetName}'`,
+                            `'${source.name}' to '${target.name}'`,
                         );
 
                         /* istanbul ignore else */
@@ -260,14 +265,14 @@ class Bind extends ExtensionTS {
                             this.mqtt.publish(
                                 'bridge/log',
                                 stringify({type: `device_${type}`,
-                                    message: {from: sourceName, to: targetName, cluster}}),
+                                    message: {from: source.name, to: target.name, cluster}}),
                             );
                         }
                     } catch (error) {
                         failedClusters.push(cluster);
                         logger.error(
-                            `Failed to ${type} cluster '${cluster}' from '${sourceName}' to ` +
-                            `'${targetName}' (${error})`,
+                            `Failed to ${type} cluster '${cluster}' from '${source.name}' to ` +
+                            `'${target.name}' (${error})`,
                         );
 
                         /* istanbul ignore else */
@@ -275,7 +280,7 @@ class Bind extends ExtensionTS {
                             this.mqtt.publish(
                                 'bridge/log',
                                 stringify({type: `device_${type}_failed`,
-                                    message: {from: sourceName, to: targetName, cluster}}),
+                                    message: {from: source.name, to: target.name, cluster}}),
                             );
                         }
                     }
@@ -283,14 +288,14 @@ class Bind extends ExtensionTS {
             }
 
             if (attemptedClusters.length === 0) {
-                logger.error(`Nothing to ${type} from '${sourceName}' to '${targetName}'`);
+                logger.error(`Nothing to ${type} from '${source.name}' to '${target.name}'`);
                 error = `Nothing to ${type}`;
 
                 /* istanbul ignore else */
                 if (settings.get().advanced.legacy_api) {
                     this.mqtt.publish(
                         'bridge/log',
-                        stringify({type: `device_${type}_failed`, message: {from: sourceName, to: targetName}}),
+                        stringify({type: `device_${type}_failed`, message: {from: source.name, to: target.name}}),
                     );
                 }
             } else if (failedClusters.length === attemptedClusters.length) {
@@ -302,15 +307,15 @@ class Bind extends ExtensionTS {
 
             if (successfulClusters.length !== 0) {
                 if (type === 'bind') {
-                    await this.setupReporting(source.endpoint.binds.filter((b) =>
+                    await this.setupReporting(bindSource.binds.filter((b) =>
                         successfulClusters.includes(b.cluster.name) && b.target === bindTarget));
-                } else if ((target.type !== 'group_number') && !skipDisableReporting) {
+                } else if ((typeof bindTarget !== 'number') && !skipDisableReporting) {
                     await this.disableUnnecessaryReportings(bindTarget);
                 }
             }
         }
 
-        const triggeredViaLegacyApi = topic.match(legacyTopicRegex);
+        const triggeredViaLegacyApi = data.topic.match(legacyTopicRegex);
         if (!triggeredViaLegacyApi) {
             const response = utils.getResponse(message, responseData, error);
             await this.mqtt.publish(`bridge/response/device/${type}`, stringify(response));
@@ -323,7 +328,7 @@ class Bind extends ExtensionTS {
         }
     }
 
-    @bind async groupMembersChanged(data: EventGroupMembersChanged): Promise<void> {
+    @bind async onGroupMembersChanged(data: EventGroupMembersChanged): Promise<void> {
         if (data.action === 'add') {
             const bindsToGroup = this.zigbee.getClientsLegacy().map((c) => c.endpoints)
                 .reduce((a, v) => a.concat(v)).map((e) => e.binds)
@@ -336,8 +341,8 @@ class Bind extends ExtensionTS {
         }
     }
 
-    getSetupReportingEndpoints(bind, coordinatorEp) {
-        const endpoints = bind.target.constructor.name === 'Group' ? bind.target.members : [bind.target];
+    getSetupReportingEndpoints(bind: ZHBind, coordinatorEp: ZHEndpoint): ZHEndpoint[] {
+        const endpoints = utils.isEndpoint(bind.target) ? [bind.target] : bind.target.members;
         return endpoints.filter((e) => {
             const supportsInputCluster = e.supportsInputCluster(bind.cluster.name);
             const hasConfiguredReporting = !!e.configuredReportings.find((c) => c.cluster.name === bind.cluster.name);
@@ -346,22 +351,24 @@ class Bind extends ExtensionTS {
         });
     }
 
-    async setupReporting(binds) {
+    async setupReporting(binds: ZHBind[]): Promise<void> {
         const coordinator = this.zigbee.getDevicesByTypeLegacy('Coordinator')[0];
         const coordinatorEndpoint = coordinator.getEndpoint(1);
         for (const bind of binds.filter((b) => b.cluster.name in reportClusters)) {
             for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
-                const entity = `${this.zigbee.resolveEntityLegacy(endpoint.getDevice()).name}/${endpoint.ID}`;
+                const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
                 try {
                     await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
+                    const items = [];
+                    for (const c of reportClusters[bind.cluster.name]) {
+                        /* istanbul ignore else */
+                        if (!c.condition || await c.condition(endpoint)) {
+                            const i = {...c};
+                            delete i.condition;
+                            items.push(i);
+                        }
+                    }
 
-                    const items = await reportClusters[bind.cluster.name]
-                        .filter(async (a) => !a.condition || await a.condition(endpoint))
-                        .map((a) => {
-                            const result = {...a};
-                            delete result.condition;
-                            return result;
-                        });
                     await endpoint.configureReporting(bind.cluster.name, items);
                     logger.info(`Succesfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                 } catch (error) {
@@ -373,7 +380,7 @@ class Bind extends ExtensionTS {
         this.eventBus.emit(`devicesChanged`);
     }
 
-    async disableUnnecessaryReportings(target: Group | ZHEndpoint): Promise<void> {
+    async disableUnnecessaryReportings(target: ZHGroup | ZHEndpoint): Promise<void> {
         const coordinator = this.zigbee.getFirstCoordinatorEndpoint();
         const endpoints = utils.isEndpoint(target) ? [target] : target.members;
         for (const endpoint of endpoints) {
@@ -395,8 +402,11 @@ class Bind extends ExtensionTS {
                     await endpoint.unbind(cluster, coordinator);
                     const items = [];
                     for (const item of reportClusters[cluster]) {
+                        /* istanbul ignore else */
                         if (!item.condition || await item.condition(endpoint)) {
-                            items.push({...item, maximumReportInterval: 0xFFFF});
+                            const i = {...item};
+                            delete i.condition;
+                            items.push({...i, maximumReportInterval: 0xFFFF});
                         }
                     }
 
@@ -426,15 +436,19 @@ class Bind extends ExtensionTS {
         if (polls.length) {
             const toPoll: Set<ZHEndpoint> = new Set();
             // Add bound devices
-            for (const bind of data.endpoint.binds) {
-                if (utils.isEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
-                    toPoll.add(bind.target);
+            for (const endpoint of data.device.endpoints) {
+                for (const bind of endpoint.binds) {
+                    if (utils.isEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
+                        toPoll.add(bind.target);
+                    }
                 }
             }
 
             // If message is published to a group, add members of the group
             const group = data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
-            group?.members.forEach((m) => toPoll.add(m));
+            if (group) {
+                group.members.forEach((m) => toPoll.add(m));
+            }
 
             for (const endpoint of toPoll) {
                 for (const poll of polls) {

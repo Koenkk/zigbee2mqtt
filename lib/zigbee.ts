@@ -212,6 +212,10 @@ export default class Zigbee {
 
     resolveEntity(key: ZHDevice | string | number): Device | Group {
         const ID = typeof key === 'string' || typeof key === 'number' ? key.toString() : key.ieeeAddr;
+        if (ID.toLowerCase() === 'coordinator') {
+            return this.addDeviceToResolvedEntitiesLookup(this.herdsman.getDevicesByType('Coordinator')[0].ieeeAddr);
+        }
+
         const entitySettings = settings.getEntity(ID);
         if (!entitySettings && !(typeof key === 'object' && key.type === 'Coordinator')) return undefined;
 
@@ -299,9 +303,6 @@ export default class Zigbee {
     }
 
     // TODO remove all legacy below
-    createGroupLegacy(groupID: number): ZHGroup {
-        return this.herdsman.createGroup(groupID);
-    }
     getGroupByIDLegacy(ID: number): ZHGroup {
         return this.herdsman.getGroupByID(ID);
     }
@@ -310,9 +311,6 @@ export default class Zigbee {
     }
     getClientsLegacy(): ZHDevice[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
-    }
-    getDevicesLegacy(): ZHDevice[] {
-        return this.herdsman.getDevices();
     }
     async permitJoinLegacy(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
         if (permit) {
