@@ -2,13 +2,13 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
 import * as utils from '../../util/utils';
-import ExtensionTS from '../extensionts';
+import Extension from '../extension';
 import bind from 'bind-decorator';
 import Device from '../../model/device';
 
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/device/(.+)/get_group_membership$`);
 
-class DeviceGroupMembership extends ExtensionTS {
+class DeviceGroupMembership extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }

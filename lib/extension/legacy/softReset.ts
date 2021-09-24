@@ -3,12 +3,12 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
 import * as utils from '../../util/utils';
-import ExtensionTS from '../extensionts';
+import Extension from '../extension';
 
 /**
  * This extensions soft resets the ZNP after a certain timeout.
  */
-class SoftReset extends ExtensionTS {
+class SoftReset extends Extension {
     private timer: NodeJS.Timer = null;
     private timeout = utils.seconds(settings.get().advanced.soft_reset_timeout);
 

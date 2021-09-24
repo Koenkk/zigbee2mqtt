@@ -7,11 +7,11 @@ import logger from './../util/logger';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
-class ExternalExtension extends ExtensionTS {
+class ExternalExtension extends Extension {
     private requestLookup: {[s: string]: (message: KeyValue) => MQTTResponse};
 
     override async start(): Promise<void> {

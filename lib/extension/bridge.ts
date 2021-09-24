@@ -8,13 +8,13 @@ import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import objectAssignDeep from 'object-assign-deep';
 import {detailedDiff} from 'deep-object-diff';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import Device from '../model/device';
 import Group from '../model/group';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
-class Bridge extends ExtensionTS {
+class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
     private coordinatorVersion: CoordinatorVersion;
     private restartRequired = false;

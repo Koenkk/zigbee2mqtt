@@ -5,7 +5,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import * as utils from '../util/utils';
 // @ts-ignore
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 
@@ -18,7 +18,7 @@ const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/o
 const topicRegex =
     new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)`, 'i');
 
-class OTAUpdate extends ExtensionTS {
+class OTAUpdate extends Extension {
     private inProgress = new Set();
     private lastChecked: {[s: string]: number} = {};
     private legacyApi = settings.get().advanced.legacy_api;

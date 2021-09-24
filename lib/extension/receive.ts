@@ -1,12 +1,12 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
 import debounce from 'debounce';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 
-class Receive extends ExtensionTS {
+class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     // eslint-disable-next-line
     private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type

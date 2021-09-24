@@ -3,7 +3,7 @@ import * as utils from '../util/utils';
 import logger from '../util/logger';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 
 interface Link {
@@ -23,7 +23,7 @@ interface Topology {
 /**
  * This extension creates a network map
  */
-class NetworkMap extends ExtensionTS {
+class NetworkMap extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;

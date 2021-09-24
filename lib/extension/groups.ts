@@ -5,7 +5,7 @@ import * as utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import equals from 'fast-deep-equal/es6';
 import bind from 'bind-decorator';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import Device from '../model/device';
 import Group from '../model/group';
 
@@ -35,7 +35,7 @@ interface ParsedMQTTMessage {
     skipDisableReporting: boolean, resolvedEntityEndpoint: ZHEndpoint,
 }
 
-class Groups extends ExtensionTS {
+class Groups extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
     private lastOptimisticState: {[s: number]: KeyValue} = {};
 

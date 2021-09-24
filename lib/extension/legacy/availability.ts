@@ -3,7 +3,7 @@ import * as settings from '../../util/settings';
 import * as utils from '../../util/utils';
 // @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
-import ExtensionTS from '../extensionts';
+import Extension from '../extension';
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(.*)/availability`);
 import bind from 'bind-decorator';
 
@@ -27,7 +27,7 @@ function timeoutLag(timeout: number, ratio: number): number {
 /**
  * This extensions pings devices to check if they are online.
  */
-class AvailabilityLegacy extends ExtensionTS {
+class AvailabilityLegacy extends Extension {
     // eslint-disable-next-line
     private availability_timeout = settings.get().advanced.availability_timeout;
     private timers: KeyValue = {};

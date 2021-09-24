@@ -6,7 +6,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 // @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import Group from '../model/group';
@@ -39,7 +39,7 @@ const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): strin
 /**
  * This extensions handles integration with HomeAssistant
  */
-class HomeAssistant extends ExtensionTS {
+class HomeAssistant extends Extension {
     private discovered: {[s: string]: string[]} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};

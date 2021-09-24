@@ -4,7 +4,7 @@ import logger from '../../util/logger';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import * as utils from '../../util/utils';
 import assert from 'assert';
-import ExtensionTS from '../extensionts';
+import Extension from '../extension';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
@@ -13,7 +13,7 @@ const configRegex =
     new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
 const allowedLogLevels = ['error', 'warn', 'info', 'debug'];
 
-class BridgeLegacy extends ExtensionTS {
+class BridgeLegacy extends Extension {
     private lastJoinedDeviceName: string = null;
     private supportedOptions: {[s: string]: (topic: string, message: string) => Promise<void> | void};
 

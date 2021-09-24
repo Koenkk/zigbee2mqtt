@@ -1,11 +1,11 @@
 // @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 
 /**
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
-class OnEvent extends ExtensionTS {
+class OnEvent extends Extension {
     override async start(): Promise<void> {
         for (const device of this.zigbee.getClients()) {
             await this.callOnEvent(device, 'start', {});

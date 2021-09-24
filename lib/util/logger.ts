@@ -171,4 +171,4 @@ logger.setLevel = (level): void => {
 // @ts-ignore
 logger.warn = (message): void => logger.warning(message);
 
-module.exports = logger;
+export default logger;

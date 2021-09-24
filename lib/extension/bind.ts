@@ -1,7 +1,7 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
@@ -163,7 +163,7 @@ interface ParsedMQTTMessage {
     type: 'bind' | 'unbind', sourceKey: string, targetKey: string, clusters: string[], skipDisableReporting: boolean
 }
 
-class Bind extends ExtensionTS {
+class Bind extends Extension {
     private pollDebouncers: {[s: string]: () => void} = {};
 
     override async start(): Promise<void> {

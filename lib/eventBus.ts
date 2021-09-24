@@ -1,7 +1,7 @@
 /* eslint-disable brace-style */
 import events from 'events';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-import ExtensionTS from './extension/extensionts';
+import Extension from './extension/extension';
 
 declare global {
     interface EventDeviceRenamed { device: Device, homeAssisantRename: boolean, from: string, to: string }
@@ -39,7 +39,7 @@ declare global {
     };
 }
 
-type ListenerKey = string | ExtensionTS;
+type ListenerKey = string | Extension;
 
 export default class EventBus {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

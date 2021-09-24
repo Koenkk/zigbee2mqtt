@@ -5,14 +5,14 @@ import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 // @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 
 /**
  * This extension calls the zigbee-herdsman-converters definition configure() method
  */
-class Configure extends ExtensionTS {
+class Configure extends Extension {
     private configuring = new Set();
     private attempts: {[s: string]: number} = {};
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;

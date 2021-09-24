@@ -4,7 +4,7 @@ import * as settings from '../util/settings';
 import zhc from 'zigbee-herdsman-converters';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Group from '../model/group';
@@ -34,7 +34,7 @@ const defaultGroupConverters = [
 
 interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
 
-class Publish extends ExtensionTS {
+class Publish extends Extension {
     async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }

@@ -11,13 +11,13 @@ import * as settings from '../util/settings';
 import * as utils from '../util/utils';
 // @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 
 /**
  * This extension servers the frontend
  */
-class Frontend extends ExtensionTS {
+class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
     private host = settings.get().frontend.host || '0.0.0.0';
     private port = settings.get().frontend.port || 8080;

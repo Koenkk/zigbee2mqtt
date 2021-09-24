@@ -3,7 +3,7 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
 import * as utils from '../../util/utils';
-import ExtensionTS from '../extensionts';
+import Extension from '../extension';
 
 const defaultConfiguration = {
     minimumReportInterval: 3, maximumReportInterval: 300, reportableChange: 1,
@@ -63,7 +63,7 @@ const clusters: {[s: string]:
     ],
 };
 
-class Report extends ExtensionTS {
+class Report extends Extension {
     private queue: Set<string> = new Set();
     private failed: Set<string> = new Set();
     private enabled = settings.get().advanced.report;

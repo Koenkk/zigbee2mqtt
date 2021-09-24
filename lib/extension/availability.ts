@@ -1,4 +1,4 @@
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import logger from '../util/logger';
 import {sleep, hours, minutes, seconds, isAvailabilityEnabledForDevice} from '../util/utils';
 import * as settings from '../util/settings';
@@ -8,7 +8,7 @@ import bind from 'bind-decorator';
 // TODO
 // - Enable for HA addon
 // - Add to setting schema (when old availability is removed)
-export default class Availability extends ExtensionTS {
+export default class Availability extends Extension {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private retrieveStateDebouncers: {[s: string]: () => void} = {};

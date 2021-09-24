@@ -1,5 +1,5 @@
 // TODO: tempState -> State, rename to extension
-abstract class ExtensionTS {
+abstract class Extension {
     protected zigbee: Zigbee;
     protected mqtt: MQTT;
     protected state: TempState;
@@ -48,4 +48,4 @@ abstract class ExtensionTS {
     }
 }
 
-export default ExtensionTS;
+export default Extension;
