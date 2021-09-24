@@ -8,7 +8,7 @@ import bind from 'bind-decorator';
 
 interface Link {
     source: {ieeeAddr: string, networkAddress: number}, target: {ieeeAddr: string, networkAddress: number},
-    linkquality: number, depth: number, routes: RoutingTableEntry[],
+    linkquality: number, depth: number, routes: zh.RoutingTableEntry[],
     sourceIeeeAddr: string, targetIeeeAddr: string, sourceNwkAddr: number, lqi: number, relationship: number,
 }
 
@@ -216,8 +216,8 @@ class NetworkMap extends Extension {
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
         const devices = this.zigbee.getDevices().filter((d) => d.type !== 'GreenPower');
-        const lqis: Map<Device, LQI> = new Map();
-        const routingTables: Map<Device, RoutingTable> = new Map();
+        const lqis: Map<Device, zh.LQI> = new Map();
+        const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();
 
         for (const device of devices.filter((d) => d.type != 'EndDevice')) {
@@ -239,7 +239,7 @@ class NetworkMap extends Extension {
             };
 
             try {
-                const result = await doRequest<LQI>(async () => device.lqi());
+                const result = await doRequest<zh.LQI>(async () => device.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {

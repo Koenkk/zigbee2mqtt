@@ -49,7 +49,7 @@ class HomeAssistant extends Extension {
     private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
 
-    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);

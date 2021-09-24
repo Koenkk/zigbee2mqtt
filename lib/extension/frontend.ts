@@ -28,7 +28,7 @@ class Frontend extends Extension {
     private fileServer: serveStatic.RequestHandler<any>;
     private wss: WebSocket.Server = null;
 
-    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);

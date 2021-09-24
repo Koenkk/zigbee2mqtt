@@ -144,7 +144,7 @@ export default class Zigbee {
         return panID;
     }
 
-    async getCoordinatorVersion(): Promise<CoordinatorVersion> {
+    async getCoordinatorVersion(): Promise<zh.CoordinatorVersion> {
         return this.herdsman.getCoordinatorVersion();
     }
 
@@ -152,7 +152,7 @@ export default class Zigbee {
         return this.herdsman.isStopping();
     }
 
-    async getNetworkParameters(): Promise<NetworkParameters> {
+    async getNetworkParameters(): Promise<zh.NetworkParameters> {
         return this.herdsman.getNetworkParameters();
     }
 
@@ -210,7 +210,7 @@ export default class Zigbee {
         return this.resolvedEntitiesLookup[groupID] as Group;
     }
 
-    resolveEntity(key: ZHDevice | string | number): Device | Group {
+    resolveEntity(key: zh.Device | string | number): Device | Group {
         const ID = typeof key === 'string' || typeof key === 'number' ? key.toString() : key.ieeeAddr;
         if (ID.toLowerCase() === 'coordinator') {
             return this.addDeviceToResolvedEntitiesLookup(this.herdsman.getDevicesByType('Coordinator')[0].ieeeAddr);
@@ -233,7 +233,7 @@ export default class Zigbee {
             .map((d) => this.resolveEntity(d) as Device).filter((d) => d);
     }
 
-    getFirstCoordinatorEndpoint(): ZHEndpoint {
+    getFirstCoordinatorEndpoint(): zh.Endpoint {
         return this.herdsman.getDevicesByType('Coordinator')[0].endpoints[0];
     }
 
@@ -303,30 +303,14 @@ export default class Zigbee {
     }
 
     // TODO remove all legacy below
-    getGroupByIDLegacy(ID: number): ZHGroup {
+    getGroupByIDLegacy(ID: number): zh.Group {
         return this.herdsman.getGroupByID(ID);
     }
-    getDevicesByTypeLegacy(type: 'Coordinator' | 'Router' | 'EndDevice'): ZHDevice[] {
+    getDevicesByTypeLegacy(type: 'Coordinator' | 'Router' | 'EndDevice'): zh.Device[] {
         return this.herdsman.getDevicesByType(type);
     }
-    getClientsLegacy(): ZHDevice[] {
+    getClientsLegacy(): zh.Device[] {
         return this.herdsman.getDevices().filter((device) => device.type !== 'Coordinator');
-    }
-    async permitJoinLegacy(permit: boolean, resolvedEntity: ResolvedDevice, time: number=undefined): Promise<void> {
-        if (permit) {
-            /* istanbul ignore next */
-            logger.info(`Zigbee: allowing new devices to join${resolvedEntity ? ` via ${resolvedEntity.name}` : ''}.`);
-        } else {
-            logger.info('Zigbee: disabling joining new devices.');
-        }
-
-        /* istanbul ignore next */
-        if (resolvedEntity && permit) {
-            /* istanbul ignore next */
-            await this.herdsman.permitJoin(permit, resolvedEntity.device, time);
-        } else {
-            await this.herdsman.permitJoin(permit, undefined, time);
-        }
     }
     /* istanbul ignore next */ /* eslint-disable-next-line */
     resolveEntityLegacy(key: any): any {

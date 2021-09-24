@@ -21,7 +21,7 @@ const devicesNotSupportingReporting = [
 
 const reportKey = 1;
 
-const getColorCapabilities = async (endpoint: ZHEndpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
+const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
     if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') === undefined) {
         await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
     }
@@ -35,7 +35,7 @@ const getColorCapabilities = async (endpoint: ZHEndpoint): Promise<{colorTempera
 
 const clusters: {[s: string]:
     {attribute: string, minimumReportInterval: number, maximumReportInterval: number, reportableChange: number
-        condition?: (endpoint: ZHEndpoint) => Promise<boolean>}[]} =
+        condition?: (endpoint: zh.Endpoint) => Promise<boolean>}[]} =
 {
     'genOnOff': [
         {attribute: 'onOff', ...defaultConfiguration, minimumReportInterval: 0, reportableChange: 0},

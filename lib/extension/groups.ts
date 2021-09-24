@@ -32,7 +32,7 @@ const stateProperties: {[s: string]: (value: string, definition: Definition) => 
 interface ParsedMQTTMessage {
     type: 'remove' | 'add' | 'remove_all', resolvedEntityGroup: Group, resolvedEntityDevice: Device,
     error: string, groupKey: string, deviceKey: string, triggeredViaLegacyApi: boolean,
-    skipDisableReporting: boolean, resolvedEntityEndpoint: ZHEndpoint,
+    skipDisableReporting: boolean, resolvedEntityEndpoint: zh.Endpoint,
 }
 
 class Groups extends Extension {
@@ -50,7 +50,7 @@ class Groups extends Extension {
         const zigbeeGroups = this.zigbee.getGroups();
 
         const addRemoveFromGroup = async (action: 'add' | 'remove', deviceName: string,
-            groupName: string | number, endpoint: ZHEndpoint, group: Group): Promise<void> => {
+            groupName: string | number, endpoint: zh.Endpoint, group: Group): Promise<void> => {
             try {
                 logger.info(`${action === 'add' ? 'Adding' : 'Removing'} '${deviceName}' to group '${groupName}'`);
                 if (action === 'remove') {
@@ -193,7 +193,7 @@ class Groups extends Extension {
         let type: 'remove' | 'add' | 'remove_all' = null;
         let resolvedEntityGroup: Group = null;
         let resolvedEntityDevice: Device = null;
-        let resolvedEntityEndpoint: ZHEndpoint = null;
+        let resolvedEntityEndpoint: zh.Endpoint = null;
         let error: string = null;
         let groupKey: string = null;
         let deviceKey: string = null;

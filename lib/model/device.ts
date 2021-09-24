@@ -4,11 +4,11 @@ import * as settings from '../util/settings';
 import zhc from 'zigbee-herdsman-converters';
 
 export default class Device {
-    private device: ZHDevice;
+    private device: zh.Device;
     private _definition: Definition;
 
-    get endpoints(): ZHEndpoint[] {return this.device.endpoints;}
-    get zhDevice(): ZHDevice {return this.device;}
+    get endpoints(): zh.Endpoint[] {return this.device.endpoints;}
+    get zhDevice(): zh.Device {return this.device;}
     get ieeeAddr(): string {return this.device.ieeeAddr;}
     get ID(): string {return this.device.ieeeAddr;}
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
@@ -31,15 +31,15 @@ export default class Device {
         return this._definition;
     }
 
-    constructor(device: ZHDevice) {
+    constructor(device: zh.Device) {
         this.device = device;
     }
 
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
     async removeFromNetwork(): Promise<void> {await this.device.removeFromNetwork();}
 
-    endpoint(key?: string | number): ZHEndpoint {
-        let endpoint: ZHEndpoint;
+    endpoint(key?: string | number): zh.Endpoint {
+        let endpoint: zh.Endpoint;
         if (key == null || key == '') key = 'default';
 
         if (!isNaN(Number(key))) {
@@ -58,7 +58,7 @@ export default class Device {
         return endpoint;
     }
 
-    endpointName(endpoint: ZHEndpoint): string {
+    endpointName(endpoint: zh.Endpoint): string {
         let name = null;
         if (this.definition?.endpoint) {
             name = Object.entries(this.definition?.endpoint(this.device)).find((e) => e[1] == endpoint.ID)[0];
@@ -75,6 +75,6 @@ export default class Device {
     }
 
     isRouter(): boolean {return this.zhDevice.type === 'Router';}
-    lqi(): Promise<LQI> {return this.zhDevice.lqi();}
-    routingTable(): Promise<RoutingTable> {return this.zhDevice.routingTable();}
+    lqi(): Promise<zh.LQI> {return this.zhDevice.lqi();}
+    routingTable(): Promise<zh.RoutingTable> {return this.zhDevice.routingTable();}
 }

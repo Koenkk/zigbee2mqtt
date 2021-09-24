@@ -16,10 +16,10 @@ declare global {
     type EventDeviceAnnounce = { device: Device };
     type EventDeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
     type EventDeviceJoined = { device: Device };
-    type EventReportingDisabled = { device: ZHDevice }; // TODO zhdevice -> device
+    type EventReportingDisabled = { device: zh.Device }; // TODO zhdevice -> device
     type EventDeviceLeave = { ieeeAddr: string };
     type EventGroupMembersChanged = {
-        group: Group, action: 'remove' | 'add' | 'remove_all', endpoint: ZHEndpoint, skipDisableReporting: boolean };
+        group: Group, action: 'remove' | 'add' | 'remove_all', endpoint: zh.Endpoint, skipDisableReporting: boolean };
     type EventPublishEntityState = {
         // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
         messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
@@ -28,7 +28,7 @@ declare global {
     type EventDeviceMessage = {
         type: ZHEvents.MessagePayloadType;
         device: Device;
-        endpoint: ZHEndpoint;
+        endpoint: zh.Endpoint;
         linkquality: number;
         groupID: number;
         cluster: string | number;

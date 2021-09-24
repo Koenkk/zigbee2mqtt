@@ -4,15 +4,15 @@ import * as settings from '../util/settings';
 import zhc from 'zigbee-herdsman-converters';
 
 export default class Group {
-    private group: ZHGroup;
+    private group: zh.Group;
 
-    get zhGroup(): ZHGroup {return this.group;}
+    get zhGroup(): zh.Group {return this.group;}
     get ID(): number {return this.group.groupID;}
     get settings(): GroupSettings {return settings.getGroup(this.ID);}
     get name(): string {return this.settings?.friendlyName || this.ID.toString();}
-    get members(): ZHEndpoint[] {return this.group.members;}
+    get members(): zh.Endpoint[] {return this.group.members;}
 
-    constructor(group: ZHGroup) {
+    constructor(group: zh.Group) {
         this.group = group;
     }
 

@@ -16,7 +16,7 @@ const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/reques
 
 class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
-    private coordinatorVersion: CoordinatorVersion;
+    private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
     private lastJoinedDeviceIeeeAddr: string;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<MQTTResponse>};

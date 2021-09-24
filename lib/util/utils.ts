@@ -282,34 +282,13 @@ export function isAvailabilityEnabledForDevice(device: Device, settings: Setting
     return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
 }
 
-/* istanbul ignore next */
-export function isAvailabilityEnabledForDeviceLegacy(rd: ResolvedDevice, settings: Settings): boolean {
-    if (!settings.experimental.availability_new) return false;
-
-    if (rd.settings.hasOwnProperty('availability')) {
-        return !!rd.settings.availability;
-    }
-
-    // availability_timeout = deprecated
-    const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
-    if (!enabledGlobal) return false;
-
-    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
-    if (passlist.length > 0) {
-        return passlist.includes(rd.name) || passlist.includes(rd.device.ieeeAddr);
-    }
-
-    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-    return !blocklist.includes(rd.name) && !blocklist.includes(rd.device.ieeeAddr);
-}
-
-export function isXiaomiDevice(device: ZHDevice): boolean {
+export function isXiaomiDevice(device: zh.Device): boolean {
     const xiaomiManufacturerID = [4151, 4447];
     return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
         (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
 }
 
-export function isIkeaTradfriDevice(device: ZHDevice): boolean {
+export function isIkeaTradfriDevice(device: zh.Device): boolean {
     return [4476].includes(device.manufacturerID);
 }
 
@@ -331,7 +310,7 @@ export function isGroup(obj: unknown): obj is Group {
     return obj.constructor.name.toLowerCase() === 'group';
 }
 
-export function isZHGroup(obj: unknown): obj is ZHGroup {
+export function isZHGroup(obj: unknown): obj is zh.Group {
     return obj.constructor.name.toLowerCase() === 'group';
 }
 

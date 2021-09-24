@@ -82,7 +82,7 @@ class Publish extends Extension {
     }
 
     legacyRetrieveState(re: Device | Group, converter: ToZigbeeConverter, result: ToZigbeeConverterResult,
-        target: ZHEndpoint | ZHGroup, key: string, meta: ToZigbeeConverterGetMeta): void {
+        target: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta): void {
         // It's possible for devices to get out of sync when writing an attribute that's not reportable.
         // So here we re-read the value after a specified timeout, this timeout could for example be the
         // transition time of a color change or for forcing a state read for devices that don't

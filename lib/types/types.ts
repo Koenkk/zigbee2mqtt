@@ -1,10 +1,11 @@
+/* eslint-disable camelcase */
 import type {
-    Device as ZZHDevice,
-    Group as ZZHGroup,
-    Endpoint as ZZHEndpoint,
+    Device as ZHDevice,
+    Group as ZHGroup,
+    Endpoint as ZHEndpoint,
 } from 'zigbee-herdsman/dist/controller/model';
 
-import {
+import type {
     NetworkParameters as ZHNetworkParameters,
     CoordinatorVersion as ZHCoordinatorVersion,
     LQI as ZHLQI,
@@ -12,62 +13,49 @@ import {
     RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 
-import {
+import type {
     Cluster as ZHCluster,
 } from 'zigbee-herdsman/dist/zcl/tstype';
 
-import * as D from 'lib/model/device';
-import * as G from 'lib/model/group';
-import * as Z from 'lib/zigbee';
-import * as E from 'lib/eventBus';
-import * as M from 'lib/mqtt';
-
-// TODO: check all
+import type TypeEventBus from 'lib/eventBus';
+import type TypeMQTT from 'lib/mqtt';
+import type TypeState from 'lib/state';
+import type TypeZigbee from 'lib/zigbee';
+import type TypeDevice from 'lib/model/device';
+import type TypeGroup from 'lib/model/group';
 
 declare global {
-    type RecursivePartial<T> = {
-        [P in keyof T]?: RecursivePartial<T[P]>;
-    };
+    // Define some class types as global
+    type EventBus = TypeEventBus;
+    type MQTT = TypeMQTT;
+    type Zigbee = TypeZigbee;
+    type Group = TypeGroup;
+    type Device = TypeDevice;
+    type State = TypeState;
 
-    type EventBus = E.default;
+    type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>;};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    interface KeyValue {[s: string]: any}
 
-    type MQTT = M.default;
-
-    type Zigbee = Z.default;
-
-    type Device = D.default;
-    type Group = G.default;
-
-    type ZHEndpoint = ZZHEndpoint;
-
-    type ZHDevice = ZZHDevice;
-    type LQI = ZHLQI;
-    type RoutingTable = ZHRoutingTable;
-    type RoutingTableEntry = ZHRoutingTableEntry;
-
-    type ZHGroup = ZZHGroup;
-
-    type CoordinatorVersion = ZHCoordinatorVersion;
-
-    type NetworkParameters = ZHNetworkParameters;
-
-    type ZigbeeEventType = 'deviceLeave' | 'deviceAnnounce';
-
-    interface ZigbeeEventData {
-        ieeeAddr: string;
+    // zigbee-herdsman
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace zh {
+        type Endpoint = ZHEndpoint;
+        type Device = ZHDevice;
+        type Group = ZHGroup;
+        type LQI = ZHLQI;
+        type RoutingTable = ZHRoutingTable;
+        type RoutingTableEntry = ZHRoutingTableEntry;
+        type CoordinatorVersion = ZHCoordinatorVersion;
+        type NetworkParameters = ZHNetworkParameters;
+        type Cluster = ZHCluster;
+        interface Bind {
+            cluster: zh.Cluster;
+            target: zh.Endpoint | zh.Group;
+        }
     }
 
-    /* eslint-disable */
-    // Controller
-    interface KeyValue {
-        [s: string]: any,
-    }
-
-    interface ZHBind {
-        cluster: ZHCluster;
-        target: ZHEndpoint | ZHGroup;
-    }
-
+    // eslint-disable camelcase
     interface Settings {
         homeassistant?: boolean,
         devices?: {[s: string]: {friendly_name: string, retention?: number}},
@@ -140,7 +128,7 @@ declare global {
             log_directory: string,
             log_file: string,
             log_level: 'debug' | 'info' | 'error' | 'warn',
-            log_syslog: {},
+            log_syslog: KeyValue,
             soft_reset_timeout: number,
             pan_id: number | 'GENERATE',
             ext_pan_id: number[],
@@ -155,7 +143,7 @@ declare global {
             cache_state: boolean,
             cache_state_persistent: boolean,
             cache_state_send_on_startup: boolean,
-            last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' |  'epoch',
+            last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' | 'epoch',
             elapsed: boolean,
             network_key: number[] | 'GENERATE',
             report: boolean,
@@ -204,22 +192,24 @@ declare global {
         type: 'device' | 'group'
         ID: number | string,
         friendlyName: string,
-    }
+    };
 
     interface ResolvedEntity {
         type: 'device' | 'group',
-        device: ZHDevice,
+        device: zh.Device,
         name: string,
     }
 
-    interface ToZigbeeConverterGetMeta {message?: {}, mapped?: Definition | Definition[]}
+    interface ToZigbeeConverterGetMeta {message?: KeyValue, mapped?: Definition | Definition[]}
 
-    interface ToZigbeeConverterResult {state: KeyValue, membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
+    interface ToZigbeeConverterResult {state: KeyValue,
+        membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
 
     interface ToZigbeeConverter {
         key: string[],
-        convertGet?: (entity: ZHEndpoint | ZHGroup, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
-        convertSet?: (entity: ZHEndpoint | ZHGroup, key: string, value: any, meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
+        convertGet?: (entity: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
+        convertSet?: (entity: zh.Endpoint | zh.Group, key: string, value: unknown,
+            meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
     }
 
     // interface Logger {
@@ -233,59 +223,45 @@ declare global {
         cluster: string,
         type: string[] | string,
         convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
-            meta: {state: KeyValue, logger: any, device: ZHDevice}) => KeyValue,
+            meta: {state: KeyValue, logger: unknown, device: zh.Device}) => KeyValue,
     }
 
-    interface DefinitionExposeFeature {name: string, endpoint?: string, property: string, value_max?: number, value_min?: number, value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
+    interface DefinitionExposeFeature {name: string, endpoint?: string,
+        property: string, value_max?: number, value_min?: number,
+        value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
-    interface DefinitionExpose {type: string, name?: string, features?: DefinitionExposeFeature[], endpoint?: string, values?: string[], value_off?: string, value_on?: string, access: number, property: string, unit?: string, value_min?: number, value_max?: number}
+    interface DefinitionExpose {
+        type: string, name?: string, features?: DefinitionExposeFeature[],
+        endpoint?: string, values?: string[], value_off?: string, value_on?: string,
+        access: number, property: string, unit?: string,
+        value_min?: number, value_max?: number}
 
-    interface Definition  {
+    interface Definition {
         model: string
-        endpoint?: (device: ZHDevice) => {[s: string]: number}
+        endpoint?: (device: zh.Device) => {[s: string]: number}
         toZigbee: ToZigbeeConverter[]
         fromZigbee: FromZigbeeConverter[]
         icon?: string
         description: string
         vendor: string
         exposes: DefinitionExpose[] // TODO
-        configure?: (device: ZHDevice, coordinatorEndpoint: ZZHEndpoint, logger: unknown) => Promise<void>;
-        onEvent?: (type: string, data: KeyValue, device: ZHDevice, settings: KeyValue) => Promise<void>;
+        configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: unknown) => Promise<void>;
+        onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
         ota?: {
-            isUpdateAvailable: (device: ZHDevice, logger: unknown, data?: KeyValue) => Promise<boolean>;
-            updateToLatest: (device: ZHDevice, logger: unknown, onProgress: (progress: number, remaining: number) => void) => Promise<void>;
+            isUpdateAvailable: (device: zh.Device, logger: unknown, data?: KeyValue) => Promise<boolean>;
+            updateToLatest: (device: zh.Device, logger: unknown,
+                onProgress: (progress: number, remaining: number) => void) => Promise<void>;
         }
-    }
-
-    interface ResolvedDevice {
-        type: 'device',
-        definition?: Definition,
-        name: string,
-        endpoint: ZHEndpoint,
-        device: ZHDevice,
-        settings: {
-            friendlyName: string,
-            availability?: {timeout?: number} | boolean,
-        }
-    }
-
-    interface TempMQTT {
-        publish: (topic: string, payload: string, options: {}, base?: string, skipLog?: boolean, skipReceive?: boolean) => Promise<void>;
-    }
-
-    interface TempState {
-        get: (ID: string | number) => KeyValue | null;
-        remove: (ID: string | number) => void;
-        removeKey: (ID: string, keys: string[]) => void;
-        exists: (ID: string) => boolean;
     }
 
     interface ExternalConverterClass {
-        new(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+        // eslint-disable-next-line
+        new(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
             eventBus: EventBus, settings: unknown, logger: unknown): ExternalConverterClass;
     }
 
     interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
 
-    type PublishEntityState = (ID: string | number, payload: KeyValue, stateChangeReason?: 'publishDebounce' | 'group_optimistic') => Promise<void>;
+    type PublishEntityState = (ID: string | number, payload: KeyValue,
+            stateChangeReason?: 'publishDebounce' | 'group_optimistic') => Promise<void>;
 }

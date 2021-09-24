@@ -22,7 +22,7 @@ const defaultReportConfiguration = {
     minimumReportInterval: 5, maximumReportInterval: 3600, reportableChange: 1,
 };
 
-const getColorCapabilities = async (endpoint: ZHEndpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
+const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
     if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') == null) {
         await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
     }
@@ -36,7 +36,7 @@ const getColorCapabilities = async (endpoint: ZHEndpoint): Promise<{colorTempera
 
 const reportClusters: {[s: string]:
     {attribute: string, minimumReportInterval: number, maximumReportInterval: number, reportableChange: number
-        condition?: (endpoint: ZHEndpoint) => Promise<boolean>}[]} =
+        condition?: (endpoint: zh.Endpoint) => Promise<boolean>}[]} =
 {
     'genOnOff': [
         {attribute: 'onOff', ...defaultReportConfiguration, minimumReportInterval: 0, reportableChange: 0},
@@ -66,7 +66,7 @@ const reportClusters: {[s: string]:
 
 type PollOnMessage = {
     cluster: {[s: string]: {type: string, data: KeyValue}[]}
-    read: {cluster: string, attributes: string[], attributesForEndpoint?: (endpoint: ZHEndpoint) => Promise<string[]>}
+    read: {cluster: string, attributes: string[], attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}
     manufacturerIDs: number[]
 }[];
 
@@ -218,8 +218,8 @@ class Bind extends Extension {
             const failedClusters = [];
             const attemptedClusters = [];
 
-            const bindSource: ZHEndpoint = source.endpoint(parsedSource.endpoint);
-            let bindTarget: number | ZHGroup | ZHEndpoint = null;
+            const bindSource: zh.Endpoint = source.endpoint(parsedSource.endpoint);
+            let bindTarget: number | zh.Group | zh.Endpoint = null;
             if (utils.isGroup(target)) bindTarget = target.zhGroup;
             else if (utils.isDevice(target)) bindTarget = target.endpoint(parsedTarget.endpoint);
             else bindTarget = target.ID;
@@ -341,7 +341,7 @@ class Bind extends Extension {
         }
     }
 
-    getSetupReportingEndpoints(bind: ZHBind, coordinatorEp: ZHEndpoint): ZHEndpoint[] {
+    getSetupReportingEndpoints(bind: zh.Bind, coordinatorEp: zh.Endpoint): zh.Endpoint[] {
         const endpoints = utils.isEndpoint(bind.target) ? [bind.target] : bind.target.members;
         return endpoints.filter((e) => {
             const supportsInputCluster = e.supportsInputCluster(bind.cluster.name);
@@ -351,7 +351,7 @@ class Bind extends Extension {
         });
     }
 
-    async setupReporting(binds: ZHBind[]): Promise<void> {
+    async setupReporting(binds: zh.Bind[]): Promise<void> {
         const coordinator = this.zigbee.getDevicesByTypeLegacy('Coordinator')[0];
         const coordinatorEndpoint = coordinator.getEndpoint(1);
         for (const bind of binds.filter((b) => b.cluster.name in reportClusters)) {
@@ -380,7 +380,7 @@ class Bind extends Extension {
         this.eventBus.emit(`devicesChanged`);
     }
 
-    async disableUnnecessaryReportings(target: ZHGroup | ZHEndpoint): Promise<void> {
+    async disableUnnecessaryReportings(target: zh.Group | zh.Endpoint): Promise<void> {
         const coordinator = this.zigbee.getFirstCoordinatorEndpoint();
         const endpoints = utils.isEndpoint(target) ? [target] : target.members;
         for (const endpoint of endpoints) {
@@ -434,7 +434,7 @@ class Bind extends Extension {
             p.cluster[data.cluster]?.find((c) => c.type === data.type && utils.equalsPartial(data.data, c.data)));
 
         if (polls.length) {
-            const toPoll: Set<ZHEndpoint> = new Set();
+            const toPoll: Set<zh.Endpoint> = new Set();
             // Add bound devices
             for (const endpoint of data.device.endpoints) {
                 for (const bind of endpoint.binds) {
