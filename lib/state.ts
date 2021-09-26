@@ -28,6 +28,7 @@ class State {
         // Save the state on every interval
         this.clearTimer();
         this.timer = setInterval(() => this.save(), saveInterval);
+        this.eventBus.onDeviceLeave(this, (data) => this.remove(data.ieeeAddr));
     }
 
     clearTimer(): void {
@@ -38,6 +39,7 @@ class State {
     }
 
     stop(): void {
+        this.eventBus.removeListeners(this);
         this.clearTimer();
         this.save();
     }
@@ -89,7 +91,7 @@ class State {
         }
 
         this.state[ID] = toState;
-        this.eventBus.emit('stateChange', {ID, from: fromState, to: toState, reason, update});
+        this.eventBus.emitStateChange({ID: ID.toString(), from: fromState, to: toState, reason, update});
         return result;
     }
 

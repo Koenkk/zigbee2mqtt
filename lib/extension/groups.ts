@@ -35,9 +35,9 @@ interface ParsedMQTTMessage {
     skipDisableReporting: boolean, resolvedEntityEndpoint: zh.Endpoint,
 }
 
-class Groups extends Extension {
+export default class Groups extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
-    private lastOptimisticState: {[s: number]: KeyValue} = {};
+    private lastOptimisticState: {[s: string]: KeyValue} = {};
 
     override async start(): Promise<void> {
         this.eventBus.onStateChange(this, this.onStateChange);
@@ -133,7 +133,7 @@ class Groups extends Extension {
                         !equals(this.lastOptimisticState[group.ID], payload)) {
                         if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(group)) {
                             this.lastOptimisticState[group.ID] = payload;
-                            await this.publishEntityState(group.ID, payload, reason);
+                            await this.publishEntityState(group, payload, reason);
                         }
                     }
                 }
@@ -141,7 +141,7 @@ class Groups extends Extension {
                 // Invalidate the last optimistic group state when group state is changed directly.
                 delete this.lastOptimisticState[entity.ID];
 
-                const groupIDsToPublish: Set<number> = new Set();
+                const groupsToPublish: Set<Group> = new Set();
                 for (const member of entity.members) {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
                     const memberPayload: KeyValue = {};
@@ -159,18 +159,18 @@ class Groups extends Extension {
                         });
                     }
 
-                    await this.publishEntityState(member.getDevice().ieeeAddr, memberPayload, reason);
+                    await this.publishEntityState(device, memberPayload, reason);
                     for (const zigbeeGroup of groups) {
                         if (zigbeeGroup.zhGroup.hasMember(member)) {
                             if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(zigbeeGroup)) {
-                                groupIDsToPublish.add(zigbeeGroup.ID);
+                                groupsToPublish.add(zigbeeGroup);
                             }
                         }
                     }
                 }
-                groupIDsToPublish.delete(entity.ID);
-                for (const groupID of groupIDsToPublish) {
-                    await this.publishEntityState(groupID, payload, reason);
+                groupsToPublish.delete(entity);
+                for (const group of groupsToPublish) {
+                    await this.publishEntityState(group, payload, reason);
                 }
             }
         }
@@ -374,5 +374,3 @@ class Groups extends Extension {
         }
     }
 }
-
-module.exports = Groups;

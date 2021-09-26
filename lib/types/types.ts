@@ -23,6 +23,9 @@ import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
 import type TypeDevice from 'lib/model/device';
 import type TypeGroup from 'lib/model/group';
+import type TypeExtension from 'lib/extension/extension';
+
+import type mqtt from 'mqtt';
 
 declare global {
     // Define some class types as global
@@ -32,6 +35,7 @@ declare global {
     type Group = TypeGroup;
     type Device = TypeDevice;
     type State = TypeState;
+    type Extension = TypeExtension;
 
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>;};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +58,13 @@ declare global {
             target: zh.Endpoint | zh.Group;
         }
     }
+
+    interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
+    type StateChangeReason = 'publishDebounce' | 'group_optimistic';
+    type PublishEntityState = (entity: Device | Group, payload: KeyValue,
+        stateChangeReason?: StateChangeReason) => Promise<void>;
+
+    // TODO below
 
     // eslint-disable camelcase
     interface Settings {
@@ -176,21 +187,23 @@ declare global {
         icon?: string,
         homeassistant?: KeyValue,
         legacy?: boolean,
+        filtered_attributes?: string[],
     }
 
     interface GroupSettings {
         friendlyName: string,
         devices: string[],
-        ID: number,
+        ID: string,
         optimistic?: boolean,
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
         homeassistant?: KeyValue,
+        filtered_attributes?: string[],
     }
 
     type EntitySettings = {
         type: 'device' | 'group'
-        ID: number | string,
+        ID: string,
         friendlyName: string,
     };
 
@@ -261,7 +274,4 @@ declare global {
     }
 
     interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
-
-    type PublishEntityState = (ID: string | number, payload: KeyValue,
-            stateChangeReason?: 'publishDebounce' | 'group_optimistic') => Promise<void>;
 }

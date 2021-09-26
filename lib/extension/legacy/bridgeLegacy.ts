@@ -13,7 +13,7 @@ const configRegex =
     new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
 const allowedLogLevels = ['error', 'warn', 'info', 'debug'];
 
-class BridgeLegacy extends Extension {
+export default class BridgeLegacy extends Extension {
     private lastJoinedDeviceName: string = null;
     private supportedOptions: {[s: string]: (topic: string, message: string) => Promise<void> | void};
 
@@ -178,7 +178,7 @@ class BridgeLegacy extends Extension {
 
     @bind groups(): void {
         const payload = settings.getGroups().map((g) => {
-            const group = {...g};
+            const group = {...g, ID: Number(g.ID)};
             delete group.friendlyName;
             return group;
         });
@@ -222,9 +222,9 @@ class BridgeLegacy extends Extension {
             settings.changeFriendlyName(from, to);
             logger.info(`Successfully renamed - ${from} to ${to} `);
             const entity = this.zigbee.resolveEntity(to);
-            const eventData = utils.isGroup(entity) ? {group: entity.zhGroup, homeAssisantRename: false} :
-                {device: entity.zhDevice, from, to, homeAssisantRename: false};
-            this.eventBus.emit(`${isGroup ? 'group' : 'device'}Renamed`, eventData);
+            if (entity.isDevice()) {
+                this.eventBus.emitDeviceRenamed({homeAssisantRename: false, from, to, device: entity});
+            }
 
             this.mqtt.publish(
                 'bridge/log',
@@ -267,7 +267,7 @@ class BridgeLegacy extends Extension {
     @bind removeGroup(topic: string, message: string): void {
         const name = message;
         const entity = this.zigbee.resolveEntity(message) as Group;
-        assert(entity && utils.isGroup(entity), `Group '${message}' does not exist`);
+        assert(entity && entity.isGroup(), `Group '${message}' does not exist`);
 
         if (topic.includes('force')) {
             entity.zhGroup.removeFromDatabase();
@@ -307,9 +307,12 @@ class BridgeLegacy extends Extension {
             return;
         }
 
+        const ieeeAddr = entity.ieeeAddr;
+        const name = entity.name;
+
         const cleanup = (): void => {
             // Fire event
-            this.eventBus.emit('deviceRemoved', {resolvedEntity: entity});
+            this.eventBus.emitDeviceRemoved({ieeeAddr, name});
 
             // Remove from configuration.yaml
             settings.removeDevice(entity.ieeeAddr);
@@ -320,8 +323,6 @@ class BridgeLegacy extends Extension {
             logger.info(`Successfully ${lookup[action][0]} ${entity.settings.friendlyName}`);
             this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}`, message}));
         };
-
-        const ieeeAddr = entity.ieeeAddr;
 
         try {
             logger.info(`${lookup[action][1]} '${entity.settings.friendlyName}'`);
@@ -460,5 +461,3 @@ class BridgeLegacy extends Extension {
         }
     }
 }
-
-module.exports = BridgeLegacy;

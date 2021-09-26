@@ -23,7 +23,7 @@ interface Topology {
 /**
  * This extension creates a network map
  */
-class NetworkMap extends Extension {
+export default class NetworkMap extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
@@ -177,7 +177,7 @@ class NetworkMap extends Extension {
             // Add the device model
             if (node.type !== 'Coordinator') {
                 text.push(`---`);
-                const definition = this.zigbee.resolveEntityLegacy(node.ieeeAddr).definition;
+                const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
                 if (definition) {
                     text.push(`${definition.vendor} ${definition.description} (${definition.model})`);
                 } else {
@@ -320,5 +320,3 @@ class NetworkMap extends Extension {
         return topology;
     }
 }
-
-module.exports = NetworkMap;

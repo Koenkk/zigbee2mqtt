@@ -7,7 +7,7 @@ export default class Group {
     private group: zh.Group;
 
     get zhGroup(): zh.Group {return this.group;}
-    get ID(): number {return this.group.groupID;}
+    get ID(): string {return this.group.groupID.toString();}
     get settings(): GroupSettings {return settings.getGroup(this.ID);}
     get name(): string {return this.settings?.friendlyName || this.ID.toString();}
     get members(): zh.Endpoint[] {return this.group.members;}
@@ -23,4 +23,7 @@ export default class Group {
     membersIeeeAddr(): string[] {
         return this.members.map((m) => m.getDevice().ieeeAddr);
     }
+
+    isDevice(): this is Device {return false;}
+    isGroup(): this is Group {return true;}
 }

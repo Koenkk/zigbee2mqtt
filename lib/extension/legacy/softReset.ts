@@ -8,7 +8,7 @@ import Extension from '../extension';
 /**
  * This extensions soft resets the ZNP after a certain timeout.
  */
-class SoftReset extends Extension {
+export default class SoftReset extends Extension {
     private timer: NodeJS.Timer = null;
     private timeout = utils.seconds(settings.get().advanced.soft_reset_timeout);
 
@@ -60,5 +60,3 @@ class SoftReset extends Extension {
         this.resetTimer();
     }
 }
-
-module.exports = SoftReset;

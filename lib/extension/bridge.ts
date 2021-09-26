@@ -14,7 +14,7 @@ import Group from '../model/group';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
-class Bridge extends Extension {
+export default class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
     private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
@@ -210,7 +210,7 @@ class Bridge extends Extension {
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         this.publishGroups();
-        return utils.getResponse(message, {friendly_name: group.friendlyName, id: group.ID}, null);
+        return utils.getResponse(message, {friendly_name: group.friendlyName, id: Number(group.ID)}, null);
     }
 
     @bind async deviceRename(message: string | KeyValue): Promise<MQTTResponse> {
@@ -452,14 +452,14 @@ class Bridge extends Extension {
 
         if (entity instanceof Device) {
             this.publishDevices();
-            this.eventBus.emit(`deviceRenamed`, {device: entity, homeAssisantRename, from: oldFriendlyName, to});
+            this.eventBus.emitDeviceRenamed({device: entity, homeAssisantRename, from: oldFriendlyName, to});
         } else {
             this.publishGroups();
             this.publishInfo();
         }
 
         // Repulish entity state
-        this.publishEntityState(to, {});
+        this.publishEntityState(entity, {});
 
         return utils.getResponse(
             message,
@@ -489,6 +489,9 @@ class Bridge extends Extension {
 
         try {
             logger.info(`Removing ${entityType} '${entity.settings.friendlyName}'${blockForceLog}`);
+            const ieeeAddr = entity.isDevice() && entity.ieeeAddr;
+            const name = entity.name;
+
             if (entity instanceof Device) {
                 if (block) {
                     settings.blockDevice(entity.ieeeAddr);
@@ -509,7 +512,7 @@ class Bridge extends Extension {
 
             // Fire event
             if (entity instanceof Device) {
-                this.eventBus.emit('deviceRemoved', {resolvedEntity: entity});
+                this.eventBus.emitDeviceRemoved({ieeeAddr, name});
             }
 
             // Remove from configuration.yaml
@@ -638,8 +641,8 @@ class Bridge extends Extension {
     async publishGroups(): Promise<void> {
         const groups = this.zigbee.getGroups().map((g) => {
             return {
-                id: g.ID,
-                friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
+                id: Number(g.ID),
+                friendly_name: g.ID === '901' ? 'default_bind_group' : g.name,
                 members: g.members.map((e) => {
                     return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
                 }),
@@ -667,5 +670,3 @@ class Bridge extends Extension {
         };
     }
 }
-
-module.exports = Bridge;

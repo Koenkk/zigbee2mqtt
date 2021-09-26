@@ -39,7 +39,7 @@ const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): strin
 /**
  * This extensions handles integration with HomeAssistant
  */
-class HomeAssistant extends Extension {
+export default class HomeAssistant extends Extension {
     private discovered: {[s: string]: string[]} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
@@ -51,7 +51,7 @@ class HomeAssistant extends Extension {
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         if (settings.get().experimental.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');
@@ -84,7 +84,7 @@ class HomeAssistant extends Extension {
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
 
         // MQTT discovery of all paired devices on startup.
-        for (const entity of [...this.zigbee.getClients(), ...this.zigbee.getGroups()]) {
+        for (const entity of [...this.zigbee.getDevices(false), ...this.zigbee.getGroups()]) {
             this.discover(entity, true);
         }
     }
@@ -659,12 +659,12 @@ class HomeAssistant extends Extension {
     }
 
     @bind onDeviceRemoved(data: EventDeviceRemoved): void {
-        logger.debug(`Clearing Home Assistant discovery topic for '${data.resolvedEntity.name}'`);
-        this.discovered[data.resolvedEntity.device.ieeeAddr]?.forEach((topic) => {
+        logger.debug(`Clearing Home Assistant discovery topic for '${data.name}'`);
+        this.discovered[data.ieeeAddr]?.forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
         });
 
-        delete this.discovered[data.resolvedEntity.device.ieeeAddr];
+        delete this.discovered[data.ieeeAddr];
     }
 
     @bind onGroupMembersChanged(data: EventGroupMembersChanged): void {
@@ -688,10 +688,10 @@ class HomeAssistant extends Extension {
                     const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
                     const payload: KeyValue = {};
-                    for (const key of Object.keys(data.messagePayload)) {
+                    for (const key of Object.keys(data.message)) {
                         const keyMatch = endpointRegExp.exec(key);
                         if (keyMatch) {
-                            payload[keyMatch[1]] = data.messagePayload[key];
+                            payload[keyMatch[1]] = data.message[key];
                         }
                     }
 
@@ -708,9 +708,9 @@ class HomeAssistant extends Extension {
          * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
          */
         if (settings.get().advanced.homeassistant_legacy_triggers) {
-            const keys = ['action', 'click'].filter((k) => data.messagePayload[k]);
+            const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
-                this.publishEntityState(data.entity.device.ieeeAddr, {[key]: ''});
+                this.publishEntityState(data.entity, {[key]: ''});
             }
         }
 
@@ -721,9 +721,9 @@ class HomeAssistant extends Extension {
          * and republish it to zigbee2mqtt/my_devic/action
          */
         if (entity instanceof Device && entity.definition) {
-            const keys = ['action', 'click'].filter((k) => data.messagePayload[k]);
+            const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
-                const value = data.messagePayload[key].toString();
+                const value = data.message[key].toString();
                 await this.publishDeviceTriggerDiscover(entity, key, value);
                 await this.mqtt.publish(`${data.entity.name}/${key}`, value, {});
             }
@@ -1104,9 +1104,9 @@ class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.getClients()) {
+                for (const device of this.zigbee.getDevices(false)) {
                     if (this.state.exists(device.ieeeAddr)) {
-                        this.publishEntityState(device.ieeeAddr, this.state.get(device.ieeeAddr));
+                        this.publishEntityState(device, this.state.get(device.ieeeAddr));
                     }
                 }
 
@@ -1136,17 +1136,17 @@ class HomeAssistant extends Extension {
         return payload;
     }
 
-    private adjustMessagePayloadBeforePublish(device: Device, messagePayload: KeyValue): void {
+    override adjustMessageBeforePublish(entity: Device | Group, message: KeyValue): void {
         // Set missing values of state to 'null': https://github.com/Koenkk/zigbee2mqtt/issues/6987
-        if (!device.definition) return null;
+        if (!entity.isDevice() || !entity.definition) return null;
 
         const add = (expose: DefinitionExpose | DefinitionExposeFeature): void => {
-            if (!messagePayload.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
-                messagePayload[expose.property] = null;
+            if (!message.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
+                message[expose.property] = null;
             }
         };
 
-        for (const expose of device.definition.exposes) {
+        for (const expose of entity.definition.exposes) {
             if (expose.hasOwnProperty('features')) {
                 for (const feature of expose.features) {
                     if (feature.name === 'state') {
@@ -1159,12 +1159,12 @@ class HomeAssistant extends Extension {
         }
 
         // Copy hue -> h, saturation -> s to make homeassitant happy
-        if (messagePayload.hasOwnProperty('color')) {
-            if (messagePayload.color.hasOwnProperty('hue')) {
-                messagePayload.color.h = messagePayload.color.hue;
+        if (message.hasOwnProperty('color')) {
+            if (message.color.hasOwnProperty('hue')) {
+                message.color.h = message.color.hue;
             }
-            if (messagePayload.color.hasOwnProperty('saturation')) {
-                messagePayload.color.s = messagePayload.color.saturation;
+            if (message.color.hasOwnProperty('saturation')) {
+                message.color.s = message.color.saturation;
             }
         }
     }
@@ -1226,5 +1226,3 @@ class HomeAssistant extends Extension {
         this.discoveredTriggers = {};
     }
 }
-
-module.exports = HomeAssistant;

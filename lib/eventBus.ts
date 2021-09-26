@@ -1,12 +1,10 @@
 /* eslint-disable brace-style */
 import events from 'events';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-import Extension from './extension/extension';
 
 declare global {
     interface EventDeviceRenamed { device: Device, homeAssisantRename: boolean, from: string, to: string }
-    // TODO: remove resolved entity, replace by Device
-    interface EventDeviceRemoved { resolvedEntity: ResolvedEntity}
+    interface EventDeviceRemoved { ieeeAddr: string, name: string }
     type EventMQTTMessage = { topic: string, message: string };
     type EventMQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
     type EventStateChange = { ID: string, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
@@ -16,15 +14,11 @@ declare global {
     type EventDeviceAnnounce = { device: Device };
     type EventDeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
     type EventDeviceJoined = { device: Device };
-    type EventReportingDisabled = { device: zh.Device }; // TODO zhdevice -> device
-    type EventDeviceLeave = { ieeeAddr: string };
+    type EventReportingDisabled = { device: Device };
+    type EventDeviceLeave = { ieeeAddr: string, name: string };
     type EventGroupMembersChanged = {
         group: Group, action: 'remove' | 'add' | 'remove_all', endpoint: zh.Endpoint, skipDisableReporting: boolean };
-    type EventPublishEntityState = {
-        // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
-        messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
-        ieeeAddr: string,
-    };
+    type EventPublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason };
     type EventDeviceMessage = {
         type: ZHEvents.MessagePayloadType;
         device: Device;
@@ -39,7 +33,8 @@ declare global {
     };
 }
 
-type ListenerKey = string | Extension;
+// eslint-disable-next-line
+type ListenerKey = object;
 
 export default class EventBus {
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -58,11 +53,11 @@ export default class EventBus {
     public onPermitJoinChanged(key: ListenerKey, callback: (data: EventPermitJoinChanged) => void): void {
         this.on('permitJoinChanged', callback, key);}
 
-    // public emitDeviceRenamed(data: EventDeviceRenamed): void {this.emitter.emit('deviceRenamed', data);}
+    public emitDeviceRenamed(data: EventDeviceRenamed): void {this.emitter.emit('deviceRenamed', data);}
     public onDeviceRenamed(key: ListenerKey, callback: (data: EventDeviceRenamed) => void): void {
         this.on('deviceRenamed', callback, key);}
 
-    // public emitDeviceRemoved(data: EventDeviceRemoved): void {this.emitter.emit('deviceRemoved', data);}
+    public emitDeviceRemoved(data: EventDeviceRemoved): void {this.emitter.emit('deviceRemoved', data);}
     public onDeviceRemoved(key: ListenerKey, callback: (data: EventDeviceRemoved) => void): void {
         this.on('deviceRemoved', callback, key);}
 
@@ -105,8 +100,8 @@ export default class EventBus {
     public onMQTTMessagePublished(key: ListenerKey, callback: (data: EventMQTTMessagePublished) => void): void {
         this.on('mqttMessagePublished', callback, key);}
 
-    // public emitPublishEntityState(data: EventPublishEntityState): void {
-    //     this.emitter.emit('publishEntityState', data);}
+    public emitPublishEntityState(data: EventPublishEntityState): void {
+        this.emitter.emit('publishEntityState', data);}
     public onPublishEntityState(key: ListenerKey, callback: (data: EventPublishEntityState) => void): void {
         this.on('publishEntityState', callback, key);}
 
@@ -118,32 +113,25 @@ export default class EventBus {
     public emitDevicesChanged(): void {this.emitter.emit('devicesChanged');}
     public onDevicesChanged(key: ListenerKey, callback: () => void): void {this.on('devicesChanged', callback, key);}
 
-    // public emitReportingDisabled(data: EventReportingDisabled): void {
-    //     this.emitter.emit('reportingDisabled', data);}
+    public emitReportingDisabled(data: EventReportingDisabled): void {
+        this.emitter.emit('reportingDisabled', data);}
     public onReportingDisabled(key: ListenerKey, callback: (data: EventReportingDisabled) => void): void {
         this.on('reportingDisabled', callback, key);}
 
-    // public emitStateChange(data: EventStateChange): void {
-    //     this.emitter.emit('stateChange', data);}
+    public emitStateChange(data: EventStateChange): void {
+        this.emitter.emit('stateChange', data);}
     public onStateChange(key: ListenerKey, callback: (data: EventStateChange) => void): void {
         this.on('stateChange', callback, key);}
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private on(event: string, callback: (...args: any[]) => void, key: ListenerKey): void {
-        key = typeof key === 'string' ? key : key.constructor.name;
-        if (!this.callbacksByExtension[key]) this.callbacksByExtension[key] = [];
-        this.callbacksByExtension[key].push({event, callback});
+        if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
+        this.callbacksByExtension[key.constructor.name].push({event, callback});
         this.emitter.on(event, callback);
     }
 
-    // TODO: remove
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    emit(event: string, ...args: any[]): void {
-        this.emitter.emit(event, ...args);
-    }
-
     public removeListeners(key: ListenerKey): void {
-        key = typeof key === 'string' ? key : key.constructor.name;
-        this.callbacksByExtension[key]?.forEach((e) => this.emitter.removeListener(e.event, e.callback));
+        this.callbacksByExtension[key.constructor.name]?.forEach(
+            (e) => this.emitter.removeListener(e.event, e.callback));
     }
 }

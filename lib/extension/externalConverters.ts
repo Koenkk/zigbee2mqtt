@@ -4,7 +4,7 @@ import * as settings from '../util/settings';
 import * as utils from '../util/utils';
 import Extension from './extension';
 
-class ExternalConverters extends Extension {
+export default class ExternalConverters extends Extension {
     override async start(): Promise<void> {
         for (const definition of utils.getExternalConvertersDefinitions(settings)) {
             const toAdd = {...definition};
@@ -13,5 +13,3 @@ class ExternalConverters extends Extension {
         }
     }
 }
-
-module.exports = ExternalConverters;

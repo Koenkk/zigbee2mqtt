@@ -106,7 +106,7 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             if (isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
                 this.publishAvailability(device, true);
@@ -189,6 +189,3 @@ export default class Availability extends Extension {
         this.retrieveStateDebouncers[device.ieeeAddr]?.();
     }
 }
-
-// TODO_finished: : change class to export default
-module.exports = Availability;

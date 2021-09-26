@@ -447,16 +447,16 @@ export function apply(newSettings: Record<string, unknown>): boolean {
     return restartRequired;
 }
 
-export function getGroup(IDorName: string | number): GroupSettings {
+export function getGroup(IDorName: string): GroupSettings {
     const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
-        return {devices: [], ...byID, ID: Number(IDorName), friendlyName: byID.friendly_name};
+        return {devices: [], ...byID, ID: IDorName, friendlyName: byID.friendly_name};
     }
 
     for (const [ID, group] of Object.entries(settings.groups)) {
         if (group.friendly_name === IDorName) {
-            return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
+            return {devices: [], ...group, ID, friendlyName: group.friendly_name};
         }
     }
 
@@ -466,7 +466,7 @@ export function getGroup(IDorName: string | number): GroupSettings {
 export function getGroups(): GroupSettings[] {
     const settings = get();
     return Object.entries(settings.groups).map(([ID, group]) => {
-        return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
+        return {devices: [], ...group, ID, friendlyName: group.friendly_name};
     });
 }
 

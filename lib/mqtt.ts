@@ -109,6 +109,7 @@ export default class MQTT {
     public onMessage(topic: string, message: string): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
+            logger.debug(`Received MQTT message on '${topic}' with data '${message}'`);
             this.eventBus.emitMQTTMessage({topic, message: message + ''});
         }
     }
@@ -117,7 +118,7 @@ export default class MQTT {
         return this.client && !this.client.reconnecting;
     }
 
-    async publish(topic: string, payload: string, options: {qos?: mqtt.QoS, retain?: boolean}={},
+    async publish(topic: string, payload: string, options: MQTTOptions={},
         base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
     ): Promise<void> {
         const defaultOptions: {qos: mqtt.QoS, retain: boolean} = {qos: 0, retain: false};

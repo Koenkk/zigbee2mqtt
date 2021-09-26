@@ -8,6 +8,7 @@ import debounce from 'debounce';
 import zigbeeHersdman from 'zigbee-herdsman';
 import bind from 'bind-decorator';
 import Device from '../model/device';
+import Group from '../model/group';
 
 const legacyApi = settings.get().advanced.legacy_api;
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
@@ -163,7 +164,7 @@ interface ParsedMQTTMessage {
     type: 'bind' | 'unbind', sourceKey: string, targetKey: string, clusters: string[], skipDisableReporting: boolean
 }
 
-class Bind extends Extension {
+export default class Bind extends Extension {
     private pollDebouncers: {[s: string]: () => void} = {};
 
     override async start(): Promise<void> {
@@ -220,9 +221,9 @@ class Bind extends Extension {
 
             const bindSource: zh.Endpoint = source.endpoint(parsedSource.endpoint);
             let bindTarget: number | zh.Group | zh.Endpoint = null;
-            if (utils.isGroup(target)) bindTarget = target.zhGroup;
-            else if (utils.isDevice(target)) bindTarget = target.endpoint(parsedTarget.endpoint);
-            else bindTarget = target.ID;
+            if (target instanceof Device) bindTarget = target.endpoint(parsedTarget.endpoint);
+            else if (target instanceof Group) bindTarget = target.zhGroup;
+            else bindTarget = Number(target.ID);
 
             // Find which clusters are supported by both the source and target.
             // Groups are assumed to support all clusters.
@@ -324,13 +325,13 @@ class Bind extends Extension {
         if (error) {
             logger.error(error);
         } else {
-            this.eventBus.emit(`devicesChanged`);
+            this.eventBus.emitDevicesChanged();
         }
     }
 
     @bind async onGroupMembersChanged(data: EventGroupMembersChanged): Promise<void> {
         if (data.action === 'add') {
-            const bindsToGroup = this.zigbee.getClientsLegacy().map((c) => c.endpoints)
+            const bindsToGroup = this.zigbee.getDevices(false).map((c) => c.endpoints)
                 .reduce((a, v) => a.concat(v)).map((e) => e.binds)
                 .reduce((a, v) => a.concat(v)).filter((b) => b.target === data.group.zhGroup);
             await this.setupReporting(bindsToGroup);
@@ -352,8 +353,7 @@ class Bind extends Extension {
     }
 
     async setupReporting(binds: zh.Bind[]): Promise<void> {
-        const coordinator = this.zigbee.getDevicesByTypeLegacy('Coordinator')[0];
-        const coordinatorEndpoint = coordinator.getEndpoint(1);
+        const coordinatorEndpoint = this.zigbee.getFirstCoordinatorEndpoint();
         for (const bind of binds.filter((b) => b.cluster.name in reportClusters)) {
             for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
                 const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
@@ -377,17 +377,18 @@ class Bind extends Extension {
             }
         }
 
-        this.eventBus.emit(`devicesChanged`);
+        this.eventBus.emitDevicesChanged();
     }
 
     async disableUnnecessaryReportings(target: zh.Group | zh.Endpoint): Promise<void> {
         const coordinator = this.zigbee.getFirstCoordinatorEndpoint();
         const endpoints = utils.isEndpoint(target) ? [target] : target.members;
         for (const endpoint of endpoints) {
-            const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
+            const device = this.zigbee.resolveEntity(endpoint.getDevice()) as Device;
+            const entity = `${device.name}/${endpoint.ID}`;
             const boundClusters = endpoint.binds.filter((b) => b.target === coordinator)
                 .map((b) => b.cluster.name);
-            const requiredClusters = this.zigbee.getClients().map((c) => c.endpoints)
+            const requiredClusters = this.zigbee.getDevices(false).map((c) => c.endpoints)
                 .reduce((a, v) => a.concat(v))
                 .map((e) => e.binds).reduce((a, v) => a.concat(v)).filter((bind) => {
                     if (utils.isEndpoint(bind.target)) {
@@ -417,7 +418,7 @@ class Bind extends Extension {
                 }
             }
 
-            this.eventBus.emit('reportingDisabled', {device: endpoint.getDevice()});
+            this.eventBus.emitReportingDisabled({device});
         }
     }
 
@@ -445,7 +446,7 @@ class Bind extends Extension {
             }
 
             // If message is published to a group, add members of the group
-            const group = data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
+            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID.toString());
             if (group) {
                 group.members.forEach((m) => toPoll.add(m));
             }
@@ -476,5 +477,3 @@ class Bind extends Extension {
         }
     }
 }
-
-module.exports = Bind;

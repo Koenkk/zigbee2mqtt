@@ -18,7 +18,7 @@ const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/o
 const topicRegex =
     new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)`, 'i');
 
-class OTAUpdate extends Extension {
+export default class OTAUpdate extends Extension {
     private inProgress = new Set();
     private lastChecked: {[s: string]: number} = {};
     private legacyApi = settings.get().advanced.legacy_api;
@@ -30,7 +30,7 @@ class OTAUpdate extends Extension {
             tradfriOTA.useTestURL();
         }
 
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
             // remove them.
             this.removeProgressAndRemainingFromState(device);
@@ -61,7 +61,7 @@ class OTAUpdate extends Extension {
             const available = await data.device.definition.ota.isUpdateAvailable(
                 data.device.zhDevice, logger, data.data);
             const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
-            this.publishEntityState(data.device.ieeeAddr, payload);
+            this.publishEntityState(data.device, payload);
 
             if (available) {
                 const message = `Update available for '${data.device.name}'`;
@@ -178,7 +178,7 @@ class OTAUpdate extends Extension {
                     }
 
                     const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
                     this.lastChecked[device.ieeeAddr] = Date.now();
                     responseData.updateAvailable = available;
                 } catch (e) {
@@ -217,7 +217,7 @@ class OTAUpdate extends Extension {
                         logger.info(msg);
 
                         const payload = this.getEntityPublishPayload('updating', progress, remaining);
-                        this.publishEntityState(device.ieeeAddr, payload);
+                        this.publishEntityState(device, payload);
 
                         /* istanbul ignore else */
                         if (settings.get().advanced.legacy_api) {
@@ -235,10 +235,10 @@ class OTAUpdate extends Extension {
                     logger.info(msg);
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload('idle');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
-                    this.eventBus.emit(`devicesChanged`);
+                    this.eventBus.emitDevicesChanged();
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -252,7 +252,7 @@ class OTAUpdate extends Extension {
 
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload('available');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -277,5 +277,3 @@ class OTAUpdate extends Extension {
         }
     }
 }
-
-module.exports = OTAUpdate;

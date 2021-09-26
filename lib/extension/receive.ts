@@ -6,7 +6,7 @@ import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 
-class Receive extends Extension {
+export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     // eslint-disable-next-line
     private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type
@@ -22,32 +22,33 @@ class Receive extends Extension {
          * In case that e.g. the state is currently held back by a debounce and a new state is published
          * remove it from the to be send debounced message.
          */
-        if (data.ieeeAddr && this.debouncers[data.ieeeAddr] && data.stateChangeReason !== 'publishDebounce') {
-            for (const key of Object.keys(data.payload)) {
-                delete this.debouncers[data.ieeeAddr].payload[key];
+        if (data.entity.isDevice() && this.debouncers[data.entity.ieeeAddr] &&
+            data.stateChangeReason !== 'publishDebounce') {
+            for (const key of Object.keys(data.message)) {
+                delete this.debouncers[data.entity.ieeeAddr].payload[key];
             }
         }
     }
 
-    publishDebounce(ieeeAddr: string, payload: KeyValue, time: number, debounceIgnore: string[]): void {
-        if (!this.debouncers[ieeeAddr]) {
-            this.debouncers[ieeeAddr] = {
+    publishDebounce(device: Device, payload: KeyValue, time: number, debounceIgnore: string[]): void {
+        if (!this.debouncers[device.ieeeAddr]) {
+            this.debouncers[device.ieeeAddr] = {
                 payload: {},
                 publish: debounce(() => {
-                    this.publishEntityState(ieeeAddr, this.debouncers[ieeeAddr].payload, 'publishDebounce');
-                    this.debouncers[ieeeAddr].payload = {};
+                    this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, 'publishDebounce');
+                    this.debouncers[device.ieeeAddr].payload = {};
                 }, time * 1000),
             };
         }
 
-        if (this.isPayloadConflicted(payload, this.debouncers[ieeeAddr].payload, debounceIgnore)) {
+        if (this.isPayloadConflicted(payload, this.debouncers[device.ieeeAddr].payload, debounceIgnore)) {
             // publish previous payload immediately
-            this.debouncers[ieeeAddr].publish.flush();
+            this.debouncers[device.ieeeAddr].publish.flush();
         }
 
         // extend debounced payload with current
-        this.debouncers[ieeeAddr].payload = {...this.debouncers[ieeeAddr].payload, ...payload};
-        this.debouncers[ieeeAddr].publish();
+        this.debouncers[device.ieeeAddr].payload = {...this.debouncers[device.ieeeAddr].payload, ...payload};
+        this.debouncers[device.ieeeAddr].publish();
     }
 
     // if debounce_ignore are specified (Array of strings)
@@ -137,10 +138,10 @@ class Receive extends Extension {
 
             // Check if we have to debounce
             if (data.device.settings.debounce) {
-                this.publishDebounce(data.device.ieeeAddr, payload, data.device.settings.debounce,
+                this.publishDebounce(data.device, payload, data.device.settings.debounce,
                     data.device.settings.debounce_ignore);
             } else {
-                this.publishEntityState(data.device.ieeeAddr, payload);
+                this.publishEntityState(data.device, payload);
             }
         };
 
@@ -158,5 +159,3 @@ class Receive extends Extension {
         }
     }
 }
-
-module.exports = Receive;

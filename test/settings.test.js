@@ -348,7 +348,7 @@ describe('Settings', () => {
 
         const group = settings.getGroup('1');
         const expected = {
-            ID: 1,
+            ID: '1',
             friendlyName: '123',
             friendly_name: '123',
             devices: [],
@@ -373,7 +373,7 @@ describe('Settings', () => {
 
         const group = settings.getGroup('1');
         const expected = {
-            ID: 1,
+            ID: '1',
             friendlyName: '123',
             friendly_name: '123',
             devices: [],
@@ -418,7 +418,7 @@ describe('Settings', () => {
 
         const group = settings.getGroup('1');
         const expectedGroup = {
-            ID: 1,
+            ID: '1',
             friendlyName: '123',
             friendly_name: '123',
             devices: [],

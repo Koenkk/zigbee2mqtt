@@ -12,7 +12,7 @@ import Device from '../model/device';
 /**
  * This extension calls the zigbee-herdsman-converters definition configure() method
  */
-class Configure extends Extension {
+export default class Configure extends Extension {
     private configuring = new Set();
     private attempts: {[s: string]: number} = {};
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
@@ -20,14 +20,12 @@ class Configure extends Extension {
 
     @bind private async onReportingDisabled(data: EventReportingDisabled): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
-        const device = this.zigbee.resolveEntity(data.device) as Device; // TODO assert device
-
-        if (device.zhDevice.meta?.hasOwnProperty('configured')) {
-            delete device.zhDevice.meta.configured;
-            device.zhDevice.save();
+        if (data.device.zhDevice.meta?.hasOwnProperty('configured')) {
+            delete data.device.zh.meta.configured;
+            data.device.zhDevice.save();
         }
 
-        await this.configure(device, 'reporting_disabled');
+        await this.configure(data.device, 'reporting_disabled');
     }
 
     // TODO remove trailing _
@@ -69,7 +67,7 @@ class Configure extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             await this.configure(device, 'started');
         }
 
@@ -121,7 +119,6 @@ class Configure extends Extension {
             device.zhDevice.meta.configured = zhc.getConfigureKey(device.definition);
             device.zhDevice.save();
             this.eventBus.emitDevicesChanged();
-            this.eventBus.emit(`devicesChanged`);
         } catch (error) {
             this.attempts[device.ieeeAddr]++;
             const attempt = this.attempts[device.ieeeAddr];
@@ -136,5 +133,3 @@ class Configure extends Extension {
         this.configuring.delete(device.ieeeAddr);
     }
 }
-
-module.exports = Configure;

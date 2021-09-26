@@ -5,9 +5,9 @@ import Extension from './extension';
 /**
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
-class OnEvent extends Extension {
+export default class OnEvent extends Extension {
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             await this.callOnEvent(device, 'start', {});
         }
 
@@ -28,7 +28,7 @@ class OnEvent extends Extension {
 
     override async stop(): Promise<void> {
         super.stop();
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             await this.callOnEvent(device, 'stop', {});
         }
     }
@@ -41,5 +41,3 @@ class OnEvent extends Extension {
         }
     }
 }
-
-module.exports = OnEvent;

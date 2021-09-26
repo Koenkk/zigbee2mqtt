@@ -17,7 +17,7 @@ import bind from 'bind-decorator';
 /**
  * This extension servers the frontend
  */
-class Frontend extends Extension {
+export default class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
     private host = settings.get().frontend.host || '0.0.0.0';
     private port = settings.get().frontend.port || 8080;
@@ -30,7 +30,7 @@ class Frontend extends Extension {
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
     }
@@ -99,7 +99,7 @@ class Frontend extends Extension {
             ws.send(stringify({topic: key, payload: value}));
         }
 
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             let payload: KeyValue = {};
             if (this.state.exists(device.ieeeAddr)) {
                 payload = {...payload, ...this.state.get(device.ieeeAddr)};
@@ -139,5 +139,3 @@ class Frontend extends Extension {
         }
     }
 }
-
-module.exports = Frontend;

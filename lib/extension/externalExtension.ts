@@ -11,7 +11,7 @@ import Extension from './extension';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
-class ExternalExtension extends Extension {
+export default class ExternalExtension extends Extension {
     private requestLookup: {[s: string]: (message: KeyValue) => MQTTResponse};
 
     override async start(): Promise<void> {
@@ -57,7 +57,7 @@ class ExternalExtension extends Extension {
 
     @bind private saveExtension(message: KeyValue): MQTTResponse {
         const {name, code} = message;
-        const ModuleConstructor = utils.loadModuleFromText(code) as ExternalConverterClass;
+        const ModuleConstructor = utils.loadModuleFromText(code) as Extension;
         this.loadExtension(ModuleConstructor);
         const basePath = this.getExtensionsBasePath();
         /* istanbul ignore else */
@@ -86,8 +86,9 @@ class ExternalExtension extends Extension {
         }
     }
 
-    @bind private loadExtension(ConstructorClass: ExternalConverterClass): void {
-        this.enableDisableExtension(false, ConstructorClass.name);
+    @bind private loadExtension(ConstructorClass: Extension): void {
+        this.enableDisableExtension(false, ConstructorClass.constructor.name);
+        // @ts-ignore
         this.addExtension(new ConstructorClass(
             this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
@@ -107,5 +108,3 @@ class ExternalExtension extends Extension {
         }, settings.get().mqtt.base_topic, true);
     }
 }
-
-module.exports = ExternalExtension;

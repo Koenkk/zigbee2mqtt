@@ -9,6 +9,7 @@ export default class Device {
 
     get endpoints(): zh.Endpoint[] {return this.device.endpoints;}
     get zhDevice(): zh.Device {return this.device;}
+    get zh(): zh.Device {return this.device;}
     get ieeeAddr(): string {return this.device.ieeeAddr;}
     get ID(): string {return this.device.ieeeAddr;}
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
@@ -33,6 +34,10 @@ export default class Device {
 
     constructor(device: zh.Device) {
         this.device = device;
+
+        if (device.type !== 'Coordinator' && !settings.getDevice(device.ieeeAddr)) {
+            settings.addDevice(device.ieeeAddr);
+        }
     }
 
     async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
@@ -77,4 +82,8 @@ export default class Device {
     isRouter(): boolean {return this.zhDevice.type === 'Router';}
     lqi(): Promise<zh.LQI> {return this.zhDevice.lqi();}
     routingTable(): Promise<zh.RoutingTable> {return this.zhDevice.routingTable();}
+
+    isDevice(): this is Device {return true;}
+    /* istanbul ignore next */
+    isGroup(): this is Group {return false;}
 }

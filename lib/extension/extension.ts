@@ -6,7 +6,7 @@ abstract class Extension {
     protected eventBus: EventBus;
     protected enableDisableExtension: (enable: boolean, name: string) => Promise<void>;
     protected restartCallback: () => void;
-    protected addExtension: (extension: ExternalConverterClass) => void;
+    protected addExtension: (extension: Extension) => void;
 
     /**
      * Besides intializing variables, the constructor should do nothing!
@@ -22,7 +22,7 @@ abstract class Extension {
      */
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
         this.state = state;
@@ -45,6 +45,9 @@ abstract class Extension {
     async stop(): Promise<void> {
         this.eventBus.removeListeners(this);
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public adjustMessageBeforePublish(entity: Group | Device, message: KeyValue): void {}
 }
 
 export default Extension;

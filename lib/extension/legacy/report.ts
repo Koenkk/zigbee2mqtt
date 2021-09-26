@@ -63,7 +63,7 @@ const clusters: {[s: string]:
     ],
 };
 
-class Report extends Extension {
+export default class Report extends Extension {
     private queue: Set<string> = new Set();
     private failed: Set<string> = new Set();
     private enabled = settings.get().advanced.report;
@@ -118,10 +118,10 @@ class Report extends Extension {
                 device.zhDevice.meta.reporting = reportKey;
             } else {
                 delete device.zhDevice.meta.reporting;
-                this.eventBus.emit('reportingDisabled', {device});
+                this.eventBus.emitReportingDisabled({device});
             }
 
-            this.eventBus.emit(`devicesChanged`);
+            this.eventBus.emitDevicesChanged();
         } catch (error) {
             logger.error(
                 `Failed to ${term1.toLowerCase()} reporting for '${device.ieeeAddr}' - ${error.stack}`,
@@ -174,7 +174,7 @@ class Report extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             if (this.shouldSetupReporting(device, null)) {
                 await this.setupReporting(device);
             }
@@ -192,5 +192,3 @@ class Report extends Extension {
         }
     }
 }
-
-module.exports = Report;

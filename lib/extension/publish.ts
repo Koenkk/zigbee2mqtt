@@ -34,7 +34,7 @@ const defaultGroupConverters = [
 
 interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
 
-class Publish extends Extension {
+export default class Publish extends Extension {
     async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }
@@ -179,8 +179,13 @@ class Publish extends Extension {
         // For each attribute call the corresponding converter
         const usedConverters: {[s: number]: ToZigbeeConverter[]} = {};
         const toPublish: {[s: number | string]: KeyValue} = {};
-        const addToToPublish = (ID: number | string, payload: KeyValue): void => {
-            if (!(ID in toPublish)) toPublish[ID] = {};
+        const toPublishEntity: {[s: number | string]: Device | Group} = {};
+        const addToToPublish = (entity: Device | Group, payload: KeyValue): void => {
+            const ID = entity.ID;
+            if (!(ID in toPublish)) {
+                toPublish[ID] = {};
+                toPublishEntity[ID] = entity;
+            }
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
 
@@ -249,12 +254,12 @@ class Publish extends Extension {
 
                         // filter out attribute listed in filtered_optimistic
                         entitySettings.filtered_optimistic?.forEach((a) => delete msg[a]);
-                        addToToPublish(re.ID, msg);
+                        addToToPublish(re, msg);
                     }
 
                     if (result && result.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
-                            addToToPublish(ieeeAddr, state);
+                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr), state);
                         }
                     }
 
@@ -279,11 +284,8 @@ class Publish extends Extension {
 
         for (const [ID, payload] of Object.entries(toPublish)) {
             if (Object.keys(payload).length != 0) {
-                this.publishEntityState(ID, payload);
+                this.publishEntityState(toPublishEntity[ID], payload);
             }
         }
     }
 }
-
-// TODO_finished: : change class to export default
-module.exports = Publish;

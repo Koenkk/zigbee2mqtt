@@ -8,7 +8,7 @@ import Device from '../../model/device';
 
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/device/(.+)/get_group_membership$`);
 
-class DeviceGroupMembership extends Extension {
+export default class DeviceGroupMembership extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }
@@ -51,8 +51,6 @@ class DeviceGroupMembership extends Extension {
         }
         logger.info(`${msgGroupList} and ${msgCapacity}`);
 
-        this.publishEntityState(device.ieeeAddr, {group_list: grouplist, group_capacity: capacity});
+        this.publishEntityState(device, {group_list: grouplist, group_capacity: capacity});
     }
 }
-
-module.exports = DeviceGroupMembership;

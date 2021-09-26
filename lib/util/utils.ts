@@ -114,7 +114,7 @@ export function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
     return true;
 }
 
-export function getObjectProperty(object: {[s: string]: unknown}, key: string, defaultValue: unknown): unknown {
+export function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown): unknown {
     return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
 }
 
@@ -300,14 +300,6 @@ export function parseEntityID(ID: string): {ID: string, endpoint: string} {
 
 export function isEndpoint(obj: unknown): obj is Endpoint {
     return obj.constructor.name.toLowerCase() === 'endpoint';
-}
-
-export function isDevice(obj: unknown): obj is Device {
-    return obj.constructor.name.toLowerCase() === 'device';
-}
-
-export function isGroup(obj: unknown): obj is Group {
-    return obj.constructor.name.toLowerCase() === 'group';
 }
 
 export function isZHGroup(obj: unknown): obj is zh.Group {

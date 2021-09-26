@@ -27,7 +27,7 @@ function timeoutLag(timeout: number, ratio: number): number {
 /**
  * This extensions pings devices to check if they are online.
  */
-class AvailabilityLegacy extends Extension {
+export default class AvailabilityLegacy extends Extension {
     // eslint-disable-next-line
     private availability_timeout = settings.get().advanced.availability_timeout;
     private timers: KeyValue = {};
@@ -49,7 +49,7 @@ class AvailabilityLegacy extends Extension {
         /* istanbul ignore next */
         this.eventBus.onDeviceNetworkAddressChanged(this, (data) => this.onZigbeeEvent_('dummy', data.device));
 
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.getDevices(false)) {
             // Mark all devices as online on start
             const ieeeAddr = device.ieeeAddr;
             this.publishAvailability(device, this.stateLookup.hasOwnProperty(ieeeAddr) ?
@@ -73,9 +73,9 @@ class AvailabilityLegacy extends Extension {
 
     /* istanbul ignore next */
     @bind onDeviceRemoved(data: EventDeviceRemoved): void {
-        this.mqtt.publish(`${data.resolvedEntity.name}/availability`, null, {retain: true, qos: 0});
-        delete this.stateLookup[data.resolvedEntity.device.ieeeAddr];
-        clearTimeout(this.timers[data.resolvedEntity.device.ieeeAddr]);
+        this.mqtt.publish(`${data.name}/availability`, null, {retain: true, qos: 0});
+        delete this.stateLookup[data.ieeeAddr];
+        clearTimeout(this.timers[data.ieeeAddr]);
     }
 
     inPasslistOrNotInBlocklist(device: Device): boolean {
@@ -164,7 +164,7 @@ class AvailabilityLegacy extends Extension {
             clearTimeout(timer);
         }
 
-        this.zigbee.getClients().forEach((device) => this.publishAvailability(device, false));
+        this.zigbee.getDevices(false).forEach((device) => this.publishAvailability(device, false));
     }
 
     async onReconnect(device: Device): Promise<void> {
@@ -227,5 +227,3 @@ class AvailabilityLegacy extends Extension {
         }
     }
 }
-
-module.exports = AvailabilityLegacy;
