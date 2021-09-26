@@ -44,7 +44,6 @@ declare global {
     interface KeyValue {[s: string]: any}
 
     // zigbee-herdsman
-    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace zh {
         type Endpoint = ZHEndpoint;
         type Device = ZHDevice;
@@ -290,12 +289,6 @@ declare global {
             updateToLatest: (device: zh.Device, logger: unknown,
                 onProgress: (progress: number, remaining: number) => void) => Promise<void>;
         }
-    }
-
-    interface ExternalConverterClass {
-        // eslint-disable-next-line
-        new(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
-            eventBus: EventBus, settings: unknown, logger: unknown): ExternalConverterClass;
     }
 
     interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
