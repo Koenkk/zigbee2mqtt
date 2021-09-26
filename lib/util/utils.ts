@@ -4,7 +4,6 @@ import * as data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
-import {Endpoint} from 'zigbee-herdsman/dist/controller/model';
 
 // TODO: check all
 
@@ -282,23 +281,13 @@ export function isAvailabilityEnabledForDevice(device: Device, settings: Setting
     return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
 }
 
-export function isXiaomiDevice(device: zh.Device): boolean {
-    const xiaomiManufacturerID = [4151, 4447];
-    return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
-        (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
-}
-
-export function isIkeaTradfriDevice(device: zh.Device): boolean {
-    return [4476].includes(device.manufacturerID);
-}
-
 const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
 export function parseEntityID(ID: string): {ID: string, endpoint: string} {
     const match = ID.match(entityIDRegex);
     return match && {ID: match[1], endpoint: match[2]};
 }
 
-export function isEndpoint(obj: unknown): obj is Endpoint {
+export function isEndpoint(obj: unknown): obj is zh.Endpoint {
     return obj.constructor.name.toLowerCase() === 'endpoint';
 }
 

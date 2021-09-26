@@ -42,7 +42,7 @@ export default class OTAUpdate extends Extension {
         this.state.removeKey(device.ieeeAddr, ['update', 'remaining']);
     }
 
-    @bind private async onZigbeeEvent(data: EventDeviceMessage): Promise<void> {
+    @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
         if (settings.get().ota.disable_automatic_update_check) return;
         if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition) return;
         logger.debug(`Device '${data.device.name}' requested OTA`);
@@ -59,7 +59,7 @@ export default class OTAUpdate extends Extension {
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
             const available = await data.device.definition.ota.isUpdateAvailable(
-                data.device.zhDevice, logger, data.data);
+                data.device.zh, logger, data.data);
             const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
             this.publishEntityState(data.device, payload);
 
@@ -81,7 +81,7 @@ export default class OTAUpdate extends Extension {
         // Respond to the OTA request:
         // - In case we don't support OTA: respond with NO_IMAGE_AVAILABLE (0x98) (so the client stops requesting OTAs)
         // - In case we do support OTA: respond with ABORT (0x95) as we don't want to update now.
-        const endpoint = data.device.endpoints.find((e) => e.supportsOutputCluster('genOta'));
+        const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster('genOta'));
         if (endpoint) {
             // Some devices send OTA requests without defining OTA cluster as input cluster.
             await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: supportsOTA ? 0x95 : 0x98});
@@ -91,13 +91,13 @@ export default class OTAUpdate extends Extension {
     private async readSoftwareBuildIDAndDateCode(device: Device, update: boolean):
         Promise<{softwareBuildID: string, dateCode: string}> {
         try {
-            const endpoint = device.endpoints.find((e) => e.supportsInputCluster('genBasic'));
+            const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
             const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId']);
 
             if (update) {
-                device.zhDevice.softwareBuildID = result.swBuildId;
-                device.zhDevice.dateCode = result.dateCode;
-                device.zhDevice.save();
+                device.zh.softwareBuildID = result.swBuildId;
+                device.zh.dateCode = result.dateCode;
+                device.zh.save();
             }
 
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
@@ -119,7 +119,7 @@ export default class OTAUpdate extends Extension {
         return payload;
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         if ((!this.legacyApi || !data.topic.match(legacyTopicRegex)) && !data.topic.match(topicRegex)) {
             return null;
         }
@@ -164,7 +164,7 @@ export default class OTAUpdate extends Extension {
                 }
 
                 try {
-                    const available = await device.definition.ota.isUpdateAvailable(device.zhDevice, logger);
+                    const available = await device.definition.ota.isUpdateAvailable(device.zh, logger);
                     const msg = `${available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -227,7 +227,7 @@ export default class OTAUpdate extends Extension {
                     };
 
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, false);
-                    await device.definition.ota.updateToLatest(device.zhDevice, logger, onProgress);
+                    await device.definition.ota.updateToLatest(device.zh, logger, onProgress);
                     const to = await this.readSoftwareBuildIDAndDateCode(device, true);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     const msg = `Finished update of '${device.name}'` +

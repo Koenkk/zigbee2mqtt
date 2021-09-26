@@ -108,18 +108,18 @@ export default class Frontend extends Extension {
             const lastSeen = settings.get().advanced.last_seen;
             /* istanbul ignore if */
             if (lastSeen !== 'disable') {
-                payload.last_seen = utils.formatDate(device.lastSeen, lastSeen);
+                payload.last_seen = utils.formatDate(device.zh.lastSeen, lastSeen);
             }
 
-            if (device.zhDevice.linkquality !== undefined) {
-                payload.linkquality = device.zhDevice.linkquality;
+            if (device.zh.linkquality !== undefined) {
+                payload.linkquality = device.zh.linkquality;
             }
 
             ws.send(stringify({topic: device.name, payload}));
         }
     }
 
-    @bind private onMQTTPublishMessage(data: EventMQTTMessagePublished): void {
+    @bind private onMQTTPublishMessage(data: eventdata.MQTTMessagePublished): void {
         if (data.topic.startsWith(`${this.mqttBaseTopic}/`)) {
             // Send topic without base_topic
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);

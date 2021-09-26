@@ -30,12 +30,12 @@ export default class Availability extends Extension {
     }
 
     private isActiveDevice(device: Device): boolean {
-        return (device.type === 'Router' && device.powerSource !== 'Battery') ||
-            device.powerSource === 'Mains (single phase)';
+        return (device.zh.type === 'Router' && device.zh.powerSource !== 'Battery') ||
+            device.zh.powerSource === 'Mains (single phase)';
     }
 
     private isAvailable(device: Device): boolean {
-        const ago = Date.now() - device.lastSeen;
+        const ago = Date.now() - device.zh.lastSeen;
         return ago < this.getTimeout(device);
     }
 
@@ -75,7 +75,7 @@ export default class Availability extends Extension {
             try {
                 // Enable recovery if device is marked as available and first ping fails.
                 const disableRecovery = !(i == 1 && available);
-                await device.ping(disableRecovery);
+                await device.zh.ping(disableRecovery);
                 pingedSuccessfully = true;
                 logger.debug(`Succesfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
@@ -100,10 +100,10 @@ export default class Availability extends Extension {
     override async start(): Promise<void> {
         logger.warn('Using experimental new availability feature');
 
-        this.eventBus.onDeviceRenamed(this, (data: EventDeviceRenamed) =>
+        this.eventBus.onDeviceRenamed(this, (data: eventdata.DeviceRenamed) =>
             this.publishAvailability(data.device, false, true));
-        this.eventBus.onDeviceLeave(this, (data: EventDeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
-        this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.retrieveState(data.device));
+        this.eventBus.onDeviceLeave(this, (data: eventdata.DeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
         for (const device of this.zigbee.getDevices(false)) {
@@ -123,7 +123,7 @@ export default class Availability extends Extension {
 
     private publishAvailability(device: Device, logLastSeen: boolean, forcePublish=false): void {
         if (logLastSeen) {
-            const ago = Date.now() - device.lastSeen;
+            const ago = Date.now() - device.zh.lastSeen;
             if (this.isActiveDevice(device)) {
                 logger.debug(
                     `Active device '${device.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
@@ -150,7 +150,7 @@ export default class Availability extends Extension {
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
     }
 
-    @bind private onLastSeenChanged(data: EventLastSeenChanged): void {
+    @bind private onLastSeenChanged(data: eventdata.LastSeenChanged): void {
         if (isAvailabilityEnabledForDevice(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(data.device);
@@ -169,7 +169,7 @@ export default class Availability extends Extension {
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (device.definition && !device.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
+        if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
             this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
                 try {
                     logger.debug(`Retrieving state of '${device.name}' after reconnect`);

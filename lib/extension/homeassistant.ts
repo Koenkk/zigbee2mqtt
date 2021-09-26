@@ -72,12 +72,12 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceJoined(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceJoined(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceInterview(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
-        this.eventBus.onDeviceMessage(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceInterview(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceMessage(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
 
         this.mqtt.subscribe(this.statusTopic);
         this.mqtt.subscribe(defaultStatusTopic);
@@ -658,7 +658,7 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onDeviceRemoved(data: EventDeviceRemoved): void {
+    @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         logger.debug(`Clearing Home Assistant discovery topic for '${data.name}'`);
         this.discovered[data.ieeeAddr]?.forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
@@ -667,11 +667,11 @@ export default class HomeAssistant extends Extension {
         delete this.discovered[data.ieeeAddr];
     }
 
-    @bind onGroupMembersChanged(data: EventGroupMembersChanged): void {
+    @bind onGroupMembersChanged(data: eventdata.GroupMembersChanged): void {
         this.discover(data.group, true);
     }
 
-    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
+    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
         /**
          * In case we deal with a lightEndpoint configuration Zigbee2MQTT publishes
          * e.g. {state_l1: ON, brightness_l1: 250} to zigbee2mqtt/mydevice.
@@ -730,7 +730,7 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onDeviceRenamed(data: EventDeviceRenamed): void {
+    @bind onDeviceRenamed(data: eventdata.DeviceRenamed): void {
         logger.debug(`Refreshing Home Assistant discovery topic for '${data.device.ieeeAddr}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
@@ -843,8 +843,9 @@ export default class HomeAssistant extends Extension {
         const discover = force || !this.discovered[discoverKey];
 
         if (entity instanceof Group) {
-            if (!discover || entity.zhGroup.members.length === 0) return;
-        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] || entity.interviewing ||
+            if (!discover || entity.zh.members.length === 0) return;
+        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] ||
+            entity.zh.interviewing ||
             (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant)) {
             return;
         }
@@ -1046,7 +1047,7 @@ export default class HomeAssistant extends Extension {
         });
     }
 
-    @bind private onMQTTMessage_(data: EventMQTTMessage): void {
+    @bind private onMQTTMessage_(data: eventdata.MQTTMessage): void {
         const discoveryRegex = new RegExp(`${this.discoveryTopic}/(.*)/(.*)/(.*)/config`);
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';

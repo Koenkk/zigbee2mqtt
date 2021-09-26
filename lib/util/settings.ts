@@ -273,7 +273,7 @@ export function validate(): string[] {
 
     const checkAvailabilityList = (list: string[], type: string): void => {
         list.forEach((e) => {
-            if (!getEntity(e)) {
+            if (!getDevice(e)) {
                 errors.push(`Non-existing entity '${e}' specified in '${type}'`);
             }
         });
@@ -447,16 +447,16 @@ export function apply(newSettings: Record<string, unknown>): boolean {
     return restartRequired;
 }
 
-export function getGroup(IDorName: string): GroupSettings {
+export function getGroup(IDorName: string | number): GroupSettings {
     const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
-        return {devices: [], ...byID, ID: IDorName, friendlyName: byID.friendly_name};
+        return {devices: [], ...byID, ID: Number(IDorName), friendlyName: byID.friendly_name};
     }
 
     for (const [ID, group] of Object.entries(settings.groups)) {
         if (group.friendly_name === IDorName) {
-            return {devices: [], ...group, ID, friendlyName: group.friendly_name};
+            return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
         }
     }
 
@@ -466,7 +466,7 @@ export function getGroup(IDorName: string): GroupSettings {
 export function getGroups(): GroupSettings[] {
     const settings = get();
     return Object.entries(settings.groups).map(([ID, group]) => {
-        return {devices: [], ...group, ID, friendlyName: group.friendly_name};
+        return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
     });
 }
 
@@ -502,20 +502,6 @@ function getDeviceThrowIfNotExists(IDorName: string): DeviceSettings {
     }
 
     return device;
-}
-
-export function getEntity(IDorName: string): EntitySettings {
-    const device = getDevice(IDorName);
-    if (device) {
-        return {...device, type: 'device'};
-    }
-
-    const group = getGroup(IDorName);
-    if (group) {
-        return {...group, type: 'group'};
-    }
-
-    return null;
 }
 
 export function addDevice(ID: string): DeviceSettings {

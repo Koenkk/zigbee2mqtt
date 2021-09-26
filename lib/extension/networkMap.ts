@@ -39,7 +39,7 @@ export default class NetworkMap extends Extension {
         };
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
             if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) &&
@@ -215,12 +215,12 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const devices = this.zigbee.getDevices().filter((d) => d.type !== 'GreenPower');
+        const devices = this.zigbee.getDevices().filter((d) => d.zh.type !== 'GreenPower');
         const lqis: Map<Device, zh.LQI> = new Map();
         const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();
 
-        for (const device of devices.filter((d) => d.type != 'EndDevice')) {
+        for (const device of devices.filter((d) => d.zh.type != 'EndDevice')) {
             failed.set(device, []);
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
@@ -239,7 +239,7 @@ export default class NetworkMap extends Extension {
             };
 
             try {
-                const result = await doRequest<zh.LQI>(async () => device.lqi());
+                const result = await doRequest<zh.LQI>(async () => device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
@@ -249,7 +249,7 @@ export default class NetworkMap extends Extension {
 
             if (includeRoutes) {
                 try {
-                    const result = await doRequest(async () => device.routingTable());
+                    const result = await doRequest(async () => device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
@@ -275,9 +275,9 @@ export default class NetworkMap extends Extension {
             } : null;
 
             topology.nodes.push({
-                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.type,
-                networkAddress: device.networkAddress, manufacturerName: device.manufacturerName,
-                modelID: device.modelID, failed: failed.get(device), lastSeen: device.lastSeen,
+                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.zh.type,
+                networkAddress: device.zh.networkAddress, manufacturerName: device.zh.manufacturerName,
+                modelID: device.zh.modelID, failed: failed.get(device), lastSeen: device.zh.lastSeen,
                 definition,
             });
         }
@@ -299,7 +299,7 @@ export default class NetworkMap extends Extension {
 
                 const link: Link = {
                     source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
-                    target: {ieeeAddr: device.ieeeAddr, networkAddress: device.networkAddress},
+                    target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
                     linkquality: neighbor.linkquality, depth: neighbor.depth, routes: [],
                     // DEPRECATED:
                     sourceIeeeAddr: neighbor.ieeeAddr, targetIeeeAddr: device.ieeeAddr,

@@ -3,6 +3,7 @@ import logger from './util/logger';
 import * as settings from './util/settings';
 import {seconds} from './util/utils';
 import fs from 'fs';
+import bind from 'bind-decorator';
 
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
@@ -12,8 +13,6 @@ export default class MQTT {
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
-        this.onMessage = this.onMessage.bind(this);
-        this.onConnect = this.onConnect.bind(this);
     }
 
     async connect(): Promise<void> {
@@ -81,7 +80,7 @@ export default class MQTT {
         });
     }
 
-    private async onConnect(): Promise<void> {
+    @bind private async onConnect(): Promise<void> {
         // Set timer at interval to check if connected to MQTT server.
         clearTimeout(this.connectionTimer);
         this.connectionTimer = setInterval(() => {
@@ -106,7 +105,7 @@ export default class MQTT {
         this.client.subscribe(topic);
     }
 
-    public onMessage(topic: string, message: string): void {
+    @bind public onMessage(topic: string, message: string): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
             logger.debug(`Received MQTT message on '${topic}' with data '${message}'`);

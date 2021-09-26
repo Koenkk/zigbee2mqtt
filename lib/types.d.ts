@@ -17,6 +17,8 @@ import type {
     Cluster as ZHCluster,
 } from 'zigbee-herdsman/dist/zcl/tstype';
 
+import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
+
 import type TypeEventBus from 'lib/eventBus';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
@@ -57,6 +59,35 @@ declare global {
             cluster: zh.Cluster;
             target: zh.Endpoint | zh.Group;
         }
+    }
+
+    namespace eventdata {
+        type DeviceRenamed = { device: Device, homeAssisantRename: boolean, from: string, to: string };
+        type DeviceRemoved = { ieeeAddr: string, name: string };
+        type MQTTMessage = { topic: string, message: string };
+        type MQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
+        type StateChange = { ID: string, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
+        type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
+        type LastSeenChanged = { device: Device };
+        type DeviceNetworkAddressChanged = { device: Device };
+        type DeviceAnnounce = { device: Device };
+        type DeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
+        type DeviceJoined = { device: Device };
+        type ReportingDisabled = { device: Device };
+        type DeviceLeave = { ieeeAddr: string, name: string };
+        type GroupMembersChanged = {group: Group, action: 'remove' | 'add' | 'remove_all',
+            endpoint: zh.Endpoint, skipDisableReporting: boolean };
+        type PublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason };
+        type DeviceMessage = {
+            type: ZHEvents.MessagePayloadType;
+            device: Device;
+            endpoint: zh.Endpoint;
+            linkquality: number;
+            groupID: number;
+            cluster: string | number;
+            data: KeyValue | Array<string | number>;
+            meta: {zclTransactionSequenceNumber?: number;};
+        };
     }
 
     interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
@@ -193,19 +224,13 @@ declare global {
     interface GroupSettings {
         friendlyName: string,
         devices: string[],
-        ID: string,
+        ID: number,
         optimistic?: boolean,
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
         homeassistant?: KeyValue,
         filtered_attributes?: string[],
     }
-
-    type EntitySettings = {
-        type: 'device' | 'group'
-        ID: string,
-        friendlyName: string,
-    };
 
     interface ResolvedEntity {
         type: 'device' | 'group',

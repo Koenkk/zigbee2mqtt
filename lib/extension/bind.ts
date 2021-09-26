@@ -173,7 +173,7 @@ export default class Bind extends Extension {
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
     }
 
-    private parseMQTTMessage(data: EventMQTTMessage): ParsedMQTTMessage {
+    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage {
         let type: 'bind' | 'unbind' = null;
         let sourceKey = null;
         let targetKey = null;
@@ -197,7 +197,7 @@ export default class Bind extends Extension {
         return {type, sourceKey, targetKey, clusters, skipDisableReporting};
     }
 
-    @bind private async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const {type, sourceKey, targetKey, clusters, skipDisableReporting} = this.parseMQTTMessage(data);
         if (!type) return null;
         const message = utils.parseJSON(data.message, data.message);
@@ -222,7 +222,7 @@ export default class Bind extends Extension {
             const bindSource: zh.Endpoint = source.endpoint(parsedSource.endpoint);
             let bindTarget: number | zh.Group | zh.Endpoint = null;
             if (target instanceof Device) bindTarget = target.endpoint(parsedTarget.endpoint);
-            else if (target instanceof Group) bindTarget = target.zhGroup;
+            else if (target instanceof Group) bindTarget = target.zh;
             else bindTarget = Number(target.ID);
 
             // Find which clusters are supported by both the source and target.
@@ -232,7 +232,7 @@ export default class Bind extends Extension {
                 let matchingClusters = false;
 
                 const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' ||
-                    (target as Device).type === 'Coordinator';
+                    (target as Device).zh.type === 'Coordinator';
 
                 if (!anyClusterValid && utils.isEndpoint(bindTarget)) {
                     matchingClusters = ((bindTarget.supportsInputCluster(cluster) &&
@@ -329,11 +329,11 @@ export default class Bind extends Extension {
         }
     }
 
-    @bind async onGroupMembersChanged(data: EventGroupMembersChanged): Promise<void> {
+    @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
         if (data.action === 'add') {
-            const bindsToGroup = this.zigbee.getDevices(false).map((c) => c.endpoints)
+            const bindsToGroup = this.zigbee.getDevices(false).map((c) => c.zh.endpoints)
                 .reduce((a, v) => a.concat(v)).map((e) => e.binds)
-                .reduce((a, v) => a.concat(v)).filter((b) => b.target === data.group.zhGroup);
+                .reduce((a, v) => a.concat(v)).filter((b) => b.target === data.group.zh);
             await this.setupReporting(bindsToGroup);
         } else { // action === remove/remove_all
             if (!data.skipDisableReporting) {
@@ -388,7 +388,7 @@ export default class Bind extends Extension {
             const entity = `${device.name}/${endpoint.ID}`;
             const boundClusters = endpoint.binds.filter((b) => b.target === coordinator)
                 .map((b) => b.cluster.name);
-            const requiredClusters = this.zigbee.getDevices(false).map((c) => c.endpoints)
+            const requiredClusters = this.zigbee.getDevices(false).map((c) => c.zh.endpoints)
                 .reduce((a, v) => a.concat(v))
                 .map((e) => e.binds).reduce((a, v) => a.concat(v)).filter((bind) => {
                     if (utils.isEndpoint(bind.target)) {
@@ -422,7 +422,7 @@ export default class Bind extends Extension {
         }
     }
 
-    @bind async poll(data: EventDeviceMessage): Promise<void> {
+    @bind async poll(data: eventdata.DeviceMessage): Promise<void> {
         /**
          * This method poll bound endpoints and group members for state changes.
          *
@@ -437,7 +437,7 @@ export default class Bind extends Extension {
         if (polls.length) {
             const toPoll: Set<zh.Endpoint> = new Set();
             // Add bound devices
-            for (const endpoint of data.device.endpoints) {
+            for (const endpoint of data.device.zh.endpoints) {
                 for (const bind of endpoint.binds) {
                     if (utils.isEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
                         toPoll.add(bind.target);
@@ -446,9 +446,9 @@ export default class Bind extends Extension {
             }
 
             // If message is published to a group, add members of the group
-            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID.toString());
+            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
             if (group) {
-                group.members.forEach((m) => toPoll.add(m));
+                group.zh.members.forEach((m) => toPoll.add(m));
             }
 
             for (const endpoint of toPoll) {

@@ -59,7 +59,6 @@ class Controller {
         this.restartCallback = restartCallback;
         this.exitCallback = exitCallback;
 
-
         // Initialize extensions.
         this.extensionArgs = [this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus,
             this.enableDisableExtension, this.restartCallback, this.addExtension];
@@ -127,7 +126,7 @@ class Controller {
             const model = device.definition ?
                 `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}` :
                 'Not supported';
-            logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.type})`);
+            logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
         }
 
         // Enable zigbee join
@@ -229,7 +228,7 @@ class Controller {
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
             message.device = {
                 friendlyName: entity.name, model: entity.definition ? entity.definition.model : 'unknown',
-                ieeeAddr: entity.ieeeAddr, networkAddress: entity.networkAddress, type: entity.type,
+                ieeeAddr: entity.ieeeAddr, networkAddress: entity.zh.networkAddress, type: entity.zh.type,
                 manufacturerID: entity.zh.manufacturerID, manufacturerName: entity.zh.manufacturerName,
                 powerSource: entity.zh.powerSource, applicationVersion: entity.zh.applicationVersion,
                 stackVersion: entity.zh.stackVersion, zclVersion: entity.zh.zclVersion,

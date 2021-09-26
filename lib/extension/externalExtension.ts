@@ -71,7 +71,7 @@ export default class ExternalExtension extends Extension {
         return utils.getResponse(message, {}, null);
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(requestRegex);
         if (match && this.requestLookup[match[1].toLowerCase()]) {
             const message = utils.parseJSON(data.message, data.message) as KeyValue;

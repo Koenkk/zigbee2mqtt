@@ -3,23 +3,6 @@ const version = require('../package.json').version;
 const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').version;
 
 describe('Utils', () => {
-    describe('Is xiaomi device', () => {
-        it('Identify xiaomi device', () => {
-            const device = {type: 'Router', manufacturerID: 4151, manufacturerName: 'Xiaomi'};
-            expect(true).toBe(utils.isXiaomiDevice(device));
-        });
-
-        it('Identify xiaomi device without manufacturerName', () => {
-            const device = {type: 'Router', manufacturerID: 4447};
-            expect(true).toBe(utils.isXiaomiDevice(device));
-        });
-
-        it('Identify xiaomi device with different manufacturerName', () => {
-            const device = {type: 'Router', manufacturerID: 4151, manufacturerName: 'Trust International B.V.\u0000'};
-            expect(false).toBe(utils.isXiaomiDevice(device));
-        });
-    });
-
     it('Object has properties', () => {
         expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b'])).toBeTruthy();
         expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b', 'd'])).toBeFalsy();

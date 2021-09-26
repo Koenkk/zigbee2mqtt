@@ -51,7 +51,7 @@ export default class BridgeLegacy extends Extension {
 
     @bind whitelist(topic: string, message: string): void {
         try {
-            const entity = settings.getEntity(message);
+            const entity = settings.getDevice(message);
             assert(entity, `Entity '${message}' does not exist`);
             settings.whitelistDevice(entity.ID.toString());
             logger.info(`Whitelisted '${entity.friendlyName}'`);
@@ -78,7 +78,7 @@ export default class BridgeLegacy extends Extension {
             return;
         }
 
-        const entity = settings.getEntity(json.friendly_name);
+        const entity = settings.getDevice(json.friendly_name);
         assert(entity, `Entity '${json.friendly_name}' does not exist`);
         settings.changeEntityOptions(entity.ID.toString(), json.options);
         logger.info(`Changed device specific options of '${json.friendly_name}' (${stringify(json.options)})`);
@@ -138,25 +138,25 @@ export default class BridgeLegacy extends Extension {
         const devices = this.zigbee.getDevices().map((device) => {
             const payload: KeyValue = {
                 ieeeAddr: device.ieeeAddr,
-                type: device.type,
-                networkAddress: device.networkAddress,
+                type: device.zh.type,
+                networkAddress: device.zh.networkAddress,
             };
 
-            if (device.type !== 'Coordinator') {
-                const definition = zigbeeHerdsmanConverters.findByDevice(device.zhDevice);
+            if (device.zh.type !== 'Coordinator') {
+                const definition = zigbeeHerdsmanConverters.findByDevice(device.zh);
                 const friendlyDevice = settings.getDevice(device.ieeeAddr);
-                payload.model = definition ? definition.model : device.modelID;
+                payload.model = definition ? definition.model : device.zh.modelID;
                 payload.vendor = definition ? definition.vendor : '-';
                 payload.description = definition ? definition.description : '-';
                 payload.friendly_name = friendlyDevice ? device.name : device.ieeeAddr;
-                payload.manufacturerID = device.zhDevice.manufacturerID;
-                payload.manufacturerName = device.manufacturerName;
-                payload.powerSource = device.powerSource;
-                payload.modelID = device.modelID;
-                payload.hardwareVersion = device.zhDevice.hardwareVersion;
-                payload.softwareBuildID = device.softwareBuildID;
-                payload.dateCode = device.dateCode;
-                payload.lastSeen = device.lastSeen;
+                payload.manufacturerID = device.zh.manufacturerID;
+                payload.manufacturerName = device.zh.manufacturerName;
+                payload.powerSource = device.zh.powerSource;
+                payload.modelID = device.zh.modelID;
+                payload.hardwareVersion = device.zh.hardwareVersion;
+                payload.softwareBuildID = device.zh.softwareBuildID;
+                payload.dateCode = device.zh.dateCode;
+                payload.lastSeen = device.zh.lastSeen;
             } else {
                 payload.friendly_name = 'Coordinator';
                 payload.softwareBuildID = coordinator.type;
@@ -270,9 +270,9 @@ export default class BridgeLegacy extends Extension {
         assert(entity && entity.isGroup(), `Group '${message}' does not exist`);
 
         if (topic.includes('force')) {
-            entity.zhGroup.removeFromDatabase();
+            entity.zh.removeFromDatabase();
         } else {
-            entity.zhGroup.removeFromNetwork();
+            entity.zh.removeFromNetwork();
         }
         settings.removeGroup(message);
 
@@ -327,9 +327,9 @@ export default class BridgeLegacy extends Extension {
         try {
             logger.info(`${lookup[action][1]} '${entity.settings.friendlyName}'`);
             if (action === 'force_remove') {
-                await entity.zhDevice.removeFromDatabase();
+                await entity.zh.removeFromDatabase();
             } else {
-                await entity.zhDevice.removeFromNetwork();
+                await entity.zh.removeFromNetwork();
             }
 
             cleanup();
@@ -346,7 +346,7 @@ export default class BridgeLegacy extends Extension {
         }
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const {topic, message} = data;
         if (!topic.match(configRegex)) {
             return;

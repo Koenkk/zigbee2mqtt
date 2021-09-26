@@ -16,7 +16,7 @@ export default class Receive extends Extension {
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
+    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
@@ -68,14 +68,14 @@ export default class Receive extends Extension {
         return result;
     }
 
-    shouldProcess(data: EventDeviceMessage): boolean {
+    shouldProcess(data: eventdata.DeviceMessage): boolean {
         if (!data.device.definition) {
-            if (data.device.interviewing) {
+            if (data.device.zh.interviewing) {
                 logger.debug(`Skipping message, definition is undefined and still interviewing`);
             } else {
                 logger.warn(
-                    `Received message from unsupported device with Zigbee model '${data.device.modelID}' ` +
-                    `and manufacturer name '${data.device.manufacturerName}'`);
+                    `Received message from unsupported device with Zigbee model '${data.device.zh.modelID}' ` +
+                    `and manufacturer name '${data.device.zh.manufacturerName}'`);
                 logger.warn(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
             }
 
@@ -85,7 +85,7 @@ export default class Receive extends Extension {
         return true;
     }
 
-    @bind onDeviceMessage(data: EventDeviceMessage): void {
+    @bind onDeviceMessage(data: eventdata.DeviceMessage): void {
         /* istanbul ignore next */
         if (!data.device) return;
 
@@ -101,7 +101,7 @@ export default class Receive extends Extension {
          * Handling these message would result in false state updates.
          * The group ID attribute of these message defines the network address of the end device.
          */
-        if (data.device.isXiaomiDevice() && data.device.isRouter() && data.groupID) {
+        if (data.device.isXiaomi() && data.device.zh.type === 'Router' && data.groupID) {
             logger.debug('Handling re-transmitted Xiaomi message');
             data = {...data, device: this.zigbee.deviceByNetworkAddress(data.groupID)};
         }
@@ -145,7 +145,7 @@ export default class Receive extends Extension {
             }
         };
 
-        const meta = {device: data.device.zhDevice, logger, state: this.state.get(data.device.ieeeAddr)};
+        const meta = {device: data.device.zh, logger, state: this.state.get(data.device.ieeeAddr)};
         let payload = {};
         converters.forEach((converter) => {
             const converted = converter.convert(data.device.definition, data, publish, data.device.settings, meta);

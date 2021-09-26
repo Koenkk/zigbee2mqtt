@@ -14,7 +14,7 @@ import bind from 'bind-decorator';
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
-    private groupLookup: {[s: string]: Group} = {};
+    private groupLookup: {[s: number]: Group} = {};
     private deviceLookup: {[s: string]: Device} = {};
 
     constructor(eventBus: EventBus) {
@@ -116,11 +116,11 @@ export default class Zigbee {
             if (passlist.length > 0) {
                 if (!passlist.includes(device.ieeeAddr)) {
                     logger.warn(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`);
-                    device.removeFromNetwork();
+                    device.zh.removeFromNetwork();
                 }
             } else if (blocklist.includes(device.ieeeAddr)) {
                 logger.warn(`Device on blocklist is connected (${device.ieeeAddr}), removing...`);
-                device.removeFromNetwork();
+                device.zh.removeFromNetwork();
             }
         }
 
@@ -139,7 +139,7 @@ export default class Zigbee {
         return startResult;
     }
 
-    private logDeviceInterview(data: EventDeviceInterview): void {
+    private logDeviceInterview(data: eventdata.DeviceInterview): void {
         const name = data.device.name;
         if (data.status === 'successful') {
             logger.info(`Successfully interviewed '${name}', device has successfully been paired`);
@@ -148,8 +148,8 @@ export default class Zigbee {
                 const {vendor, description, model} = data.device.definition;
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {
-                logger.warn(`Device '${name}' with Zigbee model '${data.device.modelID}' and manufacturer name ` +
-                    `'${data.device.manufacturerName}' is NOT supported, ` +
+                logger.warn(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
+                    `'${data.device.zh.manufacturerName}' is NOT supported, ` +
                     `please follow https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html`);
             }
         } else if (data.status === 'failed') {
@@ -209,7 +209,7 @@ export default class Zigbee {
         }
 
         if (device && permit) {
-            await this.herdsman.permitJoin(permit, device.zhDevice, time);
+            await this.herdsman.permitJoin(permit, device.zh, time);
         } else {
             await this.herdsman.permitJoin(permit, undefined, time);
         }
@@ -224,7 +224,7 @@ export default class Zigbee {
         return this.deviceLookup[ieeeAddr];
     }
 
-    private resolveGroup(groupID: string): Group {
+    private resolveGroup(groupID: number): Group {
         if (!this.groupLookup[groupID] && !isNaN(Number(groupID))) {
             const group = this.herdsman.getGroupByID(Number(groupID));
             group && (this.groupLookup[groupID] = new Group(group));
@@ -239,13 +239,14 @@ export default class Zigbee {
         } else if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
             return this.resolveDevice(this.herdsman.getDevicesByType('Coordinator')[0].ieeeAddr);
         } else {
-            const s = settings.getEntity(key.toString());
-            if (!s) return undefined;
-            else if (s.type === 'device') return this.resolveDevice(s.ID);
-            else {
-                const group = this.resolveGroup(s.ID);
+            const settingsDevice = settings.getDevice(key.toString());
+            if (settingsDevice) return this.resolveDevice(settingsDevice.ID);
+
+            const groupSettings = settings.getGroup(key);
+            if (groupSettings) {
+                const group = this.resolveGroup(groupSettings.ID);
                 // If group does not exist, create it (since it's already in configuration.yaml)
-                return group ? group : this.createGroup(s.ID);
+                return group ? group : this.createGroup(groupSettings.ID);
             }
         }
     }
@@ -255,13 +256,13 @@ export default class Zigbee {
     }
 
     getGroups(): Group[] {
-        return this.herdsman.getGroups().map((g) => this.resolveGroup(g.groupID.toString()));
+        return this.herdsman.getGroups().map((g) => this.resolveGroup(g.groupID));
     }
 
     getDevices(includeCoordinator=true): Device[] {
         return this.herdsman.getDevices()
             .map((d) => this.resolveDevice(d.ieeeAddr))
-            .filter((d) => includeCoordinator || d.type !== 'Coordinator');
+            .filter((d) => includeCoordinator || d.zh.type !== 'Coordinator');
     }
 
     @bind private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
@@ -305,8 +306,8 @@ export default class Zigbee {
         return this.herdsman.touchlinkScan();
     }
 
-    createGroup(ID: string): Group {
-        this.herdsman.createGroup(Number(ID));
+    createGroup(ID: number): Group {
+        this.herdsman.createGroup(ID);
         return this.resolveGroup(ID);
     }
 
@@ -315,7 +316,7 @@ export default class Zigbee {
         return device && this.resolveDevice(device.ieeeAddr);
     }
 
-    groupByID(ID: string): Group {
+    groupByID(ID: number): Group {
         return this.resolveGroup(ID);
     }
 }

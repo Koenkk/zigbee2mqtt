@@ -2,7 +2,6 @@
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
-import * as utils from '../../util/utils';
 import Extension from '../extension';
 
 const defaultConfiguration = {
@@ -86,7 +85,7 @@ export default class Report extends Extension {
         const term2 = this.enabled ? 'setup' : 'disabled';
 
         try {
-            for (const ep of device.endpoints) {
+            for (const ep of device.zh.endpoints) {
                 for (const [cluster, configuration] of Object.entries(clusters)) {
                     if (ep.supportsInputCluster(cluster) &&
                         !this.shouldIgnoreClusterForDevice(cluster, device.definition)) {
@@ -115,9 +114,9 @@ export default class Report extends Extension {
             }
 
             if (this.enabled) {
-                device.zhDevice.meta.reporting = reportKey;
+                device.zh.meta.reporting = reportKey;
             } else {
-                delete device.zhDevice.meta.reporting;
+                delete device.zh.meta.reporting;
                 this.eventBus.emitReportingDisabled({device});
             }
 
@@ -130,12 +129,12 @@ export default class Report extends Extension {
             this.failed.add(device.ieeeAddr);
         }
 
-        device.zhDevice.save();
+        device.zh.save();
         this.queue.delete(device.ieeeAddr);
     }
 
     shouldSetupReporting(device: Device, messageType: string): boolean {
-        if (!device || !device.zhDevice || !device.definition) return false;
+        if (!device || !device.zh || !device.definition) return false;
 
         // Handle messages of type endDeviceAnnce and devIncoming.
         // This message is typically send when a device comes online after being powered off
@@ -145,28 +144,30 @@ export default class Report extends Extension {
         // else reconfigure is done in zigbee-herdsman-converters ikea.js/bulbOnEvent
         // configuredReportings are saved since Zigbee2MQTT 1.17.0
         // https://github.com/Koenkk/zigbee2mqtt/issues/966
-        if (this.enabled && messageType === 'deviceAnnounce' && utils.isIkeaTradfriDevice(device.zhDevice) &&
-            device.endpoints.filter((e) => e.configuredReportings.length === 0).length === device.endpoints.length) {
+        if (this.enabled && messageType === 'deviceAnnounce' && device.isIkeaTradfri() &&
+            device.zh.endpoints.filter((e) => e.configuredReportings.length === 0).length ===
+                device.zh.endpoints.length) {
             return true;
         }
 
         // These do not support reproting.
         // https://github.com/Koenkk/zigbee-herdsman/issues/110
         const philipsIgnoreSw = ['5.127.1.26581', '5.130.1.30000'];
-        if (device.manufacturerName === 'Philips' && philipsIgnoreSw.includes(device.softwareBuildID)) return false;
+        if (device.zh.manufacturerName === 'Philips' &&
+            philipsIgnoreSw.includes(device.zh.softwareBuildID)) return false;
 
-        if (device.zhDevice.interviewing === true) return false;
-        if (device.type !== 'Router' || device.powerSource === 'Battery') return false;
+        if (device.zh.interviewing === true) return false;
+        if (device.zh.type !== 'Router' || device.zh.powerSource === 'Battery') return false;
         // Gledopto devices don't support reporting.
         if (devicesNotSupportingReporting.includes(device.definition) ||
             device.definition.vendor === 'Gledopto') return false;
 
-        if (this.enabled && device.zhDevice.meta.hasOwnProperty('reporting') &&
-            device.zhDevice.meta.reporting === reportKey) {
+        if (this.enabled && device.zh.meta.hasOwnProperty('reporting') &&
+            device.zh.meta.reporting === reportKey) {
             return false;
         }
 
-        if (!this.enabled && !device.zhDevice.meta.hasOwnProperty('reporting')) {
+        if (!this.enabled && !device.zh.meta.hasOwnProperty('reporting')) {
             return false;
         }
 

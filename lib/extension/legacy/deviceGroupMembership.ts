@@ -13,7 +13,7 @@ export default class DeviceGroupMembership extends Extension {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(topicRegex);
         if (!match) {
             return null;

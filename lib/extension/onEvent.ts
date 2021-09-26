@@ -23,7 +23,7 @@ export default class OnEvent extends Extension {
     }
 
     private convertData(data: KeyValue): KeyValue {
-        return {...data, device: data.device.zhDevice};
+        return {...data, device: data.device.zh};
     }
 
     override async stop(): Promise<void> {
@@ -34,10 +34,10 @@ export default class OnEvent extends Extension {
     }
 
     private async callOnEvent(device: Device, type: string, data: KeyValue): Promise<void> {
-        zhc.onEvent(type, data, device.zhDevice, device.settings);
+        zhc.onEvent(type, data, device.zh, device.settings);
 
         if (device.definition?.onEvent) {
-            await device.definition.onEvent(type, data, device.zhDevice, device.settings);
+            await device.definition.onEvent(type, data, device.zh, device.settings);
         }
     }
 }

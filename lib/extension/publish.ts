@@ -54,7 +54,7 @@ export default class Publish extends Extension {
         return {ID: ID, endpoint: match[2], type: match[3] as 'get' | 'set', attribute: match[4]};
     }
 
-    parseMessage(parsedTopic: ParsedTopic, data: EventMQTTMessage): KeyValue | null {
+    parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | null {
         if (parsedTopic.attribute) {
             try {
                 return {[parsedTopic.attribute]: JSON.parse(data.message)};
@@ -117,7 +117,7 @@ export default class Publish extends Extension {
     }
 
     // TODO remove trailing _
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const parsedTopic = this.parseTopic(data.topic);
         if (!parsedTopic) return;
 
@@ -134,12 +134,12 @@ export default class Publish extends Extension {
             logger.error(`Cannot publish to unsupported device '${re.name}'`);
             return;
         }
-        const target = re instanceof Group ? re.zhGroup : re.endpoint(parsedTopic.endpoint);
+        const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
         if (target == null) {
             logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
             return;
         }
-        const device = re instanceof Device ? re.zhDevice : null;
+        const device = re instanceof Device ? re.zh : null;
         const entitySettings = re.settings;
         const entityState = this.state.get(re.ID) || {};
         const membersState = re instanceof Group ?

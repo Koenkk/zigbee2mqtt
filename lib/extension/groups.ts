@@ -54,9 +54,9 @@ export default class Groups extends Extension {
             try {
                 logger.info(`${action === 'add' ? 'Adding' : 'Removing'} '${deviceName}' to group '${groupName}'`);
                 if (action === 'remove') {
-                    await endpoint.removeFromGroup(group.zhGroup);
+                    await endpoint.removeFromGroup(group.zh);
                 } else {
-                    await endpoint.addToGroup(group.zhGroup);
+                    await endpoint.addToGroup(group.zh);
                 }
             } catch (error) {
                 logger.error(`Failed to ${action} '${deviceName}' from '${groupName}'`);
@@ -76,13 +76,13 @@ export default class Groups extends Extension {
 
             // In settings but not in zigbee
             for (const entity of settingsEndpoint) {
-                if (!zigbeeGroup.zhGroup.hasMember(entity.endpoint)) {
+                if (!zigbeeGroup.zh.hasMember(entity.endpoint)) {
                     addRemoveFromGroup('add', entity.name, settingGroup.friendlyName, entity.endpoint, zigbeeGroup);
                 }
             }
 
             // In zigbee but not in settings
-            for (const endpoint of zigbeeGroup.members) {
+            for (const endpoint of zigbeeGroup.zh.members) {
                 if (!settingsEndpoint.find((e) => e.endpoint === endpoint)) {
                     const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendlyName;
                     addRemoveFromGroup('remove', deviceName, settingGroup.friendlyName, endpoint, zigbeeGroup);
@@ -92,7 +92,7 @@ export default class Groups extends Extension {
 
         for (const zigbeeGroup of zigbeeGroups) {
             if (!settingsGroups.find((g) => g.ID === zigbeeGroup.ID)) {
-                for (const endpoint of zigbeeGroup.members) {
+                for (const endpoint of zigbeeGroup.zh.members) {
                     const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendlyName;
                     addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
                 }
@@ -100,7 +100,7 @@ export default class Groups extends Extension {
         }
     }
 
-    @bind async onStateChange(data: EventStateChange): Promise<void> {
+    @bind async onStateChange(data: eventdata.StateChange): Promise<void> {
         const reason = 'group_optimistic';
         if (data.reason === reason) {
             return;
@@ -129,7 +129,7 @@ export default class Groups extends Extension {
 
             if (entity instanceof Device) {
                 for (const group of groups) {
-                    if (group.zhGroup.hasMember(entity.endpoint(endpointName)) &&
+                    if (group.zh.hasMember(entity.endpoint(endpointName)) &&
                         !equals(this.lastOptimisticState[group.ID], payload)) {
                         if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(group)) {
                             this.lastOptimisticState[group.ID] = payload;
@@ -142,7 +142,7 @@ export default class Groups extends Extension {
                 delete this.lastOptimisticState[entity.ID];
 
                 const groupsToPublish: Set<Group> = new Set();
-                for (const member of entity.members) {
+                for (const member of entity.zh.members) {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
                     const memberPayload: KeyValue = {};
                     Object.keys(payload).forEach((key) => {
@@ -161,7 +161,7 @@ export default class Groups extends Extension {
 
                     await this.publishEntityState(device, memberPayload, reason);
                     for (const zigbeeGroup of groups) {
-                        if (zigbeeGroup.zhGroup.hasMember(member)) {
+                        if (zigbeeGroup.zh.hasMember(member)) {
                             if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(zigbeeGroup)) {
                                 groupsToPublish.add(zigbeeGroup);
                             }
@@ -177,7 +177,7 @@ export default class Groups extends Extension {
     }
 
     private areAllMembersOff(group: Group): boolean {
-        for (const member of group.members) {
+        for (const member of group.zh.members) {
             const device = member.getDevice();
             if (this.state.exists(device.ieeeAddr)) {
                 const state = this.state.get(device.ieeeAddr);
@@ -189,7 +189,7 @@ export default class Groups extends Extension {
         return true;
     }
 
-    private parseMQTTMessage(data: EventMQTTMessage): ParsedMQTTMessage {
+    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage {
         let type: 'remove' | 'add' | 'remove_all' = null;
         let resolvedEntityGroup: Group = null;
         let resolvedEntityDevice: Device = null;
@@ -281,7 +281,7 @@ export default class Groups extends Extension {
         };
     }
 
-    @bind private async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         const parsed = this.parseMQTTMessage(data);
         if (!parsed || !parsed.type) return;
         let {
@@ -315,7 +315,7 @@ export default class Groups extends Extension {
 
                 if (type === 'add') {
                     logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
-                    await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zhGroup);
+                    await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zh);
                     settings.addDeviceToGroup(resolvedEntityGroup.ID.toString(), keys);
 
                     /* istanbul ignore else */
@@ -328,7 +328,7 @@ export default class Groups extends Extension {
                     }
                 } else if (type === 'remove') {
                     logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
-                    await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zhGroup);
+                    await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zh);
                     settings.removeDeviceFromGroup(resolvedEntityGroup.ID.toString(), keys);
 
                     /* istanbul ignore else */

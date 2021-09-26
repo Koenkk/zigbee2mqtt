@@ -18,18 +18,18 @@ export default class Configure extends Extension {
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/configure`;
 
-    @bind private async onReportingDisabled(data: EventReportingDisabled): Promise<void> {
+    @bind private async onReportingDisabled(data: eventdata.ReportingDisabled): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
-        if (data.device.zhDevice.meta?.hasOwnProperty('configured')) {
+        if (data.device.zh.meta?.hasOwnProperty('configured')) {
             delete data.device.zh.meta.configured;
-            data.device.zhDevice.save();
+            data.device.zh.save();
         }
 
         await this.configure(data.device, 'reporting_disabled');
     }
 
     // TODO remove trailing _
-    @bind private async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic === this.legacyTopic) {
             const device = this.zigbee.resolveEntity(data.message);
             if (!device || !(device instanceof Device)) {
@@ -72,9 +72,9 @@ export default class Configure extends Extension {
         }
 
         this.eventBus.onDeviceJoined(this, (data) => {
-            if (data.device.zhDevice.meta.hasOwnProperty('configured')) {
-                delete data.device.zhDevice.meta.configured;
-                data.device.zhDevice.save();
+            if (data.device.zh.meta.hasOwnProperty('configured')) {
+                delete data.device.zh.meta.configured;
+                data.device.zh.save();
             }
 
             this.configure(data.device, 'zigbee_event');
@@ -87,17 +87,17 @@ export default class Configure extends Extension {
     private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
         force=false, thowError=false): Promise<void> {
         if (!force) {
-            if (!device.definition?.configure || device.zhDevice.interviewing) {
+            if (!device.definition?.configure || device.zh.interviewing) {
                 return;
             }
 
-            if (device.zhDevice.meta?.hasOwnProperty('configured') &&
-                device.zhDevice.meta.configured === zhc.getConfigureKey(device.definition)) {
+            if (device.zh.meta?.hasOwnProperty('configured') &&
+                device.zh.meta.configured === zhc.getConfigureKey(device.definition)) {
                 return;
             }
 
             // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
-            if (device.zhDevice.type === 'EndDevice' && event !== 'zigbee_event') {
+            if (device.zh.type === 'EndDevice' && event !== 'zigbee_event') {
                 return;
             }
         }
@@ -114,10 +114,10 @@ export default class Configure extends Extension {
 
         logger.info(`Configuring '${device.name}'`);
         try {
-            await device.definition.configure(device.zhDevice, this.zigbee.getFirstCoordinatorEndpoint(), logger);
+            await device.definition.configure(device.zh, this.zigbee.getFirstCoordinatorEndpoint(), logger);
             logger.info(`Successfully configured '${device.name}'`);
-            device.zhDevice.meta.configured = zhc.getConfigureKey(device.definition);
-            device.zhDevice.save();
+            device.zh.meta.configured = zhc.getConfigureKey(device.definition);
+            device.zh.save();
             this.eventBus.emitDevicesChanged();
         } catch (error) {
             this.attempts[device.ieeeAddr]++;

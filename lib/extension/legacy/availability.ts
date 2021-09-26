@@ -34,10 +34,10 @@ export default class AvailabilityLegacy extends Extension {
     private stateLookup: KeyValue = {};
     private blocklist = settings.get().advanced.availability_blocklist
         .concat(settings.get().advanced.availability_blacklist)
-        .map((e) => settings.getEntity(e).ID);
+        .map((e) => settings.getDevice(e).ID);
     private passlist = settings.get().advanced.availability_passlist
         .concat(settings.get().advanced.availability_whitelist)
-        .map((e) => settings.getEntity(e).ID);
+        .map((e) => settings.getDevice(e).ID);
 
     override async start(): Promise<void> {
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
@@ -67,12 +67,12 @@ export default class AvailabilityLegacy extends Extension {
         }
     }
 
-    @bind onDeviceRenamed(data: EventDeviceRenamed): void {
+    @bind onDeviceRenamed(data: eventdata.DeviceRenamed): void {
         this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 0});
     }
 
     /* istanbul ignore next */
-    @bind onDeviceRemoved(data: EventDeviceRemoved): void {
+    @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         this.mqtt.publish(`${data.name}/availability`, null, {retain: true, qos: 0});
         delete this.stateLookup[data.ieeeAddr];
         clearTimeout(this.timers[data.ieeeAddr]);
@@ -97,15 +97,16 @@ export default class AvailabilityLegacy extends Extension {
     }
 
     isPingable(device: Device): boolean {
-        if (pingableEndDevices.find((d) => d.hasOwnProperty('zigbeeModel') && d.zigbeeModel.includes(device.modelID))) {
+        if (pingableEndDevices.find((d) => d.hasOwnProperty('zigbeeModel') &&
+            d.zigbeeModel.includes(device.zh.modelID))) {
             return true;
         }
 
         // Device is a mains powered router
-        return device.type === 'Router' && device.powerSource !== 'Battery';
+        return device.zh.type === 'Router' && device.zh.powerSource !== 'Battery';
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
         // Clear topics for non-existing devices
         const match = data.topic.match(topicRegex);
         if (match && (!this.zigbee.resolveEntity(match[1]) ||
@@ -117,7 +118,7 @@ export default class AvailabilityLegacy extends Extension {
     async handleIntervalPingable(device: Device): Promise<void> {
         // When a device is already unavailable, log the ping failed on 'debug' instead of 'error'.
         /* istanbul ignore next */
-        if (!device.zhDevice) {
+        if (!device.zh) {
             logger.debug(`Stop pinging '${device.ieeeAddr}', device is not known anymore`);
             return;
         }
@@ -125,7 +126,7 @@ export default class AvailabilityLegacy extends Extension {
         const level = this.stateLookup.hasOwnProperty(device.ieeeAddr) &&
             !this.stateLookup[device.ieeeAddr] ? 'debug' : 'error';
         try {
-            await device.zhDevice.ping();
+            await device.zh.ping();
             this.publishAvailability(device, true);
             logger.debug(`Successfully pinged '${device.name}'`);
         } catch (error) {
@@ -138,11 +139,11 @@ export default class AvailabilityLegacy extends Extension {
 
     async handleIntervalNotPingable(device: Device): Promise<void> {
         /* istanbul ignore next */
-        if (!device.lastSeen) {
+        if (!device.zh.lastSeen) {
             return;
         }
 
-        const ago = Date.now() - device.lastSeen;
+        const ago = Date.now() - device.zh.lastSeen;
         logger.debug(`Non-pingable device '${device.name}' was last seen '${ago / 1000}' seconds ago.`);
 
         if (ago > Hours25) {
@@ -173,7 +174,7 @@ export default class AvailabilityLegacy extends Extension {
                 for (const key of ['state', 'brightness', 'color', 'color_temp']) {
                     const converter = device.definition.toZigbee.find((tz) => tz.key.includes(key));
                     if (converter) {
-                        await converter.convertGet(device.endpoints[0], key, {});
+                        await converter.convertGet(device.zh.endpoints[0], key, {});
                     }
                 }
             } catch (error) {
@@ -211,7 +212,7 @@ export default class AvailabilityLegacy extends Extension {
                 this.setTimerPingable(device);
 
                 const online = this.stateLookup.hasOwnProperty(device.ieeeAddr) && this.stateLookup[device.ieeeAddr];
-                if (online && type === 'deviceAnnounce' && !utils.isIkeaTradfriDevice(device.zhDevice)) {
+                if (online && type === 'deviceAnnounce' && !device.isIkeaTradfri()) {
                     /**
                      * In case the device is powered off AND on within the availability timeout,
                      * zigbee2qmtt does not detect the device as offline (device is still marked online).
