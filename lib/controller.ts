@@ -302,6 +302,7 @@ class Controller {
             try {
                 await extension[method]?.();
             } catch (error) {
+                /* istanbul ignore next */
                 logger.error(`Failed to call '${extension.constructor.name}' '${method}' (${error.stack})`);
             }
         }
