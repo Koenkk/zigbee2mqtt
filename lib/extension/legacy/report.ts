@@ -1,4 +1,3 @@
-// @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
@@ -8,14 +7,14 @@ const defaultConfiguration = {
     minimumReportInterval: 3, maximumReportInterval: 300, reportableChange: 1,
 };
 
-const ZNLDP12LM = zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'ZNLDP12LM');
+const ZNLDP12LM = zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'ZNLDP12LM');
 
 const devicesNotSupportingReporting = [
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'CC2530.ROUTER'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'BASICZBR3'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'ZM-CSW032-D'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'TS0001'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'TS0115'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'CC2530.ROUTER'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'BASICZBR3'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'ZM-CSW032-D'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'TS0001'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'TS0115'),
 ];
 
 const reportKey = 1;
@@ -67,7 +66,7 @@ export default class Report extends Extension {
     private failed: Set<string> = new Set();
     private enabled = settings.get().advanced.report;
 
-    shouldIgnoreClusterForDevice(cluster: string, definition: Definition): boolean {
+    shouldIgnoreClusterForDevice(cluster: string, definition: zhc.Definition): boolean {
         if (definition === ZNLDP12LM && cluster === 'closuresWindowCovering') {
             // Device announces it but doesn't support it
             // https://github.com/Koenkk/zigbee2mqtt/issues/2611
@@ -102,8 +101,8 @@ export default class Report extends Extension {
                         }
 
                         this.enabled ?
-                            await ep.bind(cluster, this.zigbee.getFirstCoordinatorEndpoint()) :
-                            await ep.unbind(cluster, this.zigbee.getFirstCoordinatorEndpoint());
+                            await ep.bind(cluster, this.zigbee.firstCoordinatorEndpoint()) :
+                            await ep.unbind(cluster, this.zigbee.firstCoordinatorEndpoint());
 
                         await ep.configureReporting(cluster, items);
                         logger.info(
@@ -175,7 +174,7 @@ export default class Report extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             if (this.shouldSetupReporting(device, null)) {
                 await this.setupReporting(device);
             }

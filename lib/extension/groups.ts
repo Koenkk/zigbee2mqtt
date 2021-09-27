@@ -1,7 +1,6 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import equals from 'fast-deep-equal/es6';
 import bind from 'bind-decorator';
@@ -14,7 +13,7 @@ const topicRegex =
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
 const legacyTopicRegexRemoveAll = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
 
-const stateProperties: {[s: string]: (value: string, definition: Definition) => boolean} = {
+const stateProperties: {[s: string]: (value: string, definition: zhc.Definition) => boolean} = {
     'state': () => true,
     'brightness': (value, definition) =>
         !!definition.exposes.find((e) => e.type === 'light' && e.features.find((f) => f.name === 'brightness')),
@@ -41,13 +40,13 @@ export default class Groups extends Extension {
 
     override async start(): Promise<void> {
         this.eventBus.onStateChange(this, this.onStateChange);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         await this.syncGroupsWithSettings();
     }
 
     private async syncGroupsWithSettings(): Promise<void> {
         const settingsGroups = settings.getGroups();
-        const zigbeeGroups = this.zigbee.getGroups();
+        const zigbeeGroups = this.zigbee.groups();
 
         const addRemoveFromGroup = async (action: 'add' | 'remove', deviceName: string,
             groupName: string | number, endpoint: zh.Endpoint, group: Group): Promise<void> => {
@@ -70,22 +69,22 @@ export default class Groups extends Extension {
             const settingsEndpoint = settingGroup.devices.map((d) => {
                 const parsed = utils.parseEntityID(d);
                 const entity = this.zigbee.resolveEntity(parsed.ID) as Device;
-                if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendlyName}'`);
+                if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendly_name}'`);
                 return {'endpoint': entity?.endpoint(parsed.endpoint), 'name': entity?.name};
             }).filter((e) => e.endpoint != null);
 
             // In settings but not in zigbee
             for (const entity of settingsEndpoint) {
                 if (!zigbeeGroup.zh.hasMember(entity.endpoint)) {
-                    addRemoveFromGroup('add', entity.name, settingGroup.friendlyName, entity.endpoint, zigbeeGroup);
+                    addRemoveFromGroup('add', entity.name, settingGroup.friendly_name, entity.endpoint, zigbeeGroup);
                 }
             }
 
             // In zigbee but not in settings
             for (const endpoint of zigbeeGroup.zh.members) {
                 if (!settingsEndpoint.find((e) => e.endpoint === endpoint)) {
-                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendlyName;
-                    addRemoveFromGroup('remove', deviceName, settingGroup.friendlyName, endpoint, zigbeeGroup);
+                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
+                    addRemoveFromGroup('remove', deviceName, settingGroup.friendly_name, endpoint, zigbeeGroup);
                 }
             }
         }
@@ -93,7 +92,7 @@ export default class Groups extends Extension {
         for (const zigbeeGroup of zigbeeGroups) {
             if (!settingsGroups.find((g) => g.ID === zigbeeGroup.ID)) {
                 for (const endpoint of zigbeeGroup.zh.members) {
-                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendlyName;
+                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
                     addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
                 }
             }
@@ -122,8 +121,8 @@ export default class Groups extends Extension {
         }
 
         if (Object.keys(payload).length) {
-            const entity = this.zigbee.resolveEntity(data.ID);
-            const groups = this.zigbee.getGroups().filter((g) => {
+            const entity = data.entity;
+            const groups = this.zigbee.groups().filter((g) => {
                 return g.settings && (!g.settings.hasOwnProperty('optimistic') || g.settings.optimistic);
             });
 
@@ -178,9 +177,9 @@ export default class Groups extends Extension {
 
     private areAllMembersOff(group: Group): boolean {
         for (const member of group.zh.members) {
-            const device = member.getDevice();
-            if (this.state.exists(device.ieeeAddr)) {
-                const state = this.state.get(device.ieeeAddr);
+            const device = this.zigbee.resolveEntity(member.getDevice());
+            if (this.state.exists(device)) {
+                const state = this.state.get(device);
                 if (state && state.state === 'ON') {
                     return false;
                 }
@@ -209,8 +208,7 @@ export default class Groups extends Extension {
             triggeredViaLegacyApi = true;
             if (legacyTopicRegexMatch) {
                 resolvedEntityGroup = this.zigbee.resolveEntity(legacyTopicRegexMatch[1]) as Group;
-                // @ts-ignore
-                type = legacyTopicRegexMatch[2];
+                type = legacyTopicRegexMatch[2] as 'remove' | 'remove_all' | 'add';
 
                 if (!resolvedEntityGroup || !(resolvedEntityGroup instanceof Group)) {
                     logger.error(`Group '${legacyTopicRegexMatch[1]}' does not exist`);
@@ -251,8 +249,7 @@ export default class Groups extends Extension {
             }
             resolvedEntityEndpoint = resolvedEntityDevice.endpoint(parsedEntity.endpoint);
         } else if (topicRegexMatch) {
-            // @ts-ignore
-            type = topicRegexMatch[1];
+            type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
             const message = JSON.parse(data.message);
             deviceKey = message.device;
             skipDisableReporting = 'skip_disable_reporting' in message ? message.skip_disable_reporting : false;
@@ -281,7 +278,7 @@ export default class Groups extends Extension {
         };
     }
 
-    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const parsed = this.parseMQTTMessage(data);
         if (!parsed || !parsed.type) return;
         let {

@@ -106,7 +106,7 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             if (isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
                 this.publishAvailability(device, true);
@@ -178,7 +178,7 @@ export default class Availability extends Extension {
                     for (const keys of keySet) {
                         const converter = device.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
                         await converter?.convertGet?.(device.endpoint(), keys[0],
-                            {message: this.state.get(device.ieeeAddr) || {}, mapped: device.definition});
+                            {message: this.state.get(device) || {}, mapped: device.definition});
                     }
                 } catch (error) {
                     logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);

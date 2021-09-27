@@ -10,9 +10,9 @@ import bind from 'bind-decorator';
 // Pingable end devices, some end devices should be pinged
 // e.g. E11-G13 https://github.com/Koenkk/zigbee2mqtt/issues/775#issuecomment-453683846
 const pingableEndDevices = [
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'E11-G13'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === 'E11-N1EA'),
-    zigbeeHerdsmanConverters.devices.find((d: KeyValue) => d.model === '53170161'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'E11-G13'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'E11-N1EA'),
+    zigbeeHerdsmanConverters.definitions.find((d) => d.model === '53170161'),
 ];
 
 const Hours25 = 1000 * 60 * 60 * 25;
@@ -42,14 +42,14 @@ export default class AvailabilityLegacy extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceAnnounce(this, (data) => this.onZigbeeEvent_('deviceAnnounce', data.device));
         this.eventBus.onDeviceMessage(this, (data) => this.onZigbeeEvent_('dummy', data.device));
         this.eventBus.onDeviceJoined(this, (data) => this.onZigbeeEvent_('dummy', data.device));
         /* istanbul ignore next */
         this.eventBus.onDeviceNetworkAddressChanged(this, (data) => this.onZigbeeEvent_('dummy', data.device));
 
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             // Mark all devices as online on start
             const ieeeAddr = device.ieeeAddr;
             this.publishAvailability(device, this.stateLookup.hasOwnProperty(ieeeAddr) ?
@@ -81,7 +81,7 @@ export default class AvailabilityLegacy extends Extension {
     inPasslistOrNotInBlocklist(device: Device): boolean {
         const ieeeAddr = device.ieeeAddr;
         const deviceSettings = settings.getDevice(ieeeAddr);
-        const name = deviceSettings && deviceSettings.friendlyName;
+        const name = deviceSettings && deviceSettings.friendly_name;
 
         // Passlist is not empty and device is in it, enable availability
         if (this.passlist.length > 0) {
@@ -106,7 +106,7 @@ export default class AvailabilityLegacy extends Extension {
         return device.zh.type === 'Router' && device.zh.powerSource !== 'Battery';
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         // Clear topics for non-existing devices
         const match = data.topic.match(topicRegex);
         if (match && (!this.zigbee.resolveEntity(match[1]) ||
@@ -165,7 +165,7 @@ export default class AvailabilityLegacy extends Extension {
             clearTimeout(timer);
         }
 
-        this.zigbee.getDevices(false).forEach((device) => this.publishAvailability(device, false));
+        this.zigbee.devices(false).forEach((device) => this.publishAvailability(device, false));
     }
 
     async onReconnect(device: Device): Promise<void> {

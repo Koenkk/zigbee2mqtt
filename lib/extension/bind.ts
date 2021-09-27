@@ -2,7 +2,6 @@ import * as settings from '../util/settings';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
 import Extension from './extension';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
 import zigbeeHersdman from 'zigbee-herdsman';
@@ -169,7 +168,7 @@ export default class Bind extends Extension {
 
     override async start(): Promise<void> {
         this.eventBus.onDeviceMessage(this, this.poll);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
     }
 
@@ -197,7 +196,7 @@ export default class Bind extends Extension {
         return {type, sourceKey, targetKey, clusters, skipDisableReporting};
     }
 
-    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const {type, sourceKey, targetKey, clusters, skipDisableReporting} = this.parseMQTTMessage(data);
         if (!type) return null;
         const message = utils.parseJSON(data.message, data.message);
@@ -331,7 +330,7 @@ export default class Bind extends Extension {
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
         if (data.action === 'add') {
-            const bindsToGroup = this.zigbee.getDevices(false).map((c) => c.zh.endpoints)
+            const bindsToGroup = this.zigbee.devices(false).map((c) => c.zh.endpoints)
                 .reduce((a, v) => a.concat(v)).map((e) => e.binds)
                 .reduce((a, v) => a.concat(v)).filter((b) => b.target === data.group.zh);
             await this.setupReporting(bindsToGroup);
@@ -353,7 +352,7 @@ export default class Bind extends Extension {
     }
 
     async setupReporting(binds: zh.Bind[]): Promise<void> {
-        const coordinatorEndpoint = this.zigbee.getFirstCoordinatorEndpoint();
+        const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
         for (const bind of binds.filter((b) => b.cluster.name in reportClusters)) {
             for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
                 const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
@@ -381,14 +380,14 @@ export default class Bind extends Extension {
     }
 
     async disableUnnecessaryReportings(target: zh.Group | zh.Endpoint): Promise<void> {
-        const coordinator = this.zigbee.getFirstCoordinatorEndpoint();
+        const coordinator = this.zigbee.firstCoordinatorEndpoint();
         const endpoints = utils.isEndpoint(target) ? [target] : target.members;
         for (const endpoint of endpoints) {
             const device = this.zigbee.resolveEntity(endpoint.getDevice()) as Device;
             const entity = `${device.name}/${endpoint.ID}`;
             const boundClusters = endpoint.binds.filter((b) => b.target === coordinator)
                 .map((b) => b.cluster.name);
-            const requiredClusters = this.zigbee.getDevices(false).map((c) => c.zh.endpoints)
+            const requiredClusters = this.zigbee.devices(false).map((c) => c.zh.endpoints)
                 .reduce((a, v) => a.concat(v))
                 .map((e) => e.binds).reduce((a, v) => a.concat(v)).filter((bind) => {
                     if (utils.isEndpoint(bind.target)) {

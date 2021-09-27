@@ -1,11 +1,9 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-// @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import * as utils from '../../util/utils';
 import assert from 'assert';
 import Extension from '../extension';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 
@@ -44,7 +42,7 @@ export default class BridgeLegacy extends Extension {
         this.eventBus.onDeviceInterview(this, (data) => this.onZigbeeEvent_('deviceInterview', data, data.device));
         this.eventBus.onDeviceAnnounce(this, (data) => this.onZigbeeEvent_('deviceAnnounce', data, data.device));
         this.eventBus.onDeviceLeave(this, (data) => this.onZigbeeEvent_('deviceLeave', data, null));
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
 
         await this.publish();
     }
@@ -54,10 +52,10 @@ export default class BridgeLegacy extends Extension {
             const entity = settings.getDevice(message);
             assert(entity, `Entity '${message}' does not exist`);
             settings.whitelistDevice(entity.ID.toString());
-            logger.info(`Whitelisted '${entity.friendlyName}'`);
+            logger.info(`Whitelisted '${entity.friendly_name}'`);
             this.mqtt.publish(
                 'bridge/log',
-                stringify({type: 'device_whitelisted', message: {friendly_name: entity.friendlyName}}),
+                stringify({type: 'device_whitelisted', message: {friendly_name: entity.friendly_name}}),
             );
         } catch (error) {
             logger.error(`Failed to whitelist '${message}' '${error}'`);
@@ -135,7 +133,7 @@ export default class BridgeLegacy extends Extension {
 
     @bind async devices(topic: string): Promise<void> {
         const coordinator = await this.zigbee.getCoordinatorVersion();
-        const devices = this.zigbee.getDevices().map((device) => {
+        const devices = this.zigbee.devices().map((device) => {
             const payload: KeyValue = {
                 ieeeAddr: device.ieeeAddr,
                 type: device.zh.type,
@@ -178,9 +176,7 @@ export default class BridgeLegacy extends Extension {
 
     @bind groups(): void {
         const payload = settings.getGroups().map((g) => {
-            const group = {...g, ID: Number(g.ID)};
-            delete group.friendlyName;
-            return group;
+            return {...g, ID: Number(g.ID)};
         });
 
         this.mqtt.publish('bridge/log', stringify({type: 'groups', message: payload}));
@@ -318,14 +314,14 @@ export default class BridgeLegacy extends Extension {
             settings.removeDevice(entity.ieeeAddr);
 
             // Remove from state
-            this.state.remove(entity.ieeeAddr);
+            this.state.remove(ieeeAddr);
 
-            logger.info(`Successfully ${lookup[action][0]} ${entity.settings.friendlyName}`);
+            logger.info(`Successfully ${lookup[action][0]} ${entity.name}`);
             this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}`, message}));
         };
 
         try {
-            logger.info(`${lookup[action][1]} '${entity.settings.friendlyName}'`);
+            logger.info(`${lookup[action][1]} '${entity.name}'`);
             if (action === 'force_remove') {
                 await entity.zh.removeFromDatabase();
             } else {
@@ -334,7 +330,7 @@ export default class BridgeLegacy extends Extension {
 
             cleanup();
         } catch (error) {
-            logger.error(`Failed to ${lookup[action][2]} ${entity.settings.friendlyName} (${error})`);
+            logger.error(`Failed to ${lookup[action][2]} ${entity.name} (${error})`);
             // eslint-disable-next-line
             logger.error(`See https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgeconfigremove for more info`);
 
@@ -346,7 +342,7 @@ export default class BridgeLegacy extends Extension {
         }
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const {topic, message} = data;
         if (!topic.match(configRegex)) {
             return;

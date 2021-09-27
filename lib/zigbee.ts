@@ -1,10 +1,9 @@
 import {Controller} from 'zigbee-herdsman';
 import logger from './util/logger';
 import * as settings from './util/settings';
-import * as data from './util/data';
+import data from './util/data';
 import * as utils from './util/utils';
 import objectAssignDeep from 'object-assign-deep';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Device from './model/device';
 import Group from './model/group';
@@ -50,9 +49,7 @@ export default class Zigbee {
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
-        const herdsmanSettingsLog = objectAssignDeep({}, herdsmanSettings);
-        // @ts-ignore
-        herdsmanSettingsLog.network.networkKey = 'HIDDEN';
+        const herdsmanSettingsLog = objectAssignDeep({}, herdsmanSettings, {network: {networkKey: 'HIDDEN'}});
         logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
 
         let startResult;
@@ -93,7 +90,7 @@ export default class Zigbee {
             this.eventBus.emitDeviceJoined({device});
         });
         this.herdsman.on('deviceLeave', (data: ZHEvents.DeviceLeavePayload) => {
-            const name = settings.getDevice(data.ieeeAddr)?.friendlyName || data.ieeeAddr;
+            const name = settings.getDevice(data.ieeeAddr)?.friendly_name || data.ieeeAddr;
             logger.warn(`Device '${name}' left the network`);
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
         });
@@ -109,7 +106,7 @@ export default class Zigbee {
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
         logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
 
-        for (const device of this.getDevices(false)) {
+        for (const device of this.devices(false)) {
             // If a passlist is used, all other device will be removed from the network.
             const passlist = settings.get().passlist.concat(settings.get().whitelist);
             const blocklist = settings.get().blocklist.concat(settings.get().ban);
@@ -251,15 +248,15 @@ export default class Zigbee {
         }
     }
 
-    getFirstCoordinatorEndpoint(): zh.Endpoint {
+    firstCoordinatorEndpoint(): zh.Endpoint {
         return this.herdsman.getDevicesByType('Coordinator')[0].endpoints[0];
     }
 
-    getGroups(): Group[] {
+    groups(): Group[] {
         return this.herdsman.getGroups().map((g) => this.resolveGroup(g.groupID));
     }
 
-    getDevices(includeCoordinator=true): Device[] {
+    devices(includeCoordinator=true): Device[] {
         return this.herdsman.getDevices()
             .map((d) => this.resolveDevice(d.ieeeAddr))
             .filter((d) => includeCoordinator || d.zh.type !== 'Coordinator');

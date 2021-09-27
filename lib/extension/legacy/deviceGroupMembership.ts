@@ -10,10 +10,10 @@ const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/device/
 
 export default class DeviceGroupMembership extends Extension {
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(topicRegex);
         if (!match) {
             return null;
@@ -39,7 +39,7 @@ export default class DeviceGroupMembership extends Extension {
 
         grouplist = grouplist.map((gid: string) => {
             const g = settings.getGroup(gid);
-            return g ? g.friendlyName : gid;
+            return g ? g.friendly_name : gid;
         });
 
         const msgGroupList = `${device.ieeeAddr} is in groups [${grouplist}]`;

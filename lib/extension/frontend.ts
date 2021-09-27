@@ -9,7 +9,6 @@ import net from 'net';
 import url from 'url';
 import * as settings from '../util/settings';
 import * as utils from '../util/utils';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
 import bind from 'bind-decorator';
@@ -99,10 +98,10 @@ export default class Frontend extends Extension {
             ws.send(stringify({topic: key, payload: value}));
         }
 
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             let payload: KeyValue = {};
-            if (this.state.exists(device.ieeeAddr)) {
-                payload = {...payload, ...this.state.get(device.ieeeAddr)};
+            if (this.state.exists(device)) {
+                payload = {...payload, ...this.state.get(device)};
             }
 
             const lastSeen = settings.get().advanced.last_seen;

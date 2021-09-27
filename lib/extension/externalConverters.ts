@@ -1,4 +1,3 @@
-// @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
 import * as settings from '../util/settings';
 import * as utils from '../util/utils';

@@ -1,6 +1,5 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import * as utils from '../util/utils';
 // @ts-ignore
@@ -24,13 +23,13 @@ export default class OTAUpdate extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
 
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         if (settings.get().advanced.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
         }
 
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
             // remove them.
             this.removeProgressAndRemainingFromState(device);
@@ -38,8 +37,8 @@ export default class OTAUpdate extends Extension {
     }
 
     private removeProgressAndRemainingFromState(device: Device): void {
-        this.state.removeKey(device.ieeeAddr, ['update', 'progress']);
-        this.state.removeKey(device.ieeeAddr, ['update', 'remaining']);
+        delete this.state.get(device)?.update?.progress;
+        delete this.state.get(device)?.update?.remaining;
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
@@ -119,7 +118,7 @@ export default class OTAUpdate extends Extension {
         return payload;
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if ((!this.legacyApi || !data.topic.match(legacyTopicRegex)) && !data.topic.match(topicRegex)) {
             return null;
         }

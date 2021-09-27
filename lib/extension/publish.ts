@@ -1,11 +1,9 @@
 
 import * as settings from '../util/settings';
-// @ts-ignore
-import zhc from 'zigbee-herdsman-converters';
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
 import Extension from './extension';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Group from '../model/group';
 import Device from '../model/device';
@@ -17,26 +15,26 @@ const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'un
 
 // Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
 const defaultGroupConverters = [
-    zhc.toZigbeeConverters.light_onoff_brightness,
-    zhc.toZigbeeConverters.light_color_colortemp,
-    zhc.toZigbeeConverters.effect,
-    zhc.toZigbeeConverters.ignore_transition,
-    zhc.toZigbeeConverters.cover_position_tilt,
-    zhc.toZigbeeConverters.thermostat_occupied_heating_setpoint,
-    zhc.toZigbeeConverters.tint_scene,
-    zhc.toZigbeeConverters.light_brightness_move,
-    zhc.toZigbeeConverters.light_brightness_step,
-    zhc.toZigbeeConverters.light_colortemp_step,
-    zhc.toZigbeeConverters.light_colortemp_move,
-    zhc.toZigbeeConverters.light_hue_saturation_move,
-    zhc.toZigbeeConverters.light_hue_saturation_step,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_onoff_brightness,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_color_colortemp,
+    zigbeeHerdsmanConverters.toZigbeeConverters.effect,
+    zigbeeHerdsmanConverters.toZigbeeConverters.ignore_transition,
+    zigbeeHerdsmanConverters.toZigbeeConverters.cover_position_tilt,
+    zigbeeHerdsmanConverters.toZigbeeConverters.thermostat_occupied_heating_setpoint,
+    zigbeeHerdsmanConverters.toZigbeeConverters.tint_scene,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_move,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_step,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_step,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_move,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_move,
+    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_step,
 ];
 
 interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
 
 export default class Publish extends Extension {
     async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
     parseTopic(topic: string): ParsedTopic | null {
@@ -81,8 +79,8 @@ export default class Publish extends Extension {
         }
     }
 
-    legacyRetrieveState(re: Device | Group, converter: ToZigbeeConverter, result: ToZigbeeConverterResult,
-        target: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta): void {
+    legacyRetrieveState(re: Device | Group, converter: zhc.ToZigbeeConverter, result: zhc.ToZigbeeConverterResult,
+        target: zh.Endpoint | zh.Group, key: string, meta: zhc.ToZigbeeConverterGetMeta): void {
         // It's possible for devices to get out of sync when writing an attribute that's not reportable.
         // So here we re-read the value after a specified timeout, this timeout could for example be the
         // transition time of a color change or for forcing a state read for devices that don't
@@ -116,8 +114,7 @@ export default class Publish extends Extension {
         }
     }
 
-    // TODO remove trailing _
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const parsedTopic = this.parseTopic(data.topic);
         if (!parsedTopic) return;
 
@@ -141,10 +138,11 @@ export default class Publish extends Extension {
         }
         const device = re instanceof Device ? re.zh : null;
         const entitySettings = re.settings;
-        const entityState = this.state.get(re.ID) || {};
+        const entityState = this.state.get(re) || {};
         const membersState = re instanceof Group ?
-            Object.fromEntries(re.membersIeeeAddr().map((e) => [e, this.state.get(e)])) : null;
-        let converters: ToZigbeeConverter[];
+            Object.fromEntries(re.zh.members.map((e) => [e.getDevice().ieeeAddr,
+                this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))])) : null;
+        let converters: zhc.ToZigbeeConverter[];
         {
             if (Array.isArray(definition)) {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
@@ -177,7 +175,7 @@ export default class Publish extends Extension {
         entries.sort((a) => (['state', 'brightness', 'brightness_percent'].includes(a[0]) ? sorter : sorter * -1));
 
         // For each attribute call the corresponding converter
-        const usedConverters: {[s: number]: ToZigbeeConverter[]} = {};
+        const usedConverters: {[s: number]: zhc.ToZigbeeConverter[]} = {};
         const toPublish: {[s: number | string]: KeyValue} = {};
         const toPublishEntity: {[s: number | string]: Device | Group} = {};
         const addToToPublish = (entity: Device | Group, payload: KeyValue): void => {

@@ -2,14 +2,14 @@ import * as settings from '../util/settings';
 import logger from '../util/logger';
 import debounce from 'debounce';
 import Extension from './extension';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 
+type DebounceFunction = (() => void) & { clear(): void; } & { flush(): void; };
+
 export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
-    // eslint-disable-next-line
-    private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type
+    private debouncers: {[s: string]: {payload: KeyValue, publish: DebounceFunction }} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -145,8 +145,8 @@ export default class Receive extends Extension {
             }
         };
 
-        const meta = {device: data.device.zh, logger, state: this.state.get(data.device.ieeeAddr)};
-        let payload = {};
+        const meta = {device: data.device.zh, logger, state: this.state.get(data.device)};
+        let payload: KeyValue = {};
         converters.forEach((converter) => {
             const converted = converter.convert(data.device.definition, data, publish, data.device.settings, meta);
             if (converted) {

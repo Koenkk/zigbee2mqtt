@@ -1,7 +1,6 @@
 import * as settings from '../util/settings';
 import * as utils from '../util/utils';
 import logger from '../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
 import bind from 'bind-decorator';
@@ -31,7 +30,7 @@ export default class NetworkMap extends Extension {
     private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
 
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.supportedFormats = {
             'raw': this.raw,
             'graphviz': this.graphviz,
@@ -39,7 +38,7 @@ export default class NetworkMap extends Extension {
         };
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
             if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) &&
@@ -215,7 +214,7 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const devices = this.zigbee.getDevices().filter((d) => d.zh.type !== 'GreenPower');
+        const devices = this.zigbee.devices().filter((d) => d.zh.type !== 'GreenPower');
         const lqis: Map<Device, zh.LQI> = new Map();
         const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();

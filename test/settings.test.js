@@ -117,7 +117,6 @@ describe('Settings', () => {
         const device = settings.getDevice('0x12345678');
         const expected = {
             ID: "0x12345678",
-            friendlyName: "0x12345678",
             friendly_name: '0x12345678',
             retain: false,
         };
@@ -190,7 +189,6 @@ describe('Settings', () => {
         const device = settings.getDevice('0x12345678');
         const expected = {
             ID: "0x12345678",
-            friendlyName: "0x12345678",
             friendly_name: '0x12345678',
             retain: false,
         };
@@ -349,7 +347,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expected = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -374,7 +371,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expected = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -419,7 +415,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expectedGroup = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -430,7 +425,6 @@ describe('Settings', () => {
 
         const expectedDevice2 = {
             ID: '0x1234',
-            friendlyName: '0x1234',
             friendly_name: '0x1234',
         };
 

@@ -1,10 +1,9 @@
 import * as settings from '../util/settings';
 import * as utils from '../util/utils';
 import fs from 'fs';
-import * as data from './../util/data';
+import data from './../util/data';
 import path from 'path';
 import logger from './../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 import Extension from './extension';
@@ -15,7 +14,7 @@ export default class ExternalExtension extends Extension {
     private requestLookup: {[s: string]: (message: KeyValue) => MQTTResponse};
 
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.requestLookup = {'save': this.saveExtension, 'remove': this.removeExtension};
         this.loadUserDefinedExtensions();
         await this.publishExtensions();
@@ -71,7 +70,7 @@ export default class ExternalExtension extends Extension {
         return utils.getResponse(message, {}, null);
     }
 
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(requestRegex);
         if (match && this.requestLookup[match[1].toLowerCase()]) {
             const message = utils.parseJSON(data.message, data.message) as KeyValue;

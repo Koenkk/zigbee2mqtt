@@ -5,7 +5,6 @@ import State from './state';
 import logger from './util/logger';
 import * as settings from './util/settings';
 import * as utils from './util/utils';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
 import bind from 'bind-decorator';
@@ -120,7 +119,7 @@ class Controller {
         }
 
         // Log zigbee clients on startup
-        const devices = this.zigbee.getDevices(false);
+        const devices = this.zigbee.devices(false);
         logger.info(`Currently ${devices.length} devices are joined:`);
         for (const device of devices) {
             const model = device.definition ?
@@ -148,8 +147,8 @@ class Controller {
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const device of devices) {
-                if (this.state.exists(device.ieeeAddr)) {
-                    this.publishEntityState(device, this.state.get(device.ieeeAddr));
+                if (this.state.exists(device)) {
+                    this.publishEntityState(device, this.state.get(device));
                 }
             }
         }
@@ -208,7 +207,7 @@ class Controller {
         let message = {...payload};
 
         // Update state cache with new state.
-        const newState = this.state.set(entity.ID, payload, stateChangeReason);
+        const newState = this.state.set(entity, payload, stateChangeReason);
 
         if (settings.get().advanced.cache_state) {
             // Add cached state to payload
@@ -303,12 +302,7 @@ class Controller {
             try {
                 await extension[method]?.();
             } catch (error) {
-                /* istanbul ignore next */
                 logger.error(`Failed to call '${extension.constructor.name}' '${method}' (${error.stack})`);
-                /* istanbul ignore next */
-                if (process.env.JEST_WORKER_ID !== undefined) {
-                    throw error;
-                }
             }
         }
     }

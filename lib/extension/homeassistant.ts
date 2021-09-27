@@ -1,9 +1,7 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
 import * as utils from '../util/utils';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-// @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
 import Extension from './extension';
@@ -28,7 +26,7 @@ const ACCESS_SET = 0b010;
 const groupSupportedTypes = ['light', 'switch', 'lock', 'cover'];
 const defaultStatusTopic = 'homeassistant/status';
 
-const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): string => {
+const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
     } else {
@@ -67,7 +65,7 @@ export default class HomeAssistant extends Extension {
         this.populateMapping();
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
@@ -84,13 +82,13 @@ export default class HomeAssistant extends Extension {
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
 
         // MQTT discovery of all paired devices on startup.
-        for (const entity of [...this.zigbee.getDevices(false), ...this.zigbee.getGroups()]) {
+        for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             this.discover(entity, true);
         }
     }
 
-    private exposeToConfig(
-        exposes: DefinitionExpose[], entityType: 'device' | 'group', definition?: Definition): DiscoveryEntry[] {
+    private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
+        definition?: zhc.Definition): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -100,7 +98,7 @@ export default class HomeAssistant extends Extension {
 
         const discoveryEntries = [];
         const endpoint = entityType === 'device' ? exposes[0].endpoint : undefined;
-        const getProperty = (feature: DefinitionExposeFeature): string => entityType === 'group' ?
+        const getProperty = (feature: zhc.DefinitionExposeFeature): string => entityType === 'group' ?
             featurePropertyWithoutEndpoint(feature) : feature.property;
 
         /* istanbul ignore else */
@@ -763,7 +761,7 @@ export default class HomeAssistant extends Extension {
         if (isDevice) {
             configs = this.mapping[entity.definition.model].slice();
         } else { // group
-            const exposesByType: {[s: string]: DefinitionExpose[]} = {};
+            const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
 
             entity.membersDefinitions().forEach((definition) => {
                 for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
@@ -1047,7 +1045,7 @@ export default class HomeAssistant extends Extension {
         });
     }
 
-    @bind private onMQTTMessage_(data: eventdata.MQTTMessage): void {
+    @bind private onMQTTMessage(data: eventdata.MQTTMessage): void {
         const discoveryRegex = new RegExp(`${this.discoveryTopic}/(.*)/(.*)/(.*)/config`);
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
@@ -1105,9 +1103,9 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.getDevices(false)) {
-                    if (this.state.exists(device.ieeeAddr)) {
-                        this.publishEntityState(device, this.state.get(device.ieeeAddr));
+                for (const device of this.zigbee.devices(false)) {
+                    if (this.state.exists(device)) {
+                        this.publishEntityState(device, this.state.get(device));
                     }
                 }
 
@@ -1141,7 +1139,7 @@ export default class HomeAssistant extends Extension {
         // Set missing values of state to 'null': https://github.com/Koenkk/zigbee2mqtt/issues/6987
         if (!entity.isDevice() || !entity.definition) return null;
 
-        const add = (expose: DefinitionExpose | DefinitionExposeFeature): void => {
+        const add = (expose: zhc.DefinitionExpose | zhc.DefinitionExposeFeature): void => {
             if (!message.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
                 message[expose.property] = null;
             }

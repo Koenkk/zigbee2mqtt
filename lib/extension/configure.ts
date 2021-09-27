@@ -1,9 +1,7 @@
 import * as settings from '../util/settings';
 import * as utils from '../util/utils';
 import logger from '../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-// @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
 import Extension from './extension';
 import bind from 'bind-decorator';
@@ -28,8 +26,7 @@ export default class Configure extends Extension {
         await this.configure(data.device, 'reporting_disabled');
     }
 
-    // TODO remove trailing _
-    @bind private async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic === this.legacyTopic) {
             const device = this.zigbee.resolveEntity(data.message);
             if (!device || !(device instanceof Device)) {
@@ -67,7 +64,7 @@ export default class Configure extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getDevices(false)) {
+        for (const device of this.zigbee.devices(false)) {
             await this.configure(device, 'started');
         }
 
@@ -80,7 +77,7 @@ export default class Configure extends Extension {
             this.configure(data.device, 'zigbee_event');
         });
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, 'zigbee_event'));
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onReportingDisabled(this, this.onReportingDisabled);
     }
 
@@ -114,7 +111,7 @@ export default class Configure extends Extension {
 
         logger.info(`Configuring '${device.name}'`);
         try {
-            await device.definition.configure(device.zh, this.zigbee.getFirstCoordinatorEndpoint(), logger);
+            await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), logger);
             logger.info(`Successfully configured '${device.name}'`);
             device.zh.meta.configured = zhc.getConfigureKey(device.definition);
             device.zh.save();

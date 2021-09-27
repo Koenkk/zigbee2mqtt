@@ -1,21 +1,20 @@
 /* eslint-disable brace-style */
 import * as settings from '../util/settings';
-// @ts-ignore
-import zhc from 'zigbee-herdsman-converters';
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 
 export default class Device {
     public zh: zh.Device;
-    private _definition: Definition;
+    private _definition: zhc.Definition;
 
     get ieeeAddr(): string {return this.zh.ieeeAddr;}
     get ID(): string {return this.zh.ieeeAddr;}
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
     get name(): string {
-        return this.zh.type === 'Coordinator' ? 'Coordinator' : this.settings?.friendlyName || this.ieeeAddr;
+        return this.zh.type === 'Coordinator' ? 'Coordinator' : this.settings?.friendly_name || this.ieeeAddr;
     }
-    get definition(): Definition | undefined {
+    get definition(): zhc.Definition {
         if (!this._definition && !this.zh.interviewing) {
-            this._definition = zhc.findByDevice(this.zh);
+            this._definition = zigbeeHerdsmanConverters.findByDevice(this.zh);
         }
         return this._definition;
     }

@@ -1,6 +1,6 @@
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
-import * as data from './data';
+import data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
@@ -118,8 +118,7 @@ export function getObjectProperty(object: KeyValue, key: string, defaultValue: u
 }
 
 export function getResponse(request: KeyValue | string, data: KeyValue, error: string): MQTTResponse {
-    const response: {data: unknown, status: string, error?: string, transaction?: string} =
-        {data, status: error ? 'error' : 'ok'};
+    const response: MQTTResponse = {data, status: error ? 'error' : 'ok'};
     if (error) response.error = error;
     if (typeof request === 'object' && request.hasOwnProperty('transaction')) {
         response.transaction = request.transaction;

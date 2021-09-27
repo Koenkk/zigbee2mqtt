@@ -4,7 +4,6 @@ import * as utils from '../util/utils';
 import * as settings from '../util/settings';
 import Transport from 'winston-transport';
 import bind from 'bind-decorator';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import objectAssignDeep from 'object-assign-deep';
 import {detailedDiff} from 'deep-object-diff';
@@ -74,8 +73,7 @@ export default class Bridge extends Extension {
         });
         this.eventBus.onDeviceLeave(this, (data) => {
             this.publishDevices();
-            publishEvent('device_leave',
-                {ieee_address: data.ieeeAddr, friendly_name: settings.getDevice(data.ieeeAddr)?.friendlyName});
+            publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
         this.eventBus.onDeviceInterview(this, (data) => {
@@ -97,13 +95,10 @@ export default class Bridge extends Extension {
         await this.publishDevices();
         await this.publishGroups();
 
-
-        this.onMQTTMessage_ = this.onMQTTMessage_.bind(this);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
-    // TODO remove trailing _
-    @bind async onMQTTMessage_(data: eventdata.MQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(requestRegex);
         const key = match?.[1]?.toLowerCase();
         if (key in this.requestLookup) {
@@ -210,7 +205,7 @@ export default class Bridge extends Extension {
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         this.publishGroups();
-        return utils.getResponse(message, {friendly_name: group.friendlyName, id: group.ID}, null);
+        return utils.getResponse(message, {friendly_name: group.friendly_name, id: group.ID}, null);
     }
 
     @bind async deviceRename(message: string | KeyValue): Promise<MQTTResponse> {
@@ -408,7 +403,7 @@ export default class Bridge extends Extension {
         const parsedID = utils.parseEntityID(message.id);
         const endpoint = (this.getEntity('device', parsedID.ID) as Device).endpoint(parsedID.endpoint);
 
-        const coordinatorEndpoint = this.zigbee.getFirstCoordinatorEndpoint();
+        const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
         await endpoint.bind(message.cluster, coordinatorEndpoint);
 
         await endpoint.configureReporting(message.cluster, [{
@@ -443,7 +438,7 @@ export default class Bridge extends Extension {
         const homeAssisantRename = message.hasOwnProperty('homeassistant_rename') ?
             message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
-        const oldFriendlyName = entity.settings.friendlyName;
+        const oldFriendlyName = entity.settings.friendly_name;
 
         settings.changeFriendlyName(from, to);
 
@@ -488,7 +483,7 @@ export default class Bridge extends Extension {
         }
 
         try {
-            logger.info(`Removing ${entityType} '${entity.settings.friendlyName}'${blockForceLog}`);
+            logger.info(`Removing ${entityType} '${entity.name}'${blockForceLog}`);
             const ieeeAddr = entity.isDevice() && entity.ieeeAddr;
             const name = entity.name;
 
@@ -584,7 +579,7 @@ export default class Bridge extends Extension {
             clusters: {input: string[], output: string[]}
         }
 
-        const devices = this.zigbee.getDevices().map((device) => {
+        const devices = this.zigbee.devices().map((device) => {
             const endpoints: {[s: number]: Data} = {};
             for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
@@ -639,7 +634,7 @@ export default class Bridge extends Extension {
     }
 
     async publishGroups(): Promise<void> {
-        const groups = this.zigbee.getGroups().map((g) => {
+        const groups = this.zigbee.groups().map((g) => {
             return {
                 id: g.ID,
                 friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,

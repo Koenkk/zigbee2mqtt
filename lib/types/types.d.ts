@@ -39,6 +39,12 @@ declare global {
     type State = TypeState;
     type Extension = TypeExtension;
 
+    // Types
+    interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
+    interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
+    type StateChangeReason = 'publishDebounce' | 'group_optimistic';
+    type PublishEntityState = (entity: Device | Group, payload: KeyValue,
+        stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>;};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     interface KeyValue {[s: string]: any}
@@ -60,12 +66,71 @@ declare global {
         }
     }
 
+    // zigbee-herdsman-converters
+    namespace zhc {
+        interface Logger {
+            info: (message: string) => void;
+            warn: (message: string) => void;
+            error: (message: string) => void;
+            debug: (message: string) => void;
+        }
+
+        interface ToZigbeeConverterGetMeta {message?: KeyValue, mapped?: Definition | Definition[]}
+
+        interface ToZigbeeConverterResult {state: KeyValue,
+            membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
+
+        interface ToZigbeeConverter {
+            key: string[],
+            convertGet?: (entity: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
+            convertSet?: (entity: zh.Endpoint | zh.Group, key: string, value: KeyValue | string | number,
+                meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
+        }
+
+        interface FromZigbeeConverter {
+            cluster: string,
+            type: string[] | string,
+            convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
+                meta: {state: KeyValue, logger: Logger, device: zh.Device}) => KeyValue,
+        }
+
+        interface DefinitionExposeFeature {name: string, endpoint?: string,
+            property: string, value_max?: number, value_min?: number,
+            value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
+
+        interface DefinitionExpose {
+            type: string, name?: string, features?: DefinitionExposeFeature[],
+            endpoint?: string, values?: string[], value_off?: string, value_on?: string,
+            access: number, property: string, unit?: string,
+            value_min?: number, value_max?: number}
+
+        interface Definition {
+            model: string,
+            zigbeeModel: string[],
+            endpoint?: (device: zh.Device) => {[s: string]: number}
+            toZigbee: ToZigbeeConverter[]
+            fromZigbee: FromZigbeeConverter[]
+            icon?: string
+            description: string
+            vendor: string
+            exposes: DefinitionExpose[]
+            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
+            onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
+            ota?: {
+                isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue) => Promise<boolean>;
+                updateToLatest: (device: zh.Device, logger: Logger,
+                    onProgress: (progress: number, remaining: number) => void) => Promise<void>;
+            }
+        }
+    }
+
     namespace eventdata {
         type DeviceRenamed = { device: Device, homeAssisantRename: boolean, from: string, to: string };
         type DeviceRemoved = { ieeeAddr: string, name: string };
         type MQTTMessage = { topic: string, message: string };
         type MQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
-        type StateChange = { ID: string, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
+        type StateChange = {
+            entity: Device | Group, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
         type LastSeenChanged = { device: Device };
         type DeviceNetworkAddressChanged = { device: Device };
@@ -89,18 +154,12 @@ declare global {
         };
     }
 
-    interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
-    type StateChangeReason = 'publishDebounce' | 'group_optimistic';
-    type PublishEntityState = (entity: Device | Group, payload: KeyValue,
-        stateChangeReason?: StateChangeReason) => Promise<void>;
-
-    // TODO below
-
+    // Settings
     // eslint-disable camelcase
     interface Settings {
         homeassistant?: boolean,
-        devices?: {[s: string]: {friendly_name: string, retention?: number}},
-        groups?: {[s: string]: {friendly_name: string, devices?: string[]}},
+        devices?: {[s: string]: DeviceSettings},
+        groups?: {[s: string]: GroupSettings},
         passlist: string[],
         blocklist: string[],
         whitelist: string[],
@@ -135,7 +194,7 @@ declare global {
             port?: string,
             adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
         },
-        device_options: {[s: string]: unknown},
+        device_options: KeyValue,
         map_options: {
             graphviz: {
                 colors: {
@@ -205,8 +264,7 @@ declare global {
     }
 
     interface DeviceSettings {
-        friendlyName: string,
-        ID: string,
+        ID?: string,
         retention?: number,
         availability?: boolean | {timeout: number},
         optimistic?: boolean,
@@ -218,78 +276,18 @@ declare global {
         homeassistant?: KeyValue,
         legacy?: boolean,
         filtered_attributes?: string[],
+        friendly_name: string,
     }
 
     interface GroupSettings {
-        friendlyName: string,
-        devices: string[],
-        ID: number,
+        devices?: string[],
+        ID?: number,
         optimistic?: boolean,
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
         homeassistant?: KeyValue,
         filtered_attributes?: string[],
+        friendly_name: string,
     }
-
-    interface ResolvedEntity {
-        type: 'device' | 'group',
-        device: zh.Device,
-        name: string,
-    }
-
-    interface ToZigbeeConverterGetMeta {message?: KeyValue, mapped?: Definition | Definition[]}
-
-    interface ToZigbeeConverterResult {state: KeyValue,
-        membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
-
-    interface ToZigbeeConverter {
-        key: string[],
-        convertGet?: (entity: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
-        convertSet?: (entity: zh.Endpoint | zh.Group, key: string, value: unknown,
-            meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
-    }
-
-    // interface Logger {
-    //     error: (message: string) => void;
-    //     warn: (message: string) => void;
-    //     debug: (message: string) => void;
-    //     info: (message: string) => void;
-    // }
-
-    interface FromZigbeeConverter {
-        cluster: string,
-        type: string[] | string,
-        convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
-            meta: {state: KeyValue, logger: unknown, device: zh.Device}) => KeyValue,
-    }
-
-    interface DefinitionExposeFeature {name: string, endpoint?: string,
-        property: string, value_max?: number, value_min?: number,
-        value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
-
-    interface DefinitionExpose {
-        type: string, name?: string, features?: DefinitionExposeFeature[],
-        endpoint?: string, values?: string[], value_off?: string, value_on?: string,
-        access: number, property: string, unit?: string,
-        value_min?: number, value_max?: number}
-
-    interface Definition {
-        model: string
-        endpoint?: (device: zh.Device) => {[s: string]: number}
-        toZigbee: ToZigbeeConverter[]
-        fromZigbee: FromZigbeeConverter[]
-        icon?: string
-        description: string
-        vendor: string
-        exposes: DefinitionExpose[] // TODO
-        configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: unknown) => Promise<void>;
-        onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
-        ota?: {
-            isUpdateAvailable: (device: zh.Device, logger: unknown, data?: KeyValue) => Promise<boolean>;
-            updateToLatest: (device: zh.Device, logger: unknown,
-                onProgress: (progress: number, remaining: number) => void) => Promise<void>;
-        }
-    }
-
-    interface MQTTResponse {data: KeyValue, status: string, error?: string, transaction?: string}
 }
+

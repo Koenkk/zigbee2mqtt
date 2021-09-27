@@ -1,5 +1,5 @@
 import logger from './util/logger';
-import * as data from './util/data';
+import data from './util/data';
 import * as settings from './util/settings';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
@@ -23,28 +23,20 @@ class State {
     }
 
     start(): void {
-        this._load();
+        this.load();
 
         // Save the state on every interval
-        this.clearTimer();
         this.timer = setInterval(() => this.save(), saveInterval);
-        this.eventBus.onDeviceLeave(this, (data) => this.remove(data.ieeeAddr));
-    }
-
-    clearTimer(): void {
-        if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = null;
-        }
+        this.eventBus.onDeviceLeave(this, (data) => delete this.state[data.ieeeAddr]);
     }
 
     stop(): void {
         this.eventBus.removeListeners(this);
-        this.clearTimer();
+        clearTimeout(this.timer);
         this.save();
     }
 
-    _load(): void {
+    private load(): void {
         if (fs.existsSync(this.file)) {
             try {
                 this.state = JSON.parse(fs.readFileSync(this.file, 'utf8'));
@@ -57,7 +49,7 @@ class State {
         }
     }
 
-    save(): void {
+    private save(): void {
         if (settings.get().advanced.cache_state_persistent) {
             logger.debug(`Saving state to file ${this.file}`);
             const json = JSON.stringify(this.state, null, 4);
@@ -71,16 +63,16 @@ class State {
         }
     }
 
-    exists(ID: string | number): boolean {
-        return this.state.hasOwnProperty(ID);
+    exists(entity: Device | Group): boolean {
+        return this.state.hasOwnProperty(entity.ID);
     }
 
-    get(ID: string | number): KeyValue {
-        return this.state[ID];
+    get(entity: Group | Device): KeyValue {
+        return this.state[entity.ID];
     }
 
-    set(ID: string | number, update: KeyValue, reason: string=null): KeyValue {
-        const fromState = this.state[ID] || {};
+    set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {
+        const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
         const result = {...toState};
 
@@ -90,33 +82,13 @@ class State {
             }
         }
 
-        this.state[ID] = toState;
-        this.eventBus.emitStateChange({ID: ID.toString(), from: fromState, to: toState, reason, update});
+        this.state[entity.ID] = toState;
+        this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
         return result;
     }
 
-    removeKey(ID: string | number, path: string[]): void {
-        if (this.exists(ID)) {
-            let state = this.state[ID];
-            for (let i = 0; i < path.length; i++) {
-                const key = path[i];
-                if (i === path.length - 1) {
-                    delete state[key];
-                } else {
-                    if (state[key]) {
-                        state = state[key];
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     remove(ID: string | number): void {
-        if (this.exists(ID)) {
-            delete this.state[ID];
-        }
+        delete this.state[ID];
     }
 }
 
