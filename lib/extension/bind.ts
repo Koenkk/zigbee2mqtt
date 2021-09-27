@@ -4,7 +4,7 @@ import * as utils from '../util/utils';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
-import zigbeeHersdman from 'zigbee-herdsman';
+import * as zigbeeHersdman from 'zigbee-herdsman/dist';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import Group from '../model/group';

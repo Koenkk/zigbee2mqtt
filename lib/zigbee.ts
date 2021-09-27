@@ -218,13 +218,17 @@ export default class Zigbee {
             device && (this.deviceLookup[ieeeAddr] = new Device(device));
         }
 
-        return this.deviceLookup[ieeeAddr];
+        const device = this.deviceLookup[ieeeAddr];
+        if (device && !device.zh.isDeleted) {
+            device.ensureInSettings();
+            return device;
+        }
     }
 
     private resolveGroup(groupID: number): Group {
-        if (!this.groupLookup[groupID] && !isNaN(Number(groupID))) {
-            const group = this.herdsman.getGroupByID(Number(groupID));
-            group && (this.groupLookup[groupID] = new Group(group));
+        const group = this.herdsman.getGroupByID(Number(groupID));
+        if (group && !this.groupLookup[groupID]) {
+            this.groupLookup[groupID] = new Group(group);
         }
 
         return this.groupLookup[groupID];

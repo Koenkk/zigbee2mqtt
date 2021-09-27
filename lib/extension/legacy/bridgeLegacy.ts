@@ -142,11 +142,10 @@ export default class BridgeLegacy extends Extension {
 
             if (device.zh.type !== 'Coordinator') {
                 const definition = zigbeeHerdsmanConverters.findByDevice(device.zh);
-                const friendlyDevice = settings.getDevice(device.ieeeAddr);
                 payload.model = definition ? definition.model : device.zh.modelID;
                 payload.vendor = definition ? definition.vendor : '-';
                 payload.description = definition ? definition.description : '-';
-                payload.friendly_name = friendlyDevice ? device.name : device.ieeeAddr;
+                payload.friendly_name = device.name;
                 payload.manufacturerID = device.zh.manufacturerID;
                 payload.manufacturerName = device.zh.manufacturerName;
                 payload.powerSource = device.zh.powerSource;

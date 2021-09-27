@@ -21,9 +21,11 @@ export default class Device {
 
     constructor(device: zh.Device) {
         this.zh = device;
+    }
 
-        if (device.type !== 'Coordinator' && !settings.getDevice(device.ieeeAddr)) {
-            settings.addDevice(device.ieeeAddr);
+    ensureInSettings(): void {
+        if (this.zh.type !== 'Coordinator' && !settings.getDevice(this.zh.ieeeAddr)) {
+            settings.addDevice(this.zh.ieeeAddr);
         }
     }
 
