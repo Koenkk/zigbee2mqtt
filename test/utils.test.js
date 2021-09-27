@@ -1,4 +1,4 @@
-const utils = require('../lib/util/utils');
+const utils = require('../lib/util/utils').default;
 const version = require('../package.json').version;
 const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').version;
 
@@ -34,11 +34,5 @@ describe('Utils', () => {
         Date.prototype.getTimezoneOffset = () => -60;
         expect(utils.formatDate(date, 'ISO_8601_local').endsWith('+01:00')).toBeTruthy();
         Date.prototype.getTimezoneOffset = getTimezoneOffset;
-    })
-
-    it('Get key', async () => {
-        expect(utils.getKey({'1': '1'}, '1', 2, null)).toBe('1');
-        expect(utils.getKey({'1': '1'}, '2', 2, null)).toBe(2);
-        expect(utils.getKey({'1': '1'}, '1', null, () => '3')).toBe('3');
     })
 });

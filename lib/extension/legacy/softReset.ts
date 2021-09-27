@@ -2,7 +2,7 @@
 // DEPRECATED
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import * as utils from '../../util/utils';
+import utils from '../../util/utils';
 import Extension from '../extension';
 
 /**

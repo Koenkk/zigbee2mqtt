@@ -1,6 +1,6 @@
 import Extension from './extension';
 import logger from '../util/logger';
-import {sleep, hours, minutes, seconds, isAvailabilityEnabledForDevice} from '../util/utils';
+import utils from '../util/utils';
 import * as settings from '../util/settings';
 import debounce from 'debounce';
 import bind from 'bind-decorator';
@@ -17,16 +17,16 @@ export default class Availability extends Extension {
 
     private getTimeout(device: Device): number {
         if (typeof device.settings.availability === 'object' && device.settings.availability?.timeout != null) {
-            return minutes(device.settings.availability.timeout);
+            return utils.minutes(device.settings.availability.timeout);
         }
 
         const key = this.isActiveDevice(device) ? 'active' : 'passive';
         const availabilitySettings = settings.get().availability;
         if (typeof availabilitySettings === 'object' && availabilitySettings[key]?.timeout != null) {
-            return minutes(availabilitySettings[key]?.timeout);
+            return utils.minutes(availabilitySettings[key]?.timeout);
         }
 
-        return key === 'active' ? minutes(10) : hours(25);
+        return key === 'active' ? utils.minutes(10) : utils.hours(25);
     }
 
     private isActiveDevice(device: Device): boolean {
@@ -46,10 +46,10 @@ export default class Availability extends Extension {
         if (this.isActiveDevice(device)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
             this.timers[device.ieeeAddr] = setTimeout(
-                () => this.addToPingQueue(device), this.getTimeout(device) + seconds(1));
+                () => this.addToPingQueue(device), this.getTimeout(device) + utils.seconds(1));
         } else {
             this.timers[device.ieeeAddr] = setTimeout(
-                () => this.publishAvailability(device, true), this.getTimeout(device) + seconds(1));
+                () => this.publishAvailability(device, true), this.getTimeout(device) + utils.seconds(1));
         }
     }
 
@@ -83,7 +83,7 @@ export default class Availability extends Extension {
                 logger.error(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
-                !lastAttempt && await sleep(3);
+                !lastAttempt && await utils.sleep(3);
             }
         }
 
@@ -92,7 +92,7 @@ export default class Availability extends Extension {
         this.removeFromPingQueue(device);
 
         // Sleep 2 seconds before executing next ping
-        await sleep(2);
+        await utils.sleep(2);
         this.pingQueueExecuting = false;
         this.pingQueueExecuteNext();
     }
@@ -107,7 +107,7 @@ export default class Availability extends Extension {
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
         for (const device of this.zigbee.devices(false)) {
-            if (isAvailabilityEnabledForDevice(device, settings.get())) {
+            if (utils.isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
                 this.publishAvailability(device, true);
 
@@ -125,11 +125,11 @@ export default class Availability extends Extension {
         if (logLastSeen) {
             const ago = Date.now() - device.zh.lastSeen;
             if (this.isActiveDevice(device)) {
-                logger.debug(
-                    `Active device '${device.name}' was last seen '${(ago / minutes(1)).toFixed(2)}' minutes ago.`);
+                logger.debug(`Active device '${device.name}' was last seen ` +
+                    `'${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);
             } else {
                 logger.debug(
-                    `Passive device '${device.name}' was last seen '${(ago / hours(1)).toFixed(2)}' hours ago.`);
+                    `Passive device '${device.name}' was last seen '${(ago / utils.hours(1)).toFixed(2)}' hours ago.`);
             }
         }
 
@@ -151,7 +151,7 @@ export default class Availability extends Extension {
     }
 
     @bind private onLastSeenChanged(data: eventdata.LastSeenChanged): void {
-        if (isAvailabilityEnabledForDevice(data.device, settings.get())) {
+        if (utils.isAvailabilityEnabledForDevice(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(data.device);
             this.resetTimer(data.device);
@@ -183,7 +183,7 @@ export default class Availability extends Extension {
                 } catch (error) {
                     logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);
                 }
-            }, seconds(2));
+            }, utils.seconds(2));
         }
 
         this.retrieveStateDebouncers[device.ieeeAddr]?.();

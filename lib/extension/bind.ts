@@ -1,6 +1,6 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';

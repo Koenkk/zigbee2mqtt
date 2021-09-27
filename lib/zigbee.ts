@@ -2,7 +2,7 @@ import {Controller} from 'zigbee-herdsman';
 import logger from './util/logger';
 import * as settings from './util/settings';
 import data from './util/data';
-import * as utils from './util/utils';
+import utils from './util/utils';
 import objectAssignDeep from 'object-assign-deep';
 import stringify from 'json-stable-stringify-without-jsonify';
 import Device from './model/device';

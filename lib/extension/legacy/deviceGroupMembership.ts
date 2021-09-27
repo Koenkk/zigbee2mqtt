@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import * as utils from '../../util/utils';
+import utils from '../../util/utils';
 import Extension from '../extension';
 import bind from 'bind-decorator';
 import Device from '../../model/device';

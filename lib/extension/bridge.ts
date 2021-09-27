@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import * as settings from '../util/settings';
 import Transport from 'winston-transport';
 import bind from 'bind-decorator';

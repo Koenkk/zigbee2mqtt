@@ -1,7 +1,7 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
-import * as utils from '../../util/utils';
+import utils from '../../util/utils';
 import assert from 'assert';
 import Extension from '../extension';
 import stringify from 'json-stable-stringify-without-jsonify';

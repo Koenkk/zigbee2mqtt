@@ -4,7 +4,7 @@ import EventBus from './eventBus';
 import State from './state';
 import logger from './util/logger';
 import * as settings from './util/settings';
-import * as utils from './util/utils';
+import utils from './util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
 import bind from 'bind-decorator';

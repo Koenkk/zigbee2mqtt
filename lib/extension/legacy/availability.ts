@@ -1,6 +1,6 @@
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
-import * as utils from '../../util/utils';
+import utils from '../../util/utils';
 // @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import Extension from '../extension';

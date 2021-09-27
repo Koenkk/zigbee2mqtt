@@ -1,6 +1,6 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import equals from 'fast-deep-equal/es6';
 import bind from 'bind-decorator';

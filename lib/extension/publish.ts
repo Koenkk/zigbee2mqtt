@@ -2,7 +2,7 @@
 import * as settings from '../util/settings';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import Group from '../model/group';

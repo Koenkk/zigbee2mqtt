@@ -3,7 +3,7 @@ import logger from './stub/logger';
 import MQTT from './stub/mqtt';
 import zigbeeHerdsman from './stub/zigbeeHerdsman';
 
-import * as utils from '../lib/util/utils';
+import utils from '../lib/util/utils';
 import * as settings from '../lib/util/settings';
 import Controller from '../lib/controller';
 import flushPromises from './lib/flushPromises';

@@ -1,5 +1,5 @@
 import data from './data';
-import * as utils from './utils';
+import utils from './utils';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
 import yaml from './yaml';

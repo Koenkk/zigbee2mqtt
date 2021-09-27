@@ -1,5 +1,5 @@
 import * as settings from '../util/settings';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import fs from 'fs';
 import data from './../util/data';
 import path from 'path';

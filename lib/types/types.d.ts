@@ -122,6 +122,9 @@ declare global {
                     onProgress: (progress: number, remaining: number) => void) => Promise<void>;
             }
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type ExternalDefinition = Definition & {homeassistant: any};
     }
 
     namespace eventdata {

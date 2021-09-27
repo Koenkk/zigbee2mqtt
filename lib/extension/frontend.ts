@@ -8,7 +8,7 @@ import WebSocket from 'ws';
 import net from 'net';
 import url from 'url';
 import * as settings from '../util/settings';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
 import bind from 'bind-decorator';

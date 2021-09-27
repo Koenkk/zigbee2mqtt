@@ -1,6 +1,6 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
@@ -61,7 +61,7 @@ export default class HomeAssistant extends Extension {
             logger.warn('In order for Home Assistant integration to work properly set `cache_state: true');
         }
 
-        this.zigbee2MQTTVersion = await utils.getZigbee2MQTTVersionSimple();
+        this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
         this.populateMapping();
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
@@ -649,7 +649,7 @@ export default class HomeAssistant extends Extension {
         }
 
         // Deprecated in favour of exposes
-        for (const definition of utils.getExternalConvertersDefinitions(settings)) {
+        for (const definition of utils.getExternalConvertersDefinitions(settings.get())) {
             if (definition.hasOwnProperty('homeassistant')) {
                 this.mapping[definition.model] = definition.homeassistant;
             }

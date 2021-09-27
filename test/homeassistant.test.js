@@ -30,7 +30,7 @@ describe('HomeAssistant extension', () => {
     });
 
     beforeAll(async () => {
-        version = await require('../lib/util/utils').getZigbee2MQTTVersion();
+        version = await require('../lib/util/utils').default.getZigbee2MQTTVersion();
         version = `Zigbee2MQTT ${version.version}`;
         jest.useFakeTimers();
         settings.set(['homeassistant'], true);

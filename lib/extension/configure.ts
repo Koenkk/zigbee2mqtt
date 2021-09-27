@@ -1,5 +1,5 @@
 import * as settings from '../util/settings';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import zhc from 'zigbee-herdsman-converters';

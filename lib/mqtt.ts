@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import logger from './util/logger';
 import * as settings from './util/settings';
-import {seconds} from './util/utils';
+import utils from './util/utils';
 import fs from 'fs';
 import bind from 'bind-decorator';
 
@@ -87,7 +87,7 @@ export default class MQTT {
             if (this.client.reconnecting) {
                 logger.error('Not connected to MQTT server!');
             }
-        }, seconds(10));
+        }, utils.seconds(10));
 
         logger.info('Connected to MQTT server');
         this.subscribe(`${settings.get().mqtt.base_topic}/#`);
