@@ -3,7 +3,6 @@ import moment from 'moment';
 import * as settings from './settings';
 import path from 'path';
 import fs from 'fs';
-// @ts-ignore
 import fx from 'mkdir-recursive';
 import rimraf from 'rimraf';
 import assert from 'assert';
@@ -32,15 +31,17 @@ if (output.includes('file')) {
     }
 }
 
-const z2mToWinstonLevel = (level: string): string => level === 'warn' ? 'warning' : level;
-const winstonToZ2mLevel = (level: string): string => level === 'warning' ? 'warn' : level;
+type Z2MLogLevel = 'warn' | 'debug' | 'info' | 'error';
+type WinstonLogLevel = 'warning' | 'debug' | 'info' | 'error';
+
+const z2mToWinstonLevel = (level: Z2MLogLevel): WinstonLogLevel => level === 'warn' ? 'warning' : level;
+const winstonToZ2mLevel = (level: WinstonLogLevel): Z2MLogLevel => level === 'warning' ? 'warn' : level;
 
 // Determine the log level.
-let level = settings.get().advanced.log_level;
+const z2mLevel = settings.get().advanced.log_level;
 const validLevels = ['info', 'error', 'warn', 'debug'];
-assert(validLevels.includes(level), `'${level}' is not a valid log_level, use one of '${validLevels.join(', ')}'`);
-// @ts-ignore
-level = z2mToWinstonLevel(level);
+assert(validLevels.includes(z2mLevel), `'${z2mLevel}' is not valid log_level, use one of '${validLevels.join(', ')}'`);
+const level = z2mToWinstonLevel(z2mLevel);
 
 const levelWithCompensatedLength: {[s: string]: string} = {
     'info': 'info ',
@@ -49,20 +50,19 @@ const levelWithCompensatedLength: {[s: string]: string} = {
     'debug': 'debug',
 };
 
-/* istanbul ignore next */
 const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
 
 // Setup default console logger
-const transportsToUse = [
+const transportsToUse: winston.transport[] = [
     new winston.transports.Console({
         level,
         silent: !output.includes('console'),
         format: winston.format.combine(
             winston.format.timestamp({format: timestampFormat}),
             winston.format.printf(/* istanbul ignore next */(info) => {
-                let {timestamp, level, message} = info;
-                level = winstonToZ2mLevel(level);
-                const prefix = colorizer.colorize(level, `Zigbee2MQTT:${levelWithCompensatedLength[level]}`);
+                const {timestamp, level, message} = info;
+                const l = winstonToZ2mLevel(level as WinstonLogLevel);
+                const prefix = colorizer.colorize(l, `Zigbee2MQTT:${levelWithCompensatedLength[l]}`);
                 return `${prefix} ${timestamp.split('.')[0]}: ${message}`;
             }),
         ),
@@ -78,9 +78,9 @@ const transportFileOptions: KeyValue = {
     format: winston.format.combine(
         winston.format.timestamp({format: timestampFormat}),
         winston.format.printf(/* istanbul ignore next */(info) => {
-            let {timestamp, level, message} = info;
-            level = winstonToZ2mLevel(level);
-            return `${levelWithCompensatedLength[level]} ${timestamp.split('.')[0]}: ${message}`;
+            const {timestamp, level, message} = info;
+            const l = winstonToZ2mLevel(level as WinstonLogLevel);
+            return `${levelWithCompensatedLength[l]} ${timestamp.split('.')[0]}: ${message}`;
         }),
     ),
 };
@@ -92,7 +92,6 @@ if (settings.get().advanced.log_rotation) {
 }
 
 if (output.includes('file')) {
-    // @ts-ignore
     transportsToUse.push(new winston.transports.File(transportFileOptions));
 }
 
@@ -142,33 +141,46 @@ function logOutput(): void {
         } else {
             logger.info(`Logging to directory: '${directory}' filename: ${logFilename}`);
         }
-        // @ts-ignore
-        logger.cleanup();
+        cleanup();
     } else if (output.includes('console')) {
         logger.info(`Logging to console only'`);
     }
 }
 
-// @ts-ignore
-logger.addTransport = (transport): void => {
+function addTransport(transport: winston.transport): void {
     transport.level = transportsToUse[0].level;
     logger.add(transport);
-};
-// @ts-ignore
-logger.cleanup = cleanup;
-// @ts-ignore
-logger.logOutput = logOutput;
-// @ts-ignore
-logger.getLevel = (): void => winstonToZ2mLevel(transportsToUse[0].level);
-// @ts-ignore
-logger.setLevel = (level): void => {
-    level = z2mToWinstonLevel(level);
-    logger.transports.forEach((transport) => transport.level = level);
-};
+}
 
-// winston.config.syslog.levels doesnt have warn, but is required for syslog.
-/* istanbul ignore next */
-// @ts-ignore
-logger.warn = (message): void => logger.warning(message);
+function getLevel(): Z2MLogLevel {
+    return winstonToZ2mLevel(transportsToUse[0].level as WinstonLogLevel);
+}
 
-export default logger;
+function setLevel(level: Z2MLogLevel): void {
+    logger.transports.forEach((transport) => transport.level = z2mToWinstonLevel(level as Z2MLogLevel));
+}
+
+function warn(message: string): void {
+    // winston.config.syslog.levels doesnt have warn, but is required for syslog.
+    logger.warning(message);
+}
+
+function warning(message: string): void {
+    logger.warning(message);
+}
+
+function info(message: string): void {
+    logger.info(message);
+}
+
+function debug(message: string): void {
+    logger.debug(message);
+}
+
+function error(message: string): void {
+    logger.error(message);
+}
+
+export default {
+    logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, winston: logger,
+};

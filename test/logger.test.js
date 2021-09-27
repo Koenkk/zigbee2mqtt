@@ -74,23 +74,23 @@ describe('Logger', () => {
         }
 
         const logger = require('../lib/util/logger').default;
-        expect(logger.transports.length).toBe(2);
+        expect(logger.winston.transports.length).toBe(2);
         logger.addTransport(new DummyTransport());
-        expect(logger.transports.length).toBe(3);
+        expect(logger.winston.transports.length).toBe(3);
     });
 
     it('Set and get log level warn <-> warning', () => {
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
         logger.setLevel('warn');
-        expect(logger.transports[0].level).toBe('warning');
+        expect(logger.winston.transports[0].level).toBe('warning');
         expect(logger.getLevel()).toBe('warn');
     });
 
     it('Logger should be console and file by default', () => {
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(false);
@@ -102,7 +102,7 @@ describe('Logger', () => {
         settings.set(['advanced', 'log_output'], ['file']);
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(true);
@@ -114,7 +114,7 @@ describe('Logger', () => {
         settings.set(['advanced', 'log_output'], ['console']);
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
     });
@@ -123,7 +123,7 @@ describe('Logger', () => {
         settings.set(['advanced', 'log_output'], []);
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
     });
@@ -132,7 +132,7 @@ describe('Logger', () => {
         settings.set(['advanced', 'log_rotation'], false);
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
         expect(pipes[1].tailable).toBeFalsy();
@@ -147,5 +147,28 @@ describe('Logger', () => {
 
         jest.resetModules();
         logger = require('../lib/util/logger').default;
+    });
+
+    it('Log', () => {
+        const logger = require('../lib/util/logger').default;
+        const warn = jest.spyOn(logger.winston, 'warning');
+        logger.warn('warn');
+        expect(warn).toHaveBeenCalledWith('warn');
+
+        const debug = jest.spyOn(logger.winston, 'debug');
+        logger.debug('debug');
+        expect(debug).toHaveBeenCalledWith('debug');
+
+        const warning = jest.spyOn(logger.winston, 'warning');
+        logger.warning('warning');
+        expect(warning).toHaveBeenCalledWith('warning');
+
+        const info = jest.spyOn(logger.winston, 'info');
+        logger.info('info');
+        expect(info).toHaveBeenCalledWith('info');
+
+        const error = jest.spyOn(logger.winston, 'error');
+        logger.error('error');
+        expect(error).toHaveBeenCalledWith('error');
     });
 });
