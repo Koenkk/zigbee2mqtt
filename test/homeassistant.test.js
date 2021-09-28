@@ -994,7 +994,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover devices with availability', async () => {
-        settings.set(['advanced', 'availability_timeout'], 1)
+        settings.set(['availability'], true)
         await resetExtension();
 
         let payload;
@@ -1016,6 +1016,7 @@ describe('HomeAssistant extension', () => {
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
+            'availability_mode': 'all',
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}, {topic: 'zigbee2mqtt/weather_sensor/availability'}],
         };
 

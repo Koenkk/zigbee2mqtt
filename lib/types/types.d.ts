@@ -220,7 +220,6 @@ declare global {
         },
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
-            availability_new?: boolean,
             transmit_power?: number,
         },
         advanced: {
@@ -238,11 +237,6 @@ declare global {
             channel: number,
             adapter_concurrent: number | null,
             adapter_delay: number | null,
-            availability_timeout: number,
-            availability_blocklist: string[],
-            availability_passlist: string[],
-            availability_blacklist: string[],
-            availability_whitelist: string[],
             cache_state: boolean,
             cache_state_persistent: boolean,
             cache_state_send_on_startup: boolean,
@@ -258,6 +252,12 @@ declare global {
             baudrate?: number,
             rtscts?: boolean,
             ikea_ota_use_test_url?: boolean,
+            // below are deprecated
+            availability_timeout?: number,
+            availability_blocklist?: string[],
+            availability_passlist?: string[],
+            availability_blacklist?: string[],
+            availability_whitelist?: string[],
         },
         ota: {
             update_check_interval: number,

@@ -245,9 +245,6 @@ function sanitizeImageParameter(parameter: string): string {
 }
 
 function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
-    /* istanbul ignore next */
-    if (!settings.experimental.availability_new) return false;
-
     if (device.settings.hasOwnProperty('availability')) {
         return !!device.settings.availability;
     }

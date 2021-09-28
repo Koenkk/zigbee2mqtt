@@ -5,9 +5,6 @@ import * as settings from '../util/settings';
 import debounce from 'debounce';
 import bind from 'bind-decorator';
 
-// TODO
-// - Enable for HA addon
-// - Add to setting schema (when old availability is removed)
 export default class Availability extends Extension {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};

@@ -21,7 +21,6 @@ import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMember
 import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
 import ExtensionBridge from './extension/bridge';
 import ExtensionGroups from './extension/groups';
-import ExtensionAvailabilityLegacy from './extension/legacy/availability';
 import ExtensionAvailability from './extension/availability';
 import ExtensionBind from './extension/bind';
 import ExtensionReport from './extension/legacy/report';
@@ -33,7 +32,7 @@ import ExtensionExternalExtension from './extension/externalExtension';
 const AllExtensions = [
     ExtensionPublish, ExtensionReceive, ExtensionNetworkMap, ExtensionSoftReset, ExtensionHomeAssistant,
     ExtensionConfigure, ExtensionDeviceGroupMembership, ExtensionBridgeLegacy, ExtensionBridge, ExtensionGroups,
-    ExtensionAvailabilityLegacy, ExtensionBind, ExtensionReport, ExtensionOnEvent, ExtensionOTAUpdate,
+    ExtensionBind, ExtensionReport, ExtensionOnEvent, ExtensionOTAUpdate,
     ExtensionExternalConverters, ExtensionFrontend, ExtensionExternalExtension, ExtensionAvailability,
 ];
 
@@ -62,8 +61,6 @@ class Controller {
         this.extensionArgs = [this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus,
             this.enableDisableExtension, this.restartCallback, this.addExtension];
 
-        const availabilityLegacy = !settings.get().advanced.availability_timeout &&
-            settings.get().advanced.availability_timeout;
         this.extensions = [
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
@@ -77,15 +74,13 @@ class Controller {
             new ExtensionOTAUpdate(...this.extensionArgs),
             new ExtensionReport(...this.extensionArgs),
             new ExtensionExternalExtension(...this.extensionArgs),
+            new ExtensionAvailability(...this.extensionArgs),
             settings.get().frontend && new ExtensionFrontend(...this.extensionArgs),
             settings.get().advanced.legacy_api && new ExtensionBridgeLegacy(...this.extensionArgs),
             settings.get().external_converters.length && new ExtensionExternalConverters(...this.extensionArgs),
             settings.get().homeassistant && new ExtensionHomeAssistant(...this.extensionArgs),
             /* istanbul ignore next */
             settings.get().advanced.soft_reset_timeout !== 0 && new ExtensionSoftReset(...this.extensionArgs),
-            settings.get().experimental.availability_new && new ExtensionAvailability(...this.extensionArgs),
-            /* istanbul ignore next */
-            availabilityLegacy && new ExtensionAvailabilityLegacy(...this.extensionArgs),
         ].filter((n) => n);
     }
 
