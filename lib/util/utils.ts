@@ -313,7 +313,7 @@ export function isIkeaTradfriDevice(device: ZHDevice): boolean {
     return [4476].includes(device.manufacturerID);
 }
 
-const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}))?$`);
+const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
 export function parseEntityID(ID: string): {ID: string, endpoint: string} {
     const match = ID.match(entityIDRegex);
     return match && {ID: match[1], endpoint: match[2]};

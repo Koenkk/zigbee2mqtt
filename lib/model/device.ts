@@ -42,7 +42,9 @@ export default class Device {
         let endpoint: ZHEndpoint;
         if (key == null) key = 'default';
 
-        if (this.definition?.endpoint) {
+        if (!isNaN(Number(key))) {
+            endpoint = this.device.getEndpoint(Number(key));
+        } else if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.device)[key];
             if (ID) endpoint = this.device.getEndpoint(ID);
             else if (key === 'default') endpoint = this.device.endpoints[0];
