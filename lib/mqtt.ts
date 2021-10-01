@@ -1,25 +1,31 @@
-const mqtt = require('mqtt');
-const logger = require('./util/logger');
-const settings = require('./util/settings');
-const fs = require('fs');
-const events = require('events');
+import mqtt from 'mqtt';
+import logger from './util/logger';
+import * as settings from './util/settings';
+import {seconds} from './util/utils';
+import fs from 'fs';
 
-class MQTT extends events.EventEmitter {
-    constructor() {
-        super();
+export default class MQTT {
+    private publishedTopics: Set<string> = new Set();
+    private connectionTimer: NodeJS.Timeout;
+    private client: mqtt.MqttClient;
+    private eventBus: EventBus;
+
+    constructor(eventBus: EventBus) {
+        this.eventBus = eventBus;
         this.onMessage = this.onMessage.bind(this);
-        this.publishedTopics = new Set();
+        this.onConnect = this.onConnect.bind(this);
     }
 
-    async connect() {
+    async connect(): Promise<void> {
         const mqttSettings = settings.get().mqtt;
         logger.info(`Connecting to MQTT server at ${mqttSettings.server}`);
 
-        const options = {
+        const options: mqtt.IClientOptions = {
             will: {
                 topic: `${settings.get().mqtt.base_topic}/bridge/state`,
                 payload: 'offline',
                 retain: settings.get().mqtt.force_disable_retain ? false : true,
+                qos: 1,
             },
         };
 
@@ -62,22 +68,12 @@ class MQTT extends events.EventEmitter {
             options.rejectUnauthorized = false;
         }
 
-        // Set timer at interval to check if connected to MQTT server.
-        const interval = 10 * 1000; // seconds * 1000.
-        this.connectionTimer = setInterval(() => {
-            if (this.client.reconnecting) {
-                logger.error('Not connected to MQTT server!');
-            }
-        }, interval);
-
         return new Promise((resolve) => {
             this.client = mqtt.connect(mqttSettings.server, options);
 
-            const self = this;
-            this.client.on('connect', () => {
-                logger.info('Connected to MQTT server');
-                self.subscribe(`${settings.get().mqtt.base_topic}/#`);
-                self.publish('bridge/state', 'online', {retain: true, qos: 0});
+            const onConnect = this.onConnect;
+            this.client.on('connect', async () => {
+                await onConnect();
                 resolve();
             });
 
@@ -85,38 +81,53 @@ class MQTT extends events.EventEmitter {
         });
     }
 
-    async disconnect() {
+    private async onConnect(): Promise<void> {
+        // Set timer at interval to check if connected to MQTT server.
         clearTimeout(this.connectionTimer);
-        this.connectionTimer = null;
+        this.connectionTimer = setInterval(() => {
+            if (this.client.reconnecting) {
+                logger.error('Not connected to MQTT server!');
+            }
+        }, seconds(10));
+
+        logger.info('Connected to MQTT server');
+        this.subscribe(`${settings.get().mqtt.base_topic}/#`);
+        await this.publish('bridge/state', 'online', {retain: true, qos: 0});
+    }
+
+    async disconnect(): Promise<void> {
+        clearTimeout(this.connectionTimer);
         await this.publish('bridge/state', 'offline', {retain: true, qos: 0});
         logger.info('Disconnecting from MQTT server');
         this.client.end();
     }
 
-    subscribe(topic) {
+    subscribe(topic: string): void {
         this.client.subscribe(topic);
     }
 
-    onMessage(topic, message) {
+    public onMessage(topic: string, message: string): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
-            this.emit('message', {topic, message: message + ''});
+            this.eventBus.emitMQTTMessage({topic, message: message + ''});
         }
     }
 
-    isConnected() {
+    isConnected(): boolean {
         return this.client && !this.client.reconnecting;
     }
 
-    async publish(topic, payload, options, base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true) {
+    async publish(topic: string, payload: string, options: {qos?: mqtt.QoS, retain?: boolean}={},
+        base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
+    ): Promise<void> {
+        const defaultOptions: {qos: mqtt.QoS, retain: boolean} = {qos: 0, retain: false};
         topic = `${base}/${topic}`;
-        options = {qos: 0, retain: false, ...options};
 
         if (skipReceive) {
             this.publishedTopics.add(topic);
         }
 
-        this.emit('publishMessage', {topic, payload, options});
+        this.eventBus.emitMQTTMessagePublished({topic, payload, options: {...defaultOptions, ...options}});
 
         if (!this.isConnected()) {
             if (!skipLog) {
@@ -130,17 +141,13 @@ class MQTT extends events.EventEmitter {
             logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`);
         }
 
-        const actualOptions = {...options};
+        const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
         if (settings.get().mqtt.force_disable_retain) {
             actualOptions.retain = false;
         }
 
         return new Promise((resolve) => {
-            this.client.publish(topic, payload, actualOptions, () => {
-                resolve();
-            });
+            this.client.publish(topic, payload, actualOptions, () => resolve());
         });
     }
 }
-
-module.exports = MQTT;

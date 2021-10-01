@@ -127,7 +127,7 @@ class Device {
 const returnDevices = [];
 
 const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020");
-const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4')], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
+const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7', [], {lightingColorCtrl: {colorCapabilities: 17}})], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
 const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
 const ZNCZ02LM = new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug");
@@ -196,6 +196,8 @@ const devices = {
     'unknown': new Device('Router', '0x0017980134e45545', 6540,4151, [], true, "Mains (single phase)"),
     'temperature_sensor': new Device('EndDevice', '0x0017880104e45561', 6544,4151, [new Endpoint(1, [0,3,4,1026], [])], true, "Battery", "temperature.sensor"),
     'heating_actuator': new Device('Router', '0x0017880104e45562', 6545,4151, [new Endpoint(1, [0,3,4,513], [1026])], true, "Mains (single phase)", "heating.actuator"),
+    'bj_scene_switch': new Device('EndDevice', '0xd85def11a1002caa', 50117, 4398, [new Endpoint(10, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa', [{target: bulb_color_2.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 768, name: 'lightingColorCtrl'}},]), new Endpoint(11, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa')], true, 'Battery', 'RB01', false, 'Busch-Jaeger', '20161222', '1.2.0'),
+
 }
 
 const mock = {

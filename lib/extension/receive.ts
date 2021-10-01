@@ -1,37 +1,35 @@
-const settings = require('../util/settings');
-const logger = require('../util/logger');
-const utils = require('../util/utils');
-const debounce = require('debounce');
-const Extension = require('./extension');
-const stringify = require('json-stable-stringify-without-jsonify');
+import * as settings from '../util/settings';
+import logger from '../util/logger';
+import debounce from 'debounce';
+import ExtensionTS from './extensionts';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
+import bind from 'bind-decorator';
 
-class Receive extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
-        this.elapsed = {};
-        this.debouncers = {};
-        this.eventBus.on('publishEntityState', (data) => this.onPublishEntityState(data), this.constructor.name);
+class Receive extends ExtensionTS {
+    private elapsed: {[s: string]: number} = {};
+    // eslint-disable-next-line
+    private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type
+
+    async start(): Promise<void> {
+        this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
+        this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    async onZigbeeStarted() {
-        this.coordinator = this.zigbee.getDevicesByType('Coordinator')[0];
-    }
-
-    async onPublishEntityState(data) {
+    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
          * remove it from the to be send debounced message.
          */
-        if (data.entity.type === 'device' && this.debouncers[data.entity.device.ieeeAddr] &&
-            data.stateChangeReason !== 'publishDebounce') {
+        if (data.ieeeAddr && this.debouncers[data.ieeeAddr] && data.stateChangeReason !== 'publishDebounce') {
             for (const key of Object.keys(data.payload)) {
-                delete this.debouncers[data.entity.device.ieeeAddr].payload[key];
+                delete this.debouncers[data.ieeeAddr].payload[key];
             }
         }
     }
 
-    publishDebounce(ieeeAddr, payload, time, debounceIgnore) {
+    publishDebounce(ieeeAddr: string, payload: KeyValue, time: number, debounceIgnore: string[]): void {
         if (!this.debouncers[ieeeAddr]) {
             this.debouncers[ieeeAddr] = {
                 payload: {},
@@ -56,7 +54,7 @@ class Receive extends Extension {
     // then all newPayload values with key present in debounce_ignore
     // should equal or be undefined in oldPayload
     // otherwise payload is conflicted
-    isPayloadConflicted(newPayload, oldPayload, debounceIgnore) {
+    isPayloadConflicted(newPayload: KeyValue, oldPayload: KeyValue, debounceIgnore: string[] | null): boolean {
         let result = false;
         Object.keys(oldPayload)
             .filter((key) => (debounceIgnore || []).includes(key))
@@ -69,12 +67,8 @@ class Receive extends Extension {
         return result;
     }
 
-    shouldProcess(type, data, resolvedEntity) {
-        if (type !== 'message' || !resolvedEntity) {
-            return false;
-        }
-
-        if (!resolvedEntity.definition) {
+    shouldProcess(data: EventDeviceMessage): boolean {
+        if (!data.device.definition) {
             if (data.device.interviewing) {
                 logger.debug(`Skipping message, definition is undefined and still interviewing`);
             } else {
@@ -90,7 +84,10 @@ class Receive extends Extension {
         return true;
     }
 
-    onZigbeeEvent(type, data, resolvedEntity) {
+    @bind onDeviceMessage(data: EventDeviceMessage): void {
+        /* istanbul ignore next */
+        if (!data.device) return;
+
         /**
          * Handling of re-transmitted Xiaomi messages.
          * https://github.com/Koenkk/zigbee2mqtt/issues/1238
@@ -103,27 +100,23 @@ class Receive extends Extension {
          * Handling these message would result in false state updates.
          * The group ID attribute of these message defines the network address of the end device.
          */
-        if (type === 'message' && utils.isXiaomiDevice(data.device) && data.device.type === 'Router' && data.groupID) {
+        if (data.device.isXiaomiDevice() && data.device.isRouter() && data.groupID) {
             logger.debug('Handling re-transmitted Xiaomi message');
-            data.device = this.zigbee.getDeviceByNetworkAddress(data.groupID);
-            resolvedEntity = this.zigbee.resolveEntity(data.device);
+            data = {...data, device: this.zigbee.deviceByNetworkAddress(data.groupID)};
         }
 
-        if (!this.shouldProcess(type, data, resolvedEntity)) {
-            return;
-        }
+        if (!this.shouldProcess(data)) return;
 
-        const converters = resolvedEntity.definition.fromZigbee.filter((c) => {
+        const converters = data.device.definition.fromZigbee.filter((c) => {
             const type = Array.isArray(c.type) ? c.type.includes(data.type) : c.type === data.type;
             return c.cluster === data.cluster && type;
         });
 
         // Check if there is an available converter, genOta messages are not interesting.
-        if (!converters.length && !['genOta', 'genTime', 'genBasic'].includes(data.cluster)) {
-            logger.debug(
-                `No converter available for '${resolvedEntity.definition.model}' with cluster '${data.cluster}' ` +
-                `and type '${data.type}' and data '${stringify(data.data)}'`,
-            );
+        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic'];
+        if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
+            logger.debug(`No converter available for '${data.device.definition.model}' with ` +
+                `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
             return;
         }
 
@@ -132,7 +125,7 @@ class Receive extends Extension {
         // - If a payload is returned publish it to the MQTT broker
         // - If NO payload is returned do nothing. This is for non-standard behaviour
         //   for e.g. click switches where we need to count number of clicks and detect long presses.
-        const publish = (payload) => {
+        const publish = (payload: KeyValue): void => {
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
@@ -143,22 +136,18 @@ class Receive extends Extension {
             }
 
             // Check if we have to debounce
-            if (resolvedEntity.settings.debounce) {
-                this.publishDebounce(
-                    data.device.ieeeAddr, payload, resolvedEntity.settings.debounce,
-                    resolvedEntity.settings.debounce_ignore,
-                );
+            if (data.device.settings.debounce) {
+                this.publishDebounce(data.device.ieeeAddr, payload, data.device.settings.debounce,
+                    data.device.settings.debounce_ignore);
             } else {
                 this.publishEntityState(data.device.ieeeAddr, payload);
             }
         };
 
-        const meta = {device: data.device, logger, state: this.state.get(data.device.ieeeAddr)};
+        const meta = {device: data.device.zhDevice, logger, state: this.state.get(data.device.ieeeAddr)};
         let payload = {};
         converters.forEach((converter) => {
-            const converted = converter.convert(
-                resolvedEntity.definition, data, publish, resolvedEntity.settings, meta,
-            );
+            const converted = converter.convert(data.device.definition, data, publish, data.device.settings, meta);
             if (converted) {
                 payload = {...payload, ...converted};
             }
@@ -166,7 +155,6 @@ class Receive extends Extension {
 
         if (Object.keys(payload).length) {
             publish(payload);
-            return true;
         }
     }
 }

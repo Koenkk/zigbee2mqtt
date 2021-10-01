@@ -113,10 +113,8 @@ describe('Configure', () => {
     it('Should not configure twice', async () => {
         expectBulbConfigured();
         const device = zigbeeHerdsman.devices.bulb;
-        const endpoint = device.getEndpoint(1);
         mockClear(device);
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expectBulbNotConfigured();
     });
@@ -124,10 +122,8 @@ describe('Configure', () => {
     it('Should configure on zigbee message when not configured yet', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         delete device.meta.configured;
-        const endpoint = device.getEndpoint(1);
         mockClear(device);
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expectBulbConfigured();
     });
@@ -202,8 +198,7 @@ describe('Configure', () => {
         device.interviewing = true;
         const endpoint = device.getEndpoint(1);
         mockClear(device);
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expectRemoteNotConfigured();
         device.interviewing = false;
@@ -215,8 +210,7 @@ describe('Configure', () => {
         device.interviewCompleted = false;
         const endpoint = device.getEndpoint(1);
         mockClear(device);
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expectRemoteConfigured();
         device.interviewCompleted = true;
@@ -228,11 +222,10 @@ describe('Configure', () => {
         const endpoint = device.getEndpoint(1);
         endpoint.bind.mockImplementationOnce(async () => await wait(500));
         mockClear(device);
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
     });
@@ -244,20 +237,19 @@ describe('Configure', () => {
         const endpoint = device.getEndpoint(1);
         mockClear(device);
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('BLA')});
-        const payload = {data: {zclVersion: 1}, cluster: 'genBasic', device, endpoint, type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('BLA')});
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('BLA')});
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('BLA')});
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         endpoint.bind.mockImplementationOnce(async () => {throw new Error('BLA')});
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(3);
     });

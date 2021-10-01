@@ -1,9 +1,12 @@
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
-import data from './data';
+import * as data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
+import {Endpoint} from 'zigbee-herdsman/dist/controller/model';
+
+// TODO: check all
 
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:
@@ -43,6 +46,11 @@ export const endpointNames = [
 
 export function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
+}
+
+export async function getZigbee2MQTTVersionSimple(): Promise<string> {
+    const packageJSON = await import('../..' + '/package.json');
+    return packageJSON.version;
 }
 
 export async function getZigbee2MQTTVersion(): Promise<{commitHash: string, version: string}> {
@@ -110,8 +118,7 @@ export function getObjectProperty(object: {[s: string]: unknown}, key: string, d
     return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
 }
 
-export function getResponse(request: {transaction: string}, data: unknown, error: string):
-    {data: unknown, status: string, error?: string, transaction?: string} {
+export function getResponse(request: KeyValue | string, data: KeyValue, error: string): MQTTResponse {
     const response: {data: unknown, status: string, error?: string, transaction?: string} =
         {data, status: error ? 'error' : 'ok'};
     if (error) response.error = error;
@@ -121,7 +128,7 @@ export function getResponse(request: {transaction: string}, data: unknown, error
     return response;
 }
 
-export function parseJSON(value: string, failedReturnValue: unknown): unknown {
+export function parseJSON(value: string, failedReturnValue: string): KeyValue | string {
     try {
         return JSON.parse(value);
     } catch (e) {
@@ -254,7 +261,29 @@ export function sanitizeImageParameter(parameter: string): string {
     return sanitized;
 }
 
-export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Settings): boolean {
+export function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
+    /* istanbul ignore next */
+    if (!settings.experimental.availability_new) return false;
+
+    if (device.settings.hasOwnProperty('availability')) {
+        return !!device.settings.availability;
+    }
+
+    // availability_timeout = deprecated
+    const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
+    if (!enabledGlobal) return false;
+
+    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
+    if (passlist.length > 0) {
+        return passlist.includes(device.name) || passlist.includes(device.ieeeAddr);
+    }
+
+    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
+    return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
+}
+
+/* istanbul ignore next */
+export function isAvailabilityEnabledForDeviceLegacy(rd: ResolvedDevice, settings: Settings): boolean {
     if (!settings.experimental.availability_new) return false;
 
     if (rd.settings.hasOwnProperty('availability')) {
@@ -274,14 +303,24 @@ export function isAvailabilityEnabledForDevice(rd: ResolvedDevice, settings: Set
     return !blocklist.includes(rd.name) && !blocklist.includes(rd.device.ieeeAddr);
 }
 
-export function isXiaomiDevice(device: Device): boolean {
+export function isXiaomiDevice(device: ZHDevice): boolean {
     const xiaomiManufacturerID = [4151, 4447];
     return device.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(device.manufacturerID) &&
         (!device.manufacturerName || !device.manufacturerName.startsWith('Trust'));
 }
 
-export function isIkeaTradfriDevice(device: Device): boolean {
+export function isIkeaTradfriDevice(device: ZHDevice): boolean {
     return [4476].includes(device.manufacturerID);
+}
+
+const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
+export function parseEntityID(ID: string): {ID: string, endpoint: string} {
+    const match = ID.match(entityIDRegex);
+    return match && {ID: match[1], endpoint: match[2]};
+}
+
+export function isEndpoint(obj: unknown): obj is Endpoint {
+    return obj.constructor.name.toLowerCase() === 'endpoint';
 }
 
 export const hours = (hours: number): number => 1000 * 60 * 60 * hours;

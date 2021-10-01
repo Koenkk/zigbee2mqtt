@@ -1,33 +1,31 @@
-const settings = require('../util/settings');
-const Extension = require('./extension');
-const utils = require('../util/utils');
-const fs = require('fs');
-const data = require('./../util/data');
-const path = require('path');
-const logger = require('./../util/logger');
-const stringify = require('json-stable-stringify-without-jsonify');
+import * as settings from '../util/settings';
+import * as utils from '../util/utils';
+import fs from 'fs';
+import * as data from './../util/data';
+import path from 'path';
+import logger from './../util/logger';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
+import bind from 'bind-decorator';
+import ExtensionTS from './extensionts';
+
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
-class ExternalExtension extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus,
-        enableDisableExtension, restartCallback, addExtension) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
-        this.args = [zigbee, mqtt, state, publishEntityState, eventBus];
-        this.addExtension = addExtension;
-        this.enableDisableExtension = enableDisableExtension;
-        this.extensionsBaseDir = 'extension';
-        this.loadExtension = this.loadExtension.bind(this);
-        this.requestLookup = {
-            'save': this.saveExtension.bind(this),
-            'remove': this.removeExtension.bind(this),
-        };
+class ExternalExtension extends ExtensionTS {
+    private requestLookup: {[s: string]: (message: KeyValue) => MQTTResponse};
+
+    override async start(): Promise<void> {
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.requestLookup = {'save': this.saveExtension, 'remove': this.removeExtension};
         this.loadUserDefinedExtensions();
-    }
-    getExtensionsBasePath() {
-        return data.joinPath(this.extensionsBaseDir);
+        await this.publishExtensions();
     }
 
-    getListOfUserDefinedExtensions() {
+    private getExtensionsBasePath(): string {
+        return data.joinPath('extension');
+    }
+
+    private getListOfUserDefinedExtensions(): {name: string, code: string}[] {
         const basePath = this.getExtensionsBasePath();
         if (fs.existsSync(basePath)) {
             return fs.readdirSync(basePath).filter((f) => f.endsWith('.js')).map((fileName) => {
@@ -38,7 +36,8 @@ class ExternalExtension extends Extension {
             return [];
         }
     }
-    removeExtension(message) {
+
+    @bind private removeExtension(message: KeyValue): MQTTResponse {
         const {name} = message;
         const extensions = this.getListOfUserDefinedExtensions();
         const extensionToBeRemoved = extensions.find((e) => e.name === name);
@@ -46,8 +45,8 @@ class ExternalExtension extends Extension {
         if (extensionToBeRemoved) {
             this.enableDisableExtension(false, extensionToBeRemoved.name);
             const basePath = this.getExtensionsBasePath();
-            const extensonFilePath = path.join(basePath, path.basename(name));
-            fs.unlinkSync(extensonFilePath);
+            const extensionFilePath = path.join(basePath, path.basename(name));
+            fs.unlinkSync(extensionFilePath);
             this.publishExtensions();
             logger.info(`Extension ${name} removed`);
             return utils.getResponse(message, {}, null);
@@ -55,9 +54,10 @@ class ExternalExtension extends Extension {
             return utils.getResponse(message, {}, `Extension ${name} doesn't exists`);
         }
     }
-    saveExtension(message) {
+
+    @bind private saveExtension(message: KeyValue): MQTTResponse {
         const {name, code} = message;
-        const ModuleConstructor = utils.loadModuleFromText(code);
+        const ModuleConstructor = utils.loadModuleFromText(code) as ExternalConverterClass;
         this.loadExtension(ModuleConstructor);
         const basePath = this.getExtensionsBasePath();
         /* istanbul ignore else */
@@ -71,38 +71,35 @@ class ExternalExtension extends Extension {
         return utils.getResponse(message, {}, null);
     }
 
-
-    async onMQTTMessage(topic, message) {
-        const match = topic.match(requestRegex);
+    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+        const match = data.topic.match(requestRegex);
         if (match && this.requestLookup[match[1].toLowerCase()]) {
-            message = utils.parseJSON(message, message);
+            const message = utils.parseJSON(data.message, data.message) as KeyValue;
             try {
-                const response = await this.requestLookup[match[1].toLowerCase()](message);
+                const response = this.requestLookup[match[1].toLowerCase()](message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             } catch (error) {
-                logger.error(`Request '${topic}' failed with error: '${error.message}'`);
+                logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
                 const response = utils.getResponse(message, {}, error.message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             }
         }
     }
 
-    loadExtension(ConstructorClass) {
+    @bind private loadExtension(ConstructorClass: ExternalConverterClass): void {
         this.enableDisableExtension(false, ConstructorClass.name);
-        this.addExtension(new ConstructorClass(...this.args, settings, logger));
+        this.addExtension(new ConstructorClass(
+            this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
 
-    loadUserDefinedExtensions() {
+    private loadUserDefinedExtensions(): void {
         const extensions = this.getListOfUserDefinedExtensions();
         extensions
             .map(({code}) => utils.loadModuleFromText(code))
             .map(this.loadExtension);
     }
-    async onMQTTConnected() {
-        this.publishExtensions();
-    }
 
-    async publishExtensions() {
+    private async publishExtensions(): Promise<void> {
         const extensions = this.getListOfUserDefinedExtensions();
         await this.mqtt.publish('bridge/extensions', stringify(extensions), {
             retain: true,

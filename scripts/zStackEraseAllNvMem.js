@@ -64,11 +64,11 @@ class ZStackNvMemEraser {
                 if (needOsal) {
                     await this.znp.request(Subsystem.SYS, 'osalNvDelete',
                         {id: id, len: len},
-                        null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+                        null, null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
                 } else {
                     await this.znp.request(Subsystem.SYS, 'nvDelete',
                         {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0},
-                        null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
+                        null, null, [ZnpCommandStatus.SUCCESS, ZnpCommandStatus.NV_ITEM_INITIALIZED]);
                 }
                 deletedCount++;
             }

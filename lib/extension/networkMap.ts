@@ -1,27 +1,37 @@
-const settings = require('../util/settings');
-const utils = require('../util/utils');
-const logger = require('../util/logger');
-const Extension = require('./extension');
-const stringify = require('json-stable-stringify-without-jsonify');
+import * as settings from '../util/settings';
+import * as utils from '../util/utils';
+import logger from '../util/logger';
+// @ts-ignore
+import stringify from 'json-stable-stringify-without-jsonify';
+import ExtensionTS from './extensionts';
+import bind from 'bind-decorator';
+
+interface Link {
+    source: {ieeeAddr: string, networkAddress: number}, target: {ieeeAddr: string, networkAddress: number},
+    linkquality: number, depth: number, routes: RoutingTableEntry[],
+    sourceIeeeAddr: string, targetIeeeAddr: string, sourceNwkAddr: number, lqi: number, relationship: number,
+}
+
+interface Topology {
+    nodes: {
+        ieeeAddr: string, friendlyName: string, type: string, networkAddress: number, manufacturerName: string,
+        modelID: string, failed: string[], lastSeen: number,
+        definition: {model: string, vendor: string, supports: string, description: string}}[],
+    links: Link[],
+}
 
 /**
  * This extension creates a network map
  */
-class NetworkMap extends Extension {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus);
+class NetworkMap extends ExtensionTS {
+    private legacyApi = settings.get().advanced.legacy_api;
+    private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
+    private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
+    private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
+    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
 
-        this.legacyApi = settings.get().advanced.legacy_api;
-        this.legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
-        this.legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
-        this.topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
-
-        // Bind
-        this.raw = this.raw.bind(this);
-        this.graphviz = this.graphviz.bind(this);
-        this.plantuml = this.plantuml.bind(this);
-
-        // Set supported formats
+    override async start(): Promise<void> {
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
         this.supportedFormats = {
             'raw': this.raw,
             'graphviz': this.graphviz,
@@ -29,22 +39,22 @@ class NetworkMap extends Extension {
         };
     }
 
-    async onMQTTMessage(topic, message) {
+    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
-            if ((topic === this.legacyTopic || topic === this.legacyTopicRoutes) &&
-                this.supportedFormats.hasOwnProperty(message)) {
-                const includeRoutes = topic === this.legacyTopicRoutes;
+            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) &&
+                this.supportedFormats.hasOwnProperty(data.message)) {
+                const includeRoutes = data.topic === this.legacyTopicRoutes;
                 const topology = await this.networkScan(includeRoutes);
-                let converted = this.supportedFormats[message](topology);
-                converted = message === 'raw' ? stringify(converted) : converted;
-                this.mqtt.publish(`bridge/networkmap/${message}`, converted, {});
+                let converted = this.supportedFormats[data.message](topology);
+                converted = data.message === 'raw' ? stringify(converted) : converted;
+                this.mqtt.publish(`bridge/networkmap/${data.message}`, converted as string, {});
             }
         }
 
-        if (topic === this.topic) {
+        if (data.topic === this.topic) {
+            const message = utils.parseJSON(data.message, data.message);
             try {
-                message = utils.parseJSON(message, message);
                 const type = typeof message === 'object' ? message.type : message;
                 if (!this.supportedFormats.hasOwnProperty(type)) {
                     throw new Error(`Type '${type}' not supported, allowed are: ${Object.keys(this.supportedFormats)}`);
@@ -66,11 +76,11 @@ class NetworkMap extends Extension {
         }
     }
 
-    raw(topology) {
+    @bind raw(topology: Topology): KeyValue {
         return topology;
     }
 
-    graphviz(topology) {
+    @bind graphviz(topology: Topology): string {
         const colors = settings.get().map_options.graphviz.colors;
 
         let text = 'digraph G {\nnode[shape=record];\n';
@@ -102,7 +112,7 @@ class NetworkMap extends Extension {
             let lastSeen = 'unknown';
             const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
             if (date) {
-                lastSeen = utils.formatDate(date, 'relative');
+                lastSeen = utils.formatDate(date, 'relative') as string;
             }
 
             labels.push(lastSeen);
@@ -145,7 +155,7 @@ class NetworkMap extends Extension {
         return text.replace(/\0/g, '');
     }
 
-    plantuml(topology) {
+    @bind plantuml(topology: Topology): string {
         const text = [];
 
         text.push(`' paste into: https://www.planttext.com/`);
@@ -167,7 +177,7 @@ class NetworkMap extends Extension {
             // Add the device model
             if (node.type !== 'Coordinator') {
                 text.push(`---`);
-                const definition = this.zigbee.resolveEntity(node.ieeeAddr).definition;
+                const definition = this.zigbee.resolveEntityLegacy(node.ieeeAddr).definition;
                 if (definition) {
                     text.push(`${definition.vendor} ${definition.description} (${definition.model})`);
                 } else {
@@ -180,7 +190,7 @@ class NetworkMap extends Extension {
             let lastSeen = 'unknown';
             const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
             if (date) {
-                lastSeen = utils.formatDate(date, 'relative');
+                lastSeen = utils.formatDate(date, 'relative') as string;
             }
             text.push(`---`);
             text.push(lastSeen);
@@ -203,19 +213,18 @@ class NetworkMap extends Extension {
         return text.join(`\n`);
     }
 
-    async networkScan(includeRoutes) {
+    async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
         const devices = this.zigbee.getDevices().filter((d) => d.type !== 'GreenPower');
-        const lqis = new Map();
-        const routingTables = new Map();
-        const failed = new Map();
+        const lqis: Map<Device, LQI> = new Map();
+        const routingTables: Map<Device, RoutingTable> = new Map();
+        const failed: Map<Device, string[]> = new Map();
 
         for (const device of devices.filter((d) => d.type != 'EndDevice')) {
             failed.set(device, []);
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
-            const resolvedEntity = this.zigbee.resolveEntity(device);
 
-            const doRequest = async (request, firstAttempt = true) => {
+            const doRequest = async <T>(request: () => Promise<T>, firstAttempt = true): Promise<T> => {
                 try {
                     return await request();
                 } catch (error) {
@@ -224,51 +233,49 @@ class NetworkMap extends Extension {
                     } else {
                         // Network is possibly congested, sleep 5 seconds to let the network settle.
                         await utils.sleep(5);
-                        return await doRequest(request, false);
+                        return doRequest(request, false);
                     }
                 }
             };
 
             try {
-                const result = await doRequest(async () => await device.lqi());
+                const result = await doRequest<LQI>(async () => device.lqi());
                 lqis.set(device, result);
-                logger.debug(`LQI succeeded for '${resolvedEntity.name}'`);
+                logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
                 failed.get(device).push('lqi');
-                logger.error(`Failed to execute LQI for '${resolvedEntity.name}'`);
+                logger.error(`Failed to execute LQI for '${device.name}'`);
             }
 
             if (includeRoutes) {
                 try {
-                    const result = await doRequest(async () => await device.routingTable());
+                    const result = await doRequest(async () => device.routingTable());
                     routingTables.set(device, result);
-                    logger.debug(`Routing table succeeded for '${resolvedEntity.name}'`);
+                    logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
                     failed.get(device).push('routingTable');
-                    logger.error(`Failed to execute routing table for '${resolvedEntity.name}'`);
+                    logger.error(`Failed to execute routing table for '${device.name}'`);
                 }
             }
         }
 
         logger.info(`Network scan finished`);
 
-        const networkMap = {nodes: [], links: []};
+        const topology: Topology = {nodes: [], links: []};
         // Add nodes
         for (const device of devices) {
-            const resolvedEntity = this.zigbee.resolveEntity(device);
-            const definition = resolvedEntity.definition ? {
-                model: resolvedEntity.definition.model,
-                vendor: resolvedEntity.definition.vendor,
-                description: resolvedEntity.definition.description,
-                supports: Array.from(new Set((resolvedEntity.definition.exposes).map((e) => {
-                    return e.hasOwnProperty('name') ?
-                        e.name :
+            const definition = device.definition ? {
+                model: device.definition.model,
+                vendor: device.definition.vendor,
+                description: device.definition.description,
+                supports: Array.from(new Set((device.definition.exposes).map((e) => {
+                    return e.hasOwnProperty('name') ? e.name :
                         `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
                 }))).join(', '),
             } : null;
 
-            networkMap.nodes.push({
-                ieeeAddr: device.ieeeAddr, friendlyName: resolvedEntity.name, type: device.type,
+            topology.nodes.push({
+                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.type,
                 networkAddress: device.networkAddress, manufacturerName: device.manufacturerName,
                 modelID: device.modelID, failed: failed.get(device), lastSeen: device.lastSeen,
                 definition,
@@ -285,12 +292,12 @@ class NetworkMap extends Extension {
 
                 // Some Xiaomi devices return 0x00 as the neighbor ieeeAddr (obviously not correct).
                 // Determine the correct ieeeAddr based on the networkAddress.
-                const neighborDevice = this.zigbee.getDeviceByNetworkAddress(neighbor.networkAddress);
+                const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.networkAddress);
                 if (neighbor.ieeeAddr === '0x0000000000000000' && neighborDevice) {
                     neighbor.ieeeAddr = neighborDevice.ieeeAddr;
                 }
 
-                const link = {
+                const link: Link = {
                     source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
                     target: {ieeeAddr: device.ieeeAddr, networkAddress: device.networkAddress},
                     linkquality: neighbor.linkquality, depth: neighbor.depth, routes: [],
@@ -306,11 +313,11 @@ class NetworkMap extends Extension {
                         .filter((t) => t.status === 'ACTIVE' && t.nextHop === neighbor.networkAddress);
                 }
 
-                networkMap.links.push(link);
+                topology.links.push(link);
             }
         });
 
-        return networkMap;
+        return topology;
     }
 }
 
