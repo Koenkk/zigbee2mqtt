@@ -632,4 +632,16 @@ describe('Controller', () => {
         expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeFalsy();
         expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
+
+    it('Should publish last seen changes', async () => {
+        settings.set(['advanced', 'last_seen'], 'epoch');
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        const device = zigbeeHerdsman.devices.remote;
+        await zigbeeHerdsman.events.lastSeenChanged({device});
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote', stringify({"brightness":255,"last_seen":1000}), { qos: 0, retain: true }, expect.any(Function));
+    });
 });
