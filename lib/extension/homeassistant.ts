@@ -901,10 +901,6 @@ export default class HomeAssistant extends Extension {
             /* istanbul ignore next */
             if (availabilityEnabled) {
                 payload.availability_mode = 'all';
-            }
-
-            /* istanbul ignore next */
-            if (availabilityEnabled || settings.get().advanced.availability_timeout) {
                 payload.availability.push({topic: `${settings.get().mqtt.base_topic}/${entity.name}/availability`});
             }
 

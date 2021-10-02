@@ -11,8 +11,8 @@ export const schema = schemaJson;
 
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
-const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schema);
-const ajvRestartRequired = new Ajv({allErrors: true})
+const ajvSetting = new Ajv({allErrors: true, allowUnionTypes: true}).addKeyword('requiresRestart').compile(schema);
+const ajvRestartRequired = new Ajv({allErrors: true, allowUnionTypes: true})
     .addKeyword({keyword: 'requiresRestart', validate: (schema: unknown) => !schema}).compile(schema);
 
 const defaults: RecursivePartial<Settings> = {
@@ -75,7 +75,6 @@ const defaults: RecursivePartial<Settings> = {
         adapter_delay: null,
 
         // Availability timeout in seconds, disabled by default.
-        availability_timeout: 0,
         availability_blocklist: [],
         availability_passlist: [],
         // Deprecated, use block/passlist

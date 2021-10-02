@@ -33,7 +33,6 @@ describe('Availability', () => {
         jest.useFakeTimers('modern');
         settings.reRead();
         settings.set(['availability'], true);
-        settings.set(['experimental', 'availability_new'], true);
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
@@ -44,7 +43,6 @@ describe('Availability', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         settings.set(['availability'], true);
-        settings.set(['experimental', 'availability_new'], true);
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], false);
         Object.values(devices).forEach(d => d.lastSeen = utils.minutes(1));
         mocks.forEach((m) => m.mockClear());
