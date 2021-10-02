@@ -60,7 +60,7 @@ describe('Bridge', () => {
 
     it('Should publish bridge info on startup', async () => {
         await resetExtension();
-        const version = await require('../lib/util/utils').getZigbee2MQTTVersion();
+        const version = await require('../lib/util/utils').default.getZigbee2MQTTVersion();
         const directory = settings.get().advanced.log_directory;
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
@@ -542,7 +542,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'bulb_new_name'}));
         await flushPromises();
         expect(settings.getDevice('bulb')).toBeNull();
-        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb_new_name", "friendlyName": "bulb_new_name", "retain": true});
+        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb_new_name", "retain": true});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', '', {retain: true, qos: 0}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name', stringify({"brightness":50}), expect.any(Object), expect.any(Function));
@@ -569,7 +569,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({from: 'group_1', to: 'group_new_name'}));
         await flushPromises();
         expect(settings.getGroup('group_1')).toBeNull();
-        expect(settings.getGroup('group_new_name')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_new_name", "friendlyName": "group_new_name", "retain": false});
+        expect(settings.getGroup('group_new_name')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_new_name", "retain": false});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/rename',
@@ -606,7 +606,7 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({last: true, to: 'bulb_new_name'}));
         await flushPromises();
         expect(settings.getDevice('bulb')).toBeNull();
-        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb_new_name", "friendlyName": "bulb_new_name", "retain": true});
+        expect(settings.getDevice('bulb_new_name')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb_new_name", "retain": true});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
@@ -639,10 +639,10 @@ describe('Bridge', () => {
 
     it('Should allow change device options', async () => {
         MQTT.publish.mockClear();
-        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "retain": true});
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": true});
         MQTT.events.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {retain: false, transition: 1}, id: 'bulb'}));
         await flushPromises();
-        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "retain": false, "transition": 1});
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": false, "transition": 1});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/options',
             stringify({"data":{"from":{"retain": true},"to":{"retain": false,"transition":1}, "id":"bulb"},"status":"ok"}),
@@ -653,10 +653,10 @@ describe('Bridge', () => {
     it('Should allow to remove device option', async () => {
         MQTT.publish.mockClear();
         settings.set(['devices', '0x000b57fffec6a5b2', 'qos'], 1);
-        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "qos": 1, "retain": true});
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "qos": 1, "retain": true});
         MQTT.events.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {qos: null}, id: 'bulb'}));
         await flushPromises();
-        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "friendlyName": "bulb", "retain": true});
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": true});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/options',
             stringify({"data":{"from":{"retain": true, "qos": 1},"to":{"retain": true}, "id":"bulb"},"status":"ok"}),
@@ -666,10 +666,10 @@ describe('Bridge', () => {
 
     it('Should allow change group options', async () => {
         MQTT.publish.mockClear();
-        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false, "friendlyName": "group_1"});
+        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false});
         MQTT.events.message('zigbee2mqtt/bridge/request/group/options', stringify({options: {retain: true, transition: 1}, id: 'group_1'}));
         await flushPromises();
-        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": true, "friendlyName": "group_1", "transition": 1});
+        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": true, "transition": 1});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/options',
             stringify({"data":{"from":{"retain": false},"to":{"retain": true,"transition":1}, "id":"group_1"},"status":"ok"}),
@@ -692,7 +692,7 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/add', 'group_193');
         await flushPromises();
-        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 3, "devices": [], "friendly_name": "group_193", "friendlyName": "group_193"});
+        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 3, "devices": [], "friendly_name": "group_193"});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
@@ -705,7 +705,7 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/add', stringify({friendly_name: "group_193", id: 92}));
         await flushPromises();
-        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 92, "devices": [], "friendly_name": "group_193", "friendlyName": "group_193"});
+        expect(settings.getGroup('group_193')).toStrictEqual({"ID": 92, "devices": [], "friendly_name": "group_193"});
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
@@ -1127,31 +1127,31 @@ describe('Bridge', () => {
         const svg_icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo';
         const icon_link =  'https://www.zigbee2mqtt.io/images/devices/ZNCZ02LM.jpg';
         definition.icon = icon_link;
-        let payload = bridge.getDefinitionPayload({...device, definition, settings: {}});
+        let payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(icon_link);
 
         definition.icon = icon_link;
-        payload = bridge.getDefinitionPayload({...device, definition, settings: {icon: svg_icon}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {icon: svg_icon}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(svg_icon);
 
         definition.icon = '_${model}_';
-        payload = bridge.getDefinitionPayload({...device, definition, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_lumi.plug_');
 
         definition.icon = '_${model}_${zigbeeModel}_';
-        payload = bridge.getDefinitionPayload({...device, definition, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_lumi.plug_lumi.plug_');
 
         definition.icon = svg_icon;
-        payload = bridge.getDefinitionPayload({...device, definition, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(svg_icon);
@@ -1159,7 +1159,7 @@ describe('Bridge', () => {
         device.modelID = '?._Z\\NC+Z02*LM';
         definition.model = '&&&&*+';
         definition.icon = '_${model}_${zigbeeModel}_';
-        payload = bridge.getDefinitionPayload({...device, definition, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, settings: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_------_-._Z-NC-Z02-LM_');

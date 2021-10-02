@@ -1,71 +1,73 @@
 /* eslint-disable brace-style */
 import * as settings from '../util/settings';
-// @ts-ignore
-import zhc from 'zigbee-herdsman-converters';
+import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 
 export default class Device {
-    private device: ZHDevice;
-    private _definition: Definition;
+    public zh: zh.Device;
+    private _definition: zhc.Definition;
 
-    get endpoints(): ZHEndpoint[] {return this.device.endpoints;}
-    get zhDevice(): ZHDevice {return this.device;}
-    get ieeeAddr(): string {return this.device.ieeeAddr;}
-    get ID(): string {return this.device.ieeeAddr;}
+    get ieeeAddr(): string {return this.zh.ieeeAddr;}
+    get ID(): string {return this.zh.ieeeAddr;}
     get settings(): DeviceSettings {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
     get name(): string {
-        return this.type === 'Coordinator' ? 'Coordinator' : this.settings?.friendlyName || this.ieeeAddr;}
-    get lastSeen(): number {return this.device.lastSeen;}
-    get modelID(): string {return this.device.modelID;}
-    get softwareBuildID(): string {return this.device.softwareBuildID;}
-    get dateCode(): string {return this.device.dateCode;}
-    get interviewCompleted(): boolean {return this.device.interviewCompleted;}
-    get networkAddress(): number {return this.device.networkAddress;}
-    get manufacturerName(): string {return this.device.manufacturerName;}
-    get interviewing(): boolean {return this.device.interviewing;}
-    get type(): 'Coordinator' | 'Router' | 'EndDevice' | 'Unknown' | 'GreenPower' {return this.device.type;}
-    get powerSource(): string {return this.device.powerSource;}
-    get definition(): Definition | undefined {
-        if (!this._definition && !this.device.interviewing) {
-            this._definition = zhc.findByDevice(this.device);
+        return this.zh.type === 'Coordinator' ? 'Coordinator' : this.settings?.friendly_name || this.ieeeAddr;
+    }
+    get definition(): zhc.Definition {
+        if (!this._definition && !this.zh.interviewing) {
+            this._definition = zigbeeHerdsmanConverters.findByDevice(this.zh);
         }
         return this._definition;
     }
 
-    constructor(device: ZHDevice) {
-        this.device = device;
+    constructor(device: zh.Device) {
+        this.zh = device;
     }
 
-    async ping(disableRecovery: boolean): Promise<void> {await this.device.ping(disableRecovery);}
-    async removeFromNetwork(): Promise<void> {await this.device.removeFromNetwork();}
+    ensureInSettings(): void {
+        if (this.zh.type !== 'Coordinator' && !settings.getDevice(this.zh.ieeeAddr)) {
+            settings.addDevice(this.zh.ieeeAddr);
+        }
+    }
 
-    endpoint(key?: string): ZHEndpoint {
-        let endpoint: ZHEndpoint;
-        if (key == null) key = 'default';
+    endpoint(key?: string | number): zh.Endpoint {
+        let endpoint: zh.Endpoint;
+        if (key == null || key == '') key = 'default';
 
         if (!isNaN(Number(key))) {
-            endpoint = this.device.getEndpoint(Number(key));
+            endpoint = this.zh.getEndpoint(Number(key));
         } else if (this.definition?.endpoint) {
-            const ID = this.definition?.endpoint?.(this.device)[key];
-            if (ID) endpoint = this.device.getEndpoint(ID);
-            else if (key === 'default') endpoint = this.device.endpoints[0];
+            const ID = this.definition?.endpoint?.(this.zh)[key];
+            if (ID) endpoint = this.zh.getEndpoint(ID);
+            else if (key === 'default') endpoint = this.zh.endpoints[0];
             else return null;
         } else {
             /* istanbul ignore next */
             if (key !== 'default') return null;
-            endpoint = this.device.endpoints[0];
+            endpoint = this.zh.endpoints[0];
         }
 
         return endpoint;
     }
 
-    isXiaomiDevice(): boolean {
-        const xiaomiManufacturerID = [4151, 4447];
+    endpointName(endpoint: zh.Endpoint): string {
+        let name = null;
+        if (this.definition?.endpoint) {
+            name = Object.entries(this.definition?.endpoint(this.zh)).find((e) => e[1] == endpoint.ID)[0];
+        }
         /* istanbul ignore next */
-        return this.zhDevice.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(this.zhDevice.manufacturerID) &&
-            (!this.zhDevice.manufacturerName || !this.zhDevice.manufacturerName.startsWith('Trust'));
+        return name === 'default' ? null : name;
     }
 
-    isRouter(): boolean {return this.zhDevice.type === 'Router';}
-    lqi(): Promise<LQI> {return this.zhDevice.lqi();}
-    routingTable(): Promise<RoutingTable> {return this.zhDevice.routingTable();}
+    isXiaomi(): boolean {
+        const xiaomiManufacturerID = [4151, 4447];
+        /* istanbul ignore next */
+        return this.zh.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(this.zh.manufacturerID) &&
+            (!this.zh.manufacturerName || !this.zh.manufacturerName.startsWith('Trust'));
+    }
+
+    isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
+
+    isDevice(): this is Device {return true;}
+    /* istanbul ignore next */
+    isGroup(): this is Group {return false;}
 }

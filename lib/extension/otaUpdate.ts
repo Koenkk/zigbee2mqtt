@@ -1,11 +1,10 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 // @ts-ignore
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 
@@ -18,19 +17,19 @@ const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/o
 const topicRegex =
     new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)`, 'i');
 
-class OTAUpdate extends ExtensionTS {
+export default class OTAUpdate extends Extension {
     private inProgress = new Set();
     private lastChecked: {[s: string]: number} = {};
     private legacyApi = settings.get().advanced.legacy_api;
 
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         if (settings.get().advanced.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
         }
 
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.devices(false)) {
             // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
             // remove them.
             this.removeProgressAndRemainingFromState(device);
@@ -38,11 +37,11 @@ class OTAUpdate extends ExtensionTS {
     }
 
     private removeProgressAndRemainingFromState(device: Device): void {
-        this.state.removeKey(device.ieeeAddr, ['update', 'progress']);
-        this.state.removeKey(device.ieeeAddr, ['update', 'remaining']);
+        delete this.state.get(device)?.update?.progress;
+        delete this.state.get(device)?.update?.remaining;
     }
 
-    @bind private async onZigbeeEvent(data: EventDeviceMessage): Promise<void> {
+    @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
         if (settings.get().ota.disable_automatic_update_check) return;
         if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition) return;
         logger.debug(`Device '${data.device.name}' requested OTA`);
@@ -59,9 +58,9 @@ class OTAUpdate extends ExtensionTS {
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
             const available = await data.device.definition.ota.isUpdateAvailable(
-                data.device.zhDevice, logger, data.data);
+                data.device.zh, logger, data.data);
             const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
-            this.publishEntityState(data.device.ieeeAddr, payload);
+            this.publishEntityState(data.device, payload);
 
             if (available) {
                 const message = `Update available for '${data.device.name}'`;
@@ -81,7 +80,7 @@ class OTAUpdate extends ExtensionTS {
         // Respond to the OTA request:
         // - In case we don't support OTA: respond with NO_IMAGE_AVAILABLE (0x98) (so the client stops requesting OTAs)
         // - In case we do support OTA: respond with ABORT (0x95) as we don't want to update now.
-        const endpoint = data.device.endpoints.find((e) => e.supportsOutputCluster('genOta'));
+        const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster('genOta'));
         if (endpoint) {
             // Some devices send OTA requests without defining OTA cluster as input cluster.
             await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: supportsOTA ? 0x95 : 0x98});
@@ -91,13 +90,13 @@ class OTAUpdate extends ExtensionTS {
     private async readSoftwareBuildIDAndDateCode(device: Device, update: boolean):
         Promise<{softwareBuildID: string, dateCode: string}> {
         try {
-            const endpoint = device.endpoints.find((e) => e.supportsInputCluster('genBasic'));
+            const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
             const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId']);
 
             if (update) {
-                device.zhDevice.softwareBuildID = result.swBuildId;
-                device.zhDevice.dateCode = result.dateCode;
-                device.zhDevice.save();
+                device.zh.softwareBuildID = result.swBuildId;
+                device.zh.dateCode = result.dateCode;
+                device.zh.save();
             }
 
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
@@ -119,7 +118,7 @@ class OTAUpdate extends ExtensionTS {
         return payload;
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if ((!this.legacyApi || !data.topic.match(legacyTopicRegex)) && !data.topic.match(topicRegex)) {
             return null;
         }
@@ -164,7 +163,7 @@ class OTAUpdate extends ExtensionTS {
                 }
 
                 try {
-                    const available = await device.definition.ota.isUpdateAvailable(device.zhDevice, logger);
+                    const available = await device.definition.ota.isUpdateAvailable(device.zh, logger);
                     const msg = `${available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -178,7 +177,7 @@ class OTAUpdate extends ExtensionTS {
                     }
 
                     const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
                     this.lastChecked[device.ieeeAddr] = Date.now();
                     responseData.updateAvailable = available;
                 } catch (e) {
@@ -217,7 +216,7 @@ class OTAUpdate extends ExtensionTS {
                         logger.info(msg);
 
                         const payload = this.getEntityPublishPayload('updating', progress, remaining);
-                        this.publishEntityState(device.ieeeAddr, payload);
+                        this.publishEntityState(device, payload);
 
                         /* istanbul ignore else */
                         if (settings.get().advanced.legacy_api) {
@@ -227,7 +226,7 @@ class OTAUpdate extends ExtensionTS {
                     };
 
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, false);
-                    await device.definition.ota.updateToLatest(device.zhDevice, logger, onProgress);
+                    await device.definition.ota.updateToLatest(device.zh, logger, onProgress);
                     const to = await this.readSoftwareBuildIDAndDateCode(device, true);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     const msg = `Finished update of '${device.name}'` +
@@ -235,10 +234,10 @@ class OTAUpdate extends ExtensionTS {
                     logger.info(msg);
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload('idle');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
-                    this.eventBus.emit(`devicesChanged`);
+                    this.eventBus.emitDevicesChanged();
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -252,7 +251,7 @@ class OTAUpdate extends ExtensionTS {
 
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload('available');
-                    this.publishEntityState(device.ieeeAddr, payload);
+                    this.publishEntityState(device, payload);
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -277,5 +276,3 @@ class OTAUpdate extends ExtensionTS {
         }
     }
 }
-
-module.exports = OTAUpdate;

@@ -25,12 +25,12 @@ describe('HomeAssistant extension', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
-        controller.state._load();
+        controller.state.load();
         await resetExtension();
     });
 
     beforeAll(async () => {
-        version = await require('../lib/util/utils').getZigbee2MQTTVersion();
+        version = await require('../lib/util/utils').default.getZigbee2MQTTVersion();
         version = `Zigbee2MQTT ${version.version}`;
         jest.useFakeTimers();
         settings.set(['homeassistant'], true);
@@ -921,7 +921,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         expect(MQTT.subscribe).toHaveBeenCalledWith('homeassistant/status');
         await flushPromises();
@@ -946,7 +946,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should send all status when home assistant comes online', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         expect(MQTT.subscribe).toHaveBeenCalledWith('hass/status');
         MQTT.publish.mockClear();
@@ -970,7 +970,7 @@ describe('HomeAssistant extension', () => {
 
     it('Shouldnt send all status when home assistant comes offline', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         await flushPromises();
         MQTT.publish.mockClear();
@@ -983,7 +983,7 @@ describe('HomeAssistant extension', () => {
 
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status_different', 'offline');

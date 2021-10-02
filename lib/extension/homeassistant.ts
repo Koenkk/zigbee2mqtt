@@ -1,12 +1,10 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-import * as utils from '../util/utils';
-// @ts-ignore
+import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
-// @ts-ignore
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import Group from '../model/group';
@@ -28,7 +26,7 @@ const ACCESS_SET = 0b010;
 const groupSupportedTypes = ['light', 'switch', 'lock', 'cover'];
 const defaultStatusTopic = 'homeassistant/status';
 
-const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): string => {
+const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
     } else {
@@ -39,7 +37,7 @@ const featurePropertyWithoutEndpoint = (feature: DefinitionExposeFeature): strin
 /**
  * This extensions handles integration with HomeAssistant
  */
-class HomeAssistant extends ExtensionTS {
+export default class HomeAssistant extends Extension {
     private discovered: {[s: string]: string[]} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
@@ -49,9 +47,9 @@ class HomeAssistant extends ExtensionTS {
     private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
 
-    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         if (settings.get().experimental.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');
@@ -63,34 +61,34 @@ class HomeAssistant extends ExtensionTS {
             logger.warn('In order for Home Assistant integration to work properly set `cache_state: true');
         }
 
-        this.zigbee2MQTTVersion = await utils.getZigbee2MQTTVersionSimple();
+        this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
         this.populateMapping();
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceAnnounce(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceJoined(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceJoined(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
         /* istanbul ignore next TODO */
-        this.eventBus.onDeviceInterview(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
-        this.eventBus.onDeviceMessage(this, (data: EventDeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceInterview(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceMessage(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
 
         this.mqtt.subscribe(this.statusTopic);
         this.mqtt.subscribe(defaultStatusTopic);
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
 
         // MQTT discovery of all paired devices on startup.
-        for (const entity of [...this.zigbee.getClients(), ...this.zigbee.getGroups()]) {
+        for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             this.discover(entity, true);
         }
     }
 
-    private exposeToConfig(
-        exposes: DefinitionExpose[], entityType: 'device' | 'group', definition?: Definition): DiscoveryEntry[] {
+    private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
+        definition?: zhc.Definition): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -100,7 +98,7 @@ class HomeAssistant extends ExtensionTS {
 
         const discoveryEntries = [];
         const endpoint = entityType === 'device' ? exposes[0].endpoint : undefined;
-        const getProperty = (feature: DefinitionExposeFeature): string => entityType === 'group' ?
+        const getProperty = (feature: zhc.DefinitionExposeFeature): string => entityType === 'group' ?
             featurePropertyWithoutEndpoint(feature) : feature.property;
 
         /* istanbul ignore else */
@@ -651,28 +649,27 @@ class HomeAssistant extends ExtensionTS {
         }
 
         // Deprecated in favour of exposes
-        for (const definition of utils.getExternalConvertersDefinitions(settings)) {
+        for (const definition of utils.getExternalConvertersDefinitions(settings.get())) {
             if (definition.hasOwnProperty('homeassistant')) {
                 this.mapping[definition.model] = definition.homeassistant;
             }
         }
     }
 
-    @bind onDeviceRemoved(data: EventDeviceRemoved): void {
-        logger.debug(`Clearing Home Assistant discovery topic for '${data.resolvedEntity.name}'`);
-        this.discovered[data.resolvedEntity.device.ieeeAddr]?.forEach((topic) => {
+    @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
+        logger.debug(`Clearing Home Assistant discovery topic for '${data.name}'`);
+        this.discovered[data.ieeeAddr]?.forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
         });
 
-        delete this.discovered[data.resolvedEntity.device.ieeeAddr];
+        delete this.discovered[data.ieeeAddr];
     }
 
-    @bind onGroupMembersChanged(data: EventGroupMembersChanged): void {
-        const group = this.zigbee.resolveEntity(data.group.name);
-        this.discover(group, true);
+    @bind onGroupMembersChanged(data: eventdata.GroupMembersChanged): void {
+        this.discover(data.group, true);
     }
 
-    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
+    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
         /**
          * In case we deal with a lightEndpoint configuration Zigbee2MQTT publishes
          * e.g. {state_l1: ON, brightness_l1: 250} to zigbee2mqtt/mydevice.
@@ -689,10 +686,10 @@ class HomeAssistant extends ExtensionTS {
                     const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
                     const payload: KeyValue = {};
-                    for (const key of Object.keys(data.messagePayload)) {
+                    for (const key of Object.keys(data.message)) {
                         const keyMatch = endpointRegExp.exec(key);
                         if (keyMatch) {
-                            payload[keyMatch[1]] = data.messagePayload[key];
+                            payload[keyMatch[1]] = data.message[key];
                         }
                     }
 
@@ -709,9 +706,9 @@ class HomeAssistant extends ExtensionTS {
          * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
          */
         if (settings.get().advanced.homeassistant_legacy_triggers) {
-            const keys = ['action', 'click'].filter((k) => data.messagePayload[k]);
+            const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
-                this.publishEntityState(data.entity.device.ieeeAddr, {[key]: ''});
+                this.publishEntityState(data.entity, {[key]: ''});
             }
         }
 
@@ -722,16 +719,16 @@ class HomeAssistant extends ExtensionTS {
          * and republish it to zigbee2mqtt/my_devic/action
          */
         if (entity instanceof Device && entity.definition) {
-            const keys = ['action', 'click'].filter((k) => data.messagePayload[k]);
+            const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
-                const value = data.messagePayload[key].toString();
+                const value = data.message[key].toString();
                 await this.publishDeviceTriggerDiscover(entity, key, value);
                 await this.mqtt.publish(`${data.entity.name}/${key}`, value, {});
             }
         }
     }
 
-    @bind onDeviceRenamed(data: EventDeviceRenamed): void {
+    @bind onDeviceRenamed(data: eventdata.DeviceRenamed): void {
         logger.debug(`Refreshing Home Assistant discovery topic for '${data.device.ieeeAddr}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
@@ -764,7 +761,7 @@ class HomeAssistant extends ExtensionTS {
         if (isDevice) {
             configs = this.mapping[entity.definition.model].slice();
         } else { // group
-            const exposesByType: {[s: string]: DefinitionExpose[]} = {};
+            const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
 
             entity.membersDefinitions().forEach((definition) => {
                 for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
@@ -844,8 +841,9 @@ class HomeAssistant extends ExtensionTS {
         const discover = force || !this.discovered[discoverKey];
 
         if (entity instanceof Group) {
-            if (!discover || entity.zhGroup.members.length === 0) return;
-        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] || entity.interviewing ||
+            if (!discover || entity.zh.members.length === 0) return;
+        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] ||
+            entity.zh.interviewing ||
             (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant)) {
             return;
         }
@@ -1047,7 +1045,7 @@ class HomeAssistant extends ExtensionTS {
         });
     }
 
-    @bind private onMQTTMessage_(data: EventMQTTMessage): void {
+    @bind private onMQTTMessage(data: eventdata.MQTTMessage): void {
         const discoveryRegex = new RegExp(`${this.discoveryTopic}/(.*)/(.*)/(.*)/config`);
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
@@ -1105,9 +1103,9 @@ class HomeAssistant extends ExtensionTS {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.getClients()) {
-                    if (this.state.exists(device.ieeeAddr)) {
-                        this.publishEntityState(device.ieeeAddr, this.state.get(device.ieeeAddr));
+                for (const device of this.zigbee.devices(false)) {
+                    if (this.state.exists(device)) {
+                        this.publishEntityState(device, this.state.get(device));
                     }
                 }
 
@@ -1137,17 +1135,17 @@ class HomeAssistant extends ExtensionTS {
         return payload;
     }
 
-    private adjustMessagePayloadBeforePublish(device: Device, messagePayload: KeyValue): void {
+    override adjustMessageBeforePublish(entity: Device | Group, message: KeyValue): void {
         // Set missing values of state to 'null': https://github.com/Koenkk/zigbee2mqtt/issues/6987
-        if (!device.definition) return null;
+        if (!entity.isDevice() || !entity.definition) return null;
 
-        const add = (expose: DefinitionExpose | DefinitionExposeFeature): void => {
-            if (!messagePayload.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
-                messagePayload[expose.property] = null;
+        const add = (expose: zhc.DefinitionExpose | zhc.DefinitionExposeFeature): void => {
+            if (!message.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
+                message[expose.property] = null;
             }
         };
 
-        for (const expose of device.definition.exposes) {
+        for (const expose of entity.definition.exposes) {
             if (expose.hasOwnProperty('features')) {
                 for (const feature of expose.features) {
                     if (feature.name === 'state') {
@@ -1160,12 +1158,12 @@ class HomeAssistant extends ExtensionTS {
         }
 
         // Copy hue -> h, saturation -> s to make homeassitant happy
-        if (messagePayload.hasOwnProperty('color')) {
-            if (messagePayload.color.hasOwnProperty('hue')) {
-                messagePayload.color.h = messagePayload.color.hue;
+        if (message.hasOwnProperty('color')) {
+            if (message.color.hasOwnProperty('hue')) {
+                message.color.h = message.color.hue;
             }
-            if (messagePayload.color.hasOwnProperty('saturation')) {
-                messagePayload.color.s = messagePayload.color.saturation;
+            if (message.color.hasOwnProperty('saturation')) {
+                message.color.s = message.color.saturation;
             }
         }
     }
@@ -1227,5 +1225,3 @@ class HomeAssistant extends ExtensionTS {
         this.discoveredTriggers = {};
     }
 }
-
-module.exports = HomeAssistant;

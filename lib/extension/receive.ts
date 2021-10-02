@@ -1,53 +1,54 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
 import debounce from 'debounce';
-import ExtensionTS from './extensionts';
-// @ts-ignore
+import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 
-class Receive extends ExtensionTS {
+type DebounceFunction = (() => void) & { clear(): void; } & { flush(): void; };
+
+export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
-    // eslint-disable-next-line
-    private debouncers: {[s: string]: {payload: KeyValue, publish: any}} = {}; //TODO fix type
+    private debouncers: {[s: string]: {payload: KeyValue, publish: DebounceFunction }} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    @bind async onPublishEntityState(data: EventPublishEntityState): Promise<void> {
+    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
          * remove it from the to be send debounced message.
          */
-        if (data.ieeeAddr && this.debouncers[data.ieeeAddr] && data.stateChangeReason !== 'publishDebounce') {
-            for (const key of Object.keys(data.payload)) {
-                delete this.debouncers[data.ieeeAddr].payload[key];
+        if (data.entity.isDevice() && this.debouncers[data.entity.ieeeAddr] &&
+            data.stateChangeReason !== 'publishDebounce') {
+            for (const key of Object.keys(data.message)) {
+                delete this.debouncers[data.entity.ieeeAddr].payload[key];
             }
         }
     }
 
-    publishDebounce(ieeeAddr: string, payload: KeyValue, time: number, debounceIgnore: string[]): void {
-        if (!this.debouncers[ieeeAddr]) {
-            this.debouncers[ieeeAddr] = {
+    publishDebounce(device: Device, payload: KeyValue, time: number, debounceIgnore: string[]): void {
+        if (!this.debouncers[device.ieeeAddr]) {
+            this.debouncers[device.ieeeAddr] = {
                 payload: {},
                 publish: debounce(() => {
-                    this.publishEntityState(ieeeAddr, this.debouncers[ieeeAddr].payload, 'publishDebounce');
-                    this.debouncers[ieeeAddr].payload = {};
+                    this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, 'publishDebounce');
+                    this.debouncers[device.ieeeAddr].payload = {};
                 }, time * 1000),
             };
         }
 
-        if (this.isPayloadConflicted(payload, this.debouncers[ieeeAddr].payload, debounceIgnore)) {
+        if (this.isPayloadConflicted(payload, this.debouncers[device.ieeeAddr].payload, debounceIgnore)) {
             // publish previous payload immediately
-            this.debouncers[ieeeAddr].publish.flush();
+            this.debouncers[device.ieeeAddr].publish.flush();
         }
 
         // extend debounced payload with current
-        this.debouncers[ieeeAddr].payload = {...this.debouncers[ieeeAddr].payload, ...payload};
-        this.debouncers[ieeeAddr].publish();
+        this.debouncers[device.ieeeAddr].payload = {...this.debouncers[device.ieeeAddr].payload, ...payload};
+        this.debouncers[device.ieeeAddr].publish();
     }
 
     // if debounce_ignore are specified (Array of strings)
@@ -67,14 +68,14 @@ class Receive extends ExtensionTS {
         return result;
     }
 
-    shouldProcess(data: EventDeviceMessage): boolean {
+    shouldProcess(data: eventdata.DeviceMessage): boolean {
         if (!data.device.definition) {
-            if (data.device.interviewing) {
+            if (data.device.zh.interviewing) {
                 logger.debug(`Skipping message, definition is undefined and still interviewing`);
             } else {
                 logger.warn(
-                    `Received message from unsupported device with Zigbee model '${data.device.modelID}' ` +
-                    `and manufacturer name '${data.device.manufacturerName}'`);
+                    `Received message from unsupported device with Zigbee model '${data.device.zh.modelID}' ` +
+                    `and manufacturer name '${data.device.zh.manufacturerName}'`);
                 logger.warn(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
             }
 
@@ -84,7 +85,7 @@ class Receive extends ExtensionTS {
         return true;
     }
 
-    @bind onDeviceMessage(data: EventDeviceMessage): void {
+    @bind onDeviceMessage(data: eventdata.DeviceMessage): void {
         /* istanbul ignore next */
         if (!data.device) return;
 
@@ -100,7 +101,7 @@ class Receive extends ExtensionTS {
          * Handling these message would result in false state updates.
          * The group ID attribute of these message defines the network address of the end device.
          */
-        if (data.device.isXiaomiDevice() && data.device.isRouter() && data.groupID) {
+        if (data.device.isXiaomi() && data.device.zh.type === 'Router' && data.groupID) {
             logger.debug('Handling re-transmitted Xiaomi message');
             data = {...data, device: this.zigbee.deviceByNetworkAddress(data.groupID)};
         }
@@ -137,15 +138,15 @@ class Receive extends ExtensionTS {
 
             // Check if we have to debounce
             if (data.device.settings.debounce) {
-                this.publishDebounce(data.device.ieeeAddr, payload, data.device.settings.debounce,
+                this.publishDebounce(data.device, payload, data.device.settings.debounce,
                     data.device.settings.debounce_ignore);
             } else {
-                this.publishEntityState(data.device.ieeeAddr, payload);
+                this.publishEntityState(data.device, payload);
             }
         };
 
-        const meta = {device: data.device.zhDevice, logger, state: this.state.get(data.device.ieeeAddr)};
-        let payload = {};
+        const meta = {device: data.device.zh, logger, state: this.state.get(data.device)};
+        let payload: KeyValue = {};
         converters.forEach((converter) => {
             const converted = converter.convert(data.device.definition, data, publish, data.device.settings, meta);
             if (converted) {
@@ -158,5 +159,3 @@ class Receive extends ExtensionTS {
         }
     }
 }
-
-module.exports = Receive;

@@ -1,13 +1,12 @@
-// TODO: tempState -> State, rename to extension
-abstract class ExtensionTS {
+abstract class Extension {
     protected zigbee: Zigbee;
     protected mqtt: MQTT;
-    protected state: TempState;
+    protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
     protected enableDisableExtension: (enable: boolean, name: string) => Promise<void>;
     protected restartCallback: () => void;
-    protected addExtension: (extension: ExternalConverterClass) => void;
+    protected addExtension: (extension: Extension) => void;
 
     /**
      * Besides intializing variables, the constructor should do nothing!
@@ -21,9 +20,9 @@ abstract class ExtensionTS {
      * @param {restartCallback} restartCallback Restart Zigbee2MQTT
      * @param {addExtension} addExtension Add an extension
      */
-    constructor(zigbee: Zigbee, mqtt: MQTT, state: TempState, publishEntityState: PublishEntityState,
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: ExternalConverterClass) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
         this.zigbee = zigbee;
         this.mqtt = mqtt;
         this.state = state;
@@ -46,6 +45,9 @@ abstract class ExtensionTS {
     async stop(): Promise<void> {
         this.eventBus.removeListeners(this);
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public adjustMessageBeforePublish(entity: Group | Device, message: KeyValue): void {}
 }
 
-export default ExtensionTS;
+export default Extension;

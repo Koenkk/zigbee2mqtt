@@ -1,14 +1,13 @@
 import * as settings from '../util/settings';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import logger from '../util/logger';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import bind from 'bind-decorator';
 
 interface Link {
     source: {ieeeAddr: string, networkAddress: number}, target: {ieeeAddr: string, networkAddress: number},
-    linkquality: number, depth: number, routes: RoutingTableEntry[],
+    linkquality: number, depth: number, routes: zh.RoutingTableEntry[],
     sourceIeeeAddr: string, targetIeeeAddr: string, sourceNwkAddr: number, lqi: number, relationship: number,
 }
 
@@ -23,7 +22,7 @@ interface Topology {
 /**
  * This extension creates a network map
  */
-class NetworkMap extends ExtensionTS {
+export default class NetworkMap extends Extension {
     private legacyApi = settings.get().advanced.legacy_api;
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
@@ -31,7 +30,7 @@ class NetworkMap extends ExtensionTS {
     private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
 
     override async start(): Promise<void> {
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.supportedFormats = {
             'raw': this.raw,
             'graphviz': this.graphviz,
@@ -39,7 +38,7 @@ class NetworkMap extends ExtensionTS {
         };
     }
 
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
             if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) &&
@@ -177,7 +176,7 @@ class NetworkMap extends ExtensionTS {
             // Add the device model
             if (node.type !== 'Coordinator') {
                 text.push(`---`);
-                const definition = this.zigbee.resolveEntityLegacy(node.ieeeAddr).definition;
+                const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
                 if (definition) {
                     text.push(`${definition.vendor} ${definition.description} (${definition.model})`);
                 } else {
@@ -215,12 +214,12 @@ class NetworkMap extends ExtensionTS {
 
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const devices = this.zigbee.getDevices().filter((d) => d.type !== 'GreenPower');
-        const lqis: Map<Device, LQI> = new Map();
-        const routingTables: Map<Device, RoutingTable> = new Map();
+        const devices = this.zigbee.devices().filter((d) => d.zh.type !== 'GreenPower');
+        const lqis: Map<Device, zh.LQI> = new Map();
+        const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();
 
-        for (const device of devices.filter((d) => d.type != 'EndDevice')) {
+        for (const device of devices.filter((d) => d.zh.type != 'EndDevice')) {
             failed.set(device, []);
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
@@ -239,7 +238,7 @@ class NetworkMap extends ExtensionTS {
             };
 
             try {
-                const result = await doRequest<LQI>(async () => device.lqi());
+                const result = await doRequest<zh.LQI>(async () => device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
@@ -249,7 +248,7 @@ class NetworkMap extends ExtensionTS {
 
             if (includeRoutes) {
                 try {
-                    const result = await doRequest(async () => device.routingTable());
+                    const result = await doRequest(async () => device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
@@ -275,9 +274,9 @@ class NetworkMap extends ExtensionTS {
             } : null;
 
             topology.nodes.push({
-                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.type,
-                networkAddress: device.networkAddress, manufacturerName: device.manufacturerName,
-                modelID: device.modelID, failed: failed.get(device), lastSeen: device.lastSeen,
+                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.zh.type,
+                networkAddress: device.zh.networkAddress, manufacturerName: device.zh.manufacturerName,
+                modelID: device.zh.modelID, failed: failed.get(device), lastSeen: device.zh.lastSeen,
                 definition,
             });
         }
@@ -299,7 +298,7 @@ class NetworkMap extends ExtensionTS {
 
                 const link: Link = {
                     source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
-                    target: {ieeeAddr: device.ieeeAddr, networkAddress: device.networkAddress},
+                    target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
                     linkquality: neighbor.linkquality, depth: neighbor.depth, routes: [],
                     // DEPRECATED:
                     sourceIeeeAddr: neighbor.ieeeAddr, targetIeeeAddr: device.ieeeAddr,
@@ -320,5 +319,3 @@ class NetworkMap extends ExtensionTS {
         return topology;
     }
 }
-
-module.exports = NetworkMap;

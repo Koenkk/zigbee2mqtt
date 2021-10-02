@@ -2,10 +2,8 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
 
-// TODO: check all
-export function read(file: string): KeyValue {
+function read(file: string): KeyValue {
     try {
-        /* eslint-disable-line */ // @ts-ignore
         return yaml.load(fs.readFileSync(file, 'utf8'));
     } catch (error) {
         if (error.name === 'YAMLException') {
@@ -16,21 +14,23 @@ export function read(file: string): KeyValue {
     }
 }
 
-export function readIfExists(file: string, default_?: KeyValue): KeyValue {
+function readIfExists(file: string, default_?: KeyValue): KeyValue {
     return fs.existsSync(file) ? read(file) : default_;
 }
 
-export function writeIfChanged(file: string, content: KeyValue): void {
+function writeIfChanged(file: string, content: KeyValue): void {
     const before = readIfExists(file);
     if (!equals(before, content)) {
         fs.writeFileSync(file, yaml.dump(content));
     }
 }
 
-export function updateIfChanged(file: string, key: string, value: KeyValue): void {
+function updateIfChanged(file: string, key: string, value: KeyValue): void {
     const content = read(file);
     if (content[key] !== value) {
         content[key] = value;
         writeIfChanged(file, content);
     }
 }
+
+export default {read, readIfExists, updateIfChanged, writeIfChanged};
