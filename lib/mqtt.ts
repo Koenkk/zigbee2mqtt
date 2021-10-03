@@ -71,7 +71,10 @@ export default class MQTT {
             this.client = mqtt.connect(mqttSettings.server, options);
 
             const onConnect = this.onConnect;
-            this.client.on('connect', async () => {
+            this.client.on('connect', async (err) => {
+                console.log('\n\n');
+                console.log(err);
+                console.log('\n\n');
                 await onConnect();
                 resolve();
             });
