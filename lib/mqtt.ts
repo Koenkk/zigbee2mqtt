@@ -113,10 +113,6 @@ export default class MQTT {
         }
     }
 
-    isConnected(): boolean {
-        return this.client && !this.client.reconnecting;
-    }
-
     async publish(topic: string, payload: string, options: MQTTOptions={},
         base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
     ): Promise<void> {
@@ -129,25 +125,21 @@ export default class MQTT {
 
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: {...defaultOptions, ...options}});
 
-        if (!this.isConnected()) {
-            if (!skipLog) {
-                logger.error(`Not connected to MQTT server!`);
-                logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
-            }
-            return;
-        }
-
-        if (!skipLog) {
-            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`);
-        }
-
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
         if (settings.get().mqtt.force_disable_retain) {
             actualOptions.retain = false;
         }
 
         return new Promise((resolve) => {
-            this.client.publish(topic, payload, actualOptions, () => resolve());
+            this.client.publish(topic, payload, actualOptions, (err) => {
+                if (!err && !skipLog) {
+                    logger.info(`MQTT published: topic '${topic}', payload '${payload}'`);
+                } else if (err) {
+                    logger.error(`MQTT failed to publish: topic: '${topic}', payload: '${payload}`);
+                }
+
+                resolve();
+            });
         });
     }
 }
