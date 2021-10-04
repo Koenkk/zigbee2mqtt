@@ -67,7 +67,7 @@ export default class MQTT {
             options.rejectUnauthorized = false;
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
 
             const onConnect = this.onConnect;
@@ -76,6 +76,7 @@ export default class MQTT {
                 resolve();
             });
 
+            this.client.on('error', (err) => reject(err));
             this.client.on('message', this.onMessage);
         });
     }

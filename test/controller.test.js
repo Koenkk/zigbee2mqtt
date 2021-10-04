@@ -25,6 +25,7 @@ describe('Controller', () => {
     });
 
     beforeEach(() => {
+        MQTT.restoreOnMock();
         zigbeeHerdsman.returnDevices.splice(0);
         mockExit = jest.fn();
         controller = new Controller(jest.fn(), mockExit);
@@ -207,6 +208,17 @@ describe('Controller', () => {
         zigbeeHerdsman.start.mockImplementationOnce(() => {throw new Error('failed')});
         await controller.start();
         expect(mockExit).toHaveBeenCalledTimes(1);
+    });
+
+    it('Start controller fails due to MQTT', async () => {
+        MQTT.on.mockImplementation((type, handler) => {
+            if (type === 'error') handler({message: 'addr not found'});
+        });
+        await controller.start();
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect: addr not found');
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(1);
     });
 
     it('Start controller with permit join true', async () => {

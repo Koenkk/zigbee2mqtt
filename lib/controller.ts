@@ -137,7 +137,14 @@ class Controller {
         }
 
         // MQTT
-        await this.mqtt.connect();
+        try {
+            await this.mqtt.connect();
+        } catch (error) {
+            logger.error(`MQTT failed to connect: ${error.message}`);
+            logger.error('Exiting...');
+            await this.zigbee.stop();
+            this.exitCallback(1);
+        }
 
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
