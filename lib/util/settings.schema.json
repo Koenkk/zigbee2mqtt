@@ -27,44 +27,51 @@
       "examples": ["DIYRuZ_FreePad.js"]
     },
     "availability": {
-      "type": ["boolean", "object"],
-      "title": "Availability feature",
-      "requiresRestart": true,
-      "description": "Checks wether devices are online/offline",
-      "default": false,
-      "examples": [true],
-      "properties": {
-        "active": {
-          "type": "object",
-          "title": "Active",
-          "requiresRestart": true,
-          "description": "Options for active devices (routers/mains powered)",
-          "properties": {
-            "timeout": {
-              "type": "number",
-              "title": "Timeout",
-              "requiresRestart": true,
-              "default": 10,
-              "description": "Time after which an active device will be marked as offline in minutes"
-            }
-          }
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Availability (boolean)"
         },
-        "passive": {
+        {
           "type": "object",
-          "title": "Active",
-          "requiresRestart": true,
-          "description": "Options for passive devices (routers/mains powered)",
+          "title": "Availability (object)",
           "properties": {
-            "timeout": {
-              "type": "number",
-              "title": "Timeout",
+            "active": {
+              "type": "object",
+              "title": "Active",
               "requiresRestart": true,
-              "default": 1500,
-              "description": "Time after which an passive device will be marked as offline in minutes"
+              "description": "Options for active devices (routers/mains powered)",
+              "properties": {
+                "timeout": {
+                  "type": "number",
+                  "title": "Timeout",
+                  "requiresRestart": true,
+                  "default": 10,
+                  "description": "Time after which an active device will be marked as offline in minutes"
+                }
+              }
+            },
+            "passive": {
+              "type": "object",
+              "title": "Active",
+              "requiresRestart": true,
+              "description": "Options for passive devices (routers/mains powered)",
+              "properties": {
+                "timeout": {
+                  "type": "number",
+                  "title": "Timeout",
+                  "requiresRestart": true,
+                  "default": 1500,
+                  "description": "Time after which an passive device will be marked as offline in minutes"
+                }
+              }
             }
           }
         }
-      }
+      ],
+      "title": "Availability feature",
+      "requiresRestart": true,
+      "description": "Checks wether devices are online/offline"
     },
     "mqtt": {
       "type": "object",

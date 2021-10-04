@@ -7,12 +7,10 @@ import Ajv from 'ajv';
 import schemaJson from './settings.schema.json';
 export const schema = schemaJson;
 
-// TODO: check all
-
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
-const ajvSetting = new Ajv({allErrors: true, allowUnionTypes: true}).addKeyword('requiresRestart').compile(schema);
-const ajvRestartRequired = new Ajv({allErrors: true, allowUnionTypes: true})
+const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schema);
+const ajvRestartRequired = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (schema: unknown) => !schema}).compile(schema);
 
 const defaults: RecursivePartial<Settings> = {
