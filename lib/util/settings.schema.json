@@ -69,7 +69,7 @@
           }
         }
       ],
-      "title": "Availability feature",
+      "title": "Availability",
       "requiresRestart": true,
       "description": "Checks wether devices are online/offline"
     },
