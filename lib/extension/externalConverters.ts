@@ -4,7 +4,11 @@ import utils from '../util/utils';
 import Extension from './extension';
 
 export default class ExternalConverters extends Extension {
-    override async start(): Promise<void> {
+    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
+        eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        restartCallback: () => void, addExtension: (extension: Extension) => void) {
+        super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
+
         for (const definition of utils.getExternalConvertersDefinitions(settings.get())) {
             const toAdd = {...definition};
             delete toAdd['homeassistant'];
