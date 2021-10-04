@@ -150,16 +150,18 @@ describe('Controller', () => {
         controller.mqtt.client.reconnecting = false;
     });
 
-    it('Log when MQTT publish fails', async () => {
+    it('Dont publish to mqtt when client is unavailable', async () => {
         await controller.start();
         await flushPromises();
         logger.error.mockClear();
-        MQTT.mock.publish.mockImplementationOnce((topic, message, options, cb) => cb(true));
+        controller.mqtt.client.reconnecting = true;
         const device = controller.zigbee.resolveEntity('bulb');
         await controller.publishEntityState(device, {state: 'ON', brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith("MQTT failed to publish: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}");
+        expect(logger.error).toHaveBeenCalledTimes(2);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
+        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}");
+        controller.mqtt.client.reconnecting = false;
     });
 
     it('Load empty state when state file does not exist', async () => {

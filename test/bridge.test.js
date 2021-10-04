@@ -94,6 +94,18 @@ describe('Bridge', () => {
         expect(logger.info).toHaveBeenCalledTimes(1);
     });
 
+    it('Shouldnt log to MQTT when not connected', async () => {
+        logger.setTransportsEnabled(true);
+        MQTT.mock.reconnecting = true;
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.error.mockClear();
+        logger.info("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
+        expect(logger.info).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledTimes(0);
+    });
+
     it('Should publish groups on startup', async () => {
         await resetExtension();
         logger.setTransportsEnabled(true);
