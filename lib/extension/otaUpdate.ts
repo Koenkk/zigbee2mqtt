@@ -2,7 +2,6 @@ import * as settings from '../util/settings';
 import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import utils from '../util/utils';
-// @ts-ignore
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
 import Extension from './extension';
 import bind from 'bind-decorator';

@@ -2,7 +2,6 @@ import http from 'http';
 import serveStatic from 'serve-static';
 import finalhandler from 'finalhandler';
 import logger from '../util/logger';
-// @ts-ignore
 import frontend from 'zigbee2mqtt-frontend';
 import WebSocket from 'ws';
 import net from 'net';

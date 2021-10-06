@@ -190,8 +190,7 @@ export default class Publish extends Extension {
         for (let [key, value] of entries) {
             let endpointName = parsedTopic.endpoint;
             let localTarget = target;
-            // @ts-ignore TODO fix
-            let endpointOrGroupID = target.constructor.name === 'Endpoint' ? target.ID : target.groupID;
+            let endpointOrGroupID = utils.isEndpoint(target) ? target.ID : target.groupID;
 
             // When the key has a endpointName included (e.g. state_right), this will override the target.
             const propertyEndpointMatch = key.match(propertyEndpointRegex);

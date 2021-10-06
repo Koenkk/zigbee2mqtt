@@ -119,10 +119,9 @@ export default class BridgeLegacy extends Extension {
     }
 
     @bind logLevel(topic: string, message: string): void {
-        const level = message.toLowerCase();
+        const level = message.toLowerCase() as 'error' | 'warn' | 'info' | 'debug';
         if (allowedLogLevels.includes(level)) {
             logger.info(`Switching log level to '${level}'`);
-            // @ts-ignore
             logger.setLevel(level);
         } else {
             logger.error(`Could not set log level to '${level}'. Allowed level: '${allowedLogLevels.join(',')}'`);
@@ -367,7 +366,6 @@ export default class BridgeLegacy extends Extension {
             commit: info.commitHash,
             coordinator,
             network: await this.zigbee.getNetworkParameters(),
-            // @ts-ignore
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
         };

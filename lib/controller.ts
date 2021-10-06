@@ -86,7 +86,6 @@ class Controller {
 
     async start(): Promise<void> {
         this.state.start();
-        // @ts-ignore
         logger.logOutput();
 
         const info = await utils.getZigbee2MQTTVersion();

@@ -52,7 +52,7 @@ export default class Bridge extends Extension {
                 callback();
             }
         }
-        // @ts-ignore TODO fix typing
+
         logger.addTransport(new EventTransport());
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
@@ -174,7 +174,6 @@ export default class Bridge extends Extension {
         }
 
         if (newSettings.hasOwnProperty('advanced') && newSettings.advanced.hasOwnProperty('log_level')) {
-            // @ts-ignore fix type
             logger.setLevel(newSettings.advanced.log_level);
         }
 
@@ -300,12 +299,11 @@ export default class Bridge extends Extension {
     // Deprecated
     @bind async configLogLevel(message: KeyValue | string): Promise<MQTTResponse> {
         const allowed = ['error', 'warn', 'info', 'debug'];
-        const value = this.getValue(message);
+        const value = this.getValue(message) as 'error' | 'warn' | 'info' | 'debug';
         if (typeof value !== 'string' || !allowed.includes(value)) {
             throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
         }
 
-        // @ts-ignore TODO fix type
         logger.setLevel(value);
         this.publishInfo();
         return utils.getResponse(message, {value}, null);
@@ -558,7 +556,6 @@ export default class Bridge extends Extension {
             commit: this.zigbee2mqttVersion.commitHash,
             coordinator: this.coordinatorVersion,
             network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
-            // @ts-ignore TODO fix type
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),

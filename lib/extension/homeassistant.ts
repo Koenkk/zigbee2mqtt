@@ -69,13 +69,10 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
-        /* istanbul ignore next TODO */
-        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
-        /* istanbul ignore next TODO */
-        this.eventBus.onDeviceJoined(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
-        /* istanbul ignore next TODO */
-        this.eventBus.onDeviceInterview(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
-        this.eventBus.onDeviceMessage(this, (data: eventdata.DeviceAnnounce) => this.onZigbeeEvent(data.device));
+        this.eventBus.onDeviceAnnounce(this, this.onZigbeeEvent);
+        this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
+        this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
+        this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
 
         this.mqtt.subscribe(this.statusTopic);
         this.mqtt.subscribe(defaultStatusTopic);
@@ -1110,8 +1107,8 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onZigbeeEvent(device: Device): void {
-        this.discover(device);
+    @bind onZigbeeEvent(data: {device: Device}): void {
+        this.discover(data.device);
     }
 
     private getDevicePayload(entity: Device | Group): KeyValue {
