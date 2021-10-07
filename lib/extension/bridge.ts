@@ -64,6 +64,10 @@ export default class Bridge extends Extension {
         this.eventBus.onGroupMembersChanged(this, () => this.publishGroups());
         this.eventBus.onDevicesChanged(this, () => this.publishDevices() && this.publishInfo());
         this.eventBus.onPermitJoinChanged(this, () => !this.zigbee.isStopping() && this.publishInfo());
+        this.eventBus.onScenesChanged(this, () => {
+            this.publishDevices();
+            this.publishGroups();
+        });
 
         // Zigbee events
         const publishEvent = (type: string, data: KeyValue): Promise<void> =>
