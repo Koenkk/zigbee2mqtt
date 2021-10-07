@@ -100,7 +100,7 @@ export default class Groups extends Extension {
     }
 
     @bind async onStateChange(data: eventdata.StateChange): Promise<void> {
-        const reason = 'group_optimistic';
+        const reason = 'groupOptimistic';
         if (data.reason === reason) {
             return;
         }

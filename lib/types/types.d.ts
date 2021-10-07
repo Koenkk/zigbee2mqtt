@@ -42,7 +42,7 @@ declare global {
     // Types
     interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
     interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
-    type StateChangeReason = 'publishDebounce' | 'group_optimistic';
+    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue,
         stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>;};

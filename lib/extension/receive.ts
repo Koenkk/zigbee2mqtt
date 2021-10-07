@@ -23,7 +23,7 @@ export default class Receive extends Extension {
          * remove it from the to be send debounced message.
          */
         if (data.entity.isDevice() && this.debouncers[data.entity.ieeeAddr] &&
-            data.stateChangeReason !== 'publishDebounce') {
+            data.stateChangeReason !== 'publishDebounce' && data.stateChangeReason !== 'lastSeenChanged') {
             for (const key of Object.keys(data.message)) {
                 delete this.debouncers[data.entity.ieeeAddr].payload[key];
             }
