@@ -13,6 +13,8 @@ import Group from '../model/group';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
+type Scene = {id: number, name: string};
+
 export default class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
     private coordinatorVersion: zh.CoordinatorVersion;
@@ -568,18 +570,38 @@ export default class Bridge extends Extension {
             'bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
+    private getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
+        const scenes: {[id: number]: Scene} = {};
+        const endpoints = utils.isEndpoint(entity) ? [entity] : entity.members;
+        const groupID = utils.isEndpoint(entity) ? 0 : entity.groupID;
+
+        for (const endpoint of endpoints) {
+            for (const key of Object.keys(endpoint.meta?.scenes || {})) {
+                const split = key.split('_');
+                const sceneID = parseInt(split[0], 10);
+                const sceneGroupID = parseInt(split[1], 10);
+                if (sceneGroupID === groupID) {
+                    scenes[sceneID] = {id: sceneID, name: `Scene ${sceneID}`};
+                }
+            }
+        }
+
+        return Object.values(scenes);
+    }
+
     async publishDevices(): Promise<void> {
         interface Data {
             bindings: {cluster: string, target: {type: string, endpoint?: number, ieee_address?: string, id?: number}}[]
             configured_reportings: {cluster: string, attribute: string | number,
                 minimum_report_interval: number, maximum_report_interval: number, reportable_change: number}[],
-            clusters: {input: string[], output: string[]}
+            clusters: {input: string[], output: string[]}, scenes: Scene[]
         }
 
         const devices = this.zigbee.devices().map((device) => {
             const endpoints: {[s: number]: Data} = {};
             for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
+                    scenes: this.getScenes(endpoint),
                     bindings: [],
                     configured_reportings: [],
                     clusters: {
@@ -635,6 +657,7 @@ export default class Bridge extends Extension {
             return {
                 id: g.ID,
                 friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
+                scenes: this.getScenes(g.zh),
                 members: g.zh.members.map((e) => {
                     return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
                 }),
