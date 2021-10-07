@@ -580,12 +580,12 @@ export default class Bridge extends Extension {
         const groupID = utils.isEndpoint(entity) ? 0 : entity.groupID;
 
         for (const endpoint of endpoints) {
-            for (const key of Object.keys(endpoint.meta?.scenes || {})) {
+            for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
                 const split = key.split('_');
                 const sceneID = parseInt(split[0], 10);
                 const sceneGroupID = parseInt(split[1], 10);
                 if (sceneGroupID === groupID) {
-                    scenes[sceneID] = {id: sceneID, name: `Scene ${sceneID}`};
+                    scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
                 }
             }
         }
