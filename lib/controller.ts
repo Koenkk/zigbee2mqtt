@@ -158,7 +158,8 @@ class Controller {
         await this.callExtensions('start', this.extensions);
 
         if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== 'disable') {
-            this.eventBus.onLastSeenChanged(this, (data) => this.publishEntityState(data.device, {}));
+            this.eventBus.onLastSeenChanged(this, (data) =>
+                this.publishEntityState(data.device, {}, 'lastSeenChanged'));
         }
     }
 
