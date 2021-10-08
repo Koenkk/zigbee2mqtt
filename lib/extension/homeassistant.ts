@@ -19,7 +19,7 @@ const sensorClick = {
     object_id: 'click',
     discovery_payload: {
         icon: 'mdi:toggle-switch',
-        value_template: '{{ value_json.click | default('') }}',
+        value_template: '{{ value_json.click | default("") }}',
     },
 };
 
@@ -356,7 +356,7 @@ class HomeAssistant extends ExtensionTS {
                 object_id: 'fan',
                 discovery_payload: {
                     state_topic: true,
-                    state_value_template: '{{ value_json.fan_state | default('') }}',
+                    state_value_template: '{{ value_json.fan_state | default("") }}',
                     command_topic: true,
                     command_topic_postfix: 'fan_state',
                 },
@@ -640,7 +640,7 @@ class HomeAssistant extends ExtensionTS {
                     discovery_payload: {
                         unit_of_measurement: 'brightness',
                         icon: 'mdi:brightness-5',
-                        value_template: '{{ value_json.brightness | default('') }}',
+                        value_template: '{{ value_json.brightness | default("") }}',
                     },
                 });
             }
@@ -804,7 +804,7 @@ class HomeAssistant extends ExtensionTS {
                     discovery_payload: {
                         payload_on: true,
                         payload_off: false,
-                        value_template: '{{ value_json.update_available | default('') }}',
+                        value_template: '{{ value_json.update_available | default("") }}',
                         enabled_by_default: false,
                     },
                 };
