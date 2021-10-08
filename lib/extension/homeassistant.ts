@@ -968,7 +968,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.temperature_command_topic) {
-                payload.temperature_command_topic = `${stateTopic}/set/${payload.temperature_command_topic}`;
+                payload.temperature_command_topic = `${stateTopic}/set`;
             }
 
             if (payload.temperature_low_command_topic) {
