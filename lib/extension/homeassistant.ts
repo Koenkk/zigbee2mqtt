@@ -19,7 +19,7 @@ const sensorClick = {
     object_id: 'click',
     discovery_payload: {
         icon: 'mdi:toggle-switch',
-        value_template: '{{ value_json.click }}',
+        value_template: '{{ value_json.click | default('') }}',
     },
 };
 
@@ -159,7 +159,7 @@ class HomeAssistant extends ExtensionTS {
                 discovery_payload: {
                     payload_off: state.value_off,
                     payload_on: state.value_on,
-                    value_template: `{{ value_json.${property} }}`,
+                    value_template: `{{ value_json.${property}  | default('') }}`,
                     command_topic: true,
                     command_topic_prefix: endpoint,
                 },
@@ -277,7 +277,7 @@ class HomeAssistant extends ExtensionTS {
                 object_id: 'lock',
                 discovery_payload: {
                     command_topic: true,
-                    value_template: `{{ value_json.${state.property} }}`,
+                    value_template: `{{ value_json.${state.property} | default('') }}`,
                 },
             };
 
@@ -356,7 +356,7 @@ class HomeAssistant extends ExtensionTS {
                 object_id: 'fan',
                 discovery_payload: {
                     state_topic: true,
-                    state_value_template: '{{ value_json.fan_state }}',
+                    state_value_template: '{{ value_json.fan_state | default('') }}',
                     command_topic: true,
                     command_topic_postfix: 'fan_state',
                 },
@@ -440,7 +440,7 @@ class HomeAssistant extends ExtensionTS {
                     discovery_payload: {
                         value_template: typeof firstExpose.value_on === 'boolean' ?
                             `{% if value_json.${firstExpose.property} %} true {% else %} false {% endif %}` :
-                            `{{ value_json.${firstExpose.property} }}`,
+                            `{{ value_json.${firstExpose.property} | default('') }}`,
                         payload_on: firstExpose.value_on.toString(),
                         payload_off: firstExpose.value_off.toString(),
                         command_topic: true,
@@ -455,7 +455,7 @@ class HomeAssistant extends ExtensionTS {
                     type: 'binary_sensor',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                         payload_on: firstExpose.value_on,
                         payload_off: firstExpose.value_off,
                         ...(lookup[firstExpose.name] || {}),
@@ -514,7 +514,7 @@ class HomeAssistant extends ExtensionTS {
                 type: 'sensor',
                 object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                 discovery_payload: {
-                    value_template: `{{ value_json.${firstExpose.property} }}`,
+                    value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                     enabled_by_default: !allowsSet,
                     ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                     ...lookup[firstExpose.name],
@@ -532,7 +532,7 @@ class HomeAssistant extends ExtensionTS {
                     type: 'number',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
@@ -569,7 +569,7 @@ class HomeAssistant extends ExtensionTS {
                     type: 'sensor',
                     object_id: firstExpose.property,
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
                         ...lookup[firstExpose.name],
                     },
@@ -585,7 +585,7 @@ class HomeAssistant extends ExtensionTS {
                         type: 'select',
                         object_id: firstExpose.property,
                         discovery_payload: {
-                            value_template: `{{ value_json.${firstExpose.property} }}`,
+                            value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                             state_topic: true,
                             command_topic_prefix: endpoint,
                             command_topic: true,
@@ -606,7 +606,7 @@ class HomeAssistant extends ExtensionTS {
                     type: 'sensor',
                     object_id: firstExpose.property,
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: `{{ value_json.${firstExpose.property} | default('') }}`,
                         ...lookup[firstExpose.name],
                     },
                 };
@@ -640,7 +640,7 @@ class HomeAssistant extends ExtensionTS {
                     discovery_payload: {
                         unit_of_measurement: 'brightness',
                         icon: 'mdi:brightness-5',
-                        value_template: '{{ value_json.brightness }}',
+                        value_template: '{{ value_json.brightness | default('') }}',
                     },
                 });
             }
@@ -791,7 +791,7 @@ class HomeAssistant extends ExtensionTS {
                 object_id: 'update_state',
                 discovery_payload: {
                     icon: 'mdi:update',
-                    value_template: `{{ value_json['update']['state'] }}`,
+                    value_template: `{{ value_json['update']['state'] | default('') }}`,
                     enabled_by_default: false,
                 },
             };
@@ -804,7 +804,7 @@ class HomeAssistant extends ExtensionTS {
                     discovery_payload: {
                         payload_on: true,
                         payload_off: false,
-                        value_template: '{{ value_json.update_available}}',
+                        value_template: '{{ value_json.update_available | default('') }}',
                         enabled_by_default: false,
                     },
                 };
