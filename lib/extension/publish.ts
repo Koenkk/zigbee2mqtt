@@ -12,6 +12,7 @@ import bind from 'bind-decorator';
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
 const propertyEndpointRegex = new RegExp(`^(.*)_(${utils.endpointNames.join('|')})$`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
+const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all'];
 
 // Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
 const defaultGroupConverters = [
@@ -283,6 +284,12 @@ export default class Publish extends Extension {
             if (Object.keys(payload).length != 0) {
                 this.publishEntityState(toPublishEntity[ID], payload);
             }
+        }
+
+        const scenesChanged = Object.values(usedConverters)
+            .some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
+        if (scenesChanged) {
+            this.eventBus.emitScenesChanged();
         }
     }
 }
