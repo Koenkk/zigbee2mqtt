@@ -145,6 +145,9 @@ class Controller {
             this.exitCallback(1);
         }
 
+        // Call extensions
+        await this.callExtensions('start', this.extensions);
+
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const device of devices) {
@@ -153,9 +156,6 @@ class Controller {
                 }
             }
         }
-
-        // Call extensions
-        await this.callExtensions('start', this.extensions);
 
         if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== 'disable') {
             this.eventBus.onLastSeenChanged(this, (data) =>
