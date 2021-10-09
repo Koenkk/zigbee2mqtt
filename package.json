@@ -37,6 +37,7 @@
   "dependencies": {
     "ajv": "^8.6.3",
     "bind-decorator": "^1.0.11",
+    "core-js": "^3.18.2",
     "debounce": "^1.2.1",
     "deep-object-diff": "^1.1.0",
     "fast-deep-equal": "^3.1.3",
