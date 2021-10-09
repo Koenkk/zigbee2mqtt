@@ -779,6 +779,18 @@ export default class HomeAssistant extends Extension {
                 .map((exposes) => this.exposeToConfig(exposes, 'group')));
         }
 
+        if (isDevice && settings.get().advanced.last_seen !== 'disable') {
+            configs.push({
+                type: 'sensor',
+                object_id: 'last_seen',
+                discovery_payload: {
+                    icon: 'mdi:clock',
+                    value_template: '{{ value_json.last_seen }}',
+                    enabled_by_default: false,
+                },
+            });
+        }
+
         if (isDevice && entity.definition.hasOwnProperty('ota')) {
             const updateStateSensor = {
                 type: 'sensor',

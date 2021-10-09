@@ -1660,4 +1660,40 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
+
+    it('Should discover last_seen when enabled', async () => {
+        settings.set(['advanced', 'last_seen'], ' epoch');
+        await resetExtension();
+
+        const payload = {
+            "availability":[
+               {
+                  "topic":"zigbee2mqtt/bridge/state"
+               }
+            ],
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_0x000b57fffec6a5b2"
+               ],
+               "manufacturer":"IKEA",
+               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "name":"bulb",
+               "sw_version":version
+            },
+            "enabled_by_default":false,
+            "icon":"mdi:clock",
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb last seen",
+            "state_topic":"zigbee2mqtt/bulb",
+            "unique_id":"0x000b57fffec6a5b2_last_seen_zigbee2mqtt",
+            "value_template":"{{ value_json.last_seen }}"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
 });
