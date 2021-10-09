@@ -1151,9 +1151,7 @@ export default class HomeAssistant extends Extension {
         for (const expose of entity.definition.exposes) {
             if (expose.hasOwnProperty('features')) {
                 for (const feature of expose.features) {
-                    if (feature.name === 'state') {
-                        add(feature);
-                    }
+                    add(feature);
                 }
             } else {
                 add(expose);
