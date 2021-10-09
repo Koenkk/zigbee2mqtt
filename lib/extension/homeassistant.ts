@@ -8,7 +8,7 @@ import Extension from './extension';
 import bind from 'bind-decorator';
 
 // eslint-disable-next-line camelcase
-interface DiscoveryEntry {type: string, object_id: string, discovery_payload: KeyValue}
+interface DiscoveryEntry {properties: string[], type: string, object_id: string, discovery_payload: KeyValue}
 
 const sensorClick = {
     type: 'sensor',
@@ -36,7 +36,7 @@ const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): s
  * This extensions handles integration with HomeAssistant
  */
 export default class HomeAssistant extends Extension {
-    private discovered: {[s: string]: string[]} = {};
+    private discovered: {[s: string]: {topics: string[], properties: string[]}} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
     private legacyApi = settings.get().advanced.legacy_api;
@@ -842,9 +842,13 @@ export default class HomeAssistant extends Extension {
         return configs;
     }
 
+    private getDiscoverKey(entity: Device | Group): string | number {
+        return entity.isDevice() ? entity.ieeeAddr : entity.ID;
+    }
+
     private discover(entity: Device | Group, force=false): void {
         // Check if already discoverd and check if there are configs.
-        const discoverKey = entity.isDevice() ? entity.ieeeAddr : entity.ID;
+        const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
 
         if (entity.isGroup()) {
@@ -1139,22 +1143,12 @@ export default class HomeAssistant extends Extension {
     }
 
     override adjustMessageBeforePublish(entity: Device | Group, message: KeyValue): void {
-        // Set missing values of state to 'null': https://github.com/Koenkk/zigbee2mqtt/issues/6987
-        if (!entity.isDevice() || !entity.definition) return null;
+        const discoverKey = this.getDiscoverKey(entity);
+        if (!this.discovered[discoverKey]) return;
 
-        const add = (expose: zhc.DefinitionExpose | zhc.DefinitionExposeFeature): void => {
-            if (!message.hasOwnProperty(expose.property) && expose.access & ACCESS_STATE) {
-                message[expose.property] = null;
-            }
-        };
-
-        for (const expose of entity.definition.exposes) {
-            if (expose.hasOwnProperty('features')) {
-                for (const feature of expose.features) {
-                    add(feature);
-                }
-            } else {
-                add(expose);
+        for (const property of Object.values(this.discovered[discoverKey].properties)) {
+            if (!message.hasOwnProperty(property)) {
+                message[property] = null;
             }
         }
 
