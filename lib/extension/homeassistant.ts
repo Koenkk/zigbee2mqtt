@@ -6,8 +6,6 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
 import Extension from './extension';
 import bind from 'bind-decorator';
-import Device from '../model/device';
-import Group from '../model/group';
 
 // eslint-disable-next-line camelcase
 interface DiscoveryEntry {type: string, object_id: string, discovery_payload: KeyValue}
@@ -676,7 +674,7 @@ export default class HomeAssistant extends Extension {
          * zigbee2mqtt/mydevice/l1.
          */
         const entity = this.zigbee.resolveEntity(data.entity.name);
-        if (entity instanceof Device && this.mapping[entity.definition?.model]) {
+        if (entity.isDevice() && this.mapping[entity.definition?.model]) {
             for (const config of this.mapping[entity.definition.model]) {
                 const match = /light_(.*)/.exec(config['object_id']);
                 if (match) {
@@ -715,7 +713,7 @@ export default class HomeAssistant extends Extension {
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_devic/action
          */
-        if (entity instanceof Device && entity.definition) {
+        if (entity.isDevice() && entity.definition) {
             const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
                 const value = data.message[key].toString();
@@ -749,7 +747,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private getConfigs(entity: Device | Group): DiscoveryEntry[] {
-        const isDevice = entity instanceof Device;
+        const isDevice = entity.isDevice();
         /* istanbul ignore next */
         if (!entity || (isDevice && !entity.definition) ||
             (isDevice && !this.mapping[entity.definition.model])) return [];
@@ -846,10 +844,10 @@ export default class HomeAssistant extends Extension {
 
     private discover(entity: Device | Group, force=false): void {
         // Check if already discoverd and check if there are configs.
-        const discoverKey = entity instanceof Device ? entity.ieeeAddr : entity.ID;
+        const discoverKey = entity.isDevice() ? entity.ieeeAddr : entity.ID;
         const discover = force || !this.discovered[discoverKey];
 
-        if (entity instanceof Group) {
+        if (entity.isGroup()) {
             if (!discover || entity.zh.members.length === 0) return;
         } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] ||
             entity.zh.interviewing ||
@@ -906,7 +904,7 @@ export default class HomeAssistant extends Extension {
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
             const availabilityEnabled =
-                entity instanceof Device && utils.isAvailabilityEnabledForDevice(entity, settings.get());
+                entity.isDevice() && utils.isAvailabilityEnabledForDevice(entity, settings.get());
             /* istanbul ignore next */
             if (availabilityEnabled) {
                 payload.availability_mode = 'all';
@@ -1075,7 +1073,7 @@ export default class HomeAssistant extends Extension {
             // Group discovery topic uses "ENCODEDBASETOPIC_GROUPID", device use ieeeAddr
             const ID = discoveryMatch[2].includes('_') ? discoveryMatch[2].split('_')[1] : discoveryMatch[2];
             const entity = this.zigbee.resolveEntity(ID);
-            let clear = !entity || entity instanceof Device && !entity.definition;
+            let clear = !entity || entity.isDevice() && !entity.definition;
 
             // Only save when topic matches otherwise config is not updated when renamed by editing configuration.yaml
             if (entity) {
@@ -1124,7 +1122,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private getDevicePayload(entity: Device | Group): KeyValue {
-        const identifierPostfix = entity instanceof Group ?
+        const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
         const payload: KeyValue = {
             identifiers: [`${identifierPostfix}_${entity.settings.ID}`],
@@ -1132,7 +1130,7 @@ export default class HomeAssistant extends Extension {
             sw_version: `Zigbee2MQTT ${this.zigbee2MQTTVersion}`,
         };
 
-        if (entity instanceof Device) {
+        if (entity.isDevice()) {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
         }
@@ -1178,7 +1176,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private getDiscoveryTopic(config: DiscoveryEntry, entity: Device | Group): string {
-        const key = entity instanceof Device ? entity.ieeeAddr : `${this.getEncodedBaseTopic()}_${entity.ID}`;
+        const key = entity.isDevice() ? entity.ieeeAddr : `${this.getEncodedBaseTopic()}_${entity.ID}`;
         return `${config.type}/${key}/${config.object_id}/config`;
     }
 
