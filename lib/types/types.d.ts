@@ -89,6 +89,7 @@ declare global {
 
         interface FromZigbeeConverter {
             cluster: string,
+            options?: zhc.DefinitionExpose[],
             type: string[] | string,
             convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
                 meta: {state: KeyValue, logger: Logger, device: zh.Device}) => KeyValue,
