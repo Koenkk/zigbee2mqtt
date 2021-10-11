@@ -9,8 +9,8 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}))?/(get|set)(?:/(.+))?`);
-const propertyEndpointRegex = new RegExp(`^(.*)_(${utils.endpointNames.join('|')})$`);
+const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}|\\d+))?/(get|set)(?:/(.+))?`);
+const propertyEndpointRegex = new RegExp(`^(.*)_(${utils.endpointNames.join('|')}|\\d+)$`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all'];
 
@@ -218,6 +218,12 @@ export default class Publish extends Extension {
             if (!converter) {
                 logger.error(`No converter available for '${key}' (${message[key]})`);
                 continue;
+            }
+
+            // If the endpoint_name name is a nubmer, try to map it to a friendlyName
+            if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isEndpoint(localTarget) &&
+                re.endpointName(localTarget)) {
+                endpointName = re.endpointName(localTarget);
             }
 
             // Converter didn't return a result, skip

@@ -186,6 +186,17 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish messages to zigbee devices with endpoint ID', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/3/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_right: 'OFF'}),
+            {"qos": 0, "retain": false}, expect.any(Function));
+    });
+
     it('Should publish messages to zigbee devices to non default-ep with state_[EP]', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(3);
