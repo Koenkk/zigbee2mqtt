@@ -91,7 +91,7 @@ declare global {
             cluster: string,
             type: string[] | string,
             convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
-                meta: {state: KeyValue, logger: Logger, device: zh.Device}) => KeyValue,
+                meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
         }
 
         interface DefinitionExposeFeature {name: string, endpoint?: string,
