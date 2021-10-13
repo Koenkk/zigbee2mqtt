@@ -50,7 +50,10 @@ class Controller {
     private extensionArgs: ExtensionArgs;
 
     constructor(restartCallback: () => void, exitCallback: (code: number) => void) {
-        this.eventBus = new EventBus();
+        this.eventBus = new EventBus( /* istanbul ignore next */ (error) => {
+            logger.error(`Error: ${error.message}`);
+            logger.debug(error.stack);
+        });
         this.zigbee = new Zigbee(this.eventBus);
         this.mqtt = new MQTT(this.eventBus);
         this.state = new State(this.eventBus);
