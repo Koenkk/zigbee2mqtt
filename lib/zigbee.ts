@@ -110,14 +110,21 @@ export default class Zigbee {
             // If a passlist is used, all other device will be removed from the network.
             const passlist = settings.get().passlist.concat(settings.get().whitelist);
             const blocklist = settings.get().blocklist.concat(settings.get().ban);
+            const remove = async (device: Device): Promise<void> => {
+                try {
+                    await device.zh.removeFromNetwork();
+                } catch (error) {
+                    logger.error(`Failed to remove '${device.ieeeAddr}' (${error.message})`);
+                }
+            };
             if (passlist.length > 0) {
                 if (!passlist.includes(device.ieeeAddr)) {
                     logger.warn(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`);
-                    device.zh.removeFromNetwork();
+                    await remove(device);
                 }
             } else if (blocklist.includes(device.ieeeAddr)) {
                 logger.warn(`Device on blocklist is connected (${device.ieeeAddr}), removing...`);
-                device.zh.removeFromNetwork();
+                await remove(device);
             }
         }
 

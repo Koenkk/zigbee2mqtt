@@ -174,6 +174,7 @@ describe('Controller', () => {
 
     it('Should remove device not on passlist on startup', async () => {
         settings.set(['passlist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
+        zigbeeHerdsman.devices.bulb.removeFromNetwork.mockImplementationOnce(() => {throw new Error("dummy")});
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
