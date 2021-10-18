@@ -176,6 +176,7 @@ declare global {
             auth_token?: string,
             host?: string,
             port?: number,
+            url?: string,
         },
         mqtt: {
             base_topic: string,
