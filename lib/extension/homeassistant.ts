@@ -1158,6 +1158,12 @@ export default class HomeAssistant extends Extension {
             payload.manufacturer = entity.definition.vendor;
         }
 
+        if (settings.get().frontend?.url) {
+            const url = settings.get().frontend?.url;
+            payload.configuration_url = entity.isDevice() ? `${url}/#/device/${entity.ieeeAddr}/info` :
+                `${url}/#/group/${entity.ID}`;
+        }
+
         return payload;
     }
 
