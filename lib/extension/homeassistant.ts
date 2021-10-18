@@ -934,30 +934,29 @@ export default class HomeAssistant extends Extension {
                 payload.availability.push({topic: `${settings.get().mqtt.base_topic}/${entity.name}/availability`});
             }
 
+            let commandTopic = `${settings.get().mqtt.base_topic}/${entity.name}/`;
+            if (payload.command_topic_prefix) {
+                commandTopic += `${payload.command_topic_prefix}/`;
+                delete payload.command_topic_prefix;
+            }
+            commandTopic += 'set';
+            if (payload.command_topic_postfix) {
+                commandTopic += `/${payload.command_topic_postfix}`;
+                delete payload.command_topic_postfix;
+            }
+
             if (payload.command_topic) {
-                payload.command_topic = `${settings.get().mqtt.base_topic}/${entity.name}/`;
-
-                if (payload.command_topic_prefix) {
-                    payload.command_topic += `${payload.command_topic_prefix}/`;
-                    delete payload.command_topic_prefix;
-                }
-
-                payload.command_topic += 'set';
-
-                if (payload.command_topic_postfix) {
-                    payload.command_topic += `/${payload.command_topic_postfix}`;
-                    delete payload.command_topic_postfix;
-                }
+                payload.command_topic = commandTopic;
             }
 
-            if (payload.set_position_topic && payload.command_topic) {
-                payload.set_position_topic = payload.command_topic;
+            if (payload.set_position_topic) {
+                payload.set_position_topic = commandTopic;
             }
 
-            if (payload.tilt_command_topic && payload.command_topic) {
+            if (payload.tilt_command_topic) {
                 // Home Assistant does not support templates to set tilt (as of 2019-08-17),
                 // so we (have to) use a subtopic.
-                payload.tilt_command_topic = payload.command_topic + '/tilt';
+                payload.tilt_command_topic = commandTopic + '/tilt';
             }
 
             if (payload.mode_state_topic) {
