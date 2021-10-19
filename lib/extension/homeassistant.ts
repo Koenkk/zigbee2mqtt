@@ -216,9 +216,10 @@ export default class HomeAssistant extends Extension {
 
             const state = firstExpose.features.find((f) => f.name === 'running_state');
             if (state) {
+                discoveryEntry.mockProperties.push(state.property);
                 discoveryEntry.discovery_payload.action_topic = true;
                 discoveryEntry.discovery_payload.action_template = `{% set values = ` +
-                        `{'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'}` +
+                        `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'}` +
                         ` %}{{ values[value_json.${state.property}] }}`;
             }
 
