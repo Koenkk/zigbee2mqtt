@@ -1,4 +1,5 @@
 import events from 'events';
+events.captureRejections = true;
 
 // eslint-disable-next-line
 type ListenerKey = object;
@@ -7,8 +8,9 @@ export default class EventBus {
     private callbacksByExtension: { [s: string]: { event: string, callback: (...args: unknown[]) => void }[] } = {};
     private emitter = new events.EventEmitter();
 
-    constructor() {
+    constructor(onError: (error: Error) => void) {
         this.emitter.setMaxListeners(100);
+        this.emitter.on('error', onError);
     }
 
     public emitAdapterDisconnected(): void {

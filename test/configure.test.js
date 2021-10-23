@@ -114,7 +114,7 @@ describe('Configure', () => {
         expectBulbConfigured();
         const device = zigbeeHerdsman.devices.bulb;
         mockClear(device);
-        await zigbeeHerdsman.events.lastSeenChanged({device});
+        await zigbeeHerdsman.events.deviceInterview({device});
         await flushPromises();
         expectBulbNotConfigured();
     });

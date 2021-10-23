@@ -85,7 +85,7 @@ export default class Receive extends Extension {
         return true;
     }
 
-    @bind onDeviceMessage(data: eventdata.DeviceMessage): void {
+    @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
         /* istanbul ignore next */
         if (!data.device) return;
 
@@ -147,12 +147,18 @@ export default class Receive extends Extension {
 
         const meta = {device: data.device.zh, logger, state: this.state.get(data.device)};
         let payload: KeyValue = {};
-        converters.forEach((converter) => {
-            const converted = converter.convert(data.device.definition, data, publish, data.device.settings, meta);
-            if (converted) {
-                payload = {...payload, ...converted};
+        for (const converter of converters) {
+            try {
+                const converted = await converter.convert(
+                    data.device.definition, data, publish, data.device.settings, meta);
+                if (converted) {
+                    payload = {...payload, ...converted};
+                }
+            } catch (error) {
+                // istanbul ignore next
+                logger.error(`Exception while calling fromZigbee converter: ${error.message}}`);
             }
-        });
+        }
 
         if (Object.keys(payload).length) {
             publish(payload);

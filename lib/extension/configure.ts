@@ -76,6 +76,7 @@ export default class Configure extends Extension {
 
             this.configure(data.device, 'zigbee_event');
         });
+        this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, 'zigbee_event'));
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, 'zigbee_event'));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onReportingDisabled(this, this.onReportingDisabled);
