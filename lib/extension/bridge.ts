@@ -683,16 +683,13 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
-        const options: {[s: string]: zhc.DefinitionExpose} = {};
-        device.definition.fromZigbee.forEach((c) => c.options?.forEach((o) => options[o.name] = o));
-
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
             exposes: device.definition.exposes,
             supports_ota: !!device.definition.ota,
-            options: Object.values(options),
+            options: device.definition.options,
             icon,
         };
     }
