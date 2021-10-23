@@ -112,6 +112,7 @@ declare global {
             fromZigbee: FromZigbeeConverter[]
             icon?: string
             description: string
+            options: zhc.DefinitionExpose[],
             vendor: string
             exposes: DefinitionExpose[]
             configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
