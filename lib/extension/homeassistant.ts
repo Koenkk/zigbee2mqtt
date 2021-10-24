@@ -677,7 +677,7 @@ export default class HomeAssistant extends Extension {
                             command_topic_prefix: endpoint,
                             command_topic: true,
                             command_topic_postfix: firstExpose.property,
-                            options: firstExpose.values,
+                            options: firstExpose.values.map((v) => v.toString()),
                             ...lookup[firstExpose.name],
                         },
                     });
