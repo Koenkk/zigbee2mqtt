@@ -879,9 +879,11 @@ export default class HomeAssistant extends Extension {
                 object_id: 'last_seen',
                 mockProperties: ['last_seen'],
                 discovery_payload: {
-                    icon: 'mdi:clock',
                     value_template: '{{ value_json.last_seen }}',
+                    icon: 'mdi:clock',
                     enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    device_class: 'timestamp',
                 },
             });
         }
