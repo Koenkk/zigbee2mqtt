@@ -428,6 +428,7 @@ export default class HomeAssistant extends Extension {
                 gas: {device_class: 'gas'},
                 invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
+                led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
                 legacy: {entity_category: 'config', icon: 'mdi:cog'},
                 moving: {device_class: 'moving'},
                 no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
