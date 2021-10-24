@@ -617,6 +617,7 @@ export default class HomeAssistant extends Extension {
                         command_topic_postfix: firstExpose.property,
                         min: firstExpose.value_min ? firstExpose.value_min : -65535,
                         max: firstExpose.value_max ? firstExpose.value_max : 65535,
+                        ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...lookup[firstExpose.name],
                     },
                 };
