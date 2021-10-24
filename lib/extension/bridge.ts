@@ -14,6 +14,10 @@ import Group from '../model/group';
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
 type Scene = {id: number, name: string};
+type DefinitionPayload = {
+    model: string, vendor: string, description: string, exposes: zhc.DefinitionExpose[], supports_ota:
+    boolean, icon: string, options: zhc.DefinitionExpose[],
+};
 
 export default class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
@@ -671,20 +675,21 @@ export default class Bridge extends Extension {
             'bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    getDefinitionPayload(device: Device):
-        {model: string, vendor: string, description: string, exposes: unknown[], supports_ota: boolean, icon: string} {
+    getDefinitionPayload(device: Device): DefinitionPayload {
         if (!device.definition) return null;
         let icon = device.settings.icon ? device.settings.icon : device.definition.icon;
         if (icon) {
             icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
+
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
             exposes: device.definition.exposes,
             supports_ota: !!device.definition.ota,
+            options: device.definition.options,
             icon,
         };
     }
