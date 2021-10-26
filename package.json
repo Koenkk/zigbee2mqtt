@@ -58,7 +58,7 @@
     "winston-syslog": "^2.4.4",
     "ws": "^8.2.3",
     "zigbee-herdsman": "0.13.163",
-    "zigbee-herdsman-converters": "14.0.294",
+    "zigbee-herdsman-converters": "14.0.295",
     "zigbee2mqtt-frontend": "0.6.25"
   },
   "devDependencies": {
