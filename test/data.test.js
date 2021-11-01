@@ -1,5 +1,5 @@
 const logger = require('./stub/logger');
-const data = require('../lib/util/data');
+const data = require('../lib/util/data').default;
 const path = require('path');
 const tmp = require('tmp');
 const fs = require('fs');

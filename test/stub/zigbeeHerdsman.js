@@ -31,7 +31,7 @@ const clusters = {
 }
 
 class Endpoint {
-    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}, configuredReportings=[], profileID=null, deviceID=null) {
+    constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}, configuredReportings=[], profileID=null, deviceID=null, meta={}) {
         this.deviceIeeeAddress = deviceIeeeAddress;
         this.clusterValues = clusterValues;
         this.ID = ID;
@@ -45,7 +45,7 @@ class Endpoint {
         this.unbind = jest.fn();
         this.save = jest.fn();
         this.configureReporting = jest.fn();
-        this.meta = {};
+        this.meta = meta;
         this.binds = binds;
         this.profileID = profileID;
         this.deviceID = deviceID;
@@ -127,7 +127,7 @@ class Device {
 const returnDevices = [];
 
 const bulb_color = new Device('Router', '0x000b57fffec6a5b3', 40399, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b3', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020");
-const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4', [], {lightingColorCtrl: {colorCapabilities: 254}})], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
+const bulb_color_2 = new Device('Router', '0x000b57fffec6a5b4', 401292, 4107, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b4', [], {lightingColorCtrl: {colorCapabilities: 254}}, [], null, null, {'scenes': {'1_0': {name: 'Chill scene', state: {state: 'ON'}}, '4_9': {state: {state: 'OFF'}}}})], true, "Mains (single phase)", "LLC020", false, 'Philips', '2019.09', '5.127.1.26581');
 const bulb_2 =  new Device('Router', '0x000b57fffec6a5b7', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5b7', [], {lightingColorCtrl: {colorCapabilities: 17}})], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm");
 const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,4151, [new Endpoint(1, [], [], '0x0017882104a44559')], true, "Mains (single phase)", 'kud7u2l');
 const ZNCZ02LM = new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug");

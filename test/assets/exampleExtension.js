@@ -4,7 +4,7 @@ class Example {
         this.mqtt.publish('example/extension', 'call from constructor')
     }
 
-    onMQTTConnected() {
+    start() {
         this.mqtt.publish('example/extension', 'test')
     }
 }

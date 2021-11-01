@@ -26,6 +26,53 @@
       },
       "examples": ["DIYRuZ_FreePad.js"]
     },
+    "availability": {
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Availability (boolean)"
+        },
+        {
+          "type": "object",
+          "title": "Availability (object)",
+          "properties": {
+            "active": {
+              "type": "object",
+              "title": "Active",
+              "requiresRestart": true,
+              "description": "Options for active devices (routers/mains powered)",
+              "properties": {
+                "timeout": {
+                  "type": "number",
+                  "title": "Timeout",
+                  "requiresRestart": true,
+                  "default": 10,
+                  "description": "Time after which an active device will be marked as offline in minutes"
+                }
+              }
+            },
+            "passive": {
+              "type": "object",
+              "title": "Active",
+              "requiresRestart": true,
+              "description": "Options for passive devices (routers/mains powered)",
+              "properties": {
+                "timeout": {
+                  "type": "number",
+                  "title": "Timeout",
+                  "requiresRestart": true,
+                  "default": 1500,
+                  "description": "Time after which an passive device will be marked as offline in minutes"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": "Availability",
+      "requiresRestart": true,
+      "description": "Checks wether devices are online/offline"
+    },
     "mqtt": {
       "type": "object",
       "title": "MQTT",
@@ -364,50 +411,6 @@
           "title": "Elapsed",
           "description": "Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg",
           "default": false
-        },
-        "availability_timeout": {
-          "type": "number",
-          "minimum": 0,
-          "default": 0,
-          "requiresRestart": true,
-          "title": "Availability Timeout",
-          "description": "Availability timeout in seconds when enabled, devices will be checked if they are still online. Only AC powered routers are checked for availability"
-        },
-        "availability_blocklist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "requiresRestart": true,
-          "title": "Availability Blocklist",
-          "description": "Prevent devices from being checked for availability"
-        },
-        "availability_passlist": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "requiresRestart": true,
-          "title": "Availability passlist",
-          "description": "Only enable availability check for certain devices"
-        },
-        "availability_blacklist": {
-          "type": "array",
-          "readOnly": true,
-          "requiresRestart": true,
-          "title": "Availability blacklist (deprecated, use availability_blocklist)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "availability_whitelist": {
-          "type": "array",
-          "readOnly": true,
-          "requiresRestart": true,
-          "items": {
-            "type": "string"
-          },
-          "title": "Availability whitelist (deprecated, use passlist)"
         },
         "report": {
           "type": "boolean",

@@ -30,7 +30,7 @@ describe('Groups', () => {
         await controller.start();
         await flushPromises();
     });
-    
+
     afterAll(async () => {
         jest.useRealTimers();
     });

@@ -13,15 +13,17 @@ function load(): void {
 
 load();
 
-export function joinPath(file: string): string {
+function joinPath(file: string): string {
     return path.join(dataPath, file);
 }
 
-export function getPath(): string {
+function getPath(): string {
     return dataPath;
 }
 
 // eslint-disable-next-line camelcase
-export function __testingOnly_reload(): void {
+function __testingOnly_reload(): void {
     load();
 }
+
+export default {joinPath, getPath, __testingOnly_reload};

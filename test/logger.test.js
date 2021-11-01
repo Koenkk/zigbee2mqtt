@@ -24,14 +24,14 @@ describe('Logger', () => {
     });
 
     it('Create log directory', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
     });
 
     it('Should cleanup', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
 
         for (const d of fs.readdirSync(dir.name)) {
@@ -48,7 +48,7 @@ describe('Logger', () => {
     })
 
     it('Should not cleanup when there is no timestamp set', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
         for (let i = 30; i < 40; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
@@ -61,7 +61,7 @@ describe('Logger', () => {
     })
 
     it('Set and get log level', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
@@ -73,24 +73,24 @@ describe('Logger', () => {
             }
         }
 
-        const logger = require('../lib/util/logger.js');
-        expect(logger.transports.length).toBe(2);
+        const logger = require('../lib/util/logger').default;
+        expect(logger.winston.transports.length).toBe(2);
         logger.addTransport(new DummyTransport());
-        expect(logger.transports.length).toBe(3);
+        expect(logger.winston.transports.length).toBe(3);
     });
 
     it('Set and get log level warn <-> warning', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
         logger.setLevel('warn');
-        expect(logger.transports[0].level).toBe('warning');
+        expect(logger.winston.transports[0].level).toBe('warning');
         expect(logger.getLevel()).toBe('warn');
     });
 
     it('Logger should be console and file by default', () => {
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(false);
@@ -100,9 +100,9 @@ describe('Logger', () => {
 
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(true);
@@ -112,27 +112,27 @@ describe('Logger', () => {
 
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
     });
 
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
     });
 
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
-        const logger = require('../lib/util/logger.js');
+        const logger = require('../lib/util/logger').default;
         logger.logOutput();
-        const pipes = logger._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
         expect(pipes[1].tailable).toBeFalsy();
@@ -141,11 +141,34 @@ describe('Logger', () => {
 
     it('Should allow to symlink logs to current directory', () => {
         settings.set(['advanced', 'log_symlink_current'], true);
-        let logger = require('../lib/util/logger.js');
+        let logger = require('../lib/util/logger').default;
         logger.logOutput();
         expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
 
         jest.resetModules();
-        logger = require('../lib/util/logger.js');
+        logger = require('../lib/util/logger').default;
+    });
+
+    it('Log', () => {
+        const logger = require('../lib/util/logger').default;
+        const warn = jest.spyOn(logger.winston, 'warning');
+        logger.warn('warn');
+        expect(warn).toHaveBeenCalledWith('warn');
+
+        const debug = jest.spyOn(logger.winston, 'debug');
+        logger.debug('debug');
+        expect(debug).toHaveBeenCalledWith('debug');
+
+        const warning = jest.spyOn(logger.winston, 'warning');
+        logger.warning('warning');
+        expect(warning).toHaveBeenCalledWith('warning');
+
+        const info = jest.spyOn(logger.winston, 'info');
+        logger.info('info');
+        expect(info).toHaveBeenCalledWith('info');
+
+        const error = jest.spyOn(logger.winston, 'error');
+        logger.error('error');
+        expect(error).toHaveBeenCalledWith('error');
     });
 });

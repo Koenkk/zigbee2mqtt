@@ -25,12 +25,12 @@ describe('HomeAssistant extension', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
-        controller.state._load();
+        controller.state.load();
         await resetExtension();
     });
 
     beforeAll(async () => {
-        version = await require('../lib/util/utils').getZigbee2MQTTVersion();
+        version = await require('../lib/util/utils').default.getZigbee2MQTTVersion();
         version = `Zigbee2MQTT ${version.version}`;
         jest.useFakeTimers();
         settings.set(['homeassistant'], true);
@@ -825,7 +825,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null}),
+            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null, "update_available": null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -841,7 +841,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null}),
+            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null, "update_available": null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -857,7 +857,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"linkquality": null,"state": "ON"}),
+            stringify({"linkquality": null,"state": "ON", "update_available": null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -921,7 +921,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         expect(MQTT.subscribe).toHaveBeenCalledWith('homeassistant/status');
         await flushPromises();
@@ -932,13 +932,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null}),
+            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -946,7 +946,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should send all status when home assistant comes online', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         expect(MQTT.subscribe).toHaveBeenCalledWith('hass/status');
         MQTT.publish.mockClear();
@@ -956,13 +956,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null}),
+            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -970,7 +970,7 @@ describe('HomeAssistant extension', () => {
 
     it('Shouldnt send all status when home assistant comes offline', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         await flushPromises();
         MQTT.publish.mockClear();
@@ -983,7 +983,7 @@ describe('HomeAssistant extension', () => {
 
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
         data.writeDefaultState();
-        extension.state._load();
+        extension.state.load();
         await resetExtension();
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status_different', 'offline');
@@ -994,7 +994,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover devices with availability', async () => {
-        settings.set(['advanced', 'availability_timeout'], 1)
+        settings.set(['availability'], true)
         await resetExtension();
 
         let payload;
@@ -1016,6 +1016,7 @@ describe('HomeAssistant extension', () => {
                 'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
                 'manufacturer': 'Xiaomi',
             },
+            'availability_mode': 'all',
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}, {topic: 'zigbee2mqtt/weather_sensor/availability'}],
         };
 
@@ -1289,7 +1290,7 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: "", battery: null, linkquality: null, voltage: null}),
+            stringify({action: "", battery: null, linkquality: null, voltage: null, click: null}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -1476,10 +1477,10 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single', battery: null, linkquality: null, voltage: null});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single', click: null, battery: null, linkquality: null, voltage: null});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: '', battery: null, linkquality: null, voltage: null});
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({action: '', click: null, battery: null, linkquality: null, voltage: null});
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
@@ -1654,6 +1655,79 @@ describe('HomeAssistant extension', () => {
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover last_seen when enabled', async () => {
+        settings.set(['advanced', 'last_seen'], ' epoch');
+        await resetExtension();
+
+        const payload = {
+            "availability":[
+               {
+                  "topic":"zigbee2mqtt/bridge/state"
+               }
+            ],
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_0x000b57fffec6a5b2"
+               ],
+               "manufacturer":"IKEA",
+               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "name":"bulb",
+               "sw_version":version
+            },
+            "enabled_by_default":false,
+            "icon":"mdi:clock",
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb last seen",
+            "state_topic":"zigbee2mqtt/bulb",
+            "unique_id":"0x000b57fffec6a5b2_last_seen_zigbee2mqtt",
+            "value_template":"{{ value_json.last_seen }}"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover devices with configuration url', async () => {
+        settings.set(['frontend', 'url'], 'http://zigbee.mqtt');
+
+        await resetExtension();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            'unit_of_measurement': '°C',
+            'device_class': 'temperature',
+            'state_class': 'measurement',
+            'enabled_by_default': true,
+            'value_template': "{{ value_json.temperature }}",
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'weather_sensor_temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': version,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+                'configuration_url': 'http://zigbee.mqtt/#/device/0x0017880104e45522/info'
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
             { retain: true, qos: 0 },
             expect.any(Function),

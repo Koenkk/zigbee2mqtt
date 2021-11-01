@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.21.2",
+  "version": "1.22.0",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -37,6 +37,7 @@
   "dependencies": {
     "ajv": "^8.6.3",
     "bind-decorator": "^1.0.11",
+    "core-js": "^3.18.2",
     "debounce": "^1.2.1",
     "deep-object-diff": "^1.1.0",
     "fast-deep-equal": "^3.1.3",
@@ -55,10 +56,10 @@
     "source-map-support": "^0.5.20",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
-    "ws": "^8.2.2",
-    "zigbee-herdsman": "0.13.149",
-    "zigbee-herdsman-converters": "14.0.261",
-    "zigbee2mqtt-frontend": "0.6.12"
+    "ws": "^8.2.3",
+    "zigbee-herdsman": "0.13.164",
+    "zigbee-herdsman-converters": "14.0.303",
+    "zigbee2mqtt-frontend": "0.6.30"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
@@ -71,15 +72,16 @@
     "@types/jest": "^27.0.2",
     "@types/js-yaml": "^4.0.3",
     "@types/object-assign-deep": "^0.4.0",
+    "@types/rimraf": "^3.0.2",
     "@types/serve-static": "^1.13.10",
     "@types/ws": "^8.2.0",
-    "@typescript-eslint/eslint-plugin": "^4.31.2",
-    "@typescript-eslint/parser": "^4.31.2",
-    "babel-jest": "^27.2.2",
+    "@typescript-eslint/eslint-plugin": "^4.32.0",
+    "@typescript-eslint/parser": "^4.32.0",
+    "babel-jest": "^27.2.4",
     "eslint": "^7.32.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-jest": "^24.4.2",
-    "jest": "^27.2.2",
+    "eslint-plugin-jest": "^24.5.0",
+    "jest": "^27.2.4",
     "tmp": "^0.2.1",
     "typescript": "^4.4.3"
   },

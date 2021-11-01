@@ -1,139 +1,160 @@
-/* eslint-disable brace-style */
 import events from 'events';
-import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-import ExtensionTS from './extension/extensionts';
+events.captureRejections = true;
 
-declare global {
-    interface EventDeviceRenamed { device: Device, homeAssisantRename: boolean, from: string, to: string }
-    // TODO: remove resolved entity, replace by Device
-    interface EventDeviceRemoved { resolvedEntity: ResolvedEntity}
-    type EventMQTTMessage = { topic: string, message: string };
-    type EventMQTTMessagePublished = { topic: string, payload: string, options: {retain: boolean, qos: number} };
-    type EventPermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
-    type EventLastSeenChanged = { device: Device };
-    type EventDeviceNetworkAddressChanged = { device: Device };
-    type EventDeviceAnnounce = { device: Device };
-    type EventDeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
-    type EventDeviceJoined = { device: Device };
-    type EventReportingDisabled = { device: ZHDevice }; // TODO zhdevice -> device
-    type EventDeviceLeave = { ieeeAddr: string };
-    // TODO: remove resolved entity, replace by Group
-    type EventGroupMembersChanged = { group: ResolvedEntity }; // TODO fill
-    type EventPublishEntityState = {
-        // TODO: remove resolved entity, replace by Device | Group and remove ieeeAddr
-        messagePayload: KeyValue, entity: ResolvedEntity, stateChangeReason: 'publishDebounce', payload: KeyValue,
-        ieeeAddr: string,
-    };
-    type EventDeviceMessage = {
-        type: ZHEvents.MessagePayloadType;
-        device: Device;
-        endpoint: ZHEndpoint;
-        linkquality: number;
-        groupID: number;
-        cluster: string | number;
-        data: KeyValue | Array<string | number>;
-        meta: {
-            zclTransactionSequenceNumber?: number;
-        };
-    };
-}
-
-type ListenerKey = string | ExtensionTS;
+// eslint-disable-next-line
+type ListenerKey = object;
 
 export default class EventBus {
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private callbacksByExtension: { [s: string]: { event: string, callback: (...args: any[]) => void }[] } = {};
+    private callbacksByExtension: { [s: string]: { event: string, callback: (...args: unknown[]) => void }[] } = {};
     private emitter = new events.EventEmitter();
 
-    public emitAdapterDisconnected(): void {this.emitter.emit('adapterDisconnected');}
+    constructor(onError: (error: Error) => void) {
+        this.emitter.setMaxListeners(100);
+        this.emitter.on('error', onError);
+    }
+
+    public emitAdapterDisconnected(): void {
+        this.emitter.emit('adapterDisconnected');
+    }
     public onAdapterDisconnected(key: ListenerKey, callback: () => void): void {
-        this.on('adapterDisconnected', callback, key);}
+        this.on('adapterDisconnected', callback, key);
+    }
 
-    public emitPermitJoinChanged(data: EventPermitJoinChanged): void {this.emitter.emit('permitJoinChanged', data);}
-    public onPermitJoinChanged(key: ListenerKey, callback: (data: EventPermitJoinChanged) => void): void {
-        this.on('permitJoinChanged', callback, key);}
+    public emitPermitJoinChanged(data: eventdata.PermitJoinChanged): void {
+        this.emitter.emit('permitJoinChanged', data);
+    }
+    public onPermitJoinChanged(key: ListenerKey, callback: (data: eventdata.PermitJoinChanged) => void): void {
+        this.on('permitJoinChanged', callback, key);
+    }
 
-    // public emitDeviceRenamed(data: EventDeviceRenamed): void {this.emitter.emit('deviceRenamed', data);}
-    public onDeviceRenamed(key: ListenerKey, callback: (data: EventDeviceRenamed) => void): void {
-        this.on('deviceRenamed', callback, key);}
+    public emitDeviceRenamed(data: eventdata.DeviceRenamed): void {
+        this.emitter.emit('deviceRenamed', data);
+    }
+    public onDeviceRenamed(key: ListenerKey, callback: (data: eventdata.DeviceRenamed) => void): void {
+        this.on('deviceRenamed', callback, key);
+    }
 
-    // public emitDeviceRemoved(data: EventDeviceRemoved): void {this.emitter.emit('deviceRemoved', data);}
-    public onDeviceRemoved(key: ListenerKey, callback: (data: EventDeviceRemoved) => void): void {
-        this.on('deviceRemoved', callback, key);}
+    public emitDeviceRemoved(data: eventdata.DeviceRemoved): void {
+        this.emitter.emit('deviceRemoved', data);
+    }
+    public onDeviceRemoved(key: ListenerKey, callback: (data: eventdata.DeviceRemoved) => void): void {
+        this.on('deviceRemoved', callback, key);
+    }
 
-    public emitLastSeenChanged(data: EventLastSeenChanged): void {this.emitter.emit('lastSeenChanged', data);}
-    public onLastSeenChanged(key: ListenerKey, callback: (data: EventLastSeenChanged) => void): void {
-        this.on('lastSeenChanged', callback, key);}
+    public emitLastSeenChanged(data: eventdata.LastSeenChanged): void {
+        this.emitter.emit('lastSeenChanged', data);
+    }
+    public onLastSeenChanged(key: ListenerKey, callback: (data: eventdata.LastSeenChanged) => void): void {
+        this.on('lastSeenChanged', callback, key);
+    }
 
-    public emitDeviceNetworkAddressChanged(data: EventDeviceNetworkAddressChanged): void {
-        this.emitter.emit('deviceNetworkAddressChanged', data);}
+    public emitDeviceNetworkAddressChanged(data: eventdata.DeviceNetworkAddressChanged): void {
+        this.emitter.emit('deviceNetworkAddressChanged', data);
+    }
     public onDeviceNetworkAddressChanged(
-        key: ListenerKey, callback: (data: EventDeviceNetworkAddressChanged) => void): void {
-        this.on('deviceNetworkAddressChanged', callback, key);}
+        key: ListenerKey, callback: (data: eventdata.DeviceNetworkAddressChanged) => void): void {
+        this.on('deviceNetworkAddressChanged', callback, key);
+    }
 
-    public emitDeviceAnnounce(data: EventDeviceAnnounce): void {this.emitter.emit('deviceAnnounce', data);}
-    public onDeviceAnnounce(key: ListenerKey, callback: (data: EventDeviceAnnounce) => void): void {
-        this.on('deviceAnnounce', callback, key);}
+    public emitDeviceAnnounce(data: eventdata.DeviceAnnounce): void {
+        this.emitter.emit('deviceAnnounce', data);
+    }
+    public onDeviceAnnounce(key: ListenerKey, callback: (data: eventdata.DeviceAnnounce) => void): void {
+        this.on('deviceAnnounce', callback, key);
+    }
 
-    public emitDeviceInterview(data: EventDeviceInterview): void {this.emitter.emit('deviceInterview', data);}
-    public onDeviceInterview(key: ListenerKey, callback: (data: EventDeviceInterview) => void): void {
-        this.on('deviceInterview', callback, key);}
+    public emitDeviceInterview(data: eventdata.DeviceInterview): void {
+        this.emitter.emit('deviceInterview', data);
+    }
+    public onDeviceInterview(key: ListenerKey, callback: (data: eventdata.DeviceInterview) => void): void {
+        this.on('deviceInterview', callback, key);
+    }
 
-    public emitDeviceJoined(data: EventDeviceJoined): void {this.emitter.emit('deviceJoined', data);}
-    public onDeviceJoined(key: ListenerKey, callback: (data: EventDeviceJoined) => void): void {
-        this.on('deviceJoined', callback, key);}
+    public emitDeviceJoined(data: eventdata.DeviceJoined): void {
+        this.emitter.emit('deviceJoined', data);
+    }
+    public onDeviceJoined(key: ListenerKey, callback: (data: eventdata.DeviceJoined) => void): void {
+        this.on('deviceJoined', callback, key);
+    }
 
-    public emitDeviceLeave(data: EventDeviceLeave): void {this.emitter.emit('deviceLeave', data);}
-    public onDeviceLeave(key: ListenerKey, callback: (data: EventDeviceLeave) => void): void {
-        this.on('deviceLeave', callback, key);}
+    public emitDeviceLeave(data: eventdata.DeviceLeave): void {
+        this.emitter.emit('deviceLeave', data);
+    }
+    public onDeviceLeave(key: ListenerKey, callback: (data: eventdata.DeviceLeave) => void): void {
+        this.on('deviceLeave', callback, key);
+    }
 
-    public emitDeviceMessage(data: EventDeviceMessage): void {this.emitter.emit('deviceMessage', data);}
-    public onDeviceMessage(key: ListenerKey, callback: (data: EventDeviceMessage) => void): void {
-        this.on('deviceMessage', callback, key);}
+    public emitDeviceMessage(data: eventdata.DeviceMessage): void {
+        this.emitter.emit('deviceMessage', data);
+    }
+    public onDeviceMessage(key: ListenerKey, callback: (data: eventdata.DeviceMessage) => void): void {
+        this.on('deviceMessage', callback, key);
+    }
 
-    public emitMQTTMessage(data: EventMQTTMessage): void {this.emitter.emit('mqttMessage', data);}
-    public onMQTTMessage(key: ListenerKey, callback: (data: EventMQTTMessage) => void): void {
-        this.on('mqttMessage', callback, key);}
+    public emitMQTTMessage(data: eventdata.MQTTMessage): void {
+        this.emitter.emit('mqttMessage', data);
+    }
+    public onMQTTMessage(key: ListenerKey, callback: (data: eventdata.MQTTMessage) => void): void {
+        this.on('mqttMessage', callback, key);
+    }
 
-    public emitMQTTMessagePublished(data: EventMQTTMessagePublished): void {
-        this.emitter.emit('mqttMessagePublished', data);}
-    public onMQTTMessagePublished(key: ListenerKey, callback: (data: EventMQTTMessagePublished) => void): void {
-        this.on('mqttMessagePublished', callback, key);}
+    public emitMQTTMessagePublished(data: eventdata.MQTTMessagePublished): void {
+        this.emitter.emit('mqttMessagePublished', data);
+    }
+    public onMQTTMessagePublished(key: ListenerKey, callback: (data: eventdata.MQTTMessagePublished) => void): void {
+        this.on('mqttMessagePublished', callback, key);
+    }
 
-    // public emitPublishEntityState(data: EventPublishEntityState): void {
-    //     this.emitter.emit('publishEntityState', data);}
-    public onPublishEntityState(key: ListenerKey, callback: (data: EventPublishEntityState) => void): void {
-        this.on('publishEntityState', callback, key);}
+    public emitPublishEntityState(data: eventdata.PublishEntityState): void {
+        this.emitter.emit('publishEntityState', data);
+    }
+    public onPublishEntityState(key: ListenerKey, callback: (data: eventdata.PublishEntityState) => void): void {
+        this.on('publishEntityState', callback, key);
+    }
 
-    // public emitGroupMembersChanged(data: EventGroupMembersChanged): void {
-    //     this.emitter.emit('groupMembersChanged', data);}
-    public onGroupMembersChanged(key: ListenerKey, callback: (data: EventGroupMembersChanged) => void): void {
-        this.on('groupMembersChanged', callback, key);}
+    public emitGroupMembersChanged(data: eventdata.GroupMembersChanged): void {
+        this.emitter.emit('groupMembersChanged', data);
+    }
+    public onGroupMembersChanged(key: ListenerKey, callback: (data: eventdata.GroupMembersChanged) => void): void {
+        this.on('groupMembersChanged', callback, key);
+    }
 
-    public emitDevicesChanged(): void {this.emitter.emit('devicesChanged');}
-    public onDevicesChanged(key: ListenerKey, callback: () => void): void {this.on('devicesChanged', callback, key);}
+    public emitDevicesChanged(): void {
+        this.emitter.emit('devicesChanged');
+    }
+    public onDevicesChanged(key: ListenerKey, callback: () => void): void {
+        this.on('devicesChanged', callback, key);
+    }
 
-    // public emitReportingDisabled(data: EventReportingDisabled): void {
-    //     this.emitter.emit('reportingDisabled', data);}
-    public onReportingDisabled(key: ListenerKey, callback: (data: EventReportingDisabled) => void): void {
-        this.on('reportingDisabled', callback, key);}
+    public emitScenesChanged(): void {
+        this.emitter.emit('scenesChanged');
+    }
+    public onScenesChanged(key: ListenerKey, callback: () => void): void {
+        this.on('scenesChanged', callback, key);
+    }
 
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private on(event: string, callback: (...args: any[]) => void, key: ListenerKey): void {
-        key = typeof key === 'string' ? key : key.constructor.name;
-        if (!this.callbacksByExtension[key]) this.callbacksByExtension[key] = [];
-        this.callbacksByExtension[key].push({event, callback});
+    public emitReportingDisabled(data: eventdata.ReportingDisabled): void {
+        this.emitter.emit('reportingDisabled', data);
+    }
+    public onReportingDisabled(key: ListenerKey, callback: (data: eventdata.ReportingDisabled) => void): void {
+        this.on('reportingDisabled', callback, key);
+    }
+
+    public emitStateChange(data: eventdata.StateChange): void {
+        this.emitter.emit('stateChange', data);
+    }
+    public onStateChange(key: ListenerKey, callback: (data: eventdata.StateChange) => void): void {
+        this.on('stateChange', callback, key);
+    }
+
+    private on(event: string, callback: (...args: unknown[]) => void, key: ListenerKey): void {
+        if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
+        this.callbacksByExtension[key.constructor.name].push({event, callback});
         this.emitter.on(event, callback);
     }
 
-    // TODO: remove
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    emit(event: string, ...args: any[]): void {
-        this.emitter.emit(event, ...args);
-    }
-
     public removeListeners(key: ListenerKey): void {
-        key = typeof key === 'string' ? key : key.constructor.name;
-        this.callbacksByExtension[key]?.forEach((e) => this.emitter.removeListener(e.event, e.callback));
+        this.callbacksByExtension[key.constructor.name]?.forEach(
+            (e) => this.emitter.removeListener(e.event, e.callback));
     }
 }

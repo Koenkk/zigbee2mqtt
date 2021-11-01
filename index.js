@@ -1,3 +1,5 @@
+require('core-js/features/object/from-entries');
+require('core-js/features/array/flat');
 const semver = require('semver');
 const engines = require('./package.json').engines;
 const indexJsRestart = 'indexjs.restart';

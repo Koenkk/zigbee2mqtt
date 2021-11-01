@@ -1,13 +1,12 @@
-// @ts-ignore
 import zhc from 'zigbee-herdsman-converters';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 
 /**
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
-class OnEvent extends ExtensionTS {
+export default class OnEvent extends Extension {
     override async start(): Promise<void> {
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.devices(false)) {
             await this.callOnEvent(device, 'start', {});
         }
 
@@ -23,23 +22,21 @@ class OnEvent extends ExtensionTS {
     }
 
     private convertData(data: KeyValue): KeyValue {
-        return {...data, device: data.device.zhDevice};
+        return {...data, device: data.device.zh};
     }
 
     override async stop(): Promise<void> {
         super.stop();
-        for (const device of this.zigbee.getClients()) {
+        for (const device of this.zigbee.devices(false)) {
             await this.callOnEvent(device, 'stop', {});
         }
     }
 
     private async callOnEvent(device: Device, type: string, data: KeyValue): Promise<void> {
-        zhc.onEvent(type, data, device.zhDevice, device.settings);
+        zhc.onEvent(type, data, device.zh);
 
         if (device.definition?.onEvent) {
-            await device.definition.onEvent(type, data, device.zhDevice, device.settings);
+            await device.definition.onEvent(type, data, device.zh, device.settings);
         }
     }
 }
-
-module.exports = OnEvent;

@@ -1,13 +1,11 @@
-import * as data from './data';
-import * as utils from './utils';
+import data from './data';
+import utils from './utils';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
-import * as yaml from './yaml';
+import yaml from './yaml';
 import Ajv from 'ajv';
 import schemaJson from './settings.schema.json';
 export const schema = schemaJson;
-
-// TODO: check all
 
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
@@ -75,7 +73,6 @@ const defaults: RecursivePartial<Settings> = {
         adapter_delay: null,
 
         // Availability timeout in seconds, disabled by default.
-        availability_timeout: 0,
         availability_blocklist: [],
         availability_passlist: [],
         // Deprecated, use block/passlist
@@ -170,8 +167,7 @@ let _settingsWithDefaults: Settings;
 
 function write(): void {
     const settings = getInternalSettings();
-    /* eslint-disable-line */ // @ts-ignore
-    const toWrite = objectAssignDeep.noMutate(settings);
+    const toWrite: KeyValue = objectAssignDeep({}, settings);
 
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(file);
@@ -196,8 +192,7 @@ function write(): void {
     const writeDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof actual[type] === 'string' || Array.isArray(actual[type])) {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
-            /* eslint-disable-line */ // @ts-ignore
-            const content = objectAssignDeep.noMutate(settings[type]);
+            const content = objectAssignDeep({}, settings[type]);
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
@@ -218,8 +213,7 @@ function write(): void {
     yaml.writeIfChanged(file, toWrite);
 
     _settings = read();
-    /* eslint-disable-line */ // @ts-ignore
-    _settingsWithDefaults = objectAssignDeep.noMutate(defaults, getInternalSettings());
+    _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
 }
 
 export function validate(): string[] {
@@ -273,7 +267,7 @@ export function validate(): string[] {
 
     const checkAvailabilityList = (list: string[], type: string): void => {
         list.forEach((e) => {
-            if (!getEntity(e)) {
+            if (!getDevice(e)) {
                 errors.push(`Non-existing entity '${e}' specified in '${type}'`);
             }
         });
@@ -393,8 +387,7 @@ function getInternalSettings(): Partial<Settings> {
 
 export function get(): Settings {
     if (!_settingsWithDefaults) {
-        /* eslint-disable-line */ // @ts-ignore
-        _settingsWithDefaults = objectAssignDeep.noMutate(defaults, getInternalSettings());
+        _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
     }
 
     if (!_settingsWithDefaults.devices) {
@@ -451,12 +444,12 @@ export function getGroup(IDorName: string | number): GroupSettings {
     const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
-        return {devices: [], ...byID, ID: Number(IDorName), friendlyName: byID.friendly_name};
+        return {devices: [], ...byID, ID: Number(IDorName)};
     }
 
     for (const [ID, group] of Object.entries(settings.groups)) {
         if (group.friendly_name === IDorName) {
-            return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
+            return {devices: [], ...group, ID: Number(ID)};
         }
     }
 
@@ -466,7 +459,7 @@ export function getGroup(IDorName: string | number): GroupSettings {
 export function getGroups(): GroupSettings[] {
     const settings = get();
     return Object.entries(settings.groups).map(([ID, group]) => {
-        return {devices: [], ...group, ID: Number(ID), friendlyName: group.friendly_name};
+        return {devices: [], ...group, ID: Number(ID)};
     });
 }
 
@@ -483,12 +476,12 @@ export function getDevice(IDorName: string): DeviceSettings {
     const settings = get();
     const byID = settings.devices[IDorName];
     if (byID) {
-        return {...byID, ID: IDorName, friendlyName: byID.friendly_name};
+        return {...byID, ID: IDorName};
     }
 
     for (const [ID, device] of Object.entries(settings.devices)) {
         if (device.friendly_name === IDorName) {
-            return {...device, ID, friendlyName: device.friendly_name};
+            return {...device, ID};
         }
     }
 
@@ -502,20 +495,6 @@ function getDeviceThrowIfNotExists(IDorName: string): DeviceSettings {
     }
 
     return device;
-}
-
-export function getEntity(IDorName: string): EntitySettings {
-    const device = getDevice(IDorName);
-    if (device) {
-        return {...device, type: 'device'};
-    }
-
-    const group = getGroup(IDorName);
-    if (group) {
-        return {...group, type: 'group'};
-    }
-
-    return null;
 }
 
 export function addDevice(ID: string): DeviceSettings {
@@ -576,7 +555,7 @@ export function removeDevice(IDorName: string): void {
     // Remove device from groups
     if (settings.groups) {
         const regex =
-            new RegExp(`^(${device.friendlyName}|${device.ID})(/(\\d|${utils.endpointNames.join('|')}))?$`);
+            new RegExp(`^(${device.friendly_name}|${device.ID})(/(\\d|${utils.endpointNames.join('|')}))?$`);
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
             group.devices = group.devices.filter((device) => !device.match(regex));
         }

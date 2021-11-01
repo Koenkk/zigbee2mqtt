@@ -1,22 +1,27 @@
 /* eslint-disable camelcase */
 import logger from '../util/logger';
-import * as utils from '../util/utils';
+import utils from '../util/utils';
 import * as settings from '../util/settings';
 import Transport from 'winston-transport';
 import bind from 'bind-decorator';
-// @ts-ignore
 import stringify from 'json-stable-stringify-without-jsonify';
 import objectAssignDeep from 'object-assign-deep';
 import {detailedDiff} from 'deep-object-diff';
-import ExtensionTS from './extensionts';
+import Extension from './extension';
 import Device from '../model/device';
 import Group from '../model/group';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
-class Bridge extends ExtensionTS {
+type Scene = {id: number, name: string};
+type DefinitionPayload = {
+    model: string, vendor: string, description: string, exposes: zhc.DefinitionExpose[], supports_ota:
+    boolean, icon: string, options: zhc.DefinitionExpose[],
+};
+
+export default class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
-    private coordinatorVersion: CoordinatorVersion;
+    private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
     private lastJoinedDeviceIeeeAddr: string;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<MQTTResponse>};
@@ -53,7 +58,7 @@ class Bridge extends ExtensionTS {
                 callback();
             }
         }
-        // @ts-ignore TODO fix typing
+
         logger.addTransport(new EventTransport());
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
@@ -63,6 +68,10 @@ class Bridge extends ExtensionTS {
         this.eventBus.onGroupMembersChanged(this, () => this.publishGroups());
         this.eventBus.onDevicesChanged(this, () => this.publishDevices() && this.publishInfo());
         this.eventBus.onPermitJoinChanged(this, () => !this.zigbee.isStopping() && this.publishInfo());
+        this.eventBus.onScenesChanged(this, () => {
+            this.publishDevices();
+            this.publishGroups();
+        });
 
         // Zigbee events
         const publishEvent = (type: string, data: KeyValue): Promise<void> =>
@@ -74,8 +83,7 @@ class Bridge extends ExtensionTS {
         });
         this.eventBus.onDeviceLeave(this, (data) => {
             this.publishDevices();
-            publishEvent('device_leave',
-                {ieee_address: data.ieeeAddr, friendly_name: settings.getDevice(data.ieeeAddr)?.friendlyName});
+            publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
         this.eventBus.onDeviceInterview(this, (data) => {
@@ -97,13 +105,10 @@ class Bridge extends ExtensionTS {
         await this.publishDevices();
         await this.publishGroups();
 
-
-        this.onMQTTMessage_ = this.onMQTTMessage_.bind(this);
-        this.eventBus.onMQTTMessage(this, this.onMQTTMessage_);
+        this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
-    // TODO remove trailing _
-    @bind async onMQTTMessage_(data: EventMQTTMessage): Promise<void> {
+    @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(requestRegex);
         const key = match?.[1]?.toLowerCase();
         if (key in this.requestLookup) {
@@ -114,6 +119,7 @@ class Bridge extends ExtensionTS {
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
             } catch (error) {
                 logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
+                logger.debug(error.stack);
                 const response = utils.getResponse(message, {}, error.message);
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
             }
@@ -179,7 +185,6 @@ class Bridge extends ExtensionTS {
         }
 
         if (newSettings.hasOwnProperty('advanced') && newSettings.advanced.hasOwnProperty('log_level')) {
-            // @ts-ignore fix type
             logger.setLevel(newSettings.advanced.log_level);
         }
 
@@ -210,7 +215,7 @@ class Bridge extends ExtensionTS {
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         this.publishGroups();
-        return utils.getResponse(message, {friendly_name: group.friendlyName, id: group.ID}, null);
+        return utils.getResponse(message, {friendly_name: group.friendly_name, id: group.ID}, null);
     }
 
     @bind async deviceRename(message: string | KeyValue): Promise<MQTTResponse> {
@@ -305,12 +310,11 @@ class Bridge extends ExtensionTS {
     // Deprecated
     @bind async configLogLevel(message: KeyValue | string): Promise<MQTTResponse> {
         const allowed = ['error', 'warn', 'info', 'debug'];
-        const value = this.getValue(message);
+        const value = this.getValue(message) as 'error' | 'warn' | 'info' | 'debug';
         if (typeof value !== 'string' || !allowed.includes(value)) {
             throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
         }
 
-        // @ts-ignore TODO fix type
         logger.setLevel(value);
         this.publishInfo();
         return utils.getResponse(message, {value}, null);
@@ -390,7 +394,7 @@ class Bridge extends ExtensionTS {
         const entity = this.getEntity(entityType, ID);
         const oldOptions = objectAssignDeep({}, cleanup(entity.settings));
         settings.changeEntityOptions(ID, message.options);
-        const newOptions = cleanup(settings.getEntity(ID));
+        const newOptions = cleanup(entity.settings);
         await this.publishInfo();
 
         logger.info(`Changed config for ${entityType} ${ID}`);
@@ -408,7 +412,7 @@ class Bridge extends ExtensionTS {
         const parsedID = utils.parseEntityID(message.id);
         const endpoint = (this.getEntity('device', parsedID.ID) as Device).endpoint(parsedID.endpoint);
 
-        const coordinatorEndpoint = this.zigbee.getFirstCoordinatorEndpoint();
+        const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
         await endpoint.bind(message.cluster, coordinatorEndpoint);
 
         await endpoint.configureReporting(message.cluster, [{
@@ -443,7 +447,7 @@ class Bridge extends ExtensionTS {
         const homeAssisantRename = message.hasOwnProperty('homeassistant_rename') ?
             message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
-        const oldFriendlyName = entity.settings.friendlyName;
+        const oldFriendlyName = entity.settings.friendly_name;
 
         settings.changeFriendlyName(from, to);
 
@@ -452,14 +456,14 @@ class Bridge extends ExtensionTS {
 
         if (entity instanceof Device) {
             this.publishDevices();
-            this.eventBus.emit(`deviceRenamed`, {device: entity, homeAssisantRename, from: oldFriendlyName, to});
+            this.eventBus.emitDeviceRenamed({device: entity, homeAssisantRename, from: oldFriendlyName, to});
         } else {
             this.publishGroups();
             this.publishInfo();
         }
 
         // Repulish entity state
-        this.publishEntityState(to, {});
+        this.publishEntityState(entity, {});
 
         return utils.getResponse(
             message,
@@ -488,28 +492,31 @@ class Bridge extends ExtensionTS {
         }
 
         try {
-            logger.info(`Removing ${entityType} '${entity.settings.friendlyName}'${blockForceLog}`);
+            logger.info(`Removing ${entityType} '${entity.name}'${blockForceLog}`);
+            const ieeeAddr = entity.isDevice() && entity.ieeeAddr;
+            const name = entity.name;
+
             if (entity instanceof Device) {
                 if (block) {
                     settings.blockDevice(entity.ieeeAddr);
                 }
 
                 if (force) {
-                    await entity.zhDevice.removeFromDatabase();
+                    await entity.zh.removeFromDatabase();
                 } else {
-                    await entity.zhDevice.removeFromNetwork();
+                    await entity.zh.removeFromNetwork();
                 }
             } else {
                 if (force) {
-                    entity.zhGroup.removeFromDatabase();
+                    entity.zh.removeFromDatabase();
                 } else {
-                    await entity.zhGroup.removeFromNetwork();
+                    await entity.zh.removeFromNetwork();
                 }
             }
 
             // Fire event
             if (entity instanceof Device) {
-                this.eventBus.emit('deviceRemoved', {resolvedEntity: entity});
+                this.eventBus.emitDeviceRemoved({ieeeAddr, name});
             }
 
             // Remove from configuration.yaml
@@ -560,7 +567,6 @@ class Bridge extends ExtensionTS {
             commit: this.zigbee2mqttVersion.commitHash,
             coordinator: this.coordinatorVersion,
             network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
-            // @ts-ignore TODO fix type
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
@@ -573,18 +579,38 @@ class Bridge extends ExtensionTS {
             'bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
+    private getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
+        const scenes: {[id: number]: Scene} = {};
+        const endpoints = utils.isEndpoint(entity) ? [entity] : entity.members;
+        const groupID = utils.isEndpoint(entity) ? 0 : entity.groupID;
+
+        for (const endpoint of endpoints) {
+            for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
+                const split = key.split('_');
+                const sceneID = parseInt(split[0], 10);
+                const sceneGroupID = parseInt(split[1], 10);
+                if (sceneGroupID === groupID) {
+                    scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
+                }
+            }
+        }
+
+        return Object.values(scenes);
+    }
+
     async publishDevices(): Promise<void> {
         interface Data {
             bindings: {cluster: string, target: {type: string, endpoint?: number, ieee_address?: string, id?: number}}[]
             configured_reportings: {cluster: string, attribute: string | number,
                 minimum_report_interval: number, maximum_report_interval: number, reportable_change: number}[],
-            clusters: {input: string[], output: string[]}
+            clusters: {input: string[], output: string[]}, scenes: Scene[]
         }
 
-        const devices = this.zigbee.getDevices().map((device) => {
+        const devices = this.zigbee.devices().map((device) => {
             const endpoints: {[s: number]: Data} = {};
-            for (const endpoint of device.endpoints) {
+            for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
+                    scenes: this.getScenes(endpoint),
                     bindings: [],
                     configured_reportings: [],
                     clusters: {
@@ -615,18 +641,18 @@ class Bridge extends ExtensionTS {
 
             return {
                 ieee_address: device.ieeeAddr,
-                type: device.type,
-                network_address: device.networkAddress,
+                type: device.zh.type,
+                network_address: device.zh.networkAddress,
                 supported: !!device.definition,
                 friendly_name: device.name,
                 definition: this.getDefinitionPayload(device),
-                power_source: device.powerSource,
-                software_build_id: device.softwareBuildID,
-                date_code: device.dateCode,
-                model_id: device.modelID,
-                interviewing: device.interviewing,
-                interview_completed: device.interviewCompleted,
-                manufacturer: device.manufacturerName,
+                power_source: device.zh.powerSource,
+                software_build_id: device.zh.softwareBuildID,
+                date_code: device.zh.dateCode,
+                model_id: device.zh.modelID,
+                interviewing: device.zh.interviewing,
+                interview_completed: device.zh.interviewCompleted,
+                manufacturer: device.zh.manufacturerName,
                 endpoints,
             };
         });
@@ -636,11 +662,12 @@ class Bridge extends ExtensionTS {
     }
 
     async publishGroups(): Promise<void> {
-        const groups = this.zigbee.getGroups().map((g) => {
+        const groups = this.zigbee.groups().map((g) => {
             return {
                 id: g.ID,
                 friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
-                members: g.members.map((e) => {
+                scenes: this.getScenes(g.zh),
+                members: g.zh.members.map((e) => {
                     return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
                 }),
             };
@@ -649,23 +676,22 @@ class Bridge extends ExtensionTS {
             'bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    getDefinitionPayload(device: Device):
-        {model: string, vendor: string, description: string, exposes: unknown[], supports_ota: boolean, icon: string} {
+    getDefinitionPayload(device: Device): DefinitionPayload {
         if (!device.definition) return null;
         let icon = device.settings.icon ? device.settings.icon : device.definition.icon;
         if (icon) {
-            icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.modelID));
+            icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
+
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
             exposes: device.definition.exposes,
             supports_ota: !!device.definition.ota,
+            options: device.definition.options,
             icon,
         };
     }
 }
-
-module.exports = Bridge;

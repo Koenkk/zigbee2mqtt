@@ -1,7 +1,7 @@
 require('./stub/logger');
 require('./stub/data');
 const data = require('../lib/util/data');
-const utils = require('../lib/util/utils');
+const utils = require('../lib/util/utils').default;
 const settings = require('../lib/util/settings.ts');
 const fs = require('fs');
 const configurationFile = data.joinPath('configuration.yaml');
@@ -67,7 +67,6 @@ describe('Settings', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
         process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_AVAILABILITY_BLOCKLIST'] = '["0x43597f0dac781b1e", "x223b0aef2ae8d1b0"]';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
         process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
 
@@ -79,7 +78,6 @@ describe('Settings', () => {
         expected.serial.disable_led = true;
         expected.advanced.soft_reset_timeout = 1;
         expected.experimental.output = 'csvtest';
-        expected.advanced.availability_blocklist = ['0x43597f0dac781b1e', 'x223b0aef2ae8d1b0'];
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
 
@@ -117,7 +115,6 @@ describe('Settings', () => {
         const device = settings.getDevice('0x12345678');
         const expected = {
             ID: "0x12345678",
-            friendlyName: "0x12345678",
             friendly_name: '0x12345678',
             retain: false,
         };
@@ -190,7 +187,6 @@ describe('Settings', () => {
         const device = settings.getDevice('0x12345678');
         const expected = {
             ID: "0x12345678",
-            friendlyName: "0x12345678",
             friendly_name: '0x12345678',
             retain: false,
         };
@@ -349,7 +345,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expected = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -374,7 +369,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expected = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -419,7 +413,6 @@ describe('Settings', () => {
         const group = settings.getGroup('1');
         const expectedGroup = {
             ID: 1,
-            friendlyName: '123',
             friendly_name: '123',
             devices: [],
         };
@@ -430,7 +423,6 @@ describe('Settings', () => {
 
         const expectedDevice2 = {
             ID: '0x1234',
-            friendlyName: '0x1234',
             friendly_name: '0x1234',
         };
 

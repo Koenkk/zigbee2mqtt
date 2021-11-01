@@ -186,6 +186,17 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
+    it('Should publish messages to zigbee devices with endpoint ID', async () => {
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
+        await MQTT.events.message('zigbee2mqtt/wall_switch_double/3/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_right: 'OFF'}),
+            {"qos": 0, "retain": false}, expect.any(Function));
+    });
+
     it('Should publish messages to zigbee devices to non default-ep with state_[EP]', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint = device.getEndpoint(3);
@@ -1094,10 +1105,10 @@ describe('Publish', () => {
 
     it('Home Assistant: should not set state when color temperature is also set and device is already on', async () => {
         settings.set(['homeassistant'], true);
-        const device = zigbeeHerdsman.devices.bulb_color;
-        controller.state.remove(device.ieeeAddr);
-        controller.state.set(device.ieeeAddr, {state: 'ON'})
-        const endpoint = device.getEndpoint(1);
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color.ieeeAddr);
+        controller.state.remove(device);
+        controller.state.set(device, {state: 'ON'})
+        const endpoint = device.zh.getEndpoint(1);
         const payload = {state: 'ON', color_temp: 100};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify(payload));
         await flushPromises();
@@ -1110,10 +1121,10 @@ describe('Publish', () => {
 
     it('Home Assistant: should set state when color temperature is also set and device is off', async () => {
         settings.set(['homeassistant'], true);
-        const device = zigbeeHerdsman.devices.bulb_color;
-        controller.state.remove(device.ieeeAddr);
-        controller.state.set(device.ieeeAddr, {state: 'OFF'})
-        const endpoint = device.getEndpoint(1);
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color.ieeeAddr);
+        controller.state.remove(device);
+        controller.state.set(device, {state: 'OFF'})
+        const endpoint = device.zh.getEndpoint(1);
         const payload = {state: 'ON', color_temp: 100};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify(payload));
         await flushPromises();
@@ -1131,10 +1142,10 @@ describe('Publish', () => {
 
     it('Home Assistant: should not set state when color is also set', async () => {
         settings.set(['homeassistant'], true);
-        const device = zigbeeHerdsman.devices.bulb_color;
-        controller.state.remove(device.ieeeAddr);
-        controller.state.set(device.ieeeAddr, {state: 'ON'})
-        const endpoint = device.getEndpoint(1);
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color.ieeeAddr);
+        controller.state.remove(device);
+        controller.state.set(device, {state: 'ON'})
+        const endpoint = device.zh.getEndpoint(1);
         const payload = {state: 'ON', color: {x: 0.41, y: 0.25}};
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify(payload));
         await flushPromises();
@@ -1401,6 +1412,8 @@ describe('Publish', () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genScenes', 'store', { groupid: 15071, sceneid: 1 }, {});
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), {retain: true, qos: 0}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), {retain: true, qos: 0}, expect.any(Function));
 
         await MQTT.events.message('zigbee2mqtt/bulb_color_2/set', stringify({"state": "ON", "brightness": 250, "color_temp": 20}));
         await MQTT.events.message('zigbee2mqtt/bulb_2/set', stringify({"state": "ON", "brightness": 110}));
