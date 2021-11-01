@@ -9,25 +9,25 @@ Rules (don't ignore these, your issue will be closed without further notice):
 - Make sure you are running the latest firmware https://github.com/koenkk/z-stack-firmware.
 
 Did you read the FAQ?
-- https://www.zigbee2mqtt.io/information/FAQ.html
+- https://www.zigbee2mqtt.io/guide/faq
 
 Zigbee2MQTT fails to start?
-- https://www.zigbee2mqtt.io/information/FAQ.html#help-zigbee2mqtt-fails-to-start
+- https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html
 
 Having issues when using a CC2531?
 - Make sure the CC2531 is connected through a USB extension cable
 - Try the source routing firmware: https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/Z-Stack_Home_1.2/bin/source_routing
-- With larger networks (30/40+) devices, your CC2531 might not be powerful enough. This will cause weird issues, in this case it's advised to use a more powerful adapter: https://www.zigbee2mqtt.io/information/supported_adapters.html#texas-instruments-cc26x2r1
+- With larger networks (30/40+) devices, your CC2531 might not be powerful enough. This will cause weird issues, in this case it's advised to use a more powerful adapter: https://www.zigbee2mqtt.io/guide/adapters/
 
 Unsupported device?
-- https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html
+- https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html
 
 Device does not pair or interview fails?
-- https://www.zigbee2mqtt.io/information/FAQ.html#why-does-my-device-not-or-fail-to-pair
+- https://www.zigbee2mqtt.io/guide/faq/#why-does-my-device-not-or-fail-to-pair
 
 Bug report?
 - If applicable, provide steps how to reproduce the problem.
-- Provide the herdsman debug logging: https://www.zigbee2mqtt.io/information/debug.html#zigbee-herdsman-debug-logging
+- Provide the herdsman debug logging: https://www.zigbee2mqtt.io/guide/usage/debug.html
 
 -->
 
