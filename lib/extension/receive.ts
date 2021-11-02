@@ -76,7 +76,7 @@ export default class Receive extends Extension {
                 logger.warn(
                     `Received message from unsupported device with Zigbee model '${data.device.zh.modelID}' ` +
                     `and manufacturer name '${data.device.zh.manufacturerName}'`);
-                logger.warn(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
+                logger.warn(`Please see: https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html.`);
             }
 
             return false;
