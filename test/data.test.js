@@ -15,12 +15,12 @@ describe('Data', () => {
         it('Should return correct path when ZIGBEE2MQTT_DATA set', () => {
             const expected = tmp.dirSync().name;
             process.env.ZIGBEE2MQTT_DATA = expected;
-            data.__testingOnly_reload();
+            data.testingOnlyReload();
             const actual = data.getPath();
             expect(actual).toBe(expected);
             expect(data.joinPath('test')).toStrictEqual(path.join(expected, 'test'));
             delete process.env.ZIGBEE2MQTT_DATA;
-            data.__testingOnly_reload();
+            data.testingOnlyReload();
         });
     });
 });

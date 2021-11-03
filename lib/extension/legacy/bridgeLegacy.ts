@@ -330,7 +330,7 @@ export default class BridgeLegacy extends Extension {
         } catch (error) {
             logger.error(`Failed to ${lookup[action][2]} ${entity.name} (${error})`);
             // eslint-disable-next-line
-            logger.error(`See https://www.zigbee2mqtt.io/information/mqtt_topics_and_message_structure.html#zigbee2mqttbridgeconfigremove for more info`);
+            logger.error(`See https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html#zigbee2mqtt-bridge-request for more info`);
 
             this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
         }
