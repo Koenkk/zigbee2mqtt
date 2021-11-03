@@ -214,6 +214,7 @@ describe('HomeAssistant extension', () => {
             'name': 'weather_sensor_battery',
             'unique_id': '0x0017880104e45522_battery_zigbee2mqtt',
             'enabled_by_default': true,
+            'entity_category': 'diagnostic',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
@@ -234,6 +235,7 @@ describe('HomeAssistant extension', () => {
         payload = {
             'icon': 'mdi:signal',
             'enabled_by_default': false,
+            'entity_category': 'diagnostic',
             'unit_of_measurement': 'lqi',
             'state_class': 'measurement',
             'value_template': '{{ value_json.linkquality }}',
