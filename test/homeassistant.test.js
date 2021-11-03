@@ -1690,7 +1690,9 @@ describe('HomeAssistant extension', () => {
             "name":"bulb last seen",
             "state_topic":"zigbee2mqtt/bulb",
             "unique_id":"0x000b57fffec6a5b2_last_seen_zigbee2mqtt",
-            "value_template":"{{ value_json.last_seen }}"
+            "value_template":"{{ value_json.last_seen }}",
+            "device_class": "timestamp",
+            "entity_category": "diagnostic"
          };
 
         expect(MQTT.publish).toHaveBeenCalledWith(

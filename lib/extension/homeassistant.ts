@@ -428,6 +428,7 @@ export default class HomeAssistant extends Extension {
                 gas: {device_class: 'gas'},
                 invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
+                led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
                 legacy: {entity_category: 'config', icon: 'mdi:cog'},
                 moving: {device_class: 'moving'},
                 no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
@@ -615,8 +616,9 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
-                        min: firstExpose.value_min ? firstExpose.value_min : -65535,
-                        max: firstExpose.value_max ? firstExpose.value_max : 65535,
+                        min: firstExpose.value_min != null ? firstExpose.value_min : -65535,
+                        max: firstExpose.value_max != null ? firstExpose.value_max : 65535,
+                        ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...lookup[firstExpose.name],
                     },
                 };
@@ -879,9 +881,11 @@ export default class HomeAssistant extends Extension {
                 object_id: 'last_seen',
                 mockProperties: ['last_seen'],
                 discovery_payload: {
-                    icon: 'mdi:clock',
                     value_template: '{{ value_json.last_seen }}',
+                    icon: 'mdi:clock',
                     enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    device_class: 'timestamp',
                 },
             });
         }

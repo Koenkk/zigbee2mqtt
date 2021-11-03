@@ -119,6 +119,7 @@ export default class Bridge extends Extension {
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
             } catch (error) {
                 logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
+                logger.debug(error.stack);
                 const response = utils.getResponse(message, {}, error.message);
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
             }

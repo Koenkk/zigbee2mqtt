@@ -22,8 +22,8 @@ function getPath(): string {
 }
 
 // eslint-disable-next-line camelcase
-function __testingOnly_reload(): void {
+function testingOnlyReload(): void {
     load();
 }
 
-export default {joinPath, getPath, __testingOnly_reload};
+export default {joinPath, getPath, testingOnlyReload};

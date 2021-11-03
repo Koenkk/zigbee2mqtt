@@ -87,7 +87,7 @@ async function start() {
         for (const error of errors) {
             console.log(`- ${error}`);
         }
-        console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/information/configuration.html`); // eslint-disable-line
+        console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`); // eslint-disable-line
         console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
         exit(1);
     }
