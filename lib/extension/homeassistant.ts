@@ -899,24 +899,25 @@ export default class HomeAssistant extends Extension {
                     icon: 'mdi:update',
                     value_template: `{{ value_json['update']['state'] }}`,
                     enabled_by_default: false,
+                    entity_category: 'diagnostic',
                 },
             };
 
             configs.push(updateStateSensor);
-            if (this.legacyApi) {
-                const updateAvailableSensor = {
-                    type: 'binary_sensor',
-                    object_id: 'update_available',
-                    mockProperties: ['update_available'],
-                    discovery_payload: {
-                        payload_on: true,
-                        payload_off: false,
-                        value_template: '{{ value_json.update_available}}',
-                        enabled_by_default: false,
-                    },
-                };
-                configs.push(updateAvailableSensor);
-            }
+            const updateAvailableSensor = {
+                type: 'binary_sensor',
+                object_id: 'update_available',
+                mockProperties: ['update_available'],
+                discovery_payload: {
+                    payload_on: true,
+                    payload_off: false,
+                    value_template: `{{ value_json['update']['state'] == "available" }}`,
+                    enabled_by_default: true,
+                    device_class: 'update',
+                    entity_category: 'diagnostic',
+                },
+            };
+            configs.push(updateAvailableSensor);
         }
 
         if (isDevice && entity.settings.hasOwnProperty('legacy') && !entity.settings.legacy) {
