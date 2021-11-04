@@ -1182,8 +1182,8 @@ describe('HomeAssistant extension', () => {
         const payload = {
             "payload_on":true,
             "payload_off":false,
-            "value_template":"{{ value_json.update_available}}",
-            "enabled_by_default": true,
+            "value_template":`{{ value_json['update']['state'] == "available" }}`,
+            "enabled_by_default": false,
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
             "name":"bulb update available",
@@ -1198,8 +1198,6 @@ describe('HomeAssistant extension', () => {
                 "manufacturer":"IKEA"
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
-            'device_class': 'update',
-            'entity_category': 'diagnostic'
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
