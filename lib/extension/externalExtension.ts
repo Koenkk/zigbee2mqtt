@@ -75,7 +75,7 @@ export default class ExternalExtension extends Extension {
         if (match && this.requestLookup[match[1].toLowerCase()]) {
             const message = utils.parseJSON(data.message, data.message) as KeyValue;
             try {
-                const response = this.requestLookup[match[1].toLowerCase()](message);
+                const response = await this.requestLookup[match[1].toLowerCase()](message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             } catch (error) {
                 logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
