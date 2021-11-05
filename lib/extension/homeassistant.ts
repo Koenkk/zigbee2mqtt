@@ -1241,6 +1241,7 @@ export default class HomeAssistant extends Extension {
         if (entity.isDevice()) {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
+            payload.sw_version = entity.zh.softwareBuildID;
         }
 
         if (settings.get().frontend?.url) {
