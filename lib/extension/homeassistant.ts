@@ -606,7 +606,7 @@ export default class HomeAssistant extends Extension {
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                     mockProperties: [firstExpose.property],
@@ -615,12 +615,14 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
-                        min: firstExpose.value_min != null ? firstExpose.value_min : -65535,
-                        max: firstExpose.value_max != null ? firstExpose.value_max : 65535,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...lookup[firstExpose.name],
                     },
                 };
+
+                if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
+                if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
+
                 discoveryEntries.push(discoveryEntry);
             }
         } else if (firstExpose.type === 'enum') {
