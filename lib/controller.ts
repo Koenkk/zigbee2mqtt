@@ -37,7 +37,7 @@ const AllExtensions = [
 ];
 
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
-    (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => void];
+    (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => Promise<void>];
 
 class Controller {
     private eventBus: EventBus;
