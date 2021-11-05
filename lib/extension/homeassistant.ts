@@ -40,7 +40,6 @@ export default class HomeAssistant extends Extension {
     private discovered: {[s: string]: {topics: Set<string>, mockProperties: Set<string>}} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
-    private legacyApi = settings.get().advanced.legacy_api;
     private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
     private statusTopic = settings.get().advanced.homeassistant_status_topic;
     private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
