@@ -242,25 +242,6 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 1, "retain": false});
     });
 
-    it('WSDCGQ11LM pressure precision from non ZCL properties', async () => {
-        const device = zigbeeHerdsman.devices.WSDCGQ11LM;
-        settings.set(['devices', device.ieeeAddr, 'temperature_precision'], 1);
-
-        MQTT.publish.mockClear();
-        let payload = {data: {"65281":{"1":2985,"4":5032,"5":9,"6":[0,1],"10":0,"100":2345,"101":4608,"102":91552}}, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({"battery":91,"voltage":2985,"temperature":23.5,"humidity":46.08,"pressure":915.5});
-
-        MQTT.publish.mockClear();
-        payload = {data: {"16":9354,"20":-1,"measuredValue":915}, cluster: 'msPressureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({"battery":91,"voltage":2985,"temperature":23.5,"humidity":46.08,"pressure":935.4});
-    });
-
     it('Should handle a zigbee message with voltage 3010', async () => {
         const device = zigbeeHerdsman.devices.WXKG02LM_rev1;
         const data = {'65281': {'1': 3010}}
