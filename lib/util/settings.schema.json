@@ -652,7 +652,7 @@
           "type": "string",
           "title": "Bind host",
           "description": "Frontend binding host",
-          "default":" 0.0.0.0",
+          "default": "0.0.0.0",
           "requiresRestart": true
         },
         "auth_token": {
