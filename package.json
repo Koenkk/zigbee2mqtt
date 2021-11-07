@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.22.0",
+  "version": "1.22.0-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -37,7 +37,7 @@
   "dependencies": {
     "ajv": "^8.6.3",
     "bind-decorator": "^1.0.11",
-    "core-js": "^3.18.2",
+    "core-js": "^3.19.1",
     "debounce": "^1.2.1",
     "deep-object-diff": "^1.1.0",
     "fast-deep-equal": "^3.1.3",
@@ -57,33 +57,33 @@
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
     "ws": "^8.2.3",
-    "zigbee-herdsman": "0.13.164",
-    "zigbee-herdsman-converters": "14.0.303",
-    "zigbee2mqtt-frontend": "0.6.30"
+    "zigbee-herdsman": "0.13.166",
+    "zigbee-herdsman-converters": "14.0.309",
+    "zigbee2mqtt-frontend": "0.6.31"
   },
   "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/plugin-proposal-decorators": "^7.15.4",
-    "@babel/preset-env": "^7.15.6",
-    "@babel/preset-typescript": "^7.15.0",
+    "@babel/core": "^7.16.0",
+    "@babel/plugin-proposal-decorators": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@types/debounce": "^1.2.1",
     "@types/finalhandler": "^1.1.1",
-    "@types/humanize-duration": "^3.25.1",
+    "@types/humanize-duration": "^3.27.0",
     "@types/jest": "^27.0.2",
-    "@types/js-yaml": "^4.0.3",
+    "@types/js-yaml": "^4.0.4",
     "@types/object-assign-deep": "^0.4.0",
     "@types/rimraf": "^3.0.2",
     "@types/serve-static": "^1.13.10",
     "@types/ws": "^8.2.0",
-    "@typescript-eslint/eslint-plugin": "^4.32.0",
-    "@typescript-eslint/parser": "^4.32.0",
-    "babel-jest": "^27.2.4",
-    "eslint": "^7.32.0",
+    "@typescript-eslint/eslint-plugin": "^5.3.0",
+    "@typescript-eslint/parser": "^5.3.0",
+    "babel-jest": "^27.3.1",
+    "eslint": "^8.2.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-plugin-jest": "^24.5.0",
-    "jest": "^27.2.4",
+    "eslint-plugin-jest": "^25.2.3",
+    "jest": "^27.3.1",
     "tmp": "^0.2.1",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.4"
   },
   "jest": {
     "coverageThreshold": {

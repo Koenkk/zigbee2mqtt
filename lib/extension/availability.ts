@@ -97,10 +97,10 @@ export default class Availability extends Extension {
     override async start(): Promise<void> {
         logger.warn('Using experimental new availability feature');
 
-        this.eventBus.onDeviceRenamed(this, (data: eventdata.DeviceRenamed) =>
-            this.publishAvailability(data.device, false, true));
-        this.eventBus.onDeviceLeave(this, (data: eventdata.DeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
-        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.retrieveState(data.device));
+        this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
+        this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
         for (const device of this.zigbee.devices(false)) {
