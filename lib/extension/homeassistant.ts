@@ -219,7 +219,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.mockProperties.push(state.property);
                 discoveryEntry.discovery_payload.action_topic = true;
                 discoveryEntry.discovery_payload.action_template = `{% set values = ` +
-                        `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'}` +
+                        `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan_only':'fan'}` +
                         ` %}{{ values[value_json.${state.property}] }}`;
             }
 
