@@ -9,7 +9,7 @@ Rules (don't ignore these, your issue will be closed without further notice):
 - Make sure you are running the latest firmware https://github.com/koenkk/z-stack-firmware.
 
 Did you read the FAQ?
-- https://www.zigbee2mqtt.io/guide/faq
+- https://www.zigbee2mqtt.io/guide/faq/
 
 Zigbee2MQTT fails to start?
 - https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html

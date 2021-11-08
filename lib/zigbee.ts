@@ -154,7 +154,7 @@ export default class Zigbee {
             } else {
                 logger.warn(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
                     `'${data.device.zh.manufacturerName}' is NOT supported, ` +
-                    `please follow https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html`);
+                    `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);
             }
         } else if (data.status === 'failed') {
             logger.error(`Failed to interview '${name}', device has not successfully been paired`);
