@@ -114,7 +114,7 @@ export default class Receive extends Extension {
         });
 
         // Check if there is an available converter, genOta messages are not interesting.
-        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic'];
+        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
         if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
             logger.debug(`No converter available for '${data.device.definition.model}' with ` +
                 `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
