@@ -40,7 +40,6 @@ export default class HomeAssistant extends Extension {
     private discovered: {[s: string]: {topics: Set<string>, mockProperties: Set<string>}} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
-    private legacyApi = settings.get().advanced.legacy_api;
     private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
     private statusTopic = settings.get().advanced.homeassistant_status_topic;
     private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
@@ -48,7 +47,7 @@ export default class HomeAssistant extends Extension {
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: Extension) => void) {
+        restartCallback: () => void, addExtension: (extension: Extension) => Promise<void>) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         if (settings.get().experimental.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');
@@ -219,7 +218,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.mockProperties.push(state.property);
                 discoveryEntry.discovery_payload.action_topic = true;
                 discoveryEntry.discovery_payload.action_template = `{% set values = ` +
-                        `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan only':'fan'}` +
+                        `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan_only':'fan'}` +
                         ` %}{{ values[value_json.${state.property}] }}`;
             }
 
@@ -416,15 +415,31 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'binary') {
             const lookup: {[s: string]: KeyValue}= {
-                occupancy: {device_class: 'motion'},
-                battery_low: {device_class: 'battery'},
-                water_leak: {device_class: 'moisture'},
-                vibration: {device_class: 'vibration'},
-                contact: {device_class: 'door'},
-                smoke: {device_class: 'smoke'},
-                gas: {device_class: 'gas'},
+                battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
+                button_lock: {entity_category: 'config', icon: 'mdi:lock'},
                 carbon_monoxide: {device_class: 'safety'},
+                child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
+                color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
+                consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
+                contact: {device_class: 'door'},
+                eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
+                expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
+                gas: {device_class: 'gas'},
+                invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
+                led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
+                led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
+                legacy: {entity_category: 'config', icon: 'mdi:cog'},
+                moving: {device_class: 'moving'},
+                no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
+                occupancy: {device_class: 'motion'},
+                power_outage_memory: {entity_category: 'config', icon: 'mdi:memory'},
                 presence: {device_class: 'presence'},
+                smoke: {device_class: 'smoke'},
+                sos: {device_class: 'safety'},
+                tamper: {device_class: 'tamper'},
+                test: {entity_category: 'diagnostic', icon: 'mdi:test-tube'},
+                vibration: {device_class: 'vibration'},
+                water_leak: {device_class: 'moisture'},
             };
 
             /**
@@ -469,44 +484,102 @@ export default class HomeAssistant extends Extension {
             }
         } else if (firstExpose.type === 'numeric') {
             const lookup: {[s: string]: KeyValue} = {
-                battery: {device_class: 'battery', state_class: 'measurement'},
-                temperature: {device_class: 'temperature', state_class: 'measurement'},
+                angle: {icon: 'angle-acute'},
+                angle_axis: {icon: 'angle-acute'},
+                aqi: {device_class: 'aqi', state_class: 'measurement'},
+                auto_relock_time: {entity_category: 'config', icon: 'mdi:timer'},
+                away_preset_days: {entity_category: 'config', icon: 'mdi:timer'},
+                away_preset_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
+                battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement'},
+                boost_time: {entity_category: 'config', icon: 'mdi:timer'},
+                calibration: {entity_category: 'config'},
+                co2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
+                comfort_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                cpu_temperature: {
+                    device_class: 'temperature', entity_category: 'diagnostic', state_class: 'measurement',
+                },
+                cube_side: {icon: 'mdi:cube'},
+                current: {
+                    device_class: 'current',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                current_phase_b: {
+                    device_class: 'current',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                current_phase_c: {
+                    device_class: 'current',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                deadzone_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                device_temperature: {
+                    device_class: 'temperature', entity_category: 'diagnostic', state_class: 'measurement',
+                },
+                eco2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
+                eco_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                energy: {device_class: 'energy', state_class: 'total_increasing'},
+                formaldehyd: {state_class: 'measurement'},
+                gas_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
+                hcho: {icon: 'mdi:air-filter', state_class: 'measurement'},
                 humidity: {device_class: 'humidity', state_class: 'measurement'},
                 illuminance_lux: {device_class: 'illuminance', state_class: 'measurement'},
-                illuminance: {
-                    device_class: 'illuminance', enabled_by_default: false, state_class: 'measurement',
+                illuminance: {device_class: 'illuminance', enabled_by_default: false, state_class: 'measurement'},
+                linkquality: {
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    icon: 'mdi:signal',
+                    state_class: 'measurement',
                 },
-                soil_moisture: {icon: 'mdi:water-percent', state_class: 'measurement'},
+                local_temperature: {device_class: 'temperature', state_class: 'measurement'},
+                max_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                max_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer'},
+                min_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
+                occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
+                pm10: {device_class: 'pm10', state_class: 'measurement'},
+                pm25: {device_class: 'pm25', state_class: 'measurement'},
                 position: {icon: 'mdi:valve', state_class: 'measurement'},
+                power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+                precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
                 pressure: {device_class: 'pressure', state_class: 'measurement'},
-                power: {device_class: 'power', state_class: 'measurement'},
-                linkquality: {enabled_by_default: false, icon: 'mdi:signal', state_class: 'measurement'},
-                current: {device_class: 'current', state_class: 'measurement'},
-                voltage: {device_class: 'voltage', enabled_by_default: false, state_class: 'measurement'},
-                current_phase_b: {device_class: 'current', state_class: 'measurement'},
-                voltage_phase_b: {
-                    device_class: 'voltage', enabled_by_default: false, state_class: 'measurement',
+                presence_timeout: {entity_category: 'config', icon: 'mdi:timer'},
+                requested_brightness_level: {
+                    enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
-                current_phase_c: {device_class: 'current', state_class: 'measurement'},
-                voltage_phase_c: {
-                    device_class: 'voltage', enabled_by_default: false, state_class: 'measurement',
-                },
-                energy: {
-                    device_class: 'energy',
-                    state_class: 'total_increasing',
+                requested_brightness_percent: {
+                    enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
                 smoke_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
-                gas_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
-                pm25: {device_class: 'pm25', state_class: 'measurement'},
-                pm10: {device_class: 'pm10', state_class: 'measurement'},
-                voc: {icon: 'mdi:air-filter', state_class: 'measurement'},
-                aqi: {device_class: 'aqi', state_class: 'measurement'},
-                hcho: {icon: 'mdi:air-filter', state_class: 'measurement'},
-                requested_brightness_level: {enabled_by_default: false, icon: 'mdi:brightness-5'},
-                requested_brightness_percent: {enabled_by_default: false, icon: 'mdi:brightness-5'},
-                eco2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
-                co2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
-                local_temperature: {device_class: 'temperature', state_class: 'measurement'},
+                soil_moisture: {icon: 'mdi:water-percent', state_class: 'measurement'},
+                temperature: {device_class: 'temperature', state_class: 'measurement'},
+                transition: {entity_category: 'config', icon: 'mdi:transition'},
+                voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
+                vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
+                voltage: {
+                    device_class: 'voltage',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                voltage_phase_b: {
+                    device_class: 'voltage',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                voltage_phase_c: {
+                    device_class: 'voltage',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
                 x_axis: {icon: 'mdi:axis-x-arrow'},
                 y_axis: {icon: 'mdi:axis-y-arrow'},
                 z_axis: {icon: 'mdi:axis-z-arrow'},
@@ -533,7 +606,7 @@ export default class HomeAssistant extends Extension {
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                     mockProperties: [firstExpose.property],
@@ -542,32 +615,41 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
-                        min: firstExpose.value_min != null ? firstExpose.value_min : -65535,
-                        max: firstExpose.value_max != null ? firstExpose.value_max : 65535,
+                        ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...lookup[firstExpose.name],
                     },
                 };
+
+                if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
+                if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
+
                 discoveryEntries.push(discoveryEntry);
             }
         } else if (firstExpose.type === 'enum') {
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
-                backlight_auto_dim: {enabled_by_default: false, icon: 'mdi:brightness-auto'},
-                backlight_mode: {enabled_by_default: false, icon: 'mdi:lightbulb'},
-                color_power_on_behavior: {enabled_by_default: false, icon: 'mdi:palette'},
-                device_mode: {enabled_by_default: false, icon: 'mdi:tune'},
-                keep_time: {enabled_by_default: false, icon: 'mdi:av-timer'},
-                melody: {icon: 'mdi:music-note'},
-                mode_phase_control: {enabled_by_default: false, icon: 'mdi:tune'},
-                mode: {enabled_by_default: false, icon: 'mdi:tune'},
-                motion_sensitivity: {enabled_by_default: false, icon: 'mdi:tune'},
-                operation_mode: {enabled_by_default: false, icon: 'mdi:tune'},
-                power_on_behavior: {enabled_by_default: false, icon: 'mdi:power-settings'},
-                power_outage_memory: {enabled_by_default: false, icon: 'mdi:power-settings'},
-                sensitivity: {enabled_by_default: false, icon: 'mdi:tune'},
-                sensors_type: {enabled_by_default: false, icon: 'mdi:tune'},
-                switch_type: {enabled_by_default: false, icon: 'mdi:tune'},
-                volume: {icon: 'mdi: volume-high'},
+                backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
+                backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
+                color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
+                device_mode: {entity_category: 'config', icon: 'mdi:tune'},
+                effect: {enabled_by_default: false, icon: 'mdi:palette'},
+                force: {enabled_by_default: false, icon: 'mdi:valve'},
+                keep_time: {entity_category: 'config', icon: 'mdi:av-timer'},
+                keypad_lockout: {entity_category: 'config', icon: 'mdi:lock'},
+                melody: {entity_category: 'config', icon: 'mdi:music-note'},
+                mode_phase_control: {entity_category: 'config', icon: 'mdi:tune'},
+                mode: {entity_category: 'config', icon: 'mdi:tune'},
+                motion_sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
+                operation_mode: {entity_category: 'config', icon: 'mdi:tune'},
+                power_on_behavior: {entity_category: 'config', icon: 'mdi:power-settings'},
+                power_outage_memory: {entity_category: 'config', icon: 'mdi:power-settings'},
+                sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
+                sensors_type: {entity_category: 'config', icon: 'mdi:tune'},
+                sound_volume: {entity_category: 'config', icon: 'mdi:volume-high'},
+                switch_type: {entity_category: 'config', icon: 'mdi:tune'},
+                thermostat_unit: {entity_category: 'config', icon: 'mdi:thermometer'},
+                volume: {entity_category: 'config', icon: 'mdi: volume-high'},
+                week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
             };
 
             if (firstExpose.access & ACCESS_STATE) {
@@ -800,9 +882,11 @@ export default class HomeAssistant extends Extension {
                 object_id: 'last_seen',
                 mockProperties: ['last_seen'],
                 discovery_payload: {
-                    icon: 'mdi:clock',
                     value_template: '{{ value_json.last_seen }}',
+                    icon: 'mdi:clock',
                     enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    device_class: 'timestamp',
                 },
             });
         }
@@ -816,24 +900,25 @@ export default class HomeAssistant extends Extension {
                     icon: 'mdi:update',
                     value_template: `{{ value_json['update']['state'] }}`,
                     enabled_by_default: false,
+                    entity_category: 'diagnostic',
                 },
             };
 
             configs.push(updateStateSensor);
-            if (this.legacyApi) {
-                const updateAvailableSensor = {
-                    type: 'binary_sensor',
-                    object_id: 'update_available',
-                    mockProperties: ['update_available'],
-                    discovery_payload: {
-                        payload_on: true,
-                        payload_off: false,
-                        value_template: '{{ value_json.update_available}}',
-                        enabled_by_default: false,
-                    },
-                };
-                configs.push(updateAvailableSensor);
-            }
+            const updateAvailableSensor = {
+                type: 'binary_sensor',
+                object_id: 'update_available',
+                mockProperties: ['update_available'],
+                discovery_payload: {
+                    payload_on: true,
+                    payload_off: false,
+                    value_template: `{{ value_json['update']['state'] == "available" }}`,
+                    enabled_by_default: true,
+                    device_class: 'update',
+                    entity_category: 'diagnostic',
+                },
+            };
+            configs.push(updateAvailableSensor);
         }
 
         if (isDevice && entity.settings.hasOwnProperty('legacy') && !entity.settings.legacy) {
@@ -1157,6 +1242,7 @@ export default class HomeAssistant extends Extension {
         if (entity.isDevice()) {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
+            payload.sw_version = entity.zh.softwareBuildID;
         }
 
         if (settings.get().frontend?.url) {
