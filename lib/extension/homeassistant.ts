@@ -278,7 +278,7 @@ export default class HomeAssistant extends Extension {
                         command_topic_prefix: endpoint,
                         command_topic_postfix: tempCalibration.property,
                         min: -65535,
-                        max: 65535
+                        max: 65535,
                     },
                 };
                 discoveryEntries.push(discoveryEntry);
