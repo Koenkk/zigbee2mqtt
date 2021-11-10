@@ -45,7 +45,7 @@ export default class OTAUpdate extends Extension {
         if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition) return;
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
-        const supportsOTA = data.device.definition.hasOwnProperty('ota');
+        let supportsOTA = data.device.definition.hasOwnProperty('ota');
         if (supportsOTA) {
             // When a device does a next image request, it will usually do it a few times after each other
             // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
@@ -56,8 +56,14 @@ export default class OTAUpdate extends Extension {
             if (!check || this.inProgress.has(data.device.ieeeAddr)) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
-            const available = await data.device.definition.ota.isUpdateAvailable(
-                data.device.zh, logger, data.data);
+            let available = false;
+            try {
+                available = await data.device.definition.ota.isUpdateAvailable(data.device.zh, logger, data.data);
+            } catch (e) {
+                supportsOTA = false;
+                logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`);
+            }
+
             const payload = this.getEntityPublishPayload(available ? 'available' : 'idle');
             this.publishEntityState(data.device, payload);
 

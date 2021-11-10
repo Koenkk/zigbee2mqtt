@@ -11,7 +11,7 @@ import Extension from './extension';
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
 export default class ExternalExtension extends Extension {
-    private requestLookup: {[s: string]: (message: KeyValue) => MQTTResponse};
+    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>};
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -36,13 +36,13 @@ export default class ExternalExtension extends Extension {
         }
     }
 
-    @bind private removeExtension(message: KeyValue): MQTTResponse {
+    @bind private async removeExtension(message: KeyValue): Promise<MQTTResponse> {
         const {name} = message;
         const extensions = this.getListOfUserDefinedExtensions();
         const extensionToBeRemoved = extensions.find((e) => e.name === name);
 
         if (extensionToBeRemoved) {
-            this.enableDisableExtension(false, extensionToBeRemoved.name);
+            await this.enableDisableExtension(false, extensionToBeRemoved.name);
             const basePath = this.getExtensionsBasePath();
             const extensionFilePath = path.join(basePath, path.basename(name));
             fs.unlinkSync(extensionFilePath);
@@ -54,10 +54,10 @@ export default class ExternalExtension extends Extension {
         }
     }
 
-    @bind private saveExtension(message: KeyValue): MQTTResponse {
+    @bind private async saveExtension(message: KeyValue): Promise<MQTTResponse> {
         const {name, code} = message;
-        const ModuleConstructor = utils.loadModuleFromText(code) as Extension;
-        this.loadExtension(ModuleConstructor);
+        const ModuleConstructor = utils.loadModuleFromText(code) as typeof Extension;
+        await this.loadExtension(ModuleConstructor);
         const basePath = this.getExtensionsBasePath();
         /* istanbul ignore else */
         if (!fs.existsSync(basePath)) {
@@ -75,7 +75,7 @@ export default class ExternalExtension extends Extension {
         if (match && this.requestLookup[match[1].toLowerCase()]) {
             const message = utils.parseJSON(data.message, data.message) as KeyValue;
             try {
-                const response = this.requestLookup[match[1].toLowerCase()](message);
+                const response = await this.requestLookup[match[1].toLowerCase()](message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             } catch (error) {
                 logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
@@ -85,11 +85,11 @@ export default class ExternalExtension extends Extension {
         }
     }
 
-    @bind private loadExtension(ConstructorClass: Extension): void {
-        this.enableDisableExtension(false, ConstructorClass.constructor.name);
+    @bind private async loadExtension(ConstructorClass: typeof Extension): Promise<void> {
+        await this.enableDisableExtension(false, ConstructorClass.name);
         // @ts-ignore
-        this.addExtension(new ConstructorClass(
-            this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
+        await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState,
+            this.eventBus, settings, logger));
     }
 
     private loadUserDefinedExtensions(): void {

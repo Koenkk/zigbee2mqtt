@@ -76,7 +76,8 @@ export default class Receive extends Extension {
                 logger.warn(
                     `Received message from unsupported device with Zigbee model '${data.device.zh.modelID}' ` +
                     `and manufacturer name '${data.device.zh.manufacturerName}'`);
-                logger.warn(`Please see: https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html.`);
+                // eslint-disable-next-line max-len
+                logger.warn(`Please see: https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);
             }
 
             return false;
@@ -114,7 +115,7 @@ export default class Receive extends Extension {
         });
 
         // Check if there is an available converter, genOta messages are not interesting.
-        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic'];
+        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
         if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
             logger.debug(`No converter available for '${data.device.definition.model}' with ` +
                 `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
