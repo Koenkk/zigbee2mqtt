@@ -196,6 +196,7 @@ export default class HomeAssistant extends Extension {
                     // Temperature
                     current_temperature_topic: true,
                     current_temperature_template: `{{ value_json.${temperature.property} }}`,
+                    command_topic_prefix: endpoint,
                 },
             };
 
@@ -989,7 +990,8 @@ export default class HomeAssistant extends Extension {
         this.discovered[discoverKey] = {topics: new Set(), mockProperties: new Set()};
         this.getConfigs(entity).forEach((config) => {
             const payload = {...config.discovery_payload};
-            let stateTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
+            const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
+            let stateTopic = baseTopic;
             if (payload.state_topic_postfix) {
                 stateTopic += `/${payload.state_topic_postfix}`;
                 delete payload.state_topic_postfix;
@@ -1039,19 +1041,14 @@ export default class HomeAssistant extends Extension {
             /* istanbul ignore next */
             if (availabilityEnabled) {
                 payload.availability_mode = 'all';
-                payload.availability.push({topic: `${settings.get().mqtt.base_topic}/${entity.name}/availability`});
+                payload.availability.push({topic: `${baseTopic}/availability`});
             }
 
-            let commandTopic = `${settings.get().mqtt.base_topic}/${entity.name}/`;
-            if (payload.command_topic_prefix) {
-                commandTopic += `${payload.command_topic_prefix}/`;
-                delete payload.command_topic_prefix;
-            }
-            commandTopic += 'set';
-            if (payload.command_topic_postfix) {
-                commandTopic += `/${payload.command_topic_postfix}`;
-                delete payload.command_topic_postfix;
-            }
+            const commandTopicPrefix = payload.command_topic_prefix ? `${payload.command_topic_prefix}/` : '';
+            delete payload.command_topic_prefix;
+            const commandTopicPostfix = payload.command_topic_postfix ? `/${payload.command_topic_postfix}` : '';
+            delete payload.command_topic_postfix;
+            const commandTopic = `${baseTopic}/${commandTopicPrefix}set${commandTopicPostfix}`;
 
             if (payload.command_topic) {
                 payload.command_topic = commandTopic;
@@ -1072,11 +1069,11 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.mode_command_topic) {
-                payload.mode_command_topic = `${stateTopic}/set/system_mode`;
+                payload.mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/system_mode`;
             }
 
             if (payload.hold_command_topic) {
-                payload.hold_command_topic = `${stateTopic}/set/preset`;
+                payload.hold_command_topic = `${baseTopic}/${commandTopicPrefix}set/preset`;
             }
 
             if (payload.hold_state_topic) {
@@ -1088,7 +1085,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.away_mode_command_topic) {
-                payload.away_mode_command_topic = `${stateTopic}/set/away_mode`;
+                payload.away_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/away_mode`;
             }
 
             if (payload.current_temperature_topic) {
@@ -1108,15 +1105,18 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.temperature_command_topic) {
-                payload.temperature_command_topic = `${stateTopic}/set/${payload.temperature_command_topic}`;
+                payload.temperature_command_topic =
+                    `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_command_topic}`;
             }
 
             if (payload.temperature_low_command_topic) {
-                payload.temperature_low_command_topic = `${stateTopic}/set/${payload.temperature_low_command_topic}`;
+                payload.temperature_low_command_topic =
+                    `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_low_command_topic}`;
             }
 
             if (payload.temperature_high_command_topic) {
-                payload.temperature_high_command_topic = `${stateTopic}/set/${payload.temperature_high_command_topic}`;
+                payload.temperature_high_command_topic =
+                    `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_high_command_topic}`;
             }
 
             if (payload.fan_mode_state_topic) {
@@ -1124,7 +1124,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.fan_mode_command_topic) {
-                payload.fan_mode_command_topic = `${stateTopic}/set/fan_mode`;
+                payload.fan_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
             }
 
             if (payload.percentage_state_topic) {
@@ -1132,7 +1132,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.percentage_command_topic) {
-                payload.percentage_command_topic = `${stateTopic}/set/fan_mode`;
+                payload.percentage_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
             }
 
             if (payload.preset_mode_state_topic) {
@@ -1140,7 +1140,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.preset_mode_command_topic) {
-                payload.preset_mode_command_topic = `${stateTopic}/set/fan_mode`;
+                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
             }
 
             if (payload.action_topic) {
