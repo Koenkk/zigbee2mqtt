@@ -266,6 +266,24 @@ export default class HomeAssistant extends Extension {
                     `{{ value_json.${awayMode.property} }}`;
             }
 
+            const tempCalibration = firstExpose.features.find((f) => f.name === 'local_temperature_calibration');
+            if (tempCalibration) {
+                const discoveryEntry = {
+                    type: 'number',
+                    object_id: endpoint ? `${tempCalibration.name}_${endpoint}` : `${tempCalibration.name}`,
+                    mockProperties: [tempCalibration.property],
+                    discovery_payload: {
+                        value_template: `{{ value_json.${tempCalibration.property} }}`,
+                        command_topic: true,
+                        command_topic_prefix: endpoint,
+                        command_topic_postfix: tempCalibration.property,
+                        min: -65535,
+                        max: 65535
+                    },
+                };
+                discoveryEntries.push(discoveryEntry);
+            }
+
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'lock') {
             assert(!endpoint, `Endpoint not supported for lock type`);
