@@ -267,7 +267,7 @@ export default class HomeAssistant extends Extension {
 
             const tempCalibration = firstExpose.features.find((f) => f.name === 'local_temperature_calibration');
             if (tempCalibration) {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${tempCalibration.name}_${endpoint}` : `${tempCalibration.name}`,
                     mockProperties: [tempCalibration.property],
@@ -276,16 +276,14 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: tempCalibration.property,
+                        entity_category: 'config',
+                        icon: 'mdi:math-compass',
+                        ...(tempCalibration.unit && {unit_of_measurement: tempCalibration.unit}),
                     },
                 };
 
-                if (tempCalibration.value_min != null) {
-                    discoveryEntry.discovery_payload.min = tempCalibration.value_min;
-                }
-                if (tempCalibration.value_max != null) {
-                    discoveryEntry.discovery_payload.max = tempCalibration.value_max;
-                }
-
+                if (tempCalibration.value_min != null) discoveryEntry.discovery_payload.min = tempCalibration.value_min;
+                if (tempCalibration.value_max != null) discoveryEntry.discovery_payload.max = tempCalibration.value_max;
                 discoveryEntries.push(discoveryEntry);
             }
 
