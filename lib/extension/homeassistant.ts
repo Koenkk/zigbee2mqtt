@@ -281,6 +281,14 @@ export default class HomeAssistant extends Extension {
                         max: 65535,
                     },
                 };
+
+                if (tempCalibration.value_min != null) {
+                    discoveryEntry.discovery_payload.min = tempCalibration.value_min;
+                }
+                if (tempCalibration.value_max != null) {
+                    discoveryEntry.discovery_payload.max = tempCalibration.value_max;
+                }
+
                 discoveryEntries.push(discoveryEntry);
             }
 
