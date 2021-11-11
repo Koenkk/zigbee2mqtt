@@ -277,6 +277,8 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: tempCalibration.property,
+                        min: -65535,
+                        max: 65535,
                         entity_category: 'config',
                         icon: 'mdi:math-compass',
                         ...(tempCalibration.unit && {unit_of_measurement: tempCalibration.unit}),
