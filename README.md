@@ -75,7 +75,7 @@ Zigbee2MQTT uses TypeScript (partially for now). Therefore after making changes 
 ## Supported devices
 See [Supported devices](https://www.zigbee2mqtt.io/supported-devices) to check whether your device is supported. There is quite an extensive list, including devices from vendors like Xiaomi, Ikea, Philips, OSRAM and more.
 
-If it's not listed in [Supported devices](https://www.zigbee2mqtt.io/supported-devices), support can be added (fairly) easy, see [How to support new devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html).
+If it's not listed in [Supported devices](https://www.zigbee2mqtt.io/supported-devices), support can be added (fairly) easily, see [How to support new devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html).
 
 ## Support & help
 If you need assistance you can check [opened issues](https://github.com/Koenkk/zigbee2mqtt/issues). Feel free to help with Pull Requests when you were able to fix things or add new devices or just share the love on social media.
