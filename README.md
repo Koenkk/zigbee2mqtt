@@ -35,7 +35,7 @@
     </div>
     <h1>Zigbee2MQTT  🌉 🐝</h1>
     <p>
-        Allows you to use your Zigbee devices <b>without</b> the vendors bridge or gateway.
+        Allows you to use your Zigbee devices <b>without</b> the vendor's bridge or gateway.
     </p>
     <p>
         It bridges events and allows you to control your Zigbee devices via MQTT. In this way you can integrate your Zigbee devices with whatever smart home infrastructure you are using.
