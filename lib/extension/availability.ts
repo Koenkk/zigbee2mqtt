@@ -157,8 +157,8 @@ export default class Availability extends Extension {
     }
 
     override async stop(): Promise<void> {
-        super.stop();
         Object.values(this.timers).forEach((t) => clearTimeout(t));
+        super.stop();
     }
 
     private retrieveState(device: Device): void {
