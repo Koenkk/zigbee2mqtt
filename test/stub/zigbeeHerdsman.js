@@ -215,7 +215,6 @@ const mock = {
         events[type] = handler;
     },
     stop: jest.fn(),
-    setLED: jest.fn(),
     getDevices: jest.fn().mockImplementation(() => {
         return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr));
     }),

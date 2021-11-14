@@ -128,11 +128,6 @@ export default class Zigbee {
             }
         }
 
-        // Check if we have to turn off the led
-        if (settings.get().serial.disable_led) {
-            await this.herdsman.setLED(false);
-        }
-
         // Check if we have to set a transmit power
         if (settings.get().experimental.hasOwnProperty('transmit_power')) {
             const transmitPower = settings.get().experimental.transmit_power;
