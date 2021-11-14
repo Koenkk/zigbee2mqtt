@@ -400,8 +400,8 @@ export default class HomeAssistant extends Extension {
                 // presets "on", "auto" and "smart" to cover the remaining modes in
                 // ZCL. This supports a generic ZCL HVAC Fan Control fan. "Off" is
                 // always a valid speed.
-                let speeds =
-                    ['off'].concat(['low', 'medium', 'high'].filter((s) => speed.values.includes(s)));
+                let speeds = ['off'].concat(['low', 'medium', 'high', '1', '2', '3', '4', '5',
+                    '6', '7', '8', '9'].filter((s) => speed.values.includes(s)));
                 let presets = ['on', 'auto', 'smart'].filter((s) => speed.values.includes(s));
 
                 if (['99432'].includes(definition.model)) {
@@ -427,6 +427,7 @@ export default class HomeAssistant extends Extension {
                     `{{ {${percentCommands}}[value] | default('') }}`;
                 discoveryEntry.discovery_payload.speed_range_min = 1;
                 discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
+                assert(presets.length !== 0);
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                 discoveryEntry.discovery_payload.preset_mode_command_topic = true;
                 discoveryEntry.discovery_payload.preset_mode_value_template =
