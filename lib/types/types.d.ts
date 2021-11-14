@@ -95,7 +95,7 @@ declare global {
         }
 
         interface DefinitionExposeFeature {name: string, endpoint?: string,
-            property: string, value_max?: number, value_min?: number,
+            property: string, value_max?: number, value_min?: number, unit?: string,
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
         interface DefinitionExpose {
