@@ -59,7 +59,7 @@
     "ws": "^8.2.3",
     "zigbee-herdsman": "0.13.170",
     "zigbee-herdsman-converters": "14.0.318",
-    "zigbee2mqtt-frontend": "0.6.32"
+    "zigbee2mqtt-frontend": "0.6.33"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
