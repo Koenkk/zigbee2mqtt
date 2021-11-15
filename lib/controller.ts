@@ -214,9 +214,11 @@ class Controller {
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue,
         stateChangeReason?: StateChangeReason): Promise<void> {
         let message = {...payload};
+        console.log('payload', payload);
 
         // Update state cache with new state.
         const newState = this.state.set(entity, payload, stateChangeReason);
+        console.log('newstate', newState);
 
         if (settings.get().advanced.cache_state) {
             // Add cached state to payload
@@ -275,6 +277,8 @@ class Controller {
                 await this.iteratePayloadAttributeOutput(`${entity.name}/`, message, options);
             }
         }
+
+        console.log('publish', message);
 
         this.eventBus.emitPublishEntityState({entity, message, stateChangeReason});
     }
