@@ -145,7 +145,8 @@ declare global {
         type DeviceLeave = { ieeeAddr: string, name: string };
         type GroupMembersChanged = {group: Group, action: 'remove' | 'add' | 'remove_all',
             endpoint: zh.Endpoint, skipDisableReporting: boolean };
-        type PublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason };
+        type PublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason,
+                payload: KeyValue};
         type DeviceMessage = {
             type: ZHEvents.MessagePayloadType;
             device: Device;
