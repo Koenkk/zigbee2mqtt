@@ -4,7 +4,7 @@ import * as settings from './util/settings';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
 
-const saveInterval = 1000 * 60 * 5; // 5 minutes
+const saveInterval = 15 * 1000; // 15 seconds
 
 const dontCacheProperties = [
     '^action$', '^action_.*$', '^button$', '^button_left$', '^button_right$', '^click$', '^forgotten$', '^keyerror$',
