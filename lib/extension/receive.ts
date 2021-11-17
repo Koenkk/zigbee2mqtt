@@ -142,7 +142,6 @@ export default class Receive extends Extension {
                 this.publishDebounce(data.device, payload, data.device.settings.debounce,
                     data.device.settings.debounce_ignore);
             } else {
-                console.log('RECEIVE PUBLISH', payload);
                 this.publishEntityState(data.device, payload);
             }
         };
