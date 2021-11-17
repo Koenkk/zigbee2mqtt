@@ -276,7 +276,7 @@ class Controller {
             }
         }
 
-        this.eventBus.emitPublishEntityState({entity, message, stateChangeReason});
+        this.eventBus.emitPublishEntityState({entity, message, stateChangeReason, payload});
     }
 
     async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: MQTTOptions): Promise<void> {
