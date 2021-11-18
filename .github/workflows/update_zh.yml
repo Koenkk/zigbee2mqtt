@@ -16,7 +16,14 @@ jobs:
         node-version: 14
     - run: npm install zigbee-herdsman@${{ github.event.client_payload.version }} --save-exact
     - uses: peter-evans/create-pull-request@v3
+      id: cpr
       with:
         commit-message: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
         branch: "update_zh"
         title: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
+    - uses: peter-evans/enable-pull-request-automerge@v1
+      if: steps.cpr.outputs.pull-request-operation == 'created'
+      with:
+        token: ${{ secrets.CR_PAT }}
+        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+        merge-method: squash
