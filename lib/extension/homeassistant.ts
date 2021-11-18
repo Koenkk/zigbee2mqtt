@@ -329,26 +329,28 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'cover') {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
-            const hasTilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
+            const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
                 mockProperties: [],
                 object_id: endpoint ? `cover_${endpoint}` : 'cover',
-                discovery_payload: {},
+                discovery_payload: {
+                    command_topic_prefix: endpoint,
+                },
             };
 
             // For covers only supporting tilt don't discover the command/state_topic, otherwise
             // HA does not correctly reflect the state
             // - https://github.com/home-assistant/core/issues/51793
             // - https://github.com/Koenkk/zigbee-herdsman-converters/pull/2663
-            if (!hasTilt || (hasTilt && position)) {
+            if (!tilt || (tilt && position)) {
                 discoveryEntry.discovery_payload.command_topic = true;
                 discoveryEntry.discovery_payload.state_topic = !position;
                 discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
             }
 
-            if (!position && !hasTilt) {
+            if (!position && !tilt) {
                 discoveryEntry.discovery_payload.optimistic = true;
             }
 
@@ -362,12 +364,12 @@ export default class HomeAssistant extends Extension {
                 };
             }
 
-            if (hasTilt) {
-                assert(!endpoint, `Endpoint with tilt not supported for cover type`);
+            if (tilt) {
+                const t = tilt.features.find((f) => f.name === 'tilt');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
                     tilt_command_topic: true,
                     tilt_status_topic: true,
-                    tilt_status_template: '{{ value_json.tilt }}',
+                    tilt_status_template: `{{ value_json.${getProperty(t)} }}`,
                 };
             }
 
@@ -1060,9 +1062,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.tilt_command_topic) {
-                // Home Assistant does not support templates to set tilt (as of 2019-08-17),
-                // so we (have to) use a subtopic.
-                payload.tilt_command_topic = commandTopic + '/tilt';
+                payload.tilt_command_topic = `${baseTopic}/${commandTopicPrefix}set/tilt`;
             }
 
             if (payload.mode_state_topic) {
