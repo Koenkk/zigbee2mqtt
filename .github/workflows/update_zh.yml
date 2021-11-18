@@ -20,3 +20,8 @@ jobs:
         commit-message: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
         branch: "update_zh"
         title: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
+    - uses: peter-evans/enable-pull-request-automerge@v1
+      if: steps.cpr.outputs.pull-request-operation == 'created'
+      with:
+        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+        merge-method: squash
