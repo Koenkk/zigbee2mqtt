@@ -21,6 +21,7 @@ jobs:
         commit-message: Update zigbee2mqtt-frontend to ${{ github.event.client_payload.version }}
         branch: "update_frontend"
         title: Update zigbee-frontend to ${{ github.event.client_payload.version }}
+    - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
     - uses: peter-evans/enable-pull-request-automerge@v1
       if: steps.cpr.outputs.pull-request-operation == 'created'
       with:
