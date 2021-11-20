@@ -296,15 +296,15 @@ export default class HomeAssistant extends Extension {
                     mockProperties: [piHeatingDemand.property],
                     discovery_payload: {
                         value_template: `{{ value_json.${piHeatingDemand.property} }}`,
-                        ...(piHeatingDemand.unit && { unit_of_measurement: piHeatingDemand.unit }),
-                        entity_category: 'diagnostic', 
+                        ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
+                        entity_category: 'diagnostic',
                         icon: 'mdi:radiator',
                     },
                 };
 
                 discoveryEntries.push(discoveryEntry);
             }
-            
+
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'lock') {
             assert(!endpoint, `Endpoint not supported for lock type`);
