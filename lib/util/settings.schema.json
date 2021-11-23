@@ -55,7 +55,7 @@
               "type": "object",
               "title": "Active",
               "requiresRestart": true,
-              "description": "Options for passive devices (routers/mains powered)",
+              "description": "Options for passive devices (mostly battery powered devices)",
               "properties": {
                 "timeout": {
                   "type": "number",
@@ -71,7 +71,7 @@
       ],
       "title": "Availability",
       "requiresRestart": true,
-      "description": "Checks wether devices are online/offline"
+      "description": "Checks whether devices are online/offline"
     },
     "mqtt": {
       "type": "object",
