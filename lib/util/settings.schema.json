@@ -55,7 +55,7 @@
               "type": "object",
               "title": "Active",
               "requiresRestart": true,
-              "description": "Options for passive devices (mostly battery powered devices)",
+              "description": "Options for passive devices (mostly battery powered)",
               "properties": {
                 "timeout": {
                   "type": "number",
