@@ -830,6 +830,7 @@ export default class HomeAssistant extends Extension {
                         payload_off: false,
                         value_template: '{{ value_json.update_available}}',
                         enabled_by_default: false,
+                        device_class: 'update',
                     },
                 };
                 configs.push(updateAvailableSensor);
