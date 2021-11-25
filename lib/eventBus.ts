@@ -9,7 +9,7 @@ export default class EventBus {
     private emitter = new events.EventEmitter();
 
     constructor(onError: (error: Error) => void) {
-        this.emitter.setMaxListeners(100);
+        this.emitter.setMaxListeners(150);
         this.emitter.on('error', onError);
     }
 
