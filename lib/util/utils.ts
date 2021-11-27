@@ -286,7 +286,7 @@ function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, al
      * Prevent 2 MQTT publishes when 1 message event is received;
      * - In case reason == messageEmitted, receive.ts will only call this when it did not publish a
      *      message based on the received zigbee message. In this case allowMessageEmitted has to be true.
-     * - In case reason !== messageEmitted, controller.ts will call this based on the zigbee-herdsman 
+     * - In case reason !== messageEmitted, controller.ts will call this based on the zigbee-herdsman
      *      lastSeenChanged event.
      */
     const allow = data.reason !== 'messageEmitted' || (data.reason === 'messageEmitted' && allowMessageEmitted);
