@@ -136,7 +136,8 @@ declare global {
         type StateChange = {
             entity: Device | Group, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
-        type LastSeenChanged = { device: Device };
+        type LastSeenChanged = { device: Device,
+            reason: 'deviceAnnounce' | 'networkAddress' | 'deviceJoined' | 'messageEmitted' | 'messageNonEmitted'; };
         type DeviceNetworkAddressChanged = { device: Device };
         type DeviceAnnounce = { device: Device };
         type DeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };

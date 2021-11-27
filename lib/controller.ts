@@ -160,10 +160,8 @@ class Controller {
             }
         }
 
-        if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== 'disable') {
-            this.eventBus.onLastSeenChanged(this, (data) =>
-                this.publishEntityState(data.device, {}, 'lastSeenChanged'));
-        }
+        this.eventBus.onLastSeenChanged(this,
+            (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {

@@ -4,6 +4,7 @@ import debounce from 'debounce';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
+import utils from '../util/utils';
 
 type DebounceFunction = (() => void) & { clear(): void; } & { flush(): void; };
 
@@ -107,7 +108,11 @@ export default class Receive extends Extension {
             data = {...data, device: this.zigbee.deviceByNetworkAddress(data.groupID)};
         }
 
-        if (!this.shouldProcess(data)) return;
+        if (!this.shouldProcess(data)) {
+            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+                settings.get(), true, this.publishEntityState);
+            return;
+        }
 
         const converters = data.device.definition.fromZigbee.filter((c) => {
             const type = Array.isArray(c.type) ? c.type.includes(data.type) : c.type === data.type;
@@ -163,6 +168,9 @@ export default class Receive extends Extension {
 
         if (Object.keys(payload).length) {
             publish(payload);
+        } else {
+            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+                settings.get(), true, this.publishEntityState);
         }
     }
 }

@@ -644,9 +644,19 @@ describe('Controller', () => {
         await flushPromises();
         MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.remote;
-        await zigbeeHerdsman.events.lastSeenChanged({device});
+        await zigbeeHerdsman.events.lastSeenChanged({device, reason: 'deviceAnnounce'});
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote', stringify({"brightness":255,"last_seen":1000}), { qos: 0, retain: true }, expect.any(Function));
+    });
+
+    it('Should not publish last seen changes when reason is messageEmitted', async () => {
+        settings.set(['advanced', 'last_seen'], 'epoch');
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        const device = zigbeeHerdsman.devices.remote;
+        await zigbeeHerdsman.events.lastSeenChanged({device, reason: 'messageEmitted'});
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 });
