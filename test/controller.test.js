@@ -659,4 +659,14 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.lastSeenChanged({device, reason: 'messageEmitted'});
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
+
+    it('Ignore messages from coordinator', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/9218
+        await controller.start();
+        const device = zigbeeHerdsman.devices.coordinator;
+        const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, cluster: 'genBasic', data: {modelId: device.modelID}};
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'Coordinator', type 'attributeReport', cluster 'genBasic', data '{"modelId":null}' from endpoint 1, ignoring since it is from coordinator`);
+    });
 });

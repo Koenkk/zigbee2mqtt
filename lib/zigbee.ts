@@ -98,7 +98,9 @@ export default class Zigbee {
             const device = this.resolveDevice(data.device.ieeeAddr);
             logger.debug(`Received Zigbee message from '${device.name}', type '${data.type}', ` +
                 `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
-                (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``));
+                (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
+                (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``));
+            if (device.zh.type === 'Coordinator') return;
             this.eventBus.emitDeviceMessage({...data, device});
         });
 
