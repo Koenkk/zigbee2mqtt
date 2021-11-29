@@ -69,6 +69,7 @@ export default class MQTT {
 
         return new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
+            this.client.setMaxListeners(0);
 
             const onConnect = this.onConnect;
             this.client.on('connect', async () => {
