@@ -92,7 +92,7 @@ class Controller {
         logger.logOutput();
 
         const info = await utils.getZigbee2MQTTVersion();
-        logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash.replace(/[\n\r]/g,"")})`);
+        logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
 
         // Start zigbee
         let startResult;
