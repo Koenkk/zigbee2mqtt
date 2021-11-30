@@ -70,6 +70,7 @@ async function getZigbee2MQTTVersion(includeCommitHash=true): Promise<{commitHas
                 commitHash = commit.shortHash;
             }
 
+            commitHash = commitHash.trim();
             resolve({commitHash, version});
         });
     });
