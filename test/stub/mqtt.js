@@ -6,7 +6,7 @@ const mock = {
     subscribe: jest.fn(),
     reconnecting: false,
     on: jest.fn(),
-    setMaxListeners: jest.fn(),
+    stream: {setMaxListeners: jest.fn()}
 };
 
 const mockConnect = jest.fn().mockReturnValue(mock);
