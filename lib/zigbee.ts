@@ -63,7 +63,7 @@ export default class Zigbee {
 
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
-            this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr)});
+            this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr), reason: data.reason});
         });
         this.herdsman.on('permitJoinChanged', (data: ZHEvents.PermitJoinChangedPayload) => {
             this.eventBus.emitPermitJoinChanged(data);
@@ -98,7 +98,9 @@ export default class Zigbee {
             const device = this.resolveDevice(data.device.ieeeAddr);
             logger.debug(`Received Zigbee message from '${device.name}', type '${data.type}', ` +
                 `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
-                (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``));
+                (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
+                (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``));
+            if (device.zh.type === 'Coordinator') return;
             this.eventBus.emitDeviceMessage({...data, device});
         });
 
@@ -128,11 +130,6 @@ export default class Zigbee {
             }
         }
 
-        // Check if we have to turn off the led
-        if (settings.get().serial.disable_led) {
-            await this.herdsman.setLED(false);
-        }
-
         // Check if we have to set a transmit power
         if (settings.get().experimental.hasOwnProperty('transmit_power')) {
             const transmitPower = settings.get().experimental.transmit_power;
@@ -154,7 +151,8 @@ export default class Zigbee {
             } else {
                 logger.warn(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
                     `'${data.device.zh.manufacturerName}' is NOT supported, ` +
-                    `please follow https://www.zigbee2mqtt.io/how_tos/how_to_support_new_devices.html`);
+                    // eslint-disable-next-line max-len
+                    `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);
             }
         } else if (data.status === 'failed') {
             logger.error(`Failed to interview '${name}', device has not successfully been paired`);

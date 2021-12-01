@@ -69,6 +69,8 @@ export default class MQTT {
 
         return new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
+            // @ts-ignore https://github.com/Koenkk/zigbee2mqtt/issues/9822
+            this.client.stream.setMaxListeners(0);
 
             const onConnect = this.onConnect;
             this.client.on('connect', async () => {

@@ -37,7 +37,7 @@ const AllExtensions = [
 ];
 
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
-    (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => void];
+    (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => Promise<void>];
 
 class Controller {
     private eventBus: EventBus;
@@ -101,7 +101,7 @@ class Controller {
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
             logger.error('Failed to start zigbee');
-            logger.error('Check https://www.zigbee2mqtt.io/information/FAQ.html#help-zigbee2mqtt-fails-to-start for possible solutions'); /* eslint-disable-line max-len */
+            logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
             this.exitCallback(1);
@@ -160,10 +160,8 @@ class Controller {
             }
         }
 
-        if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== 'disable') {
-            this.eventBus.onLastSeenChanged(this, (data) =>
-                this.publishEntityState(data.device, {}, 'lastSeenChanged'));
-        }
+        this.eventBus.onLastSeenChanged(this,
+            (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -276,7 +274,7 @@ class Controller {
             }
         }
 
-        this.eventBus.emitPublishEntityState({entity, message, stateChangeReason});
+        this.eventBus.emitPublishEntityState({entity, message, stateChangeReason, payload});
     }
 
     async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: MQTTOptions): Promise<void> {

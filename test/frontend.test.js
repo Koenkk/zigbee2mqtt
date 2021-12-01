@@ -50,7 +50,7 @@ jest.mock('http', () => ({
     }),
 }));
 
-jest.mock("serve-static", () =>
+jest.mock("connect-gzip-static", () =>
     jest.fn().mockImplementation((path) => {
         mockNodeStatic.variables.path = path
         return mockNodeStatic.implementation
