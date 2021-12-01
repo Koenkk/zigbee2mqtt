@@ -1,5 +1,5 @@
 import http from 'http';
-import gzipStatic, { RequestHandler } from 'connect-gzip-static';
+import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
 import logger from '../util/logger';
 import frontend from 'zigbee2mqtt-frontend';
@@ -37,13 +37,14 @@ export default class Frontend extends Extension {
         this.server = http.createServer(this.onRequest);
         this.server.on('upgrade', this.onUpgrade);
 
-        /* istanbul ignore next */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        /* istanbul ignore next */
         const options = {
-            setHeaders: (res: any, path: any): void => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setHeaders: (res: any, path: string): void => {
                 if (path.endsWith('index.html')) {
                     res.setHeader('Cache-Control', 'no-store');
                 }
-            }
+            },
         };
         this.fileServer = gzipStatic(frontend.getPath(), options);
         this.wss = new WebSocket.Server({noServer: true});
