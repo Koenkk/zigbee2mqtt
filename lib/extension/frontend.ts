@@ -1,5 +1,5 @@
 import http from 'http';
-import serveStatic from 'serve-static';
+import gzipStatic, { RequestHandler } from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
 import logger from '../util/logger';
 import frontend from 'zigbee2mqtt-frontend';
@@ -23,7 +23,7 @@ export default class Frontend extends Extension {
     private retainedMessages = new Map();
     private server: http.Server;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private fileServer: serveStatic.RequestHandler<any>;
+    private fileServer: RequestHandler;
     private wss: WebSocket.Server = null;
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
@@ -38,13 +38,14 @@ export default class Frontend extends Extension {
         this.server.on('upgrade', this.onUpgrade);
 
         /* istanbul ignore next */ // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const options = {setHeaders: (res: any, path: any): void => {
-            if (path.endsWith('index.html')) {
-                res.setHeader('Cache-Control', 'no-store');
+        const options = {
+            setHeaders: (res: any, path: any): void => {
+                if (path.endsWith('index.html')) {
+                    res.setHeader('Cache-Control', 'no-store');
+                }
             }
-        }};
-
-        this.fileServer = serveStatic(frontend.getPath(), options);
+        };
+        this.fileServer = gzipStatic(frontend.getPath(), options);
         this.wss = new WebSocket.Server({noServer: true});
         this.wss.on('connection', this.onWebSocketConnection);
 
