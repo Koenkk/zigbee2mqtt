@@ -7,13 +7,15 @@ import assert from 'assert';
 import Extension from './extension';
 import bind from 'bind-decorator';
 
-// eslint-disable-next-line camelcase
-interface DiscoveryEntry {mockProperties: string[], type: string, object_id: string, discovery_payload: KeyValue}
+interface MockProperty {property: string, value: KeyValue | string}
 
-const sensorClick = {
+// eslint-disable-next-line camelcase
+interface DiscoveryEntry {mockProperties: MockProperty[], type: string, object_id: string, discovery_payload: KeyValue}
+
+const sensorClick: DiscoveryEntry = {
     type: 'sensor',
     object_id: 'click',
-    mockProperties: ['click'],
+    mockProperties: [{property: 'click', value: null}],
     discovery_payload: {
         icon: 'mdi:toggle-switch',
         value_template: '{{ value_json.click }}',
@@ -37,7 +39,7 @@ const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): s
  * This extensions handles integration with HomeAssistant
  */
 export default class HomeAssistant extends Extension {
-    private discovered: {[s: string]: {topics: Set<string>, mockProperties: Set<string>}} = {};
+    private discovered: {[s: string]: {topics: Set<string>, mockProperties: Set<MockProperty>}} = {};
     private mapping: {[s: string]: DiscoveryEntry[]} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
     private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
@@ -107,7 +109,7 @@ export default class HomeAssistant extends Extension {
             const discoveryEntry: DiscoveryEntry = {
                 type: 'light',
                 object_id: endpoint ? `light_${endpoint}` : 'light',
-                mockProperties: [state.property],
+                mockProperties: [{property: state.property, value: null}],
                 discovery_payload: {
                     brightness: !!hasBrightness,
                     schema: 'json',
@@ -151,7 +153,7 @@ export default class HomeAssistant extends Extension {
             const discoveryEntry: DiscoveryEntry = {
                 type: 'switch',
                 object_id: endpoint ? `switch_${endpoint}` : 'switch',
-                mockProperties: [property],
+                mockProperties: [{property: property, value: null}],
                 discovery_payload: {
                     payload_off: state.value_off,
                     payload_on: state.value_on,
@@ -216,7 +218,7 @@ export default class HomeAssistant extends Extension {
 
             const state = firstExpose.features.find((f) => f.name === 'running_state');
             if (state) {
-                discoveryEntry.mockProperties.push(state.property);
+                discoveryEntry.mockProperties.push({property: state.property, value: null});
                 discoveryEntry.discovery_payload.action_topic = true;
                 discoveryEntry.discovery_payload.action_template = `{% set values = ` +
                         `{None:None,'idle':'off','heat':'heating','cool':'cooling','fan_only':'fan'}` +
@@ -271,7 +273,7 @@ export default class HomeAssistant extends Extension {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${tempCalibration.name}_${endpoint}` : `${tempCalibration.name}`,
-                    mockProperties: [tempCalibration.property],
+                    mockProperties: [{property: tempCalibration.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${tempCalibration.property} }}`,
                         command_topic: true,
@@ -290,10 +292,10 @@ export default class HomeAssistant extends Extension {
 
             const piHeatingDemand = firstExpose.features.find((f) => f.name === 'pi_heating_demand');
             if (piHeatingDemand) {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'sensor',
                     object_id: endpoint ? `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
-                    mockProperties: [piHeatingDemand.property],
+                    mockProperties: [{property: piHeatingDemand.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${piHeatingDemand.property} }}`,
                         ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
@@ -313,7 +315,7 @@ export default class HomeAssistant extends Extension {
             const discoveryEntry: DiscoveryEntry = {
                 type: 'lock',
                 object_id: 'lock',
-                mockProperties: [state.property],
+                mockProperties: [{property: state.property, value: null}],
                 discovery_payload: {
                     command_topic: true,
                     value_template: `{{ value_json.${state.property} }}`,
@@ -396,7 +398,7 @@ export default class HomeAssistant extends Extension {
             const discoveryEntry: DiscoveryEntry = {
                 type: 'fan',
                 object_id: 'fan',
-                mockProperties: ['fan_state'],
+                mockProperties: [{property: 'fan_state', value: null}],
                 discovery_payload: {
                     state_topic: true,
                     state_value_template: '{{ value_json.fan_state }}',
@@ -494,7 +496,7 @@ export default class HomeAssistant extends Extension {
             if (firstExpose.access & ACCESS_SET) {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'switch',
-                    mockProperties: [firstExpose.property],
+                    mockProperties: [{property: firstExpose.property, value: null}],
                     object_id: endpoint ?
                         `switch_${firstExpose.name}_${endpoint}` :
                         `switch_${firstExpose.name}`,
@@ -512,10 +514,10 @@ export default class HomeAssistant extends Extension {
                 };
                 discoveryEntries.push(discoveryEntry);
             } else {
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'binary_sensor',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
-                    mockProperties: [firstExpose.property],
+                    mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         payload_on: firstExpose.value_on,
@@ -630,10 +632,10 @@ export default class HomeAssistant extends Extension {
 
             const allowsSet = firstExpose.access & ACCESS_SET;
 
-            const discoveryEntry = {
+            const discoveryEntry: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
-                mockProperties: [firstExpose.property],
+                mockProperties: [{property: firstExpose.property, value: null}],
                 discovery_payload: {
                     value_template: `{{ value_json.${firstExpose.property} }}`,
                     enabled_by_default: !allowsSet,
@@ -652,7 +654,7 @@ export default class HomeAssistant extends Extension {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
-                    mockProperties: [firstExpose.property],
+                    mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         command_topic: true,
@@ -699,7 +701,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntries.push({
                     type: 'sensor',
                     object_id: firstExpose.property,
-                    mockProperties: [firstExpose.property],
+                    mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
@@ -716,7 +718,7 @@ export default class HomeAssistant extends Extension {
                     discoveryEntries.push({
                         type: 'select',
                         object_id: firstExpose.property,
-                        mockProperties: [firstExpose.property],
+                        mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             value_template: `{{ value_json.${firstExpose.property} }}`,
                             state_topic: true,
@@ -735,10 +737,10 @@ export default class HomeAssistant extends Extension {
                     action: {icon: 'mdi:gesture-double-tap'},
                 };
 
-                const discoveryEntry = {
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'sensor',
                     object_id: firstExpose.property,
-                    mockProperties: [firstExpose.property],
+                    mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         ...lookup[firstExpose.name],
@@ -770,7 +772,7 @@ export default class HomeAssistant extends Extension {
                 // deprecated
                 this.mapping[def.model].push({
                     type: 'sensor',
-                    mockProperties: ['brightness'],
+                    mockProperties: [{property: 'brightness', value: null}],
                     object_id: 'brightness',
                     discovery_payload: {
                         unit_of_measurement: 'brightness',
@@ -923,7 +925,7 @@ export default class HomeAssistant extends Extension {
             configs.push({
                 type: 'sensor',
                 object_id: 'last_seen',
-                mockProperties: ['last_seen'],
+                mockProperties: [{property: 'last_seen', value: null}],
                 discovery_payload: {
                     value_template: '{{ value_json.last_seen }}',
                     icon: 'mdi:clock',
@@ -938,7 +940,7 @@ export default class HomeAssistant extends Extension {
             const updateStateSensor: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: 'update_state',
-                mockProperties: [],
+                mockProperties: [{property: 'update', value: {state: null}}],
                 discovery_payload: {
                     icon: 'mdi:update',
                     value_template: `{{ value_json['update']['state'] }}`,
@@ -948,10 +950,10 @@ export default class HomeAssistant extends Extension {
             };
 
             configs.push(updateStateSensor);
-            const updateAvailableSensor = {
+            const updateAvailableSensor: DiscoveryEntry = {
                 type: 'binary_sensor',
                 object_id: 'update_available',
-                mockProperties: ['update_available'],
+                mockProperties: [{property: 'update_available', value: null}],
                 discovery_payload: {
                     payload_on: true,
                     payload_off: false,
@@ -1193,7 +1195,8 @@ export default class HomeAssistant extends Extension {
             const topic = this.getDiscoveryTopic(config, entity);
             this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
             this.discovered[discoverKey].topics.add(topic);
-            config.mockProperties?.forEach((property) => this.discovered[discoverKey].mockProperties.add(property));
+            config.mockProperties?.forEach((mockProperty) =>
+                this.discovered[discoverKey].mockProperties.add(mockProperty));
         });
     }
 
@@ -1296,9 +1299,9 @@ export default class HomeAssistant extends Extension {
 
     override adjustMessageBeforePublish(entity: Device | Group, message: KeyValue): void {
         const discoverKey = this.getDiscoverKey(entity);
-        this.discovered[discoverKey]?.mockProperties?.forEach((property) => {
-            if (!message.hasOwnProperty(property)) {
-                message[property] = null;
+        this.discovered[discoverKey]?.mockProperties?.forEach((mockProperty) => {
+            if (!message.hasOwnProperty(mockProperty.property)) {
+                message[mockProperty.property] = mockProperty.value;
             }
         });
 
