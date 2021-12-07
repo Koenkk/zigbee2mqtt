@@ -6930,9 +6930,9 @@
       "dev": true
     },
     "zigbee-herdsman": {
-      "version": "0.13.178",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.178.tgz",
-      "integrity": "sha512-14+/r7zm1AjWdkNIL4mKFCrMkXlFJ01tGFktuyA4kM4C6xitD4S1CIwQzJlqAXmAVejduURNQTF8/bEkpjbrEQ==",
+      "version": "0.13.179",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman/-/zigbee-herdsman-0.13.179.tgz",
+      "integrity": "sha512-vGld85dtfbww/rwR0gA85MXnQv5VOSapRyTSQGpWkIB2EsI+rNARRt5Ym4FE+G62zglIFH4mpGBcUYwFIWuLdQ==",
       "requires": {
         "debounce": "^1.2.1",
         "debug": "^4.3.3",
