@@ -705,6 +705,18 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
+    it('Configuration shouldnt be valid when invalid QOS value is used', async () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            devices: {'0x0017880104e45519': {friendly_name: 'myname', retain: false, qos: 3}},
+        });
+
+        settings.reRead();
+
+        const error = `QOS for 'myname' not valid, should be 0, 1 or 2 got 3`;
+        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
         write(configurationFile, {
             ...minimalConfig,

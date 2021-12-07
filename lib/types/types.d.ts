@@ -284,6 +284,7 @@ declare global {
         legacy?: boolean,
         filtered_attributes?: string[],
         friendly_name: string,
+        qos?: 0 | 1 | 2,
     }
 
     interface GroupSettings {
@@ -295,6 +296,7 @@ declare global {
         homeassistant?: KeyValue,
         filtered_attributes?: string[],
         friendly_name: string,
+        qos?: 0 | 1 | 2,
     }
 }
 
