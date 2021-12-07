@@ -116,7 +116,7 @@ export default class Report extends Extension {
                 device.zh.meta.reporting = reportKey;
             } else {
                 delete device.zh.meta.reporting;
-                this.eventBus.emitReportingDisabled({device});
+                this.eventBus.emitReconfigure({device});
             }
 
             this.eventBus.emitDevicesChanged();

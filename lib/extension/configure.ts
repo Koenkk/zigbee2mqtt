@@ -16,7 +16,7 @@ export default class Configure extends Extension {
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/configure`;
 
-    @bind private async onReportingDisabled(data: eventdata.ReportingDisabled): Promise<void> {
+    @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
         if (data.device.zh.meta?.hasOwnProperty('configured')) {
             delete data.device.zh.meta.configured;
@@ -79,7 +79,7 @@ export default class Configure extends Extension {
         this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, 'zigbee_event'));
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, 'zigbee_event'));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.eventBus.onReportingDisabled(this, this.onReportingDisabled);
+        this.eventBus.onReconfigure(this, this.onReconfigure);
     }
 
     private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',

@@ -142,7 +142,7 @@ declare global {
         type DeviceAnnounce = { device: Device };
         type DeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
         type DeviceJoined = { device: Device };
-        type ReportingDisabled = { device: Device };
+        type Reconfigure = { device: Device };
         type DeviceLeave = { ieeeAddr: string, name: string };
         type GroupMembersChanged = {group: Group, action: 'remove' | 'add' | 'remove_all',
             endpoint: zh.Endpoint, skipDisableReporting: boolean };

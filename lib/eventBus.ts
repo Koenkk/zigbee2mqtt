@@ -133,11 +133,11 @@ export default class EventBus {
         this.on('scenesChanged', callback, key);
     }
 
-    public emitReportingDisabled(data: eventdata.ReportingDisabled): void {
-        this.emitter.emit('reportingDisabled', data);
+    public emitReconfigure(data: eventdata.Reconfigure): void {
+        this.emitter.emit('reconfigure', data);
     }
-    public onReportingDisabled(key: ListenerKey, callback: (data: eventdata.ReportingDisabled) => void): void {
-        this.on('reportingDisabled', callback, key);
+    public onReconfigure(key: ListenerKey, callback: (data: eventdata.Reconfigure) => void): void {
+        this.on('reconfigure', callback, key);
     }
 
     public emitStateChange(data: eventdata.StateChange): void {

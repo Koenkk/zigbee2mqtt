@@ -417,7 +417,7 @@ export default class Bind extends Extension {
                 }
             }
 
-            this.eventBus.emitReportingDisabled({device});
+            this.eventBus.emitReconfigure({device});
         }
     }
 

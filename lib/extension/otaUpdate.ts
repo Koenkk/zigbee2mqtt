@@ -92,11 +92,11 @@ export default class OTAUpdate extends Extension {
         }
     }
 
-    private async readSoftwareBuildIDAndDateCode(device: Device, update: boolean):
+    private async readSoftwareBuildIDAndDateCode(device: Device, update: boolean, sendWhenActive: boolean):
         Promise<{softwareBuildID: string, dateCode: string}> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
-            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId']);
+            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendWhenActive});
 
             if (update) {
                 device.zh.softwareBuildID = result.swBuildId;
@@ -230,10 +230,11 @@ export default class OTAUpdate extends Extension {
                         }
                     };
 
-                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, false);
+                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, false, false);
                     await device.definition.ota.updateToLatest(device.zh, logger, onProgress);
-                    const to = await this.readSoftwareBuildIDAndDateCode(device, true);
+                    const to = await this.readSoftwareBuildIDAndDateCode(device, true, device.zh.type === 'EndDevice');
                     const [fromS, toS] = [stringify(from_), stringify(to)];
+                    this.eventBus.emitReconfigure({device});
                     const msg = `Finished update of '${device.name}'` +
                         (to ? `, from '${fromS}' to '${toS}'` : ``);
                     logger.info(msg);
