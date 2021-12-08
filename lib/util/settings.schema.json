@@ -53,7 +53,7 @@
             },
             "passive": {
               "type": "object",
-              "title": "Active",
+              "title": "Passive",
               "requiresRestart": true,
               "description": "Options for passive devices (mostly battery powered)",
               "properties": {
