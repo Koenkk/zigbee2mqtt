@@ -85,7 +85,7 @@ const defaults: RecursivePartial<Settings> = {
          *
          * Therefore Zigbee2MQTT BY DEFAULT caches all values and resend it with every message.
          * advanced.cache_state in configuration.yaml allows to configure this.
-         * https://www.zigbee2mqtt.io/configuration/configuration.html
+         * https://www.zigbee2mqtt.io/guide/configuration/
          */
         cache_state: true,
         cache_state_persistent: true,

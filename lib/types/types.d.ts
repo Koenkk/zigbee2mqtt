@@ -95,7 +95,7 @@ declare global {
         }
 
         interface DefinitionExposeFeature {name: string, endpoint?: string,
-            property: string, value_max?: number, value_min?: number,
+            property: string, value_max?: number, value_min?: number, unit?: string,
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
         interface DefinitionExpose {
@@ -136,7 +136,8 @@ declare global {
         type StateChange = {
             entity: Device | Group, from: KeyValue, to: KeyValue, reason: string | null, update: KeyValue };
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
-        type LastSeenChanged = { device: Device };
+        type LastSeenChanged = { device: Device,
+            reason: 'deviceAnnounce' | 'networkAddress' | 'deviceJoined' | 'messageEmitted' | 'messageNonEmitted'; };
         type DeviceNetworkAddressChanged = { device: Device };
         type DeviceAnnounce = { device: Device };
         type DeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
@@ -145,7 +146,8 @@ declare global {
         type DeviceLeave = { ieeeAddr: string, name: string };
         type GroupMembersChanged = {group: Group, action: 'remove' | 'add' | 'remove_all',
             endpoint: zh.Endpoint, skipDisableReporting: boolean };
-        type PublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason };
+        type PublishEntityState = {entity: Group | Device, message: KeyValue, stateChangeReason: StateChangeReason,
+                payload: KeyValue};
         type DeviceMessage = {
             type: ZHEvents.MessagePayloadType;
             device: Device;

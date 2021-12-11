@@ -77,7 +77,7 @@ export default class Availability extends Extension {
                 logger.debug(`Succesfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
-                logger.error(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
+                logger.warn(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await utils.sleep(3);
@@ -97,10 +97,10 @@ export default class Availability extends Extension {
     override async start(): Promise<void> {
         logger.warn('Using experimental new availability feature');
 
-        this.eventBus.onDeviceRenamed(this, (data: eventdata.DeviceRenamed) =>
-            this.publishAvailability(data.device, false, true));
-        this.eventBus.onDeviceLeave(this, (data: eventdata.DeviceLeave) => clearTimeout(this.timers[data.ieeeAddr]));
-        this.eventBus.onDeviceAnnounce(this, (data: eventdata.DeviceAnnounce) => this.retrieveState(data.device));
+        this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
+        this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
+        this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
 
         for (const device of this.zigbee.devices(false)) {
@@ -157,8 +157,8 @@ export default class Availability extends Extension {
     }
 
     override async stop(): Promise<void> {
-        super.stop();
         Object.values(this.timers).forEach((t) => clearTimeout(t));
+        super.stop();
     }
 
     private retrieveState(device: Device): void {
