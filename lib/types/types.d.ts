@@ -254,6 +254,7 @@ declare global {
             baudrate?: number,
             rtscts?: boolean,
             ikea_ota_use_test_url?: boolean,
+            override_ota_index?: string,
             // below are deprecated
             availability_timeout?: number,
             availability_blocklist?: string[],

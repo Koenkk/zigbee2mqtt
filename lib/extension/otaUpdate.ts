@@ -3,9 +3,12 @@ import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import utils from '../util/utils';
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
+import zigbeeOTA from 'zigbee-herdsman-converters/lib/ota/zigbeeOTA';
 import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
+import dataDir from '../util/data';
+import fs from 'fs';
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
@@ -26,6 +29,18 @@ export default class OTAUpdate extends Extension {
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         if (settings.get().advanced.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
+        }
+
+        logger.debug(`Setting up OTAUpdate...`);
+        var override_ota_index = settings.get().advanced.override_ota_index;
+        if (override_ota_index) {
+            // If the file name is not a full path, then treat it as a relative to the data directory
+            if (!fs.existsSync(override_ota_index)) {
+                override_ota_index = dataDir.joinPath(override_ota_index);
+            }
+
+            logger.debug(`    Setting up OTA index override from ${override_ota_index}`);
+            zigbeeOTA.useIndexOverride(override_ota_index);
         }
 
         for (const device of this.zigbee.devices(false)) {

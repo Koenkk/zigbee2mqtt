@@ -465,6 +465,13 @@
           "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
           "default": false
         },
+        "override_ota_index": {
+          "type": "string",
+          "title": "OTA index override file name",
+          "requiresRestart": true,
+          "description": "Location of override OTA index file",
+          "examples": ["index.json"]
+        },
         "homeassistant_legacy_triggers": {
           "type": "boolean",
           "title": "Home Assistant legacy triggers",
