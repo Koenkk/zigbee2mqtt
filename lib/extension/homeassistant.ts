@@ -630,6 +630,13 @@ export default class HomeAssistant extends Extension {
                 z_axis: {icon: 'mdi:axis-z-arrow'},
             };
 
+            const extraAttrs = {};
+
+            // If a variable includes Wh, mark it as energy
+            if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
+                Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
+            }
+
             const allowsSet = firstExpose.access & ACCESS_SET;
 
             const discoveryEntry: DiscoveryEntry = {
@@ -641,6 +648,7 @@ export default class HomeAssistant extends Extension {
                     enabled_by_default: !allowsSet,
                     ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                     ...lookup[firstExpose.name],
+                    ...extraAttrs,
                 },
             };
             discoveryEntries.push(discoveryEntry);
