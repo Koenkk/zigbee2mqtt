@@ -1666,7 +1666,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover last_seen when enabled', async () => {
-        settings.set(['advanced', 'last_seen'], ' epoch');
+        settings.set(['advanced', 'last_seen'], 'ISO_8601');
         await resetExtension();
 
         const payload = {

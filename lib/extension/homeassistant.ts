@@ -922,7 +922,7 @@ export default class HomeAssistant extends Extension {
         }
 
         if (isDevice && settings.get().advanced.last_seen !== 'disable') {
-            configs.push({
+            const config: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: 'last_seen',
                 mockProperties: [{property: 'last_seen', value: null}],
@@ -931,9 +931,15 @@ export default class HomeAssistant extends Extension {
                     icon: 'mdi:clock',
                     enabled_by_default: false,
                     entity_category: 'diagnostic',
-                    device_class: 'timestamp',
                 },
-            });
+            };
+
+            /* istanbul ignore else */
+            if (settings.get().advanced.last_seen.startsWith('ISO_8601')) {
+                config.discovery_payload.device_class = 'timestamp';
+            }
+
+            configs.push(config);
         }
 
         if (isDevice && entity.definition.hasOwnProperty('ota')) {
