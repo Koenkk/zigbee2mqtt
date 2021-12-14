@@ -95,8 +95,6 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
-        logger.warn('Using experimental new availability feature');
-
         this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
