@@ -80,12 +80,14 @@ export default class Zigbee {
         });
         this.herdsman.on('deviceInterview', (data: ZHEvents.DeviceInterviewPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
+            /* istanbul ignore if */ if (!device) return; // Prevent potential race
             const d = {device, status: data.status};
             this.logDeviceInterview(d);
             this.eventBus.emitDeviceInterview(d);
         });
         this.herdsman.on('deviceJoined', (data: ZHEvents.DeviceJoinedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
+            /* istanbul ignore if */ if (!device) return; // Prevent potential race
             logger.info(`Device '${device.name}' joined`);
             this.eventBus.emitDeviceJoined({device});
         });
