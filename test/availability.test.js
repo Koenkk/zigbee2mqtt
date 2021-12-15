@@ -248,13 +248,12 @@ describe('Availability', () => {
         expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl',
             ['colorMode', 'currentX', 'currentY', 'enhancedCurrentHue', 'currentSaturation', 'colorTemperature']);
 
-        // Should stop when one request fails
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device: devices.bulb_color});
         await flushPromises();
         endpoint.read.mockImplementationOnce(() => {throw new Error('')});
         await advancedTime(utils.seconds(3));
-        expect(endpoint.read).toHaveBeenCalledTimes(1);
+        expect(endpoint.read).toHaveBeenCalledTimes(3);
     });
 
     it('Should republish availability when device is renamed', async () => {
