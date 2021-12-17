@@ -1179,7 +1179,8 @@ export default class HomeAssistant extends Extension {
                     Object.keys(obj).forEach((key) => {
                         if (['type', 'object_id'].includes(key)) {
                             return;
-                        } else if (['number', 'string', 'boolean'].includes(typeof obj[key])) {
+                        } else if (['number', 'string', 'boolean'].includes(typeof obj[key]) ||
+                            Array.isArray(obj[key])) {
                             payload[key] = obj[key];
                         } else if (obj[key] === null) {
                             delete payload[key];
