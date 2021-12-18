@@ -116,8 +116,7 @@ declare global {
             options: zhc.DefinitionExpose[],
             vendor: string
             exposes: DefinitionExpose[]
-            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger,
-                options?: DeviceSettings) => Promise<void>;
+            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
             onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
             ota?: {
                 isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue) => Promise<boolean>;
