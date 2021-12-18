@@ -103,7 +103,7 @@ export default class Bridge extends Extension {
 
         await this.publishInfo();
 
-        this.eventBus.onDevicesStarted(this, () => {
+        this.eventBus.onDevicesChanged(this, () => {
             this.publishDevices();
         });
         await this.publishGroups();

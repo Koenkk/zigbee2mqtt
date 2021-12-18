@@ -12,10 +12,11 @@ export default class OnEvent extends Extension {
             myPromises.push(this.callOnEvent(device, 'start', {}));
         }
 
+        // TODO: Check if someone else trigger this event on startup before us
         Promise.all(myPromises)
-            .then(() => this.eventBus.emitDevicesStarted())
+            .then(() => this.eventBus.emitDevicesChanged())
             .catch((e) => {
-                this.eventBus.emitDevicesStarted();
+                this.eventBus.emitDevicesChanged();
                 logger.error(`Some start events failed: ${e}`);
             });
 
