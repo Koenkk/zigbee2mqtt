@@ -687,20 +687,11 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
-        function treatExposes(exp: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
-            if (exp) { // we must treat visible attribute
-                exp.filter((ex) => ex.visible); // if is not visible, exclude from final payload
-            }
-            return exp;
-        }
-
-        const filteredExposes = treatExposes(device.definition.exposes);
-
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: filteredExposes,
+            exposes: device.definition.exposes?.filter((ex) => ex.visible),
             supports_ota: !!device.definition.ota,
             options: device.definition.options,
             icon,
