@@ -1,14 +1,23 @@
 import zhc from 'zigbee-herdsman-converters';
 import Extension from './extension';
+import logger from '../util/logger';
 
 /**
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
 export default class OnEvent extends Extension {
     override async start(): Promise<void> {
+        const myPromises = [];
         for (const device of this.zigbee.devices(false)) {
-            this.callOnEvent(device, 'start', {});
+            myPromises.push(this.callOnEvent(device, 'start', {}));
         }
+
+        Promise.all(myPromises)
+            .then(() => this.eventBus.emitDevicesStarted())
+            .catch((e) => {
+                this.eventBus.emitDevicesStarted();
+                logger.error(`Some start events failed: ${e}`);
+            });
 
         this.eventBus.onDeviceMessage(this, (data) => this.callOnEvent(data.device, 'message', this.convertData(data)));
         this.eventBus.onDeviceJoined(this,

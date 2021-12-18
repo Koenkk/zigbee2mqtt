@@ -102,7 +102,10 @@ export default class Bridge extends Extension {
         });
 
         await this.publishInfo();
-        await this.publishDevices();
+
+        this.eventBus.onDevicesStarted(this, () => {
+            this.publishDevices();
+        });
         await this.publishGroups();
 
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -684,11 +687,20 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
+        function treatExposes(exp: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
+            if (exp) { // we must treat visible attribute
+                exp.filter((ex) => ex.visible); // if is not visible, exclude from final payload
+            }
+            return exp;
+        }
+
+        const filteredExposes = treatExposes(device.definition.exposes);
+
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: device.definition.exposes,
+            exposes: filteredExposes,
             supports_ota: !!device.definition.ota,
             options: device.definition.options,
             icon,

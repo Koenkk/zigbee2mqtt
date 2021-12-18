@@ -94,15 +94,16 @@ declare global {
                 meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
         }
 
-        interface DefinitionExposeFeature {name: string, endpoint?: string,
+        interface DefinitionExposeFeature {name: string, endpoint?: string, visible: boolean,
             property: string, value_max?: number, value_min?: number, unit?: string,
+            features?: DefinitionExposeFeature[],
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
         interface DefinitionExpose {
             type: string, name?: string, features?: DefinitionExposeFeature[],
             endpoint?: string, values?: string[], value_off?: string, value_on?: string,
             access: number, property: string, unit?: string,
-            value_min?: number, value_max?: number}
+            value_min?: number, value_max?: number, visible: boolean}
 
         interface Definition {
             model: string,
@@ -115,7 +116,8 @@ declare global {
             options: zhc.DefinitionExpose[],
             vendor: string
             exposes: DefinitionExpose[]
-            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
+            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger,
+                options?: DeviceSettings) => Promise<void>;
             onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
             ota?: {
                 isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue) => Promise<boolean>;

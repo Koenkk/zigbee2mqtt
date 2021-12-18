@@ -782,7 +782,7 @@ export default class HomeAssistant extends Extension {
                 });
             }
 
-            for (const expose of def.exposes) {
+            for (const expose of def.exposes.filter((ex) => ex.visible)) {
                 this.mapping[def.model].push(...this.exposeToConfig([expose], 'device', def));
             }
         }

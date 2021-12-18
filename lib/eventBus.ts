@@ -133,6 +133,13 @@ export default class EventBus {
         this.on('scenesChanged', callback, key);
     }
 
+    public emitDevicesStarted(): void {
+        this.emitter.emit('devicesStarted');
+    }
+    public onDevicesStarted(key: ListenerKey, callback: () => void): void {
+        this.on('devicesStarted', callback, key);
+    }
+
     public emitReconfigure(data: eventdata.Reconfigure): void {
         this.emitter.emit('reconfigure', data);
     }

@@ -263,6 +263,31 @@ class Controller {
             entity.settings.filtered_attributes.forEach((a) => delete message[a]);
         }
 
+
+        // filter not visible attributes
+        if (entity.isDevice() && entity.definition && entity.definition.exposes) {
+            // We could have 2 different entities with same attribute and different visibility.
+            // In that case, we priorize visible attributes
+            const setOK = new Set<string>(); // visible
+            const setKO = new Set<string>(); // not visible
+
+            for (const ent of entity.definition.exposes) { // iterate exposes
+                if (ent.visible) {
+                    setOK.add(ent.property);
+                } else {
+                    setKO.add(ent.property);
+                }
+            }
+
+            for (const att in message) { // iterate message attributes
+                if (Object.prototype.hasOwnProperty.call(message, att)) {
+                    if (!setOK.has(att) && setKO.has(att)) {
+                        delete message[att];
+                    }
+                }
+            }
+        }
+
         if (Object.entries(message).length) {
             const output = settings.get().experimental.output;
             if (output === 'attribute_and_json' || output === 'json') {
