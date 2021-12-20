@@ -263,7 +263,6 @@ class Controller {
             entity.settings.filtered_attributes.forEach((a) => delete message[a]);
         }
 
-
         if (Object.entries(message).length) {
             const output = settings.get().experimental.output;
             if (output === 'attribute_and_json' || output === 'json') {
