@@ -53,10 +53,14 @@ describe('HomeAssistant extension', () => {
             const cfg_type_object_ids = [];
 
             mapping.forEach((c) => {
-                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+                let model = c['type'] + '/' + c['object_id'] + '/';
+                if (c.mockProperties[0]?.value) {
+                    model = model + c.mockProperties[0]?.value;
+                }
+                if (cfg_type_object_ids.includes(model)) {
                     duplicated.push(d.model);
                 } else {
-                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                    cfg_type_object_ids.push(model);
                 }
             });
         });

@@ -272,7 +272,7 @@ class Controller {
             const setKO = new Set<string>(); // not visible
 
             for (const ent of entity.definition.exposes) { // iterate exposes
-                if (ent.visible) {
+                if (ent.enabled) {
                     setOK.add(ent.property);
                 } else {
                     setKO.add(ent.property);

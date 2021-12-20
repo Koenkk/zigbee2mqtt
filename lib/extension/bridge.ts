@@ -687,13 +687,29 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
+        function filterEnabled(exposes: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
+            let exp = exposes;
+            if (exp) {
+                exp = exp.map((e) => {
+                    const {enabled, ...cloned} = e;
+                    // const {[prop]: value, ...cloned} = e;
+
+                    if (cloned.features) {
+                        cloned.features = filterEnabled(cloned.features);
+                    }
+                    return cloned;
+                });
+            }
+            return exp;
+        }
+
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: device.definition.exposes?.filter((ex) => ex.visible),
+            exposes: filterEnabled(device.definition.exposes?.filter((ex) => ex.enabled)),
             supports_ota: !!device.definition.ota,
-            options: device.definition.options,
+            options: filterEnabled(device.definition.options),
             icon,
         };
     }

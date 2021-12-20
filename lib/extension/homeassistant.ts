@@ -740,7 +740,7 @@ export default class HomeAssistant extends Extension {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'sensor',
                     object_id: firstExpose.property,
-                    mockProperties: [{property: firstExpose.property, value: null}],
+                    mockProperties: [{property: firstExpose.property, value: firstExpose.name}],
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         ...lookup[firstExpose.name],
@@ -782,7 +782,7 @@ export default class HomeAssistant extends Extension {
                 });
             }
 
-            for (const expose of def.exposes.filter((ex) => ex.visible)) {
+            for (const expose of def.exposes.filter((ex) => ex.enabled)) {
                 this.mapping[def.model].push(...this.exposeToConfig([expose], 'device', def));
             }
         }

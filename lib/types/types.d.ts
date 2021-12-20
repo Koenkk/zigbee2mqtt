@@ -94,7 +94,7 @@ declare global {
                 meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
         }
 
-        interface DefinitionExposeFeature {name: string, endpoint?: string, visible: boolean,
+        interface DefinitionExposeFeature {name: string, endpoint?: string, enabled: boolean,
             property: string, value_max?: number, value_min?: number, unit?: string,
             features?: DefinitionExposeFeature[],
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
@@ -103,7 +103,7 @@ declare global {
             type: string, name?: string, features?: DefinitionExposeFeature[],
             endpoint?: string, values?: string[], value_off?: string, value_on?: string,
             access: number, property: string, unit?: string,
-            value_min?: number, value_max?: number, visible: boolean}
+            value_min?: number, value_max?: number, enabled: boolean}
 
         interface Definition {
             model: string,
