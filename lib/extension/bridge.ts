@@ -687,20 +687,23 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
-        function filterEnabled(exposes: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
-            let exp = exposes;
-            if (exp) {
-                exp = exp.map((e) => {
-                    const {enabled, ...cloned} = e;
-                    // const {[prop]: value, ...cloned} = e;
+        // TODO: Is really useful split between DefinitionExpose and DefinitionExposeFeature ?
+        function filterEnabled2(features: zhc.DefinitionExposeFeature[]): zhc.DefinitionExposeFeature[] {
+            return features?.map((f) => {
+                const {enabled, ...cloned} = f;
+                cloned.features = filterEnabled2(cloned.features);
 
-                    if (cloned.features) {
-                        cloned.features = filterEnabled(cloned.features);
-                    }
-                    return cloned;
-                });
-            }
-            return exp;
+                return cloned;
+            });
+        }
+        function filterEnabled(
+            exposes: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
+            return exposes?.map((e) => {
+                const {enabled, ...cloned} = e;
+
+                cloned.features = filterEnabled2(cloned.features);
+                return cloned;
+            });
         }
 
         return {
