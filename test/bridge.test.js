@@ -22,10 +22,10 @@ describe('Bridge', () => {
     let mockRestart;
     let extension;
 
-    let resetExtension = async (ext='Bridge') => {
-        await controller.enableDisableExtension(false, ext);
-        await controller.enableDisableExtension(true, ext);
-        extension = controller.extensions.find((e) => e.constructor.name === ext);
+    let resetExtension = async () => {
+        await controller.enableDisableExtension(false, 'Bridge');
+        await controller.enableDisableExtension(true, 'Bridge');
+        extension = controller.extensions.find((e) => e.constructor.name === 'Bridge');
     }
 
     beforeAll(async () => {
@@ -73,7 +73,6 @@ describe('Bridge', () => {
     });
 
     it('Should publish devices on startup', async () => {
-        await resetExtension('OnEvent');
         await resetExtension();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',

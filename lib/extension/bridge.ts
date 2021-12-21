@@ -102,10 +102,7 @@ export default class Bridge extends Extension {
         });
 
         await this.publishInfo();
-
-        this.eventBus.onDevicesChanged(this, () => {
-            this.publishDevices();
-        });
+        await this.publishDevices();
         await this.publishGroups();
 
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -687,32 +684,13 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
-        // TODO: Is really useful split between DefinitionExpose and DefinitionExposeFeature ?
-        function filterEnabled2(features: zhc.DefinitionExposeFeature[]): zhc.DefinitionExposeFeature[] {
-            return features?.map((f) => {
-                const {enabled, ...cloned} = f;
-                cloned.features = filterEnabled2(cloned.features);
-
-                return cloned;
-            });
-        }
-        function filterEnabled(
-            exposes: zhc.DefinitionExpose[]): zhc.DefinitionExpose[] {
-            return exposes?.map((e) => {
-                const {enabled, ...cloned} = e;
-
-                cloned.features = filterEnabled2(cloned.features);
-                return cloned;
-            });
-        }
-
         return {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: filterEnabled(device.definition.exposes?.filter((ex) => ex.enabled)),
+            exposes: device.exposes(),
             supports_ota: !!device.definition.ota,
-            options: filterEnabled(device.definition.options),
+            options: device.definition.options,
             icon,
         };
     }

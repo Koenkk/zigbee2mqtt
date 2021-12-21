@@ -94,16 +94,15 @@ declare global {
                 meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
         }
 
-        interface DefinitionExposeFeature {name: string, endpoint?: string, enabled?: boolean,
+        interface DefinitionExposeFeature {name: string, endpoint?: string,
             property: string, value_max?: number, value_min?: number, unit?: string,
-            features?: DefinitionExposeFeature[],
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
         interface DefinitionExpose {
             type: string, name?: string, features?: DefinitionExposeFeature[],
             endpoint?: string, values?: string[], value_off?: string, value_on?: string,
             access: number, property: string, unit?: string,
-            value_min?: number, value_max?: number, enabled?: boolean}
+            value_min?: number, value_max?: number}
 
         interface Definition {
             model: string,
@@ -115,7 +114,7 @@ declare global {
             description: string
             options: zhc.DefinitionExpose[],
             vendor: string
-            exposes: DefinitionExpose[]
+            exposes: DefinitionExpose[] | ((device: zh.Device, settings: KeyValue) => DefinitionExpose[])
             configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
             onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
             ota?: {

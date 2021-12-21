@@ -13,17 +13,17 @@ const topicRegex =
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
 const legacyTopicRegexRemoveAll = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
 
-const stateProperties: {[s: string]: (value: string, definition: zhc.Definition) => boolean} = {
+const stateProperties: {[s: string]: (value: string, device: Device) => boolean} = {
     'state': () => true,
-    'brightness': (value, definition) =>
-        !!definition.exposes.find((e) => e.type === 'light' && e.features.find((f) => f.name === 'brightness')),
-    'color_temp': (value, definition) =>
-        !!definition.exposes.find((e) => e.type === 'light' && e.features.find((f) => f.name === 'color_temp')),
-    'color': (value, definition) =>
-        !!definition.exposes.find((e) => e.type === 'light' &&
+    'brightness': (value, device) =>
+        !!device.exposes().find((e) => e.type === 'light' && e.features.find((f) => f.name === 'brightness')),
+    'color_temp': (value, device) =>
+        !!device.exposes().find((e) => e.type === 'light' && e.features.find((f) => f.name === 'color_temp')),
+    'color': (value, device) =>
+        !!device.exposes().find((e) => e.type === 'light' &&
             e.features.find((f) => f.name === 'color_xy' || f.name === 'color_hs')),
-    'color_mode': (value, definition) =>
-        !!definition.exposes.find((e) => e.type === 'light' && (
+    'color_mode': (value, device) =>
+        !!device.exposes().find((e) => e.type === 'light' && (
             (e.features.find((f) => f.name === `color_${value}`)) ||
             (value === 'color_temp' && e.features.find((f) => f.name === 'color_temp')) )),
 };
@@ -145,7 +145,7 @@ export default class Groups extends Extension {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
                     const memberPayload: KeyValue = {};
                     Object.keys(payload).forEach((key) => {
-                        if (stateProperties[key](payload[key], device.definition)) {
+                        if (stateProperties[key](payload[key], device)) {
                             memberPayload[key] = payload[key];
                         }
                     });
