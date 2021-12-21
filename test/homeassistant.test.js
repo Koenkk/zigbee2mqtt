@@ -49,14 +49,16 @@ describe('HomeAssistant extension', () => {
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
         require('zigbee-herdsman-converters').devices.forEach((d) => {
-            const mapping = extension._getMapping()[d.model];
+            const device = {definition: d, isDevice: () => true, settings: {}};
+            const configs = extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
-            mapping.forEach((c) => {
-                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+            configs.forEach((c) => {
+                const id = c['type'] + '/' + c['object_id'];
+                if (cfg_type_object_ids.includes(id)) {
                     duplicated.push(d.model);
                 } else {
-                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                    cfg_type_object_ids.push(id);
                 }
             });
         });
@@ -1488,24 +1490,6 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({"qos": 0, "retain": false});
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
-    });
-
-    it('Load Home Assistant mapping from external converters', async () => {
-        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
-        settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
-        await resetExtension();
-
-        const homeassistantSwitch = {
-            type: 'switch',
-            object_id: 'switch',
-            discovery_payload: {
-                payload_off: 'OFF',
-                payload_on: 'ON',
-                value_template: '{{ value_json.state }}',
-                command_topic: true,
-            },
-        };
-        expect(extension._getMapping()['external_converters_device_1']).toEqual([homeassistantSwitch]);
     });
 
     it('Should clear outdated configs', async () => {
