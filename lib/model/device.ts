@@ -26,6 +26,7 @@ export default class Device {
 
     exposes(): zhc.DefinitionExpose[] {
         if (!this._exposes) {
+            /* istanbul ignore if */
             if (typeof this.definition.exposes == 'function') {
                 this._exposes = this.definition.exposes(this.zh, this.settings);
             } else {

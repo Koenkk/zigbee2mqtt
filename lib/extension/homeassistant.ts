@@ -107,7 +107,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
-        definition?: zhc.Definition): DiscoveryEntry[] {
+        definition?: zhc.Definition, definitionExposes?: zhc.DefinitionExpose[]): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -162,7 +162,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.min_mireds = min;
             }
 
-            const effect = definition && definition.exposes.find((e) => e.type === 'enum' && e.name === 'effect');
+            const effect = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'effect');
             if (effect) {
                 discoveryEntry.discovery_payload.effect = true;
                 discoveryEntry.discovery_payload.effect_list = effect.values;
@@ -879,8 +879,8 @@ export default class HomeAssistant extends Extension {
 
         let configs: DiscoveryEntry[] = [];
         if (isDevice) {
-            for (const expose of entity.definition.exposes) {
-                configs.push(...this.exposeToConfig([expose], 'device', entity.definition));
+            for (const expose of entity.exposes()) {
+                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, entity.exposes()));
             }
 
             for (const mapping of legacyMapping) {
@@ -898,20 +898,21 @@ export default class HomeAssistant extends Extension {
         } else { // group
             const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
 
-            entity.membersDefinitions().forEach((definition) => {
-                for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
-                    let key = expose.type;
-                    if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
-                        // A device can have multiple of these types which have to discovered seperately.
-                        // e.g. switch with property state and valve_detection.
-                        const state = expose.features.find((f) => f.name === 'state');
-                        key += featurePropertyWithoutEndpoint(state);
-                    }
+            entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
+                .filter((d) => d.definition).forEach((device) => {
+                    for (const expose of device.exposes().filter((e) => groupSupportedTypes.includes(e.type))) {
+                        let key = expose.type;
+                        if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
+                            // A device can have multiple of these types which have to discovered seperately.
+                            // e.g. switch with property state and valve_detection.
+                            const state = expose.features.find((f) => f.name === 'state');
+                            key += featurePropertyWithoutEndpoint(state);
+                        }
 
-                    if (!exposesByType[key]) exposesByType[key] = [];
-                    exposesByType[key].push(expose);
-                }
-            });
+                        if (!exposesByType[key]) exposesByType[key] = [];
+                        exposesByType[key].push(expose);
+                    }
+                });
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group')));

@@ -49,7 +49,8 @@ describe('HomeAssistant extension', () => {
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
         require('zigbee-herdsman-converters').devices.forEach((d) => {
-            const device = {definition: d, isDevice: () => true, settings: {}};
+            const exposes = typeof d.exposes == 'function' ? d.exposes() : d.exposes;
+            const device = {definition: d, isDevice: () => true, settings: {}, exposes: () => exposes};
             const configs = extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
