@@ -114,7 +114,7 @@ declare global {
             description: string
             options: zhc.DefinitionExpose[],
             vendor: string
-            exposes: DefinitionExpose[] | ((device: zh.Device, settings: KeyValue) => DefinitionExpose[])
+            exposes: DefinitionExpose[] | ((device: zh.Device, options: KeyValue) => DefinitionExpose[])
             configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
             onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
             ota?: {

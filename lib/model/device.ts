@@ -5,7 +5,6 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 export default class Device {
     public zh: zh.Device;
     private _definition: zhc.Definition;
-    private _exposes: zhc.DefinitionExpose[];
 
     get ieeeAddr(): string {return this.zh.ieeeAddr;}
     get ID(): string {return this.zh.ieeeAddr;}
@@ -25,16 +24,12 @@ export default class Device {
     }
 
     exposes(): zhc.DefinitionExpose[] {
-        if (!this._exposes) {
-            /* istanbul ignore if */
-            if (typeof this.definition.exposes == 'function') {
-                this._exposes = this.definition.exposes(this.zh, this.settings);
-            } else {
-                this._exposes = this.definition.exposes;
-            }
+        /* istanbul ignore if */
+        if (typeof this.definition.exposes == 'function') {
+            return this.definition.exposes(this.zh, this.settings);
+        } else {
+            return this.definition.exposes;
         }
-
-        return this._exposes;
     }
 
     ensureInSettings(): void {
