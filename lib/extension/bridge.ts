@@ -688,7 +688,7 @@ export default class Bridge extends Extension {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: device.definition.exposes,
+            exposes: device.exposes(),
             supports_ota: !!device.definition.ota,
             options: device.definition.options,
             icon,
