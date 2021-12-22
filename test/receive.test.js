@@ -421,7 +421,7 @@ describe('Receive', () => {
     it('Should handle a command', async () => {
         const device = zigbeeHerdsman.devices.E1743;
         const data = {};
-        const payload = {data, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff', linkquality: 10};
+        const payload = {data, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff', linkquality: 10, meta: {zclTransactionSequenceNumber: 1}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -437,10 +437,10 @@ describe('Receive', () => {
         const oldNow = Date.now;
         Date.now = jest.fn()
         Date.now.mockReturnValue(new Date(150));
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.message({...payload, meta: {zclTransactionSequenceNumber: 2}});
         await flushPromises();
         Date.now.mockReturnValue(new Date(200));
-        await zigbeeHerdsman.events.message(payload);
+        await zigbeeHerdsman.events.message({...payload, meta: {zclTransactionSequenceNumber: 3}});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/ikea_onoff');
