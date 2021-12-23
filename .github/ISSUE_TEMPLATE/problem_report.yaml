@@ -65,16 +65,11 @@ body:
         - CC2538 based adapter
         - ZiGate
         - EZSP
-  - type: dropdown
+  - type: textarea
     id: log
-    validations:
-      required: true
     attributes:
       label: Debug log
-      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`.<br/>After submitting this issue add a comment to it with the log file attached.<br/>[How to attach file](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files)
-      multiple: false
-      options:
-        - I will attach the debug log
-        - I will not attach the debug log
-
-
+      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Click on the text area below and drag the file into it to attach.
+      placeholder: Click here and drag the file into it
+    validations:
+      required: true
