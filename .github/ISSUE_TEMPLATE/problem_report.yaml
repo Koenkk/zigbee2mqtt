@@ -1,0 +1,97 @@
+
+
+
+## 
+
+## 
+
+## 
+
+## Debug info
+Zigbee2MQTT version:
+Adapter hardware: CC2531, CC2530, CC26X2R1, CC1352P-2, Conbee II
+Adapter firmware version:
+
+
+
+
+
+name: Problem report
+description: Create a report to help us improve
+title: "[Problem]: "
+labels: [problem]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **IMPORTANT:** Before submitting:
+        - You read the [FAQ](https://www.zigbee2mqtt.io/guide/faq/)
+        - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html)
+        - Make sure the bug also occurs in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
+        - Make sure you are using the [latest firmware](https://www.zigbee2mqtt.io/guide/adapters/#recommended) on your adapter
+        - The issue has not been [reported already](https://github.com/Koenkk/zigbee2mqtt/issues)
+        - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
+  - type: textarea
+    id: what_happend
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expect_to_happen
+    attributes:
+      label: What did you expect to happen?
+      placeholder: I expected that ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it (minimal and precise)
+      placeholder: First do this, than this..
+    validations:
+      required: true
+  - type: input
+    id: z2m_version
+    attributes:
+      label: Zigbee2MQTT version
+      description: Can be found in the frontend -> settings -> about -> Zigbee2MQTT version
+      placeholder: '1.22.1'
+    validations:
+      required: true
+  - type: input
+    id: adapter_fwversion
+    attributes:
+      label: Adapter firmware version
+      description: Can be found in the frontend -> settings -> about -> coordinator revision
+      placeholder: '20211210'
+    validations:
+      required: true
+  - type: dropdown
+    id: adapter
+    validations:
+      required: true
+    attributes:
+      label: Adapter
+      description: The adapter you are using
+      multiple: false
+      options:
+        - CC2652/CC1352 based adapter
+        - Conbee II
+        - CC2530 or CC2531 based adapter
+        - CC2538 based adapter
+        - ZiGate
+        - EZSP
+  - type: dropdown
+    id: log
+    validations:
+      required: true
+    attributes:
+      label: Debug log
+      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`.<br/>After submitting this issue add a comment to it with the log file attached.<br/>[How to attach file](https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files)
+      multiple: false
+      options:
+        - I will attach the debug log
+        - I will not attach the debug log
+
+
