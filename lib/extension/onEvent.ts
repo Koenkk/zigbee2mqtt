@@ -19,6 +19,13 @@ export default class OnEvent extends Extension {
             (data) => this.callOnEvent(data.device, 'deviceAnnounce', this.convertData(data)));
         this.eventBus.onDeviceNetworkAddressChanged(this,
             (data) => this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)));
+        this.eventBus.onEntityOptionsChanged(this,
+            (data) => {
+                if (data.entity.isDevice()) {
+                    this.callOnEvent(data.entity, 'deviceOptionsChanged', data)
+                        .then(() => this.eventBus.emitDevicesChanged());
+                }
+            });
     }
 
     private convertData(data: KeyValue): KeyValue {

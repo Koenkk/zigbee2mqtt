@@ -399,6 +399,7 @@ export default class Bridge extends Extension {
 
         logger.info(`Changed config for ${entityType} ${ID}`);
 
+        this.eventBus.emitEntityOptionsChanged({from: oldOptions, to: newOptions, entity});
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID}, null);
     }
 
