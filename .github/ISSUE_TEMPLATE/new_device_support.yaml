@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        *IMPORTANT:* Before submitting:
+        **IMPORTANT:** Before submitting:
         - Make sure this device is not already supported in the [latest dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
         - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
   - type: input
@@ -21,6 +21,7 @@ body:
     attributes:
       label: Database entry
       description: Entry of this device in `data/database.db` after pairing it
+      placeholder: '{"id":53,"type":"Router","ieeeAddr":"0x10458d00024284f69","nwkAddr":10148,"manufId":4151,"manufName":"LUMI","powerSource":"DC Source","modelId":"lumi.relay.c2acn01","epList":[1,2],"endpoints":{"1":{"profId":260,"epId":1,"devId":257,"inClusterList":[0,3,4,5,1,2,10,6,16,2820,12],"outClusterList":[25,10],"clusters":{"genBasic":{"attributes":{"modelId":"lumi.relay.c2acn01","appVersion":1,"manufacturerName":"LUMI","powerSource":4,"zclVersion":0,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020"}},"genAnalogInput":{"attributes":{"presentValue":129.04425048828125}},"genOnOff":{"attributes":{"61440":117440715,"onOff":1}}},"binds":[],"configuredReportings":[],"meta":{}},"2":{"profId":260,"epId":2,"devId":257,"inClusterList":[6,16,4,5],"outClusterList":[],"clusters":{"genOnOff":{"attributes":{"61440":237478966,"onOff":0}}},"binds":[],"configuredReportings":[],"meta":{}}},"appVersion":1,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020","zclVersion":0,"interviewCompleted":true,"meta":{},"lastSeen":1640285631405}'
     validations:
       required: true
   - type: textarea
