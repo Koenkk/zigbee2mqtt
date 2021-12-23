@@ -943,7 +943,7 @@ describe('HomeAssistant extension', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
+            stringify({"action":null,"action_duration":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -967,7 +967,7 @@ describe('HomeAssistant extension', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
+            stringify({"action":null,"action_duration":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
