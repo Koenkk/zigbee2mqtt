@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         **IMPORTANT:** Before submitting:
-        - Is your feature request related to the fronted? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=&template=feature_request.md)
+        - Is your feature request related to the fronted? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=&template=feature_request.md&title=)
   - type: textarea
     id: textarea1
     attributes:
