@@ -19,6 +19,14 @@ export default class OnEvent extends Extension {
             (data) => this.callOnEvent(data.device, 'deviceAnnounce', this.convertData(data)));
         this.eventBus.onDeviceNetworkAddressChanged(this,
             (data) => this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)));
+        this.eventBus.onDeviceOptionsChanged(this,
+            (data) => {
+                const device = this.zigbee.devices(false)
+                    .find((d) => d.ID == data.id);
+                if (device) {
+                    this.callOnEvent(device, 'deviceOptionsChanged', data);
+                }
+            });
     }
 
     private convertData(data: KeyValue): KeyValue {

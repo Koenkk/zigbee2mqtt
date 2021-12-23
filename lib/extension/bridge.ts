@@ -398,8 +398,10 @@ export default class Bridge extends Extension {
         await this.publishInfo();
 
         logger.info(`Changed config for ${entityType} ${ID}`);
+        const msg = {from: oldOptions, to: newOptions, id: ID};
 
-        return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID}, null);
+        this.eventBus.emitDeviceOptionsChanged(msg);
+        return utils.getResponse(message, msg, null);
     }
 
     @bind async deviceConfigureReporting(message: string | KeyValue): Promise<MQTTResponse> {
