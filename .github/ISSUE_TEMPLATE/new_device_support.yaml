@@ -1,0 +1,31 @@
+name: New device support request
+description: Request support for a new device
+title: ""
+labels: [new device support]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        *IMPORTANT:* Before submitting:
+        - Make sure this device is not already supported in the [latest dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
+        - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Link of this device (product page)
+    validations:
+      required: true
+  - type: input
+    id: database
+    attributes:
+      label: Database entry
+      description: Entry of this device in `data/database.db` after pairing it
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Comments
+      placeholder: I tried to follow the supporting new device page but got stuck at...
+
