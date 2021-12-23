@@ -19,13 +19,11 @@ export default class OnEvent extends Extension {
             (data) => this.callOnEvent(data.device, 'deviceAnnounce', this.convertData(data)));
         this.eventBus.onDeviceNetworkAddressChanged(this,
             (data) => this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)));
-        this.eventBus.onDeviceOptionsChanged(this,
+        this.eventBus.onEntityOptionsChanged(this,
             (data) => {
-                const device = this.zigbee.devices(false)
-                    .find((d) => d.ID == data.id);
-                if (device) {
-                    this.callOnEvent(device, 'deviceOptionsChanged', data)
-                        .then(() => this.eventBus.emitDevicesChanged()); // TODO: refine to only notify on exposes diff
+                if (data.entity.isDevice()) {
+                    this.callOnEvent(data.entity, 'deviceOptionsChanged', data)
+                        .then(() => this.eventBus.emitDevicesChanged());
                 }
             });
     }

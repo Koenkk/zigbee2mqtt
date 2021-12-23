@@ -77,11 +77,11 @@ export default class EventBus {
         this.on('deviceJoined', callback, key);
     }
 
-    public emitDeviceOptionsChanged(data: eventdata.DeviceOptionsChanged): void {
-        this.emitter.emit('deviceOptionsChanged', data);
+    public emitEntityOptionsChanged(data: eventdata.EntityOptionsChanged): void {
+        this.emitter.emit('entityOptionsChanged', data);
     }
-    public onDeviceOptionsChanged(key: ListenerKey, callback: (data: eventdata.DeviceOptionsChanged) => void): void {
-        this.on('deviceOptionsChanged', callback, key);
+    public onEntityOptionsChanged(key: ListenerKey, callback: (data: eventdata.EntityOptionsChanged) => void): void {
+        this.on('entityOptionsChanged', callback, key);
     }
 
     public emitDeviceLeave(data: eventdata.DeviceLeave): void {
