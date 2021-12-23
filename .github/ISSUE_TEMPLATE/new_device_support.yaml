@@ -1,6 +1,6 @@
 name: New device support request
 description: Request support for a new device
-title: ""
+title: "[New device support]: "
 labels: [new device support]
 body:
   - type: markdown
