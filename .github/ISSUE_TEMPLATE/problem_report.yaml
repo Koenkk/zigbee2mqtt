@@ -50,26 +50,19 @@ body:
       placeholder: '20211210'
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: adapter
-    validations:
-      required: true
     attributes:
       label: Adapter
       description: The adapter you are using
-      multiple: false
-      options:
-        - CC2652/CC1352 based adapter
-        - Conbee II
-        - CC2530 or CC2531 based adapter
-        - CC2538 based adapter
-        - ZiGate
-        - EZSP
+      placeholder: Electrolama zig-a-zig-ah! (zzh!), Slaesh's CC2652RB stick, ...
+    validations:
+      required: true
   - type: textarea
     id: log
     attributes:
       label: Debug log
-      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Click on the text area below and drag the file into it to attach.
-      placeholder: Click here and drag the file into it
+      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Attach the file below
+      placeholder: Click here and drag the file into it or click on "Attach files by.." below
     validations:
       required: true
