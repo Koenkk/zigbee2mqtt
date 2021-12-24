@@ -566,8 +566,10 @@ export default class Bridge extends Extension {
         const payload = {
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,
-            coordinator: this.coordinatorVersion,
-            coordinator_ieeeaddr: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
+            coordinator: {
+                ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
+                ...this.coordinatorVersion,
+            },
             network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
