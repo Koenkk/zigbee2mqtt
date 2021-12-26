@@ -33,3 +33,16 @@ body:
       placeholder: I tried to follow the supporting new device page but got stuck at...
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: |
+        # Lights
+        In case this device is a light, fill in the fields below
+  - type: input
+    attributes:
+      description: Supported color modes
+      placeholder: color temperature, color (rgb)
+  - type: input
+    attributes:
+      description: In case this light supports color temperature, provide the color temperature range. [How to do this](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_3-1-retrieving-color-temperature-range-only-required-for-lights-which-support-color-temperature)
+      placeholder: {"colorTempPhysicalMin":153,"colorTempPhysicalMax":454}
