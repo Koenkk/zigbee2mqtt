@@ -33,6 +33,11 @@ body:
       placeholder: I tried to follow the supporting new device page but got stuck at...
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: External converter
+      description: In case you tried to create an external converter, put it below
+      render: shell
   - type: markdown
     attributes:
       value: |
