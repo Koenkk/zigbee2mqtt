@@ -128,10 +128,6 @@ export default class Publish extends Extension {
 
         // Get entity details
         const definition = re instanceof Device ? re.definition : re.membersDefinitions();
-        if (definition == null) {
-            logger.error(`Cannot publish to unsupported device '${re.name}'`);
-            return;
-        }
         const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
         if (target == null) {
             logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
@@ -149,8 +145,11 @@ export default class Publish extends Extension {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
                 if (c.size == 0) converters = defaultGroupConverters;
                 else converters = Array.from(c);
-            } else {
+            } else if (definition) {
                 converters = definition.toZigbee;
+            } else {
+                converters = [zigbeeHerdsmanConverters.toZigbeeConverters.read,
+                    zigbeeHerdsmanConverters.toZigbeeConverters.write];
             }
         }
 
@@ -216,7 +215,7 @@ export default class Publish extends Extension {
             }
 
             if (!converter) {
-                logger.error(`No converter available for '${key}' (${message[key]})`);
+                logger.error(`No converter available for '${key}' (${stringify(message[key])})`);
                 continue;
             }
 
