@@ -99,6 +99,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
     },
     {
@@ -129,6 +130,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
     },
     {
@@ -155,6 +157,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
     },
 ];
