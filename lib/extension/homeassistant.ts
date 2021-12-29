@@ -485,6 +485,7 @@ export default class HomeAssistant extends Extension {
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
                 carbon_monoxide: {device_class: 'safety'},
+                card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
                 consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
