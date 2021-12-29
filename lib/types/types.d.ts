@@ -164,7 +164,12 @@ declare global {
     // Settings
     // eslint-disable camelcase
     interface Settings {
-        homeassistant?: boolean,
+        homeassistant?: {
+            discovery_topic: string,
+            status_topic: string,
+            legacy_entity_attributes: boolean,
+            legacy_triggers: boolean,
+        },
         devices?: {[s: string]: DeviceSettings},
         groups?: {[s: string]: GroupSettings},
         passlist: string[],
@@ -249,10 +254,6 @@ declare global {
             elapsed: boolean,
             network_key: number[] | 'GENERATE',
             report: boolean,
-            homeassistant_discovery_topic: string,
-            homeassistant_status_topic: string,
-            homeassistant_legacy_entity_attributes: boolean,
-            homeassistant_legacy_triggers: boolean,
             timestamp_format: string,
             baudrate?: number,
             rtscts?: boolean,

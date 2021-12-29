@@ -28,9 +28,10 @@ describe('Controller', () => {
         MQTT.restoreOnMock();
         zigbeeHerdsman.returnDevices.splice(0);
         mockExit = jest.fn();
+        data.writeDefaultConfiguration();
+        settings.reRead();
         controller = new Controller(jest.fn(), mockExit);
         mocksClear.forEach((m) => m.mockClear());
-        data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultState();
     });
@@ -630,11 +631,13 @@ describe('Controller', () => {
     });
 
     it('Should disable legacy options on new network start', async () => {
-        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeTruthy();
+        settings.set(['homeassistant'], true);
+        settings.reRead();
+        expect(settings.get().homeassistant.legacy_entity_attributes).toBeTruthy();
         expect(settings.get().advanced.legacy_api).toBeTruthy();
         zigbeeHerdsman.start.mockReturnValueOnce('reset');
         await controller.start();
-        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeFalsy();
+        expect(settings.get().homeassistant.legacy_entity_attributes).toBeFalsy();
         expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
 

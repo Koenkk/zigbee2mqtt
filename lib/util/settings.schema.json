@@ -6,9 +6,47 @@
     },
     "homeassistant": {
       "title": "Home Assistant integration",
-      "type": "boolean",
+      "requiresRestart": true,
       "description": "Home Assistant integration (MQTT discovery)",
-      "default": false
+      "default": false,
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Home Assistant (simple)"
+        },
+        {
+          "type": "object",
+          "title": "Home Assistant (advanced)",
+          "properties": {
+            "legacy_triggers": {
+              "type": "boolean",
+              "title": "Home Assistant legacy triggers",
+              "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
+              "default": true
+            },
+            "discovery_topic": {
+              "type": "string",
+              "title": "Homeassistant discovery topic",
+              "description": "Home Assistant discovery topic",
+              "requiresRestart": true,
+              "examples": ["homeassistant"]
+            },
+            "legacy_entity_attributes": {
+              "type": "boolean",
+              "title": "Home Assistant legacy entity attributes",
+              "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
+              "default": true
+            },
+            "status_topic": {
+              "type": "string",
+              "title": "Home Assistant status topic",
+              "description": "Home Assistant status topic",
+              "requiresRestart": true,
+              "examples": ["homeassistant/status"]
+            }
+          }
+        }
+      ]
     },
     "permit_join": {
       "type": "boolean",
@@ -30,11 +68,11 @@
       "oneOf": [
         {
           "type": "boolean",
-          "title": "Availability (boolean)"
+          "title": "Availability (simple)"
         },
         {
           "type": "object",
-          "title": "Availability (object)",
+          "title": "Availability (advanced)",
           "properties": {
             "active": {
               "type": "object",

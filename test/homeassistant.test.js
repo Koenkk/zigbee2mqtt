@@ -24,6 +24,7 @@ describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
+        settings.set(['homeassistant'], true);
         data.writeEmptyState();
         controller.state.load();
         await resetExtension();

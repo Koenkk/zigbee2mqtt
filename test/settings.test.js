@@ -842,4 +842,14 @@ describe('Settings', () => {
         const after = fs.statSync(configurationFile).mtimeMs;
         expect(before).toBe(after);
     });
+
+    it('Home Assistant config', () => {
+        write(configurationFile, {...minimalConfig,
+            homeassistant: {discovery_topic: 'new'}, 
+            advanced: {homeassistant_discovery_topic: 'old', homeassistant_status_topic: 'olds'},
+        });
+
+        settings.reRead();
+        expect(settings.get().homeassistant).toStrictEqual({discovery_topic: 'new', legacy_entity_attributes: true, legacy_triggers: true, status_topic: 'olds'})
+    });
 });

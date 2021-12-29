@@ -7,11 +7,19 @@ import Ajv from 'ajv';
 import schemaJson from './settings.schema.json';
 export const schema = schemaJson;
 
+// Remove legacy settings from schema
+{
+    delete schema.properties.advanced.properties.homeassistant_discovery_topic;
+    delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
+    delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
+    delete schema.properties.advanced.properties.homeassistant_status_topic;
+}
+
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
-const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schema);
+const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
 const ajvRestartRequired = new Ajv({allErrors: true})
-    .addKeyword({keyword: 'requiresRestart', validate: (schema: unknown) => !schema}).compile(schema);
+    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
 
 const defaults: RecursivePartial<Settings> = {
     passlist: [],
@@ -117,32 +125,6 @@ const defaults: RecursivePartial<Settings> = {
         report: false,
 
         /**
-         * Home Assistant discovery topic
-         */
-        homeassistant_discovery_topic: 'homeassistant',
-
-        /**
-         * Home Assistant status topic
-         */
-        homeassistant_status_topic: 'hass/status',
-
-        /**
-         * Home Assistant legacy entity attributes, when enabled:
-         * Zigbee2MQTT will send additional states as attributes with each entity.
-         * For example, A temperature & humidity sensor will have 2 entities for
-         * the temperature and humidity, with this setting enabled both entities
-         * will also have an temperature and humidity attribute.
-         */
-        homeassistant_legacy_entity_attributes: true,
-
-        /**
-         * Home Assistant legacy triggers, when enabled:
-         * - Zigbee2mqt will send an empty 'action' or 'click' after one has been send
-         * - A 'sensor_action' and 'sensor_click' will be discoverd
-         */
-        homeassistant_legacy_triggers: true,
-
-        /**
          * Configurable timestampFormat
          * https://github.com/Koenkk/zigbee2mqtt/commit/44db557a0c83f419d66755d14e460cd78bd6204e
          */
@@ -164,6 +146,39 @@ const defaults: RecursivePartial<Settings> = {
 
 let _settings: Partial<Settings>;
 let _settingsWithDefaults: Settings;
+
+function loadSettingsWithDefaults(): void {
+    _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
+
+    if (!_settingsWithDefaults.devices) {
+        _settingsWithDefaults.devices = {};
+    }
+
+    if (!_settingsWithDefaults.groups) {
+        _settingsWithDefaults.groups = {};
+    }
+
+    if (_settingsWithDefaults.homeassistant) {
+        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status',
+            legacy_entity_attributes: true, legacy_triggers: true};
+        const sLegacy = {};
+        if (_settingsWithDefaults.advanced) {
+            for (const key of ['homeassistant_legacy_triggers', 'homeassistant_discovery_topic',
+                'homeassistant_legacy_entity_attributes', 'homeassistant_status_topic']) {
+                // @ts-ignore
+                if (_settingsWithDefaults.advanced[key] !== undefined) {
+                    // @ts-ignore
+                    sLegacy[key.replace('homeassistant_', '')] = _settingsWithDefaults.advanced[key];
+                }
+            }
+        }
+
+        const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
+        // @ts-ignore
+        _settingsWithDefaults.homeassistant = {};
+        objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
+    }
+}
 
 function write(): void {
     const settings = getInternalSettings();
@@ -213,7 +228,7 @@ function write(): void {
     yaml.writeIfChanged(file, toWrite);
 
     _settings = read();
-    _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
+    loadSettingsWithDefaults();
 }
 
 export function validate(): string[] {
@@ -376,7 +391,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
             }
         });
     };
-    iterate(schema.properties, []);
+    iterate(schemaJson.properties, []);
 }
 
 function getInternalSettings(): Partial<Settings> {
@@ -390,15 +405,7 @@ function getInternalSettings(): Partial<Settings> {
 
 export function get(): Settings {
     if (!_settingsWithDefaults) {
-        _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
-    }
-
-    if (!_settingsWithDefaults.devices) {
-        _settingsWithDefaults.devices = {};
-    }
-
-    if (!_settingsWithDefaults.groups) {
-        _settingsWithDefaults.groups = {};
+        loadSettingsWithDefaults();
     }
 
     return _settingsWithDefaults;
