@@ -5,7 +5,10 @@ import path from 'path';
 import yaml from './yaml';
 import Ajv from 'ajv';
 import schemaJson from './settings.schema.json';
-export const schema = schemaJson;
+export let schema = schemaJson;
+// @ts-ignore
+schema = {};
+objectAssignDeep(schema, schemaJson);
 
 // Remove legacy settings from schema
 {
