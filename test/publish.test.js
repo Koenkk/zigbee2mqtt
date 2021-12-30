@@ -916,16 +916,21 @@ describe('Publish', () => {
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'TOGGLE',}));
         await flushPromises();
-        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'TOGGLE',}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(4);
         expect(endpoint.command).toHaveBeenNthCalledWith(1, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 163, "transtime": 200}, {})
         expect(endpoint.command).toHaveBeenNthCalledWith(2, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 0, "transtime": 200}, {})
         expect(endpoint.command).toHaveBeenNthCalledWith(3, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 163, "transtime": 200}, {})
-        expect(MQTT.publish).toHaveBeenCalledTimes(3);
+        expect(endpoint.command).toHaveBeenNthCalledWith(4, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 0, "transtime": 200}, {})
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"ON"}),
             { retain: false, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenNthCalledWith(2, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"OFF"}),
             { retain: false, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"ON"}),
+            { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenNthCalledWith(4, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"OFF"}),
             { retain: false, qos: 0 }, expect.any(Function));
     });
 
