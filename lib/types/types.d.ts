@@ -170,17 +170,19 @@ declare global {
             legacy_entity_attributes: boolean,
             legacy_triggers: boolean,
         },
+        permit_join?: boolean,
+        availability?: {
+            active: {timeout: number},
+            passive: {timeout: number}
+        },
+
+        // TODO
         devices?: {[s: string]: DeviceSettings},
         groups?: {[s: string]: GroupSettings},
         passlist: string[],
         blocklist: string[],
         whitelist: string[],
         ban: string[],
-        availability?: boolean | {
-            active?: {timeout?: number},
-            passive?: {timeout?: number}
-        },
-        permit_join: boolean,
         frontend?: {
             auth_token?: string,
             host?: string,

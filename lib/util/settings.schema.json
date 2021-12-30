@@ -1,9 +1,6 @@
 {
   "type": "object",
   "properties": {
-    "device_options": {
-      "type": "object"
-    },
     "homeassistant": {
       "title": "Home Assistant integration",
       "requiresRestart": true,
@@ -54,16 +51,6 @@
       "title": "Permit join",
       "description": "Allow new devices to join (re-applied at restart)"
     },
-    "external_converters": {
-      "type": "array",
-      "title": "External converters",
-      "description": "You can define external converters to e.g. add support for a DiY device",
-      "requiresRestart": true,
-      "items": {
-        "type": "string"
-      },
-      "examples": ["DIYRuZ_FreePad.js"]
-    },
     "availability": {
       "oneOf": [
         {
@@ -110,6 +97,16 @@
       "title": "Availability",
       "requiresRestart": true,
       "description": "Checks whether devices are online/offline"
+    },
+    "external_converters": {
+      "type": "array",
+      "title": "External converters",
+      "description": "You can define external converters to e.g. add support for a DiY device",
+      "requiresRestart": true,
+      "items": {
+        "type": "string"
+      },
+      "examples": ["DIYRuZ_FreePad.js"]
     },
     "mqtt": {
       "type": "object",
@@ -700,6 +697,9 @@
           "requiresRestart": true
         }
       }
+    },
+    "device_options": {
+      "type": "object"
     }
   },
   "required": ["mqtt"],

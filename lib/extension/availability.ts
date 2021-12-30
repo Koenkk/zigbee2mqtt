@@ -18,12 +18,8 @@ export default class Availability extends Extension {
         }
 
         const key = this.isActiveDevice(device) ? 'active' : 'passive';
-        const availabilitySettings = settings.get().availability;
-        if (typeof availabilitySettings === 'object' && availabilitySettings[key]?.timeout != null) {
-            return utils.minutes(availabilitySettings[key]?.timeout);
-        }
-
-        return key === 'active' ? utils.minutes(10) : utils.hours(25);
+        const value = settings.get().availability[key]?.timeout;
+        return key === 'active' ? utils.minutes(value) : utils.hours(value);
     }
 
     private isActiveDevice(device: Device): boolean {
@@ -95,7 +91,9 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
-        this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
+        this.eventBus.onDeviceRenamed(this, (data) =>
+            utils.isAvailabilityEnabledForDevice(data.device, settings.get()) &&
+            this.publishAvailability(data.device, false, true));
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));

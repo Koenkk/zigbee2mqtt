@@ -25,12 +25,14 @@ const ajvRestartRequired = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
 
 const defaults: RecursivePartial<Settings> = {
+    permit_join: false,
+
+    // TODO
     passlist: [],
     blocklist: [],
     // Deprecated: use block/passlist
     whitelist: [],
     ban: [],
-    permit_join: false,
     mqtt: {
         include_device_information: false,
         /**
@@ -180,6 +182,14 @@ function loadSettingsWithDefaults(): void {
         // @ts-ignore
         _settingsWithDefaults.homeassistant = {};
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
+    }
+
+    if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
+        const defaults = {active: {timeout: 10}, passive: {timeout: 25}};
+        const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
+        // @ts-ignore
+        _settingsWithDefaults.availability = {};
+        objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
 }
 
