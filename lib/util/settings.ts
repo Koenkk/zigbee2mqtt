@@ -26,6 +26,15 @@ const ajvRestartRequired = new Ajv({allErrors: true})
 
 const defaults: RecursivePartial<Settings> = {
     permit_join: false,
+    external_converters: [],
+    mqtt: {
+        base_topic: 'zigbee2mqtt',
+        include_device_information: false,
+        force_disable_retain: false,
+    },
+    serial: {
+        disable_led: false,
+    },
 
     // TODO
     passlist: [],
@@ -33,17 +42,6 @@ const defaults: RecursivePartial<Settings> = {
     // Deprecated: use block/passlist
     whitelist: [],
     ban: [],
-    mqtt: {
-        include_device_information: false,
-        /**
-         * Configurable force disable retain flag on mqtt publish.
-         * https://github.com/Koenkk/zigbee2mqtt/pull/4948
-         */
-        force_disable_retain: false,
-    },
-    serial: {
-        disable_led: false,
-    },
     device_options: {},
     map_options: {
         graphviz: {
@@ -146,7 +144,6 @@ const defaults: RecursivePartial<Settings> = {
          */
         disable_automatic_update_check: false,
     },
-    external_converters: [],
 };
 
 let _settings: Partial<Settings>;

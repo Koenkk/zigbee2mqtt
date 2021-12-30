@@ -175,20 +175,7 @@ declare global {
             active: {timeout: number},
             passive: {timeout: number}
         },
-
-        // TODO
-        devices?: {[s: string]: DeviceSettings},
-        groups?: {[s: string]: GroupSettings},
-        passlist: string[],
-        blocklist: string[],
-        whitelist: string[],
-        ban: string[],
-        frontend?: {
-            auth_token?: string,
-            host?: string,
-            port?: number,
-            url?: string,
-        },
+        external_converters: string[],
         mqtt: {
             base_topic: string,
             include_device_information: boolean,
@@ -205,9 +192,23 @@ declare global {
             reject_unauthorized?: boolean,
         },
         serial: {
-            disable_led?: boolean,
+            disable_led: boolean,
             port?: string,
             adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
+        },
+
+        // TODO
+        devices?: {[s: string]: DeviceSettings},
+        groups?: {[s: string]: GroupSettings},
+        passlist: string[],
+        blocklist: string[],
+        whitelist: string[],
+        ban: string[],
+        frontend?: {
+            auth_token?: string,
+            host?: string,
+            port?: number,
+            url?: string,
         },
         device_options: KeyValue,
         map_options: {
@@ -271,7 +272,6 @@ declare global {
             update_check_interval: number,
             disable_automatic_update_check: boolean
         },
-        external_converters: string[],
     }
 
     interface DeviceSettings {

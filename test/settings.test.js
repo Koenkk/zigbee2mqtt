@@ -150,6 +150,7 @@ describe('Settings', () => {
         write(configurationFile, contentConfiguration);
 
         const expected = {
+            base_topic: 'zigbee2mqtt',
             include_device_information: false,
             force_disable_retain: false,
             password: "mysecretpassword",

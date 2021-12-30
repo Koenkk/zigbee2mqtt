@@ -115,6 +115,7 @@
         "base_topic": {
           "type": "string",
           "title": "Base topic",
+          "default": "zigbee2mqtt",
           "requiresRestart": true,
           "description": "MQTT base topic for Zigbee2MQTT MQTT messages",
           "examples": ["zigbee2mqtt"]
@@ -204,7 +205,7 @@
           "default": false
         }
       },
-      "required": ["base_topic", "server"]
+      "required": ["server"]
     },
     "serial": {
       "type": "object",
