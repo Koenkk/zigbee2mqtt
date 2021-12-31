@@ -56,7 +56,7 @@ describe('Bridge legacy', () => {
     it('Should allow whitelist', async () => {
         const bulb_color = zigbeeHerdsman.devices.bulb_color;
         const bulb = zigbeeHerdsman.devices.bulb;
-        expect(settings.get().whitelist).toStrictEqual([]);
+        expect(settings.get().passlist).toStrictEqual([]);
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/whitelist', 'bulb_color');
         await flushPromises();
@@ -68,7 +68,7 @@ describe('Bridge legacy', () => {
         );
 
         MQTT.publish.mockClear()
-        expect(settings.get().whitelist).toStrictEqual([bulb_color.ieeeAddr]);
+        expect(settings.get().passlist).toStrictEqual([bulb_color.ieeeAddr]);
         MQTT.events.message('zigbee2mqtt/bridge/config/whitelist', 'bulb');
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -79,10 +79,10 @@ describe('Bridge legacy', () => {
         );
 
         MQTT.publish.mockClear()
-        expect(settings.get().whitelist).toStrictEqual([bulb_color.ieeeAddr, bulb.ieeeAddr]);
+        expect(settings.get().passlist).toStrictEqual([bulb_color.ieeeAddr, bulb.ieeeAddr]);
         MQTT.events.message('zigbee2mqtt/bridge/config/whitelist', 'bulb');
         await flushPromises();
-        expect(settings.get().whitelist).toStrictEqual([bulb_color.ieeeAddr, bulb.ieeeAddr]);
+        expect(settings.get().passlist).toStrictEqual([bulb_color.ieeeAddr, bulb.ieeeAddr]);
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
@@ -366,7 +366,7 @@ describe('Bridge legacy', () => {
         controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
-        expect(settings.get().ban.length).toBe(0);
+        expect(settings.get().blocklist.length).toBe(0);
         await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'bulb_color');
@@ -381,14 +381,14 @@ describe('Bridge legacy', () => {
             expect.any(Function)
         );
         expect(controller.state.state).toStrictEqual({});
-        expect(settings.get().ban.length).toBe(0);
+        expect(settings.get().blocklist.length).toBe(0);
     });
 
     it('Should allow to force remove device', async () => {
         controller.state.state = {'0x000b57fffec6a5b3': {brightness: 100}};
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromDatabase.mockClear();
-        expect(settings.get().ban.length).toBe(0);
+        expect(settings.get().blocklist.length).toBe(0);
         await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/force_remove', 'bulb_color');
@@ -403,13 +403,13 @@ describe('Bridge legacy', () => {
             expect.any(Function)
         );
         expect(controller.state.state).toStrictEqual({});
-        expect(settings.get().ban.length).toBe(0);
+        expect(settings.get().blocklist.length).toBe(0);
     });
 
-    it('Should allow to ban device', async () => {
+    it('Should allow to block device', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         device.removeFromNetwork.mockClear();
-        expect(settings.get().ban.length).toBe(0);
+        expect(settings.get().blocklist.length).toBe(0);
         await flushPromises();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/config/ban', 'bulb_color');
@@ -423,7 +423,7 @@ describe('Bridge legacy', () => {
             {qos: 0, retain: false},
             expect.any(Function)
         );
-        expect(settings.get().ban).toStrictEqual(['0x000b57fffec6a5b3']);
+        expect(settings.get().blocklist).toStrictEqual(['0x000b57fffec6a5b3']);
     });
 
     it('Shouldnt crash when removing non-existing device', async () => {

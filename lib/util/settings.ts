@@ -16,6 +16,8 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
     delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
     delete schema.properties.advanced.properties.homeassistant_status_topic;
+    delete schemaJson.properties.whitelist;
+    delete schemaJson.properties.ban;
 }
 
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
@@ -35,13 +37,10 @@ const defaults: RecursivePartial<Settings> = {
     serial: {
         disable_led: false,
     },
-
-    // TODO
     passlist: [],
     blocklist: [],
-    // Deprecated: use block/passlist
-    whitelist: [],
-    ban: [],
+
+    // TODO
     device_options: {},
     map_options: {
         graphviz: {
@@ -188,6 +187,11 @@ function loadSettingsWithDefaults(): void {
         _settingsWithDefaults.availability = {};
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
+
+    // @ts-ignore
+    _settingsWithDefaults.ban && _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
+    // @ts-ignore
+    _settingsWithDefaults.whitelist && _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
 }
 
 function write(): void {
@@ -533,17 +537,17 @@ export function addDevice(ID: string): DeviceSettings {
     return getDevice(ID);
 }
 
-export function whitelistDevice(ID: string): void {
+export function addDeviceToPasslist(ID: string): void {
     const settings = getInternalSettings();
-    if (!settings.whitelist) {
-        settings.whitelist = [];
+    if (!settings.passlist) {
+        settings.passlist = [];
     }
 
-    if (settings.whitelist.includes(ID)) {
-        throw new Error(`Device '${ID}' already whitelisted`);
+    if (settings.passlist.includes(ID)) {
+        throw new Error(`Device '${ID}' already in passlist`);
     }
 
-    settings.whitelist.push(ID);
+    settings.passlist.push(ID);
     write();
 }
 
@@ -554,16 +558,6 @@ export function blockDevice(ID: string): void {
     }
 
     settings.blocklist.push(ID);
-    write();
-}
-
-export function banDevice(ID: string): void {
-    const settings = getInternalSettings();
-    if (!settings.ban) {
-        settings.ban = [];
-    }
-
-    settings.ban.push(ID);
     write();
 }
 

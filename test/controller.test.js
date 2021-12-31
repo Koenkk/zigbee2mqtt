@@ -181,24 +181,8 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
     });
 
-    it('Should remove non whitelisted devices on startup', async () => {
-        settings.set(['whitelist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
-        await controller.start();
-        await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
-        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
-    });
-
     it('Should remove device on blocklist on startup', async () => {
         settings.set(['blocklist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
-        await controller.start();
-        await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(0);
-    });
-
-    it('Should remove banned devices on startup', async () => {
-        settings.set(['ban'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);

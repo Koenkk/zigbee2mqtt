@@ -196,14 +196,12 @@ declare global {
             port?: string,
             adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
         },
+        passlist: string[],
+        blocklist: string[],
 
         // TODO
         devices?: {[s: string]: DeviceSettings},
         groups?: {[s: string]: GroupSettings},
-        passlist: string[],
-        blocklist: string[],
-        whitelist: string[],
-        ban: string[],
         frontend?: {
             auth_token?: string,
             host?: string,

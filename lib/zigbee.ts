@@ -112,8 +112,8 @@ export default class Zigbee {
 
         for (const device of this.devices(false)) {
             // If a passlist is used, all other device will be removed from the network.
-            const passlist = settings.get().passlist.concat(settings.get().whitelist);
-            const blocklist = settings.get().blocklist.concat(settings.get().ban);
+            const passlist = settings.get().passlist;
+            const blocklist = settings.get().blocklist;
             const remove = async (device: Device): Promise<void> => {
                 try {
                     await device.zh.removeFromNetwork();
@@ -275,8 +275,8 @@ export default class Zigbee {
 
     @bind private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
         // If passlist is set, all devices not on passlist will be rejected to join the network
-        const passlist = settings.get().passlist.concat(settings.get().whitelist);
-        const blocklist = settings.get().blocklist.concat(settings.get().ban);
+        const passlist = settings.get().passlist;
+        const blocklist = settings.get().blocklist;
         if (passlist.length > 0) {
             if (passlist.includes(ieeeAddr)) {
                 logger.info(`Accepting joining device which is on passlist '${ieeeAddr}'`);

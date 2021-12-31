@@ -673,14 +673,6 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Should ban devices', () => {
-        write(configurationFile, {});
-        settings.banDevice('0x123');
-        expect(settings.get().ban).toStrictEqual(['0x123']);
-        settings.banDevice('0x1234');
-        expect(settings.get().ban).toStrictEqual(['0x123', '0x1234']);
-    });
-
     it('Should add devices to blocklist', () => {
         write(configurationFile, {});
         settings.blockDevice('0x123');
@@ -844,7 +836,7 @@ describe('Settings', () => {
         expect(before).toBe(after);
     });
 
-    it('Home Assistant config', () => {
+    it('Deprecated: Home Assistant config', () => {
         write(configurationFile, {...minimalConfig,
             homeassistant: {discovery_topic: 'new'}, 
             advanced: {homeassistant_discovery_topic: 'old', homeassistant_status_topic: 'olds'},
@@ -852,5 +844,15 @@ describe('Settings', () => {
 
         settings.reRead();
         expect(settings.get().homeassistant).toStrictEqual({discovery_topic: 'new', legacy_entity_attributes: true, legacy_triggers: true, status_topic: 'olds'})
+    });
+
+    it('Deprecated: ban/whitelist config', () => {
+        write(configurationFile, {...minimalConfig,
+            ban: ['ban'], whitelist: ['whitelist'], passlist: ['passlist'], blocklist: ['blocklist']
+        });
+
+        settings.reRead();
+        expect(settings.get().blocklist).toStrictEqual(['blocklist', 'ban'])
+        expect(settings.get().passlist).toStrictEqual(['passlist', 'whitelist'])
     });
 });

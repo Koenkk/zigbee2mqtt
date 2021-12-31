@@ -253,24 +253,11 @@
         "type": "string"
       }
     },
-    "whitelist": {
-      "readOnly": true,
-      "type": "array",
-      "requiresRestart": true,
-      "title": "Whitelist (deprecated, use passlist)",
-      "items": {
-        "type": "string"
-      }
-    },
-    "ban": {
-      "readOnly": true,
-      "type": "array",
-      "requiresRestart": true,
-      "title": "Ban (deprecated, use blocklist)",
-      "items": {
-        "type": "string"
-      }
-    },
+
+
+
+
+    
     "experimental": {
       "type": "object",
       "title": "Experimental",
@@ -701,6 +688,28 @@
     },
     "device_options": {
       "type": "object"
+    },
+
+
+
+
+    "whitelist": {
+      "readOnly": true,
+      "type": "array",
+      "requiresRestart": true,
+      "title": "Whitelist (deprecated, use passlist)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ban": {
+      "readOnly": true,
+      "type": "array",
+      "requiresRestart": true,
+      "title": "Ban (deprecated, use blocklist)",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": ["mqtt"],
