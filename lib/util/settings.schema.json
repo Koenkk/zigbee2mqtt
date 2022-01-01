@@ -344,7 +344,7 @@
             "enum": ["console", "file", "syslog"]
           },
           "title": "Log output",
-          "description": "Output location of the log, leave empty to supress logging"
+          "description": "Output location of the log, leave empty to suppress logging"
         },
         "log_directory": {
           "type": "string",
