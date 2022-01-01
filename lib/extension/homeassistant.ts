@@ -670,7 +670,7 @@ export default class HomeAssistant extends Extension {
 
             /**
              * If numeric attribute has SET access then expose as SELECT entity too.
-             * Note: currently both sensor and number are discoverd, this is to avoid
+             * Note: currently both sensor and number are discovered, this is to avoid
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
@@ -734,7 +734,7 @@ export default class HomeAssistant extends Extension {
 
                 /**
                  * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discoverd, this is to avoid
+                 * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
                  */
                 if ((firstExpose.access & ACCESS_SET)) {
@@ -1001,7 +1001,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private discover(entity: Device | Group, force=false): void {
-        // Check if already discoverd and check if there are configs.
+        // Check if already discovered and check if there are configs.
         const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
 
@@ -1210,7 +1210,7 @@ export default class HomeAssistant extends Extension {
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
-            // Clear outdated discovery configs and remember already discoverd device_automations
+            // Clear outdated discovery configs and remember already discovered device_automations
             let message: KeyValue = null;
             try {
                 message = JSON.parse(data.message);
