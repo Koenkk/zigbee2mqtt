@@ -2,7 +2,6 @@ import * as settings from '../util/settings';
 import logger from '../util/logger';
 import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
-import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 import assert from 'assert';
 import Extension from './extension';
 import bind from 'bind-decorator';
@@ -27,6 +26,30 @@ const ACCESS_SET = 0b010;
 const groupSupportedTypes = ['light', 'switch', 'lock', 'cover'];
 const defaultStatusTopic = 'homeassistant/status';
 
+const legacyMapping = [
+    {
+        models: ['WXKG01LM', 'HS1EB/HS1EB-E', 'ICZB-KPD14S', 'TERNCY-SD01', 'TERNCY-PP01', 'ICZB-KPD18S',
+            'E1766', 'ZWallRemote0', 'ptvo.switch', '2AJZ4KPKEY', 'ZGRC-KEY-013', 'HGZB-02S', 'HGZB-045',
+            'HGZB-1S', 'AV2010/34', 'IM6001-BTP01', 'WXKG11LM', 'WXKG03LM', 'WXKG02LM_rev1', 'WXKG02LM_rev2',
+            'QBKG04LM', 'QBKG03LM', 'QBKG11LM', 'QBKG21LM', 'QBKG22LM', 'WXKG12LM', 'QBKG12LM',
+            'E1743'],
+        discovery: sensorClick,
+    },
+    {
+        models: ['ICTC-G-1'],
+        discovery: {
+            type: 'sensor',
+            mockProperties: [{property: 'brightness', value: null}],
+            object_id: 'brightness',
+            discovery_payload: {
+                unit_of_measurement: 'brightness',
+                icon: 'mdi:brightness-5',
+                value_template: '{{ value_json.brightness }}',
+            },
+        },
+    },
+];
+
 const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
@@ -39,8 +62,8 @@ const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): s
  * This extensions handles integration with HomeAssistant
  */
 export default class HomeAssistant extends Extension {
-    private discovered: {[s: string]: {topics: Set<string>, mockProperties: Set<MockProperty>}} = {};
-    private mapping: {[s: string]: DiscoveryEntry[]} = {};
+    private discovered: {[s: string]:
+        {topics: Set<string>, mockProperties: Set<MockProperty>, objectIDs: Set<string>}} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
     private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
     private statusTopic = settings.get().advanced.homeassistant_status_topic;
@@ -62,7 +85,6 @@ export default class HomeAssistant extends Extension {
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
-        this.populateMapping();
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -85,7 +107,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
-        definition?: zhc.Definition): DiscoveryEntry[] {
+        definition?: zhc.Definition, definitionExposes?: zhc.DefinitionExpose[]): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -140,7 +162,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.min_mireds = min;
             }
 
-            const effect = definition && definition.exposes.find((e) => e.type === 'enum' && e.name === 'effect');
+            const effect = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'effect');
             if (effect) {
                 discoveryEntry.discovery_payload.effect = true;
                 discoveryEntry.discovery_payload.effect_list = effect.values;
@@ -463,6 +485,7 @@ export default class HomeAssistant extends Extension {
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
                 carbon_monoxide: {device_class: 'safety'},
+                card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
                 consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
@@ -655,7 +678,7 @@ export default class HomeAssistant extends Extension {
 
             /**
              * If numeric attribute has SET access then expose as SELECT entity too.
-             * Note: currently both sensor and number are discoverd, this is to avoid
+             * Note: currently both sensor and number are discovered, this is to avoid
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
@@ -719,7 +742,7 @@ export default class HomeAssistant extends Extension {
 
                 /**
                  * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discoverd, this is to avoid
+                 * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
                  */
                 if ((firstExpose.access & ACCESS_SET)) {
@@ -763,46 +786,6 @@ export default class HomeAssistant extends Extension {
         return discoveryEntries;
     }
 
-    private populateMapping(): void {
-        for (const def of zigbeeHerdsmanConverters.definitions) {
-            this.mapping[def.model] = [];
-
-            if (['WXKG01LM', 'HS1EB/HS1EB-E', 'ICZB-KPD14S', 'TERNCY-SD01', 'TERNCY-PP01', 'ICZB-KPD18S',
-                'E1766', 'ZWallRemote0', 'ptvo.switch', '2AJZ4KPKEY', 'ZGRC-KEY-013', 'HGZB-02S', 'HGZB-045',
-                'HGZB-1S', 'AV2010/34', 'IM6001-BTP01', 'WXKG11LM', 'WXKG03LM', 'WXKG02LM_rev1', 'WXKG02LM_rev2',
-                'QBKG04LM', 'QBKG03LM', 'QBKG11LM', 'QBKG21LM', 'QBKG22LM', 'WXKG12LM', 'QBKG12LM',
-                'E1743'].includes(def.model)) {
-                // deprecated
-                this.mapping[def.model].push(sensorClick);
-            }
-
-            if (['ICTC-G-1'].includes(def.model)) {
-                // deprecated
-                this.mapping[def.model].push({
-                    type: 'sensor',
-                    mockProperties: [{property: 'brightness', value: null}],
-                    object_id: 'brightness',
-                    discovery_payload: {
-                        unit_of_measurement: 'brightness',
-                        icon: 'mdi:brightness-5',
-                        value_template: '{{ value_json.brightness }}',
-                    },
-                });
-            }
-
-            for (const expose of def.exposes) {
-                this.mapping[def.model].push(...this.exposeToConfig([expose], 'device', def));
-            }
-        }
-
-        // Deprecated in favour of exposes
-        for (const definition of utils.getExternalConvertersDefinitions(settings.get())) {
-            if (definition.hasOwnProperty('homeassistant')) {
-                this.mapping[definition.model] = definition.homeassistant;
-            }
-        }
-    }
-
     @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         logger.debug(`Clearing Home Assistant discovery topic for '${data.name}'`);
         this.discovered[data.ieeeAddr]?.topics.forEach((topic) => {
@@ -826,9 +809,9 @@ export default class HomeAssistant extends Extension {
          * zigbee2mqtt/mydevice/l1.
          */
         const entity = this.zigbee.resolveEntity(data.entity.name);
-        if (entity.isDevice() && this.mapping[entity.definition?.model]) {
-            for (const config of this.mapping[entity.definition.model]) {
-                const match = /light_(.*)/.exec(config['object_id']);
+        if (entity.isDevice() && this.discovered[entity.ieeeAddr]) {
+            for (const objectID of this.discovered[entity.ieeeAddr].objectIDs) {
+                const match = /light_(.*)/.exec(objectID);
                 if (match) {
                     const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
@@ -901,36 +884,51 @@ export default class HomeAssistant extends Extension {
     private getConfigs(entity: Device | Group): DiscoveryEntry[] {
         const isDevice = entity.isDevice();
         /* istanbul ignore next */
-        if (!entity || (isDevice && !entity.definition) ||
-            (isDevice && !this.mapping[entity.definition.model])) return [];
+        if (!entity || (isDevice && !entity.definition)) return [];
 
-        let configs: DiscoveryEntry[];
+        let configs: DiscoveryEntry[] = [];
         if (isDevice) {
-            configs = this.mapping[entity.definition.model].slice();
+            for (const expose of entity.exposes()) {
+                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, entity.exposes()));
+            }
+
+            for (const mapping of legacyMapping) {
+                if (mapping.models.includes(entity.definition.model)) {
+                    configs.push(mapping.discovery);
+                }
+            }
+
+            // Deprecated in favour of exposes
+            /* istanbul ignore if */
+            if (entity.definition.hasOwnProperty('homeassistant')) {
+                // @ts-ignore
+                configs.push(entity.definition.homeassistant);
+            }
         } else { // group
             const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
 
-            entity.membersDefinitions().forEach((definition) => {
-                for (const expose of definition.exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
-                    let key = expose.type;
-                    if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
-                        // A device can have multiple of these types which have to discovered seperately.
-                        // e.g. switch with property state and valve_detection.
-                        const state = expose.features.find((f) => f.name === 'state');
-                        key += featurePropertyWithoutEndpoint(state);
-                    }
+            entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
+                .filter((d) => d.definition).forEach((device) => {
+                    for (const expose of device.exposes().filter((e) => groupSupportedTypes.includes(e.type))) {
+                        let key = expose.type;
+                        if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
+                            // A device can have multiple of these types which have to discovered seperately.
+                            // e.g. switch with property state and valve_detection.
+                            const state = expose.features.find((f) => f.name === 'state');
+                            key += featurePropertyWithoutEndpoint(state);
+                        }
 
-                    if (!exposesByType[key]) exposesByType[key] = [];
-                    exposesByType[key].push(expose);
-                }
-            });
+                        if (!exposesByType[key]) exposesByType[key] = [];
+                        exposesByType[key].push(expose);
+                    }
+                });
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group')));
         }
 
         if (isDevice && settings.get().advanced.last_seen !== 'disable') {
-            configs.push({
+            const config: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: 'last_seen',
                 mockProperties: [{property: 'last_seen', value: null}],
@@ -939,9 +937,15 @@ export default class HomeAssistant extends Extension {
                     icon: 'mdi:clock',
                     enabled_by_default: false,
                     entity_category: 'diagnostic',
-                    device_class: 'timestamp',
                 },
-            });
+            };
+
+            /* istanbul ignore else */
+            if (settings.get().advanced.last_seen.startsWith('ISO_8601')) {
+                config.discovery_payload.device_class = 'timestamp';
+            }
+
+            configs.push(config);
         }
 
         if (isDevice && entity.definition.hasOwnProperty('ota')) {
@@ -1005,19 +1009,18 @@ export default class HomeAssistant extends Extension {
     }
 
     private discover(entity: Device | Group, force=false): void {
-        // Check if already discoverd and check if there are configs.
+        // Check if already discovered and check if there are configs.
         const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
 
         if (entity.isGroup()) {
             if (!discover || entity.zh.members.length === 0) return;
-        } else if (!discover || !entity.definition || !this.mapping[entity.definition.model] ||
-            entity.zh.interviewing ||
+        } else if (!discover || !entity.definition || entity.zh.interviewing ||
             (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant)) {
             return;
         }
 
-        this.discovered[discoverKey] = {topics: new Set(), mockProperties: new Set()};
+        this.discovered[discoverKey] = {topics: new Set(), mockProperties: new Set(), objectIDs: new Set()};
         this.getConfigs(entity).forEach((config) => {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
@@ -1181,7 +1184,8 @@ export default class HomeAssistant extends Extension {
                     Object.keys(obj).forEach((key) => {
                         if (['type', 'object_id'].includes(key)) {
                             return;
-                        } else if (['number', 'string', 'boolean'].includes(typeof obj[key])) {
+                        } else if (['number', 'string', 'boolean'].includes(typeof obj[key]) ||
+                            Array.isArray(obj[key])) {
                             payload[key] = obj[key];
                         } else if (obj[key] === null) {
                             delete payload[key];
@@ -1203,6 +1207,7 @@ export default class HomeAssistant extends Extension {
             const topic = this.getDiscoveryTopic(config, entity);
             this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
             this.discovered[discoverKey].topics.add(topic);
+            this.discovered[discoverKey].objectIDs.add(config.object_id);
             config.mockProperties?.forEach((mockProperty) =>
                 this.discovered[discoverKey].mockProperties.add(mockProperty));
         });
@@ -1213,7 +1218,7 @@ export default class HomeAssistant extends Extension {
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
-            // Clear outdated discovery configs and remember already discoverd device_automations
+            // Clear outdated discovery configs and remember already discovered device_automations
             let message: KeyValue = null;
             try {
                 message = JSON.parse(data.message);
@@ -1371,11 +1376,6 @@ export default class HomeAssistant extends Extension {
 
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
         this.discoveredTriggers[device.ieeeAddr].add(discoveredKey);
-    }
-
-    // Only for homeassistant.test.js
-    _getMapping(): {[s: string]: DiscoveryEntry[]} {
-        return this.mapping;
     }
 
     _clearDiscoveredTrigger(): void {

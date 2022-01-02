@@ -907,6 +907,33 @@ describe('Publish', () => {
         expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColor", {"colorx": 45940, "colory": 19595, "transtime": 30}, {}]);
     });
 
+    it('Should correctly toggle when transition is used', async () => {
+        settings.set(['devices', zigbeeHerdsman.devices.bulb_color.ieeeAddr, 'transition'], 20);
+        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 163}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'TOGGLE',}));
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'TOGGLE',}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(4);
+        expect(endpoint.command).toHaveBeenNthCalledWith(1, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 163, "transtime": 200}, {})
+        expect(endpoint.command).toHaveBeenNthCalledWith(2, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 0, "transtime": 200}, {})
+        expect(endpoint.command).toHaveBeenNthCalledWith(3, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 163, "transtime": 200}, {})
+        expect(endpoint.command).toHaveBeenNthCalledWith(4, "genLevelCtrl", "moveToLevelWithOnOff", {"level": 0, "transtime": 200}, {})
+        expect(MQTT.publish).toHaveBeenCalledTimes(4);
+        expect(MQTT.publish).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"ON"}),
+            { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenNthCalledWith(2, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"OFF"}),
+            { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"ON"}),
+            { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenNthCalledWith(4, 'zigbee2mqtt/bulb_color', stringify({"brightness":163,"state":"OFF"}),
+            { retain: false, qos: 0 }, expect.any(Function));
+    });
+
     it('Should turn device off when brightness 0 is send', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);

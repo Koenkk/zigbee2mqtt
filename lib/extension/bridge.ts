@@ -399,6 +399,7 @@ export default class Bridge extends Extension {
 
         logger.info(`Changed config for ${entityType} ${ID}`);
 
+        this.eventBus.emitEntityOptionsChanged({from: oldOptions, to: newOptions, entity});
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID}, null);
     }
 
@@ -565,7 +566,10 @@ export default class Bridge extends Extension {
         const payload = {
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,
-            coordinator: this.coordinatorVersion,
+            coordinator: {
+                ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
+                ...this.coordinatorVersion,
+            },
             network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
@@ -688,7 +692,7 @@ export default class Bridge extends Extension {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: device.definition.exposes,
+            exposes: device.exposes(),
             supports_ota: !!device.definition.ota,
             options: device.definition.options,
             icon,
