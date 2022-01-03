@@ -465,7 +465,7 @@
           "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
           "default": false
         },
-        "override_ota_index": {
+        "zigbee_ota_override_index_location": {
           "type": "string",
           "title": "OTA index override file name",
           "requiresRestart": true,
