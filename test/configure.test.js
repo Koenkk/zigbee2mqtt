@@ -100,12 +100,12 @@ describe('Configure', () => {
         expectBulbConfigured();
     });
 
-    it('Should reconfigure reporting on reportingDisabled event', async () => {
+    it('Should reconfigure reporting on reconfigure event', async () => {
         expectBulbConfigured();
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
         mockClear(device.zh);
         expectBulbNotConfigured();
-        controller.eventBus.emitReportingDisabled({device});
+        controller.eventBus.emitReconfigure({device});
         await flushPromises();
         expectBulbConfigured();
     });

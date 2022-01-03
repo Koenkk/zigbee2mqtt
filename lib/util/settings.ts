@@ -247,15 +247,18 @@ export function validate(): string[] {
 
     // Verify that all friendly names are unique
     const names: string[] = [];
-    const check = (name: string): void => {
-        if (names.includes(name)) errors.push(`Duplicate friendly_name '${name}' found`);
-        errors.push(...utils.validateFriendlyName(name));
-        names.push(name);
+    const check = (e: DeviceSettings | GroupSettings): void => {
+        if (names.includes(e.friendly_name)) errors.push(`Duplicate friendly_name '${e.friendly_name}' found`);
+        errors.push(...utils.validateFriendlyName(e.friendly_name));
+        names.push(e.friendly_name);
+        if (e.qos != null && ![0, 1, 2].includes(e.qos)) {
+            errors.push(`QOS for '${e.friendly_name}' not valid, should be 0, 1 or 2 got ${e.qos}`);
+        }
     };
 
     const settingsWithDefaults = get();
-    Object.values(settingsWithDefaults.devices).forEach((d) => check(d.friendly_name));
-    Object.values(settingsWithDefaults.groups).forEach((g) => check(g.friendly_name));
+    Object.values(settingsWithDefaults.devices).forEach((d) => check(d));
+    Object.values(settingsWithDefaults.groups).forEach((g) => check(g));
 
     if (settingsWithDefaults.mqtt.version !== 5) {
         for (const device of Object.values(settingsWithDefaults.devices)) {

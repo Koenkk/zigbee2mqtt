@@ -124,6 +124,8 @@ export default class Receive extends Extension {
         if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
             logger.debug(`No converter available for '${data.device.definition.model}' with ` +
                 `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
+            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+                settings.get(), true, this.publishEntityState);
             return;
         }
 

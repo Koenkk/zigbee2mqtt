@@ -114,7 +114,7 @@ declare global {
             description: string
             options: zhc.DefinitionExpose[],
             vendor: string
-            exposes: DefinitionExpose[]
+            exposes: DefinitionExpose[] | ((device: zh.Device, options: KeyValue) => DefinitionExpose[])
             configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger) => Promise<void>;
             onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
             ota?: {
@@ -142,7 +142,8 @@ declare global {
         type DeviceAnnounce = { device: Device };
         type DeviceInterview = { device: Device, status: 'started' | 'successful' | 'failed' };
         type DeviceJoined = { device: Device };
-        type ReportingDisabled = { device: Device };
+        type EntityOptionsChanged = { entity: Device | Group, from: KeyValue, to: KeyValue };
+        type Reconfigure = { device: Device };
         type DeviceLeave = { ieeeAddr: string, name: string };
         type GroupMembersChanged = {group: Group, action: 'remove' | 'add' | 'remove_all',
             endpoint: zh.Endpoint, skipDisableReporting: boolean };
@@ -285,6 +286,7 @@ declare global {
         legacy?: boolean,
         filtered_attributes?: string[],
         friendly_name: string,
+        qos?: 0 | 1 | 2,
     }
 
     interface GroupSettings {
@@ -296,6 +298,7 @@ declare global {
         homeassistant?: KeyValue,
         filtered_attributes?: string[],
         friendly_name: string,
+        qos?: 0 | 1 | 2,
     }
 }
 

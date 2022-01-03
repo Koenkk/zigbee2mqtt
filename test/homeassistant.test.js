@@ -49,14 +49,17 @@ describe('HomeAssistant extension', () => {
     it('Should not have duplicate type/object_ids in a mapping', () => {
         const duplicated = [];
         require('zigbee-herdsman-converters').devices.forEach((d) => {
-            const mapping = extension._getMapping()[d.model];
+            const exposes = typeof d.exposes == 'function' ? d.exposes() : d.exposes;
+            const device = {definition: d, isDevice: () => true, settings: {}, exposes: () => exposes};
+            const configs = extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
-            mapping.forEach((c) => {
-                if (cfg_type_object_ids.includes(c['type'] + '/' + c['object_id'])) {
+            configs.forEach((c) => {
+                const id = c['type'] + '/' + c['object_id'];
+                if (cfg_type_object_ids.includes(id)) {
                     duplicated.push(d.model);
                 } else {
-                    cfg_type_object_ids.push(c['type'] + '/' + c['object_id']);
+                    cfg_type_object_ids.push(id);
                 }
             });
         });
@@ -827,7 +830,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null, "update_available": null}),
+            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null, "update_available": null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -843,7 +846,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null, "update_available": null}),
+            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null, "update_available": null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -859,7 +862,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"linkquality": null,"state": "ON", "update_available": null}),
+            stringify({"linkquality": null,"state": "ON", "update_available": null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -934,13 +937,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null}),
+            stringify({"action":null,"action_duration":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -958,13 +961,13 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null}),
+            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
-            stringify({"action":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null}),
+            stringify({"action":null,"action_duration":null,"battery":null,"brightness":255,"linkquality":null, "update_available": null, "update": {"state": null}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -1490,24 +1493,6 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
     });
 
-    it('Load Home Assistant mapping from external converters', async () => {
-        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
-        settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
-        await resetExtension();
-
-        const homeassistantSwitch = {
-            type: 'switch',
-            object_id: 'switch',
-            discovery_payload: {
-                payload_off: 'OFF',
-                payload_on: 'ON',
-                value_template: '{{ value_json.state }}',
-                command_topic: true,
-            },
-        };
-        expect(extension._getMapping()['external_converters_device_1']).toEqual([homeassistantSwitch]);
-    });
-
     it('Should clear outdated configs', async () => {
         // Non-existing group -> clear
         MQTT.publish.mockClear();
@@ -1666,7 +1651,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover last_seen when enabled', async () => {
-        settings.set(['advanced', 'last_seen'], ' epoch');
+        settings.set(['advanced', 'last_seen'], 'ISO_8601');
         await resetExtension();
 
         const payload = {

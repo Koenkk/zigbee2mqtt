@@ -254,13 +254,13 @@ class Controller {
             message.linkquality = entity.zh.linkquality;
         }
 
+        for (const extension of this.extensions) {
+            extension.adjustMessageBeforePublish?.(entity, message);
+        }
+
         // filter mqtt message attributes
         if (entity.settings.filtered_attributes) {
             entity.settings.filtered_attributes.forEach((a) => delete message[a]);
-        }
-
-        for (const extension of this.extensions) {
-            extension.adjustMessageBeforePublish?.(entity, message);
         }
 
         if (Object.entries(message).length) {

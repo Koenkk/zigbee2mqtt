@@ -23,6 +23,15 @@ export default class Device {
         this.zh = device;
     }
 
+    exposes(): zhc.DefinitionExpose[] {
+        /* istanbul ignore if */
+        if (typeof this.definition.exposes == 'function') {
+            return this.definition.exposes(this.zh, this.settings);
+        } else {
+            return this.definition.exposes;
+        }
+    }
+
     ensureInSettings(): void {
         if (this.zh.type !== 'Coordinator' && !settings.getDevice(this.zh.ieeeAddr)) {
             settings.addDevice(this.zh.ieeeAddr);

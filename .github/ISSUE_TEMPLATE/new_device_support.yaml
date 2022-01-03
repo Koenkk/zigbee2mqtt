@@ -1,0 +1,54 @@
+name: New device support request
+description: Request support for a new device
+title: "[New device support]: "
+labels: [new device support]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **IMPORTANT:** Before submitting:
+        - Make sure this device is not already supported in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
+        - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
+        - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Link of this device (product page)
+      placeholder: https://www.linktomydevice.org
+    validations:
+      required: true
+  - type: input
+    id: database
+    attributes:
+      label: Database entry
+      description: Entry of this device in `data/database.db` after pairing it
+      placeholder: '{"id":53,"type":"Router","ieeeAddr":"0x10458d00024284f69","nwkAddr":10148,"manufId":4151,"manufName":"LUMI","powerSource":"DC Source","modelId":"lumi.relay.c2acn01","epList":[1,2],"endpoints":{"1":{"profId":260,"epId":1,"devId":257,"inClusterList":[0,3,4,5,1,2,10,6,16,2820,12],"outClusterList":[25,10],"clusters":{"genBasic":{"attributes":{"modelId":"lumi.relay.c2acn01","appVersion":1,"manufacturerName":"LUMI","powerSource":4,"zclVersion":0,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020"}},"genAnalogInput":{"attributes":{"presentValue":129.04425048828125}},"genOnOff":{"attributes":{"61440":117440715,"onOff":1}}},"binds":[],"configuredReportings":[],"meta":{}},"2":{"profId":260,"epId":2,"devId":257,"inClusterList":[6,16,4,5],"outClusterList":[],"clusters":{"genOnOff":{"attributes":{"61440":237478966,"onOff":0}}},"binds":[],"configuredReportings":[],"meta":{}}},"appVersion":1,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020","zclVersion":0,"interviewCompleted":true,"meta":{},"lastSeen":1640285631405}'
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Comments
+      placeholder: I tried to follow the supporting new device page but got stuck at...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: External converter
+      description: In case you tried to create an external converter, put it below
+      render: shell
+  - type: markdown
+    attributes:
+      value: |
+        # Lights
+        In case this device is a light, fill in the fields below:
+  - type: input
+    attributes:
+      label: Supported color modes
+      placeholder: color temperature, color (rgb)
+  - type: input
+    attributes:
+      label: Color temperature range
+      description: In case this light supports color temperature, provide the color temperature range. [How to do this](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_3-1-retrieving-color-temperature-range-only-required-for-lights-which-support-color-temperature).
+      placeholder: '{"colorTempPhysicalMin":153,"colorTempPhysicalMax":454}'

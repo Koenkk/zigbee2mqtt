@@ -95,8 +95,6 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
-        logger.warn('Using experimental new availability feature');
-
         this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
@@ -167,18 +165,17 @@ export default class Availability extends Extension {
          * device can send multiple times after each other.
          */
         if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
-            this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
-                try {
-                    logger.debug(`Retrieving state of '${device.name}' after reconnect`);
-                    // Color and color temperature converters do both, only needs to be called once.
-                    const keySet = [['state'], ['brightness'], ['color', 'color_temp']];
-                    for (const keys of keySet) {
-                        const converter = device.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
-                        await converter?.convertGet?.(device.endpoint(), keys[0],
-                            {message: this.state.get(device) || {}, mapped: device.definition});
-                    }
-                } catch (error) {
-                    logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);
+            this.retrieveStateDebouncers[device.ieeeAddr] = debounce(() => {
+                logger.debug(`Retrieving state of '${device.name}' after reconnect`);
+                // Color and color temperature converters do both, only needs to be called once.
+                const keySet = [['state'], ['brightness'], ['color', 'color_temp']];
+                for (const keys of keySet) {
+                    const converter = device.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
+                    converter?.convertGet?.(device.endpoint(), keys[0],
+                        {message: this.state.get(device) || {}, mapped: device.definition})
+                        .catch((e) => {
+                            logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`);
+                        });
                 }
             }, utils.seconds(2));
         }

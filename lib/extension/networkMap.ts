@@ -267,7 +267,7 @@ export default class NetworkMap extends Extension {
                 model: device.definition.model,
                 vendor: device.definition.vendor,
                 description: device.definition.description,
-                supports: Array.from(new Set((device.definition.exposes).map((e) => {
+                supports: Array.from(new Set((device.exposes()).map((e) => {
                     return e.hasOwnProperty('name') ? e.name :
                         `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
                 }))).join(', '),
