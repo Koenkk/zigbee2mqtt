@@ -465,13 +465,6 @@
           "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
           "default": false
         },
-        "zigbee_ota_override_index_location": {
-          "type": "string",
-          "title": "OTA index override file name",
-          "requiresRestart": true,
-          "description": "Location of override OTA index file",
-          "examples": ["index.json"]
-        },
         "homeassistant_legacy_triggers": {
           "type": "boolean",
           "title": "Home Assistant legacy triggers",
@@ -619,6 +612,13 @@
           "title": "Disable automatic update check",
           "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
           "default": false
+        },
+        "zigbee_ota_override_index_location": {
+          "type": "string",
+          "title": "OTA index override file name",
+          "requiresRestart": true,
+          "description": "Location of override OTA index file",
+          "examples": ["index.json"]
         }
       }
     },

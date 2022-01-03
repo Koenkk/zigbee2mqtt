@@ -31,13 +31,13 @@ export default class OTAUpdate extends Extension {
             tradfriOTA.useTestURL();
         }
 
-        let override_ota_index = settings.get().advanced.zigbee_ota_override_index_location;
+        let override_ota_index = settings.get().ota.zigbee_ota_override_index_location;
         if (override_ota_index) {
             var path = require('path');
 
             // If the file name is not a full path, then treat it as a relative to the data directory
             if (!path.isAbsolute(override_ota_index) && !fs.existsSync(override_ota_index)) {
-                override_ota_index = dataDir.joinPath(override_ota_index); }
+                override_ota_index = dataDir.joinPath(override_ota_index);
             }
 
             zigbeeOTA.useIndexOverride(override_ota_index);
