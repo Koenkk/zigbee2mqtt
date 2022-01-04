@@ -8,17 +8,18 @@ import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import dataDir from '../util/data';
-import fs from 'fs';
-import * as URI from "uri-js"
+import * as URI from 'uri-js';
+import path from 'path';
 
-function isValidUrl(url: string) {
-    let parsed; 
+function isValidUrl(url: string): boolean {
+    let parsed;
     try {
         parsed = URI.parse(url);
     } catch (_) {
+        // istanbul ignore next
         return false;
     }
-    return parsed.scheme === "http" || parsed.scheme === "https" ;
+    return parsed.scheme === 'http' || parsed.scheme === 'https';
 }
 
 type UpdateState = 'updating' | 'idle' | 'available';
@@ -42,16 +43,14 @@ export default class OTAUpdate extends Extension {
             tradfriOTA.useTestURL();
         }
 
-        let override_ota_index = settings.get().ota.zigbee_ota_override_index_location;
-        if (override_ota_index) {
-            var path = require('path');
-
+        let overrideOTAIndex = settings.get().ota.zigbee_ota_override_index_location;
+        if (overrideOTAIndex) {
             // If the file name is not a full path, then treat it as a relative to the data directory
-            if (!isValidUrl(override_ota_index) && !path.isAbsolute(override_ota_index)) {
-                override_ota_index = dataDir.joinPath(override_ota_index);
+            if (!isValidUrl(overrideOTAIndex) && !path.isAbsolute(overrideOTAIndex)) {
+                overrideOTAIndex = dataDir.joinPath(overrideOTAIndex);
             }
 
-            zigbeeOTA.useIndexOverride(override_ota_index);
+            zigbeeOTA.useIndexOverride(overrideOTAIndex);
         }
 
         for (const device of this.zigbee.devices(false)) {

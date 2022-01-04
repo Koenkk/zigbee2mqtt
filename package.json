@@ -52,6 +52,7 @@
     "mqtt": "4.3.1",
     "object-assign-deep": "^0.4.0",
     "rimraf": "^3.0.2",
+    "uri-js": "^4.4.1",
     "semver": "^7.3.5",
     "source-map-support": "^0.5.21",
     "winston": "^3.3.3",
