@@ -54,6 +54,7 @@
     "rimraf": "^3.0.2",
     "semver": "^7.3.5",
     "source-map-support": "^0.5.21",
+    "uri-js": "^4.4.1",
     "winston": "^3.3.3",
     "winston-syslog": "^2.4.4",
     "ws": "^8.4.0",

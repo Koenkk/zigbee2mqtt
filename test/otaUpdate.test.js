@@ -7,9 +7,17 @@ const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const stringify = require('json-stable-stringify-without-jsonify');
+const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
+
+const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
 describe('OTA update', () => {
     let controller;
+
+    let resetExtension = async () => {
+        await controller.enableDisableExtension(false, 'OTAUpdate');
+        await controller.enableDisableExtension(true, 'OTAUpdate');
+    }
 
     const mockClear = (mapped) => {
         mapped.ota.updateToLatest = jest.fn();
@@ -452,5 +460,17 @@ describe('OTA update', () => {
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+    });
+
+    it('Set zigbee_ota_override_index_location', async () => {
+        settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
+        await resetExtension();
+        expect(spyUseIndexOverride).toHaveBeenCalledWith(data.mockDir + '/local.index.json');
+        spyUseIndexOverride.mockClear();
+        
+        settings.set(['ota', 'zigbee_ota_override_index_location'], 'http://my.site/index.json');
+        await resetExtension();
+        expect(spyUseIndexOverride).toHaveBeenCalledWith('http://my.site/index.json');
+        spyUseIndexOverride.mockClear();
     });
 });

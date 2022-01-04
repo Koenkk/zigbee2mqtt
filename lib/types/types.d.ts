@@ -266,7 +266,8 @@ declare global {
         },
         ota: {
             update_check_interval: number,
-            disable_automatic_update_check: boolean
+            disable_automatic_update_check: boolean,
+            zigbee_ota_override_index_location?: string,
         },
         external_converters: string[],
     }

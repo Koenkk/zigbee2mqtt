@@ -3,9 +3,24 @@ import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import utils from '../util/utils';
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
+import zigbeeOTA from 'zigbee-herdsman-converters/lib/ota/zigbeeOTA';
 import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
+import dataDir from '../util/data';
+import * as URI from 'uri-js';
+import path from 'path';
+
+function isValidUrl(url: string): boolean {
+    let parsed;
+    try {
+        parsed = URI.parse(url);
+    } catch (_) {
+        // istanbul ignore next
+        return false;
+    }
+    return parsed.scheme === 'http' || parsed.scheme === 'https';
+}
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
@@ -26,6 +41,16 @@ export default class OTAUpdate extends Extension {
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         if (settings.get().advanced.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
+        }
+
+        let overrideOTAIndex = settings.get().ota.zigbee_ota_override_index_location;
+        if (overrideOTAIndex) {
+            // If the file name is not a full path, then treat it as a relative to the data directory
+            if (!isValidUrl(overrideOTAIndex) && !path.isAbsolute(overrideOTAIndex)) {
+                overrideOTAIndex = dataDir.joinPath(overrideOTAIndex);
+            }
+
+            zigbeeOTA.useIndexOverride(overrideOTAIndex);
         }
 
         for (const device of this.zigbee.devices(false)) {
