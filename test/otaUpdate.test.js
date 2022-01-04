@@ -462,7 +462,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
     });
 
-    it('onlythisSet zigbee_ota_override_index_location', async () => {
+    it('Set zigbee_ota_override_index_location', async () => {
         settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
         await resetExtension();
         expect(spyUseIndexOverride).toHaveBeenCalledWith(data.mockDir + '/local.index.json');
