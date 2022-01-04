@@ -9,6 +9,17 @@ import bind from 'bind-decorator';
 import Device from '../model/device';
 import dataDir from '../util/data';
 import fs from 'fs';
+import * as URI from "uri-js"
+
+function isValidUrl(url: string) {
+    let parsed; 
+    try {
+        parsed = URI.parse(url);
+    } catch (_) {
+        return false;
+    }
+    return parsed.scheme === "http" || parsed.scheme === "https" ;
+}
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
@@ -36,7 +47,7 @@ export default class OTAUpdate extends Extension {
             var path = require('path');
 
             // If the file name is not a full path, then treat it as a relative to the data directory
-            if (!path.isAbsolute(override_ota_index) && !fs.existsSync(override_ota_index)) {
+            if (!isValidUrl(override_ota_index) && !path.isAbsolute(override_ota_index)) {
                 override_ota_index = dataDir.joinPath(override_ota_index);
             }
 
