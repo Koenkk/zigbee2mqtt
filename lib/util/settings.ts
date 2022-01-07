@@ -181,6 +181,14 @@ function loadSettingsWithDefaults(): void {
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
 
+    if (_settingsWithDefaults.frontend) {
+        const defaults = {port: 8080, auth_token: false, host: '0.0.0.0'};
+        const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
+        // @ts-ignore
+        _settingsWithDefaults.frontend = {};
+        objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
+    }
+
     // @ts-ignore
     _settingsWithDefaults.ban && _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
     // @ts-ignore

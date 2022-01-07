@@ -333,6 +333,48 @@
         }
       }
     },
+    "frontend": {
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Frontend (simple)"
+        },
+        {
+          "type": "object",
+          "title": "Frontend (advanced)",
+          "properties": {
+            "port": {
+              "type": "number",
+              "title": "Port",
+              "description": "Frontend binding port",
+              "default": 8080,
+              "requiresRestart": true
+            },
+            "host": {
+              "type": "string",
+              "title": "Bind host",
+              "description": "Frontend binding host",
+              "default": "0.0.0.0",
+              "requiresRestart": true
+            },
+            "auth_token": {
+              "type": ["string", "null"],
+              "title": "Auth token",
+              "description": "Enables authentication, disabled by default",
+              "requiresRestart": true
+            },
+            "url": {
+              "type": ["string", "null"],
+              "title": "URL",
+              "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
+              "requiresRestart": true
+            }
+          }
+        }
+      ],
+      "title": "Frontend",
+      "requiresRestart": true
+    },
 
 
     
@@ -662,32 +704,6 @@
       "patternProperties": {
         "^.*$": {
           "$ref": "#/definitions/group"
-        }
-      }
-    },
-    "frontend": {
-      "type": "object",
-      "title": "Frontend",
-      "properties": {
-        "port": {
-          "type": "number",
-          "title": "Port",
-          "description": "Frontend binding port",
-          "default": 8080,
-          "requiresRestart": true
-        },
-        "host": {
-          "type": "string",
-          "title": "Bind host",
-          "description": "Frontend binding host",
-          "default": "0.0.0.0",
-          "requiresRestart": true
-        },
-        "auth_token": {
-          "type": ["string", "null"],
-          "title": "Auth token",
-          "description": "Enables authentication, disabled by default",
-          "requiresRestart": true
         }
       }
     },

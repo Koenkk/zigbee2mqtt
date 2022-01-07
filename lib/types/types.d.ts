@@ -223,16 +223,16 @@ declare global {
             disable_automatic_update_check: boolean,
             zigbee_ota_override_index_location?: string,
         },
-
-        // TODO
-        devices?: {[s: string]: DeviceSettings},
-        groups?: {[s: string]: GroupSettings},
         frontend?: {
             auth_token?: string,
             host?: string,
             port?: number,
             url?: string,
         },
+
+        // TODO
+        devices?: {[s: string]: DeviceSettings},
+        groups?: {[s: string]: GroupSettings},
         device_options: KeyValue,
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
