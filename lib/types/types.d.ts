@@ -218,6 +218,11 @@ declare global {
                 },
             },
         },
+        ota: {
+            update_check_interval: number,
+            disable_automatic_update_check: boolean,
+            zigbee_ota_override_index_location?: string,
+        },
 
         // TODO
         devices?: {[s: string]: DeviceSettings},
@@ -265,11 +270,6 @@ declare global {
             availability_passlist?: string[],
             availability_blacklist?: string[],
             availability_whitelist?: string[],
-        },
-        ota: {
-            update_check_interval: number,
-            disable_automatic_update_check: boolean,
-            zigbee_ota_override_index_location?: string,
         },
     }
 

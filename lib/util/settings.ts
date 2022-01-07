@@ -59,6 +59,10 @@ const defaults: RecursivePartial<Settings> = {
             },
         },
     },
+    ota: {
+        update_check_interval: 24 * 60,
+        disable_automatic_update_check: false,
+    },
 
     // TODO
     device_options: {},
@@ -131,17 +135,6 @@ const defaults: RecursivePartial<Settings> = {
          * https://github.com/Koenkk/zigbee2mqtt/commit/44db557a0c83f419d66755d14e460cd78bd6204e
          */
         timestamp_format: 'YYYY-MM-DD HH:mm:ss',
-    },
-    ota: {
-        /**
-         * Minimal time delta in minutes between polling third party server for potential firmware updates
-         */
-        update_check_interval: 24 * 60,
-        /**
-         * Completely disallow Zigbee devices to initiate a search for a potential firmware update.
-         * If set to true, only a user-initiated update search will be possible.
-         */
-        disable_automatic_update_check: false,
     },
 };
 

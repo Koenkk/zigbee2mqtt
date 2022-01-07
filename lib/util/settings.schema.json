@@ -308,8 +308,31 @@
         }
       }
     },
-
-
+    "ota": {
+      "type": "object",
+      "title": "OTA updates",
+      "properties": {
+        "update_check_interval": {
+          "type": "number",
+          "title": "Update check interval",
+          "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
+          "default": 1440
+        },
+        "disable_automatic_update_check": {
+          "type": "boolean",
+          "title": "Disable automatic update check",
+          "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
+          "default": false
+        },
+        "zigbee_ota_override_index_location": {
+          "type": "string",
+          "title": "OTA index override file name",
+          "requiresRestart": true,
+          "description": "Location of override OTA index file",
+          "examples": ["index.json"]
+        }
+      }
+    },
 
 
     
@@ -617,31 +640,6 @@
               "default": "/n"
             }
           }
-        }
-      }
-    },
-    "ota": {
-      "type": "object",
-      "title": "OTA updates",
-      "properties": {
-        "update_check_interval": {
-          "type": "number",
-          "title": "Update check interval",
-          "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
-          "default": 1440
-        },
-        "disable_automatic_update_check": {
-          "type": "boolean",
-          "title": "Disable automatic update check",
-          "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
-          "default": false
-        },
-        "zigbee_ota_override_index_location": {
-          "type": "string",
-          "title": "OTA index override file name",
-          "requiresRestart": true,
-          "description": "Location of override OTA index file",
-          "examples": ["index.json"]
         }
       }
     },
