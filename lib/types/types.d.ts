@@ -198,17 +198,6 @@ declare global {
         },
         passlist: string[],
         blocklist: string[],
-
-        // TODO
-        devices?: {[s: string]: DeviceSettings},
-        groups?: {[s: string]: GroupSettings},
-        frontend?: {
-            auth_token?: string,
-            host?: string,
-            port?: number,
-            url?: string,
-        },
-        device_options: KeyValue,
         map_options: {
             graphviz: {
                 colors: {
@@ -229,6 +218,17 @@ declare global {
                 },
             },
         },
+
+        // TODO
+        devices?: {[s: string]: DeviceSettings},
+        groups?: {[s: string]: GroupSettings},
+        frontend?: {
+            auth_token?: string,
+            host?: string,
+            port?: number,
+            url?: string,
+        },
+        device_options: KeyValue,
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
             transmit_power?: number,

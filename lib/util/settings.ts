@@ -39,9 +39,6 @@ const defaults: RecursivePartial<Settings> = {
     },
     passlist: [],
     blocklist: [],
-
-    // TODO
-    device_options: {},
     map_options: {
         graphviz: {
             colors: {
@@ -62,6 +59,9 @@ const defaults: RecursivePartial<Settings> = {
             },
         },
     },
+
+    // TODO
+    device_options: {},
     experimental: {
         // json or attribute or attribute_and_json
         output: 'json',

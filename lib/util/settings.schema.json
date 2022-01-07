@@ -253,6 +253,61 @@
         "type": "string"
       }
     },
+    "map_options": {
+      "type": "object",
+      "title": "Networkmap",
+      "properties": {
+        "graphviz": {
+          "type": "object",
+          "properties": {
+            "colors": {
+              "type": "object",
+              "properties": {
+                "fill": {
+                  "type": "object",
+                  "properties": {
+                    "enddevice": {
+                      "type": "string"
+                    },
+                    "coordinator": {
+                      "type": "string"
+                    },
+                    "router": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "font": {
+                  "type": "object",
+                  "properties": {
+                    "enddevice": {
+                      "type": "string"
+                    },
+                    "coordinator": {
+                      "type": "string"
+                    },
+                    "router": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "line": {
+                  "type": "object",
+                  "properties": {
+                    "active": {
+                      "type": "string"
+                    },
+                    "inactive": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
 
 
 
@@ -560,61 +615,6 @@
               "title": "eol",
               "description": "The end of line character to be added to the end of the message (Default: Message without modifications).",
               "default": "/n"
-            }
-          }
-        }
-      }
-    },
-    "map_options": {
-      "type": "object",
-      "title": "Networkmap",
-      "properties": {
-        "graphviz": {
-          "type": "object",
-          "properties": {
-            "colors": {
-              "type": "object",
-              "properties": {
-                "fill": {
-                  "type": "object",
-                  "properties": {
-                    "enddevice": {
-                      "type": "string"
-                    },
-                    "coordinator": {
-                      "type": "string"
-                    },
-                    "router": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "font": {
-                  "type": "object",
-                  "properties": {
-                    "enddevice": {
-                      "type": "string"
-                    },
-                    "coordinator": {
-                      "type": "string"
-                    },
-                    "router": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "line": {
-                  "type": "object",
-                  "properties": {
-                    "active": {
-                      "type": "string"
-                    },
-                    "inactive": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
             }
           }
         }
