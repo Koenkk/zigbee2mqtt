@@ -836,6 +836,15 @@ describe('Settings', () => {
         expect(before).toBe(after);
     });
 
+    it('Frontend config', () => {
+        write(configurationFile, {...minimalConfig,
+            frontend: true, 
+        });
+
+        settings.reRead();
+        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false, host: '0.0.0.0'})
+    });
+
     it('Deprecated: Home Assistant config', () => {
         write(configurationFile, {...minimalConfig,
             homeassistant: {discovery_topic: 'new'}, 
