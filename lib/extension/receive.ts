@@ -91,23 +91,6 @@ export default class Receive extends Extension {
         /* istanbul ignore next */
         if (!data.device) return;
 
-        /**
-         * Handling of re-transmitted Xiaomi messages.
-         * https://github.com/Koenkk/zigbee2mqtt/issues/1238
-         * https://github.com/Koenkk/zigbee2mqtt/issues/3592
-         *
-         * Some Xiaomi router devices re-transmit messages from Xiaomi end devices.
-         * The network address of these message is set to the one of the Xiaomi router.
-         * Therefore it looks like if the message came from the Xiaomi router, while in
-         * fact it came from the end device.
-         * Handling these message would result in false state updates.
-         * The group ID attribute of these message defines the network address of the end device.
-         */
-        if (data.device.isXiaomi() && data.device.zh.type === 'Router' && data.groupID) {
-            logger.debug('Handling re-transmitted Xiaomi message');
-            data = {...data, device: this.zigbee.deviceByNetworkAddress(data.groupID)};
-        }
-
         if (!this.shouldProcess(data)) {
             utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
                 settings.get(), true, this.publishEntityState);
