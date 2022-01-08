@@ -375,6 +375,28 @@
       "title": "Frontend",
       "requiresRestart": true
     },
+    "devices": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^0x[\\d\\w]{16}$"
+      },
+      "patternProperties": {
+        "^.*$": {
+          "$ref": "#/definitions/device"
+        }
+      }
+    },
+    "groups": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[\\w].*$"
+      },
+      "patternProperties": {
+        "^.*$": {
+          "$ref": "#/definitions/group"
+        }
+      }
+    },
 
 
     
@@ -682,28 +704,6 @@
               "default": "/n"
             }
           }
-        }
-      }
-    },
-    "devices": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^0x[\\d\\w]{16}$"
-      },
-      "patternProperties": {
-        "^.*$": {
-          "$ref": "#/definitions/device"
-        }
-      }
-    },
-    "groups": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^[\\w].*$"
-      },
-      "patternProperties": {
-        "^.*$": {
-          "$ref": "#/definitions/group"
         }
       }
     },

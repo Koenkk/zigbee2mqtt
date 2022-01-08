@@ -229,10 +229,10 @@ declare global {
             port?: number,
             url?: string,
         },
-
-        // TODO
         devices?: {[s: string]: DeviceSettings},
         groups?: {[s: string]: GroupSettings},
+
+        // TODO
         device_options: KeyValue,
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
