@@ -1129,31 +1129,31 @@ describe('Bridge', () => {
         const svg_icon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo';
         const icon_link =  'https://www.zigbee2mqtt.io/images/devices/ZNCZ02LM.jpg';
         definition.icon = icon_link;
-        let payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {}});
+        let payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(icon_link);
 
         definition.icon = icon_link;
-        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {icon: svg_icon}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {icon: svg_icon}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(svg_icon);
 
         definition.icon = '_${model}_';
-        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_lumi.plug_');
 
         definition.icon = '_${model}_${zigbeeModel}_';
-        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_lumi.plug_lumi.plug_');
 
         definition.icon = svg_icon;
-        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe(svg_icon);
@@ -1161,7 +1161,7 @@ describe('Bridge', () => {
         device.modelID = '?._Z\\NC+Z02*LM';
         definition.model = '&&&&*+';
         definition.icon = '_${model}_${zigbeeModel}_';
-        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, settings: {}});
+        payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         expect(payload).not.toBeUndefined()
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_------_-._Z-NC-Z02-LM_');
