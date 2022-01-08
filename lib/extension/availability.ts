@@ -13,8 +13,8 @@ export default class Availability extends Extension {
     private pingQueueExecuting = false;
 
     private getTimeout(device: Device): number {
-        if (typeof device.settings.availability === 'object' && device.settings.availability?.timeout != null) {
-            return utils.minutes(device.settings.availability.timeout);
+        if (typeof device.options.availability === 'object' && device.options.availability?.timeout != null) {
+            return utils.minutes(device.options.availability.timeout);
         }
 
         const key = this.isActiveDevice(device) ? 'active' : 'passive';

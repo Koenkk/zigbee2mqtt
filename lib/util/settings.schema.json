@@ -397,6 +397,10 @@
         }
       }
     },
+    "device_options": {
+      "type": "object",
+      "title": "Options that are applied to all devices"
+    },
 
 
     
@@ -706,9 +710,6 @@
           }
         }
       }
-    },
-    "device_options": {
-      "type": "object"
     },
 
 

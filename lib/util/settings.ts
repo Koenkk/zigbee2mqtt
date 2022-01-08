@@ -63,9 +63,9 @@ const defaults: RecursivePartial<Settings> = {
         update_check_interval: 24 * 60,
         disable_automatic_update_check: false,
     },
+    device_options: {},
 
     // TODO
-    device_options: {},
     experimental: {
         // json or attribute or attribute_and_json
         output: 'json',
@@ -277,7 +277,7 @@ export function validate(): string[] {
 
     // Verify that all friendly names are unique
     const names: string[] = [];
-    const check = (e: DeviceSettings | GroupSettings): void => {
+    const check = (e: DeviceOptions | GroupOptions): void => {
         if (names.includes(e.friendly_name)) errors.push(`Duplicate friendly_name '${e.friendly_name}' found`);
         errors.push(...utils.validateFriendlyName(e.friendly_name));
         names.push(e.friendly_name);
@@ -465,7 +465,7 @@ export function apply(newSettings: Record<string, unknown>): boolean {
     return restartRequired;
 }
 
-export function getGroup(IDorName: string | number): GroupSettings {
+export function getGroup(IDorName: string | number): GroupOptions {
     const settings = get();
     const byID = settings.groups[IDorName];
     if (byID) {
@@ -481,14 +481,14 @@ export function getGroup(IDorName: string | number): GroupSettings {
     return null;
 }
 
-export function getGroups(): GroupSettings[] {
+export function getGroups(): GroupOptions[] {
     const settings = get();
     return Object.entries(settings.groups).map(([ID, group]) => {
         return {devices: [], ...group, ID: Number(ID)};
     });
 }
 
-function getGroupThrowIfNotExists(IDorName: string): GroupSettings {
+function getGroupThrowIfNotExists(IDorName: string): GroupOptions {
     const group = getGroup(IDorName);
     if (!group) {
         throw new Error(`Group '${IDorName}' does not exist`);
@@ -497,7 +497,7 @@ function getGroupThrowIfNotExists(IDorName: string): GroupSettings {
     return group;
 }
 
-export function getDevice(IDorName: string): DeviceSettings {
+export function getDevice(IDorName: string): DeviceOptions {
     const settings = get();
     const byID = settings.devices[IDorName];
     if (byID) {
@@ -513,7 +513,7 @@ export function getDevice(IDorName: string): DeviceSettings {
     return null;
 }
 
-function getDeviceThrowIfNotExists(IDorName: string): DeviceSettings {
+function getDeviceThrowIfNotExists(IDorName: string): DeviceOptions {
     const device = getDevice(IDorName);
     if (!device) {
         throw new Error(`Device '${IDorName}' does not exist`);
@@ -522,7 +522,7 @@ function getDeviceThrowIfNotExists(IDorName: string): DeviceSettings {
     return device;
 }
 
-export function addDevice(ID: string): DeviceSettings {
+export function addDevice(ID: string): DeviceOptions {
     if (getDevice(ID)) {
         throw new Error(`Device '${ID}' already exists`);
     }
@@ -579,7 +579,7 @@ export function removeDevice(IDorName: string): void {
     write();
 }
 
-export function addGroup(name: string, ID?: string): GroupSettings {
+export function addGroup(name: string, ID?: string): GroupOptions {
     utils.validateFriendlyName(name, true);
     if (getGroup(name) || getDevice(name)) {
         throw new Error(`friendly_name '${name}' is already in use`);

@@ -229,11 +229,11 @@ declare global {
             port?: number,
             url?: string,
         },
-        devices?: {[s: string]: DeviceSettings},
-        groups?: {[s: string]: GroupSettings},
+        devices?: {[s: string]: DeviceOptions},
+        groups?: {[s: string]: GroupOptions},
+        device_options: KeyValue,
 
         // TODO
-        device_options: KeyValue,
         experimental: {
             output: 'json' | 'attribute' | 'attribute_and_json',
             transmit_power?: number,
@@ -273,7 +273,7 @@ declare global {
         },
     }
 
-    interface DeviceSettings {
+    interface DeviceOptions {
         ID?: string,
         retention?: number,
         availability?: boolean | {timeout: number},
@@ -290,7 +290,7 @@ declare global {
         qos?: 0 | 1 | 2,
     }
 
-    interface GroupSettings {
+    interface GroupOptions {
         devices?: string[],
         ID?: number,
         optimistic?: boolean,

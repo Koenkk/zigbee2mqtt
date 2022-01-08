@@ -392,9 +392,9 @@ export default class Bridge extends Extension {
 
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
-        const oldOptions = objectAssignDeep({}, cleanup(entity.settings));
+        const oldOptions = objectAssignDeep({}, cleanup(entity.options));
         settings.changeEntityOptions(ID, message.options);
-        const newOptions = cleanup(entity.settings);
+        const newOptions = cleanup(entity.options);
         await this.publishInfo();
 
         logger.info(`Changed config for ${entityType} ${ID}`);
@@ -448,7 +448,7 @@ export default class Bridge extends Extension {
         const homeAssisantRename = message.hasOwnProperty('homeassistant_rename') ?
             message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
-        const oldFriendlyName = entity.settings.friendly_name;
+        const oldFriendlyName = entity.options.friendly_name;
 
         settings.changeFriendlyName(from, to);
 
@@ -682,7 +682,7 @@ export default class Bridge extends Extension {
 
     getDefinitionPayload(device: Device): DefinitionPayload {
         if (!device.definition) return null;
-        let icon = device.settings.icon ? device.settings.icon : device.definition.icon;
+        let icon = device.options.icon ? device.options.icon : device.definition.icon;
         if (icon) {
             icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
