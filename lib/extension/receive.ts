@@ -128,9 +128,9 @@ export default class Receive extends Extension {
             }
 
             // Check if we have to debounce
-            if (data.device.settings.debounce) {
-                this.publishDebounce(data.device, payload, data.device.settings.debounce,
-                    data.device.settings.debounce_ignore);
+            if (data.device.options.debounce) {
+                this.publishDebounce(data.device, payload, data.device.options.debounce,
+                    data.device.options.debounce_ignore);
             } else {
                 this.publishEntityState(data.device, payload);
             }
@@ -141,7 +141,7 @@ export default class Receive extends Extension {
         for (const converter of converters) {
             try {
                 const converted = await converter.convert(
-                    data.device.definition, data, publish, data.device.settings, meta);
+                    data.device.definition, data, publish, data.device.options, meta);
                 if (converted) {
                     payload = {...payload, ...converted};
                 }

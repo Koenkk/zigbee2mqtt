@@ -91,7 +91,7 @@ export default class Publish extends Extension {
         // Only do this when the retrieve_state option is enabled for this device.
         // retrieve_state == decprecated
         if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') &&
-            re.settings.retrieve_state
+            re.options.retrieve_state
         ) {
             setTimeout(() => converter.convertGet(target, key, meta), result.readAfterWriteTime);
         }
@@ -134,7 +134,7 @@ export default class Publish extends Extension {
             return;
         }
         const device = re instanceof Device ? re.zh : null;
-        const entitySettings = re.settings;
+        const entitySettings = re.options;
         const entityState = this.state.get(re) || {};
         const membersState = re instanceof Group ?
             Object.fromEntries(re.zh.members.map((e) => [e.getDevice().ieeeAddr,

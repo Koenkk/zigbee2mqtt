@@ -51,7 +51,7 @@ export default class BridgeLegacy extends Extension {
         try {
             const entity = settings.getDevice(message);
             assert(entity, `Entity '${message}' does not exist`);
-            settings.whitelistDevice(entity.ID.toString());
+            settings.addDeviceToPasslist(entity.ID.toString());
             logger.info(`Whitelisted '${entity.friendly_name}'`);
             this.mqtt.publish(
                 'bridge/log',
@@ -336,7 +336,7 @@ export default class BridgeLegacy extends Extension {
         }
 
         if (action === 'ban') {
-            settings.banDevice(ieeeAddr);
+            settings.blockDevice(ieeeAddr);
         }
     }
 

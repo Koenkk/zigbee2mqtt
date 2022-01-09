@@ -36,8 +36,8 @@ export default class Zigbee {
             databaseBackupPath: data.joinPath('database.db.backup'),
             backupPath: data.joinPath('coordinator_backup.json'),
             serialPort: {
-                baudRate: settings.get().advanced.baudrate,
-                rtscts: settings.get().advanced.rtscts,
+                baudRate: settings.get().serial.baudrate,
+                rtscts: settings.get().serial.rtscts,
                 path: settings.get().serial.port,
                 adapter: settings.get().serial.adapter,
             },
@@ -112,8 +112,8 @@ export default class Zigbee {
 
         for (const device of this.devices(false)) {
             // If a passlist is used, all other device will be removed from the network.
-            const passlist = settings.get().passlist.concat(settings.get().whitelist);
-            const blocklist = settings.get().blocklist.concat(settings.get().ban);
+            const passlist = settings.get().passlist;
+            const blocklist = settings.get().blocklist;
             const remove = async (device: Device): Promise<void> => {
                 try {
                     await device.zh.removeFromNetwork();
@@ -133,8 +133,8 @@ export default class Zigbee {
         }
 
         // Check if we have to set a transmit power
-        if (settings.get().experimental.hasOwnProperty('transmit_power')) {
-            const transmitPower = settings.get().experimental.transmit_power;
+        if (settings.get().advanced.hasOwnProperty('transmit_power')) {
+            const transmitPower = settings.get().advanced.transmit_power;
             await this.herdsman.setTransmitPower(transmitPower);
             logger.info(`Set transmit power to '${transmitPower}'`);
         }
@@ -275,8 +275,8 @@ export default class Zigbee {
 
     @bind private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
         // If passlist is set, all devices not on passlist will be rejected to join the network
-        const passlist = settings.get().passlist.concat(settings.get().whitelist);
-        const blocklist = settings.get().blocklist.concat(settings.get().ban);
+        const passlist = settings.get().passlist;
+        const blocklist = settings.get().blocklist;
         if (passlist.length > 0) {
             if (passlist.includes(ieeeAddr)) {
                 logger.info(`Accepting joining device which is on passlist '${ieeeAddr}'`);

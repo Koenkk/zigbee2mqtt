@@ -13,17 +13,13 @@ export default class Availability extends Extension {
     private pingQueueExecuting = false;
 
     private getTimeout(device: Device): number {
-        if (typeof device.settings.availability === 'object' && device.settings.availability?.timeout != null) {
-            return utils.minutes(device.settings.availability.timeout);
+        if (typeof device.options.availability === 'object' && device.options.availability?.timeout != null) {
+            return utils.minutes(device.options.availability.timeout);
         }
 
         const key = this.isActiveDevice(device) ? 'active' : 'passive';
-        const availabilitySettings = settings.get().availability;
-        if (typeof availabilitySettings === 'object' && availabilitySettings[key]?.timeout != null) {
-            return utils.minutes(availabilitySettings[key]?.timeout);
-        }
-
-        return key === 'active' ? utils.minutes(10) : utils.hours(25);
+        const value = settings.get().availability[key]?.timeout;
+        return key === 'active' ? utils.minutes(value) : utils.hours(value);
     }
 
     private isActiveDevice(device: Device): boolean {
@@ -96,7 +92,9 @@ export default class Availability extends Extension {
 
     override async start(): Promise<void> {
         this.eventBus.onEntityRenamed(this, (data) =>
-            data.entity.isDevice() && this.publishAvailability(data.entity, false, true));
+            data.entity.isDevice() &&
+            utils.isAvailabilityEnabledForDevice(data.entity, settings.get()) &&
+            this.publishAvailability(data.entity, false, true));
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
