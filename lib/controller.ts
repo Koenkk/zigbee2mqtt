@@ -264,7 +264,7 @@ class Controller {
         }
 
         if (Object.entries(message).length) {
-            const output = settings.get().experimental.output;
+            const output = settings.get().advanced.output;
             if (output === 'attribute_and_json' || output === 'json') {
                 await this.mqtt.publish(entity.name, stringify(message), options);
             }

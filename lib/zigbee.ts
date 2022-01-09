@@ -36,8 +36,8 @@ export default class Zigbee {
             databaseBackupPath: data.joinPath('database.db.backup'),
             backupPath: data.joinPath('coordinator_backup.json'),
             serialPort: {
-                baudRate: settings.get().advanced.baudrate,
-                rtscts: settings.get().advanced.rtscts,
+                baudRate: settings.get().serial.baudrate,
+                rtscts: settings.get().serial.rtscts,
                 path: settings.get().serial.port,
                 adapter: settings.get().serial.adapter,
             },
@@ -133,8 +133,8 @@ export default class Zigbee {
         }
 
         // Check if we have to set a transmit power
-        if (settings.get().experimental.hasOwnProperty('transmit_power')) {
-            const transmitPower = settings.get().experimental.transmit_power;
+        if (settings.get().advanced.hasOwnProperty('transmit_power')) {
+            const transmitPower = settings.get().advanced.transmit_power;
             await this.herdsman.setTransmitPower(transmitPower);
             logger.info(`Set transmit power to '${transmitPower}'`);
         }

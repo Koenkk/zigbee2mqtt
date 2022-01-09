@@ -66,7 +66,7 @@ describe('Settings', () => {
     it('Should apply environment variables', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
-        process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'csvtest';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
         process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
 
@@ -77,7 +77,7 @@ describe('Settings', () => {
         expected.groups = {};
         expected.serial.disable_led = true;
         expected.advanced.soft_reset_timeout = 1;
-        expected.experimental.output = 'csvtest';
+        expected.advanced.output = 'csvtest';
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
 
@@ -843,6 +843,51 @@ describe('Settings', () => {
 
         settings.reRead();
         expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false, host: '0.0.0.0'})
+    });
+
+    it('Baudrate config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {baudrate: 20}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().serial.baudrate).toStrictEqual(20)
+    });
+
+    it('ikea_ota_use_test_url config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {ikea_ota_use_test_url: true}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().ota.ikea_ota_use_test_url).toStrictEqual(true)
+    });
+
+    it('transmit_power config', () => {
+        write(configurationFile, {...minimalConfig,
+            experimental: {transmit_power: 1337}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().advanced.transmit_power).toStrictEqual(1337)
+    });
+
+    it('output config', () => {
+        write(configurationFile, {...minimalConfig,
+            experimental: {output: 'json'}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().advanced.output).toStrictEqual('json')
+    });
+
+    it('Baudrartsctste config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {rtscts: true}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().serial.rtscts).toStrictEqual(true)
     });
 
     it('Deprecated: Home Assistant config', () => {

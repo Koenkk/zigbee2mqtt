@@ -28,7 +28,7 @@ describe('OTA update', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultConfiguration();
-        settings.set(['advanced', 'ikea_ota_use_test_url'], true);
+        settings.set(['ota', 'ikea_ota_use_test_url'], true);
         settings.reRead();
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());

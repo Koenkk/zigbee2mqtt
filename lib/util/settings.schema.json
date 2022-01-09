@@ -232,6 +232,19 @@
           "default": "auto",
           "requiresRestart": true,
           "description": "Adapter type, not needed unless you are experiencing problems"
+        },
+        "baudrate": {
+          "type": "number",
+          "title": "Baudrate",
+          "requiresRestart": true,
+          "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
+          "examples": [38400, 57600, 115200]
+        },
+        "rtscts": {
+          "type": "boolean",
+          "title": "RTS / CTS",
+          "requiresRestart": true,
+          "description": "RTS / CTS Hardware Flow Control for serial port"
         }
       }
     },
@@ -324,6 +337,13 @@
           "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
           "default": false
         },
+        "ikea_ota_use_test_url": {
+          "type": "boolean",
+          "title": "IKEA TRADFRI OTA use test url",
+          "requiresRestart": true,
+          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
+          "default": false
+        },
         "zigbee_ota_override_index_location": {
           "type": "string",
           "title": "OTA index override file name",
@@ -401,27 +421,6 @@
       "type": "object",
       "title": "Options that are applied to all devices"
     },
-
-
-    
-    "experimental": {
-      "type": "object",
-      "title": "Experimental",
-      "properties": {
-        "transmit_power": {
-          "type": ["number", "null"],
-          "title": "Transmit power",
-          "requiresRestart": true,
-          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
-        },
-        "output": {
-          "type": "string",
-          "enum": ["attribute_and_json", "attribute", "json"],
-          "title": "MQTT output type",
-          "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-        }
-      }
-    },
     "advanced": {
       "type": "object",
       "title": "Advanced",
@@ -431,57 +430,6 @@
           "title": "Legacy API",
           "requiresRestart": true,
           "description": "Disables the legacy api (false = disable)",
-          "default": true
-        },
-        "pan_id": {
-          "oneOf": [{
-              "type": "string",
-              "title": "Pan ID (string)"
-            },
-            {
-              "type": "number",
-              "title": "Pan ID (number)"
-            }
-          ],
-          "title": "Pan ID",
-          "requiresRestart": true,
-          "description": "ZigBee pan ID, changing requires repairing all devices!"
-        },
-        "ext_pan_id": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "title": "Ext Pan ID",
-          "requiresRestart": true,
-          "description": "Zigbee extended pan ID, changing requires repairing all devices!"
-        },
-        "channel": {
-          "type": "number",
-          "minimum": 11,
-          "maximum": 26,
-          "default": 11,
-          "title": "ZigBee channel",
-          "requiresRestart": true,
-          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
-          "examples": [15, 20, 25]
-        },
-        "cache_state": {
-          "type": "boolean",
-          "title": "Cache state",
-          "description": "MQTT message payload will contain all attributes, not only changed ones. Has to be true when integrating via Home Assistant",
-          "default": true
-        },
-        "cache_state_persistent": {
-          "type": "boolean",
-          "title": "Persist cache state",
-          "description": "Persist cached state, only used when cache_state: true",
-          "default": true
-        },
-        "cache_state_send_on_startup": {
-          "type": "boolean",
-          "title": "Send cached state on startup",
-          "description": "Send cached state on startup, only used when cache_state: true",
           "default": true
         },
         "log_rotation": {
@@ -497,13 +445,6 @@
           "requiresRestart": true,
           "description": "Create symlink to current logs in the log directory",
           "default": false
-        },
-        "log_level": {
-          "type": "string",
-          "enum": ["info", "warn", "error", "debug"],
-          "title": "Log level",
-          "description": "Logging level",
-          "default": "info"
         },
         "log_output": {
           "type": "array",
@@ -530,115 +471,12 @@
           "examples": ["zigbee2mqtt_%TIMESTAMP%.log"],
           "default": "log.txt"
         },
-        "baudrate": {
-          "type": "number",
-          "title": "Baudrate",
-          "requiresRestart": true,
-          "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-          "examples": [38400, 57600, 115200]
-        },
-        "rtscts": {
-          "type": "boolean",
-          "title": "RTS / CTS",
-          "requiresRestart": true,
-          "description": "RTS / CTS Hardware Flow Control for serial port"
-        },
-        "soft_reset_timeout": {
-          "type": "number",
-          "minimum": 0,
-          "requiresRestart": true,
-          "title": "Soft reset timeout (deprecated)",
-          "description": "Soft reset ZNP after timeout",
-          "readOnly": true
-        },
-        "network_key": {
-          "oneOf": [{
-              "type": "string",
-              "title": "Network key(string)"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "title": "Network key(array)"
-            }
-          ],
-          "title": "Network key",
-          "requiresRestart": true,
-          "description": "Network encryption key, changing requires repairing all devices!"
-        },
-        "last_seen": {
+        "log_level": {
           "type": "string",
-          "enum": ["disable", "ISO_8601", "ISO_8601_local", "epoch"],
-          "title": "Last seen",
-          "description": "Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message",
-          "default": "disable"
-        },
-        "elapsed": {
-          "type": "boolean",
-          "title": "Elapsed",
-          "description": "Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg",
-          "default": false
-        },
-        "report": {
-          "type": "boolean",
-          "title": "Reporting",
-          "requiresRestart": true,
-          "readOnly": true,
-          "description": "Enables report feature (deprecated)"
-        },
-        "homeassistant_discovery_topic": {
-          "type": "string",
-          "title": "Homeassistant discovery topic",
-          "description": "Home Assistant discovery topic",
-          "requiresRestart": true,
-          "examples": ["homeassistant"]
-        },
-        "homeassistant_legacy_entity_attributes": {
-          "type": "boolean",
-          "title": "Home Assistant legacy entity attributes",
-          "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-          "default": true
-        },
-        "homeassistant_status_topic": {
-          "type": "string",
-          "title": "Home Assistant status topic",
-          "description": "Home Assistant status topic",
-          "requiresRestart": true,
-          "examples": ["homeassistant/status"]
-        },
-        "timestamp_format": {
-          "type": "string",
-          "title": "Timestamp format",
-          "requiresRestart": true,
-          "description": "Log timestamp format",
-          "examples": ["YYYY-MM-DD HH:mm:ss"]
-        },
-        "adapter_concurrent": {
-          "title": "Adapter concurrency",
-          "requiresRestart": true,
-          "type": ["number", "null"],
-          "description": "Adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)"
-        },
-        "adapter_delay": {
-          "type": ["number", "null"],
-          "requiresRestart": true,
-          "title": "Adapter delay",
-          "description": "Adapter delay"
-        },
-        "ikea_ota_use_test_url": {
-          "type": "boolean",
-          "title": "IKEA TRADFRI OTA use test url",
-          "requiresRestart": true,
-          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-          "default": false
-        },
-        "homeassistant_legacy_triggers": {
-          "type": "boolean",
-          "title": "Home Assistant legacy triggers",
-          "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
-          "default": true
+          "enum": ["info", "warn", "error", "debug"],
+          "title": "Log level",
+          "description": "Logging level",
+          "default": "info"
         },
         "log_syslog": {
           "type": "object",
@@ -708,13 +546,200 @@
               "default": "/n"
             }
           }
+        },
+        "pan_id": {
+          "oneOf": [{
+              "type": "string",
+              "title": "Pan ID (string)"
+            },
+            {
+              "type": "number",
+              "title": "Pan ID (number)"
+            }
+          ],
+          "title": "Pan ID",
+          "requiresRestart": true,
+          "description": "ZigBee pan ID, changing requires repairing all devices!"
+        },
+        "ext_pan_id": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "title": "Ext Pan ID",
+          "requiresRestart": true,
+          "description": "Zigbee extended pan ID, changing requires repairing all devices!"
+        },
+        "channel": {
+          "type": "number",
+          "minimum": 11,
+          "maximum": 26,
+          "default": 11,
+          "title": "ZigBee channel",
+          "requiresRestart": true,
+          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
+          "examples": [15, 20, 25]
+        },
+        "adapter_concurrent": {
+          "title": "Adapter concurrency",
+          "requiresRestart": true,
+          "type": ["number", "null"],
+          "description": "Adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)"
+        },
+        "adapter_delay": {
+          "type": ["number", "null"],
+          "requiresRestart": true,
+          "title": "Adapter delay",
+          "description": "Adapter delay"
+        },
+        "cache_state": {
+          "type": "boolean",
+          "title": "Cache state",
+          "description": "MQTT message payload will contain all attributes, not only changed ones. Has to be true when integrating via Home Assistant",
+          "default": true
+        },
+        "cache_state_persistent": {
+          "type": "boolean",
+          "title": "Persist cache state",
+          "description": "Persist cached state, only used when cache_state: true",
+          "default": true
+        },
+        "cache_state_send_on_startup": {
+          "type": "boolean",
+          "title": "Send cached state on startup",
+          "description": "Send cached state on startup, only used when cache_state: true",
+          "default": true
+        },
+        "last_seen": {
+          "type": "string",
+          "enum": ["disable", "ISO_8601", "ISO_8601_local", "epoch"],
+          "title": "Last seen",
+          "description": "Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message",
+          "default": "disable"
+        },
+        "elapsed": {
+          "type": "boolean",
+          "title": "Elapsed",
+          "description": "Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg",
+          "default": false
+        },
+        "network_key": {
+          "oneOf": [{
+              "type": "string",
+              "title": "Network key(string)"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "title": "Network key(array)"
+            }
+          ],
+          "title": "Network key",
+          "requiresRestart": true,
+          "description": "Network encryption key, changing requires repairing all devices!"
+        },
+        "timestamp_format": {
+          "type": "string",
+          "title": "Timestamp format",
+          "requiresRestart": true,
+          "description": "Log timestamp format",
+          "examples": ["YYYY-MM-DD HH:mm:ss"]
+        },
+        "transmit_power": {
+          "type": ["number", "null"],
+          "title": "Transmit power",
+          "requiresRestart": true,
+          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
+        },
+        "output": {
+          "type": "string",
+          "enum": ["attribute_and_json", "attribute", "json"],
+          "title": "MQTT output type",
+          "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
+        },
+        "homeassistant_discovery_topic": {
+          "type": "string",
+          "title": "Homeassistant discovery topic",
+          "description": "Home Assistant discovery topic",
+          "requiresRestart": true,
+          "examples": ["homeassistant"]
+        },
+        "homeassistant_legacy_entity_attributes": {
+          "type": "boolean",
+          "title": "Home Assistant legacy entity attributes",
+          "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
+          "default": true
+        },
+        "homeassistant_status_topic": {
+          "type": "string",
+          "title": "Home Assistant status topic",
+          "description": "Home Assistant status topic",
+          "requiresRestart": true,
+          "examples": ["homeassistant/status"]
+        },
+        "homeassistant_legacy_triggers": {
+          "type": "boolean",
+          "title": "Home Assistant legacy triggers",
+          "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
+          "default": true
+        },
+        "soft_reset_timeout": {
+          "type": "number",
+          "minimum": 0,
+          "requiresRestart": true,
+          "title": "Soft reset timeout (deprecated)",
+          "description": "Soft reset ZNP after timeout",
+          "readOnly": true
+        },
+        "report": {
+          "type": "boolean",
+          "title": "Reporting",
+          "requiresRestart": true,
+          "readOnly": true,
+          "description": "Enables report feature (deprecated)"
+        },
+        "baudrate": {
+          "type": "number",
+          "title": "Baudrate (deprecated)",
+          "requiresRestart": true,
+          "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
+          "examples": [38400, 57600, 115200]
+        },
+        "rtscts": {
+          "type": "boolean",
+          "title": "RTS / CTS (deprecated)",
+          "requiresRestart": true,
+          "description": "RTS / CTS Hardware Flow Control for serial port"
+        },
+        "ikea_ota_use_test_url": {
+          "type": "boolean",
+          "title": "IKEA TRADFRI OTA use test url (deprecated)",
+          "requiresRestart": true,
+          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
+          "default": false
         }
       }
     },
-
-
-
-
+    "experimental": {
+      "type": "object",
+      "title": "Experimental (deprecated)",
+      "properties": {
+        "transmit_power": {
+          "type": ["number", "null"],
+          "title": "Transmit power",
+          "requiresRestart": true,
+          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
+        },
+        "output": {
+          "type": "string",
+          "enum": ["attribute_and_json", "attribute", "json"],
+          "title": "MQTT output type",
+          "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
+        }
+      }
+    },
     "whitelist": {
       "readOnly": true,
       "type": "array",

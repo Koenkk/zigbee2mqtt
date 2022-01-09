@@ -39,7 +39,7 @@ export default class OTAUpdate extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
-        if (settings.get().advanced.ikea_ota_use_test_url) {
+        if (settings.get().ota.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
         }
 

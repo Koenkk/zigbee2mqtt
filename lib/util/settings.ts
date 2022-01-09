@@ -16,6 +16,12 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
     delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
     delete schema.properties.advanced.properties.homeassistant_status_topic;
+    delete schema.properties.advanced.properties.soft_reset_timeout;
+    delete schema.properties.advanced.properties.report;
+    delete schema.properties.advanced.properties.baudrate;
+    delete schema.properties.advanced.properties.rtscts;
+    delete schema.properties.advanced.properties.ikea_ota_use_test_url;
+    delete schema.properties.experimental;
     delete schemaJson.properties.whitelist;
     delete schemaJson.properties.ban;
 }
@@ -64,12 +70,6 @@ const defaults: RecursivePartial<Settings> = {
         disable_automatic_update_check: false,
     },
     device_options: {},
-
-    // TODO
-    experimental: {
-        // json or attribute or attribute_and_json
-        output: 'json',
-    },
     advanced: {
         legacy_api: true,
         log_rotation: true,
@@ -79,62 +79,26 @@ const defaults: RecursivePartial<Settings> = {
         log_file: 'log.txt',
         log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
         log_syslog: {},
-        soft_reset_timeout: 0,
         pan_id: 0x1a62,
         ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD],
         channel: 11,
         adapter_concurrent: null,
         adapter_delay: null,
-
-        // Availability timeout in seconds, disabled by default.
-        availability_blocklist: [],
-        availability_passlist: [],
-        // Deprecated, use block/passlist
-        availability_blacklist: [],
-        availability_whitelist: [],
-
-        /**
-         * Home Assistant requires ALL attributes to be present in ALL MQTT messages send by the device.
-         * https://community.home-assistant.io/t/missing-value-with-mqtt-only-last-data-set-is-shown/47070/9
-         *
-         * Therefore Zigbee2MQTT BY DEFAULT caches all values and resend it with every message.
-         * advanced.cache_state in configuration.yaml allows to configure this.
-         * https://www.zigbee2mqtt.io/guide/configuration/
-         */
         cache_state: true,
         cache_state_persistent: true,
         cache_state_send_on_startup: true,
-
-        /**
-         * Add a last_seen attribute to mqtt messages, contains date/time of zigbee message arrival
-         * "ISO_8601": ISO 8601 format
-         * "ISO_8601_local": Local ISO 8601 format (instead of UTC-based)
-         * "epoch": milliseconds elapsed since the UNIX epoch
-         * "disable": no last_seen attribute (default)
-         */
         last_seen: 'disable',
-
-        // Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg
         elapsed: false,
-
-        /**
-         * https://github.com/Koenkk/zigbee2mqtt/issues/685#issuecomment-449112250
-         *
-         * Network key will serve as the encryption key of your network.
-         * Changing this will require you to repair your devices.
-         */
         network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
-
-        /**
-         * Enables reporting feature
-         */
-        report: false,
-
-        /**
-         * Configurable timestampFormat
-         * https://github.com/Koenkk/zigbee2mqtt/commit/44db557a0c83f419d66755d14e460cd78bd6204e
-         */
         timestamp_format: 'YYYY-MM-DD HH:mm:ss',
+        output: 'json',
+        // Everything below is deprecated
+        availability_blocklist: [],
+        availability_passlist: [],
+        availability_blacklist: [],
+        availability_whitelist: [],
+        soft_reset_timeout: 0,
+        report: false,
     },
 };
 
@@ -187,6 +151,33 @@ function loadSettingsWithDefaults(): void {
         // @ts-ignore
         _settingsWithDefaults.frontend = {};
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
+    }
+
+    if (_settings.advanced?.hasOwnProperty('baudrate') && _settings.serial?.baudrate == null) {
+        // @ts-ignore
+        _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;
+    }
+
+    if (_settings.advanced?.hasOwnProperty('rtscts') && _settings.serial?.rtscts == null) {
+        // @ts-ignore
+        _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
+    }
+
+    if (_settings.advanced?.hasOwnProperty('ikea_ota_use_test_url') && _settings.ota?.ikea_ota_use_test_url == null) {
+        // @ts-ignore
+        _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
+    }
+
+    // @ts-ignore
+    if (_settings.experimental?.hasOwnProperty('transmit_power') && _settings.advanced?.transmit_power == null) {
+        // @ts-ignore
+        _settingsWithDefaults.advanced.transmit_power = _settings.experimental.transmit_power;
+    }
+
+    // @ts-ignore
+    if (_settings.experimental?.hasOwnProperty('output') && _settings.advanced?.output == null) {
+        // @ts-ignore
+        _settingsWithDefaults.advanced.output = _settings.experimental.output;
     }
 
     // @ts-ignore

@@ -194,7 +194,9 @@ declare global {
         serial: {
             disable_led: boolean,
             port?: string,
-            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate'
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate',
+            baudrate?: number,
+            rtscts?: boolean,
         },
         passlist: string[],
         blocklist: string[],
@@ -222,6 +224,7 @@ declare global {
             update_check_interval: number,
             disable_automatic_update_check: boolean,
             zigbee_ota_override_index_location?: string,
+            ikea_ota_use_test_url?: boolean,
         },
         frontend?: {
             auth_token?: string,
@@ -232,12 +235,6 @@ declare global {
         devices?: {[s: string]: DeviceOptions},
         groups?: {[s: string]: GroupOptions},
         device_options: KeyValue,
-
-        // TODO
-        experimental: {
-            output: 'json' | 'attribute' | 'attribute_and_json',
-            transmit_power?: number,
-        },
         advanced: {
             legacy_api: boolean,
             log_rotation: boolean,
@@ -247,7 +244,6 @@ declare global {
             log_file: string,
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: KeyValue,
-            soft_reset_timeout: number,
             pan_id: number | 'GENERATE',
             ext_pan_id: number[],
             channel: number,
@@ -259,17 +255,17 @@ declare global {
             last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' | 'epoch',
             elapsed: boolean,
             network_key: number[] | 'GENERATE',
-            report: boolean,
             timestamp_format: string,
-            baudrate?: number,
-            rtscts?: boolean,
-            ikea_ota_use_test_url?: boolean,
-            // below are deprecated
+            output: 'json' | 'attribute' | 'attribute_and_json',
+            transmit_power?: number,
+            // Everything below is deprecated
             availability_timeout?: number,
             availability_blocklist?: string[],
             availability_passlist?: string[],
             availability_blacklist?: string[],
             availability_whitelist?: string[],
+            soft_reset_timeout: number,
+            report: boolean,
         },
     }
 
