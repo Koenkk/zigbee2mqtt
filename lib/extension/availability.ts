@@ -95,7 +95,8 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
-        this.eventBus.onDeviceRenamed(this, (data) => this.publishAvailability(data.device, false, true));
+        this.eventBus.onEntityRenamed(this, (data) =>
+            data.entity.isDevice() && this.publishAvailability(data.entity, false, true));
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));

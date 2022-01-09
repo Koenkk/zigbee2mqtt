@@ -1141,6 +1141,50 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should refresh discovery when group is renamed', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({"from": "ha_discovery_group", "to": "ha_discovery_group_new","homeassistant_rename":true}));
+        await flushPromises();
+
+        const payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/ha_discovery_group_new/set",
+            "device":{
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
+               "name":"ha_discovery_group_new",
+               "sw_version": version,
+            },
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group_new",
+            "max_mireds": 454,
+            "min_mireds": 250,
+            "name":"ha_discovery_group_new",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/ha_discovery_group_new",
+            "supported_color_modes":[
+               "xy",
+               "color_temp"
+            ],
+            "unique_id":"9_light_zigbee2mqtt"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            null,
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Shouldnt refresh discovery when device is renamed and homeassistant_rename is false', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":false}));
