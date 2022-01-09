@@ -67,13 +67,6 @@ export default class Device {
         return name === 'default' ? null : name;
     }
 
-    isXiaomi(): boolean {
-        const xiaomiManufacturerID = [4151, 4447];
-        /* istanbul ignore next */
-        return this.zh.modelID !== 'lumi.router' && xiaomiManufacturerID.includes(this.zh.manufacturerID) &&
-            (!this.zh.manufacturerName || !this.zh.manufacturerName.startsWith('Trust'));
-    }
-
     isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
 
     isDevice(): this is Device {return true;}

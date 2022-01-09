@@ -43,6 +43,7 @@ export default class OTAUpdate extends Extension {
             tradfriOTA.useTestURL();
         }
 
+        // Let zigbeeOTA module know if the override index file is provided
         let overrideOTAIndex = settings.get().ota.zigbee_ota_override_index_location;
         if (overrideOTAIndex) {
             // If the file name is not a full path, then treat it as a relative to the data directory
@@ -53,9 +54,12 @@ export default class OTAUpdate extends Extension {
             zigbeeOTA.useIndexOverride(overrideOTAIndex);
         }
 
+        // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
+        zigbeeOTA.setDataDir(dataDir.getPath());
+
+        // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
+        // remove them.
         for (const device of this.zigbee.devices(false)) {
-            // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
-            // remove them.
             this.removeProgressAndRemainingFromState(device);
         }
     }

@@ -64,7 +64,7 @@ export default class Bridge extends Extension {
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
         this.coordinatorVersion = await this.zigbee.getCoordinatorVersion();
 
-        this.eventBus.onDeviceRenamed(this, () => this.publishInfo());
+        this.eventBus.onEntityRenamed(this, () => this.publishInfo());
         this.eventBus.onGroupMembersChanged(this, () => this.publishGroups());
         this.eventBus.onDevicesChanged(this, () => this.publishDevices() && this.publishInfo());
         this.eventBus.onPermitJoinChanged(this, () => !this.zigbee.isStopping() && this.publishInfo());
@@ -455,9 +455,10 @@ export default class Bridge extends Extension {
         // Clear retained messages
         this.mqtt.publish(oldFriendlyName, '', {retain: true});
 
+        this.eventBus.emitEntityRenamed({entity: entity, homeAssisantRename, from: oldFriendlyName, to});
+
         if (entity instanceof Device) {
             this.publishDevices();
-            this.eventBus.emitDeviceRenamed({device: entity, homeAssisantRename, from: oldFriendlyName, to});
         } else {
             this.publishGroups();
             this.publishInfo();

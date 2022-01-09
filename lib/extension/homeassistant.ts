@@ -88,7 +88,7 @@ export default class HomeAssistant extends Extension {
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
+        this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         this.eventBus.onDeviceAnnounce(this, this.onZigbeeEvent);
@@ -858,25 +858,25 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onDeviceRenamed(data: eventdata.DeviceRenamed): void {
-        logger.debug(`Refreshing Home Assistant discovery topic for '${data.device.ieeeAddr}'`);
+    @bind onEntityRenamed(data: eventdata.EntityRenamed): void {
+        logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
         if (data.homeAssisantRename) {
-            for (const config of this.getConfigs(data.device)) {
-                const topic = this.getDiscoveryTopic(config, data.device);
+            for (const config of this.getConfigs(data.entity)) {
+                const topic = this.getDiscoveryTopic(config, data.entity);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
         }
 
-        this.discover(data.device, true);
+        this.discover(data.entity, true);
 
-        if (this.discoveredTriggers[data.device.ieeeAddr]) {
-            for (const config of this.discoveredTriggers[data.device.ieeeAddr]) {
+        if (data.entity.isDevice() && this.discoveredTriggers[data.entity.ieeeAddr]) {
+            for (const config of this.discoveredTriggers[data.entity.ieeeAddr]) {
                 const key = config.substring(0, config.indexOf('_'));
                 const value = config.substring(config.indexOf('_') + 1);
-                this.publishDeviceTriggerDiscover(data.device, key, value, true);
+                this.publishDeviceTriggerDiscover(data.entity, key, value, true);
             }
         }
     }

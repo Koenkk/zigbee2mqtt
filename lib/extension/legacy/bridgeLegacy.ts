@@ -217,7 +217,7 @@ export default class BridgeLegacy extends Extension {
             logger.info(`Successfully renamed - ${from} to ${to} `);
             const entity = this.zigbee.resolveEntity(to);
             if (entity.isDevice()) {
-                this.eventBus.emitDeviceRenamed({homeAssisantRename: false, from, to, device: entity});
+                this.eventBus.emitEntityRenamed({homeAssisantRename: false, from, to, entity});
             }
 
             this.mqtt.publish(

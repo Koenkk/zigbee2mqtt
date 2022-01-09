@@ -27,10 +27,10 @@ export default class EventBus {
         this.on('permitJoinChanged', callback, key);
     }
 
-    public emitDeviceRenamed(data: eventdata.DeviceRenamed): void {
+    public emitEntityRenamed(data: eventdata.EntityRenamed): void {
         this.emitter.emit('deviceRenamed', data);
     }
-    public onDeviceRenamed(key: ListenerKey, callback: (data: eventdata.DeviceRenamed) => void): void {
+    public onEntityRenamed(key: ListenerKey, callback: (data: eventdata.EntityRenamed) => void): void {
         this.on('deviceRenamed', callback, key);
     }
 
