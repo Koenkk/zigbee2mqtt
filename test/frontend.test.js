@@ -133,6 +133,7 @@ describe('Frontend', () => {
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic:"remote", payload:{brightness:255}}));
 
         // Message
+        await flushPromises();
         MQTT.publish.mockClear();
         mockWSClient.implementation.send.mockClear();
         mockWSClient.events.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false)

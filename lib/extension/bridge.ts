@@ -86,13 +86,13 @@ export default class Bridge extends Extension {
             publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
-        this.eventBus.onDeviceInterview(this, (data) => {
+        this.eventBus.onDeviceInterview(this, async (data) => {
             this.publishDevices();
             const payload: KeyValue =
                 {friendly_name: data.device.name, status: data.status, ieee_address: data.device.ieeeAddr};
             if (data.status === 'successful') {
                 payload.supported = !!data.device.definition;
-                payload.definition = this.getDefinitionPayload(data.device);
+                payload.definition = await this.getDefinitionPayload(data.device);
             }
             publishEvent('device_interview', payload);
         });
@@ -611,7 +611,7 @@ export default class Bridge extends Extension {
             clusters: {input: string[], output: string[]}, scenes: Scene[]
         }
 
-        const devices = this.zigbee.devices().map((device) => {
+        const devices = await Promise.all(this.zigbee.devices().map(async (device) => {
             const endpoints: {[s: number]: Data} = {};
             for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
@@ -650,7 +650,7 @@ export default class Bridge extends Extension {
                 network_address: device.zh.networkAddress,
                 supported: !!device.definition,
                 friendly_name: device.name,
-                definition: this.getDefinitionPayload(device),
+                definition: await this.getDefinitionPayload(device),
                 power_source: device.zh.powerSource,
                 software_build_id: device.zh.softwareBuildID,
                 date_code: device.zh.dateCode,
@@ -660,7 +660,7 @@ export default class Bridge extends Extension {
                 manufacturer: device.zh.manufacturerName,
                 endpoints,
             };
-        });
+        }));
 
         await this.mqtt.publish('bridge/devices', stringify(devices),
             {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
@@ -681,7 +681,7 @@ export default class Bridge extends Extension {
             'bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    getDefinitionPayload(device: Device): DefinitionPayload {
+    async getDefinitionPayload(device: Device): Promise<DefinitionPayload> {
         if (!device.definition) return null;
         let icon = device.options.icon ? device.options.icon : device.definition.icon;
         if (icon) {
@@ -693,7 +693,7 @@ export default class Bridge extends Extension {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
-            exposes: device.exposes(),
+            exposes: await device.exposes(),
             supports_ota: !!device.definition.ota,
             options: device.definition.options,
             icon,

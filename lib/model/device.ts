@@ -23,7 +23,7 @@ export default class Device {
         this.zh = device;
     }
 
-    exposes(): zhc.DefinitionExpose[] {
+    async exposes(): Promise<zhc.DefinitionExpose[]> {
         /* istanbul ignore if */
         if (typeof this.definition.exposes == 'function') {
             return this.definition.exposes(this.zh, this.options);

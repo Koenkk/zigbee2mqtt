@@ -858,13 +858,13 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onEntityRenamed(data: eventdata.EntityRenamed): void {
+    @bind async onEntityRenamed(data: eventdata.EntityRenamed): Promise<void> {
         logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
         if (data.homeAssisantRename) {
-            for (const config of this.getConfigs(data.entity)) {
+            for (const config of await this.getConfigs(data.entity)) {
                 const topic = this.getDiscoveryTopic(config, data.entity);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
@@ -881,15 +881,15 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    private getConfigs(entity: Device | Group): DiscoveryEntry[] {
+    private async getConfigs(entity: Device | Group): Promise<DiscoveryEntry[]> {
         const isDevice = entity.isDevice();
         /* istanbul ignore next */
         if (!entity || (isDevice && !entity.definition)) return [];
 
         let configs: DiscoveryEntry[] = [];
         if (isDevice) {
-            for (const expose of entity.exposes()) {
-                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, entity.exposes()));
+            for (const expose of await entity.exposes()) {
+                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, await entity.exposes()));
             }
 
             for (const mapping of legacyMapping) {
@@ -907,21 +907,21 @@ export default class HomeAssistant extends Extension {
         } else { // group
             const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
 
-            entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
-                .filter((d) => d.definition).forEach((device) => {
-                    for (const expose of device.exposes().filter((e) => groupSupportedTypes.includes(e.type))) {
-                        let key = expose.type;
-                        if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
-                            // A device can have multiple of these types which have to discovered seperately.
-                            // e.g. switch with property state and valve_detection.
-                            const state = expose.features.find((f) => f.name === 'state');
-                            key += featurePropertyWithoutEndpoint(state);
-                        }
-
-                        if (!exposesByType[key]) exposesByType[key] = [];
-                        exposesByType[key].push(expose);
+            for (const device of entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
+                .filter((d) => d && d.definition)) {
+                for (const expose of (await device.exposes()).filter((e) => groupSupportedTypes.includes(e.type))) {
+                    let key = expose.type;
+                    if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
+                        // A device can have multiple of these types which have to discovered seperately.
+                        // e.g. switch with property state and valve_detection.
+                        const state = expose.features.find((f) => f.name === 'state');
+                        key += featurePropertyWithoutEndpoint(state);
                     }
-                });
+
+                    if (!exposesByType[key]) exposesByType[key] = [];
+                    exposesByType[key].push(expose);
+                }
+            }
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group')));
@@ -1008,7 +1008,7 @@ export default class HomeAssistant extends Extension {
         return entity.isDevice() ? entity.ieeeAddr : entity.ID;
     }
 
-    private discover(entity: Device | Group, force=false): void {
+    private async discover(entity: Device | Group, force=false): Promise<void> {
         // Check if already discovered and check if there are configs.
         const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
@@ -1021,7 +1021,7 @@ export default class HomeAssistant extends Extension {
         }
 
         this.discovered[discoverKey] = {topics: new Set(), mockProperties: new Set(), objectIDs: new Set()};
-        this.getConfigs(entity).forEach((config) => {
+        (await this.getConfigs(entity)).forEach((config) => {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
@@ -1213,7 +1213,7 @@ export default class HomeAssistant extends Extension {
         });
     }
 
-    @bind private onMQTTMessage(data: eventdata.MQTTMessage): void {
+    @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const discoveryRegex = new RegExp(`${this.discoveryTopic}/(.*)/(.*)/(.*)/config`);
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
@@ -1255,7 +1255,7 @@ export default class HomeAssistant extends Extension {
             if (!clear && !isDeviceAutomation) {
                 const type = discoveryMatch[1];
                 const objectID = discoveryMatch[3];
-                clear = !this.getConfigs(entity)
+                clear = !(await this.getConfigs(entity))
                     .find((c) => c.type === type && c.object_id === objectID &&
                     `${this.discoveryTopic}/${this.getDiscoveryTopic(c, entity)}` === data.topic);
             }

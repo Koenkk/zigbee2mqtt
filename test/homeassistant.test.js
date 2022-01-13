@@ -47,12 +47,12 @@ describe('HomeAssistant extension', () => {
         jest.useRealTimers();
     });
 
-    it('Should not have duplicate type/object_ids in a mapping', () => {
+    it('Should not have duplicate type/object_ids in a mapping', async () => {
         const duplicated = [];
-        require('zigbee-herdsman-converters').devices.forEach((d) => {
-            const exposes = typeof d.exposes == 'function' ? d.exposes() : d.exposes;
+        for (const d of require('zigbee-herdsman-converters').devices) {
+            const exposes = typeof d.exposes == 'function' ? (await d.exposes()) : d.exposes;
             const device = {definition: d, isDevice: () => true, options: {}, exposes: () => exposes};
-            const configs = extension.getConfigs(device);
+            const configs = await extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
             configs.forEach((c) => {
@@ -63,7 +63,7 @@ describe('HomeAssistant extension', () => {
                     cfg_type_object_ids.push(id);
                 }
             });
-        });
+        };
 
         expect(duplicated).toHaveLength(0);
     });
@@ -620,6 +620,7 @@ describe('HomeAssistant extension', () => {
         })
 
         await resetExtension();
+        await flushPromises();
 
         const topics = MQTT.publish.mock.calls.map((c) => c[0]);
         expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config')
@@ -781,6 +782,7 @@ describe('HomeAssistant extension', () => {
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
         };
 
+        await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'my_custom_discovery_topic/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
@@ -991,6 +993,7 @@ describe('HomeAssistant extension', () => {
         data.writeDefaultState();
         extension.state.load();
         await resetExtension();
+        await flushPromises();
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status_different', 'offline');
         await flushPromises();
@@ -1026,6 +1029,7 @@ describe('HomeAssistant extension', () => {
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}, {topic: 'zigbee2mqtt/weather_sensor/availability'}],
         };
 
+        await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
@@ -1434,7 +1438,7 @@ describe('HomeAssistant extension', () => {
             retain: false,
         })
         await resetExtension();
-
+        await flushPromises();
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(4);
         expect(discovered).toContain('homeassistant/sensor/0x0017880104e45520/action/config');
@@ -1446,6 +1450,7 @@ describe('HomeAssistant extension', () => {
         settings.set(['advanced', 'homeassistant_legacy_triggers'], false);
         await resetExtension();
 
+        await flushPromises();
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(3);
         expect(discovered).not.toContain('homeassistant/sensor/0x0017880104e45520/click/config');
@@ -1724,7 +1729,8 @@ describe('HomeAssistant extension', () => {
             "device_class": "timestamp",
             "entity_category": "diagnostic"
          };
-
+        
+        await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config',
             stringify(payload),
