@@ -1,6 +1,5 @@
 name: Problem report
 description: Create a report to help us improve
-title: "[Problem]: "
 labels: [problem]
 body:
   - type: markdown
