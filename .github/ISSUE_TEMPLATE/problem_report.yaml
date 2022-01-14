@@ -1,6 +1,5 @@
 name: Problem report
 description: Create a report to help us improve
-title: "[Problem]: "
 labels: [problem]
 body:
   - type: markdown
@@ -26,14 +25,14 @@ body:
       label: What did you expect to happen?
       placeholder: I expected that ...
     validations:
-      required: true
+      required: false
   - type: textarea
     id: reproduce
     attributes:
       label: How to reproduce it (minimal and precise)
       placeholder: First do this, than this..
     validations:
-      required: true
+      required: false
   - type: input
     id: z2m_version
     attributes:
@@ -65,4 +64,4 @@ body:
       description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Attach the file below
       placeholder: Click here and drag the file into it or click on "Attach files by.." below
     validations:
-      required: true
+      required: false
