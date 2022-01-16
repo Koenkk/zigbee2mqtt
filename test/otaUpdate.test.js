@@ -80,7 +80,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhenActive': false});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"updating","progress":0}}),
@@ -380,7 +380,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhenActive': false});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
     });
 
     it('Legacy api: Should handle when OTA update fails', async () => {
