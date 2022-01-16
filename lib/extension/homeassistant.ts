@@ -1271,6 +1271,7 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
+                this.mqtt.publish('bridge/state', 'online', {retain: true, qos: 0});
                 for (const device of this.zigbee.devices(false)) {
                     if (this.state.exists(device)) {
                         this.publishEntityState(device, this.state.get(device));
