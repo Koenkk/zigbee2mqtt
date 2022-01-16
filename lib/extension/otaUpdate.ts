@@ -261,7 +261,7 @@ export default class OTAUpdate extends Extension {
                     this.publishEntityState(device, payload);
                     const to = await this.readSoftwareBuildIDAndDateCode(device, 'active');
                     const [fromS, toS] = [stringify(from_), stringify(to)];
-                    logger.info(`'${device.name}' was updated from '${fromS}' to '${toS}'`);
+                    logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
                     this.eventBus.emitDevicesChanged();
