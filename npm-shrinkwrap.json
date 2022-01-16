@@ -13183,9 +13183,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "14.0.386",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.386.tgz",
-      "integrity": "sha512-kGtUCIbjT9uVdVD/vWsw1eZuFlQnn+FcdWcEZ08BCwyArsaZBuxNRFFVaNfmeBWHSODeBnmFeclXtJs/dT++bw==",
+      "version": "14.0.387",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.387.tgz",
+      "integrity": "sha512-G3mwGzmfWl0HVvcduwv72wI08T5V4G1rXFcYivClppQ/SZ5Q4xd1eWeLQxX9Zb4PTLzBG+eV9EEHIo6TD2XK+A==",
       "requires": {
         "axios": "^0.24.0",
         "buffer-crc32": "^0.2.13",
@@ -14675,9 +14675,9 @@
           "integrity": "sha512-WsbX4WbjuMvTdeVL6+J3rK1RGhCTqjsFjX7UMSMgZiyxxaNLkoJENbrGExzERFeoTpGw3F3FypTiWAP9ZXzkEw=="
         },
         "eslint-plugin-jest": {
-          "version": "25.3.4",
-          "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-25.3.4.tgz",
-          "integrity": "sha512-CCnwG71wvabmwq/qkz0HWIqBHQxw6pXB1uqt24dxqJ9WB34pVg49bL1sjXphlJHgTMWGhBjN1PicdyxDxrfP5A==",
+          "version": "25.7.0",
+          "resolved": "https://registry.npmjs.org/eslint-plugin-jest/-/eslint-plugin-jest-25.7.0.tgz",
+          "integrity": "sha512-PWLUEXeeF7C9QGKqvdSbzLOiLTx+bno7/HC9eefePfEb257QFHg7ye3dh80AZVkaa/RQsBB1Q/ORQvg2X7F0NQ==",
           "requires": {
             "@typescript-eslint/experimental-utils": "^5.0.0"
           }
@@ -14707,9 +14707,9 @@
           }
         },
         "eslint-visitor-keys": {
-          "version": "3.1.0",
-          "resolved": "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.1.0.tgz",
-          "integrity": "sha512-yWJFpu4DtjsWKkt5GeNBBuZMlNcYVs6vRCLoCVEJrTjaSB6LC98gFipNK/erM2Heg/E8mIK+hXG/pJMLK+eRZA=="
+          "version": "3.2.0",
+          "resolved": "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-3.2.0.tgz",
+          "integrity": "sha512-IOzT0X126zn7ALX0dwFiUQEdsfzrm4+ISsQS8nukaJXwEyYKRSnEIIDULYg1mCtGp7UUXgfGl7BIolXREQK+XQ=="
         },
         "espree": {
           "version": "9.3.0",
