@@ -23,6 +23,7 @@ const mock = {
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
     setTransportsEnabled: (value) => {transportsEnabled = value},
+    on: jest.fn(),
 };
 
 jest.mock('../../lib/util/logger', () => (mock));
