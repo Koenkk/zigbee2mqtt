@@ -141,7 +141,7 @@ export default class MQTT {
         }
 
         if (!skipLog) {
-            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`);
+            logger.debug(`MQTT publish: topic '${topic}', payload '${payload}'`);
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
