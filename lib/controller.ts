@@ -104,14 +104,7 @@ class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
-
-            // Workaround for https://github.com/winstonjs/winston/issues/1629
-            await new Promise<void>((resolve, reject) => {
-                logger.winston.on('finish', () => {
-                    setTimeout(() => resolve(), 1000);
-                });
-                logger.winston.end();
-				    });
+            await logger.end();
             this.exitCallback(1);
         }
 

@@ -181,6 +181,16 @@ function error(message: string): void {
     logger.error(message);
 }
 
+// Workaround for https://github.com/winstonjs/winston/issues/1629.
+async function end(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        logger.on('finish', () => {
+            setTimeout(() => resolve(), 1000);
+        });
+        logger.end();
+    });
+}
+
 export default {
-    logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, winston: logger,
+    logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end, winston: logger,
 };
