@@ -27,7 +27,7 @@
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
     "test-watch": "jest test --watch",
-	"build-bin": "npm run build && pkg . --out-path bin"
+	"build-bin": "npm run build && pkg . --out-path bin --compress GZip"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
