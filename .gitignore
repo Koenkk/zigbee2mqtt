@@ -80,3 +80,6 @@ data/extension
 
 # Ignore config
 data/*.yaml
+
+# Ignore binary
+bin/

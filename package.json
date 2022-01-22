@@ -26,7 +26,8 @@
     "start": "node index.js",
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
-    "test-watch": "jest test --watch"
+    "test-watch": "jest test --watch",
+	"build-bin": "npm build && pkg . --out-path bin"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -82,7 +83,8 @@
     "eslint-plugin-jest": "^25.3.0",
     "jest": "^27.4.5",
     "tmp": "^0.2.1",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "pkg": "^5.5.2"
   },
   "jest": {
     "coverageThreshold": {
@@ -100,5 +102,12 @@
   },
   "bin": {
     "zigbee2mqtt": "cli.js"
+  },
+  "pkg": {
+    "assets": [
+      "dist/**/*",
+      "node_modules/zigbee-herdsman/node_modules/@serialport/bindings/build/**/*",
+      "node_modules/zigbee2mqtt-frontend/dist/**/*"
+    ]
   }
 }
