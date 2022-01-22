@@ -127,6 +127,7 @@ export default class HomeAssistant extends Extension {
             const hasBrightness = exposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
             const hasColorTemp = exposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
             const state = firstExpose.features.find((f) => f.name === 'state');
+            const preferHS = !!exposes.find((expose) => expose.preferredColorMode === 'hs');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'light',
@@ -143,8 +144,8 @@ export default class HomeAssistant extends Extension {
             };
 
             const colorModes = [
-                hasColorXY ? 'xy' : null,
-                !hasColorXY && hasColorHS ? 'hs' : null,
+                hasColorXY && !preferHS ? 'xy' : null,
+                (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                 hasColorTemp ? 'color_temp' : null,
             ].filter((c) => c);
 
