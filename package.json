@@ -63,9 +63,9 @@
     "zigbee2mqtt-frontend": "0.6.68"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
+    "@babel/core": "^7.16.12",
     "@babel/plugin-proposal-decorators": "^7.16.7",
-    "@babel/preset-env": "^7.16.8",
+    "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@types/debounce": "^1.2.1",
     "@types/finalhandler": "^1.1.1",
@@ -75,15 +75,15 @@
     "@types/object-assign-deep": "^0.4.0",
     "@types/rimraf": "^3.0.2",
     "@types/ws": "^8.2.2",
-    "@typescript-eslint/eslint-plugin": "^5.9.1",
-    "@typescript-eslint/parser": "^5.9.1",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
     "babel-jest": "^27.4.6",
-    "eslint": "^8.6.0",
+    "eslint": "^8.7.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jest": "^25.7.0",
     "jest": "^27.4.7",
     "tmp": "^0.2.1",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.5"
   },
   "jest": {
     "coverageThreshold": {
