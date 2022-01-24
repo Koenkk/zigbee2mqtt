@@ -91,8 +91,10 @@ if (settings.get().advanced.log_rotation) {
     transportFileOptions.maxsize = 10000000; // 10MB
 }
 
+let fileTransport : winston.transport;
 if (output.includes('file')) {
-    transportsToUse.push(new winston.transports.File(transportFileOptions));
+    fileTransport = new winston.transports.File(transportFileOptions);
+    transportsToUse.push(fileTransport);
 }
 
 /* istanbul ignore next */
@@ -183,11 +185,24 @@ function error(message: string): void {
 
 // Workaround for https://github.com/winstonjs/winston/issues/1629.
 async function end(): Promise<void> {
+    logger.end();
+
     await new Promise<void>((resolve, reject) => {
-        logger.on('finish', () => {
-            setTimeout(() => resolve(), 1000);
-        });
-        logger.end();
+        if (!fileTransport) {
+          process.nextTick(resolve);
+          return;
+        }
+
+        // @ts-ignore
+        if (fileTransport._dest) {
+            // @ts-ignore
+            fileTransport._dest.on('finish', resolve);
+        } else {
+            fileTransport.on('open', () => {
+                // @ts-ignore
+                fileTransport._dest.on('finish', resolve);
+            });
+        }
     });
 }
 
