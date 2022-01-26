@@ -104,7 +104,7 @@ class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
-            this.exitCallback(1);
+            await this.exit(1);
         }
 
         // Disable some legacy options on new network creation
@@ -145,7 +145,7 @@ class Controller {
             logger.error(`MQTT failed to connect: ${error.message}`);
             logger.error('Exiting...');
             await this.zigbee.stop();
-            this.exitCallback(1);
+            await this.exit(1);
         }
 
         // Call extensions
@@ -197,11 +197,16 @@ class Controller {
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
-            this.exitCallback(0);
+            await this.exit(0);
         } catch (error) {
             logger.error('Failed to stop Zigbee2MQTT');
-            this.exitCallback(1);
+            await this.exit(1);
         }
+    }
+
+    async exit(code: number): Promise<void> {
+        await logger.end();
+        this.exitCallback(code);
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {
