@@ -91,10 +91,13 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
-        this.eventBus.onEntityRenamed(this, (data) =>
-            data.entity.isDevice() &&
-            utils.isAvailabilityEnabledForDevice(data.entity, settings.get()) &&
-            this.publishAvailability(data.entity, false, true));
+        this.eventBus.onEntityRenamed(this, (data) => {
+            if (data.entity.isDevice() && utils.isAvailabilityEnabledForDevice(data.entity, settings.get())) {
+                this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 0});
+                this.publishAvailability(data.entity, false, true);
+            }
+        });
+
         this.eventBus.onDeviceRemoved(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
