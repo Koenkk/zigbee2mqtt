@@ -184,24 +184,23 @@ function error(message: string): void {
 }
 
 // Workaround for https://github.com/winstonjs/winston/issues/1629.
+// https://github.com/Koenkk/zigbee2mqtt/pull/10905
+/* istanbul ignore next */
 async function end(): Promise<void> {
     logger.end();
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
         if (!fileTransport) {
-          process.nextTick(resolve);
-          return;
-        }
-
-        // @ts-ignore
-        if (fileTransport._dest) {
-            // @ts-ignore
-            fileTransport._dest.on('finish', resolve);
+            process.nextTick(resolve);
         } else {
-            fileTransport.on('open', () => {
+            // @ts-ignore
+            if (fileTransport._dest) {
                 // @ts-ignore
                 fileTransport._dest.on('finish', resolve);
-            });
+            } else {
+                // @ts-ignore
+                fileTransport.on('open', () => fileTransport._dest.on('finish', resolve));
+            }
         }
     });
 }
