@@ -1,27 +1,19 @@
-let level = 'info';
+import winston from 'winston';
 
-const transports = [];
-
+const logger = winston.createLogger();
+logger.add(new winston.transports.Console({ silent: true }));
 let transportsEnabled = false;
-const callTransports = (level, message) => {
-    if (transportsEnabled) {
-        for (const transport of transports) {
-            transport.log({level, message}, () => {});
-        }
-    }
-}
 
 const mock = {
-    info: jest.fn().mockImplementation((msg) => callTransports('info', msg)),
-    warn: jest.fn().mockImplementation((msg) => callTransports('warn', msg)),
-    error: jest.fn().mockImplementation((msg) => callTransports('error', msg)),
-    debug: jest.fn().mockImplementation((msg) => callTransports('debug', msg)),
+    info: jest.fn().mockImplementation((msg) => transportsEnabled && logger.info(msg)),
+    warn: jest.fn().mockImplementation((msg) => transportsEnabled && logger.warn(msg)),
+    error: jest.fn().mockImplementation((msg) => transportsEnabled && logger.error(msg)),
+    debug: jest.fn().mockImplementation((msg) => transportsEnabled && logger.debug(msg)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
-    add: (transport) => transports.push(transport),
-    addTransport: (transport) => transports.push(transport),
-    setLevel: (newLevel) => {level = newLevel},
-    getLevel: () => level,
+    addTransport: (transport) => logger.add(transport),
+    setLevel: (level) => logger.level = level,
+    getLevel: () => logger.level,
     setTransportsEnabled: (value) => {transportsEnabled = value},
 };
 

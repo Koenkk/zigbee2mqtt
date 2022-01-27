@@ -55,7 +55,6 @@ const timestampFormat = (): string => moment().format(settings.get().advanced.ti
 // Setup default console logger
 const transportsToUse: winston.transport[] = [
     new winston.transports.Console({
-        level,
         silent: !output.includes('console'),
         format: winston.format.combine(
             winston.format.timestamp({format: timestampFormat}),
@@ -74,7 +73,6 @@ const transportsToUse: winston.transport[] = [
 const transportFileOptions: KeyValue = {
     filename: path.join(directory, logFilename),
     json: false,
-    level,
     format: winston.format.combine(
         winston.format.timestamp({format: timestampFormat}),
         winston.format.printf(/* istanbul ignore next */(info) => {
@@ -112,7 +110,11 @@ if (output.includes('syslog')) {
 }
 
 // Create logger
-const logger = winston.createLogger({transports: transportsToUse, levels: winston.config.syslog.levels});
+const logger = winston.createLogger({
+    level,
+    transports: transportsToUse,
+    levels: winston.config.syslog.levels,
+});
 
 // Cleanup any old log directory.
 function cleanup(): void {
@@ -148,16 +150,15 @@ function logOutput(): void {
 }
 
 function addTransport(transport: winston.transport): void {
-    transport.level = transportsToUse[0].level;
     logger.add(transport);
 }
 
 function getLevel(): Z2MLogLevel {
-    return winstonToZ2mLevel(transportsToUse[0].level as WinstonLogLevel);
+    return winstonToZ2mLevel(logger.level as WinstonLogLevel);
 }
 
 function setLevel(level: Z2MLogLevel): void {
-    logger.transports.forEach((transport) => transport.level = z2mToWinstonLevel(level as Z2MLogLevel));
+    logger.level = z2mToWinstonLevel(level);
 }
 
 function warn(message: string): void {

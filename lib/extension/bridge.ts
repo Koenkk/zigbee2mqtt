@@ -59,7 +59,7 @@ export default class Bridge extends Extension {
             }
         }
 
-        logger.addTransport(new EventTransport());
+        logger.addTransport(new EventTransport({ level: 'info' }));
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
         this.coordinatorVersion = await this.zigbee.getCoordinatorVersion();

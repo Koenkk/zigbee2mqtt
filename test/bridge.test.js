@@ -108,6 +108,22 @@ describe('Bridge', () => {
         expect(logger.error).toHaveBeenCalledTimes(0);
     });
 
+    it('Should log to MQTT regardless of log level', async () => {
+        logger.setLevel('error');
+        logger.setTransportsEnabled(true);
+        MQTT.publish.mockClear();
+        logger.info.mockClear();
+        logger.info("this is a test");
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/logging',
+            stringify({message: 'this is a test', level: 'info'}),
+          { retain: false, qos: 0 },
+          expect.any(Function)
+        );
+        expect(logger.info).toHaveBeenCalledTimes(1);
+    });
+
     it('Should publish groups on startup', async () => {
         await resetExtension();
         logger.setTransportsEnabled(true);
