@@ -350,20 +350,6 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({"qos": 0, "retain": false});
     });
 
-    it('Should handle forwarded Xiaomi messages', async () => {
-        const device = zigbeeHerdsman.devices.ZNCZ02LM;
-        const payload = {data: {measuredValue: -85}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, groupID: 6539};
-        await zigbeeHerdsman.events.message(payload);
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/weather_sensor',
-            stringify({temperature: -0.85}),
-            {"qos": 1, "retain": false},
-            expect.any(Function),
-        )
-    });
-
     it('Should handle messages from Xiaomi router devices', async () => {
         const device = zigbeeHerdsman.devices.ZNCZ02LM;
         const data = {onOff: 1};

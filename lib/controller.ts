@@ -104,7 +104,7 @@ class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
-            this.exitCallback(1);
+            await this.exit(1);
         }
 
         // Disable some legacy options on new network creation
@@ -145,7 +145,7 @@ class Controller {
             logger.error(`MQTT failed to connect: ${error.message}`);
             logger.error('Exiting...');
             await this.zigbee.stop();
-            this.exitCallback(1);
+            await this.exit(1);
         }
 
         // Call extensions
@@ -197,11 +197,16 @@ class Controller {
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
-            this.exitCallback(0);
+            await this.exit(0);
         } catch (error) {
             logger.error('Failed to stop Zigbee2MQTT');
-            this.exitCallback(1);
+            await this.exit(1);
         }
+    }
+
+    async exit(code: number): Promise<void> {
+        await logger.end();
+        this.exitCallback(code);
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {
@@ -222,11 +227,11 @@ class Controller {
         }
 
         const options: MQTTOptions = {
-            retain: utils.getObjectProperty(entity.settings, 'retain', false) as boolean,
-            qos: utils.getObjectProperty(entity.settings, 'qos', 0) as 0 | 1 | 2,
+            retain: utils.getObjectProperty(entity.options, 'retain', false) as boolean,
+            qos: utils.getObjectProperty(entity.options, 'qos', 0) as 0 | 1 | 2,
         };
 
-        const retention = utils.getObjectProperty(entity.settings, 'retention', false);
+        const retention = utils.getObjectProperty(entity.options, 'retention', false);
         if (retention !== false) {
             options.properties = {messageExpiryInterval: retention as number};
         }
@@ -259,12 +264,12 @@ class Controller {
         }
 
         // filter mqtt message attributes
-        if (entity.settings.filtered_attributes) {
-            entity.settings.filtered_attributes.forEach((a) => delete message[a]);
+        if (entity.options.filtered_attributes) {
+            entity.options.filtered_attributes.forEach((a) => delete message[a]);
         }
 
         if (Object.entries(message).length) {
-            const output = settings.get().experimental.output;
+            const output = settings.get().advanced.output;
             if (output === 'attribute_and_json' || output === 'json') {
                 await this.mqtt.publish(entity.name, stringify(message), options);
             }

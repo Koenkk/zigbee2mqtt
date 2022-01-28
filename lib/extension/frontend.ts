@@ -17,9 +17,9 @@ import bind from 'bind-decorator';
  */
 export default class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
-    private host = settings.get().frontend.host || '0.0.0.0';
-    private port = settings.get().frontend.port || 8080;
-    private authToken = settings.get().frontend.auth_token || false;
+    private host = settings.get().frontend.host;
+    private port = settings.get().frontend.port;
+    private authToken = settings.get().frontend.auth_token;
     private retainedMessages = new Map();
     private server: http.Server;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

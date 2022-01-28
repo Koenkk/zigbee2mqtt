@@ -246,8 +246,8 @@ function sanitizeImageParameter(parameter: string): string {
 }
 
 function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
-    if (device.settings.hasOwnProperty('availability')) {
-        return !!device.settings.availability;
+    if (device.options.hasOwnProperty('availability')) {
+        return !!device.options.availability;
     }
 
     // availability_timeout = deprecated

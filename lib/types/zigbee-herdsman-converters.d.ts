@@ -11,3 +11,7 @@ declare module 'zigbee-herdsman-converters/lib/ota/tradfri' {
     export function useTestURL(): void;
 }
 
+declare module 'zigbee-herdsman-converters/lib/ota/zigbeeOTA' {
+    export function useIndexOverride(indexFileName: string): void;
+    export function setDataDir(dataDir: string): void;
+}

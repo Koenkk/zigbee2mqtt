@@ -51,7 +51,7 @@ export default class BridgeLegacy extends Extension {
         try {
             const entity = settings.getDevice(message);
             assert(entity, `Entity '${message}' does not exist`);
-            settings.whitelistDevice(entity.ID.toString());
+            settings.addDeviceToPasslist(entity.ID.toString());
             logger.info(`Whitelisted '${entity.friendly_name}'`);
             this.mqtt.publish(
                 'bridge/log',
@@ -217,7 +217,7 @@ export default class BridgeLegacy extends Extension {
             logger.info(`Successfully renamed - ${from} to ${to} `);
             const entity = this.zigbee.resolveEntity(to);
             if (entity.isDevice()) {
-                this.eventBus.emitDeviceRenamed({homeAssisantRename: false, from, to, device: entity});
+                this.eventBus.emitEntityRenamed({homeAssisantRename: false, from, to, entity});
             }
 
             this.mqtt.publish(
@@ -336,7 +336,7 @@ export default class BridgeLegacy extends Extension {
         }
 
         if (action === 'ban') {
-            settings.banDevice(ieeeAddr);
+            settings.blockDevice(ieeeAddr);
         }
     }
 

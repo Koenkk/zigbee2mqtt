@@ -65,16 +65,16 @@ export default class HomeAssistant extends Extension {
     private discovered: {[s: string]:
         {topics: Set<string>, mockProperties: Set<MockProperty>, objectIDs: Set<string>}} = {};
     private discoveredTriggers : {[s: string]: Set<string>}= {};
-    private discoveryTopic = settings.get().advanced.homeassistant_discovery_topic;
-    private statusTopic = settings.get().advanced.homeassistant_status_topic;
-    private entityAttributes = settings.get().advanced.homeassistant_legacy_entity_attributes;
+    private discoveryTopic = settings.get().homeassistant.discovery_topic;
+    private statusTopic = settings.get().homeassistant.status_topic;
+    private entityAttributes = settings.get().homeassistant.legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => void, addExtension: (extension: Extension) => Promise<void>) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
-        if (settings.get().experimental.output === 'attribute') {
+        if (settings.get().advanced.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');
         }
     }
@@ -88,7 +88,7 @@ export default class HomeAssistant extends Extension {
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.eventBus.onDeviceRenamed(this, this.onDeviceRenamed);
+        this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         this.eventBus.onDeviceAnnounce(this, this.onZigbeeEvent);
@@ -127,6 +127,11 @@ export default class HomeAssistant extends Extension {
             const hasBrightness = exposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
             const hasColorTemp = exposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
             const state = firstExpose.features.find((f) => f.name === 'state');
+            // Prefer HS over XY when at least one of the lights in the group prefers HS over XY.
+            // A light prefers HS over XY when HS is earlier in the feature array than HS.
+            const preferHS = exposes.map((e) => [e.features.findIndex((ee) => ee.name === 'color_xy'),
+                e.features.findIndex((ee) => ee.name === 'color_hs')])
+                .filter((d) => d[0] !== -1 && d[1] !== -1 && d[1] < d[0]).length !== 0;
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'light',
@@ -143,8 +148,8 @@ export default class HomeAssistant extends Extension {
             };
 
             const colorModes = [
-                hasColorXY ? 'xy' : null,
-                !hasColorXY && hasColorHS ? 'hs' : null,
+                hasColorXY && !preferHS ? 'xy' : null,
+                (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                 hasColorTemp ? 'color_temp' : null,
             ].filter((c) => c);
 
@@ -653,6 +658,13 @@ export default class HomeAssistant extends Extension {
                 z_axis: {icon: 'mdi:axis-z-arrow'},
             };
 
+            const extraAttrs = {};
+
+            // If a variable includes Wh, mark it as energy
+            if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
+                Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
+            }
+
             const allowsSet = firstExpose.access & ACCESS_SET;
 
             const discoveryEntry: DiscoveryEntry = {
@@ -664,13 +676,14 @@ export default class HomeAssistant extends Extension {
                     enabled_by_default: !allowsSet,
                     ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                     ...lookup[firstExpose.name],
+                    ...extraAttrs,
                 },
             };
             discoveryEntries.push(discoveryEntry);
 
             /**
              * If numeric attribute has SET access then expose as SELECT entity too.
-             * Note: currently both sensor and number are discoverd, this is to avoid
+             * Note: currently both sensor and number are discovered, this is to avoid
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
@@ -734,7 +747,7 @@ export default class HomeAssistant extends Extension {
 
                 /**
                  * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discoverd, this is to avoid
+                 * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
                  */
                 if ((firstExpose.access & ACCESS_SET)) {
@@ -827,7 +840,7 @@ export default class HomeAssistant extends Extension {
          * can use Home Assistant entities in automations.
          * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
          */
-        if (settings.get().advanced.homeassistant_legacy_triggers) {
+        if (settings.get().homeassistant.legacy_triggers) {
             const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
                 this.publishEntityState(data.entity, {[key]: ''});
@@ -850,25 +863,25 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onDeviceRenamed(data: eventdata.DeviceRenamed): void {
-        logger.debug(`Refreshing Home Assistant discovery topic for '${data.device.ieeeAddr}'`);
+    @bind onEntityRenamed(data: eventdata.EntityRenamed): void {
+        logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
         if (data.homeAssisantRename) {
-            for (const config of this.getConfigs(data.device)) {
-                const topic = this.getDiscoveryTopic(config, data.device);
+            for (const config of this.getConfigs(data.entity)) {
+                const topic = this.getDiscoveryTopic(config, data.entity);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
         }
 
-        this.discover(data.device, true);
+        this.discover(data.entity, true);
 
-        if (this.discoveredTriggers[data.device.ieeeAddr]) {
-            for (const config of this.discoveredTriggers[data.device.ieeeAddr]) {
+        if (data.entity.isDevice() && this.discoveredTriggers[data.entity.ieeeAddr]) {
+            for (const config of this.discoveredTriggers[data.entity.ieeeAddr]) {
                 const key = config.substring(0, config.indexOf('_'));
                 const value = config.substring(config.indexOf('_') + 1);
-                this.publishDeviceTriggerDiscover(data.device, key, value, true);
+                this.publishDeviceTriggerDiscover(data.entity, key, value, true);
             }
         }
     }
@@ -970,19 +983,19 @@ export default class HomeAssistant extends Extension {
             configs.push(updateAvailableSensor);
         }
 
-        if (isDevice && entity.settings.hasOwnProperty('legacy') && !entity.settings.legacy) {
+        if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
             configs = configs.filter((c) => c !== sensorClick);
         }
 
-        if (!settings.get().advanced.homeassistant_legacy_triggers) {
+        if (!settings.get().homeassistant.legacy_triggers) {
             configs = configs.filter((c) => c.object_id !== 'action' && c.object_id !== 'click');
         }
 
         // deep clone of the config objects
         configs = JSON.parse(JSON.stringify(configs));
 
-        if (entity.settings.homeassistant) {
-            const s = entity.settings.homeassistant;
+        if (entity.options.homeassistant) {
+            const s = entity.options.homeassistant;
             configs = configs.filter((config) => !s.hasOwnProperty(config.object_id) || s[config.object_id] != null);
             configs.forEach((config) => {
                 const configOverride = s[config.object_id];
@@ -1001,14 +1014,14 @@ export default class HomeAssistant extends Extension {
     }
 
     private discover(entity: Device | Group, force=false): void {
-        // Check if already discoverd and check if there are configs.
+        // Check if already discovered and check if there are configs.
         const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
 
         if (entity.isGroup()) {
             if (!discover || entity.zh.members.length === 0) return;
         } else if (!discover || !entity.definition || entity.zh.interviewing ||
-            (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant)) {
+            (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant)) {
             return;
         }
 
@@ -1053,7 +1066,7 @@ export default class HomeAssistant extends Extension {
             }
 
             // Set unique_id
-            payload.unique_id = `${entity.settings.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
+            payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
             // Attributes for device registry
             payload.device = this.getDevicePayload(entity);
@@ -1171,7 +1184,7 @@ export default class HomeAssistant extends Extension {
             }
 
             // Override configuration with user settings.
-            if (entity.settings.hasOwnProperty('homeassistant')) {
+            if (entity.options.hasOwnProperty('homeassistant')) {
                 const add = (obj: KeyValue): void => {
                     Object.keys(obj).forEach((key) => {
                         if (['type', 'object_id'].includes(key)) {
@@ -1189,10 +1202,10 @@ export default class HomeAssistant extends Extension {
                     });
                 };
 
-                add(entity.settings.homeassistant);
+                add(entity.options.homeassistant);
 
-                if (entity.settings.homeassistant.hasOwnProperty(config.object_id)) {
-                    add(entity.settings.homeassistant[config.object_id]);
+                if (entity.options.homeassistant.hasOwnProperty(config.object_id)) {
+                    add(entity.options.homeassistant[config.object_id]);
                 }
             }
 
@@ -1210,7 +1223,7 @@ export default class HomeAssistant extends Extension {
         const discoveryMatch = data.topic.match(discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
-            // Clear outdated discovery configs and remember already discoverd device_automations
+            // Clear outdated discovery configs and remember already discovered device_automations
             let message: KeyValue = null;
             try {
                 message = JSON.parse(data.message);
@@ -1252,7 +1265,7 @@ export default class HomeAssistant extends Extension {
                     `${this.discoveryTopic}/${this.getDiscoveryTopic(c, entity)}` === data.topic);
             }
             // Device was flagged to be excluded from homeassistant discovery
-            clear = clear || (entity.settings.hasOwnProperty('homeassistant') && !entity.settings.homeassistant);
+            clear = clear || (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant);
 
             if (clear) {
                 logger.debug(`Clearing Home Assistant config '${data.topic}'`);
@@ -1263,6 +1276,7 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
+                this.mqtt.publish('bridge/state', 'online', {retain: true, qos: 0});
                 for (const device of this.zigbee.devices(false)) {
                     if (this.state.exists(device)) {
                         this.publishEntityState(device, this.state.get(device));
@@ -1282,7 +1296,7 @@ export default class HomeAssistant extends Extension {
         const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
         const payload: KeyValue = {
-            identifiers: [`${identifierPostfix}_${entity.settings.ID}`],
+            identifiers: [`${identifierPostfix}_${entity.options.ID}`],
             name: entity.name,
             sw_version: `Zigbee2MQTT ${this.zigbee2MQTTVersion}`,
         };
@@ -1331,8 +1345,8 @@ export default class HomeAssistant extends Extension {
     }
 
     private async publishDeviceTriggerDiscover(device: Device, key: string, value: string, force=false): Promise<void> {
-        const haConfig = device.settings.homeassistant;
-        if (device.settings.hasOwnProperty('homeassistant') && (haConfig == null ||
+        const haConfig = device.options.homeassistant;
+        if (device.options.hasOwnProperty('homeassistant') && (haConfig == null ||
                 (haConfig.hasOwnProperty('device_automation') && typeof haConfig === 'object' &&
                     haConfig.device_automation == null))) {
             return;

@@ -7,9 +7,17 @@ const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const stringify = require('json-stable-stringify-without-jsonify');
+const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
+
+const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
 describe('OTA update', () => {
     let controller;
+
+    let resetExtension = async () => {
+        await controller.enableDisableExtension(false, 'OTAUpdate');
+        await controller.enableDisableExtension(true, 'OTAUpdate');
+    }
 
     const mockClear = (mapped) => {
         mapped.ota.updateToLatest = jest.fn();
@@ -20,7 +28,7 @@ describe('OTA update', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultConfiguration();
-        settings.set(['advanced', 'ikea_ota_use_test_url'], true);
+        settings.set(['ota', 'ikea_ota_use_test_url'], true);
         settings.reRead();
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
@@ -70,9 +78,11 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhenActive': false});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'active'});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"updating","progress":0}}),
@@ -90,7 +100,7 @@ describe('OTA update', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            stringify({"data":{"id": "bulb","from":{"software_build_id":1,"date_code":"20190101"},"to":{"software_build_id":2,"date_code":"20190102"}},"status":"ok"}),
+            stringify({"data":{"from":{"date_code":"20190101","software_build_id":1},"id":"bulb","to":{"date_code":"20190103","software_build_id":3}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -369,10 +379,11 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb', from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);        
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhenActive': false});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
     });
 
     it('Legacy api: Should handle when OTA update fails', async () => {
@@ -452,5 +463,17 @@ describe('OTA update', () => {
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+    });
+
+    it('Set zigbee_ota_override_index_location', async () => {
+        settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
+        await resetExtension();
+        expect(spyUseIndexOverride).toHaveBeenCalledWith(data.mockDir + '/local.index.json');
+        spyUseIndexOverride.mockClear();
+        
+        settings.set(['ota', 'zigbee_ota_override_index_location'], 'http://my.site/index.json');
+        await resetExtension();
+        expect(spyUseIndexOverride).toHaveBeenCalledWith('http://my.site/index.json');
+        spyUseIndexOverride.mockClear();
     });
 });

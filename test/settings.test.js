@@ -66,7 +66,7 @@ describe('Settings', () => {
     it('Should apply environment variables', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
-        process.env['ZIGBEE2MQTT_CONFIG_EXPERIMENTAL_OUTPUT'] = 'csvtest';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'csvtest';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
         process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
 
@@ -77,7 +77,7 @@ describe('Settings', () => {
         expected.groups = {};
         expected.serial.disable_led = true;
         expected.advanced.soft_reset_timeout = 1;
-        expected.experimental.output = 'csvtest';
+        expected.advanced.output = 'csvtest';
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
 
@@ -150,6 +150,7 @@ describe('Settings', () => {
         write(configurationFile, contentConfiguration);
 
         const expected = {
+            base_topic: 'zigbee2mqtt',
             include_device_information: false,
             force_disable_retain: false,
             password: "mysecretpassword",
@@ -672,14 +673,6 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Should ban devices', () => {
-        write(configurationFile, {});
-        settings.banDevice('0x123');
-        expect(settings.get().ban).toStrictEqual(['0x123']);
-        settings.banDevice('0x1234');
-        expect(settings.get().ban).toStrictEqual(['0x123', '0x1234']);
-    });
-
     it('Should add devices to blocklist', () => {
         write(configurationFile, {});
         settings.blockDevice('0x123');
@@ -841,5 +834,79 @@ describe('Settings', () => {
         settings.addDevice('0x1234');
         const after = fs.statSync(configurationFile).mtimeMs;
         expect(before).toBe(after);
+    });
+
+    it('Frontend config', () => {
+        write(configurationFile, {...minimalConfig,
+            frontend: true, 
+        });
+
+        settings.reRead();
+        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false, host: '0.0.0.0'})
+    });
+
+    it('Baudrate config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {baudrate: 20}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().serial.baudrate).toStrictEqual(20)
+    });
+
+    it('ikea_ota_use_test_url config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {ikea_ota_use_test_url: true}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().ota.ikea_ota_use_test_url).toStrictEqual(true)
+    });
+
+    it('transmit_power config', () => {
+        write(configurationFile, {...minimalConfig,
+            experimental: {transmit_power: 1337}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().advanced.transmit_power).toStrictEqual(1337)
+    });
+
+    it('output config', () => {
+        write(configurationFile, {...minimalConfig,
+            experimental: {output: 'json'}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().advanced.output).toStrictEqual('json')
+    });
+
+    it('Baudrartsctste config', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {rtscts: true}, 
+        });
+
+        settings.reRead();
+        expect(settings.get().serial.rtscts).toStrictEqual(true)
+    });
+
+    it('Deprecated: Home Assistant config', () => {
+        write(configurationFile, {...minimalConfig,
+            homeassistant: {discovery_topic: 'new'}, 
+            advanced: {homeassistant_discovery_topic: 'old', homeassistant_status_topic: 'olds'},
+        });
+
+        settings.reRead();
+        expect(settings.get().homeassistant).toStrictEqual({discovery_topic: 'new', legacy_entity_attributes: true, legacy_triggers: true, status_topic: 'olds'})
+    });
+
+    it('Deprecated: ban/whitelist config', () => {
+        write(configurationFile, {...minimalConfig,
+            ban: ['ban'], whitelist: ['whitelist'], passlist: ['passlist'], blocklist: ['blocklist']
+        });
+
+        settings.reRead();
+        expect(settings.get().blocklist).toStrictEqual(['blocklist', 'ban'])
+        expect(settings.get().passlist).toStrictEqual(['passlist', 'whitelist'])
     });
 });

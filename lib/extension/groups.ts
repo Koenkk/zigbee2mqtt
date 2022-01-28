@@ -123,7 +123,7 @@ export default class Groups extends Extension {
         if (Object.keys(payload).length) {
             const entity = data.entity;
             const groups = this.zigbee.groups().filter((g) => {
-                return g.settings && (!g.settings.hasOwnProperty('optimistic') || g.settings.optimistic);
+                return g.options && (!g.options.hasOwnProperty('optimistic') || g.options.optimistic);
             });
 
             if (entity instanceof Device) {
