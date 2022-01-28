@@ -83,7 +83,8 @@ describe('Logger', () => {
         const logger = require('../lib/util/logger').default;
         logger.logOutput();
         logger.setLevel('warn');
-        expect(logger.winston.transports[0].level).toBe('warning');
+        expect(logger.winston.level).toBe('warning');
+        expect(logger.winston.transports[0].level).toBeUndefined();
         expect(logger.getLevel()).toBe('warn');
     });
 
