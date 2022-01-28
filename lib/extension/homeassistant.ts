@@ -127,6 +127,11 @@ export default class HomeAssistant extends Extension {
             const hasBrightness = exposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
             const hasColorTemp = exposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
             const state = firstExpose.features.find((f) => f.name === 'state');
+            // Prefer HS over XY when at least one of the lights in the group prefers HS over XY.
+            // A light prefers HS over XY when HS is earlier in the feature array than HS.
+            const preferHS = exposes.map((e) => [e.features.findIndex((ee) => ee.name === 'color_xy'),
+                e.features.findIndex((ee) => ee.name === 'color_hs')])
+                .filter((d) => d[0] !== -1 && d[1] !== -1 && d[1] < d[0]).length !== 0;
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'light',
@@ -143,8 +148,8 @@ export default class HomeAssistant extends Extension {
             };
 
             const colorModes = [
-                hasColorXY ? 'xy' : null,
-                !hasColorXY && hasColorHS ? 'hs' : null,
+                hasColorXY && !preferHS ? 'xy' : null,
+                (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                 hasColorTemp ? 'color_temp' : null,
             ].filter((c) => c);
 
