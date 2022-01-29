@@ -10,7 +10,7 @@ import Device from '../model/device';
 import bind from 'bind-decorator';
 
 const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}|\\d+))?/(get|set)(?:/(.+))?`);
-const propertyEndpointRegex = new RegExp(`^([^_]*)_(${utils.endpointNames.join('|')})$`);
+const propertyEndpointRegex = new RegExp(`^(.*?)_(${utils.endpointNames.join('|')})$`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all'];
 
