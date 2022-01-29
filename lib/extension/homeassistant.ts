@@ -1056,9 +1056,11 @@ export default class HomeAssistant extends Extension {
                 payload.json_attributes_topic = stateTopic;
             }
 
-            // Set (unique) name, separate by space if friendlyName contains space.
-            const nameSeparator = entity.name.includes('_') ? '_' : ' ';
-            payload.name = entity.name;
+            const devicePayload = this.getDevicePayload(entity);
+
+            // Set (unique) name, separate by space if device name contains space.
+            const nameSeparator = devicePayload.name.includes('_') ? '_' : ' ';
+            payload.name = devicePayload.name;
             if (config.object_id.startsWith(config.type) && config.object_id.includes('_')) {
                 payload.name += `${nameSeparator}${config.object_id.split(/_(.+)/)[1]}`;
             } else if (!config.object_id.startsWith(config.type)) {
@@ -1069,7 +1071,7 @@ export default class HomeAssistant extends Extension {
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
             // Attributes for device registry
-            payload.device = this.getDevicePayload(entity);
+            payload.device = devicePayload;
 
             // Availability payload
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
@@ -1185,9 +1187,11 @@ export default class HomeAssistant extends Extension {
 
             // Override configuration with user settings.
             if (entity.options.hasOwnProperty('homeassistant')) {
-                const add = (obj: KeyValue): void => {
+                const add = (obj: KeyValue, ignoreName: boolean): void => {
                     Object.keys(obj).forEach((key) => {
                         if (['type', 'object_id'].includes(key)) {
+                            return;
+                        } else if (ignoreName && key === 'name') {
                             return;
                         } else if (['number', 'string', 'boolean'].includes(typeof obj[key]) ||
                             Array.isArray(obj[key])) {
@@ -1202,10 +1206,10 @@ export default class HomeAssistant extends Extension {
                     });
                 };
 
-                add(entity.options.homeassistant);
+                add(entity.options.homeassistant, true);
 
                 if (entity.options.homeassistant.hasOwnProperty(config.object_id)) {
-                    add(entity.options.homeassistant[config.object_id]);
+                    add(entity.options.homeassistant[config.object_id], false);
                 }
             }
 
@@ -1295,9 +1299,18 @@ export default class HomeAssistant extends Extension {
     private getDevicePayload(entity: Device | Group): KeyValue {
         const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
+
+        // Allow device name to be overriden by homeassistant config
+        let deviceName = entity.name;
+        if (entity.options.hasOwnProperty('homeassistant') &&
+            entity.options.homeassistant.hasOwnProperty('name') &&
+            typeof entity.options.homeassistant.name == 'string') {
+            deviceName = entity.options.homeassistant.name;
+        }
+
         const payload: KeyValue = {
             identifiers: [`${identifierPostfix}_${entity.options.ID}`],
-            name: entity.name,
+            name: deviceName,
             sw_version: `Zigbee2MQTT ${this.zigbee2MQTTVersion}`,
         };
 
