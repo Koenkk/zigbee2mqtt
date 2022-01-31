@@ -1302,9 +1302,7 @@ export default class HomeAssistant extends Extension {
 
         // Allow device name to be overriden by homeassistant config
         let deviceName = entity.name;
-        if (entity.options.hasOwnProperty('homeassistant') &&
-            entity.options.homeassistant.hasOwnProperty('name') &&
-            typeof entity.options.homeassistant.name == 'string') {
+        if (typeof entity.options.homeassistant?.name === 'string') {
             deviceName = entity.options.homeassistant.name;
         }
 
