@@ -476,7 +476,7 @@ describe('HomeAssistant extension', () => {
                 device: {
                     manufacturer: 'Not from Xiaomi',
                     model: 'custom model',
-                }
+                },
             },
             friendly_name: 'weather_sensor',
             retain: false,
@@ -545,6 +545,75 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover devices with overriden name', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
+            homeassistant: {
+                name: "Weather Sensor",
+            },
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
+
+        await resetExtension();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            'unit_of_measurement': '°C',
+            'device_class': 'temperature',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.temperature }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'Weather Sensor temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'Weather Sensor',
+                'sw_version': null,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'enabled_by_default': true,
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            'unit_of_measurement': '%',
+            'device_class': 'humidity',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.humidity }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'Weather Sensor humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'enabled_by_default': true,
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'Weather Sensor',
+                'sw_version': null,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Should discover devices with overriden user configuration affecting type and object_id', async () => {
         settings.set(['devices', '0x0017880104e45541'], {
             friendly_name: 'my_switch',
@@ -556,8 +625,7 @@ describe('HomeAssistant extension', () => {
                 light: {
                     type: 'this should be ignored',
                     name: 'my_light_name_override'
-                }
-
+                },
             },
         })
 
