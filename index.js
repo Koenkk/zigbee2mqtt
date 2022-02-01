@@ -47,6 +47,10 @@ async function build(reason) {
         exec('npm run build', {cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
+                if (err.code === 134) {
+                    process.stderr.write(
+                        '\n\nBuild failed; ran out-of-memory, free some memory (RAM) and start again\n\n');
+                }
                 reject(err);
             } else {
                 process.stdout.write(', finished\n');

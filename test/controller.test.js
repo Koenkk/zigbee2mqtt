@@ -28,9 +28,10 @@ describe('Controller', () => {
         MQTT.restoreOnMock();
         zigbeeHerdsman.returnDevices.splice(0);
         mockExit = jest.fn();
+        data.writeDefaultConfiguration();
+        settings.reRead();
         controller = new Controller(jest.fn(), mockExit);
         mocksClear.forEach((m) => m.mockClear());
-        data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultState();
     });
@@ -180,24 +181,8 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
     });
 
-    it('Should remove non whitelisted devices on startup', async () => {
-        settings.set(['whitelist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
-        await controller.start();
-        await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(0);
-        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(1);
-    });
-
     it('Should remove device on blocklist on startup', async () => {
         settings.set(['blocklist'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
-        await controller.start();
-        await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(0);
-    });
-
-    it('Should remove banned devices on startup', async () => {
-        settings.set(['ban'], [zigbeeHerdsman.devices.bulb_color.ieeeAddr]);
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
@@ -630,11 +615,13 @@ describe('Controller', () => {
     });
 
     it('Should disable legacy options on new network start', async () => {
-        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeTruthy();
+        settings.set(['homeassistant'], true);
+        settings.reRead();
+        expect(settings.get().homeassistant.legacy_entity_attributes).toBeTruthy();
         expect(settings.get().advanced.legacy_api).toBeTruthy();
         zigbeeHerdsman.start.mockReturnValueOnce('reset');
         await controller.start();
-        expect(settings.get().advanced.homeassistant_legacy_entity_attributes).toBeFalsy();
+        expect(settings.get().homeassistant.legacy_entity_attributes).toBeFalsy();
         expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
 

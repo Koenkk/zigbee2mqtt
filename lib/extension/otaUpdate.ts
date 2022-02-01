@@ -3,9 +3,24 @@ import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import utils from '../util/utils';
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
+import zigbeeOTA from 'zigbee-herdsman-converters/lib/ota/zigbeeOTA';
 import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
+import dataDir from '../util/data';
+import * as URI from 'uri-js';
+import path from 'path';
+
+function isValidUrl(url: string): boolean {
+    let parsed;
+    try {
+        parsed = URI.parse(url);
+    } catch (_) {
+        // istanbul ignore next
+        return false;
+    }
+    return parsed.scheme === 'http' || parsed.scheme === 'https';
+}
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
@@ -24,13 +39,27 @@ export default class OTAUpdate extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
-        if (settings.get().advanced.ikea_ota_use_test_url) {
+        if (settings.get().ota.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
         }
 
+        // Let zigbeeOTA module know if the override index file is provided
+        let overrideOTAIndex = settings.get().ota.zigbee_ota_override_index_location;
+        if (overrideOTAIndex) {
+            // If the file name is not a full path, then treat it as a relative to the data directory
+            if (!isValidUrl(overrideOTAIndex) && !path.isAbsolute(overrideOTAIndex)) {
+                overrideOTAIndex = dataDir.joinPath(overrideOTAIndex);
+            }
+
+            zigbeeOTA.useIndexOverride(overrideOTAIndex);
+        }
+
+        // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
+        zigbeeOTA.setDataDir(dataDir.getPath());
+
+        // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
+        // remove them.
         for (const device of this.zigbee.devices(false)) {
-            // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state.
-            // remove them.
             this.removeProgressAndRemainingFromState(device);
         }
     }
@@ -92,11 +121,11 @@ export default class OTAUpdate extends Extension {
         }
     }
 
-    private async readSoftwareBuildIDAndDateCode(device: Device, sendWhenActive: boolean):
+    private async readSoftwareBuildIDAndDateCode(device: Device, sendWhen: 'active' | 'immediate'):
         Promise<{softwareBuildID: string, dateCode: string}> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
-            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendWhenActive});
+            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendWhen});
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
         } catch (e) {
             return null;
@@ -223,17 +252,16 @@ export default class OTAUpdate extends Extension {
                         }
                     };
 
-                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, false);
+                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
                     await device.definition.ota.updateToLatest(device.zh, logger, onProgress);
-                    const to = await this.readSoftwareBuildIDAndDateCode(device, device.zh.type === 'EndDevice');
-                    const [fromS, toS] = [stringify(from_), stringify(to)];
+                    logger.info(`Finished update of '${device.name}'`);
                     this.eventBus.emitReconfigure({device});
-                    const msg = `Finished update of '${device.name}'` +
-                        (to ? `, from '${fromS}' to '${toS}'` : ``);
-                    logger.info(msg);
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload('idle');
                     this.publishEntityState(device, payload);
+                    const to = await this.readSoftwareBuildIDAndDateCode(device, 'active');
+                    const [fromS, toS] = [stringify(from_), stringify(to)];
+                    logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
                     this.eventBus.emitDevicesChanged();

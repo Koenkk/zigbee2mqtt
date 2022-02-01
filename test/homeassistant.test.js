@@ -24,6 +24,7 @@ describe('HomeAssistant extension', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
+        settings.set(['homeassistant'], true);
         data.writeEmptyState();
         controller.state.load();
         await resetExtension();
@@ -50,7 +51,7 @@ describe('HomeAssistant extension', () => {
         const duplicated = [];
         require('zigbee-herdsman-converters').devices.forEach((d) => {
             const exposes = typeof d.exposes == 'function' ? d.exposes() : d.exposes;
-            const device = {definition: d, isDevice: () => true, settings: {}, exposes: () => exposes};
+            const device = {definition: d, isDevice: () => true, options: {}, exposes: () => exposes};
             const configs = extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
@@ -475,7 +476,7 @@ describe('HomeAssistant extension', () => {
                 device: {
                     manufacturer: 'Not from Xiaomi',
                     model: 'custom model',
-                }
+                },
             },
             friendly_name: 'weather_sensor',
             retain: false,
@@ -544,6 +545,75 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover devices with overriden name', async () => {
+        settings.set(['devices', '0x0017880104e45522'], {
+            homeassistant: {
+                name: "Weather Sensor",
+            },
+            friendly_name: 'weather_sensor',
+            retain: false,
+        })
+
+        await resetExtension();
+
+        let payload;
+        await flushPromises();
+
+        payload = {
+            'unit_of_measurement': '°C',
+            'device_class': 'temperature',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.temperature }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'Weather Sensor temperature',
+            'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'Weather Sensor',
+                'sw_version': null,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'enabled_by_default': true,
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/temperature/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        payload = {
+            'unit_of_measurement': '%',
+            'device_class': 'humidity',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.humidity }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'name': 'Weather Sensor humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'enabled_by_default': true,
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'Weather Sensor',
+                'sw_version': null,
+                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
+                'manufacturer': 'Xiaomi',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Should discover devices with overriden user configuration affecting type and object_id', async () => {
         settings.set(['devices', '0x0017880104e45541'], {
             friendly_name: 'my_switch',
@@ -555,8 +625,7 @@ describe('HomeAssistant extension', () => {
                 light: {
                     type: 'this should be ignored',
                     name: 'my_light_name_override'
-                }
-
+                },
             },
         })
 
@@ -1136,6 +1205,50 @@ describe('HomeAssistant extension', () => {
                     "manufacturer":"Xiaomi"
                 }
             }),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should refresh discovery when group is renamed', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({"from": "ha_discovery_group", "to": "ha_discovery_group_new","homeassistant_rename":true}));
+        await flushPromises();
+
+        const payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/ha_discovery_group_new/set",
+            "device":{
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
+               "name":"ha_discovery_group_new",
+               "sw_version": version,
+            },
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group_new",
+            "max_mireds": 454,
+            "min_mireds": 250,
+            "name":"ha_discovery_group_new",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/ha_discovery_group_new",
+            "supported_color_modes":[
+               "xy",
+               "color_temp"
+            ],
+            "unique_id":"9_light_zigbee2mqtt"
+         };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            null,
             { retain: true, qos: 0 },
             expect.any(Function),
         );
