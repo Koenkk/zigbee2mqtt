@@ -138,7 +138,7 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
-        const defaults = {active: {timeout: 10}, passive: {timeout: 1500}};
+        const defaults = {};
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
         // @ts-ignore
         _settingsWithDefaults.availability = {};

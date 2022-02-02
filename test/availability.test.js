@@ -227,6 +227,17 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
     });
 
+    it('Should to enable availabilty for just one device', async () => {
+        settings.set(['availability'], false);
+        settings.set(['devices', devices.bulb_color.ieeeAddr, 'availability'], true);
+
+        await resetExtension();
+        MQTT.publish.mockClear();
+
+        await advancedTime(utils.minutes(11));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+    });
+
     it('Should retrieve device state when it reconnects', async () => {
         MQTT.publish.mockClear();
 

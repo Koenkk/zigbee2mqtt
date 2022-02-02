@@ -18,7 +18,8 @@ export default class Availability extends Extension {
         }
 
         const key = this.isActiveDevice(device) ? 'active' : 'passive';
-        const value = settings.get().availability[key]?.timeout;
+        let value = settings.get().availability?.[key]?.timeout;
+        if (value == null) value = key == 'active' ? 10 : 1500;
         return utils.minutes(value);
     }
 
