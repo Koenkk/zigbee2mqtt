@@ -238,6 +238,7 @@ declare global {
         device_options: KeyValue,
         advanced: {
             legacy_api: boolean,
+            legacy_availability_payload: boolean,
             log_rotation: boolean,
             log_symlink_current: boolean,
             log_output: ('console' | 'file' | 'syslog')[],

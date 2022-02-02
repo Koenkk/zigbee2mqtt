@@ -282,6 +282,16 @@ describe('Availability', () => {
             'offline', {retain: true, qos: 0}, expect.any(Function));
     });
 
+    it('Should publish availabiltiy payload in JSON format', async () => {
+        settings.set(['advanced', 'legacy_availability_payload'], false);
+        await resetExtension();
+        MQTT.publish.mockClear();
+        await advancedTime(utils.hours(26));
+        expect(devices.remote.ping).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
+            stringify({state: 'offline'}), {retain: true, qos: 0}, expect.any(Function));
+    });
+
     it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {
         settings.set(['advanced', 'availability_blocklist'], [devices.bulb_color.ieeeAddr]);
         await resetExtension();

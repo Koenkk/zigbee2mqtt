@@ -104,6 +104,9 @@ export default class HomeAssistant extends Extension {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             this.discover(entity, true);
         }
+
+        // Send availability messages, this is required if the legacy_availability_payload option has been changed.
+        this.eventBus.emitPublishAvailability();
     }
 
     private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
@@ -1084,6 +1087,10 @@ export default class HomeAssistant extends Extension {
                 payload.availability.push({topic: `${baseTopic}/availability`});
             }
 
+            if (!settings.get().advanced.legacy_availability_payload) {
+                payload.availability.forEach((a: KeyValue) => a.value_template = '{{ value_json.state }}');
+            }
+
             const commandTopicPrefix = payload.command_topic_prefix ? `${payload.command_topic_prefix}/` : '';
             delete payload.command_topic_prefix;
             const commandTopicPostfix = payload.command_topic_postfix ? `/${payload.command_topic_postfix}` : '';
@@ -1280,7 +1287,6 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                this.mqtt.publish('bridge/state', 'online', {retain: true, qos: 0});
                 for (const device of this.zigbee.devices(false)) {
                     if (this.state.exists(device)) {
                         this.publishEntityState(device, this.state.get(device));

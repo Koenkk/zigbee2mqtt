@@ -111,6 +111,7 @@ class Controller {
         if (startResult === 'reset') {
             settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
             settings.set(['advanced', 'legacy_api'], false);
+            settings.set(['advanced', 'legacy_availability_payload'], false);
             settings.set(['device_options', 'legacy'], false);
             this.enableDisableExtension(false, 'BridgeLegacy');
         }

@@ -103,7 +103,11 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
+        this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllDevices);
+        this.publishAvailabilityForAllDevices();
+    }
 
+    @bind private publishAvailabilityForAllDevices(): void {
         for (const device of this.zigbee.devices(false)) {
             if (utils.isAvailabilityEnabledForDevice(device, settings.get())) {
                 // Publish initial availablility
@@ -143,7 +147,7 @@ export default class Availability extends Extension {
         }
 
         const topic = `${device.name}/availability`;
-        const payload = available ? 'online' : 'offline';
+        const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[device.ieeeAddr] = available;
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
     }

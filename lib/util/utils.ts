@@ -277,6 +277,10 @@ function isZHGroup(obj: unknown): obj is zh.Group {
     return obj.constructor.name.toLowerCase() === 'group';
 }
 
+function availabilityPayload(state: 'online' | 'offline', settings: Settings): string {
+    return settings.advanced.legacy_availability_payload ? state : JSON.stringify({state});
+}
+
 const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 const minutes = (minutes: number): number => 1000 * 60 * minutes;
 const seconds = (seconds: number): number => 1000 * seconds;
@@ -302,5 +306,5 @@ export default {
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
-    sanitizeImageParameter, isAvailabilityEnabledForDevice, publishLastSeen,
+    sanitizeImageParameter, isAvailabilityEnabledForDevice, publishLastSeen, availabilityPayload,
 };

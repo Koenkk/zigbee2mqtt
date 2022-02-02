@@ -1763,6 +1763,42 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover with json availability payload value_template', async () => {
+        settings.set(['advanced', 'legacy_availability_payload'], false);
+        await resetExtension();
+
+        const payload = {
+            "availability":[{"topic":"zigbee2mqtt/bridge/state","value_template":'{{ value_json.state }}'}],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/ha_discovery_group/set",
+            "device":{
+               "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
+               "name":"ha_discovery_group",
+               "sw_version": version,
+            },
+            "max_mireds": 454,
+            "min_mireds": 250,
+            "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
+            "name":"ha_discovery_group",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/ha_discovery_group",
+            "supported_color_modes":[
+               "xy",
+               "color_temp"
+            ],
+            "unique_id":"9_light_zigbee2mqtt"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Should discover last_seen when enabled', async () => {
         settings.set(['advanced', 'last_seen'], 'ISO_8601');
         await resetExtension();

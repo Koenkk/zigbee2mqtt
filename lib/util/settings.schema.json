@@ -432,6 +432,13 @@
           "description": "Disables the legacy api (false = disable)",
           "default": true
         },
+        "legacy_availability_payload": {
+          "type": "boolean",
+          "title": "Legacy availability payload",
+          "requiresRestart": true,
+          "description": "Payload to be used for device availabilty and bridge/state topics. true = text, false = JSON",
+          "default": true
+        },
         "log_rotation": {
           "type": "boolean",
           "title": "Log rotation",
