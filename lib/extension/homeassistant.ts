@@ -95,6 +95,8 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
+        this.eventBus.onEntityOptionsChanged(this,
+            (data) => this.discover(data.entity, true));
 
         this.mqtt.subscribe(this.statusTopic);
         this.mqtt.subscribe(defaultStatusTopic);
@@ -896,8 +898,9 @@ export default class HomeAssistant extends Extension {
 
         let configs: DiscoveryEntry[] = [];
         if (isDevice) {
-            for (const expose of entity.exposes()) {
-                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, entity.exposes()));
+            const exp = entity.exposes(); // avoid calling it hundred of times/s
+            for (const expose of exp) {
+                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, exp));
             }
 
             for (const mapping of legacyMapping) {
