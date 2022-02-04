@@ -560,6 +560,16 @@ export default class HomeAssistant extends Extension {
             }
         } else if (firstExpose.type === 'numeric') {
             const lookup: {[s: string]: KeyValue} = {
+                ac_frequency: {
+                    device_class: 'frequency',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
+                alarm_humidity_max: { device_class: 'humidity', icon: 'mdi:water-plus' },
+                alarm_humidity_min: { device_class: 'humidity', icon: 'mdi:water-minus' },
+                alarm_temperature_max: { device_class: 'temperature', icon: 'mdi:thermometer-high' },
+                alarm_temperature_min: { device_class: 'temperature', icon: 'mdi:thermometer-low' },
                 angle: {icon: 'angle-acute'},
                 angle_axis: {icon: 'angle-acute'},
                 aqi: {device_class: 'aqi', state_class: 'measurement'},
@@ -621,8 +631,15 @@ export default class HomeAssistant extends Extension {
                 occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 pm10: {device_class: 'pm10', state_class: 'measurement'},
                 pm25: {device_class: 'pm25', state_class: 'measurement'},
+                people: { state_class: 'measurement', icon: 'mdi:account-multiple' },
                 position: {icon: 'mdi:valve', state_class: 'measurement'},
                 power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+                power_factor: {
+                    device_class: 'power_factor',
+                    enabled_by_default: false,
+                    entity_category: 'diagnostic',
+                    state_class: 'measurement',
+                },
                 precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
                 pressure: {device_class: 'pressure', state_class: 'measurement'},
                 presence_timeout: {entity_category: 'config', icon: 'mdi:timer'},
@@ -712,6 +729,8 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'enum') {
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
+                alarm_humidity: { device_class: 'humidity', icon: 'mdi:water-percent-alert' },
+                alarm_temperature: { device_class: 'temperature', icon: 'mdi:thermometer-alert' },
                 backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
                 backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
                 color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
@@ -730,6 +749,7 @@ export default class HomeAssistant extends Extension {
                 sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
                 sensors_type: {entity_category: 'config', icon: 'mdi:tune'},
                 sound_volume: {entity_category: 'config', icon: 'mdi:volume-high'},
+                status: { icon: 'mdi:state-machine' },
                 switch_type: {entity_category: 'config', icon: 'mdi:tune'},
                 thermostat_unit: {entity_category: 'config', icon: 'mdi:thermometer'},
                 volume: {entity_category: 'config', icon: 'mdi: volume-high'},
