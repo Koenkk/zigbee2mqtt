@@ -722,8 +722,8 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'enum') {
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
-                alarm_humidity: {device_class: 'humidity', icon: 'mdi:water-percent-alert'},
-                alarm_temperature: {device_class: 'temperature', icon: 'mdi:thermometer-alert'},
+                alarm_humidity: {icon: 'mdi:water-percent-alert'},
+                alarm_temperature: {icon: 'mdi:thermometer-alert'},
                 backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
                 backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
                 color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
