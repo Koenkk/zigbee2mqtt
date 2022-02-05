@@ -58,7 +58,12 @@ describe('HomeAssistant extension', () => {
             configs.forEach((c) => {
                 const id = c['type'] + '/' + c['object_id'];
                 if (cfg_type_object_ids.includes(id)) {
-                    duplicated.push(d.model);
+                    if (typeof d.exposes == 'function') {
+                        // A dynamic function must exposes all possible attributes for the docs
+                        console.warn(`${d.model} dynamic exposes contains duplicated ${id}`)
+                    } else {
+                        duplicated.push(d.model);
+                    }
                 } else {
                     cfg_type_object_ids.push(id);
                 }
@@ -991,6 +996,19 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
+    });
+
+    it('Should discover when options change', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
+        MQTT.publish.mockClear();
+        controller.eventBus.emitEntityOptionsChanged({entity: device, from: {}, to: {'test': 123}});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/light/${device.ID}/light/config`,
+            expect.any(String),
+            expect.any(Object),
+            expect.any(Function),
+        );
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
