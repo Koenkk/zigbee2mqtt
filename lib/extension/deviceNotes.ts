@@ -63,24 +63,22 @@ export default class DeviceNotes extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if (data.topic.match(requestRegex)) {
-            const match = data.topic.match(requestRegex);
-            if (match && this.requestLookup[match[1].toLowerCase()]) {
-                const message = utils.parseJSON(data.message, data.message) as KeyValue;
-                try {
-                    const {id} = message;
-                    const device = this.getDevice(id);
-                    if (device == null) {
-                        throw new Error(`Device '${id}' is unknown`);
-                    }
-
-                    const response = await this.requestLookup[match[1].toLowerCase()](device, message);
-                    await this.mqtt.publish(`bridge/response/device/notes/${match[1]}`, stringify(response));
-                } catch (error) {
-                    logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
-                    const response = utils.getResponse(message, {}, error.message);
-                    await this.mqtt.publish(`bridge/response/device/notes/${match[1]}`, stringify(response));
+        const match = data.topic.match(requestRegex);
+        if (match && this.requestLookup[match[1].toLowerCase()]) {
+            const message = utils.parseJSON(data.message, data.message) as KeyValue;
+            try {
+                const {id} = message;
+                const device = this.getDevice(id);
+                if (device == null) {
+                    throw new Error(`Device '${id}' is unknown`);
                 }
+
+                const response = await this.requestLookup[match[1].toLowerCase()](device, message);
+                await this.mqtt.publish(`bridge/response/device/notes/${match[1]}`, stringify(response));
+            } catch (error) {
+                logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
+                const response = utils.getResponse(message, {}, error.message);
+                await this.mqtt.publish(`bridge/response/device/notes/${match[1]}`, stringify(response));
             }
         }
     }
