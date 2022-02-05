@@ -5,6 +5,7 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 export default class Device {
     public zh: zh.Device;
     private _definition: zhc.Definition;
+    private _definitionModelID: string;
 
     get ieeeAddr(): string {return this.zh.ieeeAddr;}
     get ID(): string {return this.zh.ieeeAddr;}
@@ -13,8 +14,11 @@ export default class Device {
         return this.zh.type === 'Coordinator' ? 'Coordinator' : this.options?.friendly_name || this.ieeeAddr;
     }
     get definition(): zhc.Definition {
-        if (!this._definition && !this.zh.interviewing) {
+        // Some devices can change modelID, reconsider the definition in that case.
+        // https://github.com/Koenkk/zigbee-herdsman-converters/issues/3016
+        if (!this.zh.interviewing && (!this._definition || this._definitionModelID !== this.zh.modelID)) {
             this._definition = zigbeeHerdsmanConverters.findByDevice(this.zh);
+            this._definitionModelID = this.zh.modelID;
         }
         return this._definition;
     }
