@@ -897,9 +897,9 @@ export default class HomeAssistant extends Extension {
 
         let configs: DiscoveryEntry[] = [];
         if (isDevice) {
-            const exp = entity.exposes(); // avoid calling it hundred of times/s
-            for (const expose of exp) {
-                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, exp));
+            const exposes = entity.exposes(); // avoid calling it hundred of times/s
+            for (const expose of exposes) {
+                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, exposes));
             }
 
             for (const mapping of legacyMapping) {
