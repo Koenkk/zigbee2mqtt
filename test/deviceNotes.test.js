@@ -15,8 +15,12 @@ const mocksClear = [
 ];
 
 const fs = require('fs');
+
 const notesExtension = '.txt';
 const notesDirectoryName = 'notes';
+const requestBaseTopic = 'zigbee2mqtt/bridge/request/device/notes'
+const responseBaseTopic = 'zigbee2mqtt/bridge/response/device/notes'
+
 const exampleNotes = 'Example notes with json symbols like { ", and utf-8 👍 and windows\r\n and unix\n line breaks'
 const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync');
 const writeSyncSpy = jest.spyOn(fs, 'writeFileSync');
@@ -53,6 +57,22 @@ describe('Device notes', () => {
         rimraf.sync(notesDirectory);
     });
 
+    it('Should not respond to unhandled command', async () => {
+        // Prepare
+        const id = zigbeeHerdsman.devices.bulb_color.ieeeAddr;
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+
+        // Test
+        MQTT.events.message(requestBaseTopic + '/unhandled_command', stringify({ id }));
+
+        // Expect
+        await flushPromises();
+        expect(MQTT.publish).not.toBeCalled();
+    });
+
     it('Should read initial empty notes for ieee_address', async () => {
         // Prepare
         const id = zigbeeHerdsman.devices.bulb_color.ieeeAddr;
@@ -64,11 +84,11 @@ describe('Device notes', () => {
         writeSyncSpy.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/read', stringify({ id }));
+        MQTT.events.message(requestBaseTopic + '/read', stringify({ id }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/read', stringify({ status: 'ok', data: { notes: '', mtime: null } }), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/read', stringify({ status: 'ok', data: { notes: '', mtime: null } }), { retain: false, qos: 0 }, expect.any(Function));
         expect(mkdirSyncSpy).not.toHaveBeenCalled();
         expect(writeSyncSpy).not.toHaveBeenCalled();
     });
@@ -90,11 +110,11 @@ describe('Device notes', () => {
         readSyncSpy.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/read', stringify({ id: 'bulb_color' }));
+        MQTT.events.message(requestBaseTopic + '/read', stringify({ id: 'bulb_color' }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toEqual({
             status: 'ok',
             data: expect.objectContaining({
@@ -122,11 +142,11 @@ describe('Device notes', () => {
         MQTT.publish.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/read', stringify({ id, transaction }));
+        MQTT.events.message(requestBaseTopic + '/read', stringify({ id, transaction }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toEqual({
             status: 'ok',
             transaction,
@@ -149,11 +169,32 @@ describe('Device notes', () => {
         writeSyncSpy.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/save', stringify({ id, notes }));
+        MQTT.events.message(requestBaseTopic + '/save', stringify({ id, notes }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/save', stringify({ status: 'error', data: {}, error: `Device '${id}' is unknown` }), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/save', stringify({ status: 'error', data: {}, error: `Device '${id}' is unknown` }), { retain: false, qos: 0 }, expect.any(Function));
+        expect(mkdirSyncSpy).not.toHaveBeenCalled();
+        expect(writeSyncSpy).not.toHaveBeenCalled();
+    });
+
+    it('Should fail saving for group', async () => {
+        // Prepare
+        const notes = 'some notes';
+        const id = zigbeeHerdsman.groups.group_1;
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        await flushPromises();
+        MQTT.publish.mockClear();
+        mkdirSyncSpy.mockClear();
+        writeSyncSpy.mockClear();
+
+        // Test
+        MQTT.events.message(requestBaseTopic + '/save', stringify({ id, notes }));
+
+        // Expect
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/save', stringify({ status: 'error', data: {}, error: `Device '${id}' is unknown` }), { retain: false, qos: 0 }, expect.any(Function));
         expect(mkdirSyncSpy).not.toHaveBeenCalled();
         expect(writeSyncSpy).not.toHaveBeenCalled();
     });
@@ -174,11 +215,11 @@ describe('Device notes', () => {
         writeSyncSpy.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/save', stringify({ id, notes, transaction }));
+        MQTT.events.message(requestBaseTopic + '/save', stringify({ id, notes, transaction }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/save', stringify({ status: 'ok', transaction, data: {}}), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/save', stringify({ status: 'ok', transaction, data: {}}), { retain: false, qos: 0 }, expect.any(Function));
         expect(mkdirSyncSpy).toHaveBeenCalledWith(notesDirectory);
         expect(writeSyncSpy).toHaveBeenCalledWith(noteFilePath, notes, 'utf-8');
     });
@@ -202,11 +243,11 @@ describe('Device notes', () => {
         writeSyncSpy.mockClear();
 
         // Test
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/save', stringify({ id, transaction, notes: newNotes }));
+        MQTT.events.message(requestBaseTopic + '/save', stringify({ id, transaction, notes: newNotes }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/save', stringify({ status: 'ok', transaction, data: {}}), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/save', stringify({ status: 'ok', transaction, data: {}}), { retain: false, qos: 0 }, expect.any(Function));
         expect(mkdirSyncSpy).not.toHaveBeenCalledWith(notesDirectory);
         expect(writeSyncSpy).toHaveBeenCalledWith(noteFilePath, newNotes, 'utf-8');
         expect(fs.readFileSync(noteFilePath, 'utf-8')).toBe(newNotes);
@@ -214,11 +255,11 @@ describe('Device notes', () => {
         // Test read back
         MQTT.publish.mockClear();
         transaction = 'read-back'
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/notes/read', stringify({ id, transaction }));
+        MQTT.events.message(requestBaseTopic + '/read', stringify({ id, transaction }));
 
         // Expect
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/device/notes/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(responseBaseTopic + '/read', expect.any(String), { retain: false, qos: 0 }, expect.any(Function));
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toEqual({
             status: 'ok',
             transaction,
