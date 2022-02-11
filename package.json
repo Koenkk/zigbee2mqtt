@@ -57,6 +57,7 @@
     "uri-js": "^4.4.1",
     "winston": "^3.5.1",
     "winston-syslog": "^2.5.0",
+    "winston-transport": "^4.5.0",
     "ws": "^8.4.2",
     "zigbee-herdsman": "0.14.13",
     "zigbee-herdsman-converters": "14.0.417",
