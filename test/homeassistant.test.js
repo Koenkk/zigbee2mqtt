@@ -745,29 +745,35 @@ describe('HomeAssistant extension', () => {
         let payload;
 
         payload = {
-            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            "action_template":"{% set values = {None:None,'idle':'off','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
+            "action_topic":"zigbee2mqtt/TS0601_thermostat",
+            "availability":[
+                {
+                    "topic":"zigbee2mqtt/bridge/state"
+                }
+            ],
             "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
             "away_mode_state_template":"{{ value_json.away_mode }}",
             "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "current_temperature_template":"{{ value_json.local_temperature }}",
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
-               "identifiers":[
-                  "zigbee2mqtt_0x0017882104a44559"
-               ],
-               "manufacturer":"TuYa",
-               "model":"Radiator valve with thermostat (TS0601_thermostat)",
-               "name":"TS0601_thermostat",
-               "sw_version":  null,
+                "identifiers":[
+                    "zigbee2mqtt_0x0017882104a44559"
+                ],
+                "manufacturer":"TuYa",
+                "model":"Radiator valve with thermostat (TS0601_thermostat)",
+                "name":"TS0601_thermostat",
+                "sw_version":null
             },
             "hold_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
             "hold_modes":[
-               "schedule",
-               "manual",
-               "boost",
-               "complex",
-               "comfort",
-               "eco"
+                "schedule",
+                "manual",
+                "boost",
+                "complex",
+                "comfort",
+                "eco"
             ],
             "hold_state_template":"{{ value_json.preset }}",
             "hold_state_topic":"zigbee2mqtt/TS0601_thermostat",
@@ -778,7 +784,9 @@ describe('HomeAssistant extension', () => {
             "mode_state_template":"{{ value_json.system_mode }}",
             "mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "modes":[
-               "heat", "auto", "off"
+                "heat",
+                "auto",
+                "off"
             ],
             "name":"TS0601_thermostat",
             "temp_step":0.5,
