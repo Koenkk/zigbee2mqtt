@@ -419,7 +419,7 @@ export default class Bridge extends Extension {
         await endpoint.configureReporting(message.cluster, [{
             attribute: message.attribute, minimumReportInterval: message.minimum_report_interval,
             maximumReportInterval: message.maximum_report_interval, reportableChange: message.reportable_change,
-        }]);
+        }], message.options);
 
         this.publishDevices();
 

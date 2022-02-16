@@ -965,7 +965,7 @@ describe('Bridge', () => {
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
         expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinator.endpoints[0]);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(1);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 10, "minimumReportInterval": 1, "reportableChange": 1}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 10, "minimumReportInterval": 1, "reportableChange": 1}], undefined);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({"data":{id: '0x000b57fffec6a5b2/1', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1},"status":"ok"}),
