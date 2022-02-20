@@ -21,7 +21,8 @@ function writeDefaultConfiguration() {
         devices: {
             "0x000b57fffec6a5b2": {
                 retain: true,
-                friendly_name: "bulb"
+                friendly_name: "bulb",
+                description: "this is my bulb",
             },
             "0x0017880104e45517": {
                 retain: true,

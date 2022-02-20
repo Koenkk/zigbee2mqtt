@@ -6,7 +6,7 @@ export default class Group {
     public zh: zh.Group;
 
     get ID(): number {return this.zh.groupID;}
-    get options(): GroupOptions {return settings.getGroup(this.ID);}
+    get options(): GroupOptions {return {...settings.getGroup(this.ID)};}
     get name(): string {return this.options?.friendly_name || this.ID.toString();}
 
     constructor(group: zh.Group) {

@@ -285,6 +285,7 @@ declare global {
         legacy?: boolean,
         filtered_attributes?: string[],
         friendly_name: string,
+        description?: string,
         qos?: 0 | 1 | 2,
     }
 
@@ -297,6 +298,7 @@ declare global {
         homeassistant?: KeyValue,
         filtered_attributes?: string[],
         friendly_name: string,
+        description?: string,
         qos?: 0 | 1 | 2,
     }
 }

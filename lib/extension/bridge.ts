@@ -650,6 +650,7 @@ export default class Bridge extends Extension {
                 network_address: device.zh.networkAddress,
                 supported: !!device.definition,
                 friendly_name: device.name,
+                description: device.options.description,
                 definition: this.getDefinitionPayload(device),
                 power_source: device.zh.powerSource,
                 software_build_id: device.zh.softwareBuildID,
@@ -671,6 +672,7 @@ export default class Bridge extends Extension {
             return {
                 id: g.ID,
                 friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
+                description: g.options.description,
                 scenes: this.getScenes(g.zh),
                 members: g.zh.members.map((e) => {
                     return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
