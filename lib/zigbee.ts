@@ -219,7 +219,7 @@ export default class Zigbee {
         }
     }
 
-    private resolveDevice(ieeeAddr: string): Device {
+    @bind private resolveDevice(ieeeAddr: string): Device {
         if (!this.deviceLookup[ieeeAddr]) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
             device && (this.deviceLookup[ieeeAddr] = new Device(device));
@@ -235,7 +235,7 @@ export default class Zigbee {
     private resolveGroup(groupID: number): Group {
         const group = this.herdsman.getGroupByID(Number(groupID));
         if (group && !this.groupLookup[groupID]) {
-            this.groupLookup[groupID] = new Group(group);
+            this.groupLookup[groupID] = new Group(group, this.resolveDevice);
         }
 
         return this.groupLookup[groupID];

@@ -318,4 +318,21 @@ describe('Availability', () => {
         await advancedTime(utils.minutes(12));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
+
+    it('Should publish availabilty for groups', async () => {
+        settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], true);
+        await resetExtension();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
+        MQTT.publish.mockClear();
+        await advancedTime(utils.minutes(12));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability',
+            'offline', {retain: true, qos: 0}, expect.any(Function));
+        MQTT.publish.mockClear();
+        devices.bulb_color_2.lastSeen = Date.now();
+        await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color_2});
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability',
+            'online', {retain: true, qos: 0}, expect.any(Function));
+    });
 });

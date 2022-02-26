@@ -1093,10 +1093,8 @@ export default class HomeAssistant extends Extension {
             // Availability payload
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
-            const availabilityEnabled =
-                entity.isDevice() && utils.isAvailabilityEnabledForDevice(entity, settings.get());
             /* istanbul ignore next */
-            if (availabilityEnabled) {
+            if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 payload.availability_mode = 'all';
                 payload.availability.push({topic: `${baseTopic}/availability`});
             }

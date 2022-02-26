@@ -245,9 +245,13 @@ function sanitizeImageParameter(parameter: string): string {
     return sanitized;
 }
 
-function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boolean {
-    if (device.options.hasOwnProperty('availability')) {
-        return !!device.options.availability;
+function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settings): boolean {
+    if (entity.isGroup()) {
+        return !entity.membersDevices().map((d) => isAvailabilityEnabledForEntity(d, settings)).includes(false);
+    }
+
+    if (entity.options.hasOwnProperty('availability')) {
+        return !!entity.options.availability;
     }
 
     // availability_timeout = deprecated
@@ -256,11 +260,11 @@ function isAvailabilityEnabledForDevice(device: Device, settings: Settings): boo
 
     const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
     if (passlist.length > 0) {
-        return passlist.includes(device.name) || passlist.includes(device.ieeeAddr);
+        return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
     }
 
     const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-    return !blocklist.includes(device.name) && !blocklist.includes(device.ieeeAddr);
+    return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
 }
 
 const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
@@ -306,5 +310,5 @@ export default {
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
-    sanitizeImageParameter, isAvailabilityEnabledForDevice, publishLastSeen, availabilityPayload,
+    sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
 };
