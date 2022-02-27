@@ -62,7 +62,12 @@ const transportsToUse: winston.transport[] = [
             winston.format.printf(/* istanbul ignore next */(info) => {
                 const {timestamp, level, message} = info;
                 const l = winstonToZ2mLevel(level as WinstonLogLevel);
-                const prefix = colorizer.colorize(l, `Zigbee2MQTT:${levelWithCompensatedLength[l]}`);
+
+                const plainPrefix = `Zigbee2MQTT:${levelWithCompensatedLength[l]}`;
+                let prefix = plainPrefix;
+                if (process.stdout.isTTY) {
+                    prefix = colorizer.colorize(l, plainPrefix);
+                }
                 return `${prefix} ${timestamp.split('.')[0]}: ${message}`;
             }),
         ),
