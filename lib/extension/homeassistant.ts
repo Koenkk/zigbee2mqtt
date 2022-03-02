@@ -499,6 +499,7 @@ export default class HomeAssistant extends Extension {
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
                 consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
                 contact: {device_class: 'door'},
+                garage_door_contact: {device_class: 'garage'},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
                 expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
                 gas: {device_class: 'gas'},
