@@ -809,8 +809,6 @@ describe('HomeAssistant extension', () => {
         let payload;
 
         payload = {
-            state_topic: 'zigbee2mqtt/smart vent',
-            value_template: "{% if not value_json.running %} stopped {% else %}{% if value_json.position > 0 %} closing {% else %} opening {% endif %} {% endif %}",
             command_topic: 'zigbee2mqtt/smart vent/set',
             position_topic: 'zigbee2mqtt/smart vent',
             set_position_topic: 'zigbee2mqtt/smart vent/set',
