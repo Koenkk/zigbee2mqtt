@@ -396,8 +396,10 @@ export default class HomeAssistant extends Extension {
             // - https://github.com/Koenkk/zigbee-herdsman-converters/pull/2663
             if (!tilt || (tilt && position)) {
                 discoveryEntry.discovery_payload.command_topic = true;
-                discoveryEntry.discovery_payload.state_topic = !position;
+                discoveryEntry.discovery_payload.state_topic = true;
                 discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+                discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} stopped {% else %}` +
+                    `{% if value_json.position > 0 %} closing {% else %} opening {% endif %} {% endif %}`;
             }
 
             if (!position && !tilt) {
