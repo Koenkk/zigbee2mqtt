@@ -380,7 +380,7 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'cover') {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
-            const running = exposes.find((expose) => expose.features.find((e) => e.name === 'running'));
+            const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
