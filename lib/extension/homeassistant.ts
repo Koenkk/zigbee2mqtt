@@ -380,6 +380,7 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'cover') {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
+            const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
@@ -396,8 +397,14 @@ export default class HomeAssistant extends Extension {
             // - https://github.com/Koenkk/zigbee-herdsman-converters/pull/2663
             if (!tilt || (tilt && position)) {
                 discoveryEntry.discovery_payload.command_topic = true;
-                discoveryEntry.discovery_payload.state_topic = !position;
+                discoveryEntry.discovery_payload.state_topic = !!running || !position;
                 discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+
+                if (running) {
+                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} ` +
+                        `stopped {% else %} {% if value_json.position > 0 %} closing {% else %} ` +
+                        `opening {% endif %} {% endif %}`;
+                }
             }
 
             if (!position && !tilt) {
@@ -499,6 +506,7 @@ export default class HomeAssistant extends Extension {
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
                 consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
                 contact: {device_class: 'door'},
+                garage_door_contact: {device_class: 'garage'},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
                 expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
                 gas: {device_class: 'gas'},

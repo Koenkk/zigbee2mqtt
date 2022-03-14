@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.23.0-dev",
+  "version": "1.24.0-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -60,8 +60,8 @@
     "winston-transport": "^4.5.0",
     "ws": "^8.5.0",
     "zigbee-herdsman": "0.14.20",
-    "zigbee-herdsman-converters": "14.0.435",
-    "zigbee2mqtt-frontend": "0.6.75"
+    "zigbee-herdsman-converters": "14.0.450",
+    "zigbee2mqtt-frontend": "0.6.79"
   },
   "devDependencies": {
     "@babel/core": "^7.17.5",
@@ -71,20 +71,20 @@
     "@types/debounce": "^1.2.1",
     "@types/finalhandler": "^1.1.1",
     "@types/humanize-duration": "^3.27.1",
-    "@types/jest": "^27.4.0",
+    "@types/jest": "^27.4.1",
     "@types/js-yaml": "^4.0.5",
     "@types/object-assign-deep": "^0.4.0",
     "@types/rimraf": "^3.0.2",
-    "@types/ws": "^8.2.3",
-    "@typescript-eslint/eslint-plugin": "^5.12.0",
-    "@typescript-eslint/parser": "^5.12.0",
+    "@types/ws": "^8.5.3",
+    "@typescript-eslint/eslint-plugin": "^5.14.0",
+    "@typescript-eslint/parser": "^5.14.0",
     "babel-jest": "^27.5.1",
-    "eslint": "^8.9.0",
+    "eslint": "^8.11.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jest": "^26.1.1",
     "jest": "^27.5.1",
     "tmp": "^0.2.1",
-    "typescript": "^4.5.5"
+    "typescript": "^4.6.2"
   },
   "jest": {
     "coverageThreshold": {
