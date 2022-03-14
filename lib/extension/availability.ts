@@ -117,7 +117,7 @@ export default class Availability extends Extension {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 // Publish initial availablility
-                this.publishAvailability(entity, true, true);
+                this.publishAvailability(entity, true, false, true);
 
                 if (entity.isDevice()) {
                     this.resetTimer(entity);
@@ -131,8 +131,8 @@ export default class Availability extends Extension {
         }
     }
 
-    private publishAvailability(entity: Device | Group, logLastSeen: boolean, skipGroups=false,
-        forcePublish=false): void {
+    private publishAvailability(entity: Device | Group, logLastSeen: boolean,
+        forcePublish=false, skipGroups=false): void {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
