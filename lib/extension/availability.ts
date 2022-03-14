@@ -33,7 +33,8 @@ export default class Availability extends Extension {
             const ago = Date.now() - entity.zh.lastSeen;
             return ago < this.getTimeout(entity);
         } else {
-            return !entity.membersDevices().map((d) => this.isAvailable(d)).includes(false);
+            return entity.membersDevices().length === 0 ||
+                entity.membersDevices().map((d) => this.availabilityCache[d.ieeeAddr]).includes(true);
         }
     }
 
@@ -108,6 +109,7 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
+        this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
         this.publishAvailabilityForAllEntities();
     }
 
@@ -115,7 +117,7 @@ export default class Availability extends Extension {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 // Publish initial availablility
-                this.publishAvailability(entity, true);
+                this.publishAvailability(entity, true, true);
 
                 if (entity.isDevice()) {
                     this.resetTimer(entity);
@@ -129,7 +131,8 @@ export default class Availability extends Extension {
         }
     }
 
-    private publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish=false): void {
+    private publishAvailability(entity: Device | Group, logLastSeen: boolean, skipGroups=false,
+        forcePublish=false): void {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
@@ -146,12 +149,6 @@ export default class Availability extends Extension {
             return;
         }
 
-        if (entity.isDevice()) {
-            this.zigbee.groups().filter((g) => g.hasMember(entity))
-                .filter((g) => utils.isAvailabilityEnabledForEntity(g, settings.get()))
-                .forEach((g) => this.publishAvailability(g, false, forcePublish));
-        }
-
         if (entity.isDevice() && entity.ieeeAddr in this.availabilityCache && available &&
             this.availabilityCache[entity.ieeeAddr] === false) {
             logger.debug(`Device '${entity.name}' reconnected`);
@@ -162,6 +159,12 @@ export default class Availability extends Extension {
         const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[entity.ID] = available;
         this.mqtt.publish(topic, payload, {retain: true, qos: 0});
+
+        if (!skipGroups && entity.isDevice()) {
+            this.zigbee.groups().filter((g) => g.hasMember(entity))
+                .filter((g) => utils.isAvailabilityEnabledForEntity(g, settings.get()))
+                .forEach((g) => this.publishAvailability(g, false, forcePublish));
+        }
     }
 
     @bind private onLastSeenChanged(data: eventdata.LastSeenChanged): void {
