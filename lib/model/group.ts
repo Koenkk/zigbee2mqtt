@@ -4,13 +4,23 @@ import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
 
 export default class Group {
     public zh: zh.Group;
+    private resolveDevice: (ieeeAddr: string) => Device;
 
     get ID(): number {return this.zh.groupID;}
     get options(): GroupOptions {return {...settings.getGroup(this.ID)};}
     get name(): string {return this.options?.friendly_name || this.ID.toString();}
 
-    constructor(group: zh.Group) {
+    constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device) {
         this.zh = group;
+        this.resolveDevice = resolveDevice;
+    }
+
+    hasMember(device: Device): boolean {
+        return !!device.zh.endpoints.find((e) => this.zh.members.includes(e));
+    }
+
+    membersDevices(): Device[] {
+        return this.zh.members.map((e) => this.resolveDevice(e.getDevice().ieeeAddr)).filter((d) => d);
     }
 
     membersDefinitions(): zhc.Definition[] {
