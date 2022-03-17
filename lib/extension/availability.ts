@@ -5,6 +5,12 @@ import * as settings from '../util/settings';
 import debounce from 'debounce';
 import bind from 'bind-decorator';
 
+const retrieveOnReconnect = [
+    {keys: ['state']},
+    {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
+    {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
+];
+
 export default class Availability extends Extension {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
@@ -187,17 +193,18 @@ export default class Availability extends Extension {
          * device can send multiple times after each other.
          */
         if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
-            this.retrieveStateDebouncers[device.ieeeAddr] = debounce(() => {
+            this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
                 logger.debug(`Retrieving state of '${device.name}' after reconnect`);
                 // Color and color temperature converters do both, only needs to be called once.
-                const keySet = [['state'], ['brightness'], ['color', 'color_temp']];
-                for (const keys of keySet) {
-                    const converter = device.definition.toZigbee.find((c) => c.key.find((k) => keys.includes(k)));
-                    converter?.convertGet?.(device.endpoint(), keys[0],
+                for (const item of retrieveOnReconnect) {
+                    if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) continue;
+                    const converter = device.definition.toZigbee.find((c) => c.key.find((k) => item.keys.includes(k)));
+                    await converter?.convertGet?.(device.endpoint(), item.keys[0],
                         {message: this.state.get(device) || {}, mapped: device.definition})
                         .catch((e) => {
                             logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`);
                         });
+                    await utils.sleep(500);
                 }
             }, utils.seconds(2));
         }

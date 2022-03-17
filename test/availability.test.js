@@ -241,6 +241,9 @@ describe('Availability', () => {
     it('Should retrieve device state when it reconnects', async () => {
         MQTT.publish.mockClear();
 
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        controller.state.set(device, {state: 'OFF'})
+
         const endpoint = devices.bulb_color.getEndpoint(1);
         endpoint.read.mockClear();
 
@@ -253,18 +256,15 @@ describe('Availability', () => {
         expect(endpoint.read).toHaveBeenCalledTimes(0);
         await advancedTime(utils.seconds(2));
 
-        expect(endpoint.read).toHaveBeenCalledTimes(3);
+        expect(endpoint.read).toHaveBeenCalledTimes(1);
         expect(endpoint.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        expect(endpoint.read).toHaveBeenCalledWith('genLevelCtrl', ['currentLevel']);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl',
-            ['colorMode', 'currentX', 'currentY', 'enhancedCurrentHue', 'currentSaturation', 'colorTemperature']);
 
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device: devices.bulb_color});
         await flushPromises();
         endpoint.read.mockImplementationOnce(() => {throw new Error('')});
         await advancedTime(utils.seconds(3));
-        expect(endpoint.read).toHaveBeenCalledTimes(3);
+        expect(endpoint.read).toHaveBeenCalledTimes(1);
     });
 
     it('Should republish availability when device is renamed', async () => {
