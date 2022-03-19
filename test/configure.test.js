@@ -192,19 +192,7 @@ describe('Configure', () => {
         expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'ZNLDP12LM', device does not require this.`)
     });
 
-    it('Should not configure when interviewing', async () => {
-        const device = zigbeeHerdsman.devices.remote;
-        delete device.meta.configured;
-        device.interviewing = true;
-        const endpoint = device.getEndpoint(1);
-        mockClear(device);
-        await zigbeeHerdsman.events.lastSeenChanged({device});
-        await flushPromises();
-        expectRemoteNotConfigured();
-        device.interviewing = false;
-    });
-
-    it('Should configure when not interviewCompleted', async () => {
+    it('Should not configure when interview not completed', async () => {
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;
         device.interviewCompleted = false;
@@ -212,7 +200,7 @@ describe('Configure', () => {
         mockClear(device);
         await zigbeeHerdsman.events.lastSeenChanged({device});
         await flushPromises();
-        expectRemoteConfigured();
+        expectRemoteNotConfigured();
         device.interviewCompleted = true;
     });
 

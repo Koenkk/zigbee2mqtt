@@ -85,7 +85,7 @@ export default class Configure extends Extension {
     private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
         force=false, thowError=false): Promise<void> {
         if (!force) {
-            if (!device.definition?.configure || device.zh.interviewing) {
+            if (!device.definition?.configure || !device.zh.interviewCompleted) {
                 return;
             }
 
