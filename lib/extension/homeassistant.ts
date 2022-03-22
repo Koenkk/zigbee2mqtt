@@ -380,7 +380,7 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'cover') {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
-            const motor_state = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' && 
+            const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
 
             const discoveryEntry: DiscoveryEntry = {
@@ -401,28 +401,31 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.state_topic = !position;
                 discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
 
-                // For curtains that have `motor_state` lookup a possible state names and make this 
-                // available for discovery. If the curtains only support the `running` value, 
+                // For curtains that have `motor_state` lookup a possible state names and make this
+                // available for discovery. If the curtains only support the `running` value,
                 // then we use it anyway. The movement direction is calculated (assumed) in this case.
-                if (motor_state) {
+                if (motorState) {
                     const openingLookup = ['opening', 'open', 'forward', 'up', 'rising'];
                     const closingLookup = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
                     const stoppedLookup = ['stopped', 'stop', 'pause', 'paused'];
 
-                    const openingState = motor_state.values.find((s) => openingLookup.includes(s.toLowerCase()));
-                    const closingState = motor_state.values.find((s) => closingLookup.includes(s.toLowerCase()));
-                    const stoppedState = motor_state.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
+                    const openingState = motorState.values.find((s) => openingLookup.includes(s.toLowerCase()));
+                    const closingState = motorState.values.find((s) => closingLookup.includes(s.toLowerCase()));
+                    const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
 
-                    if (openingState)
+                    if (openingState) {
                         discoveryEntry.discovery_payload.state_opening = openingState;
-                    if (closingState)
+                    }
+                    if (closingState) {
                         discoveryEntry.discovery_payload.state_closing = closingState;
-                    if (stoppedState)
+                    }
+                    if (stoppedState) {
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
+                    }
 
                     if (openingState || closingState || stoppedState) {
                         discoveryEntry.discovery_payload.state_topic = true;
-                        discoveryEntry.discovery_payload.value_template = `{{ value_json.motor_state }}`; 
+                        discoveryEntry.discovery_payload.value_template = `{{ value_json.motor_state }}`;
                     }
                 } else {
                     const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
