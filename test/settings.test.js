@@ -862,7 +862,16 @@ describe('Settings', () => {
         settings.reRead();
         expect(settings.get().ota.ikea_ota_use_test_url).toStrictEqual(true)
     });
+    
+    it('legacy_api_force_ota_update', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {legacy_api_force_ota_update: false}, 
+        });
 
+        settings.reRead();
+        expect(settings.get().ota.legacy_api_force_ota_update).toStrictEqual(false)
+    });
+    
     it('transmit_power config', () => {
         write(configurationFile, {...minimalConfig,
             experimental: {transmit_power: 1337}, 
