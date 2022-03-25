@@ -226,6 +226,7 @@ declare global {
             disable_automatic_update_check: boolean,
             zigbee_ota_override_index_location?: string,
             ikea_ota_use_test_url?: boolean,
+            legacy_api_force_ota_update?: boolean,
         },
         frontend?: {
             auth_token?: string,
