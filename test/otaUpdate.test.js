@@ -29,6 +29,7 @@ describe('OTA update', () => {
         settings.reRead();
         data.writeDefaultConfiguration();
         settings.set(['ota', 'ikea_ota_use_test_url'], true);
+        settings.set(['ota', 'legacy_api_force_ota_update'], false);
         settings.reRead();
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
