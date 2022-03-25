@@ -3,6 +3,7 @@ import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
 import utils from '../util/utils';
 import tradfriOTA from 'zigbee-herdsman-converters/lib/ota/tradfri';
+import ledvanceOTA from 'zigbee-herdsman-converters/lib/ota/ledvance';
 import zigbeeOTA from 'zigbee-herdsman-converters/lib/ota/zigbeeOTA';
 import Extension from './extension';
 import bind from 'bind-decorator';
@@ -41,6 +42,10 @@ export default class OTAUpdate extends Extension {
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         if (settings.get().ota.ikea_ota_use_test_url) {
             tradfriOTA.useTestURL();
+        }
+        
+        if (settings.get().ota.legacy_api_force_ota_update) {
+            ledvanceOTA.legacyForceOtaUpdate();
         }
 
         // Let zigbeeOTA module know if the override index file is provided
