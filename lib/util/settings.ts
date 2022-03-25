@@ -21,6 +21,7 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.baudrate;
     delete schema.properties.advanced.properties.rtscts;
     delete schema.properties.advanced.properties.ikea_ota_use_test_url;
+    delete schema.properties.advanced.properties.legacy_api_force_ota_update;
     delete schema.properties.experimental;
     delete schemaJson.properties.whitelist;
     delete schemaJson.properties.ban;
@@ -167,6 +168,11 @@ function loadSettingsWithDefaults(): void {
     if (_settings.advanced?.hasOwnProperty('ikea_ota_use_test_url') && _settings.ota?.ikea_ota_use_test_url == null) {
         // @ts-ignore
         _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
+    }
+    
+    if (_settings.advanced?.hasOwnProperty('legacy_api_force_ota_update') && _settings.ota?.legacy_api_force_ota_update == null) {
+        // @ts-ignore
+        _settingsWithDefaults.ota.legacy_api_force_ota_update = _settings.advanced.legacy_api_force_ota_update;
     }
 
     // @ts-ignore
