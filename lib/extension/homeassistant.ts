@@ -1038,6 +1038,32 @@ export default class HomeAssistant extends Extension {
                 },
             };
             configs.push(updateAvailableSensor);
+            const updateProgressSensor: DiscoveryEntry = {
+                type: 'sensor',
+                object_id: 'update_progress',
+                mockProperties: [{property: 'update', value: {progress: null}}],
+                discovery_payload: {
+                    icon: 'mdi:update',
+                    value_template: `{{ value_json['update']['progress'] if 'progress' in value_json['update'] else None }}`,
+                    enabled_by_default: false,
+                    unit_of_measurement: '%',
+                    entity_category: 'diagnostic',
+                },
+            };
+            configs.push(updateProgressSensor);
+            const updateFinishesAtSensor: DiscoveryEntry = {
+                type: 'sensor',
+                object_id: 'update_finishes_at',
+                mockProperties: [{property: 'update', value: {remaining: null}}],
+                discovery_payload: {
+                    icon: 'mdi:update',
+                    value_template: `{{ (now() + timedelta(seconds=value_json['update']['remaining'])) if 'remaining' in value_json['update'] else None }}`,
+                    enabled_by_default: false,
+                    device_class: 'timestamp',
+                    entity_category: 'diagnostic',
+                },
+            };
+            configs.push(updateFinishesAtSensor);
         }
 
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {

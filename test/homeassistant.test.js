@@ -1352,6 +1352,70 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover update_progress sensor when device supports it', async () => {
+        const payload = {
+            "payload_on":true,
+            "payload_off":false,
+            "value_template":`{{ value_json['update']['progress'] if 'progress' in value_json['update'] else None }}`,
+            "enabled_by_default": true,
+            "state_topic":"zigbee2mqtt/bulb",
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb update progress",
+            "unique_id":"0x000b57fffec6a5b2_update_progress_zigbee2mqtt",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x000b57fffec6a5b2"
+                ],
+                "name":"bulb",
+                'sw_version': null,
+                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "manufacturer":"IKEA"
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'unit_of_measurement': '%',
+            'entity_category': 'diagnostic'
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x000b57fffec6a5b2/update_progress/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover update_finishes_at sensor when device supports it', async () => {
+        const payload = {
+            "payload_on":true,
+            "payload_off":false,
+            "value_template":`{{ (now() + timedelta(seconds=value_json['update']['remaining'])) if 'remaining' in value_json['update'] else None }}`,
+            "enabled_by_default": true,
+            "state_topic":"zigbee2mqtt/bulb",
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "name":"bulb update finishes at",
+            "unique_id":"0x000b57fffec6a5b2_update_finishes_at_zigbee2mqtt",
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x000b57fffec6a5b2"
+                ],
+                "name":"bulb",
+                'sw_version': null,
+                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "manufacturer":"IKEA"
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+            'device_class': 'timestamp',
+            'entity_category': 'diagnostic'
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/0x000b57fffec6a5b2/update_finishes_at/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Should discover trigger when click is published', async () => {
         const discovered = MQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(5);
