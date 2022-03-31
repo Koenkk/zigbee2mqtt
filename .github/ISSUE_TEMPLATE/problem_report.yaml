@@ -37,7 +37,7 @@ body:
     id: z2m_version
     attributes:
       label: Zigbee2MQTT version
-      description: Can be found in the frontend -> settings -> about -> Zigbee2MQTT version
+      description: Can be found in the frontend -> settings -> about -> Zigbee2MQTT version. Are you running Zigbee2MQTT 1.18.1? Then read [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0).
       placeholder: '1.22.1'
     validations:
       required: true
