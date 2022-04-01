@@ -413,19 +413,13 @@ export default class HomeAssistant extends Extension {
                     const closingState = motorState.values.find((s) => closingLookup.includes(s.toLowerCase()));
                     const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
 
-                    if (openingState) {
-                        discoveryEntry.discovery_payload.state_opening = openingState;
-                    }
-                    if (closingState) {
-                        discoveryEntry.discovery_payload.state_closing = closingState;
-                    }
-                    if (stoppedState) {
-                        discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                    }
-
-                    if (openingState || closingState || stoppedState) {
+                    if (openingState && closingState && stoppedState) {
                         discoveryEntry.discovery_payload.state_topic = true;
-                        discoveryEntry.discovery_payload.value_template = `{{ value_json.motor_state }}`;
+                        discoveryEntry.discovery_payload.state_opening = openingState;
+                        discoveryEntry.discovery_payload.state_closing = closingState;
+                        discoveryEntry.discovery_payload.state_stopped = stoppedState;
+                        discoveryEntry.discovery_payload.value_template = `{% if not value_json.motor_state %} ` +
+                            `${stoppedState} {% else %} {{ value_json.motor_state }} {% endif %}`;
                     }
                 } else {
                     const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
