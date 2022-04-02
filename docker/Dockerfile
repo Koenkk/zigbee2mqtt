@@ -3,27 +3,12 @@ FROM node:16-alpine3.15 as base
 WORKDIR /app
 RUN apk add --no-cache tzdata eudev tini
 
-COPY package.json ./
+COPY package.json package-lock.json tsconfig.json index.js dist lib LICENSE index.js data/configuration.yaml ./
 
-# Dependencies and build
-FROM base as dependencies_and_build
-
-COPY package-lock.json tsconfig.json index.js ./
-COPY lib ./lib
-
+# Install dependencies
 RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
-    npm ci --no-audit --no-optional --no-update-notifier && \
-    npm run build && \
-    rm -rf node_modules && \
     npm ci --production --no-audit --no-optional --no-update-notifier && \
     apk del .buildtools
-
-# Release
-FROM base as release
-
-COPY --from=dependencies_and_build /app/node_modules ./node_modules
-COPY --from=dependencies_and_build /app/dist ./dist
-COPY LICENSE index.js data/configuration.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
