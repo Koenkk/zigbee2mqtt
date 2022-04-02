@@ -8,11 +8,11 @@ jobs:
   update_deps:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: dev
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    - uses: actions/setup-node@v2-beta
+    - uses: actions/setup-node@v3
       with:
         node-version: 16
     - run: rm -rf npm-shrinkwrap.json
