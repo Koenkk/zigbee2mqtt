@@ -3,7 +3,9 @@ FROM node:16-alpine3.15 as base
 WORKDIR /app
 RUN apk add --no-cache tzdata eudev tini
 
-COPY package.json package-lock.json tsconfig.json index.js dist lib LICENSE index.js data/configuration.yaml ./
+COPY package.json package-lock.json tsconfig.json index.js LICENSE index.js data/configuration.yaml ./
+COPY lib ./lib
+COPY dist ./dist
 
 # Install dependencies
 RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
