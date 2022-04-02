@@ -8,7 +8,7 @@ COPY package.json ./
 # Dependencies and build
 FROM base as dependencies_and_build
 
-COPY npm-shrinkwrap.json tsconfig.json index.js ./
+COPY package-lock.json tsconfig.json index.js ./
 COPY lib ./lib
 
 RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
