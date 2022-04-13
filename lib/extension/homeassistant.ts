@@ -526,6 +526,7 @@ export default class HomeAssistant extends Extension {
             const lookup: {[s: string]: KeyValue}= {
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
+                calibration: {entity_category: 'config', icon: 'mdi:progress-wrench'},
                 carbon_monoxide: {device_class: 'safety'},
                 card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
@@ -540,6 +541,7 @@ export default class HomeAssistant extends Extension {
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
                 led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
                 legacy: {entity_category: 'config', icon: 'mdi:cog'},
+                motor_reversal: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 moving: {device_class: 'moving'},
                 no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
                 occupancy: {device_class: 'motion'},
@@ -610,7 +612,8 @@ export default class HomeAssistant extends Extension {
                 battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement'},
                 boost_time: {entity_category: 'config', icon: 'mdi:timer'},
-                calibration: {entity_category: 'config'},
+                calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
+                calibration_time: {entity_category: 'config', icon: 'mdi:wrench-clock'},
                 co2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
                 comfort_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 cpu_temperature: {
