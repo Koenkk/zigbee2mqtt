@@ -4,6 +4,7 @@ const semver = require('semver');
 const engines = require('./package.json').engines;
 const indexJsRestart = 'indexjs.restart';
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const {exec} = require('child_process');
 const rimraf = require('rimraf');
@@ -44,7 +45,15 @@ async function build(reason) {
     return new Promise((resolve, reject) => {
         process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
         rimraf.sync('dist');
-        exec('npm run build', {cwd: __dirname}, async (err, stdout, stderr) => {
+        const env = {...process.env};
+        const _600mb = 629145600;
+        if (_600mb > os.totalmem()) {
+            // Prevent OOM on tsc compile for system with low memory
+            // https://github.com/Koenkk/zigbee2mqtt/issues/12034
+            env.NODE_OPTIONS = '--max_old_space_size=256';
+        }
+
+        exec('npm run build', {env, cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
                 if (err.code === 134) {
