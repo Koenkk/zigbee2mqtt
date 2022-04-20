@@ -47,7 +47,7 @@ async function build(reason) {
         rimraf.sync('dist');
         const env = {...process.env};
         const _600mb = 629145600;
-        if (_600mb > os.totalmem()) {
+        if (_600mb > os.totalmem() && !env.NODE_OPTIONS) {
             // Prevent OOM on tsc compile for system with low memory
             // https://github.com/Koenkk/zigbee2mqtt/issues/12034
             env.NODE_OPTIONS = '--max_old_space_size=256';
