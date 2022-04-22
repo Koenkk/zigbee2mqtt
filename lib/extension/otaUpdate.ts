@@ -70,7 +70,8 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
-        if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition) return;
+        if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition ||
+            this.inProgress.has(data.device.ieeeAddr)) return;
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
         const automaticOTADisabled = settings.get().ota.disable_automatic_update_check;
@@ -82,7 +83,7 @@ export default class OTAUpdate extends Extension {
             const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
             const check = this.lastChecked.hasOwnProperty(data.device.ieeeAddr) ?
                 (Date.now() - this.lastChecked[data.device.ieeeAddr]) > updateCheckInterval : true;
-            if (!check || this.inProgress.has(data.device.ieeeAddr)) return;
+            if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
             let available = false;
