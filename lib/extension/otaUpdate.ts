@@ -70,12 +70,12 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
-        if (settings.get().ota.disable_automatic_update_check) return;
         if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition) return;
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
+        const automaticOTADisabled = settings.get().ota.disable_automatic_update_check;
         let supportsOTA = data.device.definition.hasOwnProperty('ota');
-        if (supportsOTA) {
+        if (supportsOTA && !automaticOTADisabled) {
             // When a device does a next image request, it will usually do it a few times after each other
             // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
             // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
