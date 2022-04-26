@@ -244,6 +244,7 @@ export default class NetworkMap extends Extension {
             } catch (error) {
                 failed.get(device).push('lqi');
                 logger.error(`Failed to execute LQI for '${device.name}'`);
+                logger.debug(error.stack);
             }
 
             if (includeRoutes) {
