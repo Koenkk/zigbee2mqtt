@@ -60,7 +60,7 @@
     "winston-transport": "^4.5.0",
     "ws": "^8.5.0",
     "zigbee-herdsman": "0.14.27",
-    "zigbee-herdsman-converters": "14.0.504",
+    "zigbee-herdsman-converters": "14.0.505",
     "zigbee2mqtt-frontend": "0.6.83"
   },
   "devDependencies": {
