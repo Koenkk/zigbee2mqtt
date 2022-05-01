@@ -610,6 +610,7 @@ export default class HomeAssistant extends Extension {
                 away_preset_days: {entity_category: 'config', icon: 'mdi:timer'},
                 away_preset_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
+                battery2: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement'},
                 boost_time: {entity_category: 'config', icon: 'mdi:timer'},
                 calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
