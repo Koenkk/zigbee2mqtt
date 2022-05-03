@@ -836,7 +836,7 @@
           "description": "The user-defined device icon for the frontend. It can be a link to an image (not a path to a file) or base64 encoded data URL like: image/svg+xml;base64,PHN2ZyB3aW....R0aD"
         },
         "homeassistant": {
-          "type": "object",
+          "type": ["object", "null"],
           "title": "Home Assistant",
           "properties": {
               "name": {
