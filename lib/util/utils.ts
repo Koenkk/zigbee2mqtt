@@ -210,6 +210,30 @@ function toSnakeCase(value: string | KeyValue): any {
     }
 }
 
+function charRange(start: string, stop: string): number[] {
+    const result = [];
+    for (let idx=start.charCodeAt(0), end=stop.charCodeAt(0); idx <=end; ++idx) {
+        result.push(idx);
+    }
+    return result;
+}
+
+const controlCharacters = [
+    ...charRange('\u0000', '\u001F'),
+    ...charRange('\u007f', '\u009F'),
+    ...charRange('\ufdd0', '\ufdef'),
+];
+
+function containsControlCharacter(str: string): boolean {
+    for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        if (controlCharacters.includes(ch) || [0xFFFE, 0xFFFF].includes(ch & 0xFFFF)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function validateFriendlyName(name: string, throwFirstError=false): string[] {
     const errors = [];
     for (const endpointName of endpointNames) {
@@ -220,7 +244,7 @@ function validateFriendlyName(name: string, throwFirstError=false): string[] {
 
     if (name.length === 0) errors.push(`friendly_name must be at least 1 char long`);
     if (name.endsWith('/') || name.startsWith('/')) errors.push(`friendly_name is not allowed to end or start with /`);
-    if (name.endsWith(String.fromCharCode(0))) errors.push(`friendly_name is not allowed to contain null char`);
+    if (containsControlCharacter(name)) errors.push(`friendly_name is not allowed to contain control char`);
     if (endpointNames.includes(name)) errors.push(`Following friendly_name are not allowed: '${endpointNames}'`);
     if (name.match(/.*\/\d*$/)) errors.push(`Friendly name cannot end with a "/DIGIT" ('${name}')`);
     if (name.includes('#') || name.includes('+')) {

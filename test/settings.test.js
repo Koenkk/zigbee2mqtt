@@ -747,15 +747,15 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Configuration friendly name cannot contain null char', async () => {
+    it('Configuration friendly name cannot contain control char', async () => {
         write(configurationFile, {
             ...minimalConfig,
-            devices: {'0x0017880104e45519': {friendly_name: 'blaa/blaa' + String.fromCharCode(0), retain: false}},
+            devices: {'0x0017880104e45519': {friendly_name: 'blaa/blaa\u009f', retain: false}},
         });
 
         settings.reRead();
 
-        const error = `friendly_name is not allowed to contain null char`;
+        const error = `friendly_name is not allowed to contain control char`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
