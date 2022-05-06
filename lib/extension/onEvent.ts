@@ -43,7 +43,8 @@ export default class OnEvent extends Extension {
         zhc.onEvent(type, data, device.zh);
 
         if (device.definition?.onEvent) {
-            await device.definition.onEvent(type, data, device.zh, device.options);
+            const deviceState = this.state.get(device);
+            await device.definition.onEvent(type, data, device.zh, device.options, deviceState ? deviceState : {});
         }
     }
 }
