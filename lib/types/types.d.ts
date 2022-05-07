@@ -117,7 +117,8 @@ declare global {
             exposes: DefinitionExpose[] | ((device: zh.Device, options: KeyValue) => DefinitionExpose[])
             configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger,
                 options?: DeviceOptions) => Promise<void>;
-            onEvent?: (type: string, data: KeyValue, device: zh.Device, settings: KeyValue) => Promise<void>;
+            onEvent?: (type: string, data: KeyValue, device: zh.Device,
+                settings: KeyValue, state: KeyValue) => Promise<void>;
             ota?: {
                 isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue) => Promise<boolean>;
                 updateToLatest: (device: zh.Device, logger: Logger,
