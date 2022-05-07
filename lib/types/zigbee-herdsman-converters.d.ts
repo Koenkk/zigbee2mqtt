@@ -4,7 +4,7 @@ declare module 'zigbee-herdsman-converters' {
     export const toZigbeeConverters: {[s: string]: zhc.ToZigbeeConverter};
     export const definitions: zhc.Definition[];
     export function addDeviceDefinition(definition: zhc.Definition): Promise<void>;
-    export function onEvent(type: string, data: KeyValue, device: zh.Device): Promise<void>;
+    export function onEvent(type: string, data: KeyValue, device: zh.Device, state: KeyValue): Promise<void>;
 }
 
 declare module 'zigbee-herdsman-converters/lib/ota/tradfri' {

@@ -76,6 +76,6 @@ describe('On event', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device);
+        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device, {});
     });
 });
