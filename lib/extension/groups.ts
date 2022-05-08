@@ -181,7 +181,7 @@ export default class Groups extends Extension {
             const device = this.zigbee.resolveEntity(member.getDevice());
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
-                if (state && state.state === 'ON') {
+                if (state.state === 'ON') {
                     return false;
                 }
             }

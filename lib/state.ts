@@ -68,7 +68,7 @@ class State {
     }
 
     get(entity: Group | Device): KeyValue {
-        return this.state[entity.ID];
+        return this.state[entity.ID] || {};
     }
 
     set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {

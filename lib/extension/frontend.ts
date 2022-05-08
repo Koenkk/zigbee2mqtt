@@ -100,11 +100,7 @@ export default class Frontend extends Extension {
         }
 
         for (const device of this.zigbee.devices(false)) {
-            let payload: KeyValue = {};
-            if (this.state.exists(device)) {
-                payload = {...payload, ...this.state.get(device)};
-            }
-
+            const payload = this.state.get(device);
             const lastSeen = settings.get().advanced.last_seen;
             /* istanbul ignore if */
             if (lastSeen !== 'disable') {
