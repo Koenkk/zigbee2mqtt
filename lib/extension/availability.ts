@@ -200,7 +200,7 @@ export default class Availability extends Extension {
                     if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) continue;
                     const converter = device.definition.toZigbee.find((c) => c.key.find((k) => item.keys.includes(k)));
                     await converter?.convertGet?.(device.endpoint(), item.keys[0],
-                        {message: this.state.get(device) || {}, mapped: device.definition})
+                        {message: this.state.get(device), mapped: device.definition})
                         .catch((e) => {
                             logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`);
                         });
