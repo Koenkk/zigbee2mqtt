@@ -71,7 +71,6 @@ export default class NetworkMap extends Extension {
                     'bridge/response/networkmap',
                     stringify(utils.getResponse(message, {}, error.message)),
                 );
-                logger.debug(error.stack);
             }
         }
     }
