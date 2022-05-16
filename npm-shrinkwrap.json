@@ -35,7 +35,7 @@
         "ws": "^8.6.0",
         "zigbee-herdsman": "0.14.30",
         "zigbee-herdsman-converters": "14.0.516",
-        "zigbee2mqtt-frontend": "0.6.84"
+        "zigbee2mqtt-frontend": "0.6.85"
       },
       "bin": {
         "zigbee2mqtt": "cli.js"
@@ -9717,9 +9717,9 @@
       }
     },
     "node_modules/zigbee2mqtt-frontend": {
-      "version": "0.6.84",
-      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.6.84.tgz",
-      "integrity": "sha512-OdnBgrKsy6tDjrh+5fkE+i1g5F1e42TEc+wKWaz/vgbqRKmVS2m/380RD1x0KwLBusGzpNNPBzWbiO7wKKfWCA=="
+      "version": "0.6.85",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.6.85.tgz",
+      "integrity": "sha512-/8AAKwZnkk2Gg/dKIaGdTEALv9acPBeeW1MBbrprSH2loNar6qbqHx+Xz1/7mFK2EUQVhihjwkC3c54LMeMI+g=="
     }
   },
   "dependencies": {
@@ -16849,9 +16849,9 @@
       }
     },
     "zigbee2mqtt-frontend": {
-      "version": "0.6.84",
-      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.6.84.tgz",
-      "integrity": "sha512-OdnBgrKsy6tDjrh+5fkE+i1g5F1e42TEc+wKWaz/vgbqRKmVS2m/380RD1x0KwLBusGzpNNPBzWbiO7wKKfWCA=="
+      "version": "0.6.85",
+      "resolved": "https://registry.npmjs.org/zigbee2mqtt-frontend/-/zigbee2mqtt-frontend-0.6.85.tgz",
+      "integrity": "sha512-/8AAKwZnkk2Gg/dKIaGdTEALv9acPBeeW1MBbrprSH2loNar6qbqHx+Xz1/7mFK2EUQVhihjwkC3c54LMeMI+g=="
     }
   }
 }
