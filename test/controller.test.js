@@ -568,8 +568,8 @@ describe('Controller', () => {
         await controller.start();
         logger.error.mockClear();
         controller.state.file = "/";
-        await controller.state.save();
-        expect(logger.error).toHaveBeenCalledWith(`Failed to write state to '/' (EISDIR: illegal operation on a directory, open '/')`);
+        await controller.state.save();        
+        expect(logger.error).toHaveBeenCalledWith(expect.stringMatching(/Failed to write state to \'\/\'/));
     });
 
     it('Publish should not cache when set', async () => {
