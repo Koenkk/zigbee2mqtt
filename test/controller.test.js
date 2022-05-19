@@ -568,7 +568,7 @@ describe('Controller', () => {
         await controller.start();
         logger.error.mockClear();
         controller.state.file = "/";
-        await controller.state.save();        
+        await controller.state.save();
         expect(logger.error).toHaveBeenCalledWith(expect.stringMatching(/Failed to write state to \'\/\'/));
     });
 
