@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   tests:    
-    continue-on-error: true
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
