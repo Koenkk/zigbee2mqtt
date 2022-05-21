@@ -15,6 +15,7 @@ module.exports = {
         'indent': ['error', 4],
         'max-len': ['error', {'code': 120}],
         'no-prototype-builtins': 'off',
+        'linebreak-style': ['error', (process.platform === 'win32' ? 'windows' : 'unix')], // https://stackoverflow.com/q/39114446/2771889
     },
     'plugins': [
         'jest',

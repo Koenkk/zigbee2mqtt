@@ -3,6 +3,37 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  tests:    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [14, 16, 17, 18]
+        exclude:
+          - os: windows-latest # https://github.com/serialport/node-serialport/issues/2344
+            node: 17
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: https://registry.npmjs.org/
+      
+      - name: Restore node_modules cache
+        id: cache-node-modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('npm-shrinkwrap.json') }}
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+      - name: Lint
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test-with-coverage
   ci:
     runs-on: ubuntu-latest
     steps:

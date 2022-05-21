@@ -1,3 +1,5 @@
+const path = require('path');
+
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
@@ -10,6 +12,7 @@ const stringify = require('json-stable-stringify-without-jsonify');
 const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
 
 const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
+
 
 describe('OTA update', () => {
     let controller;
@@ -468,7 +471,7 @@ describe('OTA update', () => {
     it('Set zigbee_ota_override_index_location', async () => {
         settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
         await resetExtension();
-        expect(spyUseIndexOverride).toHaveBeenCalledWith(data.mockDir + '/local.index.json');
+        expect(spyUseIndexOverride).toHaveBeenCalledWith(path.join(data.mockDir, 'local.index.json'));
         spyUseIndexOverride.mockClear();
         
         settings.set(['ota', 'zigbee_ota_override_index_location'], 'http://my.site/index.json');
