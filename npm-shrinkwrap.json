@@ -34,7 +34,7 @@
         "winston-transport": "^4.5.0",
         "ws": "^8.6.0",
         "zigbee-herdsman": "0.14.32",
-        "zigbee-herdsman-converters": "14.0.521",
+        "zigbee-herdsman-converters": "14.0.522",
         "zigbee2mqtt-frontend": "0.6.94"
       },
       "bin": {
@@ -64,7 +64,7 @@
         "typescript": "^4.6.4"
       },
       "engines": {
-        "node": "^10 || ^12 || ^14 || ^15 || ^16 || ^17 || ^18"
+        "node": "^14 || ^16 || ^17 || ^18"
       }
     },
     "node_modules/@ampproject/remapping": {
@@ -9718,15 +9718,15 @@
       }
     },
     "node_modules/zigbee-herdsman-converters": {
-      "version": "14.0.521",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.521.tgz",
-      "integrity": "sha512-RsIfbjWb7LQU1P3FkgY2bMh9DldCH5EiotHNzXV5Re7iulIqvqqV/+JJSexozB27/7FkImc8gE2jNpRnye8ehg==",
+      "version": "14.0.522",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.522.tgz",
+      "integrity": "sha512-s/Q6ybCgmFb9+jt2qSYR3GZS00y8tYabE4Fn61/tJIqAzn+fd/HLsD/SRD9gS0IhDyS4J51mpVcIJxx+GiixBg==",
       "dependencies": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
         "https-proxy-agent": "^5.0.1",
         "tar-stream": "^2.2.0",
-        "zigbee-herdsman": "^0.14.30"
+        "zigbee-herdsman": "^0.14.32"
       }
     },
     "node_modules/zigbee2mqtt-frontend": {
@@ -16873,15 +16873,15 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "14.0.521",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.521.tgz",
-      "integrity": "sha512-RsIfbjWb7LQU1P3FkgY2bMh9DldCH5EiotHNzXV5Re7iulIqvqqV/+JJSexozB27/7FkImc8gE2jNpRnye8ehg==",
+      "version": "14.0.522",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.522.tgz",
+      "integrity": "sha512-s/Q6ybCgmFb9+jt2qSYR3GZS00y8tYabE4Fn61/tJIqAzn+fd/HLsD/SRD9gS0IhDyS4J51mpVcIJxx+GiixBg==",
       "requires": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
         "https-proxy-agent": "^5.0.1",
         "tar-stream": "^2.2.0",
-        "zigbee-herdsman": "^0.14.30"
+        "zigbee-herdsman": "^0.14.32"
       }
     },
     "zigbee2mqtt-frontend": {
