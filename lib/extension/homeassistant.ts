@@ -1243,7 +1243,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.preset_mode_command_topic) {
-                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set`;
+                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/preset`;
             }
 
             if (payload.action_topic) {
