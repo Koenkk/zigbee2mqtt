@@ -286,7 +286,7 @@ export default class HomeAssistant extends Extension {
             if (preset) {
                 discoveryEntry.discovery_payload.preset_modes = preset.values;
                 discoveryEntry.discovery_payload.preset_mode_command_topic = true;
-                discoveryEntry.discovery_payload.preset_mode_state_template =
+                discoveryEntry.discovery_payload.preset_mode_value_template =
                     `{{ value_json.${preset.property} }}`;
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
             }
