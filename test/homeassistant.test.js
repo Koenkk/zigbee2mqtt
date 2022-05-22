@@ -766,8 +766,8 @@ describe('HomeAssistant extension', () => {
                 "name":"TS0601_thermostat",
                 "sw_version":null
             },
-            "hold_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
-            "hold_modes":[
+            "preset_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
+            "preset_modes":[
                 "schedule",
                 "manual",
                 "boost",
@@ -775,8 +775,8 @@ describe('HomeAssistant extension', () => {
                 "comfort",
                 "eco"
             ],
-            "hold_state_template":"{{ value_json.preset }}",
-            "hold_state_topic":"zigbee2mqtt/TS0601_thermostat",
+            "preset_mode_state_template":"{{ value_json.preset }}",
+            "preset_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "json_attributes_topic":"zigbee2mqtt/TS0601_thermostat",
             "max_temp":"35",
             "min_temp":"5",
