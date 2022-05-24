@@ -1207,10 +1207,12 @@ export default class HomeAssistant extends Extension {
                 payload.temperature_state_topic = stateTopic;
             }
 
+            /* istanbul ignore next */
             if (payload.temperature_low_state_topic) {
                 payload.temperature_low_state_topic = stateTopic;
             }
 
+            /* istanbul ignore next */
             if (payload.temperature_high_state_topic) {
                 payload.temperature_high_state_topic = stateTopic;
             }
@@ -1220,20 +1222,24 @@ export default class HomeAssistant extends Extension {
                     `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_command_topic}`;
             }
 
+            /* istanbul ignore next */
             if (payload.temperature_low_command_topic) {
                 payload.temperature_low_command_topic =
                     `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_low_command_topic}`;
             }
 
+            /* istanbul ignore next */
             if (payload.temperature_high_command_topic) {
                 payload.temperature_high_command_topic =
                     `${baseTopic}/${commandTopicPrefix}set/${payload.temperature_high_command_topic}`;
             }
 
+            /* istanbul ignore next */
             if (payload.fan_mode_state_topic) {
                 payload.fan_mode_state_topic = stateTopic;
             }
 
+            /* istanbul ignore next */
             if (payload.fan_mode_command_topic) {
                 payload.fan_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
             }
