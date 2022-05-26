@@ -18,7 +18,7 @@ jobs:
     - run: rm -rf npm-shrinkwrap.json
     - run: npx npm-check-updates -u
     - run: npm install && npm shrinkwrap --dev
-    - uses: peter-evans/create-pull-request@v3
+    - uses: peter-evans/create-pull-request@v4
       with:
         commit-message: Update dependencies
         branch: "update_deps"
