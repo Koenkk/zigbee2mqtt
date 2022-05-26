@@ -22,7 +22,7 @@ jobs:
         branch: "update_zh"
         title: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
     - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
-    - uses: peter-evans/enable-pull-request-automerge@v1
+    - uses: peter-evans/enable-pull-request-automerge@v2
       if: steps.cpr.outputs.pull-request-operation == 'created'
       with:
         token: ${{ secrets.CR_PAT }}
