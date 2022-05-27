@@ -26,4 +26,4 @@ jobs:
         env:
           OWNER: user
           PACKAGE_NAME: zigbee2mqtt
-          PER_PAGE: 2
+          PER_PAGE: 200
