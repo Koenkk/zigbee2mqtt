@@ -24,6 +24,6 @@ jobs:
                 }
             }
         env:
-          OWNER: koenkk/zigbee2mqtt
+          OWNER: user
           PACKAGE_NAME: zigbee2mqtt
           PER_PAGE: 2
