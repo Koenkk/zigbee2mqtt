@@ -15,9 +15,8 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: 16
-    - run: rm -rf npm-shrinkwrap.json
     - run: npx npm-check-updates -u -x connect-gzip-static # connect-gzip-static only supports node 16
-    - run: npm install && npm shrinkwrap --dev
+    - run: npm install
     - uses: peter-evans/create-pull-request@v4
       with:
         commit-message: Update dependencies
