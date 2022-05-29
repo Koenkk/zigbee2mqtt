@@ -12,6 +12,7 @@ const callTransports = (level, message) => {
 }
 
 const mock = {
+    init: jest.fn(),
     info: jest.fn().mockImplementation((msg) => callTransports('info', msg)),
     warn: jest.fn().mockImplementation((msg) => callTransports('warn', msg)),
     error: jest.fn().mockImplementation((msg) => callTransports('error', msg)),
