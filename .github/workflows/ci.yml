@@ -89,7 +89,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
-          cache: 'npm'         
+          cache: 'npm'
+      - run: npm config set --global devdir $(npm config get cache)         
       - name: Install dependencies
         run: npm ci
       - name: Lint
