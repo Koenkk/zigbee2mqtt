@@ -15,15 +15,8 @@ jobs:
     - name: Get NodeJS Version
       id: nodeversion
       run: |
-        echo "::set-output name=version::$(node --version)"
-    - name: Restore node_modules cache
-      id: cache-node-modules
-      uses: actions/cache@v3
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-${{ steps.nodeversion.outputs.version }}-${{ hashFiles('package-lock.json') }}
+        echo "::set-output name=version::$(node --version)"    
     - name: Install dependencies
-      if: steps.cache-node-modules.outputs.cache-hit != 'true'
       run: npm ci
     - name: Build
       run: npm run build
@@ -100,16 +93,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
-          cache: 'npm'
-      
-      - name: Restore node_modules cache
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ matrix.node }}-${{ hashFiles('package-lock.json') }}
+          cache: 'npm'         
       - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
       - name: Lint
         run: npm run eslint
