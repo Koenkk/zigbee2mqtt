@@ -2,7 +2,6 @@ require('core-js/features/object/from-entries');
 require('core-js/features/array/flat');
 const semver = require('semver');
 const engines = require('./package.json').engines;
-const indexJsRestart = 'indexjs.restart';
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -16,12 +15,12 @@ let stopping = false;
 const hashFile = path.join(__dirname, 'dist', '.hash');
 
 async function restart() {
-    await stop(indexJsRestart);
+    await stop(true);
     await start();
 }
 
-async function exit(code, reason) {
-    if (reason !== indexJsRestart) {
+async function exit(code, restart) {
+    if (!restart) {
         process.exit(code);
     }
 }
@@ -110,14 +109,14 @@ async function start() {
     await controller.start();
 }
 
-async function stop(reason=null) {
-    await controller.stop(reason);
+async function stop(restart) {
+    await controller.stop(restart);
 }
 
 async function handleQuit() {
     if (!stopping && controller) {
         stopping = true;
-        await stop();
+        await stop(false);
     }
 }
 
