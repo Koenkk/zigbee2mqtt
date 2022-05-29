@@ -11,6 +11,7 @@ jobs:
       with:
         node-version: 16
         registry-url: https://registry.npmjs.org/
+        cache: 'npm'
     - name: Get NodeJS Version
       id: nodeversion
       run: |
