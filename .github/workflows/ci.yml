@@ -88,6 +88,7 @@ jobs:
       - name: Cache node-gyp
         uses: actions/cache@v3
         with:
+          key: ${{matrix.os}}-${{ matrix.node }}
           path: |
             ~/.cache/node-gyp/
       - uses: actions/setup-node@v3
