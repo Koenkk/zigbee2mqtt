@@ -87,7 +87,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [14, 16, 17, 18]
+        node: [14, 16, 17]
         exclude:
           - os: windows-latest # https://github.com/serialport/node-serialport/issues/2344
             node: 17
