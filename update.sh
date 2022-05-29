@@ -18,7 +18,6 @@ echo "Creating backup of configuration..."
 cp -R data data-backup
 
 echo "Updating..."
-git checkout HEAD -- npm-shrinkwrap.json
 git pull
 
 echo "Installing dependencies..."
