@@ -85,12 +85,15 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
+      - run: node scripts/get-node-gyp-cache-location.js
+      - name: Determine node-gyp cache location
+        run: export NODE_GYP_CACHE_LOCATION=$(node scripts/get-node-gyp-cache-location.js)
       - name: Cache node-gyp
         uses: actions/cache@v3
         with:
-          key: ${{matrix.os}}-${{ matrix.node }}
+          key: ${{ matrix.os }}-${{ matrix.node }}
           path: |
-            ~/.cache/node-gyp/
+            ${{ env.NODE_GYP_CACHE_LOCATION }}
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
