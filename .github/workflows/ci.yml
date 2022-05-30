@@ -93,8 +93,6 @@ jobs:
           path: |
             /home/runner/.cache/node-gyp
             C:\Users\runneradmin\AppData\Local\node-gyp
-      - run: find / -type d -name node-gyp 2> /dev/null
-        if: matrix.os == 'macos-latest'
       - name: Cache node-gyp mac os
         if: matrix.os == 'macos-latest'
         uses: actions/cache@v3
@@ -110,6 +108,9 @@ jobs:
       - run: env
       - name: Install dependencies
         run: npm ci
+
+      - run: find / -type d -name node-gyp 2> /dev/null
+        if: matrix.os == 'macos-latest'
       # - name: Lint
       #   run: npm run eslint
       # - name: Build
