@@ -1,1 +1,0 @@
-console.log(require('env-paths')('node-gyp', { suffix: '' }).cache)
