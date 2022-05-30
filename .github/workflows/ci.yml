@@ -98,7 +98,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: ${{ matrix.os }}-${{ matrix.node }}-node-gyp
-          path: /Users/runner/.cache/node-gyp
+          path: /Users/runner/Library/Caches/node-gyp
 
       - uses: actions/setup-node@v3
         with:
@@ -109,7 +109,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - run: find / -type d -name node-gyp 2> /dev/null
+      - run: ls -lah /Users/runner/Library/Caches/node-gyp
         if: matrix.os == 'macos-latest'
       # - name: Lint
       #   run: npm run eslint
