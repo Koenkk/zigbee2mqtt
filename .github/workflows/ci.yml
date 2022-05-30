@@ -91,7 +91,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: 'npm'
       - run: npm install -g env-paths
-      - run: node scripts/get-node-gyp-cache-location.js
+      - run: |
+          echo "console.log(require('env-paths')('node-gyp', { suffix: '' }).cache)" | node -
       - name: Determine node-gyp cache location
         run: export NODE_GYP_CACHE_LOCATION=$(node scripts/get-node-gyp-cache-location.js)
       - name: Cache node-gyp
