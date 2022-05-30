@@ -73,7 +73,7 @@ jobs:
           -u ${{ secrets.HASSIO_TRIGGER_SECRET }} \
           "https://dev.azure.com/zigbee2mqtt/Zigbee2mqtt%20Add-on/_apis/build/builds?api-version=5.1"
 
-  tests:    
+  tests:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -92,13 +92,13 @@ jobs:
           path: |
             /home/runner/Library/node-gyp
             /Users/runner/.cache/node-gyp
-            C:\Users\runneradmin\AppData\Local\node-gyp  
+            C:\Users\runneradmin\AppData\Local\node-gyp
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org/
-          cache: 'npm'          
-      - run: env            
+          cache: 'npm'
+      - run: env
       - name: Install dependencies
         run: npm ci
       - name: Lint
