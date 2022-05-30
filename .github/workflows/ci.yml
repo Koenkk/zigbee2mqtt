@@ -88,7 +88,7 @@ jobs:
       - name: Cache node-gyp
         uses: actions/cache@v3
         with:
-          key: ${{ matrix.os }}-${{ matrix.node }}
+          key: ${{ matrix.os }}-${{ matrix.node }}-node-gyp
           path: |
             /home/runner/Library/node-gyp
             /Users/runner/.cache/node-gyp
