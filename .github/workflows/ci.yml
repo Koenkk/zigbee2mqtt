@@ -91,7 +91,7 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.node }}
           path: |
             /home/runner/Library/node-gyp
-            /home/runner/.cache/node-gyp
+            /Users/runner/.cache/node-gyp
             C:\Users\runneradmin\AppData\Local\node-gyp  
       - uses: actions/setup-node@v3
         with:
