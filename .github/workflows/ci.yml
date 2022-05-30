@@ -90,9 +90,9 @@ jobs:
         with:
           key: ${{ matrix.os }}-${{ matrix.node }}
           path: |
-            ~/Library/node-gyp
-            ~/.cache/node-gyp
-            %LOCALAPPDATA%\node-gyp  
+            ${{ env.HOME }}/Library/node-gyp
+            ${{ env.HOME }}/.cache/node-gyp
+            ${{ env.LOCALAPPDATA }}\node-gyp  
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
