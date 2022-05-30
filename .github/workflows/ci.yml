@@ -85,13 +85,13 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Cache node-gyp linux
         if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v3
         with:
           key: ${{ matrix.os }}-${{ matrix.node }}-node-gyp
-          path: /home/runner/Library/node-gyp
+          path: /home/runner/node-gyp
       
       - name: Cache node-gyp windows
         if: matrix.os == 'windows-latest'
