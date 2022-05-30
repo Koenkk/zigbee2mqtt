@@ -77,7 +77,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [18] # 14, 16, 17, 
+        node: [14, 16, 17, 18]
         exclude:
           - os: windows-latest # https://github.com/serialport/node-serialport/issues/2344
             node: 17
@@ -86,20 +86,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Cache node-gyp
-        if: matrix.os != 'macos-latest'
         uses: actions/cache@v3        
         with:
           key: ${{ matrix.os }}-${{ matrix.node }}-node-gyp
           path: |
             /home/runner/.cache/node-gyp
             C:\Users\runneradmin\AppData\Local\node-gyp
-      - name: Cache node-gyp mac os
-        if: matrix.os == 'macos-latest'
-        uses: actions/cache@v3
-        with:
-          key: ${{ matrix.os }}-${{ matrix.node }}-node-gyp
-          path: /Users/runner/Library/Caches/node-gyp
-
+            /Users/runner/Library/Caches/node-gyp
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
@@ -108,12 +101,9 @@ jobs:
       - run: env
       - name: Install dependencies
         run: npm ci
-
-      - run: ls -lah /Users/runner/Library/Caches/node-gyp
-        if: matrix.os == 'macos-latest'
-      # - name: Lint
-      #   run: npm run eslint
-      # - name: Build
-      #   run: npm run build
-      # - name: Test
-      #   run: npm run test-with-coverage
+      - name: Lint
+        run: npm run eslint
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test-with-coverage
