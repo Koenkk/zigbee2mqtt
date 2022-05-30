@@ -93,7 +93,7 @@ jobs:
           path: |
             /home/runner/.cache/node-gyp
             C:\Users\runneradmin\AppData\Local\node-gyp
-      - run: find / -name node-gyp 2> /dev/null
+      - run: find / -type d -name node-gyp 2> /dev/null
         if: matrix.os == 'macos-latest'
       - name: Cache node-gyp mac os
         if: matrix.os == 'macos-latest'
