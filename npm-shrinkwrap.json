@@ -34,7 +34,7 @@
         "winston-transport": "^4.5.0",
         "ws": "^8.7.0",
         "zigbee-herdsman": "0.14.34",
-        "zigbee-herdsman-converters": "14.0.530",
+        "zigbee-herdsman-converters": "14.0.531",
         "zigbee2mqtt-frontend": "0.6.97"
       },
       "bin": {
@@ -9747,9 +9747,9 @@
       }
     },
     "node_modules/zigbee-herdsman-converters": {
-      "version": "14.0.530",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.530.tgz",
-      "integrity": "sha512-GY3wksCe9PZuHP5m+uq+M6rp8BvXSZiLOCh9zRqkr7k5mmVaanpiCb1EDP75JQeTbs9que0Y6sgGGiTQFnd0kA==",
+      "version": "14.0.531",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.531.tgz",
+      "integrity": "sha512-vykmRygjDX1DHtIwpxL8wo5bBnMZNQMnJykfH2aV6n5nkC4aUSyF9efIzaGubPa1G4K3NQCmqIkLFUSrKagPJg==",
       "dependencies": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
@@ -16924,9 +16924,9 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "14.0.530",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.530.tgz",
-      "integrity": "sha512-GY3wksCe9PZuHP5m+uq+M6rp8BvXSZiLOCh9zRqkr7k5mmVaanpiCb1EDP75JQeTbs9que0Y6sgGGiTQFnd0kA==",
+      "version": "14.0.531",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.531.tgz",
+      "integrity": "sha512-vykmRygjDX1DHtIwpxL8wo5bBnMZNQMnJykfH2aV6n5nkC4aUSyF9efIzaGubPa1G4K3NQCmqIkLFUSrKagPJg==",
       "requires": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
