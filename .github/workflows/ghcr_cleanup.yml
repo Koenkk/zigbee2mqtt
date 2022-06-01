@@ -17,10 +17,14 @@ jobs:
             });
             for(version of response.data) {
                 if (version.metadata.container.tags.length == 0) {
+                    try {
                     console.log("delete " + version.id)
 
                     const deleteResponse = await github.request("DELETE /${{ env.OWNER }}/packages/container/${{ env.PACKAGE_NAME }}/versions/" + version.id, { });
                     console.log("status " + deleteResponse.status)
+                    } catch (e) {
+                    console.log("failed")
+                    }
                 }
             }
         env:
