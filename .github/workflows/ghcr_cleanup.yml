@@ -25,5 +25,5 @@ jobs:
             }
         env:
           OWNER: user # or orgs/<org name>
-          PACKAGE_NAME: koenkk/zigbee2mqtt
+          PACKAGE_NAME: zigbee2mqtt
           PER_PAGE: 200
