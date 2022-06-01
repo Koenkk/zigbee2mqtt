@@ -1,6 +1,9 @@
 on:
-  push:
   workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+name: ghcr cleanup
 
 jobs:
   build:
@@ -18,16 +21,15 @@ jobs:
             for(version of response.data) {
                 if (version.metadata.container.tags.length == 0) {
                     try {
-                    console.log("delete " + version.id)
-
-                    const deleteResponse = await github.request("DELETE /${{ env.OWNER }}/packages/container/${{ env.PACKAGE_NAME }}/versions/" + version.id, { });
-                    console.log("status " + deleteResponse.status)
+                        console.log("delete " + version.id)
+                        const deleteResponse = await github.request("DELETE /${{ env.OWNER }}/packages/container/${{ env.PACKAGE_NAME }}/versions/" + version.id, { });
+                        console.log("status " + deleteResponse.status)
                     } catch (e) {
-                    console.log("failed")
+                        console.log("failed")
                     }
                 }
             }
         env:
-          OWNER: user # or orgs/<org name>
+          OWNER: user
           PACKAGE_NAME: zigbee2mqtt
-          PER_PAGE: 200
+          PER_PAGE: 2000
