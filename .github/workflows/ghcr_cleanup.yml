@@ -1,9 +1,10 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "*/10 * * * *"
+    #- cron: "0 4 * * *"
 
-name: ghcr cleanup
+name: GHCR cleanup
 
 jobs:
   build:
