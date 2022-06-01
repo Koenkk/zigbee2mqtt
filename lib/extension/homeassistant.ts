@@ -933,7 +933,7 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onEntityRenamed(data: eventdata.EntityRenamed): void {
+    @bind async onEntityRenamed(data: eventdata.EntityRenamed): Promise<void> {
         logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
@@ -943,6 +943,10 @@ export default class HomeAssistant extends Extension {
                 const topic = this.getDiscoveryTopic(config, data.entity);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
+
+            // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
+            // https://github.com/Koenkk/zigbee2mqtt/issues/12610
+            await utils.sleep(2);
         }
 
         this.discover(data.entity, true);

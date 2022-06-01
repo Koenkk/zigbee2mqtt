@@ -1178,6 +1178,8 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":true}));
         await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
 
         const payload = {
             'unit_of_measurement': '°C',
@@ -1239,6 +1241,8 @@ describe('HomeAssistant extension', () => {
     it('Should refresh discovery when group is renamed', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({"from": "ha_discovery_group", "to": "ha_discovery_group_new","homeassistant_rename":true}));
+        await flushPromises();
+        jest.runOnlyPendingTimers();
         await flushPromises();
 
         const payload = {
