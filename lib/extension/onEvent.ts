@@ -40,10 +40,11 @@ export default class OnEvent extends Extension {
     }
 
     private async callOnEvent(device: Device, type: string, data: KeyValue): Promise<void> {
-        zhc.onEvent(type, data, device.zh);
+        const state = this.state.get(device);
+        zhc.onEvent(type, data, device.zh, device.options, state);
 
         if (device.definition?.onEvent) {
-            await device.definition.onEvent(type, data, device.zh, device.options);
+            await device.definition.onEvent(type, data, device.zh, device.options, state);
         }
     }
 }

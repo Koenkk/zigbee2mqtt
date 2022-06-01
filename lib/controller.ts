@@ -45,11 +45,12 @@ class Controller {
     private state: State;
     private mqtt: MQTT;
     private restartCallback: () => void;
-    private exitCallback: (code: number) => void;
+    private exitCallback: (code: number, restart: boolean) => void;
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
 
     constructor(restartCallback: () => void, exitCallback: (code: number) => void) {
+        logger.init();
         this.eventBus = new EventBus( /* istanbul ignore next */ (error) => {
             logger.error(`Error: ${error.message}`);
             logger.debug(error.stack);
@@ -186,7 +187,7 @@ class Controller {
         await this.callExtensions('start', [extension]);
     }
 
-    async stop(): Promise<void> {
+    async stop(restart = false): Promise<void> {
         // Call extensions
         await this.callExtensions('stop', this.extensions);
         this.eventBus.removeListeners(this);
@@ -198,16 +199,16 @@ class Controller {
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
-            await this.exit(0);
+            await this.exit(0, restart);
         } catch (error) {
             logger.error('Failed to stop Zigbee2MQTT');
-            await this.exit(1);
+            await this.exit(1, restart);
         }
     }
 
-    async exit(code: number): Promise<void> {
+    async exit(code: number, restart = false): Promise<void> {
         await logger.end();
-        this.exitCallback(code);
+        this.exitCallback(code, restart);
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {

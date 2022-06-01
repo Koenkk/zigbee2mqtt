@@ -203,7 +203,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect: addr not found');
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Start controller with permit join true', async () => {
@@ -220,13 +220,13 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledWith(14);
     });
 
-    it('Start controller and stop', async () => {
+    it('Start controller and stop with restart', async () => {
         await controller.start();
-        await controller.stop();
+        await controller.stop(true);
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(0);
+        expect(mockExit).toHaveBeenCalledWith(0, true);
     });
 
     it('Start controller and stop', async () => {
@@ -236,7 +236,7 @@ describe('Controller', () => {
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Start controller adapter disconnects', async () => {
@@ -247,7 +247,7 @@ describe('Controller', () => {
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Handle mqtt message', async () => {
@@ -569,7 +569,7 @@ describe('Controller', () => {
         logger.error.mockClear();
         controller.state.file = "/";
         await controller.state.save();
-        expect(logger.error).toHaveBeenCalledWith(`Failed to write state to '/' (EISDIR: illegal operation on a directory, open '/')`);
+        expect(logger.error).toHaveBeenCalledWith(expect.stringMatching(/Failed to write state to \'\/\'/));
     });
 
     it('Publish should not cache when set', async () => {

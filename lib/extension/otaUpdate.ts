@@ -65,8 +65,8 @@ export default class OTAUpdate extends Extension {
     }
 
     private removeProgressAndRemainingFromState(device: Device): void {
-        delete this.state.get(device)?.update?.progress;
-        delete this.state.get(device)?.update?.remaining;
+        delete this.state.get(device).update?.progress;
+        delete this.state.get(device).update?.remaining;
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {

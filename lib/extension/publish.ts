@@ -135,7 +135,7 @@ export default class Publish extends Extension {
         }
         const device = re instanceof Device ? re.zh : null;
         const entitySettings = re.options;
-        const entityState = this.state.get(re) || {};
+        const entityState = this.state.get(re);
         const membersState = re instanceof Group ?
             Object.fromEntries(re.zh.members.map((e) => [e.getDevice().ieeeAddr,
                 this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))])) : null;
