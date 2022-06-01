@@ -34,7 +34,7 @@
         "winston-transport": "^4.5.0",
         "ws": "^8.7.0",
         "zigbee-herdsman": "0.14.34",
-        "zigbee-herdsman-converters": "14.0.531",
+        "zigbee-herdsman-converters": "14.0.532",
         "zigbee2mqtt-frontend": "0.6.97"
       },
       "bin": {
@@ -9747,15 +9747,15 @@
       }
     },
     "node_modules/zigbee-herdsman-converters": {
-      "version": "14.0.531",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.531.tgz",
-      "integrity": "sha512-vykmRygjDX1DHtIwpxL8wo5bBnMZNQMnJykfH2aV6n5nkC4aUSyF9efIzaGubPa1G4K3NQCmqIkLFUSrKagPJg==",
+      "version": "14.0.532",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.532.tgz",
+      "integrity": "sha512-DrUaD8kSq+t5QyvO5UQyb//jDEupcnU6AMyNJCWMxTuoj+JABgDwgEskI07aoxVVRQr0ulNDpC4hb7MEVHn39A==",
       "dependencies": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
         "https-proxy-agent": "^5.0.1",
         "tar-stream": "^2.2.0",
-        "zigbee-herdsman": "^0.14.33"
+        "zigbee-herdsman": "^0.14.34"
       }
     },
     "node_modules/zigbee2mqtt-frontend": {
@@ -16924,15 +16924,15 @@
       }
     },
     "zigbee-herdsman-converters": {
-      "version": "14.0.531",
-      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.531.tgz",
-      "integrity": "sha512-vykmRygjDX1DHtIwpxL8wo5bBnMZNQMnJykfH2aV6n5nkC4aUSyF9efIzaGubPa1G4K3NQCmqIkLFUSrKagPJg==",
+      "version": "14.0.532",
+      "resolved": "https://registry.npmjs.org/zigbee-herdsman-converters/-/zigbee-herdsman-converters-14.0.532.tgz",
+      "integrity": "sha512-DrUaD8kSq+t5QyvO5UQyb//jDEupcnU6AMyNJCWMxTuoj+JABgDwgEskI07aoxVVRQr0ulNDpC4hb7MEVHn39A==",
       "requires": {
         "axios": "^0.27.2",
         "buffer-crc32": "^0.2.13",
         "https-proxy-agent": "^5.0.1",
         "tar-stream": "^2.2.0",
-        "zigbee-herdsman": "^0.14.33"
+        "zigbee-herdsman": "^0.14.34"
       }
     },
     "zigbee2mqtt-frontend": {
