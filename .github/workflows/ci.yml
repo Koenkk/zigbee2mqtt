@@ -38,13 +38,13 @@ jobs:
       run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u koenkk --password-stdin
     - name: Docker setup - QEMU
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v1
       with:
         platforms: all
     - name: Docker setup - Buildx
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       id: buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v1
       with:
         version: latest
     - name: Docker build dev
