@@ -66,7 +66,12 @@ jobs:
     - name: Trigger zigbee2mqtt/hassio-zigbee2mqtt build
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
-        curl -XPOST -H "Authorization: token ${{ secrets.CR_PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches --data '{"event_type": "ci", "client_payload": { }}'
+        curl \
+          -X POST \
+          -H "Authorization: token ${{ secrets.CR_PAT }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
+          -d '{"ref":"master","inputs":{}}'
 
   tests:
     strategy:
