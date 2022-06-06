@@ -66,12 +66,7 @@ jobs:
     - name: Trigger zigbee2mqtt/hassio-zigbee2mqtt build
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
-        curl -s \
-          --request POST \
-          --header "Content-Type: application/json" \
-          --data '{"definition": {"id": 9}}' \
-          -u ${{ secrets.HASSIO_TRIGGER_SECRET }} \
-          "https://dev.azure.com/zigbee2mqtt/Zigbee2mqtt%20Add-on/_apis/build/builds?api-version=5.1"
+        curl -XPOST -H "Authorization: token ${{ secrets.CR_PAT }}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches --data '{"event_type": "ci", "client_payload": { }}'
 
   tests:
     strategy:
