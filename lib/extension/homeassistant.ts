@@ -1357,9 +1357,9 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.devices(false)) {
-                    if (this.state.exists(device)) {
-                        this.publishEntityState(device, this.state.get(device));
+                for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
+                    if (this.state.exists(entity)) {
+                        this.publishEntityState(entity, this.state.get(entity));
                     }
                 }
 

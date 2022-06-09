@@ -1042,6 +1042,12 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function)
         );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/group_1',
+            stringify({"state":'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
     });
 
     it('Should send all status when home assistant comes online', async () => {
