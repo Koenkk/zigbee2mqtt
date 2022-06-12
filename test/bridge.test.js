@@ -7,6 +7,18 @@ const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 const stringify = require('json-stable-stringify-without-jsonify');
 
+const mockJSZipFile = jest.fn();
+const mockJSZipGenerateAsync = jest.fn().mockReturnValue("THISISBASE64");
+
+jest.mock("jszip", () =>
+    jest.fn().mockImplementation((path) => {
+        return {
+            file: mockJSZipFile,
+            generateAsync: mockJSZipGenerateAsync,
+        }
+    })
+);
+
 const {coordinator, bulb, unsupported, WXKG11LM, remote, ZNCZ02LM, bulb_color_2, WSDCGQ11LM} = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
 zigbeeHerdsman.returnDevices.push(bulb.ieeeAddr);
@@ -991,6 +1003,22 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow to create a backup', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/backup', '');
+        await flushPromises(); 
+        expect(mockJSZipFile).toHaveBeenCalledTimes(2);
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(1, 'configuration.yaml', expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, 'state.json', expect.any(Object));
+        expect(mockJSZipGenerateAsync).toHaveBeenCalledTimes(1);
+        expect(mockJSZipGenerateAsync).toHaveBeenNthCalledWith(1, {type: 'base64'});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/backup',
+            stringify({"data":{"zip":"THISISBASE64"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });

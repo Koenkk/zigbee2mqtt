@@ -47,6 +47,7 @@
     "humanize-duration": "^3.27.2",
     "js-yaml": "^4.1.0",
     "json-stable-stringify-without-jsonify": "^1.0.1",
+    "jszip": "^3.10.0",
     "mkdir-recursive": "^0.4.0",
     "moment": "^2.29.3",
     "mqtt": "4.3.7",
