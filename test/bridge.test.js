@@ -4,6 +4,8 @@ const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
+const fs = require('fs');
+const path = require('path');
 const flushPromises = require('./lib/flushPromises');
 const stringify = require('json-stable-stringify-without-jsonify');
 
@@ -1008,12 +1010,20 @@ describe('Bridge', () => {
     });
 
     it('Should allow to create a backup', async () => {
+        fs.mkdirSync(path.join(data.mockDir, 'ext_converters'));
+        fs.writeFileSync(path.join(data.mockDir, 'ext_converters', 'afile.js'), 'test123')
+        fs.mkdirSync(path.join(data.mockDir, 'log'));
+        fs.writeFileSync(path.join(data.mockDir, 'log', 'log.txt'), 'test123')
+        fs.mkdirSync(path.join(data.mockDir, 'ext_converters', '123'));
+        fs.writeFileSync(path.join(data.mockDir, 'ext_converters', '123', 'myfile.js'), 'test123')
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/backup', '');
         await flushPromises(); 
-        expect(mockJSZipFile).toHaveBeenCalledTimes(2);
+        expect(mockJSZipFile).toHaveBeenCalledTimes(4);
         expect(mockJSZipFile).toHaveBeenNthCalledWith(1, 'configuration.yaml', expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, 'state.json', expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, 'ext_converters/123/myfile.js', expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(3, 'ext_converters/afile.js', expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(4, 'state.json', expect.any(Object));
         expect(mockJSZipGenerateAsync).toHaveBeenCalledTimes(1);
         expect(mockJSZipGenerateAsync).toHaveBeenNthCalledWith(1, {type: 'base64'});
         expect(MQTT.publish).toHaveBeenCalledWith(

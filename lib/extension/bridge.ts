@@ -12,7 +12,6 @@ import Device from '../model/device';
 import Group from '../model/group';
 import data from '../util/data';
 import JSZip from 'jszip';
-import path from 'path';
 import fs from 'fs';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
@@ -240,10 +239,10 @@ export default class Bridge extends Extension {
 
     @bind async backup(message: string | KeyValue): Promise<MQTTResponse> {
         const dataPath = data.getPath();
-        const files = fs.readdirSync(data.getPath()).map((f) => path.join(dataPath, f))
-            .filter((f) => fs.lstatSync(f).isFile());
+        const files = utils.getAllFiles(dataPath).map((f) => [f, f.substring(dataPath.length + 1)])
+            .filter((f) => !f[1].startsWith('log'));
         const zip = new JSZip();
-        files.forEach((f) => zip.file(path.basename(f), fs.readFileSync(f)));
+        files.forEach((f) => zip.file(f[1], fs.readFileSync(f[0])));
         const base64Zip = await zip.generateAsync({type: 'base64'});
         return utils.getResponse(message, {zip: base64Zip}, null);
     }
