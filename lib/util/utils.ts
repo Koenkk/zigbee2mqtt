@@ -234,6 +234,19 @@ function containsControlCharacter(str: string): boolean {
     return false;
 }
 
+function getAllFiles(path_: string): string[] {
+    const result = [];
+    for (let item of fs.readdirSync(path_)) {
+        item = path.join(path_, item);
+        if (fs.lstatSync(item).isFile()) {
+            result.push(item);
+        } else {
+            result.push(...getAllFiles(item));
+        }
+    }
+    return result;
+}
+
 function validateFriendlyName(name: string, throwFirstError=false): string[] {
     const errors = [];
     for (const endpointName of endpointNames) {
@@ -335,4 +348,5 @@ export default {
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
+    getAllFiles,
 };

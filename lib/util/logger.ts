@@ -9,39 +9,11 @@ import assert from 'assert';
 
 const colorizer = winston.format.colorize();
 
-// What transports to enable
-const output = settings.get().advanced.log_output;
-
-// Directory to log to
-const timestamp = moment(Date.now()).format('YYYY-MM-DD.HH-mm-ss');
-const directory = settings.get().advanced.log_directory.replace('%TIMESTAMP%', timestamp);
-const logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
-
-// Make sure that log directoy exsists when not logging to stdout only
-if (output.includes('file')) {
-    fx.mkdirSync(directory);
-
-    if (settings.get().advanced.log_symlink_current) {
-        const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
-        const actual = './' + timestamp;
-        if (fs.existsSync(current)) {
-            fs.unlinkSync(current);
-        }
-        fs.symlinkSync(actual, current);
-    }
-}
-
 type Z2MLogLevel = 'warn' | 'debug' | 'info' | 'error';
 type WinstonLogLevel = 'warning' | 'debug' | 'info' | 'error';
 
 const z2mToWinstonLevel = (level: Z2MLogLevel): WinstonLogLevel => level === 'warn' ? 'warning' : level;
 const winstonToZ2mLevel = (level: WinstonLogLevel): Z2MLogLevel => level === 'warning' ? 'warn' : level;
-
-// Determine the log level.
-const z2mLevel = settings.get().advanced.log_level;
-const validLevels = ['info', 'error', 'warn', 'debug'];
-assert(validLevels.includes(z2mLevel), `'${z2mLevel}' is not valid log_level, use one of '${validLevels.join(', ')}'`);
-const level = z2mToWinstonLevel(z2mLevel);
 
 const levelWithCompensatedLength: {[s: string]: string} = {
     'info': 'info ',
@@ -50,76 +22,113 @@ const levelWithCompensatedLength: {[s: string]: string} = {
     'debug': 'debug',
 };
 
-const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
+let logger: winston.Logger;
+let fileTransport : winston.transport;
+let output: string[];
+let directory: string;
+let logFilename: string;
+let transportsToUse: winston.transport[];
 
-// Setup default console logger
-const transportsToUse: winston.transport[] = [
-    new winston.transports.Console({
+function init(): void {
+    // What transports to enable
+    output = settings.get().advanced.log_output;
+
+    // Directory to log to
+    const timestamp = moment(Date.now()).format('YYYY-MM-DD.HH-mm-ss');
+    directory = settings.get().advanced.log_directory.replace('%TIMESTAMP%', timestamp);
+    logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
+
+    // Make sure that log directoy exsists when not logging to stdout only
+    if (output.includes('file')) {
+        fx.mkdirSync(directory);
+
+        if (settings.get().advanced.log_symlink_current) {
+            const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
+            const actual = './' + timestamp;
+            /* istanbul ignore next */
+            if (fs.existsSync(current)) {
+                fs.unlinkSync(current);
+            }
+            fs.symlinkSync(actual, current);
+        }
+    }
+
+    // Determine the log level.
+    const z2mLevel = settings.get().advanced.log_level;
+    const validLevels = ['info', 'error', 'warn', 'debug'];
+    assert(validLevels.includes(z2mLevel),
+        `'${z2mLevel}' is not valid log_level, use one of '${validLevels.join(', ')}'`);
+    const level = z2mToWinstonLevel(z2mLevel);
+
+    const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
+
+    // Setup default console logger
+    transportsToUse = [
+        new winston.transports.Console({
+            level,
+            silent: !output.includes('console'),
+            format: winston.format.combine(
+                winston.format.timestamp({format: timestampFormat}),
+                winston.format.printf(/* istanbul ignore next */(info) => {
+                    const {timestamp, level, message} = info;
+                    const l = winstonToZ2mLevel(level as WinstonLogLevel);
+
+                    const plainPrefix = `Zigbee2MQTT:${levelWithCompensatedLength[l]}`;
+                    let prefix = plainPrefix;
+                    if (process.stdout.isTTY) {
+                        prefix = colorizer.colorize(l, plainPrefix);
+                    }
+                    return `${prefix} ${timestamp.split('.')[0]}: ${message}`;
+                }),
+            ),
+        }),
+    ];
+
+    // Add file logger when enabled
+    // NOTE: the initiation of the logger, even when not added as transport tries to create the logging directory
+    const transportFileOptions: KeyValue = {
+        filename: path.join(directory, logFilename),
+        json: false,
         level,
-        silent: !output.includes('console'),
         format: winston.format.combine(
             winston.format.timestamp({format: timestampFormat}),
             winston.format.printf(/* istanbul ignore next */(info) => {
                 const {timestamp, level, message} = info;
                 const l = winstonToZ2mLevel(level as WinstonLogLevel);
-
-                const plainPrefix = `Zigbee2MQTT:${levelWithCompensatedLength[l]}`;
-                let prefix = plainPrefix;
-                if (process.stdout.isTTY) {
-                    prefix = colorizer.colorize(l, plainPrefix);
-                }
-                return `${prefix} ${timestamp.split('.')[0]}: ${message}`;
+                return `${levelWithCompensatedLength[l]} ${timestamp.split('.')[0]}: ${message}`;
             }),
         ),
-    }),
-];
-
-// Add file logger when enabled
-// NOTE: the initiation of the logger, even when not added as transport tries to create the logging directory
-const transportFileOptions: KeyValue = {
-    filename: path.join(directory, logFilename),
-    json: false,
-    level,
-    format: winston.format.combine(
-        winston.format.timestamp({format: timestampFormat}),
-        winston.format.printf(/* istanbul ignore next */(info) => {
-            const {timestamp, level, message} = info;
-            const l = winstonToZ2mLevel(level as WinstonLogLevel);
-            return `${levelWithCompensatedLength[l]} ${timestamp.split('.')[0]}: ${message}`;
-        }),
-    ),
-};
-
-if (settings.get().advanced.log_rotation) {
-    transportFileOptions.tailable = true;
-    transportFileOptions.maxFiles = 3; // Keep last 3 files
-    transportFileOptions.maxsize = 10000000; // 10MB
-}
-
-let fileTransport : winston.transport;
-if (output.includes('file')) {
-    fileTransport = new winston.transports.File(transportFileOptions);
-    transportsToUse.push(fileTransport);
-}
-
-/* istanbul ignore next */
-if (output.includes('syslog')) {
-    // eslint-disable-next-line
-    require('winston-syslog').Syslog;
-    const options: KeyValue = {
-        app_name: 'Zigbee2MQTT',
-        format: winston.format.printf(/* istanbul ignore next */(info) => {
-            return `${info.message}`;
-        }),
-        ...settings.get().advanced.log_syslog,
     };
-    if (options.hasOwnProperty('type')) options.type = options.type.toString();
-    // @ts-ignore
-    transportsToUse.push(new winston.transports.Syslog(options));
-}
 
-// Create logger
-const logger = winston.createLogger({transports: transportsToUse, levels: winston.config.syslog.levels});
+    if (settings.get().advanced.log_rotation) {
+        transportFileOptions.tailable = true;
+        transportFileOptions.maxFiles = 3; // Keep last 3 files
+        transportFileOptions.maxsize = 10000000; // 10MB
+    }
+
+    if (output.includes('file')) {
+        fileTransport = new winston.transports.File(transportFileOptions);
+        transportsToUse.push(fileTransport);
+    }
+
+    /* istanbul ignore next */
+    if (output.includes('syslog')) {
+        // eslint-disable-next-line
+        require('winston-syslog').Syslog;
+        const options: KeyValue = {
+            app_name: 'Zigbee2MQTT',
+            format: winston.format.printf(/* istanbul ignore next */(info) => {
+                return `${info.message}`;
+            }),
+            ...settings.get().advanced.log_syslog,
+        };
+        if (options.hasOwnProperty('type')) options.type = options.type.toString();
+        // @ts-ignore
+        transportsToUse.push(new winston.transports.Syslog(options));
+    }
+
+    logger = winston.createLogger({transports: transportsToUse, levels: winston.config.syslog.levels});
+}
 
 // Cleanup any old log directory.
 function cleanup(): void {
@@ -211,5 +220,6 @@ async function end(): Promise<void> {
 }
 
 export default {
-    logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end, winston: logger,
+    init, logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end,
+    winston: (): winston.Logger => logger,
 };

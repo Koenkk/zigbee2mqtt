@@ -120,6 +120,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({"brightness":255}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":'ON'}), {"qos": 0, "retain":false}, expect.any(Function));
     });
 
     it('Start controller should not publish cached states when disabled', async () => {
@@ -203,7 +204,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect: addr not found');
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Start controller with permit join true', async () => {
@@ -220,13 +221,13 @@ describe('Controller', () => {
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledWith(14);
     });
 
-    it('Start controller and stop', async () => {
+    it('Start controller and stop with restart', async () => {
         await controller.start();
-        await controller.stop();
+        await controller.stop(true);
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(0);
+        expect(mockExit).toHaveBeenCalledWith(0, true);
     });
 
     it('Start controller and stop', async () => {
@@ -236,7 +237,7 @@ describe('Controller', () => {
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Start controller adapter disconnects', async () => {
@@ -247,7 +248,7 @@ describe('Controller', () => {
         expect(MQTT.end).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
     it('Handle mqtt message', async () => {
