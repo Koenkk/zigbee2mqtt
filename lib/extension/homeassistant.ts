@@ -291,14 +291,6 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
             }
 
-            const awayMode = firstExpose.features.find((f) => f.name === 'away_mode');
-            if (awayMode) {
-                discoveryEntry.discovery_payload.away_mode_command_topic = true;
-                discoveryEntry.discovery_payload.away_mode_state_topic = true;
-                discoveryEntry.discovery_payload.away_mode_state_template =
-                    `{{ value_json.${awayMode.property} }}`;
-            }
-
             const tempCalibration = firstExpose.features.find((f) => f.name === 'local_temperature_calibration');
             if (tempCalibration) {
                 const discoveryEntry: DiscoveryEntry = {
@@ -1185,14 +1177,6 @@ export default class HomeAssistant extends Extension {
 
             if (payload.mode_command_topic) {
                 payload.mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/system_mode`;
-            }
-
-            if (payload.away_mode_state_topic) {
-                payload.away_mode_state_topic = stateTopic;
-            }
-
-            if (payload.away_mode_command_topic) {
-                payload.away_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/away_mode`;
             }
 
             if (payload.current_temperature_topic) {

@@ -752,9 +752,6 @@ describe('HomeAssistant extension', () => {
                     "topic":"zigbee2mqtt/bridge/state"
                 }
             ],
-            "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
-            "away_mode_state_template":"{{ value_json.away_mode }}",
-            "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "current_temperature_template":"{{ value_json.local_temperature }}",
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
