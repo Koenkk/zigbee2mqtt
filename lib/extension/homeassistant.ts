@@ -285,7 +285,7 @@ export default class HomeAssistant extends Extension {
             const preset = firstExpose.features.find((f) => f.name === 'preset');
             if (preset) {
                 discoveryEntry.discovery_payload.preset_modes = preset.values;
-                discoveryEntry.discovery_payload.preset_mode_command_topic = true;
+                discoveryEntry.discovery_payload.preset_mode_command_topic = 'preset';
                 discoveryEntry.discovery_payload.preset_mode_value_template =
                     `{{ value_json.${preset.property} }}`;
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
@@ -514,7 +514,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
                 assert(presets.length !== 0);
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
-                discoveryEntry.discovery_payload.preset_mode_command_topic = true;
+                discoveryEntry.discovery_payload.preset_mode_command_topic = 'fan_mode';
                 discoveryEntry.discovery_payload.preset_mode_value_template =
                     `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}]` +
                     ` else 'None' | default('None') }}`;
@@ -1243,7 +1243,8 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.preset_mode_command_topic) {
-                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/preset`;
+                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/` +
+                    payload.preset_mode_command_topic;
             }
 
             if (payload.action_topic) {
