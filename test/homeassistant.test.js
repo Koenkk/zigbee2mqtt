@@ -758,13 +758,13 @@ describe('HomeAssistant extension', () => {
             "current_temperature_template":"{{ value_json.local_temperature }}",
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
-              "identifiers":[
-                "zigbee2mqtt_0x0017882104a44559"
-              ],
-              "manufacturer":"TuYa",
-              "model":"Radiator valve with thermostat (TS0601_thermostat)",
-              "name":"TS0601_thermostat",
-              "sw_version":null
+                "identifiers":[
+                    "zigbee2mqtt_0x0017882104a44559"
+                ],
+                "manufacturer":"TuYa",
+                "model":"Radiator valve with thermostat (TS0601_thermostat)",
+                "name":"TS0601_thermostat",
+                "sw_version":null
             },
             "preset_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
             "preset_modes":[
@@ -784,9 +784,9 @@ describe('HomeAssistant extension', () => {
             "mode_state_template":"{{ value_json.system_mode }}",
             "mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "modes":[
-              "heat",
-              "auto",
-              "off"
+                "heat",
+                "auto",
+                "off"
             ],
             "name":"TS0601_thermostat",
             "temp_step":0.5,
