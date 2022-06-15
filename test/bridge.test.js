@@ -1019,6 +1019,7 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/backup', '');
         await flushPromises(); 
+        expect(zigbeeHerdsman.backup).toHaveBeenCalledTimes(1);
         expect(mockJSZipFile).toHaveBeenCalledTimes(4);
         expect(mockJSZipFile).toHaveBeenNthCalledWith(1, 'configuration.yaml', expect.any(Object));
         expect(mockJSZipFile).toHaveBeenNthCalledWith(2, 'ext_converters/123/myfile.js', expect.any(Object));

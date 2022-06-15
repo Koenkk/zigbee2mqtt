@@ -183,6 +183,10 @@ export default class Zigbee {
         return this.herdsman.isStopping();
     }
 
+    async backup(): Promise<void> {
+        return this.herdsman.backup();
+    }
+
     async getNetworkParameters(): Promise<zh.NetworkParameters> {
         return this.herdsman.getNetworkParameters();
     }

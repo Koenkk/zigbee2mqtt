@@ -238,6 +238,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async backup(message: string | KeyValue): Promise<MQTTResponse> {
+        await this.zigbee.backup();
         const dataPath = data.getPath();
         const files = utils.getAllFiles(dataPath).map((f) => [f, f.substring(dataPath.length + 1)])
             .filter((f) => !f[1].startsWith('log'));
