@@ -1022,8 +1022,8 @@ describe('Bridge', () => {
         expect(zigbeeHerdsman.backup).toHaveBeenCalledTimes(1);
         expect(mockJSZipFile).toHaveBeenCalledTimes(4);
         expect(mockJSZipFile).toHaveBeenNthCalledWith(1, 'configuration.yaml', expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, 'ext_converters/123/myfile.js', expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(3, 'ext_converters/afile.js', expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, path.join('ext_converters', '123','myfile.js'), expect.any(Object));
+        expect(mockJSZipFile).toHaveBeenNthCalledWith(3, path.join('ext_converters', 'afile.js'), expect.any(Object));
         expect(mockJSZipFile).toHaveBeenNthCalledWith(4, 'state.json', expect.any(Object));
         expect(mockJSZipGenerateAsync).toHaveBeenCalledTimes(1);
         expect(mockJSZipGenerateAsync).toHaveBeenNthCalledWith(1, {type: 'base64'});
