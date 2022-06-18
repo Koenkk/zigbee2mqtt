@@ -870,6 +870,14 @@
         "qos": {
           "type": "number"
         },
+        "off_state": {
+          "type": ["string"],
+          "enum": ["all_members_off", "last_member_state"],
+          "title": "Group off state",
+          "default": "auto",
+          "requiresRestart": true,
+          "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group memebers are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
+        },
         "filtered_attributes": {
           "type": "array",
           "items": {
