@@ -196,9 +196,12 @@ function write(): void {
 
     // In case the setting is defined in a separte file (e.g. !secret network_key) update it there.
     for (const path of [
+        ['mqtt', 'server'],
         ['mqtt', 'user'],
         ['mqtt', 'password'],
         ['advanced', 'network_key'],
+        ['advanced', 'pan_id'],
+        ['advanced', 'ext_pan_id'],
         ['frontend', 'auth_token'],
     ]) {
         if (actual[path[0]] && actual[path[0]][path[1]]) {

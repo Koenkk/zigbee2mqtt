@@ -171,6 +171,57 @@ describe('Settings', () => {
         expect(read(secretFile)).toStrictEqual({...contentSecret, username: 'test123', network_key: [1,2,3,4]});
     });
 
+    it('Should read ALL secrets form a separate file', () => {
+        const contentConfiguration = {
+            mqtt: {
+                server: '!secret server',
+                user: '!secret username',
+                password: '!secret password',
+            },
+            advanced: {
+                network_key: '!secret network_key'
+                pan_id: '!secret pan_id'
+                ext_pan_id: '!secret ext_pan_id'
+            }
+        };
+
+        const contentSecret = {
+            server: 'my.mqtt.server',
+            username: 'mysecretusername',
+            password: 'mysecretpassword',
+            network_key: [1,2,3],
+            pan_id: 12345,
+            ext_pan_id: [1,2,3,4,5],
+        };
+
+        write(secretFile, contentSecret, false);
+        write(configurationFile, contentConfiguration);
+
+        const expected = {
+            base_topic: 'zigbee2mqtt',
+            include_device_information: false,
+            force_disable_retain: false,
+            password: "mysecretpassword",
+            server: "my.mqtt.server",
+            user: "mysecretusername",
+        };
+
+        expect(settings.get().mqtt).toStrictEqual(expected);
+        expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
+        expect(settings.get().advanced.pan_id).toStrictEqual(12345);
+        expect(settings.get().advanced.ext_pan_id).toStrictEqual([1,2,3,4,5]);
+
+        settings.testing.write();
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['mqtt', 'server'], 'not.secret.server');
+        settings.set(['advanced', 'pan_id'], '23456');
+        settings.set(['advanced', 'ext_pan_id'], [1,2,3,4,5, 6]);
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, server: 'not.secret.server', pan_id: '23456', ext_pan_id: [1,2,3,4,5,6]});
+    });
+
     it('Should read devices form a separate file', () => {
         const contentConfiguration = {
             devices: 'devices.yaml',
