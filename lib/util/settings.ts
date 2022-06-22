@@ -326,13 +326,28 @@ function read(): Settings {
         }
     };
 
-    if (s.mqtt?.user && s.mqtt?.password) {
+    if (s.mqtt?.user) {
         s.mqtt.user = interpetValue(s.mqtt.user);
+    }
+
+    if (s.mqtt?.password) {
         s.mqtt.password = interpetValue(s.mqtt.password);
+    }
+
+    if (s.mqtt?.server) {
+        s.mqtt.server = interpetValue(s.mqtt.server);
     }
 
     if (s.advanced?.network_key) {
         s.advanced.network_key = interpetValue(s.advanced.network_key);
+    }
+
+    if (s.advanced?.pan_id) {
+        s.advanced.pan_id = interpetValue(s.advanced.pan_id);
+    }
+
+    if (s.advanced?.ext_pan_id) {
+        s.advanced.ext_pan_id = interpetValue(s.advanced.ext_pan_id);
     }
 
     if (s.frontend?.auth_token) {
