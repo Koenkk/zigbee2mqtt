@@ -179,9 +179,9 @@ describe('Settings', () => {
                 password: '!secret password',
             },
             advanced: {
-                network_key: '!secret network_key'
-                pan_id: '!secret pan_id'
-                ext_pan_id: '!secret ext_pan_id'
+                network_key: '!secret network_key',
+                pan_id: '!secret pan_id',
+                ext_pan_id: '!secret ext_pan_id',
             }
         };
 
