@@ -39,6 +39,7 @@ describe('Settings', () => {
 
     beforeEach(() => {
         remove(configurationFile);
+        remove(secretFile);
         remove(devicesFile);
         remove(groupsFile);
         clearEnvironmentVariables();
