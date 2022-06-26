@@ -181,8 +181,6 @@ describe('Settings', () => {
             },
             advanced: {
                 network_key: '!secret network_key',
-                pan_id: '!secret pan_id',
-                ext_pan_id: '!secret ext_pan_id',
             }
         };
 
@@ -191,8 +189,6 @@ describe('Settings', () => {
             username: 'mysecretusername',
             password: 'mysecretpassword',
             network_key: [1,2,3],
-            pan_id: 12345,
-            ext_pan_id: [1,2,3,4,5],
         };
 
         write(secretFile, contentSecret, false);
@@ -209,18 +205,14 @@ describe('Settings', () => {
 
         expect(settings.get().mqtt).toStrictEqual(expected);
         expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
-        expect(settings.get().advanced.pan_id).toStrictEqual(12345);
-        expect(settings.get().advanced.ext_pan_id).toStrictEqual([1,2,3,4,5]);
 
         settings.testing.write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
         expect(read(secretFile)).toStrictEqual(contentSecret);
 
         settings.set(['mqtt', 'server'], 'not.secret.server');
-        settings.set(['advanced', 'pan_id'], '23456');
-        settings.set(['advanced', 'ext_pan_id'], [1,2,3,4,5, 6]);
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
-        expect(read(secretFile)).toStrictEqual({...contentSecret, server: 'not.secret.server', pan_id: '23456', ext_pan_id: [1,2,3,4,5,6]});
+        expect(read(secretFile)).toStrictEqual({...contentSecret, server: 'not.secret.server'});
     });
 
     it('Should read devices form a separate file', () => {

@@ -200,8 +200,6 @@ function write(): void {
         ['mqtt', 'user'],
         ['mqtt', 'password'],
         ['advanced', 'network_key'],
-        ['advanced', 'pan_id'],
-        ['advanced', 'ext_pan_id'],
         ['frontend', 'auth_token'],
     ]) {
         if (actual[path[0]] && actual[path[0]][path[1]]) {
@@ -340,14 +338,6 @@ function read(): Settings {
 
     if (s.advanced?.network_key) {
         s.advanced.network_key = interpetValue(s.advanced.network_key);
-    }
-
-    if (s.advanced?.pan_id) {
-        s.advanced.pan_id = interpetValue(s.advanced.pan_id);
-    }
-
-    if (s.advanced?.ext_pan_id) {
-        s.advanced.ext_pan_id = interpetValue(s.advanced.ext_pan_id);
     }
 
     if (s.frontend?.auth_token) {
