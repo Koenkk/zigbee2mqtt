@@ -390,7 +390,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 
                 if (typeof obj[key] === 'object' && obj[key]) {
                     const newPath = [...path];
-                    if (key !== 'properties') {
+                    if (key !== 'properties' && key !== 'oneOf' && !Number.isInteger(Number(key))) {
                         newPath.push(key);
                     }
                     iterate(obj[key], newPath);
