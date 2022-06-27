@@ -196,6 +196,7 @@ function write(): void {
 
     // In case the setting is defined in a separte file (e.g. !secret network_key) update it there.
     for (const path of [
+        ['mqtt', 'server'],
         ['mqtt', 'user'],
         ['mqtt', 'password'],
         ['advanced', 'network_key'],
@@ -323,9 +324,16 @@ function read(): Settings {
         }
     };
 
-    if (s.mqtt?.user && s.mqtt?.password) {
+    if (s.mqtt?.user) {
         s.mqtt.user = interpetValue(s.mqtt.user);
+    }
+
+    if (s.mqtt?.password) {
         s.mqtt.password = interpetValue(s.mqtt.password);
+    }
+
+    if (s.mqtt?.server) {
+        s.mqtt.server = interpetValue(s.mqtt.server);
     }
 
     if (s.advanced?.network_key) {
