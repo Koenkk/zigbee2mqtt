@@ -812,15 +812,6 @@
           "description": "Publish optimistic state after set",
           "default": true
         },
-        "filtered_optimistic": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": ["color_mode", "color_temp", "color"],
-          "title": "Filtered optimistic attributes",
-          "description": "Filter attributes from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
-        },
         "filtered_attributes": {
           "type": "array",
           "items": {
@@ -829,6 +820,24 @@
           "examples": ["temperature", "battery", "action"],
           "title": "Filtered publish attributes",
           "description": "Filter attributes from publish payload."
+        },
+        "filtered_cache": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["action", "input_actions"],
+          "title": "Filtered attributes from cache",
+          "description": "Filter attributes from being added to the cache."
+        },
+        "filtered_optimistic": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "examples": ["color_mode", "color_temp", "color"],
+          "title": "Filtered optimistic attributes",
+          "description": "Filter attributes from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
         },
         "icon": {
           "type": "string",

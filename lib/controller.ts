@@ -218,10 +218,11 @@ class Controller {
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue,
         stateChangeReason?: StateChangeReason): Promise<void> {
+        const extraDontCacheProperties = entity.options.filtered_cache ? entity.options.filtered_cache : [];
         let message = {...payload};
 
         // Update state cache with new state.
-        const newState = this.state.set(entity, payload, stateChangeReason);
+        const newState = this.state.set(entity, payload, stateChangeReason, extraDontCacheProperties);
 
         if (settings.get().advanced.cache_state) {
             // Add cached state to payload
@@ -265,7 +266,7 @@ class Controller {
             extension.adjustMessageBeforePublish?.(entity, message);
         }
 
-        // filter mqtt message attributes
+        // Filter mqtt message attributes
         if (entity.options.filtered_attributes) {
             entity.options.filtered_attributes.forEach((a) => delete message[a]);
         }
