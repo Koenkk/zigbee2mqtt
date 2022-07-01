@@ -243,6 +243,9 @@ const defaultState = {
     "0x0017880104e45517": {
         "brightness": 255
     },
+    "1": {
+        'state': 'ON',
+    }
 }
 
 function getDefaultState() {

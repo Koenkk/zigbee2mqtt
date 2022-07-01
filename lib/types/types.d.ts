@@ -294,6 +294,7 @@ declare global {
         devices?: string[],
         ID?: number,
         optimistic?: boolean,
+        off_state?: 'all_members_off' | 'last_member_state'
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
         homeassistant?: KeyValue,

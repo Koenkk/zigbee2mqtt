@@ -129,11 +129,10 @@ export default class Groups extends Extension {
             if (entity instanceof Device) {
                 for (const group of groups) {
                     if (group.zh.hasMember(entity.endpoint(endpointName)) &&
-                        !equals(this.lastOptimisticState[group.ID], payload)) {
-                        if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(group)) {
-                            this.lastOptimisticState[group.ID] = payload;
-                            await this.publishEntityState(group, payload, reason);
-                        }
+                        !equals(this.lastOptimisticState[group.ID], payload) &&
+                        this.shouldPublishPayloadForGroup(group, payload)) {
+                        this.lastOptimisticState[group.ID] = payload;
+                        await this.publishEntityState(group, payload, reason);
                     }
                 }
             } else {
@@ -161,10 +160,9 @@ export default class Groups extends Extension {
 
                     await this.publishEntityState(device, memberPayload, reason);
                     for (const zigbeeGroup of groups) {
-                        if (zigbeeGroup.zh.hasMember(member)) {
-                            if (!payload || payload.state !== 'OFF' || this.areAllMembersOff(zigbeeGroup)) {
-                                groupsToPublish.add(zigbeeGroup);
-                            }
+                        if (zigbeeGroup.zh.hasMember(member) &&
+                            this.shouldPublishPayloadForGroup(zigbeeGroup, payload)) {
+                            groupsToPublish.add(zigbeeGroup);
                         }
                     }
                 }
@@ -174,6 +172,13 @@ export default class Groups extends Extension {
                 }
             }
         }
+    }
+
+    private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
+        if (group.options.off_state === 'last_member_state') return true;
+        if (!payload || payload.state !== 'OFF') return true;
+        if (this.areAllMembersOff(group)) return true;
+        return false;
     }
 
     private areAllMembersOff(group: Group): boolean {
