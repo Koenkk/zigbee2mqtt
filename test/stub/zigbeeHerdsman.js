@@ -28,6 +28,7 @@ const clusters = {
     'closuresWindowCovering': 258,
     'hvacThermostat': 513,
     'msTemperatureMeasurement': 1026,
+    'msRelativeHumidity': 1029
 }
 
 class Endpoint {
