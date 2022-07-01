@@ -922,7 +922,7 @@ describe('Publish', () => {
         expect(endpoint.command.mock.calls[2]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish.mock.calls[0]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'ON', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
-        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
+        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 0}), {"qos": 0, "retain": false}, expect.any(Function)]);
         expect(MQTT.publish.mock.calls[2]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'ON', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
     });
 
@@ -941,7 +941,7 @@ describe('Publish', () => {
         expect(endpoint.command.mock.calls[2]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 50, transtime: 0}, {}]);
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish.mock.calls[0]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'ON', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
-        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
+        expect(MQTT.publish.mock.calls[1]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'OFF', brightness: 0}), {"qos": 0, "retain": false}, expect.any(Function)]);
         expect(MQTT.publish.mock.calls[2]).toEqual(["zigbee2mqtt/bulb_color", stringify({state: 'ON', brightness: 50}), {"qos": 0, "retain": false}, expect.any(Function)]);
     });
 

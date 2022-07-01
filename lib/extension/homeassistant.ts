@@ -284,19 +284,11 @@ export default class HomeAssistant extends Extension {
 
             const preset = firstExpose.features.find((f) => f.name === 'preset');
             if (preset) {
-                discoveryEntry.discovery_payload.hold_modes = preset.values;
-                discoveryEntry.discovery_payload.hold_command_topic = true;
-                discoveryEntry.discovery_payload.hold_state_template =
+                discoveryEntry.discovery_payload.preset_modes = preset.values;
+                discoveryEntry.discovery_payload.preset_mode_command_topic = 'preset';
+                discoveryEntry.discovery_payload.preset_mode_value_template =
                     `{{ value_json.${preset.property} }}`;
-                discoveryEntry.discovery_payload.hold_state_topic = true;
-            }
-
-            const awayMode = firstExpose.features.find((f) => f.name === 'away_mode');
-            if (awayMode) {
-                discoveryEntry.discovery_payload.away_mode_command_topic = true;
-                discoveryEntry.discovery_payload.away_mode_state_topic = true;
-                discoveryEntry.discovery_payload.away_mode_state_template =
-                    `{{ value_json.${awayMode.property} }}`;
+                discoveryEntry.discovery_payload.preset_mode_state_topic = true;
             }
 
             const tempCalibration = firstExpose.features.find((f) => f.name === 'local_temperature_calibration');
@@ -514,7 +506,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
                 assert(presets.length !== 0);
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
-                discoveryEntry.discovery_payload.preset_mode_command_topic = true;
+                discoveryEntry.discovery_payload.preset_mode_command_topic = 'fan_mode';
                 discoveryEntry.discovery_payload.preset_mode_value_template =
                     `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}]` +
                     ` else 'None' | default('None') }}`;
@@ -933,7 +925,7 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    @bind onEntityRenamed(data: eventdata.EntityRenamed): void {
+    @bind async onEntityRenamed(data: eventdata.EntityRenamed): Promise<void> {
         logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
 
         // Clear before rename so Home Assistant uses new friendly_name
@@ -943,6 +935,10 @@ export default class HomeAssistant extends Extension {
                 const topic = this.getDiscoveryTopic(config, data.entity);
                 this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
             }
+
+            // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
+            // https://github.com/Koenkk/zigbee2mqtt/issues/12610
+            await utils.sleep(2);
         }
 
         this.discover(data.entity, true);
@@ -1183,22 +1179,6 @@ export default class HomeAssistant extends Extension {
                 payload.mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/system_mode`;
             }
 
-            if (payload.hold_command_topic) {
-                payload.hold_command_topic = `${baseTopic}/${commandTopicPrefix}set/preset`;
-            }
-
-            if (payload.hold_state_topic) {
-                payload.hold_state_topic = stateTopic;
-            }
-
-            if (payload.away_mode_state_topic) {
-                payload.away_mode_state_topic = stateTopic;
-            }
-
-            if (payload.away_mode_command_topic) {
-                payload.away_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/away_mode`;
-            }
-
             if (payload.current_temperature_topic) {
                 payload.current_temperature_topic = stateTopic;
             }
@@ -1251,7 +1231,8 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.preset_mode_command_topic) {
-                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
+                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/` +
+                    payload.preset_mode_command_topic;
             }
 
             if (payload.action_topic) {
@@ -1353,9 +1334,9 @@ export default class HomeAssistant extends Extension {
             data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const device of this.zigbee.devices(false)) {
-                    if (this.state.exists(device)) {
-                        this.publishEntityState(device, this.state.get(device));
+                for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
+                    if (this.state.exists(entity)) {
+                        this.publishEntityState(entity, this.state.get(entity));
                     }
                 }
 

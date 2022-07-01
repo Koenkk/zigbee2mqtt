@@ -39,6 +39,7 @@ describe('Settings', () => {
 
     beforeEach(() => {
         remove(configurationFile);
+        remove(secretFile);
         remove(devicesFile);
         remove(groupsFile);
         clearEnvironmentVariables();
@@ -169,6 +170,49 @@ describe('Settings', () => {
         settings.set(['advanced', 'network_key'], [1,2,3, 4]);
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
         expect(read(secretFile)).toStrictEqual({...contentSecret, username: 'test123', network_key: [1,2,3,4]});
+    });
+
+    it('Should read ALL secrets form a separate file', () => {
+        const contentConfiguration = {
+            mqtt: {
+                server: '!secret server',
+                user: '!secret username',
+                password: '!secret password',
+            },
+            advanced: {
+                network_key: '!secret network_key',
+            }
+        };
+
+        const contentSecret = {
+            server: 'my.mqtt.server',
+            username: 'mysecretusername',
+            password: 'mysecretpassword',
+            network_key: [1,2,3],
+        };
+
+        write(secretFile, contentSecret, false);
+        write(configurationFile, contentConfiguration);
+
+        const expected = {
+            base_topic: 'zigbee2mqtt',
+            include_device_information: false,
+            force_disable_retain: false,
+            password: "mysecretpassword",
+            server: "my.mqtt.server",
+            user: "mysecretusername",
+        };
+
+        expect(settings.get().mqtt).toStrictEqual(expected);
+        expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
+
+        settings.testing.write();
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['mqtt', 'server'], 'not.secret.server');
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, server: 'not.secret.server'});
     });
 
     it('Should read devices form a separate file', () => {

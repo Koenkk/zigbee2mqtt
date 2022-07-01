@@ -752,9 +752,6 @@ describe('HomeAssistant extension', () => {
                     "topic":"zigbee2mqtt/bridge/state"
                 }
             ],
-            "away_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/away_mode",
-            "away_mode_state_template":"{{ value_json.away_mode }}",
-            "away_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "current_temperature_template":"{{ value_json.local_temperature }}",
             "current_temperature_topic":"zigbee2mqtt/TS0601_thermostat",
             "device":{
@@ -766,8 +763,8 @@ describe('HomeAssistant extension', () => {
                 "name":"TS0601_thermostat",
                 "sw_version":null
             },
-            "hold_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
-            "hold_modes":[
+            "preset_mode_command_topic":"zigbee2mqtt/TS0601_thermostat/set/preset",
+            "preset_modes":[
                 "schedule",
                 "manual",
                 "boost",
@@ -775,8 +772,8 @@ describe('HomeAssistant extension', () => {
                 "comfort",
                 "eco"
             ],
-            "hold_state_template":"{{ value_json.preset }}",
-            "hold_state_topic":"zigbee2mqtt/TS0601_thermostat",
+            "preset_mode_value_template":"{{ value_json.preset }}",
+            "preset_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
             "json_attributes_topic":"zigbee2mqtt/TS0601_thermostat",
             "max_temp":"35",
             "min_temp":"5",
@@ -1042,6 +1039,12 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function)
         );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/group_1',
+            stringify({"state":'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
     });
 
     it('Should send all status when home assistant comes online', async () => {
@@ -1178,6 +1181,8 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":true}));
         await flushPromises();
+        jest.runOnlyPendingTimers();
+        await flushPromises();
 
         const payload = {
             'unit_of_measurement': '°C',
@@ -1239,6 +1244,8 @@ describe('HomeAssistant extension', () => {
     it('Should refresh discovery when group is renamed', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({"from": "ha_discovery_group", "to": "ha_discovery_group_new","homeassistant_rename":true}));
+        await flushPromises();
+        jest.runOnlyPendingTimers();
         await flushPromises();
 
         const payload = {

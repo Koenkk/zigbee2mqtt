@@ -120,6 +120,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99}), {"qos": 0, "retain": true}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({"brightness":255}), {"qos": 0, "retain": true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":'ON'}), {"qos": 0, "retain":false}, expect.any(Function));
     });
 
     it('Start controller should not publish cached states when disabled', async () => {
