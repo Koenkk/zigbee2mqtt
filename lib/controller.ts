@@ -265,7 +265,7 @@ class Controller {
             extension.adjustMessageBeforePublish?.(entity, message);
         }
 
-        // filter mqtt message attributes
+        // Filter mqtt message attributes
         if (entity.options.filtered_attributes) {
             entity.options.filtered_attributes.forEach((a) => delete message[a]);
         }
