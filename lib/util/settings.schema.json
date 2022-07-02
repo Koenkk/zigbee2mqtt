@@ -828,7 +828,7 @@
           },
           "examples": ["action", "input_actions"],
           "title": "Filtered attributes from cache",
-          "description": "Filter attributes from being added to the cache."
+          "description": "Filter attributes from being added to the cache, this prevents the attribute from being in the published payload when the value didn't change."
         },
         "filtered_optimistic": {
           "type": "array",
