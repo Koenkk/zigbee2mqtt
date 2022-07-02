@@ -75,7 +75,7 @@ class State {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
         const newCache = {...toState};
-        const entityDontCacheProperties = entity.options.filtered_cache ? entity.options.filtered_cache : [];
+        const entityDontCacheProperties = entity.options.filtered_cache || [];
 
         for (const property of Object.keys(newCache)) {
             if (dontCacheProperties.concat(entityDontCacheProperties).find((p) => property.match(p))) {
