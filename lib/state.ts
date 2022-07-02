@@ -74,17 +74,18 @@ class State {
     set(entity: Group | Device, update: KeyValue, reason: string=null, extraDontCacheProperties: string[]=[]): KeyValue {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
-        const result = {...toState};
+        const newCache = {...toState};
 
-        for (const property of Object.keys(toState)) {
+
+        for (const property of Object.keys(newCache)) {
             if (dontCacheProperties.concat(extraDontCacheProperties).find((p) => property.match(p))) {
-                delete toState[property];
+                delete newCache[property];
             }
         }
 
-        this.state[entity.ID] = toState;
+        this.state[entity.ID] = newCache;
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
-        return result;
+        return toState;
     }
 
     remove(ID: string | number): void {
