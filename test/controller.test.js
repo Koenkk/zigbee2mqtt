@@ -492,7 +492,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute_json output filtered cache', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute_and_json');
+        settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_cache'], ['linkquality']);
         MQTT.publish.mockClear();
 
@@ -512,7 +512,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute_json output filtered cache (device_options)', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute_and_json');
+        settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['device_options', 'filtered_cache'], ['linkquality']);
         MQTT.publish.mockClear();
 
