@@ -218,11 +218,10 @@ class Controller {
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue,
         stateChangeReason?: StateChangeReason): Promise<void> {
-        const extraDontCacheProperties = entity.options.filtered_cache ? entity.options.filtered_cache : [];
         let message = {...payload};
 
         // Update state cache with new state.
-        const newState = this.state.set(entity, payload, stateChangeReason, extraDontCacheProperties);
+        const newState = this.state.set(entity, payload, stateChangeReason);
 
         if (settings.get().advanced.cache_state) {
             // Add cached state to payload

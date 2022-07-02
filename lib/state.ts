@@ -71,14 +71,14 @@ class State {
         return this.state[entity.ID] || {};
     }
 
-    set(entity: Group | Device, update: KeyValue, reason: string=null, extraDontCacheProperties: string[]=[]): KeyValue {
+    set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
         const newCache = {...toState};
-
+        const entityDontCacheProperties = entity.options.filtered_cache ? entity.options.filtered_cache : [];
 
         for (const property of Object.keys(newCache)) {
-            if (dontCacheProperties.concat(extraDontCacheProperties).find((p) => property.match(p))) {
+            if (dontCacheProperties.concat(entityDontCacheProperties).find((p) => property.match(p))) {
                 delete newCache[property];
             }
         }
