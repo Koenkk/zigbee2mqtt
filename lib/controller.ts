@@ -267,7 +267,11 @@ class Controller {
 
         // Filter mqtt message attributes
         if (entity.options.filtered_attributes) {
-            entity.options.filtered_attributes.forEach((a) => delete message[a]);
+            for (const property of Object.keys(message)) {
+                if (entity.options.filtered_attributes.find((p) => property.match(p))) {
+                    delete message[property];
+                }
+            }
         }
 
         if (Object.entries(message).length) {
