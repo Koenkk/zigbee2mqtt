@@ -465,7 +465,7 @@ describe('Controller', () => {
     it('Publish entity state attribute_json output filtered', async () => {
         await controller.start();
         settings.set(['experimental', 'output'], 'attribute_and_json');
-        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_attributes'], ['color_temp', 'linkquality']);
+        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_attributes'], ['^color_temp$', '^linkquality$']);
         MQTT.publish.mockClear();
         const device = controller.zigbee.resolveEntity('bulb');
         await controller.publishEntityState(device, {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
@@ -479,7 +479,7 @@ describe('Controller', () => {
     it('Publish entity state attribute_json output filtered (device_options)', async () => {
         await controller.start();
         settings.set(['experimental', 'output'], 'attribute_and_json');
-        settings.set(['device_options', 'filtered_attributes'], ['color_temp', 'linkquality']);
+        settings.set(['device_options', 'filtered_attributes'], ['^color_temp$', '^linkquality$']);
         MQTT.publish.mockClear();
         const device = controller.zigbee.resolveEntity('bulb');
         await controller.publishEntityState(device, {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
@@ -493,7 +493,7 @@ describe('Controller', () => {
     it('Publish entity state attribute_json output filtered cache', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
-        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_cache'], ['linkquality']);
+        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'filtered_cache'], ['^linkquality$']);
         MQTT.publish.mockClear();
 
         const device = controller.zigbee.resolveEntity('bulb');
@@ -513,7 +513,7 @@ describe('Controller', () => {
     it('Publish entity state attribute_json output filtered cache (device_options)', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
-        settings.set(['device_options', 'filtered_cache'], ['linkquality']);
+        settings.set(['device_options', 'filtered_cache'], ['^linkquality$']);
         MQTT.publish.mockClear();
 
         const device = controller.zigbee.resolveEntity('bulb');
