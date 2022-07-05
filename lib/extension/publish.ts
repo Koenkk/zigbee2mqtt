@@ -256,13 +256,7 @@ export default class Publish extends Extension {
                         }
 
                         // filter out attribute listed in filtered_optimistic
-                        if (entitySettings.filtered_optimistic) {
-                            for (const property of Object.keys(msg)) {
-                                if (entitySettings.filtered_optimistic.find((p) => property.match(p))) {
-                                    delete msg[property];
-                                }
-                            }
-                        }
+                        utils.filterProperties(entitySettings.filtered_optimistic, msg);
 
                         addToToPublish(re, msg);
                     }
