@@ -341,6 +341,15 @@ function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, al
     }
 }
 
+function filterProperties(filterRegex: string[], data: KeyValue): void {
+    if (filterRegex) {
+        for (const property of Object.keys(data)) {
+            if (filterRegex.find((p) => property.match(p))) {
+                delete data[property];
+            }
+        }
+    }
+}
 
 export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
@@ -348,5 +357,5 @@ export default {
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles,
+    getAllFiles, filterProperties,
 };

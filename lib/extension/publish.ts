@@ -256,7 +256,8 @@ export default class Publish extends Extension {
                         }
 
                         // filter out attribute listed in filtered_optimistic
-                        entitySettings.filtered_optimistic?.forEach((a) => delete msg[a]);
+                        utils.filterProperties(entitySettings.filtered_optimistic, msg);
+
                         addToToPublish(re, msg);
                     }
 

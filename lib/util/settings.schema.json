@@ -817,27 +817,27 @@
           "items": {
             "type": "string"
           },
-          "examples": ["temperature", "battery", "action"],
+          "examples": ["^temperature$", "^battery$", "^action$"],
           "title": "Filtered publish attributes",
-          "description": "Filter attributes from publish payload."
+          "description": "Filter attributes with regex from published payload."
         },
         "filtered_cache": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "examples": ["action", "input_actions"],
+          "examples": ["^input_actions$"],
           "title": "Filtered attributes from cache",
-          "description": "Filter attributes from being added to the cache, this prevents the attribute from being in the published payload when the value didn't change."
+          "description": "Filter attributes with regex from being added to the cache, this prevents the attribute from being in the published payload when the value didn't change."
         },
         "filtered_optimistic": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "examples": ["color_mode", "color_temp", "color"],
+          "examples": ["^color_(mode|temp)$", "color"],
           "title": "Filtered optimistic attributes",
-          "description": "Filter attributes from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
+          "description": "Filter attributes with regex from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
         },
         "icon": {
           "type": "string",

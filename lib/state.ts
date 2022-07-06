@@ -1,6 +1,7 @@
 import logger from './util/logger';
 import data from './util/data';
 import * as settings from './util/settings';
+import utils from './util/utils';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
 
@@ -77,11 +78,7 @@ class State {
         const newCache = {...toState};
         const entityDontCacheProperties = entity.options.filtered_cache || [];
 
-        for (const property of Object.keys(newCache)) {
-            if (dontCacheProperties.concat(entityDontCacheProperties).find((p) => property.match(p))) {
-                delete newCache[property];
-            }
-        }
+        utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
 
         this.state[entity.ID] = newCache;
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
