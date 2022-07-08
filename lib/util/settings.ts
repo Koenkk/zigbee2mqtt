@@ -381,7 +381,11 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
-                            setting[key] = JSON.parse(process.env[envVariableName]);
+                            try {
+                                setting[key] = JSON.parse(process.env[envVariableName]);
+                            } catch (error) {
+                                setting[key] = process.env[envVariableName];
+                            }
                         } else if (type.indexOf('number') >= 0) {
                             /* eslint-disable-line */ // @ts-ignore
                             setting[key] = process.env[envVariableName] * 1;

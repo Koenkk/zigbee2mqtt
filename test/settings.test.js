@@ -70,6 +70,7 @@ describe('Settings', () => {
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'csvtest';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
         process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY'] = 'GENERATE';
 
         write(configurationFile, {});
         const s = settings.get();
@@ -81,6 +82,7 @@ describe('Settings', () => {
         expected.advanced.output = 'csvtest';
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
+        expected.advanced.network_key = 'GENERATE';
 
         expect(s).toStrictEqual(expected);
     });
