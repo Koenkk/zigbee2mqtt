@@ -8,9 +8,9 @@ import objectAssignDeep from 'object-assign-deep';
 const saveInterval = 1000 * 60 * 5; // 5 minutes
 
 const dontCacheProperties = [
-    '^action$', '^action_.*$', '^button$', '^button_left$', '^button_right$', '^click$', '^forgotten$', '^keyerror$',
-    '^step_size$', '^transition_time$', '^group_list$', '^group_capacity$', '^no_occupancy_since$',
-    '^step_mode$', '^transition_time$', '^duration$', '^elapsed$', '^from_side$', '^to_side$',
+    'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
+    'step_size', 'transition_time', 'group_list', 'group_capacity', 'no_occupancy_since',
+    'step_mode', 'transition_time', 'duration', 'elapsed', 'from_side', 'to_side',
 ];
 
 class State {

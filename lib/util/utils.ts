@@ -341,10 +341,10 @@ function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, al
     }
 }
 
-function filterProperties(filterRegex: string[], data: KeyValue): void {
-    if (filterRegex) {
+function filterProperties(filter: string[], data: KeyValue): void {
+    if (filter) {
         for (const property of Object.keys(data)) {
-            if (filterRegex.find((p) => property.match(p))) {
+            if (filter.find((p) => property.match(`^${p}$`))) {
                 delete data[property];
             }
         }
