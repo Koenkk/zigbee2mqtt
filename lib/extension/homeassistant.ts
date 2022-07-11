@@ -747,6 +747,7 @@ export default class HomeAssistant extends Extension {
                     discovery_payload: {
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         command_topic: true,
+                        device_class: null,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
