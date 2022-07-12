@@ -1337,7 +1337,7 @@ export default class HomeAssistant extends Extension {
                 // Publish all device states.
                 for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
                     if (this.state.exists(entity)) {
-                        this.publishEntityState(entity, this.state.get(entity));
+                        this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                     }
                 }
 

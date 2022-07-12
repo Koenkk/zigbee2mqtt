@@ -157,7 +157,7 @@ class Controller {
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const entity of [...devices, ...this.zigbee.groups()]) {
                 if (this.state.exists(entity)) {
-                    this.publishEntityState(entity, this.state.get(entity));
+                    this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                 }
             }
         }
