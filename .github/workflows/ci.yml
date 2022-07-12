@@ -48,7 +48,7 @@ jobs:
           --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
           -f docker/Dockerfile \
           --push \
-          -t koenkk/zigbee2mqtt:latest-dev \ #-t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
+          -t koenkk/zigbee2mqtt:latest-dev \
           .
     - name: Docker build release
       if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
