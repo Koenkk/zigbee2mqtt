@@ -741,7 +741,6 @@ export default class HomeAssistant extends Extension {
              * breaking changes for sensors already existing in HA (legacy).
              */
             if (allowsSet) {
-                const deviceClass = lookup[firstExpose.name]?.device_class === 'temperature' ? 'temperature' : null;
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
@@ -753,9 +752,14 @@ export default class HomeAssistant extends Extension {
                         command_topic_postfix: firstExpose.property,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...lookup[firstExpose.name],
-                        device_class: deviceClass,
                     },
                 };
+
+                if (lookup[firstExpose.name]?.device_class === 'temperature') {
+                    discoveryEntry.discovery_payload.device_class == lookup[firstExpose.name]?.device_class;
+                } else {
+                    delete discoveryEntry.discovery_payload.device_class;
+                }
 
                 if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
                 if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
