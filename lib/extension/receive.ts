@@ -145,8 +145,7 @@ export default class Receive extends Extension {
                 if (converted) {
                     payload = {...payload, ...converted};
                 }
-            } catch (error) {
-                // istanbul ignore next
+            } catch (error) /* istanbul ignore next */ {
                 logger.error(`Exception while calling fromZigbee converter: ${error.message}}`);
                 logger.debug(error.stack);
             }
