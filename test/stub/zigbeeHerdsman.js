@@ -27,11 +27,8 @@ const clusters = {
     'lightingColorCtrl': 768,
     'closuresWindowCovering': 258,
     'hvacThermostat': 513,
-    'msIlluminanceMeasurement': 1024,
     'msTemperatureMeasurement': 1026,
-    'msRelativeHumidity': 1029,
-    'msSoilMoisture': 1032,
-    'msCO2': 1037
+    'msRelativeHumidity': 1029
 }
 
 class Endpoint {
