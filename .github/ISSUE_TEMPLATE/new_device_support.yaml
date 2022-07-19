@@ -8,7 +8,6 @@ body:
       value: |
         **IMPORTANT:** Before submitting:
         - Make sure this device is not already supported in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
-        - Make sure there is no existing issue or PR for this device already, search for your device here: https://github.com/Koenkk/zigbee2mqtt/issues
         - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
         - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
   - type: input
