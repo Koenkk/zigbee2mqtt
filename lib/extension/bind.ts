@@ -13,8 +13,7 @@ const legacyApi = settings.get().advanced.legacy_api;
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
 const clusterCandidates = ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl', 'closuresWindowCovering',
-    'hvacThermostat', 'msIlluminanceMeasurement', 'msTemperatureMeasurement', 'msRelativeHumidity',
-    'msSoilMoisture', 'msCO2'];
+    'hvacThermostat', 'msTemperatureMeasurement', 'msRelativeHumidity'];
 
 // See zigbee-herdsman-converters
 const defaultBindGroup = {type: 'group_number', ID: 901, name: 'default_bind_group'};
