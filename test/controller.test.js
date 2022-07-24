@@ -645,6 +645,15 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
+    it('Should republish retained messages on MQTT reconnect', async () => {
+        await controller.start();
+        MQTT.publish.mockClear();
+        MQTT.events['connect']();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(13);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+    });
+
     it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {
         settings.set(['mqtt', 'force_disable_retain'], true);
         await controller.mqtt.connect()
