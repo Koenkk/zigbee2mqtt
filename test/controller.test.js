@@ -650,8 +650,19 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         MQTT.events['connect']();
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(13);
+        jest.runOnlyPendingTimers();
+        expect(MQTT.publish).toHaveBeenCalledTimes(12);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+    });
+
+    it('Should not republish retained messages on MQTT reconnect when retained message are sent', async () => {
+        await controller.start();
+        MQTT.publish.mockClear();
+        MQTT.events['connect']();
+        await flushPromises();
+        await MQTT.events.message('zigbee2mqtt/bridge/state', 'online');
+        jest.runOnlyPendingTimers();
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {

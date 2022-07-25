@@ -10,6 +10,8 @@ export default class MQTT {
     private connectionTimer: NodeJS.Timeout;
     private client: mqtt.MqttClient;
     private eventBus: EventBus;
+    private initialConnect = true;
+    private republishRetainedTimer: NodeJS.Timer;
     private retainedMessages: {[s: string]: {payload: string, options: MQTTOptions,
         skipLog: boolean, skipReceive: boolean, topic: string, base: string}} = {};
 
@@ -97,13 +99,19 @@ export default class MQTT {
 
         logger.info('Connected to MQTT server');
 
-        // Republish retained messages in case MQTT broker does not persist them.
-        // https://github.com/Koenkk/zigbee2mqtt/issues/9629
-        Object.values(this.retainedMessages).forEach((e) =>
-            this.publish(e.topic, e.payload, e.options, e.base, e.skipLog, e.skipReceive));
+        if (this.initialConnect) {
+            await this.publishStateOnline();
+        } else {
+            this.republishRetainedTimer = setTimeout(() => {
+                // Republish retained messages in case MQTT broker does not persist them.
+                // https://github.com/Koenkk/zigbee2mqtt/issues/9629
+                Object.values(this.retainedMessages).forEach((e) =>
+                    this.publish(e.topic, e.payload, e.options, e.base, e.skipLog, e.skipReceive));
+            }, 2000);
+        }
 
+        this.initialConnect = false;
         this.subscribe(`${settings.get().mqtt.base_topic}/#`);
-        await this.publishStateOnline();
     }
 
     async publishStateOnline(): Promise<void> {
@@ -128,6 +136,11 @@ export default class MQTT {
         if (!this.publishedTopics.has(topic)) {
             logger.debug(`Received MQTT message on '${topic}' with data '${message}'`);
             this.eventBus.emitMQTTMessage({topic, message: message + ''});
+        }
+
+        if (this.republishRetainedTimer && topic == `${settings.get().mqtt.base_topic}/bridge/state`) {
+            clearTimeout(this.republishRetainedTimer);
+            this.republishRetainedTimer = null;
         }
     }
 
