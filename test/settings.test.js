@@ -180,6 +180,7 @@ describe('Settings', () => {
                 server: '!secret server',
                 user: '!secret username',
                 password: '!secret password',
+                client_id: '!secret client_id',
             },
             advanced: {
                 network_key: '!secret network_key',
@@ -190,6 +191,7 @@ describe('Settings', () => {
             server: 'my.mqtt.server',
             username: 'mysecretusername',
             password: 'mysecretpassword',
+            client_id: 'mqtt.client.id',
             network_key: [1,2,3],
         };
 
@@ -203,6 +205,7 @@ describe('Settings', () => {
             password: "mysecretpassword",
             server: "my.mqtt.server",
             user: "mysecretusername",
+            client_id: "mqtt.client.id",
         };
 
         expect(settings.get().mqtt).toStrictEqual(expected);
@@ -212,9 +215,39 @@ describe('Settings', () => {
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
         expect(read(secretFile)).toStrictEqual(contentSecret);
 
-        settings.set(['mqtt', 'server'], 'not.secret.server');
+        settings.set(['mqtt', 'client_id'], 'new.client.id');
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
-        expect(read(secretFile)).toStrictEqual({...contentSecret, server: 'not.secret.server'});
+        expect(read(secretFile)).toStrictEqual({...contentSecret, client_id: 'new.client.id'});
+    });
+
+    it('Should read serial config from separate file', () => {
+        const contentConfiguration = {
+            serial: {
+                port: '!secret serial_port'
+            }
+        };
+
+        const contentSecret = {
+            serial_port: 'tcp://secret.host:port'
+        };
+
+        write(secretFile, contentSecret, false);
+        write(configurationFile, contentConfiguration);
+
+        const expected = {
+            "disable_led": false,
+            port: "tcp://secret.host:port",
+        };
+
+        expect(settings.get().serial).toStrictEqual(expected);
+
+        settings.testing.write();
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual(contentSecret);
+
+        settings.set(['serial', 'port'], '/dev/ttyACM0');
+        expect(read(configurationFile)).toStrictEqual(contentConfiguration);
+        expect(read(secretFile)).toStrictEqual({...contentSecret, serial_port: '/dev/ttyACM0'});
     });
 
     it('Should read devices form a separate file', () => {

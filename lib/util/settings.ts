@@ -199,6 +199,8 @@ function write(): void {
         ['mqtt', 'server'],
         ['mqtt', 'user'],
         ['mqtt', 'password'],
+        ['mqtt', 'client_id'],
+        ['serial', 'port'],
         ['advanced', 'network_key'],
         ['frontend', 'auth_token'],
     ]) {
@@ -334,6 +336,14 @@ function read(): Settings {
 
     if (s.mqtt?.server) {
         s.mqtt.server = interpetValue(s.mqtt.server);
+    }
+
+    if (s.mqtt?.client_id) {
+        s.mqtt.client_id = interpetValue(s.mqtt.client_id);
+    }
+
+    if (s.serial?.port) {
+        s.serial.port = interpetValue(s.serial.port);
     }
 
     if (s.advanced?.network_key) {
