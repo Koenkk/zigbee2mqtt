@@ -302,6 +302,7 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_prefix: endpoint,
                         command_topic_postfix: tempCalibration.property,
+                        device_class: 'temperature',
                         entity_category: 'config',
                         icon: 'mdi:math-compass',
                         ...(tempCalibration.unit && {unit_of_measurement: tempCalibration.unit}),
@@ -753,6 +754,12 @@ export default class HomeAssistant extends Extension {
                         ...lookup[firstExpose.name],
                     },
                 };
+
+                if (lookup[firstExpose.name]?.device_class === 'temperature') {
+                    discoveryEntry.discovery_payload.device_class == lookup[firstExpose.name]?.device_class;
+                } else {
+                    delete discoveryEntry.discovery_payload.device_class;
+                }
 
                 if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
                 if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
@@ -1336,7 +1343,7 @@ export default class HomeAssistant extends Extension {
                 // Publish all device states.
                 for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
                     if (this.state.exists(entity)) {
-                        this.publishEntityState(entity, this.state.get(entity));
+                        this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                     }
                 }
 

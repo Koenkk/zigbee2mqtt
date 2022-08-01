@@ -42,7 +42,7 @@ declare global {
     // Types
     interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
     interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
-    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged';
+    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue,
         stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>;};
@@ -280,11 +280,12 @@ declare global {
         retrieve_state?: boolean,
         debounce?: number,
         debounce_ignore?: string[],
+        filtered_attributes?: string[],
+        filtered_cache?: string[],
         filtered_optimistic?: string[],
         icon?: string,
         homeassistant?: KeyValue,
         legacy?: boolean,
-        filtered_attributes?: string[],
         friendly_name: string,
         description?: string,
         qos?: 0 | 1 | 2,
@@ -295,10 +296,11 @@ declare global {
         ID?: number,
         optimistic?: boolean,
         off_state?: 'all_members_off' | 'last_member_state'
+        filtered_attributes?: string[],
+        filtered_cache?: string[],
         filtered_optimistic?: string[],
         retrieve_state?: boolean,
         homeassistant?: KeyValue,
-        filtered_attributes?: string[],
         friendly_name: string,
         description?: string,
         qos?: 0 | 1 | 2,

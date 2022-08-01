@@ -1,15 +1,16 @@
 import logger from './util/logger';
 import data from './util/data';
 import * as settings from './util/settings';
+import utils from './util/utils';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
 
 const dontCacheProperties = [
-    '^action$', '^action_.*$', '^button$', '^button_left$', '^button_right$', '^click$', '^forgotten$', '^keyerror$',
-    '^step_size$', '^transition_time$', '^group_list$', '^group_capacity$', '^no_occupancy_since$',
-    '^step_mode$', '^transition_time$', '^duration$', '^elapsed$', '^from_side$', '^to_side$',
+    'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
+    'step_size', 'transition_time', 'group_list', 'group_capacity', 'no_occupancy_since',
+    'step_mode', 'transition_time', 'duration', 'elapsed', 'from_side', 'to_side',
 ];
 
 class State {
@@ -74,17 +75,14 @@ class State {
     set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
-        const result = {...toState};
+        const newCache = {...toState};
+        const entityDontCacheProperties = entity.options.filtered_cache || [];
 
-        for (const property of Object.keys(toState)) {
-            if (dontCacheProperties.find((p) => property.match(p))) {
-                delete toState[property];
-            }
-        }
+        utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
 
-        this.state[entity.ID] = toState;
+        this.state[entity.ID] = newCache;
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
-        return result;
+        return toState;
     }
 
     remove(ID: string | number): void {

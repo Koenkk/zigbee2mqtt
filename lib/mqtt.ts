@@ -10,6 +10,10 @@ export default class MQTT {
     private connectionTimer: NodeJS.Timeout;
     private client: mqtt.MqttClient;
     private eventBus: EventBus;
+    private initialConnect = true;
+    private republishRetainedTimer: NodeJS.Timer;
+    private retainedMessages: {[s: string]: {payload: string, options: MQTTOptions,
+        skipLog: boolean, skipReceive: boolean, topic: string, base: string}} = {};
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -94,8 +98,20 @@ export default class MQTT {
         }, utils.seconds(10));
 
         logger.info('Connected to MQTT server');
+
+        if (this.initialConnect) {
+            await this.publishStateOnline();
+        } else {
+            this.republishRetainedTimer = setTimeout(() => {
+                // Republish retained messages in case MQTT broker does not persist them.
+                // https://github.com/Koenkk/zigbee2mqtt/issues/9629
+                Object.values(this.retainedMessages).forEach((e) =>
+                    this.publish(e.topic, e.payload, e.options, e.base, e.skipLog, e.skipReceive));
+            }, 2000);
+        }
+
+        this.initialConnect = false;
         this.subscribe(`${settings.get().mqtt.base_topic}/#`);
-        await this.publishStateOnline();
     }
 
     async publishStateOnline(): Promise<void> {
@@ -121,6 +137,11 @@ export default class MQTT {
             logger.debug(`Received MQTT message on '${topic}' with data '${message}'`);
             this.eventBus.emitMQTTMessage({topic, message: message + ''});
         }
+
+        if (this.republishRetainedTimer && topic == `${settings.get().mqtt.base_topic}/bridge/state`) {
+            clearTimeout(this.republishRetainedTimer);
+            this.republishRetainedTimer = null;
+        }
     }
 
     isConnected(): boolean {
@@ -135,6 +156,15 @@ export default class MQTT {
 
         if (skipReceive) {
             this.publishedTopics.add(topic);
+        }
+
+        if (options.retain) {
+            if (payload) {
+                this.retainedMessages[topic] =
+                    {payload, options, skipReceive, skipLog, topic: topic.substring(base.length + 1), base};
+            } else {
+                delete this.retainedMessages[topic];
+            }
         }
 
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: {...defaultOptions, ...options}});
