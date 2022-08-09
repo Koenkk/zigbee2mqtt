@@ -520,6 +520,7 @@ export default class HomeAssistant extends Extension {
                 garage_door_contact: {device_class: 'garage_door', payload_on: false, payload_off: true},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
                 expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
+                flip_indicator_light: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 gas: {device_class: 'gas'},
                 invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
