@@ -794,39 +794,42 @@ export default class HomeAssistant extends Extension {
                 week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
             };
 
+            const valueTemplate = firstExpose.access & ACCESS_STATE ?
+                `{{ value_json.${firstExpose.property} }}` : undefined;
+
             if (firstExpose.access & ACCESS_STATE) {
                 discoveryEntries.push({
                     type: 'sensor',
                     object_id: firstExpose.property,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: valueTemplate,
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
                         ...lookup[firstExpose.name],
                     },
                 });
+            }
 
-                /**
-                 * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discovered, this is to avoid
-                 * breaking changes for sensors already existing in HA (legacy).
-                 */
-                if ((firstExpose.access & ACCESS_SET)) {
-                    discoveryEntries.push({
-                        type: 'select',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            value_template: `{{ value_json.${firstExpose.property} }}`,
-                            state_topic: true,
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExpose.property,
-                            options: firstExpose.values.map((v) => v.toString()),
-                            ...lookup[firstExpose.name],
-                        },
-                    });
-                }
+            /**
+             * If enum attribute has SET access then expose as SELECT entity too.
+             * Note: currently both sensor and select are discovered, this is to avoid
+             * breaking changes for sensors already existing in HA (legacy).
+             */
+            if ((firstExpose.access & ACCESS_SET)) {
+                discoveryEntries.push({
+                    type: 'select',
+                    object_id: firstExpose.property,
+                    mockProperties: [], // Already mocked above in case access STATE is supported
+                    discovery_payload: {
+                        value_template: valueTemplate,
+                        state_topic: !!(firstExpose.access & ACCESS_STATE),
+                        command_topic_prefix: endpoint,
+                        command_topic: true,
+                        command_topic_postfix: firstExpose.property,
+                        options: firstExpose.values.map((v) => v.toString()),
+                        ...lookup[firstExpose.name],
+                    },
+                });
             }
         } else if (firstExpose.type === 'text' || firstExpose.type === 'composite') {
             if (firstExpose.access & ACCESS_STATE) {
