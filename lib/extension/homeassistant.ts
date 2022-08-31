@@ -282,6 +282,15 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.fan_mode_state_topic = true;
             }
 
+            const swingMode = firstExpose.features.find((f) => f.name === 'swing_mode');
+            if (swingMode) {
+                discoveryEntry.discovery_payload.swing_modes = swingMode.values;
+                discoveryEntry.discovery_payload.swing_mode_command_topic = true;
+                discoveryEntry.discovery_payload.swing_mode_state_template =
+                    `{{ value_json.${swingMode.property} }}`;
+                discoveryEntry.discovery_payload.swing_mode_state_topic = true;
+            }
+
             const preset = firstExpose.features.find((f) => f.name === 'preset');
             if (preset) {
                 discoveryEntry.discovery_payload.preset_modes = preset.values;
@@ -1223,6 +1232,14 @@ export default class HomeAssistant extends Extension {
 
             if (payload.fan_mode_command_topic) {
                 payload.fan_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
+            }
+
+            if (payload.swing_mode_state_topic) {
+                payload.swing_mode_state_topic = stateTopic;
+            }
+
+            if (payload.swing_mode_command_topic) {
+                payload.swing_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/swing_mode`;
             }
 
             if (payload.percentage_state_topic) {
