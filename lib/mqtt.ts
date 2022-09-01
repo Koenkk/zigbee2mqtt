@@ -98,10 +98,9 @@ export default class MQTT {
         }, utils.seconds(10));
 
         logger.info('Connected to MQTT server');
+        await this.publishStateOnline();
 
-        if (this.initialConnect) {
-            await this.publishStateOnline();
-        } else {
+        if (!this.initialConnect) {
             this.republishRetainedTimer = setTimeout(() => {
                 // Republish retained messages in case MQTT broker does not persist them.
                 // https://github.com/Koenkk/zigbee2mqtt/issues/9629
