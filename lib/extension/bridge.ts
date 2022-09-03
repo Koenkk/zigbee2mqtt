@@ -256,6 +256,7 @@ export default class Bridge extends Extension {
 
         const value = typeof message === 'object' ? message.value : message;
         await this.zigbee.addInstallCode(value);
+        logger.info('Successfully added new install code');
         return utils.getResponse(message, {value}, null);
     }
 
