@@ -214,6 +214,7 @@ const mock = {
     backup: jest.fn(),
     isStopping: jest.fn(),
     permitJoin: jest.fn(),
+    addInstallCode: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     getNetworkParameters: jest.fn().mockReturnValue({panID: 0x162a, extendedPanID: [0, 11, 22], channel: 15}),
     on: (type, handler) => {
