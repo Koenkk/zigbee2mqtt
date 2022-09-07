@@ -4,6 +4,9 @@ homeassistant: false
 # allow new devices to join
 permit_join: true
 
+# Enable a default frontend
+frontend: true
+
 # MQTT settings
 mqtt:
   # MQTT base topic for zigbee2mqtt MQTT messages
