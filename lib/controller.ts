@@ -144,8 +144,7 @@ class Controller {
         try {
             await this.mqtt.connect();
         } catch (error) {
-            logger.error(`MQTT failed to connect: ${error.message}`);
-            logger.error('Exiting...');
+            logger.error(`MQTT failed to connect, exiting...`);
             await this.zigbee.stop();
             await this.exit(1);
         }
