@@ -371,6 +371,7 @@ export default class HomeAssistant extends Extension {
 
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'cover') {
+            const state = exposes.find((expose) => expose.features.find((e) => e.name === 'state'));
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
@@ -385,6 +386,7 @@ export default class HomeAssistant extends Extension {
                     command_topic_prefix: endpoint,
                     command_topic: true,
                     state_topic: true,
+                    value_template: `{{ value_json.${state.property} }}`,
                 },
             };
 
