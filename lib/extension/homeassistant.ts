@@ -371,9 +371,12 @@ export default class HomeAssistant extends Extension {
 
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'cover') {
-            const state = exposes.find((expose) => expose.features.find((e) => e.name === 'state'));
-            const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
-            const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
+            const state = exposes.find((expose) => expose.features.find((e) => e.name === 'state'))
+                ?.features.find((f) => f.name === 'state');
+            const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'))
+                ?.features.find((f) => f.name === 'position');
+            const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
+                ?.features.find((f) => f.name === 'tilt');
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
             const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
@@ -413,7 +416,7 @@ export default class HomeAssistant extends Extension {
                     `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
                     `opening {% endif %} {% endif %}`;
             } else {
-                discoveryEntry.discovery_payload.value_template = `{{ value_json.${state.property} }}`,
+                discoveryEntry.discovery_payload.value_template = `{{ value_json.${getProperty(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
@@ -423,21 +426,19 @@ export default class HomeAssistant extends Extension {
             }
 
             if (position) {
-                const p = position.features.find((f) => f.name === 'position');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
-                    position_template: `{{ value_json.${getProperty(p)} }}`,
-                    set_position_template: `{ "${getProperty(p)}": {{ position }} }`,
+                    position_template: `{{ value_json.${getProperty(position)} }}`,
+                    set_position_template: `{ "${getProperty(position)}": {{ position }} }`,
                     set_position_topic: true,
                     position_topic: true,
                 };
             }
 
             if (tilt) {
-                const t = tilt.features.find((f) => f.name === 'tilt');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
                     tilt_command_topic: true,
                     tilt_status_topic: true,
-                    tilt_status_template: `{{ value_json.${getProperty(t)} }}`,
+                    tilt_status_template: `{{ value_json.${getProperty(tilt)} }}`,
                 };
             }
 
