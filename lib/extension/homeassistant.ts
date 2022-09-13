@@ -386,7 +386,6 @@ export default class HomeAssistant extends Extension {
                     command_topic_prefix: endpoint,
                     command_topic: true,
                     state_topic: true,
-                    value_template: `{{ value_json.${state.property} }}`,
                 },
             };
 
@@ -406,15 +405,15 @@ export default class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_opening = openingState;
                     discoveryEntry.discovery_payload.state_closing = closingState;
                     discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.motor_state %} ` +
-                        `${stoppedState} {% else %} {{ value_json.motor_state }} {% endif %}`;
+                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.${motorState.property} %}` +
+                        ` ${stoppedState} {% else %} {{ value_json.${motorState.property} }} {% endif %}`;
                 }
             } else if (running) {
-                discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} ` +
-                    `stopped {% else %} {% if value_json.position > 0 %} closing {% else %} ` +
+                discoveryEntry.discovery_payload.value_template = `{% if not value_json.${running.property} %} ` +
+                    `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
                     `opening {% endif %} {% endif %}`;
             } else {
-                discoveryEntry.discovery_payload.value_template = `{{ value_json.state }}`;
+                discoveryEntry.discovery_payload.value_template = `{{ value_json.${state.property} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
