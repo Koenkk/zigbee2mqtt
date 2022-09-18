@@ -384,6 +384,7 @@ export default class HomeAssistant extends Extension {
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
+            const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
@@ -391,48 +392,38 @@ export default class HomeAssistant extends Extension {
                 object_id: endpoint ? `cover_${endpoint}` : 'cover',
                 discovery_payload: {
                     command_topic_prefix: endpoint,
+                    command_topic: true,
+                    state_topic: true,
                 },
             };
 
-            // For covers only supporting tilt don't discover the command/state_topic, otherwise
-            // HA does not correctly reflect the state
-            // - https://github.com/home-assistant/core/issues/51793
-            // - https://github.com/Koenkk/zigbee-herdsman-converters/pull/2663
-            if (!tilt || (tilt && position)) {
-                discoveryEntry.discovery_payload.command_topic = true;
-                discoveryEntry.discovery_payload.state_topic = !position;
-                discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+            // For curtains that have `motor_state` lookup a possible state names and make this
+            // available for discovery. If the curtains only support the `running` value,
+            // then we use it anyway. The movement direction is calculated (assumed) in this case.
+            if (motorState) {
+                const openingLookup = ['opening', 'open', 'forward', 'up', 'rising'];
+                const closingLookup = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
+                const stoppedLookup = ['stopped', 'stop', 'pause', 'paused'];
 
-                // For curtains that have `motor_state` lookup a possible state names and make this
-                // available for discovery. If the curtains only support the `running` value,
-                // then we use it anyway. The movement direction is calculated (assumed) in this case.
-                if (motorState) {
-                    const openingLookup = ['opening', 'open', 'forward', 'up', 'rising'];
-                    const closingLookup = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
-                    const stoppedLookup = ['stopped', 'stop', 'pause', 'paused'];
+                const openingState = motorState.values.find((s) => openingLookup.includes(s.toLowerCase()));
+                const closingState = motorState.values.find((s) => closingLookup.includes(s.toLowerCase()));
+                const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
 
-                    const openingState = motorState.values.find((s) => openingLookup.includes(s.toLowerCase()));
-                    const closingState = motorState.values.find((s) => closingLookup.includes(s.toLowerCase()));
-                    const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
-
-                    if (openingState && closingState && stoppedState) {
-                        discoveryEntry.discovery_payload.state_topic = true;
-                        discoveryEntry.discovery_payload.state_opening = openingState;
-                        discoveryEntry.discovery_payload.state_closing = closingState;
-                        discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                        discoveryEntry.discovery_payload.value_template = `{% if not value_json.motor_state %} ` +
-                            `${stoppedState} {% else %} {{ value_json.motor_state }} {% endif %}`;
-                    }
-                } else {
-                    const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
-
-                    if (running) {
-                        discoveryEntry.discovery_payload.state_topic = true;
-                        discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} ` +
-                            `stopped {% else %} {% if value_json.position > 0 %} closing {% else %} ` +
-                            `opening {% endif %} {% endif %}`;
-                    }
+                if (openingState && closingState && stoppedState) {
+                    discoveryEntry.discovery_payload.state_opening = openingState;
+                    discoveryEntry.discovery_payload.state_closing = closingState;
+                    discoveryEntry.discovery_payload.state_stopped = stoppedState;
+                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.motor_state %} ` +
+                        `${stoppedState} {% else %} {{ value_json.motor_state }} {% endif %}`;
                 }
+            } else if (running) {
+                discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} ` +
+                    `stopped {% else %} {% if value_json.position > 0 %} closing {% else %} ` +
+                    `opening {% endif %} {% endif %}`;
+            } else {
+                discoveryEntry.discovery_payload.value_template = `{{ value_json.state }}`;
+                discoveryEntry.discovery_payload.state_open = 'OPEN';
+                discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
 
             if (!position && !tilt) {
@@ -538,6 +529,7 @@ export default class HomeAssistant extends Extension {
                 garage_door_contact: {device_class: 'garage_door', payload_on: false, payload_off: true},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
                 expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
+                flip_indicator_light: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 gas: {device_class: 'gas'},
                 invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
@@ -811,39 +803,42 @@ export default class HomeAssistant extends Extension {
                 week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
             };
 
+            const valueTemplate = firstExpose.access & ACCESS_STATE ?
+                `{{ value_json.${firstExpose.property} }}` : undefined;
+
             if (firstExpose.access & ACCESS_STATE) {
                 discoveryEntries.push({
                     type: 'sensor',
                     object_id: firstExpose.property,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        value_template: valueTemplate,
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
                         ...lookup[firstExpose.name],
                     },
                 });
+            }
 
-                /**
-                 * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discovered, this is to avoid
-                 * breaking changes for sensors already existing in HA (legacy).
-                 */
-                if ((firstExpose.access & ACCESS_SET)) {
-                    discoveryEntries.push({
-                        type: 'select',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            value_template: `{{ value_json.${firstExpose.property} }}`,
-                            state_topic: true,
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExpose.property,
-                            options: firstExpose.values.map((v) => v.toString()),
-                            ...lookup[firstExpose.name],
-                        },
-                    });
-                }
+            /**
+             * If enum attribute has SET access then expose as SELECT entity too.
+             * Note: currently both sensor and select are discovered, this is to avoid
+             * breaking changes for sensors already existing in HA (legacy).
+             */
+            if ((firstExpose.access & ACCESS_SET)) {
+                discoveryEntries.push({
+                    type: 'select',
+                    object_id: firstExpose.property,
+                    mockProperties: [], // Already mocked above in case access STATE is supported
+                    discovery_payload: {
+                        value_template: valueTemplate,
+                        state_topic: !!(firstExpose.access & ACCESS_STATE),
+                        command_topic_prefix: endpoint,
+                        command_topic: true,
+                        command_topic_postfix: firstExpose.property,
+                        options: firstExpose.values.map((v) => v.toString()),
+                        ...lookup[firstExpose.name],
+                    },
+                });
             }
         } else if (firstExpose.type === 'text' || firstExpose.type === 'composite') {
             if (firstExpose.access & ACCESS_STATE) {
