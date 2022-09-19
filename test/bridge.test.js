@@ -913,6 +913,47 @@ describe('Bridge', () => {
         );
     });
 
+    it('Add install code', async () => {
+        MQTT.publish.mockClear();
+
+        // By object
+        zigbeeHerdsman.addInstallCode.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/install_code/add', stringify({value: 'my-code'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.addInstallCode).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.addInstallCode).toHaveBeenCalledWith('my-code');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/install_code/add',
+            stringify({"data":{"value":'my-code'},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+
+        // By string
+        zigbeeHerdsman.addInstallCode.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/install_code/add', 'my-string-code');
+        await flushPromises();
+        expect(zigbeeHerdsman.addInstallCode).toHaveBeenCalledTimes(1);
+        expect(zigbeeHerdsman.addInstallCode).toHaveBeenCalledWith('my-string-code');
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/install_code/add',
+            stringify({"data":{"value":'my-code'},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Add install code error', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.addInstallCode.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/install_code/add', stringify({wrong: 'my-code'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.addInstallCode).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/install_code/add',
+            stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to touchlink identify specific device', async () => {
         MQTT.publish.mockClear();
         zigbeeHerdsman.touchlinkIdentify.mockClear();

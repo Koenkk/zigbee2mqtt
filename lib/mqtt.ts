@@ -83,7 +83,10 @@ export default class MQTT {
                 resolve();
             });
 
-            this.client.on('error', (err) => reject(err));
+            this.client.on('error', (err) => {
+                logger.error(`MQTT error: ${err.message}`);
+                reject(err);
+            });
             this.client.on('message', this.onMessage);
         });
     }

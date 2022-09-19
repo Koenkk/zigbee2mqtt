@@ -44,6 +44,7 @@ export default class Bridge extends Extension {
             'backup': this.backup,
             'touchlink/factory_reset': this.touchlinkFactoryReset,
             'touchlink/identify': this.touchlinkIdentify,
+            'install_code/add': this.installCodeAdd,
             'touchlink/scan': this.touchlinkScan,
             'health_check': this.healthCheck,
             'options': this.bridgeOptions,
@@ -246,6 +247,17 @@ export default class Bridge extends Extension {
         files.forEach((f) => zip.file(f[1], fs.readFileSync(f[0])));
         const base64Zip = await zip.generateAsync({type: 'base64'});
         return utils.getResponse(message, {zip: base64Zip}, null);
+    }
+
+    @bind async installCodeAdd(message: KeyValue | string): Promise<MQTTResponse> {
+        if (typeof message === 'object' && !message.hasOwnProperty('value')) {
+            throw new Error('Invalid payload');
+        }
+
+        const value = typeof message === 'object' ? message.value : message;
+        await this.zigbee.addInstallCode(value);
+        logger.info('Successfully added new install code');
+        return utils.getResponse(message, {value}, null);
     }
 
     @bind async permitJoin(message: KeyValue | string): Promise<MQTTResponse> {

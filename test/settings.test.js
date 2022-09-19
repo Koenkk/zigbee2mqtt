@@ -67,21 +67,41 @@ describe('Settings', () => {
     it('Should apply environment variables', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'csvtest';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'attribute_and_json';
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT'] = '["console"]';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
         process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
+        process.env['ZIGBEE2MQTT_CONFIG_MQTT_SERVER'] = 'testserver';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY'] = 'GENERATE';
+        process.env['ZIGBEE2MQTT_CONFIG_DEVICES'] = 'devices.yaml';
+
+        const contentDevices = {
+            '0x00158d00018255df': {
+                friendly_name: '0x00158d00018255df',
+                retain: false,
+            },
+        };
 
         write(configurationFile, {});
+        write(devicesFile, contentDevices);
+        expect(settings.validate()).toStrictEqual([]);
+
         const s = settings.get();
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
-        expected.devices = {};
+        expected.devices = {
+            '0x00158d00018255df': {
+                friendly_name: '0x00158d00018255df',
+                retain: false,
+            },
+        };
         expected.groups = {};
         expected.serial.disable_led = true;
         expected.advanced.soft_reset_timeout = 1;
-        expected.advanced.output = 'csvtest';
+        expected.advanced.log_output = ["console"];
+        expected.advanced.output = 'attribute_and_json';
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
+        expected.mqtt.server = 'testserver';
         expected.advanced.network_key = 'GENERATE';
 
         expect(s).toStrictEqual(expected);
