@@ -137,6 +137,7 @@ const TS0601_thermostat =  new Device('EndDevice', '0x0017882104a44559', 6544,41
 const ZNCZ02LM = new Device('Router', '0x0017880104e45524', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45524')], true, "Mains (single phase)", "lumi.plug");
 const GLEDOPTO_2ID = new Device('Router', '0x0017880104e45724', 6540,4151, [new Endpoint(11, [0,3,4,5,6,8,768], [], '0x0017880104e45724', [], {}, [], 49246, 528), new Endpoint(12, [0, 3, 4, 5, 6, 8, 768], [], '0x0017880104e45724', [], {}, [], 260, 258), new Endpoint(13, [4096], [4096], '0x0017880104e45724', [], {}, [], 49246, 57694), new Endpoint(15, [0, 3, 4, 5, 6, 8, 768], [], '0x0017880104e45724', [], {}, [], 49246, 256)], true, "Mains (single phase)", 'GL-C-007', false, 'GLEDOPTO');
 const QBKG03LM = new Device('Router', '0x0017880104e45542', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45542'), new Endpoint(2, [0, 6], [], '0x0017880104e45542'), new Endpoint(3, [0, 6], [], '0x0017880104e45542')], true, "Mains (single phase)", 'lumi.ctrl_neutral2');
+const zigfred_plus = new Device('Router', '0x0017880104e48888', 6589, 0x129C, [new Endpoint(5, [0, 3, 4, 5, 6, 8, 0x0300, 0xFC42], [0xFC42], '0x0017880104e48888'), new Endpoint(7, [0, 3, 4, 5, 6, 8], [], '0x0017880104e48888'), new Endpoint(8, [0, 3, 4, 5, 6, 8], [], '0x0017880104e48888'), new Endpoint(9, [0, 3, 4, 5, 6, 8], [], '0x0017880104e48888'), new Endpoint(10, [0, 3, 4, 5, 6, 8], [], '0x0017880104e48888'), new Endpoint(11, [0, 3, 4, 5, 0x0102], [], '0x0017880104e48888'), new Endpoint(12, [0, 3, 4, 5, 0x0102], [], '0x0017880104e48888')], true, "Mains (single phase)", 'ZFP-1A-CH', false, 'Siglis');
 
 const groups = {
     'group_1': new Group(1, []),
@@ -192,6 +193,7 @@ const devices = {
     'MKS-CM-W5': new Device('Router', '0x90fd9ffffe4b64ac', 33901, 4476, [new Endpoint(1, [0,4,3,5,10,258,13,19,6,1,1030,8,768,1027,1029,1026], [0,3,4,6,8,5], '0x90fd9ffffe4b64aa', [], {})], true, "Mains (single phase)", "qnazj70", false),
     'GL-S-007ZS': new Device('Router', '0x0017880104e45526', 6540,4151, [new Endpoint(1, [0], [], '0x0017880104e45526')], true, "Mains (single phase)", 'GL-S-007ZS'),
     'U202DST600ZB': new Device('Router', '0x0017880104e43559', 6540,4151, [new Endpoint(10, [0, 6], [], '0x0017880104e43559'), new Endpoint(11, [0, 6], [], '0x0017880104e43559')], true, "Mains (single phase)", 'U202DST600ZB'),
+    'zigfred_plus': zigfred_plus,
     '3157100': new Device('Router', '0x0017880104e44559', 6542,4151, [new Endpoint(1, [], [], '0x0017880104e44559')], true, "Mains (single phase)", '3157100', false, 'Centralite'),
     'J1': new Device('Router', '0x0017880104a44559', 6543,4151, [new Endpoint(1, [], [], '0x0017880104a44559')], true, "Mains (single phase)", 'J1 (5502)'),
     'TS0601_thermostat': TS0601_thermostat,

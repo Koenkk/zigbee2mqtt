@@ -153,6 +153,9 @@ function writeDefaultConfiguration() {
             '0x0017880104e43559': {
                 friendly_name: 'U202DST600ZB'
             },
+            '0x0017880104e48888': {
+                friendly_name: 'zigfred_plus'
+            },
             '0x0017880104e44559': {
                 friendly_name: '3157100_thermostat',
             },
