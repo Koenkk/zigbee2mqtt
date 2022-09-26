@@ -511,7 +511,6 @@ describe('Publish', () => {
         const device = zigbeeHerdsman.devices.zigfred_plus;
         const endpoint11 = device.getEndpoint(11);
         const endpoint12 = device.getEndpoint(12);
-        console.log(device);
         await MQTT.events.message('zigbee2mqtt/zigfred_plus/get', stringify({state: ''}));
         await flushPromises();
         expect(endpoint11.read).toHaveBeenCalledTimes(1);
