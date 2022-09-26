@@ -373,18 +373,20 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'cover') {
             const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
+            const state = firstExpose.features.find((f) => f.name === 'state');
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
             const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
-                mockProperties: [],
+                mockProperties: [{property: state.property, value: null}],
                 object_id: endpoint ? `cover_${endpoint}` : 'cover',
                 discovery_payload: {
                     command_topic_prefix: endpoint,
                     command_topic: true,
                     state_topic: true,
+                    state_topic_postfix: endpoint,
                 },
             };
 
@@ -880,9 +882,26 @@ export default class HomeAssistant extends Extension {
         const entity = this.zigbee.resolveEntity(data.entity.name);
         if (entity.isDevice() && this.discovered[entity.ieeeAddr]) {
             for (const objectID of this.discovered[entity.ieeeAddr].objectIDs) {
-                const match = /light_(.*)/.exec(objectID);
-                if (match) {
-                    const endpoint = match[1];
+                const lightMatch = /light_(.*)/.exec(objectID);
+                if (lightMatch) {
+                    const endpoint = lightMatch[1];
+                    const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
+                    const payload: KeyValue = {};
+                    for (const key of Object.keys(data.message)) {
+                        const keyMatch = endpointRegExp.exec(key);
+                        if (keyMatch) {
+                            payload[keyMatch[1]] = data.message[key];
+                        }
+                    }
+
+                    await this.mqtt.publish(
+                        `${data.entity.name}/${endpoint}`, stringify(payload), {},
+                    );
+                }
+
+                const coverMatch = /cover_(.*)/.exec(objectID);
+                if (coverMatch) {
+                    const endpoint = coverMatch[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
                     const payload: KeyValue = {};
                     for (const key of Object.keys(data.message)) {
