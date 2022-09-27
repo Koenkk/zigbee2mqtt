@@ -153,7 +153,7 @@ function writeDefaultConfiguration() {
             '0x0017880104e43559': {
                 friendly_name: 'U202DST600ZB'
             },
-            '0x0017880104e48888': {
+            '0xf4ce368a38be56a1': {
                 retain: false,
                 friendly_name: 'zigfred_plus'
             },
