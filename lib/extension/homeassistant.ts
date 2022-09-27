@@ -898,23 +898,6 @@ export default class HomeAssistant extends Extension {
                         `${data.entity.name}/${endpoint}`, stringify(payload), {},
                     );
                 }
-
-                const coverMatch = /cover_(.*)/.exec(objectID);
-                if (coverMatch) {
-                    const endpoint = coverMatch[1];
-                    const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
-                    const payload: KeyValue = {};
-                    for (const key of Object.keys(data.message)) {
-                        const keyMatch = endpointRegExp.exec(key);
-                        if (keyMatch) {
-                            payload[keyMatch[1]] = data.message[key];
-                        }
-                    }
-
-                    await this.mqtt.publish(
-                        `${data.entity.name}/${endpoint}`, stringify(payload), {},
-                    );
-                }
             }
         }
 

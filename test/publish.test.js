@@ -507,10 +507,8 @@ describe('Publish', () => {
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
 
-    it('Should handle get with multiple endpoints to postfix topic with coverWithPostfix config', async () => {
+    it('Should handle get with multiple cover endpoints', async () => {
         const device = zigbeeHerdsman.devices.zigfred_plus;
-        device.meta.testing = true;
-        device.save();
         const endpoint11 = device.getEndpoint(11);
         const endpoint12 = device.getEndpoint(12);
         await MQTT.events.message('zigbee2mqtt/zigfred_plus/get', stringify({state_l6: '', state_l7: ''}));
