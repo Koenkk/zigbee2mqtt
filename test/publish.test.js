@@ -511,17 +511,14 @@ describe('Publish', () => {
         const device = zigbeeHerdsman.devices.zigfred_plus;
         device.meta.testing = true;
         device.save();
-        const endpoint5 = device.getEndpoint(5);
         const endpoint11 = device.getEndpoint(11);
         const endpoint12 = device.getEndpoint(12);
-        await MQTT.events.message('zigbee2mqtt/zigfred_plus/get', stringify({state: ''}));
+        await MQTT.events.message('zigbee2mqtt/zigfred_plus/get', stringify({state_l6: '', state_l7: ''}));
         await flushPromises();
-        expect(endpoint5.read).toHaveBeenCalledTimes(1);
-        expect(endpoint5.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
-        // expect(endpoint11.read).toHaveBeenCalledTimes(1);
-        // expect(endpoint11.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
-        // expect(endpoint12.read).toHaveBeenCalledTimes(1);
-        // expect(endpoint12.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
+        expect(endpoint11.read).toHaveBeenCalledTimes(1);
+        expect(endpoint11.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
+        expect(endpoint12.read).toHaveBeenCalledTimes(1);
+        expect(endpoint12.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
     });
 
     it('Should log error when device has no such endpoint (via topic)', async () => {
