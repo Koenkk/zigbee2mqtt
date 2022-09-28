@@ -848,7 +848,7 @@ describe('HomeAssistant extension', () => {
             },
             "json_attributes_topic": "zigbee2mqtt/zigfred_plus/l6",
             "name": "zigfred_plus_l6",
-            "position_template": "{{ value_json.position_l6 }}",
+            "position_template": "{{ value_json.position }}",
             "position_topic": "zigbee2mqtt/zigfred_plus/l6",
             "set_position_template": "{ \"position_l6\": {{ position }} }",
             "set_position_topic": "zigbee2mqtt/zigfred_plus/l6/set",
@@ -856,7 +856,7 @@ describe('HomeAssistant extension', () => {
             "state_open": "OPEN",
             "state_topic": "zigbee2mqtt/zigfred_plus/l6",
             "tilt_command_topic": "zigbee2mqtt/zigfred_plus/l6/set/tilt",
-            "tilt_status_template": "{{ value_json.tilt_l6 }}",
+            "tilt_status_template": "{{ value_json.tilt }}",
             "tilt_status_topic": "zigbee2mqtt/zigfred_plus/l6",
             "unique_id": "0xf4ce368a38be56a1_cover_l6_zigbee2mqtt",
             "value_template": "{{ value_json.state }}"
