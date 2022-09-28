@@ -426,7 +426,7 @@ export default class HomeAssistant extends Extension {
             if (position) {
                 const p = position.features.find((f) => f.name === 'position');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
-                    position_template: `{{ value_json.${getProperty(p)} }}`,
+                    position_template: `{{ value_json.${featurePropertyWithoutEndpoint(p)} }}`,
                     set_position_template: `{ "${getProperty(p)}": {{ position }} }`,
                     set_position_topic: true,
                     position_topic: true,
@@ -438,7 +438,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
                     tilt_command_topic: true,
                     tilt_status_topic: true,
-                    tilt_status_template: `{{ value_json.${getProperty(t)} }}`,
+                    tilt_status_template: `{{ value_json.${featurePropertyWithoutEndpoint(t)} }}`,
                 };
             }
 
