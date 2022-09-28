@@ -883,8 +883,12 @@ export default class HomeAssistant extends Extension {
         if (entity.isDevice() && this.discovered[entity.ieeeAddr]) {
             for (const objectID of this.discovered[entity.ieeeAddr].objectIDs) {
                 const lightMatch = /light_(.*)/.exec(objectID);
-                if (lightMatch) {
-                    const endpoint = lightMatch[1];
+                const coverMatch = /cover_(.*)/.exec(objectID);
+
+                const match = lightMatch || coverMatch;
+
+                if (match) {
+                    const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
                     const payload: KeyValue = {};
                     for (const key of Object.keys(data.message)) {
