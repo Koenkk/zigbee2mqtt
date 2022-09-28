@@ -386,7 +386,6 @@ export default class HomeAssistant extends Extension {
                 ?.features.find((f) => f.name === 'position');
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
                 ?.features.find((f) => f.name === 'tilt');
-
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
             const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
