@@ -835,6 +835,39 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 0 },
             expect.any(Function),
         );
+
+        payload = {
+            "availability": [{ "topic": "zigbee2mqtt/bridge/state" }],
+            "command_topic": "zigbee2mqtt/zigfred_plus/l6/set",
+            "device": {
+                "identifiers": ["zigbee2mqtt_0xf4ce368a38be56a1"],
+                "manufacturer": "Siglis",
+                "model": "zigfred plus smart in-wall switch (ZFP-1A-CH)",
+                "name": "zigfred_plus",
+                "sw_version": null
+            },
+            "json_attributes_topic": "zigbee2mqtt/zigfred_plus/l6",
+            "name": "zigfred_plus_l6",
+            "position_template": "{{ value_json.position }}",
+            "position_topic": "zigbee2mqtt/zigfred_plus/l6",
+            "set_position_template": "{ \"position_l6\": {{ position }} }",
+            "set_position_topic": "zigbee2mqtt/zigfred_plus/l6/set",
+            "state_closed": "CLOSE",
+            "state_open": "OPEN",
+            "state_topic": "zigbee2mqtt/zigfred_plus/l6",
+            "tilt_command_topic": "zigbee2mqtt/zigfred_plus/l6/set/tilt",
+            "tilt_status_template": "{{ value_json.tilt }}",
+            "tilt_status_topic": "zigbee2mqtt/zigfred_plus/l6",
+            "unique_id": "0xf4ce368a38be56a1_cover_l6_zigbee2mqtt",
+            "value_template": "{{ value_json.state }}"
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/cover/0xf4ce368a38be56a1/cover_l6/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
     });
 
     it('Should discover devices with custom homeassistant_discovery_topic', async () => {

@@ -153,6 +153,23 @@ function writeDefaultConfiguration() {
             '0x0017880104e43559': {
                 friendly_name: 'U202DST600ZB'
             },
+            '0xf4ce368a38be56a1': {
+                retain: false,
+                friendly_name: 'zigfred_plus',
+                front_surface_enabled: 'true',
+                dimmer_1_enabled: 'true',
+                dimmer_1_dimming_enabled: 'true',
+                dimmer_2_enabled: 'true',
+                dimmer_2_dimming_enabled: 'true',
+                dimmer_3_enabled: 'true',
+                dimmer_3_dimming_enabled: 'true',
+                dimmer_4_enabled: 'true',
+                dimmer_4_dimming_enabled: 'true',
+                cover_1_enabled: 'true',
+                cover_1_tilt_enabled: 'true',
+                cover_2_enabled: 'true',
+                cover_2_tilt_enabled: 'true',
+            },
             '0x0017880104e44559': {
                 friendly_name: '3157100_thermostat',
             },
