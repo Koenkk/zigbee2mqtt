@@ -392,12 +392,13 @@ export default class HomeAssistant extends Extension {
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
-                mockProperties: [],
+                mockProperties: [{property: state.property, value: null}],
                 object_id: endpoint ? `cover_${endpoint}` : 'cover',
                 discovery_payload: {
                     command_topic_prefix: endpoint,
                     command_topic: true,
                     state_topic: true,
+                    state_topic_postfix: endpoint,
                 },
             };
 
@@ -425,7 +426,8 @@ export default class HomeAssistant extends Extension {
                     `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
                     `opening {% endif %} {% endif %}`;
             } else {
-                discoveryEntry.discovery_payload.value_template = `{{ value_json.${getProperty(state)} }}`,
+                discoveryEntry.discovery_payload.value_template =
+                    `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
@@ -436,7 +438,7 @@ export default class HomeAssistant extends Extension {
 
             if (position) {
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
-                    position_template: `{{ value_json.${getProperty(position)} }}`,
+                    position_template: `{{ value_json.${featurePropertyWithoutEndpoint(position)} }}`,
                     set_position_template: `{ "${getProperty(position)}": {{ position }} }`,
                     set_position_topic: true,
                     position_topic: true,
@@ -447,7 +449,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
                     tilt_command_topic: true,
                     tilt_status_topic: true,
-                    tilt_status_template: `{{ value_json.${getProperty(tilt)} }}`,
+                    tilt_status_template: `{{ value_json.${featurePropertyWithoutEndpoint(tilt)} }}`,
                 };
             }
 
@@ -891,7 +893,11 @@ export default class HomeAssistant extends Extension {
         const entity = this.zigbee.resolveEntity(data.entity.name);
         if (entity.isDevice() && this.discovered[entity.ieeeAddr]) {
             for (const objectID of this.discovered[entity.ieeeAddr].objectIDs) {
-                const match = /light_(.*)/.exec(objectID);
+                const lightMatch = /light_(.*)/.exec(objectID);
+                const coverMatch = /cover_(.*)/.exec(objectID);
+
+                const match = lightMatch || coverMatch;
+
                 if (match) {
                     const endpoint = match[1];
                     const endpointRegExp = new RegExp(`(.*)_${endpoint}`);

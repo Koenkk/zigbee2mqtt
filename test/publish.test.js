@@ -507,6 +507,18 @@ describe('Publish', () => {
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
 
+    it('Should handle get with multiple cover endpoints', async () => {
+        const device = zigbeeHerdsman.devices.zigfred_plus;
+        const endpoint11 = device.getEndpoint(11);
+        const endpoint12 = device.getEndpoint(12);
+        await MQTT.events.message('zigbee2mqtt/zigfred_plus/get', stringify({state_l6: '', state_l7: ''}));
+        await flushPromises();
+        expect(endpoint11.read).toHaveBeenCalledTimes(1);
+        expect(endpoint11.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
+        expect(endpoint12.read).toHaveBeenCalledTimes(1);
+        expect(endpoint12.read).toHaveBeenCalledWith('closuresWindowCovering', ['currentPositionLiftPercentage']);
+    });
+
     it('Should log error when device has no such endpoint (via topic)', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint2 = device.getEndpoint(2);
