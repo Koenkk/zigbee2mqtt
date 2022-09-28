@@ -427,7 +427,8 @@ export default class HomeAssistant extends Extension {
                     `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
                     `opening {% endif %} {% endif %}`;
             } else {
-                discoveryEntry.discovery_payload.value_template = `{{ value_json.${getProperty(state)} }}`,
+                discoveryEntry.discovery_payload.value_template =
+                    `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
