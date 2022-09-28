@@ -309,6 +309,7 @@ export function validate(): string[] {
 
 function read(): Settings {
     const s = yaml.read(file) as Settings;
+    applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
     // eslint-disable-next-line
@@ -416,7 +417,6 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 function getInternalSettings(): Partial<Settings> {
     if (!_settings) {
         _settings = read();
-        applyEnvironmentVariables(_settings);
     }
 
     return _settings;

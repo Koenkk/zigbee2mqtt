@@ -282,6 +282,15 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.fan_mode_state_topic = true;
             }
 
+            const swingMode = firstExpose.features.find((f) => f.name === 'swing_mode');
+            if (swingMode) {
+                discoveryEntry.discovery_payload.swing_modes = swingMode.values;
+                discoveryEntry.discovery_payload.swing_mode_command_topic = true;
+                discoveryEntry.discovery_payload.swing_mode_state_template =
+                    `{{ value_json.${swingMode.property} }}`;
+                discoveryEntry.discovery_payload.swing_mode_state_topic = true;
+            }
+
             const preset = firstExpose.features.find((f) => f.name === 'preset');
             if (preset) {
                 discoveryEntry.discovery_payload.preset_modes = preset.values;
@@ -371,9 +380,13 @@ export default class HomeAssistant extends Extension {
 
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'cover') {
-            const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'));
-            const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'));
-            const state = firstExpose.features.find((f) => f.name === 'state');
+            const state = exposes.find((expose) => expose.features.find((e) => e.name === 'state'))
+                ?.features.find((f) => f.name === 'state');
+            const position = exposes.find((expose) => expose.features.find((e) => e.name === 'position'))
+                ?.features.find((f) => f.name === 'position');
+            const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
+                ?.features.find((f) => f.name === 'tilt');
+
             const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
             const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
@@ -406,15 +419,15 @@ export default class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_opening = openingState;
                     discoveryEntry.discovery_payload.state_closing = closingState;
                     discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.motor_state %} ` +
-                        `${stoppedState} {% else %} {{ value_json.motor_state }} {% endif %}`;
+                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.${motorState.property} %}` +
+                        ` ${stoppedState} {% else %} {{ value_json.${motorState.property} }} {% endif %}`;
                 }
             } else if (running) {
-                discoveryEntry.discovery_payload.value_template = `{% if not value_json.running %} ` +
-                    `stopped {% else %} {% if value_json.position > 0 %} closing {% else %} ` +
+                discoveryEntry.discovery_payload.value_template = `{% if not value_json.${running.property} %} ` +
+                    `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
                     `opening {% endif %} {% endif %}`;
             } else {
-                discoveryEntry.discovery_payload.value_template = `{{ value_json.state }}`;
+                discoveryEntry.discovery_payload.value_template = `{{ value_json.${getProperty(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
             }
@@ -424,21 +437,19 @@ export default class HomeAssistant extends Extension {
             }
 
             if (position) {
-                const p = position.features.find((f) => f.name === 'position');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
-                    position_template: `{{ value_json.${featurePropertyWithoutEndpoint(p)} }}`,
-                    set_position_template: `{ "${getProperty(p)}": {{ position }} }`,
+                    position_template: `{{ value_json.${featurePropertyWithoutEndpoint(position)} }}`,
+                    set_position_template: `{ "${getProperty(position)}": {{ position }} }`,
                     set_position_topic: true,
                     position_topic: true,
                 };
             }
 
             if (tilt) {
-                const t = tilt.features.find((f) => f.name === 'tilt');
                 discoveryEntry.discovery_payload = {...discoveryEntry.discovery_payload,
                     tilt_command_topic: true,
                     tilt_status_topic: true,
-                    tilt_status_template: `{{ value_json.${featurePropertyWithoutEndpoint(t)} }}`,
+                    tilt_status_template: `{{ value_json.${featurePropertyWithoutEndpoint(tilt)} }}`,
                 };
             }
 
@@ -722,7 +733,7 @@ export default class HomeAssistant extends Extension {
                 discovery_payload: {
                     value_template: `{{ value_json.${firstExpose.property} }}`,
                     enabled_by_default: !allowsSet,
-                    ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
+                    unit_of_measurement: firstExpose.unit || '',
                     ...lookup[firstExpose.name],
                     ...extraAttrs,
                 },
@@ -1224,6 +1235,14 @@ export default class HomeAssistant extends Extension {
 
             if (payload.fan_mode_command_topic) {
                 payload.fan_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
+            }
+
+            if (payload.swing_mode_state_topic) {
+                payload.swing_mode_state_topic = stateTopic;
+            }
+
+            if (payload.swing_mode_command_topic) {
+                payload.swing_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/swing_mode`;
             }
 
             if (payload.percentage_state_topic) {

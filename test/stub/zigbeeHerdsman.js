@@ -203,7 +203,7 @@ const devices = {
     'temperature_sensor': new Device('EndDevice', '0x0017880104e45561', 6544,4151, [new Endpoint(1, [0,3,4,1026], [])], true, "Battery", "temperature.sensor"),
     'heating_actuator': new Device('Router', '0x0017880104e45562', 6545,4151, [new Endpoint(1, [0,3,4,513], [1026])], true, "Mains (single phase)", "heating.actuator"),
     'bj_scene_switch': new Device('EndDevice', '0xd85def11a1002caa', 50117, 4398, [new Endpoint(10, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa', [{target: bulb_color_2.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 768, name: 'lightingColorCtrl'}},]), new Endpoint(11, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa')], true, 'Battery', 'RB01', false, 'Busch-Jaeger', '20161222', '1.2.0'),
-
+    'GW003-AS-IN-TE-FC': new Device('Router', '0x0017548104a44669', 6545,4699, [new Endpoint(1, [3], [0,3,513,514], '0x0017548104a44669')], true, "Mains (single phase)", 'Adapter Zigbee FUJITSU'),
 }
 
 const mock = {
@@ -216,6 +216,7 @@ const mock = {
     backup: jest.fn(),
     isStopping: jest.fn(),
     permitJoin: jest.fn(),
+    addInstallCode: jest.fn(),
     getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     getNetworkParameters: jest.fn().mockReturnValue({panID: 0x162a, extendedPanID: [0, 11, 22], channel: 15}),
     on: (type, handler) => {

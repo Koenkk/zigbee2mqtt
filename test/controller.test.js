@@ -202,7 +202,8 @@ describe('Controller', () => {
         });
         await controller.start();
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect: addr not found');
+        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found');
+        expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect, exiting...');
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
     });
