@@ -756,6 +756,7 @@ export default class HomeAssistant extends Extension {
                         command_topic_prefix: endpoint,
                         command_topic_postfix: firstExpose.property,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
+                        ...(firstExpose.value_step && {step: firstExpose.value_step}),
                         ...lookup[firstExpose.name],
                     },
                 };
