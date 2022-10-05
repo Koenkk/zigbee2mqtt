@@ -665,6 +665,7 @@ export default class HomeAssistant extends Extension {
                 local_temperature: {device_class: 'temperature', state_class: 'measurement'},
                 max_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 max_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer'},
+                min_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer'},
                 min_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
                 occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
