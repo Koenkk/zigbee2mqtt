@@ -340,21 +340,21 @@ export default class HomeAssistant extends Extension {
                 discoveryEntries.push(discoveryEntry);
             }
 
-            const temperatureSensorSelect = firstExpose.features.find((f) => f.name === 'sensor');
-            if (temperatureSensorSelect) {
+            const tempSensorSelect = firstExpose.features.find((f) => f.name === 'sensor');
+            if (tempSensorSelect) {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'select',
-                    object_id: endpoint ? `${temperatureSensorSelect.name}_${endpoint}` : `${temperatureSensorSelect.name}`,
-                    mockProperties: [{property: temperatureSensorSelect.property, value:  null}],
+                    object_id: endpoint ? `${tempSensorSelect.name}_${endpoint}` : `${tempSensorSelect.name}`,
+                    mockProperties: [{property: tempSensorSelect.property, value: null}],
                     discovery_payload: {
-                        value_template: `{{ value_json.${temperatureSensorSelect.property} }}`,
+                        value_template: `{{ value_json.${tempSensorSelect.property} }}`,
                         command_topic: true,
                         command_topic_prefix: endpoint,
-                        command_topic_postfix: temperatureSensorSelect.property,
+                        command_topic_postfix: tempSensorSelect.property,
                         entity_category: 'config',
                         icon: 'mdi:home-thermometer',
                         state_topic: true,
-                        options: temperatureSensorSelect.values.map((v) => v.toString()),
+                        options: tempSensorSelect.values.map((v) => v.toString()),
                     },
                 };
                 discoveryEntries.push(discoveryEntry);
