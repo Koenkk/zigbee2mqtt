@@ -804,6 +804,7 @@ export default class HomeAssistant extends Extension {
                 sound_volume: {entity_category: 'config', icon: 'mdi:volume-high'},
                 status: {icon: 'mdi:state-machine'},
                 switch_type: {entity_category: 'config', icon: 'mdi:tune'},
+                temperature_sensor_select: {entity_category: 'config', icon: 'mdi:home-thermometer'},
                 thermostat_unit: {entity_category: 'config', icon: 'mdi:thermometer'},
                 volume: {entity_category: 'config', icon: 'mdi: volume-high'},
                 week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
