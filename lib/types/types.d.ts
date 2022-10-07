@@ -247,6 +247,8 @@ declare global {
             log_file: string,
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: KeyValue,
+            db_directory: string,
+            backup_directory: string,
             pan_id: number | 'GENERATE',
             ext_pan_id: number[],
             channel: number,
