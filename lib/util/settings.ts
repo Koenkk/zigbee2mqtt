@@ -80,6 +80,8 @@ const defaults: RecursivePartial<Settings> = {
         log_file: 'log.txt',
         log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
         log_syslog: {},
+        db_directory: data.getPath(),
+        backup_directory: data.getPath(),
         pan_id: 0x1a62,
         ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD],
         channel: 11,

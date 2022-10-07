@@ -32,9 +32,9 @@ export default class Zigbee {
                 networkKey: settings.get().advanced.network_key === 'GENERATE' ?
                     this.generateNetworkKey() : settings.get().advanced.network_key as number[],
             },
-            databasePath: data.joinPath('database.db'),
-            databaseBackupPath: data.joinPath('database.db.backup'),
-            backupPath: data.joinPath('coordinator_backup.json'),
+            databasePath: settings.get().advanced.db_directory.joinPath('database.db'),
+            databaseBackupPath: settings.get().advanced.backup_directory.joinPath('database.db.backup'),
+            backupPath: settings.get().advanced.backup_directory.joinPath('coordinator_backup.json'),
             serialPort: {
                 baudRate: settings.get().serial.baudrate,
                 rtscts: settings.get().serial.rtscts,
