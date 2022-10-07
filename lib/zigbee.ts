@@ -9,6 +9,7 @@ import Device from './model/device';
 import Group from './model/group';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
+import path from 'path';
 
 export default class Zigbee {
     private herdsman: Controller;
