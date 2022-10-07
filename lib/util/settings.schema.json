@@ -554,6 +554,20 @@
             }
           }
         },
+        "db_directory": {
+          "type": "string",
+          "title": "Database directory",
+          "requiresRestart": true,
+          "description": "Location of database directory",
+          "examples": ["data/"]
+        },
+        "backup_directory": {
+          "type": "string",
+          "title": "Backup directory",
+          "requiresRestart": true,
+          "description": "Location of backup directory",
+          "examples": ["data/"]
+        },
         "pan_id": {
           "oneOf": [{
               "type": "string",
