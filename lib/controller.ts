@@ -39,7 +39,7 @@ const AllExtensions = [
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
     (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => Promise<void>];
 
-class Controller {
+export class Controller {
     private eventBus: EventBus;
     private zigbee: Zigbee;
     private state: State;
@@ -49,7 +49,7 @@ class Controller {
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
 
-    constructor(restartCallback: () => void, exitCallback: (code: number) => void) {
+    constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
         logger.init();
         this.eventBus = new EventBus( /* istanbul ignore next */ (error) => {
             logger.error(`Error: ${error.message}`);
