@@ -314,6 +314,14 @@ function isEndpoint(obj: unknown): obj is zh.Endpoint {
     return obj.constructor.name.toLowerCase() === 'endpoint';
 }
 
+function flatten<Type>(arr: Type[][]): Type[] {
+    return [].concat(...arr);
+}
+
+function arrayUnique<Type>(arr: Type[]): Type[] {
+    return [...new Set(arr)];
+}
+
 function isZHGroup(obj: unknown): obj is zh.Group {
     return obj.constructor.name.toLowerCase() === 'group';
 }
@@ -357,5 +365,5 @@ export default {
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles, filterProperties,
+    getAllFiles, filterProperties, flatten, arrayUnique,
 };

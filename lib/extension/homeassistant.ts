@@ -111,7 +111,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
-        definition?: zhc.Definition, definitionExposes?: zhc.DefinitionExpose[]): DiscoveryEntry[] {
+        allExposes: zhc.DefinitionExpose[], definition?: zhc.Definition): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -171,10 +171,11 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.min_mireds = min;
             }
 
-            const effect = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'effect');
-            if (effect) {
+            const effects = utils.arrayUnique(utils.flatten(
+                allExposes.filter((e) => e.type === 'enum' && e.name === 'effect').map((e) => e.values)));
+            if (effects.length) {
                 discoveryEntry.discovery_payload.effect = true;
-                discoveryEntry.discovery_payload.effect_list = effect.values;
+                discoveryEntry.discovery_payload.effect_list = effects;
             }
 
             discoveryEntries.push(discoveryEntry);
@@ -386,9 +387,9 @@ export default class HomeAssistant extends Extension {
                 ?.features.find((f) => f.name === 'position');
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
                 ?.features.find((f) => f.name === 'tilt');
-            const motorState = definitionExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
+            const motorState = allExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
                 e.access === ACCESS_STATE);
-            const running = definitionExposes?.find((e) => e.type === 'binary' && e.name === 'running');
+            const running = allExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'cover',
@@ -983,7 +984,7 @@ export default class HomeAssistant extends Extension {
         if (isDevice) {
             const exposes = entity.exposes(); // avoid calling it hundred of times/s
             for (const expose of exposes) {
-                configs.push(...this.exposeToConfig([expose], 'device', entity.definition, exposes));
+                configs.push(...this.exposeToConfig([expose], 'device', exposes, entity.definition));
             }
 
             for (const mapping of legacyMapping) {
@@ -1000,10 +1001,13 @@ export default class HomeAssistant extends Extension {
             }
         } else { // group
             const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
+            const allExposes: zhc.DefinitionExpose[] = [];
 
             entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
                 .filter((d) => d.definition).forEach((device) => {
-                    for (const expose of device.exposes().filter((e) => groupSupportedTypes.includes(e.type))) {
+                    const exposes = device.exposes();
+                    allExposes.push(...exposes);
+                    for (const expose of exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
                         let key = expose.type;
                         if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
                             // A device can have multiple of these types which have to discovered seperately.
@@ -1018,7 +1022,7 @@ export default class HomeAssistant extends Extension {
                 });
 
             configs = [].concat(...Object.values(exposesByType)
-                .map((exposes) => this.exposeToConfig(exposes, 'group')));
+                .map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
         }
 
         if (isDevice && settings.get().advanced.last_seen !== 'disable') {
