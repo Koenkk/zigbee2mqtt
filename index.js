@@ -120,10 +120,16 @@ async function handleQuit() {
     }
 }
 
-if (process.argv.length === 3 && process.argv[2] === 'writehash') {
-    writeHash();
+if (require.main === module) {
+    if (process.argv.length === 3 && process.argv[2] === 'writehash') {
+        writeHash();
+    } else {
+        process.on('SIGINT', handleQuit);
+        process.on('SIGTERM', handleQuit);
+        start();
+    }    
 } else {
     process.on('SIGINT', handleQuit);
     process.on('SIGTERM', handleQuit);
-    start();
+    module.exports = { start };
 }
