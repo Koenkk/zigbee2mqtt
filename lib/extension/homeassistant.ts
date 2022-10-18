@@ -321,6 +321,9 @@ export default class HomeAssistant extends Extension {
 
                 if (tempCalibration.value_min != null) discoveryEntry.discovery_payload.min = tempCalibration.value_min;
                 if (tempCalibration.value_max != null) discoveryEntry.discovery_payload.max = tempCalibration.value_max;
+                if (tempCalibration.value_step != null) {
+                    discoveryEntry.discovery_payload.step = tempCalibration.value_step;
+                }
                 discoveryEntries.push(discoveryEntry);
             }
 
