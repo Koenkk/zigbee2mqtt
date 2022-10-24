@@ -28,5 +28,7 @@ RUN mkdir /app/data
 ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
 
+ENV NODE_ENV production
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
