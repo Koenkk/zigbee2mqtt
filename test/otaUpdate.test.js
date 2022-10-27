@@ -277,6 +277,28 @@ describe('OTA update', () => {
         );
     });
 
+    it('Should respond with NO_IMAGE_AVAILABLE when update available request fails', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        device.endpoints[0].commandResponse.mockClear();
+        const data = {imageType: 12382};
+        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        mockClear(mapped);
+        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('Nothing to find here')})
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        logger.info.mockClear();
+        await zigbeeHerdsman.events.message(payload);
+        await flushPromises();
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb',
+            stringify({"update_available":false,"update":{"state":"idle"}}),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should check for update when device requests it and it is not available', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.endpoints[0].commandResponse.mockClear();
