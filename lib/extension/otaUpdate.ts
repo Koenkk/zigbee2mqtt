@@ -112,13 +112,11 @@ export default class OTAUpdate extends Extension {
             }
         }
 
-        // Respond to the OTA request:
-        // - In case we don't support OTA: respond with NO_IMAGE_AVAILABLE (0x98) (so the client stops requesting OTAs)
-        // - In case we do support OTA: respond with ABORT (0x95) as we don't want to update now.
+        // Respond to the OTA request: respond with NO_IMAGE_AVAILABLE (0x98) (so the client stops requesting OTAs)
         const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster('genOta'));
         if (endpoint) {
             // Some devices send OTA requests without defining OTA cluster as input cluster.
-            await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: supportsOTA ? 0x95 : 0x98});
+            await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: 0x98});
         }
     }
 
