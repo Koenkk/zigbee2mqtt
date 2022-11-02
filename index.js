@@ -120,16 +120,16 @@ async function handleQuit() {
     }
 }
 
-if (require.main === module) {
+if (require.main === module || require.main.filename.endsWith(path.sep + 'cli.js')) {
     if (process.argv.length === 3 && process.argv[2] === 'writehash') {
         writeHash();
     } else {
         process.on('SIGINT', handleQuit);
         process.on('SIGTERM', handleQuit);
         start();
-    }    
+    }
 } else {
     process.on('SIGINT', handleQuit);
     process.on('SIGTERM', handleQuit);
-    module.exports = { start };
+    module.exports = {start};
 }
