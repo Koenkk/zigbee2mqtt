@@ -955,7 +955,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null, "update_available": null, "update": {"state": null}}),
+            stringify({"color":{"hue": 0, "saturation": 100, "h": 0, "s": 100}, "color_mode": "hs", "linkquality": null, "state": null, "update_available": null, "power_on_behavior":null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -971,7 +971,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null, "update_available": null, "update": {"state": null}}),
+            stringify({"color": {"x": 0.4576,"y": 0.41}, "color_mode": "xy", "linkquality": null,"state": null, "update_available": null, "power_on_behavior":null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
@@ -987,7 +987,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({"linkquality": null,"state": "ON", "update_available": null, "update": {"state": null}}),
+            stringify({"linkquality": null,"state": "ON", "update_available": null, "power_on_behavior": null, "update": {"state": null}}),
             { retain: false, qos: 0 },
             expect.any(Function),
         );
