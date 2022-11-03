@@ -3,6 +3,7 @@ on:
 
 name: GHCR cleanup
 
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest
