@@ -38,7 +38,6 @@
     "ajv": "^8.11.0",
     "bind-decorator": "^1.0.11",
     "connect-gzip-static": "2.1.1",
-    "core-js": "^3.26.0",
     "debounce": "^1.2.1",
     "deep-object-diff": "^1.1.7",
     "fast-deep-equal": "^3.1.3",
