@@ -245,9 +245,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.mode_state_topic = true;
                 discoveryEntry.discovery_payload.mode_state_template = `{{ value_json.${mode.property} }}`;
                 discoveryEntry.discovery_payload.modes = mode.values;
-                if (mode.access & ACCESS_SET) {
-                    discoveryEntry.discovery_payload.mode_command_topic = true;
-                }
+                discoveryEntry.discovery_payload.mode_command_topic = true;
             }
 
             const state = firstExpose.features.find((f) => f.name === 'running_state');
