@@ -554,8 +554,10 @@ export default class HomeAssistant extends Extension {
                 tamper: {device_class: 'tamper'},
                 temperature_scale: {entity_category: 'config', icon: 'mdi:temperature-celsius'},
                 test: {entity_category: 'diagnostic', icon: 'mdi:test-tube'},
+                valve_state: {device_class: 'opening'},
                 vibration: {device_class: 'vibration'},
                 water_leak: {device_class: 'moisture'},
+                window: {device_class: 'window'},
             };
 
             /**
@@ -615,6 +617,8 @@ export default class HomeAssistant extends Extension {
                 battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery2: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement'},
+                boost_heating_countdown: {device_class: 'duration'},
+                boost_heating_countdown_time_set: {entity_category: 'config', icon: 'mdi:timer'},
                 boost_time: {entity_category: 'config', icon: 'mdi:timer'},
                 calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
                 calibration_time: {entity_category: 'config', icon: 'mdi:wrench-clock'},
@@ -667,10 +671,10 @@ export default class HomeAssistant extends Extension {
                     state_class: 'measurement',
                 },
                 local_temperature: {device_class: 'temperature', state_class: 'measurement'},
-                max_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
-                max_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer'},
-                min_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer'},
-                min_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                max_temperature: {entity_category: 'config', icon: 'mdi:thermometer-high'},
+                max_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer-high'},
+                min_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer-low'},
+                min_temperature: {entity_category: 'config', icon: 'mdi:thermometer-low'},
                 measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
                 occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 pm10: {device_class: 'pm10', state_class: 'measurement'},
@@ -855,6 +859,7 @@ export default class HomeAssistant extends Extension {
             if (firstExpose.access & ACCESS_STATE) {
                 const lookup: {[s: string]: KeyValue} = {
                     action: {icon: 'mdi:gesture-double-tap'},
+                    programming_mode: {icon: 'mdi:calendar-clock'},
                 };
 
                 const discoveryEntry: DiscoveryEntry = {
