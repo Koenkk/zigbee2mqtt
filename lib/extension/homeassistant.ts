@@ -1082,6 +1082,23 @@ export default class HomeAssistant extends Extension {
                 },
             };
             configs.push(updateAvailableSensor);
+            const updateSensor: DiscoveryEntry = {
+                type: 'update',
+                object_id: 'update',
+                mockProperties: [{property: 'update', value: {state: null}}],
+                discovery_payload: {
+                    entity_picture: 'https://github.com/Koenkk/zigbee2mqtt/raw/master/images/logo.png',
+                    latest_version_topic: true,
+                    state_topic: true,
+                    device_class: 'firmware',
+                    command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
+                    payload_install: `{"id": "${entity.ieeeAddr}"}`,
+                    value_template: `{{ value_json['update']['installed_version'] }}`,
+                    latest_version_template: `{% if value_json['update']['state'] == "available" %}{{ 'newer' }}` +
+                        `{% else %}{{ value_json['update']['installed_version'] }}{% endif %}`,
+                },
+            };
+            configs.push(updateSensor);
         }
 
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
@@ -1193,7 +1210,7 @@ export default class HomeAssistant extends Extension {
             delete payload.command_topic_postfix;
             const commandTopic = `${baseTopic}/${commandTopicPrefix}set${commandTopicPostfix}`;
 
-            if (payload.command_topic) {
+            if (payload.command_topic && typeof payload.command_topic !== 'string') {
                 payload.command_topic = commandTopic;
             }
 
@@ -1246,6 +1263,10 @@ export default class HomeAssistant extends Extension {
 
             if (payload.fan_mode_state_topic) {
                 payload.fan_mode_state_topic = stateTopic;
+            }
+
+            if (payload.latest_version_topic) {
+                payload.latest_version_topic = stateTopic;
             }
 
             if (payload.fan_mode_command_topic) {
@@ -1438,6 +1459,10 @@ export default class HomeAssistant extends Extension {
             if (message.color.hasOwnProperty('saturation')) {
                 message.color.s = message.color.saturation;
             }
+        }
+
+        if (entity.isDevice() && entity.definition.ota) {
+            message['update']['installed_version'] = entity.zh.softwareBuildID;
         }
     }
 
