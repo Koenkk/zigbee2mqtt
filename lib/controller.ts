@@ -163,6 +163,8 @@ export class Controller {
 
         this.eventBus.onLastSeenChanged(this,
             (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
+
+        logger.info(`Zigbee2MQTT started!`);
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
