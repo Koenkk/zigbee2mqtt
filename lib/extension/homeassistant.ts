@@ -234,6 +234,19 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
+            const localTempEntry: DiscoveryEntry = {
+                type: 'sensor',
+                object_id: endpoint ? `local_temperature_${endpoint}` : 'local_temperature',
+                mockProperties: [],
+                discovery_payload: {
+                    value_template: `{{ value_json.${temperature.property} }}`,
+                    device_class: 'temperature',
+                    state_class: 'measurement',
+                    ...(temperature.unit && {unit_of_measurement: temperature.unit}),
+                },
+            };
+            discoveryEntries.push(localTempEntry);
+
             const mode = firstExpose.features.find((f) => f.name === 'system_mode');
             if (mode) {
                 if (mode.values.includes('sleep')) {
