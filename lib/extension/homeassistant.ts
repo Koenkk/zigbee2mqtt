@@ -236,7 +236,7 @@ export default class HomeAssistant extends Extension {
 
             const localTempEntry: DiscoveryEntry = {
                 type: 'sensor',
-                object_id: endpoint ? `local_temperature_${endpoint}` : 'local_temperature',
+                object_id: endpoint ? `${temperature.name}_${endpoint}` : `climate_${temperature.name}`,
                 mockProperties: [],
                 discovery_payload: {
                     value_template: `{{ value_json.${temperature.property} }}`,
