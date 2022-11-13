@@ -842,7 +842,7 @@
         "icon": {
           "type": "string",
           "title": "Icon",
-          "description": "The user-defined device icon for the frontend. It can be a link to an image (not a path to a file) or base64 encoded data URL like: image/svg+xml;base64,PHN2ZyB3aW....R0aD"
+          "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://MY.SITE/MODEL123.jpg) or base64 encoded data URL (e.g. image/svg+xml;base64,PHN2ZyB3aW....R0aD)"
         },
         "homeassistant": {
           "type": ["object", "null"],
