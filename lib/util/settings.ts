@@ -187,6 +187,20 @@ function loadSettingsWithDefaults(): void {
     _settingsWithDefaults.whitelist && _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
 }
 
+function parseValueRef(text: string): {filename: string, key: string} | null {
+    const match = /!(.*) (.*)/g.exec(text);
+    if (match) {
+        let filename = match[1];
+        // This is mainly for backward compatibility.
+        if (!filename.endsWith('.yaml') && !filename.endsWith('.yml')) {
+            filename += '.yaml';
+        }
+        return {filename, key: match[2]};
+    } else {
+        return null;
+    }
+}
+
 function write(): void {
     const settings = getInternalSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
@@ -203,9 +217,9 @@ function write(): void {
         ['frontend', 'auth_token'],
     ]) {
         if (actual[path[0]] && actual[path[0]][path[1]]) {
-            const match = /!(.*) (.*)/g.exec(actual[path[0]][path[1]]);
-            if (match) {
-                yaml.updateIfChanged(data.joinPath(`${match[1]}.yaml`), match[2], toWrite[path[0]][path[1]]);
+            const ref = parseValueRef(actual[path[0]][path[1]]);
+            if (ref) {
+                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[path[0]][path[1]]);
                 toWrite[path[0]][path[1]] = actual[path[0]][path[1]];
             }
         }
@@ -314,12 +328,9 @@ function read(): Settings {
     // Read !secret MQTT username and password if set
     // eslint-disable-next-line
     const interpetValue = (value: any): any => {
-        const re = /!(.*) (.*)/g;
-        const match = re.exec(value);
-        if (match) {
-            const file = data.joinPath(`${match[1]}.yaml`);
-            const key = match[2];
-            return yaml.read(file)[key];
+        const ref = parseValueRef(value);
+        if (ref) {
+            return yaml.read(data.joinPath(ref.filename))[ref.key];
         } else {
             return value;
         }
