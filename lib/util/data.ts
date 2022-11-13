@@ -14,7 +14,7 @@ function load(): void {
 load();
 
 function joinPath(file: string): string {
-    return path.join(dataPath, file);
+    return path.resolve(dataPath, file);
 }
 
 function getPath(): string {
