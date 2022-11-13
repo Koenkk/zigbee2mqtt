@@ -1461,7 +1461,7 @@ export default class HomeAssistant extends Extension {
             }
         }
 
-        if (entity.isDevice() && entity.definition.ota) {
+        if (entity.isDevice() && entity.definition?.ota && message.hasOwnProperty('update')) {
             message['update']['installed_version'] = entity.zh.softwareBuildID;
         }
     }
