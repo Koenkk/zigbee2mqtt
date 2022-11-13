@@ -190,7 +190,12 @@ function loadSettingsWithDefaults(): void {
 function parseValueRef(text: string): {filename: string, key: string} | null {
     const match = /!(.*) (.*)/g.exec(text);
     if (match) {
-        return {filename: match[1], key: match[2]};
+        let filename = match[1];
+        // This is mainly for backward compatibility.
+        if (!filename.endsWith('.yaml') && !filename.endsWith('.yml')) {
+            filename += '.yaml';
+        }
+        return {filename, key: match[2]};
     } else {
         return null;
     }

@@ -199,7 +199,7 @@ describe('Settings', () => {
             mqtt: {
                 server: '!secret server',
                 user: '!secret username',
-                password: '!secret password',
+                password: '!secret.yaml password',
             },
             advanced: {
                 network_key: '!secret network_key',
