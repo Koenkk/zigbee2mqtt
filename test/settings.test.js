@@ -203,6 +203,7 @@ describe('Settings', () => {
             },
             advanced: {
                 network_key: '!secret network_key',
+                pan_id: '!secret.yaml pan_id',
             }
         };
 
@@ -211,6 +212,7 @@ describe('Settings', () => {
             username: 'mysecretusername',
             password: 'mysecretpassword',
             network_key: [1,2,3],
+            pan_id: 0x1a66,
         };
 
         write(secretFile, contentSecret, false);
@@ -227,6 +229,7 @@ describe('Settings', () => {
 
         expect(settings.get().mqtt).toStrictEqual(expected);
         expect(settings.get().advanced.network_key).toStrictEqual([1,2,3]);
+        expect(settings.get().advanced.pan_id).toStrictEqual(0x1a66);
 
         settings.testing.write();
         expect(read(configurationFile)).toStrictEqual(contentConfiguration);
