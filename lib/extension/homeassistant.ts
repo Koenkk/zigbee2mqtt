@@ -855,7 +855,7 @@ export default class HomeAssistant extends Extension {
                     },
                 });
             }
-        } else if (firstExpose.type === 'text' || firstExpose.type === 'composite') {
+        } else if (firstExpose.type === 'text' || firstExpose.type === 'composite' || firstExpose.type === 'list') {
             if (firstExpose.access & ACCESS_STATE) {
                 const lookup: {[s: string]: KeyValue} = {
                     action: {icon: 'mdi:gesture-double-tap'},
