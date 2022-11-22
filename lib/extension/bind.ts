@@ -68,7 +68,8 @@ const reportClusters: {[s: string]:
 type PollOnMessage = {
     cluster: {[s: string]: {type: string, data: KeyValue}[]}
     read: {cluster: string, attributes: string[], attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}
-    manufacturerIDs: number[]
+    manufacturerIDs: number[],
+    manufacturerNames: string [],
 }[];
 
 const pollOnMessage: PollOnMessage = [
