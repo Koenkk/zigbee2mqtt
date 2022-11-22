@@ -102,6 +102,10 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
+        manufacturerNames: [
+            'GLEDOPTO',
+            'Trust International B.V.\u0000',
+        ],
     },
     {
         cluster: {
@@ -133,6 +137,10 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
+        manufacturerNames: [
+            'GLEDOPTO',
+            'Trust International B.V.\u0000',
+        ],
     },
     {
         cluster: {
@@ -159,6 +167,10 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
+        ],
+        manufacturerNames: [
+		    'GLEDOPTO',
+            'Trust International B.V.\u0000',
         ],
     },
 ];
@@ -456,7 +468,8 @@ export default class Bind extends Extension {
 
             for (const endpoint of toPoll) {
                 for (const poll of polls) {
-                    if (!poll.manufacturerIDs.includes(endpoint.getDevice().manufacturerID) ||
+                    if ((!poll.manufacturerIDs.includes(endpoint.getDevice().manufacturerID) &&
+                        !poll.manufacturerNames.includes(endpoint.getDevice().manufacturerName)) ||
                         !endpoint.supportsInputCluster(poll.read.cluster)) {
                         continue;
                     }
