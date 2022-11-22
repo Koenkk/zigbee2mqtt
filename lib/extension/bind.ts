@@ -169,7 +169,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
         ],
         manufacturerNames: [
-		    'GLEDOPTO',
+            'GLEDOPTO',
             'Trust International B.V.\u0000',
         ],
     },
