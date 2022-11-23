@@ -779,7 +779,8 @@ describe('HomeAssistant extension', () => {
                 "boost",
                 "complex",
                 "comfort",
-                "eco"
+                "eco",
+                "away"
             ],
             "preset_mode_value_template":"{{ value_json.preset }}",
             "preset_mode_state_topic":"zigbee2mqtt/TS0601_thermostat",
