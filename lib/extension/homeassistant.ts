@@ -868,7 +868,7 @@ export default class HomeAssistant extends Extension {
                     },
                 });
             }
-        } else if (firstExpose.type === 'text' || firstExpose.type === 'composite') {
+        } else if (firstExpose.type === 'text' || firstExpose.type === 'composite' || firstExpose.type === 'list') {
             if (firstExpose.access & ACCESS_STATE) {
                 const lookup: {[s: string]: KeyValue} = {
                     action: {icon: 'mdi:gesture-double-tap'},
@@ -1474,8 +1474,8 @@ export default class HomeAssistant extends Extension {
             }
         }
 
-        if (entity.isDevice() && entity.definition.ota) {
-            message['update']['installed_version'] = entity.zh.softwareBuildID;
+        if (entity.isDevice() && entity.definition?.ota && message.hasOwnProperty('update')) {
+            message['update']['installed_version'] = entity.zh.softwareBuildID || 'unknown';
         }
     }
 

@@ -140,7 +140,7 @@ describe('Frontend', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: null}}),
+            stringify({state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: "unknown"}}),
             { retain: false, qos: 0 },
             expect.any(Function)
         );
@@ -151,7 +151,7 @@ describe('Frontend', () => {
 
         // Received message on socket
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(1);
-        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: {state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: null}}}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bulb_color', payload: {state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: "unknown"}}}));
 
         // Shouldnt set when not ready
         mockWSClient.implementation.send.mockClear();
