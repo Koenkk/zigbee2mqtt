@@ -148,7 +148,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const diff: KeyValue = detailedDiff(settings.get(), message.options);
+        const diff: KeyValue = utils.clone(detailedDiff(settings.get(), message.options));
 
         // Remove any settings that are in the deleted.diff but not in the passed options
         const cleanupDeleted = (options: KeyValue, deleted: KeyValue): void => {
