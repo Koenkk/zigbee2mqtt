@@ -148,7 +148,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const diff: KeyValue = utils.clone(detailedDiff(settings.get(), message.options));
+        const diff: KeyValue = detailedDiff(settings.get(), message.options);
 
         // Remove any settings that are in the deleted.diff but not in the passed options
         const cleanupDeleted = (options: KeyValue, deleted: KeyValue): void => {
@@ -162,7 +162,8 @@ export default class Bridge extends Extension {
         };
         cleanupDeleted(message.options, diff.deleted);
 
-        const newSettings = objectAssignDeep({}, diff.added, diff.updated, diff.deleted);
+        const newSettings = objectAssignDeep({}, utils.clone(diff.added), utils.clone(diff.updated),
+            utils.clone(diff.deleted));
 
         // deep-object-diff converts arrays to objects, set original array back here
         const convertBackArray = (before: KeyValue, after: KeyValue): void => {
