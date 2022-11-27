@@ -359,11 +359,15 @@ function filterProperties(filter: string[], data: KeyValue): void {
     }
 }
 
+function clone(obj: KeyValue): KeyValue {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles, filterProperties, flatten, arrayUnique,
+    getAllFiles, filterProperties, flatten, arrayUnique, clone,
 };

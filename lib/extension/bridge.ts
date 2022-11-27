@@ -162,7 +162,9 @@ export default class Bridge extends Extension {
         };
         cleanupDeleted(message.options, diff.deleted);
 
-        const newSettings = objectAssignDeep({}, diff.added, diff.updated, diff.deleted);
+        // objectAssignDeep requires object prototype which is missing from detailedDiff, therefore clone
+        const newSettings = objectAssignDeep({}, utils.clone(diff.added), utils.clone(diff.updated),
+            utils.clone(diff.deleted));
 
         // deep-object-diff converts arrays to objects, set original array back here
         const convertBackArray = (before: KeyValue, after: KeyValue): void => {
