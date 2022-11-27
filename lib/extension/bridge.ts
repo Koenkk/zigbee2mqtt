@@ -162,6 +162,7 @@ export default class Bridge extends Extension {
         };
         cleanupDeleted(message.options, diff.deleted);
 
+        // objectAssignDeep requires object prototype which is missing from detailedDiff, therefore clone
         const newSettings = objectAssignDeep({}, utils.clone(diff.added), utils.clone(diff.updated),
             utils.clone(diff.deleted));
 
