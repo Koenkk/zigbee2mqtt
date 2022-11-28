@@ -419,7 +419,7 @@ describe('Receive', () => {
         const data = {instantaneousDemand:496,currentSummDelivered:[0,6648]}
 
         const SP600_NEW = zigbeeHerdsman.devices.SP600_NEW;
-        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_NEW, endpoint: SP600_NEW.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_NEW, endpoint: SP600_NEW.getEndpoint(1), type: 'attributeReport', linkquality: 10, meta: {zclTransactionSequenceNumber: 1}});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_NEW');
@@ -427,7 +427,7 @@ describe('Receive', () => {
 
         MQTT.publish.mockClear();
         const SP600_OLD = zigbeeHerdsman.devices.SP600_OLD;
-        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_OLD, endpoint: SP600_OLD.getEndpoint(1), type: 'attributeReport', linkquality: 10});
+        await zigbeeHerdsman.events.message({data, cluster: 'seMetering', device: SP600_OLD, endpoint: SP600_OLD.getEndpoint(1), type: 'attributeReport', linkquality: 10, meta: {zclTransactionSequenceNumber: 2}});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_OLD');
