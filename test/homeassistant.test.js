@@ -1388,7 +1388,7 @@ describe('HomeAssistant extension', () => {
             "payload_on":true,
             "payload_off":false,
             "value_template":`{{ value_json['update']['state'] == "available" }}`,
-            "enabled_by_default": true,
+            "enabled_by_default": false,
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
             "name":"bulb update available",

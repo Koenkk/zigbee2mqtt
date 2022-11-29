@@ -1076,7 +1076,7 @@ export default class HomeAssistant extends Extension {
                     payload_on: true,
                     payload_off: false,
                     value_template: `{{ value_json['update']['state'] == "available" }}`,
-                    enabled_by_default: true,
+                    enabled_by_default: false,
                     device_class: 'update',
                     entity_category: 'diagnostic',
                 },
