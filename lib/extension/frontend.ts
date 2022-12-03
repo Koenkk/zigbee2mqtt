@@ -21,8 +21,8 @@ export default class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
     private host = settings.get().frontend.host;
     private port = settings.get().frontend.port;
-    private ssl_cert = settings.get().frontend.ssl_cert;
-    private ssl_key = settings.get().frontend.ssl_key;
+    private sslCert = settings.get().frontend.ssl_cert;
+    private sslKey = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
     private retainedMessages = new Map();
     private server: http.Server;
@@ -38,10 +38,9 @@ export default class Frontend extends Extension {
     }
 
     private isHttpsConfigured():boolean {
-        if (this.ssl_cert && this.ssl_key &&
-            this.ssl_cert.length > 0 && this.ssl_key.length > 0) {
-            if (!fs.existsSync(this.ssl_cert) || !fs.existsSync(this.ssl_key)) {
-                logger.warn(`defined ssl_cert or ssl_key file path does not exists : '${this.ssl_cert}', server won't be secured.`); /* eslint-disable-line max-len */
+        if (this.sslCert && this.sslKey) {
+            if (!fs.existsSync(this.sslCert) || !fs.existsSync(this.sslKey)) {
+                logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`); /* eslint-disable-line max-len */
                 return false;
             }
             return true;
@@ -53,8 +52,8 @@ export default class Frontend extends Extension {
     override async start(): Promise<void> {
         if (this.isHttpsConfigured()) {
             const serverOptions = {
-                key: fs.readFileSync(this.ssl_key),
-                cert: fs.readFileSync(this.ssl_cert)};
+                key: fs.readFileSync(this.sslKey),
+                cert: fs.readFileSync(this.sslCert)};
             this.server = https.createServer(serverOptions, this.onRequest);
         } else {
             this.server = http.createServer(this.onRequest);
