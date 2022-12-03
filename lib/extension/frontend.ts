@@ -1,4 +1,5 @@
 import http from 'http';
+import https from 'https';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
 import logger from '../util/logger';
@@ -6,6 +7,7 @@ import frontend from 'zigbee2mqtt-frontend';
 import WebSocket from 'ws';
 import net from 'net';
 import url from 'url';
+import fs from 'fs';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -19,6 +21,8 @@ export default class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
     private host = settings.get().frontend.host;
     private port = settings.get().frontend.port;
+    private ssl_cert = settings.get().frontend.ssl_cert;
+    private ssl_key = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
     private retainedMessages = new Map();
     private server: http.Server;
@@ -33,8 +37,29 @@ export default class Frontend extends Extension {
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
     }
 
+    private isHttpsConfigured():boolean {
+        if (this.ssl_cert && this.ssl_key &&
+            this.ssl_cert.length > 0 && this.ssl_key.length > 0) {
+            if (!fs.existsSync(this.ssl_cert) || !fs.existsSync(this.ssl_key)) {
+                logger.warn(`defined ssl_cert or ssl_key file path does not exists : '${this.ssl_cert}', server won't be secured.`); /* eslint-disable-line max-len */
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+
     override async start(): Promise<void> {
-        this.server = http.createServer(this.onRequest);
+        if (this.isHttpsConfigured()) {
+            const serverOptions = {
+                key: fs.readFileSync(this.ssl_key),
+                cert: fs.readFileSync(this.ssl_cert)};
+            this.server = https.createServer(serverOptions, this.onRequest);
+        } else {
+            this.server = http.createServer(this.onRequest);
+        }
+
         this.server.on('upgrade', this.onUpgrade);
 
         /* istanbul ignore next */

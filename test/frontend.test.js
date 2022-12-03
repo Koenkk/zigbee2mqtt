@@ -7,12 +7,23 @@ const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = require('./lib/flushPromises');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const path = require("path");
 jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mockHTTP = {
     implementation: {
         listen: jest.fn(),
         on: (event, handler) => {mockHTTP.events[event] = handler},
+        close: jest.fn().mockImplementation((cb) => cb()),
+    },
+    variables: {},
+    events: {},
+};
+
+const mockHTTPS = {
+    implementation: {
+        listen: jest.fn(),
+        on: (event, handler) => {mockHTTPS.events[event] = handler},
         close: jest.fn().mockImplementation((cb) => cb()),
     },
     variables: {},
@@ -47,6 +58,13 @@ jest.mock('http', () => ({
     createServer: jest.fn().mockImplementation((onRequest) => {
         mockHTTP.variables.onRequest = onRequest;
         return mockHTTP.implementation;
+    }),
+}));
+
+jest.mock('https', () => ({
+    createServer: jest.fn().mockImplementation((onRequest) => {
+        mockHTTPS.variables.onRequest = onRequest;
+        return mockHTTPS.implementation;
     }),
 }));
 
@@ -98,7 +116,6 @@ describe('Frontend', () => {
         await controller.start();
         expect(mockNodeStatic.variables.path).toBe("my/dummy/path");
         expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
-
         const mockWSClient = {
             implementation: {
                 terminate: jest.fn(),
@@ -111,6 +128,46 @@ describe('Frontend', () => {
         expect(mockWSClient.implementation.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.implementation.close).toHaveBeenCalledTimes(1);
         expect(mockWS.implementation.close).toHaveBeenCalledTimes(1);
+        mockHTTP.implementation.listen.mockClear();
+        mockHTTPS.implementation.listen.mockClear();
+    });
+
+
+    it('Start/stop HTTPS valid', async () => {
+        settings.set(['frontend','ssl_cert'], path.join(__dirname,'assets','certs','dummy.crt'));
+        settings.set(['frontend','ssl_key'],  path.join(__dirname,'assets','certs','dummy.key'));
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        expect(mockHTTP.implementation.listen).not.toHaveBeenCalledWith(8081, "127.0.0.1");
+        expect(mockHTTPS.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
+        await controller.stop();
+        mockHTTP.implementation.listen.mockClear();
+        mockHTTPS.implementation.listen.mockClear();
+    });
+
+    it('Start/stop HTTPS invalid : missing config', async () => {
+        settings.set(['frontend','ssl_cert'], path.join(__dirname,'assets','certs','dummy.crt'));
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
+        expect(mockHTTPS.implementation.listen).not.toHaveBeenCalledWith(8081, "127.0.0.1");
+        await controller.stop();
+        mockHTTP.implementation.listen.mockClear();
+        mockHTTPS.implementation.listen.mockClear();
+
+    });
+
+    it('Start/stop HTTPS invalid : missing file', async () => {
+        settings.set(['frontend','ssl_cert'], 'filesNotExists.crt');
+        settings.set(['frontend','ssl_key'],  path.join(__dirname,'assets','certs','dummy.key'));
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
+        expect(mockHTTPS.implementation.listen).not.toHaveBeenCalledWith(8081, "127.0.0.1");
+        await controller.stop();
+        mockHTTP.implementation.listen.mockClear();
+        mockHTTPS.implementation.listen.mockClear();
+
     });
 
     it('Websocket interaction', async () => {
@@ -140,7 +197,7 @@ describe('Frontend', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
-            stringify({state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: "unknown"}}),
+             stringify({state: 'ON', power_on_behavior:null, linkquality: null, update_available: null, update: {state: null, installed_version: "unknown"}}),
             { retain: false, qos: 0 },
             expect.any(Function)
         );
