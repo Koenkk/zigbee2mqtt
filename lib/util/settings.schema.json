@@ -388,6 +388,18 @@
               "title": "URL",
               "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
               "requiresRestart": true
+            },
+            "ssl_cert" :  {
+              "type": ["string", "null"],
+              "title": "Certificate file path",
+              "description": "SSL Certificate file path for exposing HTTPS. The sibling property 'ssl_key' must be set for HTTPS to be activated.",
+              "requiresRestart": true
+            },
+            "ssl_key" :  {
+              "type": ["string", "null"],
+              "title": "key file path",
+              "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
+              "requiresRestart": true
             }
           }
         }

@@ -233,6 +233,8 @@ declare global {
             host?: string,
             port?: number,
             url?: string,
+            ssl_cert?: string,
+            ssl_key?: string,
         },
         devices?: {[s: string]: DeviceOptions},
         groups?: {[s: string]: GroupOptions},
