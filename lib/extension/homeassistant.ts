@@ -1463,6 +1463,7 @@ export default class HomeAssistant extends Extension {
 
         if (entity.isDevice() && entity.definition?.ota && message.hasOwnProperty('update')) {
             message['update']['installed_version'] = entity.zh.softwareBuildID ?
+                // Prepend with v: https://github.com/Koenkk/zigbee2mqtt/pull/15369
                 `v${entity.zh.softwareBuildID}` : 'unknown';
         }
     }
