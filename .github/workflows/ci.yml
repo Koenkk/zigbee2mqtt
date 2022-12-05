@@ -40,26 +40,55 @@ jobs:
       uses: docker/setup-buildx-action@v2
       with:
         version: latest
-    - name: Docker build dev
+    - name: Docker build dev (alpine)
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
         docker buildx build \
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --build-arg base=alpine \
           --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --target release \
           -f docker/Dockerfile \
           --push \
           -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
           .
-    - name: Docker build release
+    - name: Docker build dev (debian)
+      if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+      run: |
+        docker buildx build \
+          --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --build-arg base=debian \
+          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --target release \
+          -f docker/Dockerfile \
+          --push \
+          -t koenkk/zigbee2mqtt:latest-dev-debian -t ghcr.io/koenkk/zigbee2mqtt:latest-dev-debian \
+          .
+    - name: Docker build release (alpine)
       if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
       run: |
         TAG="$(git describe --tags)"
         docker buildx build \
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --build-arg base=alpine \
           --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --target release \
           -f docker/Dockerfile \
           --push \
           -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
+          .
+    - name: Docker build release (debian)
+      if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+      run: |
+        TAG="$(git describe --tags)"
+        docker buildx build \
+          --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --build-arg base=debian \
+          --platform linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          --target release \
+          -f docker/Dockerfile \
+          --push \
+          -t koenkk/zigbee2mqtt:latest-debian -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest-debian -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
           .
     - name: Publish to npm
       if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
