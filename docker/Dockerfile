@@ -11,6 +11,7 @@ COPY lib ./lib
 
 RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
     npm ci --production --no-audit --no-optional --no-update-notifier && \
+    npm rebuild --build-from-source && \
     apk del .buildtools
 
 # Release
