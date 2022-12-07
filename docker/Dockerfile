@@ -34,4 +34,3 @@ ENV NODE_ENV production
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
-
