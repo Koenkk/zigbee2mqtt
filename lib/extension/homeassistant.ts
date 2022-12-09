@@ -1200,7 +1200,10 @@ export default class HomeAssistant extends Extension {
                 payload.availability.push({topic: `${baseTopic}/availability`});
             }
 
-            if (!settings.get().advanced.legacy_availability_payload) {
+            if (entity.isDevice() && entity.options.disabled) {
+                // Mark disabled device always as unavailable
+                payload.availability.forEach((a: KeyValue) => a.value_template = '{{ false }}');
+            } else if (!settings.get().advanced.legacy_availability_payload) {
                 payload.availability.forEach((a: KeyValue) => a.value_template = '{{ value_json.state }}');
             }
 

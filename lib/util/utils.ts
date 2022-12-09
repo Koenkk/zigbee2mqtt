@@ -295,6 +295,8 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
     if (!enabledGlobal) return false;
 
+    if (entity.isDevice() && entity.options.disabled) return false;
+
     const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
     if (passlist.length > 0) {
         return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
