@@ -64,9 +64,11 @@ export default class Configure extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.devices(false)) {
-            await this.configure(device, 'started');
-        }
+        setImmediate(async () => {
+            for (const device of this.zigbee.devices(false)) {
+                await this.configure(device, 'started');
+            }
+        });
 
         this.eventBus.onDeviceJoined(this, (data) => {
             if (data.device.zh.meta.hasOwnProperty('configured')) {
