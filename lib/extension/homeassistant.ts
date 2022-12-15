@@ -1031,6 +1031,8 @@ export default class HomeAssistant extends Extension {
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
+            
+            // FIXME: add scene support
         }
 
         if (isDevice && settings.get().advanced.last_seen !== 'disable') {
