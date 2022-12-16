@@ -1906,6 +1906,60 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should discover with availability offline when device is disabled', async () => {
+        settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
+
+        await resetExtension();
+
+        const payload = {
+            "availability":[
+               {
+                  "topic":"zigbee2mqtt/bridge/state",
+                  "value_template": `{{ "offline" }}`,
+               }
+            ],
+            "brightness":true,
+            "brightness_scale":254,
+            "color_mode":true,
+            "command_topic":"zigbee2mqtt/bulb/set",
+            "device":{
+               "identifiers":[
+                  "zigbee2mqtt_0x000b57fffec6a5b2"
+               ],
+               "manufacturer":"IKEA",
+               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "name":"bulb",
+               "sw_version":null
+            },
+            "effect":true,
+            "effect_list":[
+               "blink",
+               "breathe",
+               "okay",
+               "channel_change",
+               "finish_effect",
+               "stop_effect"
+            ],
+            "json_attributes_topic":"zigbee2mqtt/bulb",
+            "max_mireds":454,
+            "min_mireds":250,
+            "name":"bulb",
+            "schema":"json",
+            "state_topic":"zigbee2mqtt/bulb",
+            "supported_color_modes":[
+               "color_temp"
+            ],
+            "unique_id":"0x000b57fffec6a5b2_light_zigbee2mqtt"
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/0x000b57fffec6a5b2/light/config',
+            stringify(payload),
+            { retain: true, qos: 0 },
+            expect.any(Function),
+        );
+    });
+
     it('Should discover last_seen when enabled', async () => {
         settings.set(['advanced', 'last_seen'], 'ISO_8601');
         await resetExtension();
