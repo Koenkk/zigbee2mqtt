@@ -36,6 +36,7 @@ describe('OTA update', () => {
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
+        await jest.runOnlyPendingTimers();
         await flushPromises();
     });
 

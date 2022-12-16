@@ -65,6 +65,7 @@ describe('Configure', () => {
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
+        await jest.runOnlyPendingTimers();
         await flushPromises();
     });
 
@@ -72,8 +73,9 @@ describe('Configure', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
-     coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
+        coordinatorEndpoint = zigbeeHerdsman.devices.coordinator.getEndpoint(1);
         await resetExtension();
+        await jest.runOnlyPendingTimers();
     });
 
     afterAll(async () => {
