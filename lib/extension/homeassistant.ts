@@ -1058,7 +1058,7 @@ export default class HomeAssistant extends Extension {
             const updateStateSensor: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: 'update_state',
-                mockProperties: [{property: 'update', value: {state: null}}],
+                mockProperties: [], // update is mocked below with updateSensor
                 discovery_payload: {
                     icon: 'mdi:update',
                     value_template: `{{ value_json['update']['state'] }}`,
@@ -1094,8 +1094,7 @@ export default class HomeAssistant extends Extension {
                     command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
                     payload_install: `{"id": "${entity.ieeeAddr}"}`,
                     value_template: `{{ value_json['update']['installed_version'] }}`,
-                    latest_version_template: `{% if value_json['update']['state'] == "available" %}{{ 'newer' }}` +
-                        `{% else %}{{ value_json['update']['installed_version'] }}{% endif %}`,
+                    latest_version_template: `{{ value_json['update']['latest_version'] }}`,
                 },
             };
             configs.push(updateSensor);
@@ -1461,8 +1460,8 @@ export default class HomeAssistant extends Extension {
             }
         }
 
-        if (entity.isDevice() && entity.definition?.ota && message.hasOwnProperty('update')) {
-            message['update']['installed_version'] = entity.zh.softwareBuildID || 'unknown';
+        if (entity.isDevice() && entity.definition?.ota && !message.update?.hasOwnProperty('installed_version')) {
+            message.update = {...message.update, installed_version: -1, latest_version: -1};
         }
     }
 
