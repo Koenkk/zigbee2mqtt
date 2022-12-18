@@ -14,7 +14,7 @@ const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
 const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
 
-describe('OTA update', () => {
+describe('onlythisOTA update', () => {
     let controller;
 
     let resetExtension = async () => {
@@ -72,6 +72,7 @@ describe('OTA update', () => {
         mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
             onUpdate(0, null);
             onUpdate(10, 3600.2123);
+            return 90;
         });
 
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
@@ -99,7 +100,7 @@ describe('OTA update', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"update_available":false,"update":{"state":"idle"}}),
+            stringify({"update_available":false,"update":{"state":"idle","installed_version":90,"latest_version":90}}),
             {retain: true, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -145,7 +146,7 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
 
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "bulb");
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
@@ -157,7 +158,7 @@ describe('OTA update', () => {
         );
 
         MQTT.publish.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "bulb");
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(2);
@@ -250,7 +251,7 @@ describe('OTA update', () => {
         const data = {imageType: 12382};
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
@@ -267,13 +268,13 @@ describe('OTA update', () => {
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
 
         logger.info.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"update_available":true,"update":{"state":"available"}}),
+            stringify({"update_available":true,"update":{"state":"available","installed_version":10,"latest_version":12}}),
             {retain: true, qos: 0}, expect.any(Function)
         );
     });
@@ -306,7 +307,7 @@ describe('OTA update', () => {
         const data = {imageType: 12382};
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 13, otaFileVersion: 13});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
@@ -317,7 +318,7 @@ describe('OTA update', () => {
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"update_available":false,"update":{"state":"idle"}}),
+            stringify({"update_available":false,"update":{"state":"idle","installed_version": 13, "latest_version": 13}}),
             {retain: true, qos: 0}, expect.any(Function)
         );
     });
@@ -328,7 +329,7 @@ describe('OTA update', () => {
         const data = {imageType: 12382};
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 13});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
@@ -373,6 +374,7 @@ describe('OTA update', () => {
         mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
             onUpdate(0, null);
             onUpdate(10, 3600);
+            return 91;
         });
 
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
@@ -415,7 +417,7 @@ describe('OTA update', () => {
         mockClear(mapped);
 
         logger.info.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(false);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 13, otaFileVersion: 13});
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
@@ -423,7 +425,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`No update available for 'bulb'`);
 
         logger.info.mockClear();
-        mapped.ota.isUpdateAvailable.mockReturnValueOnce(true);
+        mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 13, otaFileVersion: 15});
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(2);
