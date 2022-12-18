@@ -14,7 +14,7 @@ const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
 const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
 
-describe('onlythisOTA update', () => {
+describe('OTA update', () => {
     let controller;
 
     let resetExtension = async () => {
