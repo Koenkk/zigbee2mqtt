@@ -102,6 +102,17 @@ describe('Configure', () => {
         expectBulbConfigured();
     });
 
+    it('Should not re-configure disabled devices', async () => {
+        expectBulbConfigured();
+        const device = zigbeeHerdsman.devices.bulb;
+        await flushPromises();
+        mockClear(device);
+        settings.set(['devices', device.ieeeAddr, 'disabled'], true);
+        zigbeeHerdsman.events.deviceJoined({device});
+        await flushPromises();
+        expectBulbNotConfigured();
+    });
+
     it('Should reconfigure reporting on reconfigure event', async () => {
         expectBulbConfigured();
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);

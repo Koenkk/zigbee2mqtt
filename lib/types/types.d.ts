@@ -279,6 +279,7 @@ declare global {
 
     interface DeviceOptions {
         ID?: string,
+        disabled?: boolean,
         retention?: number,
         availability?: boolean | {timeout: number},
         optimistic?: boolean,

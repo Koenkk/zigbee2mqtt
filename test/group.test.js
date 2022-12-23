@@ -334,6 +334,22 @@ describe('Groups', () => {
         expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
     });
 
+    it('Should not publish state change when group changes state and device is disabled', async () => {
+        const device = zigbeeHerdsman.devices.bulb_color;
+        const endpoint = device.getEndpoint(1);
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(endpoint);
+        settings.set(['devices', device.ieeeAddr, 'disabled'], true);
+        settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
+        await resetExtension();
+
+        MQTT.publish.mockClear();
+        await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({"state":"ON"}), {"retain": false, qos: 0}, expect.any(Function));
+    });
+
     it('Should publish state change for group when members state change', async () => {
         // Created for https://github.com/Koenkk/zigbee2mqtt/issues/5725
         const device = zigbeeHerdsman.devices.bulb_color;

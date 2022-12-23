@@ -214,7 +214,7 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const devices = this.zigbee.devices().filter((d) => d.zh.type !== 'GreenPower');
+        const devices = this.zigbee.devices().filter((d) => d.zh.type !== 'GreenPower' && !d.options.disabled);
         const lqis: Map<Device, zh.LQI> = new Map();
         const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();

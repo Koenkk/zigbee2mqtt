@@ -142,6 +142,7 @@ export default class Groups extends Extension {
                 const groupsToPublish: Set<Group> = new Set();
                 for (const member of entity.zh.members) {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
+                    if (device.options.disabled) continue;
                     const exposes = device.exposes();
                     const memberPayload: KeyValue = {};
                     Object.keys(payload).forEach((key) => {

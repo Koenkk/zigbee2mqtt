@@ -292,4 +292,19 @@ describe('Networkmap', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
+
+    it('Should exclude disabled devices from networkmap', async () => {
+        settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
+        mock();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const expected = {"data":{"routes":true,"type":"raw","value":{"links":[{"depth":1,"linkquality":120,"lqi":120,"relationship":2,"routes":[],"source":{"ieeeAddr":"0x000b57fffec6a5b3","networkAddress":40399},"sourceIeeeAddr":"0x000b57fffec6a5b3","sourceNwkAddr":40399,"target":{"ieeeAddr":"0x00124b00120144ae","networkAddress":0},"targetIeeeAddr":"0x00124b00120144ae"},{"depth":1,"linkquality":92,"lqi":92,"relationship":2,"routes":[{"destinationAddress":6540,"nextHop":40369,"status":"ACTIVE"}],"source":{"ieeeAddr":"0x000b57fffec6a5b2","networkAddress":40369},"sourceIeeeAddr":"0x000b57fffec6a5b2","sourceNwkAddr":40369,"target":{"ieeeAddr":"0x00124b00120144ae","networkAddress":0},"targetIeeeAddr":"0x00124b00120144ae"},{"depth":1,"linkquality":92,"lqi":92,"relationship":2,"routes":[],"source":{"ieeeAddr":"0x0017880104e45511","networkAddress":1114},"sourceIeeeAddr":"0x0017880104e45511","sourceNwkAddr":1114,"target":{"ieeeAddr":"0x00124b00120144ae","networkAddress":0},"targetIeeeAddr":"0x00124b00120144ae"},{"depth":2,"linkquality":130,"lqi":130,"relationship":1,"routes":[],"source":{"ieeeAddr":"0x0017880104e45521","networkAddress":6538},"sourceIeeeAddr":"0x0017880104e45521","sourceNwkAddr":6538,"target":{"ieeeAddr":"0x0017880104e45559","networkAddress":6540},"targetIeeeAddr":"0x0017880104e45559"}],"nodes":[{"definition":null,"failed":[],"friendlyName":"Coordinator","ieeeAddr":"0x00124b00120144ae","lastSeen":1000,"modelID":null,"networkAddress":0,"type":"Coordinator"},{"definition":{"description":"Hue Go","model":"7146060PH","supports":"light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), effect, power_on_behavior, linkquality","vendor":"Philips"},"failed":[],"friendlyName":"bulb_color","ieeeAddr":"0x000b57fffec6a5b3","lastSeen":1000,"modelID":"LLC020","networkAddress":40399,"type":"Router"},{"definition":{"description":"Aqara double key wireless wall switch (2016 model)","model":"WXKG02LM_rev1","supports":"battery, action, voltage, power_outage_count, linkquality","vendor":"Xiaomi"},"friendlyName":"button_double_key","ieeeAddr":"0x0017880104e45521","lastSeen":1000,"modelID":"lumi.sensor_86sw2.es1","networkAddress":6538,"type":"EndDevice"},{"definition":null,"failed":["lqi","routingTable"],"friendlyName":"0x0017880104e45525","ieeeAddr":"0x0017880104e45525","lastSeen":1000,"manufacturerName":"Boef","modelID":"notSupportedModelID","networkAddress":6536,"type":"Router"},{"definition":{"description":"[CC2530 router](http://ptvo.info/cc2530-based-zigbee-coordinator-and-router-112/)","model":"CC2530.ROUTER","supports":"led, linkquality","vendor":"Custom devices (DiY)"},"failed":[],"friendlyName":"cc2530_router","ieeeAddr":"0x0017880104e45559","lastSeen":1000,"modelID":"lumi.router","networkAddress":6540,"type":"Router"},{"definition":{"description":"external","model":"external_converter_device","supports":"linkquality","vendor":"external"},"friendlyName":"0x0017880104e45511","ieeeAddr":"0x0017880104e45511","lastSeen":1000,"modelID":"external_converter_device","networkAddress":1114,"type":"EndDevice"}]}},"status":"ok"};
+        const actual = JSON.parse(call[1]);
+        expect(actual).toStrictEqual(expected);
+    });
 });

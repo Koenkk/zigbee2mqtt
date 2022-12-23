@@ -179,6 +179,15 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
 
+    it('Should not ping disabled devices', async () => {
+        settings.set(['devices', devices.bulb_color.ieeeAddr, 'disabled'], true);
+        await resetExtension();
+        MQTT.publish.mockClear();
+
+        await advancedTime(utils.minutes(15));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+    });
+
     it('Should allow to change availability timeout via avaiability options', async () => {
         settings.set(['availability'], {active: {timeout: 30}});
         await resetExtension();
