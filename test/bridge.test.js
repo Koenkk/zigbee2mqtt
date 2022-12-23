@@ -663,7 +663,7 @@ describe('Bridge', () => {
         expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": false, "transition": 1, "description": "this is my bulb"});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/options',
-            stringify({"data":{"from":{"retain": true, "description": "this is my bulb"},"to":{"retain": false,"transition":1, "description": "this is my bulb"}, "id":"bulb"},"status":"ok"}),
+            stringify({"data":{"from":{"retain": true, "description": "this is my bulb"},"to":{"retain": false,"transition":1, "description": "this is my bulb"}, "restart_required": false, "id":"bulb"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -677,7 +677,20 @@ describe('Bridge', () => {
         expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": true, "description": "this is my bulb"});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/options',
-            stringify({"data":{"from":{"retain": true, "qos": 1, "description": "this is my bulb"},"to":{"retain": true, "description": "this is my bulb"}, "id":"bulb"},"status":"ok"}),
+            stringify({"data":{"from":{"retain": true, "qos": 1, "description": "this is my bulb"},"to":{"retain": true, "description": "this is my bulb"}, "restart_required": false, "id":"bulb"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow change device options with restart required', async () => {
+        MQTT.publish.mockClear();
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": true, "description": "this is my bulb"});
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {disabled: true}, id: 'bulb'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toStrictEqual({"ID": "0x000b57fffec6a5b2", "friendly_name": "bulb", "retain": true, "disabled": true, "description": "this is my bulb"});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/options',
+            stringify({"data":{"from":{"retain": true, "description": "this is my bulb"},"to":{"disabled": true, "retain": true, "description": "this is my bulb"}, "restart_required": true, "id":"bulb"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -690,7 +703,20 @@ describe('Bridge', () => {
         expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": true, "transition": 1});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/options',
-            stringify({"data":{"from":{"retain": false},"to":{"retain": true,"transition":1}, "id":"group_1"},"status":"ok"}),
+            stringify({"data":{"from":{"retain": false},"to":{"retain": true,"transition":1}, "restart_required": false, "id":"group_1"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow change group options with restart required', async () => {
+        MQTT.publish.mockClear();
+        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false});
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/options', stringify({options: {off_state: 'all_members_off'}, id: 'group_1'}));
+        await flushPromises();
+        expect(settings.getGroup('group_1')).toStrictEqual({"ID": 1, "devices": [], "friendly_name": "group_1", "retain": false, "off_state": "all_members_off"});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/group/options',
+            stringify({"data":{"from":{"retain": false},"to":{"retain": false,"off_state":"all_members_off"}, "restart_required": true, "id":"group_1"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });

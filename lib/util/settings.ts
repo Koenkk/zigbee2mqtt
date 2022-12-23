@@ -3,7 +3,7 @@ import utils from './utils';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
 import yaml from './yaml';
-import Ajv from 'ajv';
+import Ajv, {ValidateFunction} from 'ajv';
 import schemaJson from './settings.schema.json';
 export let schema = schemaJson;
 // @ts-ignore
@@ -31,7 +31,10 @@ const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
 const ajvRestartRequired = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
-
+const ajvRestartRequiredDeviceOptions = new Ajv({allErrors: true})
+    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson.definitions.device);
+const ajvRestartRequiredGroupOptions = new Ajv({allErrors: true})
+    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson.definitions.group);
 const defaults: RecursivePartial<Settings> = {
     permit_join: false,
     external_converters: [],
@@ -667,21 +670,27 @@ export function removeGroup(IDorName: string | number): void {
     write();
 }
 
-export function changeEntityOptions(IDorName: string, newOptions: KeyValue): void {
+export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boolean {
     const settings = getInternalSettings();
     delete newOptions.friendly_name;
     delete newOptions.devices;
+    let validator: ValidateFunction;
     if (getDevice(IDorName)) {
         objectAssignDeep(settings.devices[getDevice(IDorName).ID], newOptions);
         utils.removeNullPropertiesFromObject(settings.devices[getDevice(IDorName).ID]);
+        validator = ajvRestartRequiredDeviceOptions;
     } else if (getGroup(IDorName)) {
         objectAssignDeep(settings.groups[getGroup(IDorName).ID], newOptions);
         utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID]);
+        validator = ajvRestartRequiredGroupOptions;
     } else {
         throw new Error(`Device or group '${IDorName}' does not exist`);
     }
 
     write();
+    validator(newOptions);
+    const restartRequired = validator.errors && !!validator.errors.find((e) => e.keyword === 'requiresRestart');
+    return restartRequired;
 }
 
 export function changeFriendlyName(IDorName: string, newName: string): void {

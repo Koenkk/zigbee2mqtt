@@ -797,7 +797,8 @@
         "disabled": {
           "type": "boolean",
           "title": "Disabled",
-          "description": "Disables the device (excludes device from network scans, availability and group state updates)"
+          "description": "Disables the device (excludes device from network scans, availability and group state updates)",
+          "requiresRestart": true
         },
         "retention": {
           "type": "number",
