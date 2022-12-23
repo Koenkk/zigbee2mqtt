@@ -104,6 +104,8 @@ declare global {
             access: number, property: string, unit?: string,
             value_min?: number, value_max?: number}
 
+        interface OtaUpdateAvailableResult {available: boolean, currentFileVersion: number, otaFileVersion: number}
+
         interface Definition {
             model: string,
             zigbeeModel: string[],
@@ -120,9 +122,10 @@ declare global {
             onEvent?: (type: string, data: KeyValue, device: zh.Device,
                 settings: KeyValue, state: KeyValue) => Promise<void>;
             ota?: {
-                isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue) => Promise<boolean>;
+                isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue)
+                    => Promise<OtaUpdateAvailableResult>;
                 updateToLatest: (device: zh.Device, logger: Logger,
-                    onProgress: (progress: number, remaining: number) => void) => Promise<void>;
+                    onProgress: (progress: number, remaining: number) => void) => Promise<number>;
             }
         }
 
