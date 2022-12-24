@@ -1,7 +1,7 @@
-FROM node:18-alpine3.16 as base
+FROM alpine:3.17.0 as base
 
 WORKDIR /app
-RUN apk add --no-cache tzdata eudev tini
+RUN apk add --no-cache tzdata eudev tini nodejs
 
 # Dependencies and build
 FROM base as dependencies_and_build
@@ -9,7 +9,7 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
+RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git npm && \
     npm ci --production --no-audit --no-optional --no-update-notifier && \
     # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
     npm rebuild --build-from-source && \
