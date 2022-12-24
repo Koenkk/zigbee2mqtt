@@ -18,7 +18,7 @@ jobs:
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
     - run: npm install zigbee-herdsman@${{ github.event.client_payload.version }} --save-exact
     - uses: peter-evans/create-pull-request@v4
       id: cpr

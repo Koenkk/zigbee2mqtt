@@ -20,7 +20,7 @@ jobs:
         ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
     - run: npx npm-check-updates -u -x connect-gzip-static # connect-gzip-static only supports node 16
     - run: npm install
     - uses: peter-evans/create-pull-request@v4
