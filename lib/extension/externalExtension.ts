@@ -56,7 +56,7 @@ export default class ExternalExtension extends Extension {
 
     @bind private async saveExtension(message: KeyValue): Promise<MQTTResponse> {
         const {name, code} = message;
-        const ModuleConstructor = utils.loadModuleFromText(code) as typeof Extension;
+        const ModuleConstructor = utils.loadModuleFromText(code,name) as typeof Extension;
         await this.loadExtension(ModuleConstructor);
         const basePath = this.getExtensionsBasePath();
         /* istanbul ignore else */
@@ -95,7 +95,7 @@ export default class ExternalExtension extends Extension {
     private loadUserDefinedExtensions(): void {
         const extensions = this.getListOfUserDefinedExtensions();
         extensions
-            .map(({code}) => utils.loadModuleFromText(code))
+            .map(({code,name}) => utils.loadModuleFromText(code,name))
             .map(this.loadExtension);
     }
 
