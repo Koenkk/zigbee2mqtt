@@ -134,8 +134,8 @@ function parseJSON(value: string, fallback: string): KeyValue | string {
     }
 }
 
-function loadModuleFromText(moduleCode: string): unknown {
-    const moduleFakePath = path.join(__dirname, 'externally-loaded.js');
+function loadModuleFromText(moduleCode: string, name?: string): unknown {
+    const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name || 'externally-loaded.js');
     const sandbox = {
         require: require,
         module: {},
