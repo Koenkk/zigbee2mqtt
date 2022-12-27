@@ -259,6 +259,7 @@ declare global {
             adapter_delay: number | null,
             cache_state: boolean,
             cache_state_persistent: boolean,
+            cache_state_persist_on_leave: boolean,
             cache_state_send_on_startup: boolean,
             last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' | 'epoch',
             elapsed: boolean,

@@ -623,6 +623,12 @@
           "description": "Persist cached state, only used when cache_state: true",
           "default": true
         },
+        "cache_state_persist_on_leave": {
+          "type": "boolean",
+          "title": "Persist cache state",
+          "description": "Persist cached state, only used when cache_state: true",
+          "default": false
+        },
         "cache_state_send_on_startup": {
           "type": "boolean",
           "title": "Send cached state on startup",

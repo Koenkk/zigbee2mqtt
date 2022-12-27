@@ -28,7 +28,10 @@ class State {
 
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
-        this.eventBus.onDeviceLeave(this, (data) => delete this.state[data.ieeeAddr]);
+        this.eventBus.onDeviceLeave(this, (data) => { 
+            if (!settings.get().advanced.cache_state_persist_on_leave)
+                delete this.state[data.ieeeAddr] 
+        });
     }
 
     stop(): void {
