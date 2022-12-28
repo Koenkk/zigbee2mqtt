@@ -36,6 +36,7 @@ class State {
         this.deleteTimer = setInterval(() => {
             const now = Date.now();
             Object.entries(this.pendingDeletion).forEach(([id, time]) => {
+                // eslint-disable-next-line max-len
                 logger.debug(`Pending delete state for ${id} is ${time >= now} ${new Date(this.pendingDeletion[id]).toISOString()}`);
                 if (time < now) {
                     delete this.state[id];
@@ -60,7 +61,8 @@ class State {
             } else {
                 // Delay before leaving, in case the device rejoins the network after a glitch
                 this.pendingDeletion[data.ieeeAddr] = Date.now() + leaveAfterSeconds * 1000;
-                logger.debug(`Pending delete state for ${data.ieeeAddr} as ${new Date(this.pendingDeletion[data.ieeeAddr])} (device left)`);
+                // eslint-disable-next-line max-len
+                logger.debug(`Pending delete state for ${data.ieeeAddr} as ${new Date(this.pendingDeletion[data.ieeeAddr]).toISOString()} (device left)`);
             }
         });
     }
