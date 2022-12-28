@@ -36,21 +36,31 @@ class State {
         this.deleteTimer = setInterval(() => {
             const now = Date.now();
             Object.entries(this.pendingDeletion).forEach(([id, time]) => {
-                if (time >= now) {
+                logger.debug(`Pending delete state for ${id} is ${time >= now} ${new Date(this.pendingDeletion[id]).toISOString()}`);
+                if (time < now) {
                     delete this.state[id];
                     delete this.pendingDeletion[id];
                 }
             });
         }, deleteInterval);
 
+        this.eventBus.onDeviceJoined(this, (data) => {
+            if (this.pendingDeletion[data.device.ieeeAddr]) {
+                logger.debug(`Pending delete state removed for ${data.device.ieeeAddr} (device joined)`);
+                delete this.pendingDeletion[data.device.ieeeAddr];
+            }
+        });
+
         this.eventBus.onDeviceLeave(this, (data) => {
             const leaveAfterSeconds = settings.get().advanced.cache_state_persist_on_leave;
             if (leaveAfterSeconds === 0) {
+                logger.debug(`Delete state immediately for ${data.ieeeAddr} (device left)`);
                 delete this.state[data.ieeeAddr];
                 delete this.pendingDeletion[data.ieeeAddr];
             } else {
                 // Delay before leaving, in case the device rejoins the network after a glitch
                 this.pendingDeletion[data.ieeeAddr] = Date.now() + leaveAfterSeconds * 1000;
+                logger.debug(`Pending delete state for ${data.ieeeAddr} as ${new Date(this.pendingDeletion[data.ieeeAddr])} (device left)`);
             }
         });
     }
