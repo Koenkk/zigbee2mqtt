@@ -6,6 +6,7 @@ import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
+const deleteInterval = 1000 * 15; // 15 seconds
 
 const dontCacheProperties = [
     'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
@@ -15,8 +16,10 @@ const dontCacheProperties = [
 
 class State {
     private state: {[s: string | number]: KeyValue} = {};
+    private pendingDeletion: { [ieeeAddress: string]: number; /* Time to really delete this device */ } = { };
     private file = data.joinPath('state.json');
     private timer: NodeJS.Timer = null;
+    private deleteTimer: NodeJS.Timer = null;
     private eventBus: EventBus;
 
     constructor(eventBus: EventBus) {
@@ -28,13 +31,36 @@ class State {
 
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
-        this.eventBus.onDeviceLeave(this, (data) => { 
-            if (!settings.get().advanced.cache_state_persist_on_leave)
-                delete this.state[data.ieeeAddr] 
+
+        // Check if we need to really removed cached states for devices that have left the network
+        this.deleteTimer = setInterval(() => {
+            const now = Date.now();
+            Object.entries(this.pendingDeletion).forEach(([id, time]) => {
+                if (time >= now) {
+                    delete this.state[id];
+                    delete this.pendingDeletion[id];
+                }
+            });
+        }, deleteInterval);
+
+        this.eventBus.onDeviceLeave(this, (data) => {
+            const leaveAfterSeconds = settings.get().advanced.cache_state_persist_on_leave;
+            if (leaveAfterSeconds === 0) {
+                delete this.state[data.ieeeAddr];
+                delete this.pendingDeletion[data.ieeeAddr];
+            } else {
+                // Delay before leaving, in case the device rejoins the network after a glitch
+                this.pendingDeletion[data.ieeeAddr] = Date.now() + leaveAfterSeconds * 1000;
+            }
         });
     }
 
     stop(): void {
+        // Force-delete any pendingDeletion states if the system is stopped
+        clearTimeout(this.deleteTimer);
+        Object.keys(this.pendingDeletion).forEach((pending) => delete this.state[pending]);
+        this.pendingDeletion = {};
+
         this.eventBus.removeListeners(this);
         clearTimeout(this.timer);
         this.save();
@@ -84,6 +110,8 @@ class State {
         utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
 
         this.state[entity.ID] = newCache;
+        delete this.pendingDeletion[entity.ID]; // The device is apparantly active again
+
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
         return toState;
     }

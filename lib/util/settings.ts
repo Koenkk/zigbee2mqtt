@@ -90,7 +90,7 @@ const defaults: RecursivePartial<Settings> = {
         adapter_delay: null,
         cache_state: true,
         cache_state_persistent: true,
-        cache_state_persist_on_leave: false,
+        cache_state_persist_on_leave: 0,
         cache_state_send_on_startup: true,
         last_seen: 'disable',
         elapsed: false,

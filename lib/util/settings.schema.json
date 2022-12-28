@@ -624,10 +624,10 @@
           "default": true
         },
         "cache_state_persist_on_leave": {
-          "type": "boolean",
-          "title": "Persist cache state",
-          "description": "Persist cached state, only used when cache_state: true",
-          "default": false
+          "type": "number",
+          "title": "Persist state after devices leave the network",
+          "description": "Keep device state in the cache for 'n' seconds when a devices leaves the network in case it rejoins. Defaults to 0 (remove immediately)",
+          "default": 0
         },
         "cache_state_send_on_startup": {
           "type": "boolean",
