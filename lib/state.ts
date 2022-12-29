@@ -6,7 +6,6 @@ import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
-const deleteInterval = 1000 * 15; // 15 seconds
 
 const dontCacheProperties = [
     'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
@@ -16,10 +15,9 @@ const dontCacheProperties = [
 
 class State {
     private state: {[s: string | number]: KeyValue} = {};
-    private pendingDeletion: { [ieeeAddress: string]: number; /* Time to really delete this device */ } = { };
+    private pendingDeletion: { [ieeeAddress: string]: true } = { };
     private file = data.joinPath('state.json');
     private timer: NodeJS.Timer = null;
-    private deleteTimer: NodeJS.Timer = null;
     private eventBus: EventBus;
 
     constructor(eventBus: EventBus) {
@@ -32,44 +30,19 @@ class State {
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
 
-        // Check if we need to really removed cached states for devices that have left the network
-        this.deleteTimer = setInterval(() => {
-            const now = Date.now();
-            Object.entries(this.pendingDeletion).forEach(([id, time]) => {
-                // eslint-disable-next-line max-len
-                logger.debug(`Pending delete state for ${id} is ${time >= now} ${new Date(this.pendingDeletion[id]).toISOString()}`);
-                if (time < now) {
-                    delete this.state[id];
-                    delete this.pendingDeletion[id];
-                }
-            });
-        }, deleteInterval);
-
         this.eventBus.onDeviceJoined(this, (data) => {
             if (this.pendingDeletion[data.device.ieeeAddr]) {
-                logger.debug(`Pending delete state removed for ${data.device.ieeeAddr} (device joined)`);
                 delete this.pendingDeletion[data.device.ieeeAddr];
             }
         });
 
         this.eventBus.onDeviceLeave(this, (data) => {
-            const leaveAfterSeconds = settings.get().advanced.cache_state_persist_on_leave;
-            if (leaveAfterSeconds === 0) {
-                logger.debug(`Delete state immediately for ${data.ieeeAddr} (device left)`);
-                delete this.state[data.ieeeAddr];
-                delete this.pendingDeletion[data.ieeeAddr];
-            } else {
-                // Delay before leaving, in case the device rejoins the network after a glitch
-                this.pendingDeletion[data.ieeeAddr] = Date.now() + leaveAfterSeconds * 1000;
-                // eslint-disable-next-line max-len
-                logger.debug(`Pending delete state for ${data.ieeeAddr} as ${new Date(this.pendingDeletion[data.ieeeAddr]).toISOString()} (device left)`);
-            }
+            this.pendingDeletion[data.ieeeAddr] = true;
         });
     }
 
     stop(): void {
-        // Force-delete any pendingDeletion states if the system is stopped
-        clearTimeout(this.deleteTimer);
+        // Remove any pendingDeletion states when the system is stopped
         Object.keys(this.pendingDeletion).forEach((pending) => delete this.state[pending]);
         this.pendingDeletion = {};
 
