@@ -15,12 +15,10 @@ const dontCacheProperties = [
 
 class State {
     private state: {[s: string | number]: KeyValue} = {};
-    private pendingDeletion: { [ieeeAddress: string]: true } = { };
     private file = data.joinPath('state.json');
     private timer: NodeJS.Timer = null;
-    private eventBus: EventBus;
 
-    constructor(eventBus: EventBus) {
+    constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
         this.eventBus = eventBus;
     }
 
@@ -30,21 +28,13 @@ class State {
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
 
-        this.eventBus.onDeviceJoined(this, (data) => {
-            if (this.pendingDeletion[data.device.ieeeAddr]) {
-                delete this.pendingDeletion[data.device.ieeeAddr];
-            }
-        });
-
-        this.eventBus.onDeviceLeave(this, (data) => {
-            this.pendingDeletion[data.ieeeAddr] = true;
-        });
     }
 
     stop(): void {
-        // Remove any pendingDeletion states when the system is stopped
-        Object.keys(this.pendingDeletion).forEach((pending) => delete this.state[pending]);
-        this.pendingDeletion = {};
+        // Remove any invalid states (ie when the device has left the network) when the system is stopped
+        Object.keys(this.state)
+            .filter((k) => typeof k === 'string' && !this.zigbee.resolveEntity(k)) // string key = ieeeAddr
+            .forEach((k) => delete this.state[k]);
 
         this.eventBus.removeListeners(this);
         clearTimeout(this.timer);
@@ -95,7 +85,6 @@ class State {
         utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
 
         this.state[entity.ID] = newCache;
-        delete this.pendingDeletion[entity.ID]; // The device is apparantly active again
 
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
         return toState;

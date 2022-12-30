@@ -57,7 +57,7 @@ export class Controller {
         });
         this.zigbee = new Zigbee(this.eventBus);
         this.mqtt = new MQTT(this.eventBus);
-        this.state = new State(this.eventBus);
+        this.state = new State(this.eventBus, this.zigbee);
         this.restartCallback = restartCallback;
         this.exitCallback = exitCallback;
 
