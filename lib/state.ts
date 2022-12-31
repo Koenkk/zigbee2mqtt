@@ -20,6 +20,7 @@ class State {
 
     constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
         this.eventBus = eventBus;
+        this.zigbee = zigbee;
     }
 
     start(): void {
@@ -35,7 +36,6 @@ class State {
             .filter((k) => typeof k === 'string' && !this.zigbee.resolveEntity(k)) // string key = ieeeAddr
             .forEach((k) => delete this.state[k]);
 
-        this.eventBus.removeListeners(this);
         clearTimeout(this.timer);
         this.save();
     }
@@ -84,7 +84,6 @@ class State {
         utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
 
         this.state[entity.ID] = newCache;
-
         this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
         return toState;
     }
