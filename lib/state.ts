@@ -17,10 +17,10 @@ class State {
     private state: {[s: string | number]: KeyValue} = {};
     private file = data.joinPath('state.json');
     private timer: NodeJS.Timer = null;
-    private eventBus: EventBus;
 
-    constructor(eventBus: EventBus) {
+    constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
         this.eventBus = eventBus;
+        this.zigbee = zigbee;
     }
 
     start(): void {
@@ -28,11 +28,14 @@ class State {
 
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
-        this.eventBus.onDeviceLeave(this, (data) => delete this.state[data.ieeeAddr]);
     }
 
     stop(): void {
-        this.eventBus.removeListeners(this);
+        // Remove any invalid states (ie when the device has left the network) when the system is stopped
+        Object.keys(this.state)
+            .filter((k) => typeof k === 'string' && !this.zigbee.resolveEntity(k)) // string key = ieeeAddr
+            .forEach((k) => delete this.state[k]);
+
         clearTimeout(this.timer);
         this.save();
     }
