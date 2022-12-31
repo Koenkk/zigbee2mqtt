@@ -1,174 +1,96 @@
-import events from 'events';
-events.captureRejections = true;
+import logger from './util/logger';
+import data from './util/data';
+import * as settings from './util/settings';
+import utils from './util/utils';
+import fs from 'fs';
+import objectAssignDeep from 'object-assign-deep';
 
-// eslint-disable-next-line
-type ListenerKey = object;
+const saveInterval = 1000 * 60 * 5; // 5 minutes
 
-export default class EventBus {
-    private callbacksByExtension: { [s: string]: { event: string, callback: (...args: unknown[]) => void }[] } = {};
-    private emitter = new events.EventEmitter();
+const dontCacheProperties = [
+    'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
+    'step_size', 'transition_time', 'group_list', 'group_capacity', 'no_occupancy_since',
+    'step_mode', 'transition_time', 'duration', 'elapsed', 'from_side', 'to_side',
+];
 
-    constructor(onError: (error: Error) => void) {
-        this.emitter.setMaxListeners(100);
-        this.emitter.on('error', onError);
-    }
+class State {
+    private state: {[s: string | number]: KeyValue} = {};
+    private file = data.joinPath('state.json');
+    private timer: NodeJS.Timer = null;
 
-    public emitAdapterDisconnected(): void {
-        this.emitter.emit('adapterDisconnected');
-    }
-    public onAdapterDisconnected(key: ListenerKey, callback: () => void): void {
-        this.on('adapterDisconnected', callback, key);
-    }
-
-    public emitPermitJoinChanged(data: eventdata.PermitJoinChanged): void {
-        this.emitter.emit('permitJoinChanged', data);
-    }
-    public onPermitJoinChanged(key: ListenerKey, callback: (data: eventdata.PermitJoinChanged) => void): void {
-        this.on('permitJoinChanged', callback, key);
+    constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
+        this.eventBus = eventBus;
+        this.zigbee = zigbee;
     }
 
-    public emitPublishAvailability(): void {
-        this.emitter.emit('publishAvailability');
-    }
-    public onPublishAvailability(key: ListenerKey, callback: () => void): void {
-        this.on('publishAvailability', callback, key);
+    start(): void {
+        this.load();
+
+        // Save the state on every interval
+        this.timer = setInterval(() => this.save(), saveInterval);
     }
 
-    public emitEntityRenamed(data: eventdata.EntityRenamed): void {
-        this.emitter.emit('deviceRenamed', data);
-    }
-    public onEntityRenamed(key: ListenerKey, callback: (data: eventdata.EntityRenamed) => void): void {
-        this.on('deviceRenamed', callback, key);
+    stop(): void {
+        // Remove any invalid states (ie when the device has left the network) when the system is stopped
+        Object.keys(this.state)
+            .filter((k) => typeof k === 'string' && !this.zigbee.resolveEntity(k)) // string key = ieeeAddr
+            .forEach((k) => delete this.state[k]);
+
+        clearTimeout(this.timer);
+        this.save();
     }
 
-    public emitDeviceRemoved(data: eventdata.DeviceRemoved): void {
-        this.emitter.emit('deviceRemoved', data);
-    }
-    public onDeviceRemoved(key: ListenerKey, callback: (data: eventdata.DeviceRemoved) => void): void {
-        this.on('deviceRemoved', callback, key);
-    }
-
-    public emitLastSeenChanged(data: eventdata.LastSeenChanged): void {
-        this.emitter.emit('lastSeenChanged', data);
-    }
-    public onLastSeenChanged(key: ListenerKey, callback: (data: eventdata.LastSeenChanged) => void): void {
-        this.on('lastSeenChanged', callback, key);
-    }
-
-    public emitDeviceNetworkAddressChanged(data: eventdata.DeviceNetworkAddressChanged): void {
-        this.emitter.emit('deviceNetworkAddressChanged', data);
-    }
-    public onDeviceNetworkAddressChanged(
-        key: ListenerKey, callback: (data: eventdata.DeviceNetworkAddressChanged) => void): void {
-        this.on('deviceNetworkAddressChanged', callback, key);
+    private load(): void {
+        if (fs.existsSync(this.file)) {
+            try {
+                this.state = JSON.parse(fs.readFileSync(this.file, 'utf8'));
+                logger.debug(`Loaded state from file ${this.file}`);
+            } catch (e) {
+                logger.debug(`Failed to load state from file ${this.file} (corrupt file?)`);
+            }
+        } else {
+            logger.debug(`Can't load state from file ${this.file} (doesn't exist)`);
+        }
     }
 
-    public emitDeviceAnnounce(data: eventdata.DeviceAnnounce): void {
-        this.emitter.emit('deviceAnnounce', data);
-    }
-    public onDeviceAnnounce(key: ListenerKey, callback: (data: eventdata.DeviceAnnounce) => void): void {
-        this.on('deviceAnnounce', callback, key);
-    }
-
-    public emitDeviceInterview(data: eventdata.DeviceInterview): void {
-        this.emitter.emit('deviceInterview', data);
-    }
-    public onDeviceInterview(key: ListenerKey, callback: (data: eventdata.DeviceInterview) => void): void {
-        this.on('deviceInterview', callback, key);
-    }
-
-    public emitDeviceJoined(data: eventdata.DeviceJoined): void {
-        this.emitter.emit('deviceJoined', data);
-    }
-    public onDeviceJoined(key: ListenerKey, callback: (data: eventdata.DeviceJoined) => void): void {
-        this.on('deviceJoined', callback, key);
+    private save(): void {
+        if (settings.get().advanced.cache_state_persistent) {
+            logger.debug(`Saving state to file ${this.file}`);
+            const json = JSON.stringify(this.state, null, 4);
+            try {
+                fs.writeFileSync(this.file, json, 'utf8');
+            } catch (e) {
+                logger.error(`Failed to write state to '${this.file}' (${e.message})`);
+            }
+        } else {
+            logger.debug(`Not saving state`);
+        }
     }
 
-    public emitEntityOptionsChanged(data: eventdata.EntityOptionsChanged): void {
-        this.emitter.emit('entityOptionsChanged', data);
-    }
-    public onEntityOptionsChanged(key: ListenerKey, callback: (data: eventdata.EntityOptionsChanged) => void): void {
-        this.on('entityOptionsChanged', callback, key);
+    exists(entity: Device | Group): boolean {
+        return this.state.hasOwnProperty(entity.ID);
     }
 
-    public emitDeviceLeave(data: eventdata.DeviceLeave): void {
-        this.emitter.emit('deviceLeave', data);
-    }
-    public onDeviceLeave(key: ListenerKey, callback: (data: eventdata.DeviceLeave) => void): void {
-        this.on('deviceLeave', callback, key);
+    get(entity: Group | Device): KeyValue {
+        return this.state[entity.ID] || {};
     }
 
-    public emitDeviceMessage(data: eventdata.DeviceMessage): void {
-        this.emitter.emit('deviceMessage', data);
-    }
-    public onDeviceMessage(key: ListenerKey, callback: (data: eventdata.DeviceMessage) => void): void {
-        this.on('deviceMessage', callback, key);
+    set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {
+        const fromState = this.state[entity.ID] || {};
+        const toState = objectAssignDeep({}, fromState, update);
+        const newCache = {...toState};
+        const entityDontCacheProperties = entity.options.filtered_cache || [];
+
+        utils.filterProperties(dontCacheProperties.concat(entityDontCacheProperties), newCache);
+
+        this.state[entity.ID] = newCache;
+        this.eventBus.emitStateChange({entity, from: fromState, to: toState, reason, update});
+        return toState;
     }
 
-    public emitMQTTMessage(data: eventdata.MQTTMessage): void {
-        this.emitter.emit('mqttMessage', data);
-    }
-    public onMQTTMessage(key: ListenerKey, callback: (data: eventdata.MQTTMessage) => void): void {
-        this.on('mqttMessage', callback, key);
-    }
-
-    public emitMQTTMessagePublished(data: eventdata.MQTTMessagePublished): void {
-        this.emitter.emit('mqttMessagePublished', data);
-    }
-    public onMQTTMessagePublished(key: ListenerKey, callback: (data: eventdata.MQTTMessagePublished) => void): void {
-        this.on('mqttMessagePublished', callback, key);
-    }
-
-    public emitPublishEntityState(data: eventdata.PublishEntityState): void {
-        this.emitter.emit('publishEntityState', data);
-    }
-    public onPublishEntityState(key: ListenerKey, callback: (data: eventdata.PublishEntityState) => void): void {
-        this.on('publishEntityState', callback, key);
-    }
-
-    public emitGroupMembersChanged(data: eventdata.GroupMembersChanged): void {
-        this.emitter.emit('groupMembersChanged', data);
-    }
-    public onGroupMembersChanged(key: ListenerKey, callback: (data: eventdata.GroupMembersChanged) => void): void {
-        this.on('groupMembersChanged', callback, key);
-    }
-
-    public emitDevicesChanged(): void {
-        this.emitter.emit('devicesChanged');
-    }
-    public onDevicesChanged(key: ListenerKey, callback: () => void): void {
-        this.on('devicesChanged', callback, key);
-    }
-
-    public emitScenesChanged(): void {
-        this.emitter.emit('scenesChanged');
-    }
-    public onScenesChanged(key: ListenerKey, callback: () => void): void {
-        this.on('scenesChanged', callback, key);
-    }
-
-    public emitReconfigure(data: eventdata.Reconfigure): void {
-        this.emitter.emit('reconfigure', data);
-    }
-    public onReconfigure(key: ListenerKey, callback: (data: eventdata.Reconfigure) => void): void {
-        this.on('reconfigure', callback, key);
-    }
-
-    public emitStateChange(data: eventdata.StateChange): void {
-        this.emitter.emit('stateChange', data);
-    }
-    public onStateChange(key: ListenerKey, callback: (data: eventdata.StateChange) => void): void {
-        this.on('stateChange', callback, key);
-    }
-
-    private on(event: string, callback: (...args: unknown[]) => void, key: ListenerKey): void {
-        if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
-        this.callbacksByExtension[key.constructor.name].push({event, callback});
-        this.emitter.on(event, callback);
-    }
-
-    public removeListeners(key: ListenerKey): void {
-        this.callbacksByExtension[key.constructor.name]?.forEach(
-            (e) => this.emitter.removeListener(e.event, e.callback));
+    remove(ID: string | number): void {
+        delete this.state[ID];
     }
 }
+
+export default State;
