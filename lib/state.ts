@@ -27,7 +27,6 @@ class State {
 
         // Save the state on every interval
         this.timer = setInterval(() => this.save(), saveInterval);
-
     }
 
     stop(): void {
