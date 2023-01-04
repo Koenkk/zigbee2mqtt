@@ -1463,7 +1463,7 @@ export default class HomeAssistant extends Extension {
             }
         }
 
-        if (entity.isDevice() && entity.definition?.ota && !message.update?.hasOwnProperty('latest_version')) {
+        if (entity.isDevice() && entity.definition?.ota && message.update?.latest_version == null) {
             message.update = {...message.update, installed_version: -1, latest_version: -1};
         }
     }
