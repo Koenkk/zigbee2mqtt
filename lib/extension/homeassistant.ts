@@ -742,7 +742,7 @@ export default class HomeAssistant extends Extension {
                 discovery_payload: {
                     value_template: `{{ value_json.${firstExpose.property} }}`,
                     enabled_by_default: !allowsSet,
-                    unit_of_measurement: firstExpose.unit || '',
+                    ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                     ...lookup[firstExpose.name],
                     ...extraAttrs,
                 },
