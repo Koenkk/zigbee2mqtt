@@ -102,6 +102,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHersdman.Zcl.ManufacturerCode.BUSCH_JAEGER,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -137,6 +138,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHersdman.Zcl.ManufacturerCode.BUSCH_JAEGER,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -168,6 +170,7 @@ const pollOnMessage: PollOnMessage = [
             zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
             zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
+            // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: [
             'GLEDOPTO',
