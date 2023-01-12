@@ -752,9 +752,9 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            // When state_class == measurement, unit_of_measurement must be set, otherwise warnings are generated.
+            // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
             // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
-            if (discoveryEntry.discovery_payload.state_class === 'measurement' &&
+            if (discoveryEntry.discovery_payload.device_class &&
                 !discoveryEntry.discovery_payload.unit_of_measurement) {
                 delete discoveryEntry.discovery_payload.state_class;
             }
