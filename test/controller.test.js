@@ -147,7 +147,6 @@ describe('Controller', () => {
         logger.error.mockClear();
         controller.mqtt.client.reconnecting = true;
         jest.advanceTimersByTime(11 * 1000);
-        await flushPromises();
         expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
         controller.mqtt.client.reconnecting = false;
     });
