@@ -756,7 +756,7 @@ export default class HomeAssistant extends Extension {
             // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
             if (discoveryEntry.discovery_payload.device_class &&
                 !discoveryEntry.discovery_payload.unit_of_measurement) {
-                delete discoveryEntry.discovery_payload.state_class;
+                delete discoveryEntry.discovery_payload.device_class;
             }
 
             discoveryEntries.push(discoveryEntry);
