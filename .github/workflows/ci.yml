@@ -37,9 +37,11 @@ jobs:
     - name: Docker setup - Buildx
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       id: buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v3
       with:
         version: latest
+        # disabled provenance generation until support of OCI multi-arch image manifests with provenance information has been fixed in all necessary places. Cf. https://github.com/Koenkk/zigbee2mqtt/issues/16201 and https://github.com/docker/buildx/issues/1509
+        provenance: false
     - name: Docker build dev
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
