@@ -511,13 +511,13 @@
               "type": "number",
               "title": "Port",
               "description": "The port on the host that syslog is running on, defaults to syslogd's default port.",
-              "default": 123
+              "default": 514
             },
             "protocol": {
               "type": "string",
               "title": "Protocol",
               "description": "The network protocol to log over (e.g. tcp4, udp4, tls4, unix, unix-connect, etc).",
-              "default": "tcp4",
+              "default": "udp4",
               "examples": [
                 "udp4",
                 "tls4",
