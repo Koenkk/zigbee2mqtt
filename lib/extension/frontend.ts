@@ -85,7 +85,10 @@ export default class Frontend extends Extension {
             client.terminate();
         });
         this.wss?.close();
-        return new Promise((cb: () => void) => this.server.close(cb));
+        /* istanbul ignore else */
+        if (this.server) {
+            return new Promise((cb: () => void) => this.server.close(cb));
+        }
     }
 
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
