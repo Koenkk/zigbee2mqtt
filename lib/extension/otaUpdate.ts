@@ -122,6 +122,9 @@ export default class OTAUpdate extends Extension {
         if (endpoint) {
             // Some devices send OTA requests without defining OTA cluster as input cluster.
             await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: 0x98});
+            logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
+        } else {
+            logger.debug(`Did not respond to OTA request of '${data.device.name}' (no OTA endpoint)`);
         }
     }
 
