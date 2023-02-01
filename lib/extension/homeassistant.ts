@@ -390,8 +390,8 @@ export default class HomeAssistant extends Extension {
                 ?.features.find((f) => f.name === 'position');
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
                 ?.features.find((f) => f.name === 'tilt');
-            const motorState = allExposes?.find((e) => e.type === 'enum' && e.name === 'motor_state' &&
-                e.access === ACCESS_STATE);
+            const motorState = allExposes?.find((e) => e.type === 'enum' &&
+                ['motor_state', 'moving'].includes(e.name) && e.access === ACCESS_STATE);
             const running = allExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
@@ -406,7 +406,7 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            // For curtains that have `motor_state` lookup a possible state names and make this
+            // For curtains that have `motor_state` or `moving` lookup a possible state names and make this
             // available for discovery. If the curtains only support the `running` value,
             // then we use it anyway. The movement direction is calculated (assumed) in this case.
             if (motorState) {
@@ -742,11 +742,19 @@ export default class HomeAssistant extends Extension {
                 discovery_payload: {
                     value_template: `{{ value_json.${firstExpose.property} }}`,
                     enabled_by_default: !allowsSet,
-                    unit_of_measurement: firstExpose.unit || '',
+                    ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                     ...lookup[firstExpose.name],
                     ...extraAttrs,
                 },
             };
+
+            // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
+            // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
+            if (discoveryEntry.discovery_payload.device_class &&
+                !discoveryEntry.discovery_payload.unit_of_measurement) {
+                delete discoveryEntry.discovery_payload.device_class;
+            }
+
             discoveryEntries.push(discoveryEntry);
 
             /**

@@ -243,11 +243,14 @@ export class Controller {
             message.device = {
                 friendlyName: entity.name, model: entity.definition ? entity.definition.model : 'unknown',
                 ieeeAddr: entity.ieeeAddr, networkAddress: entity.zh.networkAddress, type: entity.zh.type,
-                manufacturerID: entity.zh.manufacturerID, manufacturerName: entity.zh.manufacturerName,
+                manufacturerID: entity.zh.manufacturerID,
                 powerSource: entity.zh.powerSource, applicationVersion: entity.zh.applicationVersion,
                 stackVersion: entity.zh.stackVersion, zclVersion: entity.zh.zclVersion,
                 hardwareVersion: entity.zh.hardwareVersion, dateCode: entity.zh.dateCode,
                 softwareBuildID: entity.zh.softwareBuildID,
+                // Manufacturer name can contain \u0000, remove this.
+                // https://github.com/home-assistant/core/issues/85691
+                manufacturerName: entity.zh.manufacturerName?.split('\u0000')[0],
             };
         }
 
