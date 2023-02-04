@@ -40,8 +40,6 @@ jobs:
       uses: docker/setup-buildx-action@v2
       with:
         version: latest
-        # disabled provenance generation until support of OCI multi-arch image manifests with provenance information has been fixed in all necessary places. Cf. https://github.com/Koenkk/zigbee2mqtt/issues/16201 and https://github.com/docker/buildx/issues/1509
-        provenance: false
     - name: Docker build dev
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
@@ -49,6 +47,7 @@ jobs:
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
           --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
           -f docker/Dockerfile \
+          --provenance=false \
           --push \
           -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
           .
@@ -60,6 +59,7 @@ jobs:
           --build-arg COMMIT=$(git rev-parse --short HEAD) \
           --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
           -f docker/Dockerfile \
+          --provenance=false \
           --push \
           -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
           .
