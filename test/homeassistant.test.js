@@ -104,8 +104,12 @@ describe('HomeAssistant extension', () => {
                 "breathe",
                 "okay",
                 "channel_change",
+                "candle",
+                "fireplace",
+                "colorloop",
                 "finish_effect",
-                "stop_effect"
+                "stop_effect",
+                "stop_hue_effect",
             ],
             "unique_id":"9_light_zigbee2mqtt"
         };
@@ -1322,8 +1326,12 @@ describe('HomeAssistant extension', () => {
                 "breathe",
                 "okay",
                 "channel_change",
+                "candle",
+                "fireplace",
+                "colorloop",
                 "finish_effect",
-                "stop_effect"
+                "stop_effect",
+                "stop_hue_effect",
             ],
             "unique_id":"9_light_zigbee2mqtt"
          };
@@ -1847,8 +1855,12 @@ describe('HomeAssistant extension', () => {
                 "breathe",
                 "okay",
                 "channel_change",
+                "candle",
+                "fireplace",
+                "colorloop",
                 "finish_effect",
-                "stop_effect"
+                "stop_effect",
+                "stop_hue_effect",
             ],
             "unique_id":"9_light_zigbee2mqtt"
          };
@@ -1892,8 +1904,12 @@ describe('HomeAssistant extension', () => {
                 "breathe",
                 "okay",
                 "channel_change",
+                "candle",
+                "fireplace",
+                "colorloop",
                 "finish_effect",
-                "stop_effect"
+                "stop_effect",
+                "stop_hue_effect",
             ],
             "unique_id":"9_light_zigbee2mqtt"
         };
