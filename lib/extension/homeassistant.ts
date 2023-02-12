@@ -406,9 +406,16 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            // For curtains that have `motor_state` or `moving` lookup a possible state names and make this
-            // available for discovery. If the curtains only support the `running` value,
-            // then we use it anyway. The movement direction is calculated (assumed) in this case.
+            // If curtains have `running` property, use this in discovery.
+            // The movement direction is calculated (assumed) in this case.
+            if (running) {
+                discoveryEntry.discovery_payload.value_template = `{% if "${running.property}" in value_json ` +
+                    `and value_json.${running.property} %} {% if value_json.${position.property} > 0 %} closing ` +
+                    `{% else %} opening {% endif %} {% else %} stopped {% endif %}`;
+            }
+
+            // If curtains have `motor_state` or `moving` property, lookup for possible
+            // state names to detect movement direction and use this in discovery.
             if (motorState) {
                 const openingLookup = ['opening', 'open', 'forward', 'up', 'rising'];
                 const closingLookup = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
@@ -422,14 +429,14 @@ export default class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_opening = openingState;
                     discoveryEntry.discovery_payload.state_closing = closingState;
                     discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                    discoveryEntry.discovery_payload.value_template = `{% if not value_json.${motorState.property} %}` +
-                        ` ${stoppedState} {% else %} {{ value_json.${motorState.property} }} {% endif %}`;
+                    discoveryEntry.discovery_payload.value_template = `{% if "${motorState.property}" in value_json ` +
+                        `and value_json.${motorState.property} %} {{ value_json.${motorState.property} }} {% else %} ` +
+                        `${stoppedState} {% endif %}`;
                 }
-            } else if (running) {
-                discoveryEntry.discovery_payload.value_template = `{% if not value_json.${running.property} %} ` +
-                    `stopped {% else %} {% if value_json.${position.property} > 0 %} closing {% else %} ` +
-                    `opening {% endif %} {% endif %}`;
-            } else {
+            }
+
+            // If curtains do not have `running`, `motor_state` or `moving` properties.
+            if (!discoveryEntry.discovery_payload.value_template) {
                 discoveryEntry.discovery_payload.value_template =
                     `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
