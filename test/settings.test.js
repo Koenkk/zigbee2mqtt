@@ -123,6 +123,22 @@ describe('Settings', () => {
         expect(actual).toStrictEqual(expected);
     });
 
+    it('Should add devices even when devices exist empty', () => {
+        write(configurationFile, {devices: []});
+        settings.addDevice('0x12345678');
+
+        const actual = read(configurationFile);
+        const expected = {
+            devices: {
+                '0x12345678': {
+                    friendly_name: '0x12345678',
+                },
+            },
+        };
+
+        expect(actual).toStrictEqual(expected);
+    });
+
     it('Should read devices', () => {
         const content = {
             devices: {
@@ -904,7 +920,7 @@ describe('Settings', () => {
 
     it('Frontend config', () => {
         write(configurationFile, {...minimalConfig,
-            frontend: true, 
+            frontend: true,
         });
 
         settings.reRead();
@@ -913,7 +929,7 @@ describe('Settings', () => {
 
     it('Baudrate config', () => {
         write(configurationFile, {...minimalConfig,
-            advanced: {baudrate: 20}, 
+            advanced: {baudrate: 20},
         });
 
         settings.reRead();
@@ -922,7 +938,7 @@ describe('Settings', () => {
 
     it('ikea_ota_use_test_url config', () => {
         write(configurationFile, {...minimalConfig,
-            advanced: {ikea_ota_use_test_url: true}, 
+            advanced: {ikea_ota_use_test_url: true},
         });
 
         settings.reRead();
@@ -931,7 +947,7 @@ describe('Settings', () => {
 
     it('transmit_power config', () => {
         write(configurationFile, {...minimalConfig,
-            experimental: {transmit_power: 1337}, 
+            experimental: {transmit_power: 1337},
         });
 
         settings.reRead();
@@ -940,7 +956,7 @@ describe('Settings', () => {
 
     it('output config', () => {
         write(configurationFile, {...minimalConfig,
-            experimental: {output: 'json'}, 
+            experimental: {output: 'json'},
         });
 
         settings.reRead();
@@ -949,7 +965,7 @@ describe('Settings', () => {
 
     it('Baudrartsctste config', () => {
         write(configurationFile, {...minimalConfig,
-            advanced: {rtscts: true}, 
+            advanced: {rtscts: true},
         });
 
         settings.reRead();
@@ -958,7 +974,7 @@ describe('Settings', () => {
 
     it('Deprecated: Home Assistant config', () => {
         write(configurationFile, {...minimalConfig,
-            homeassistant: {discovery_topic: 'new'}, 
+            homeassistant: {discovery_topic: 'new'},
             advanced: {homeassistant_discovery_topic: 'old', homeassistant_status_topic: 'olds'},
         });
 
