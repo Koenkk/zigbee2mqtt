@@ -1192,16 +1192,13 @@ export default class HomeAssistant extends Extension {
 
             const devicePayload = this.getDevicePayload(entity);
 
-            // Set (unique) name, separate and change case according to name of the device.
+            // Set (unique) name, separate by space if device name contains space.
             const nameSeparator = devicePayload.name.includes('_') ? '_' : ' ';
-            const isNameCapitalize = devicePayload.name[0] === devicePayload.name[0].toUpperCase();
             payload.name = devicePayload.name;
             if (config.object_id.startsWith(config.type) && config.object_id.includes('_')) {
-                const name = config.object_id.split(/_(.+)/)[1];
-                payload.name += `${nameSeparator}${isNameCapitalize ? utils.capitalize(name) : name}`;
+                payload.name += `${nameSeparator}${config.object_id.split(/_(.+)/)[1]}`;
             } else if (!config.object_id.startsWith(config.type)) {
-                const name = config.object_id.replace(/_/g, nameSeparator);
-                payload.name += `${nameSeparator}${isNameCapitalize ? utils.capitalize(name) : name}`;
+                payload.name += `${nameSeparator}${config.object_id.replace(/_/g, nameSeparator)}`;
             }
 
             // Set unique_id
