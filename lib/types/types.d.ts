@@ -239,6 +239,12 @@ declare global {
             ssl_cert?: string,
             ssl_key?: string,
         },
+        metrics?: {
+          per_device_labels: boolean;
+          nodejs_metrics: boolean;
+          host?: string,
+          port?: number
+        }
         devices?: {[s: string]: DeviceOptions},
         groups?: {[s: string]: GroupOptions},
         device_options: KeyValue,

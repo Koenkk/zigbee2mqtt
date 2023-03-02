@@ -157,6 +157,14 @@ function loadSettingsWithDefaults(): void {
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 
+    if (_settingsWithDefaults.metrics) {
+      const defaults = {port: 8081, host: '0.0.0.0', nodejs_metrics: true, per_device_labels: true};
+      const s = typeof _settingsWithDefaults.metrics === 'object' ? _settingsWithDefaults.metrics : {};
+        // @ts-ignore
+        _settingsWithDefaults.metrics = {};
+        objectAssignDeep(_settingsWithDefaults.metrics, defaults, s);
+    }
+
     if (_settings.advanced?.hasOwnProperty('baudrate') && _settings.serial?.baudrate == null) {
         // @ts-ignore
         _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;

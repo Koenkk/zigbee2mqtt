@@ -407,6 +407,51 @@
       "title": "Frontend",
       "requiresRestart": true
     },
+    "metrics": {
+      "oneOf": [
+        {
+          "type": "boolean",
+          "title": "Metrics (simple)"
+        },
+        {
+          "type": "object",
+          "title": "Metrics (advanced)",
+          "properties": {
+            "port": {
+              "type": "number",
+              "title": "Port",
+              "description": "Metrics binding port - make sure it doesn't collide with Frontend port",
+              "default": 8081,
+              "requiresRestart": true
+            },
+            "host": {
+              "type": "string",
+              "title": "Bind host",
+              "description": "Metrics binding host",
+              "default": "0.0.0.0",
+              "requiresRestart": true
+            },
+            "per_device_labels" :  {
+              "type": ["boolean"],
+              "title": "Per device labels",
+              "description": "Report metrics per device in your network. May increase memory usage if you have a very large number of devices.",
+              "default": true,
+              "requiresRestart": true
+            },
+            "nodejs_metrics" :  {
+              "type": ["boolean"],
+              "title": "Node.js Metrics",
+              "description": "Report generic nodejs process metrics related to memory and resource usage",
+              "default": true,
+              "requiresRestart": true
+            }
+          }
+        }
+      ],
+      "title": "Metrics",
+      "description": "Enable the Prometheus metrics endpoint server",
+      "requiresRestart": true
+    },
     "devices": {
       "type": "object",
       "propertyNames": {

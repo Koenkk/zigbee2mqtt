@@ -11,6 +11,7 @@ import bind from 'bind-decorator';
 
 // Extensions
 import ExtensionFrontend from './extension/frontend';
+import ExtensionMetrics from './extension/metrics';
 import ExtensionPublish from './extension/publish';
 import ExtensionReceive from './extension/receive';
 import ExtensionNetworkMap from './extension/networkMap';
@@ -33,7 +34,8 @@ const AllExtensions = [
     ExtensionPublish, ExtensionReceive, ExtensionNetworkMap, ExtensionSoftReset, ExtensionHomeAssistant,
     ExtensionConfigure, ExtensionDeviceGroupMembership, ExtensionBridgeLegacy, ExtensionBridge, ExtensionGroups,
     ExtensionBind, ExtensionReport, ExtensionOnEvent, ExtensionOTAUpdate,
-    ExtensionExternalConverters, ExtensionFrontend, ExtensionExternalExtension, ExtensionAvailability,
+    ExtensionExternalConverters, ExtensionFrontend, ExtensionMetrics,
+    ExtensionExternalExtension, ExtensionAvailability,
 ];
 
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
@@ -80,6 +82,7 @@ export class Controller {
             new ExtensionExternalExtension(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
             settings.get().frontend && new ExtensionFrontend(...this.extensionArgs),
+            settings.get().metrics && new ExtensionMetrics(...this.extensionArgs),
             settings.get().advanced.legacy_api && new ExtensionBridgeLegacy(...this.extensionArgs),
             settings.get().external_converters.length && new ExtensionExternalConverters(...this.extensionArgs),
             settings.get().homeassistant && new ExtensionHomeAssistant(...this.extensionArgs),

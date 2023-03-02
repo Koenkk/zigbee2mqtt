@@ -51,6 +51,7 @@
     "moment": "^2.29.4",
     "mqtt": "4.3.7",
     "object-assign-deep": "^0.4.0",
+    "prom-client": "^14.1.1",
     "rimraf": "^4.1.2",
     "semver": "^7.3.8",
     "source-map-support": "^0.5.21",
