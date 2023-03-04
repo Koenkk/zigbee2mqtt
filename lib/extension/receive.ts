@@ -49,6 +49,13 @@ export default class Receive extends Extension {
 
         // extend debounced payload with current
         this.debouncers[device.ieeeAddr].payload = {...this.debouncers[device.ieeeAddr].payload, ...payload};
+
+        // Update state cache right away. This makes sure that during debouncing cached state is always up to date.
+        // ( Update right away as "lastSeenChanged" event might occur while debouncer is still active.
+        //  And if that happens it would cause old message to be published from cache.
+        // By updating cache we make sure that state cache is always up-to-date.
+        this.state.set(device, this.debouncers[device.ieeeAddr].payload);
+
         this.debouncers[device.ieeeAddr].publish();
     }
 
