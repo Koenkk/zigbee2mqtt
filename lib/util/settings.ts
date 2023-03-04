@@ -230,7 +230,7 @@ function write(): void {
 
     // Write devices/groups to separate file if required.
     const writeDevicesOrGroups = (type: 'devices' | 'groups'): void => {
-        if (typeof actual[type] === 'string' || Array.isArray(actual[type])) {
+        if (typeof actual[type] === 'string' || (Array.isArray(actual[type]) && actual[type].length > 0)) {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
             const content = objectAssignDeep({}, settings[type]);
 
@@ -361,7 +361,7 @@ function read(): Settings {
 
     // Read devices/groups configuration from separate file if specified.
     const readDevicesOrGroups = (type: 'devices' | 'groups'): void => {
-        if (typeof s[type] === 'string' || Array.isArray(s[type])) {
+        if (typeof s[type] === 'string' || (Array.isArray(s[type]) && Array(s[type]).length > 0)) {
             /* eslint-disable-line */ // @ts-ignore
             const files: string[] = Array.isArray(s[type]) ? s[type] : [s[type]];
             s[type] = {};

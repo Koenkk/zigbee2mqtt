@@ -1,6 +1,7 @@
 
 import * as settings from '../util/settings';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import philips from 'zigbee-herdsman-converters/lib/philips';
 import logger from '../util/logger';
 import utils from '../util/utils';
 import Extension from './extension';
@@ -18,7 +19,7 @@ const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_r
 const defaultGroupConverters = [
     zigbeeHerdsmanConverters.toZigbeeConverters.light_onoff_brightness,
     zigbeeHerdsmanConverters.toZigbeeConverters.light_color_colortemp,
-    zigbeeHerdsmanConverters.toZigbeeConverters.effect,
+    philips.tz.effect, // Support Hue effects for groups
     zigbeeHerdsmanConverters.toZigbeeConverters.ignore_transition,
     zigbeeHerdsmanConverters.toZigbeeConverters.cover_position_tilt,
     zigbeeHerdsmanConverters.toZigbeeConverters.thermostat_occupied_heating_setpoint,
