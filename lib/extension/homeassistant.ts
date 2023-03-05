@@ -764,6 +764,12 @@ export default class HomeAssistant extends Extension {
                 delete discoveryEntry.discovery_payload.device_class;
             }
 
+            // Home Assisstant only supports µg/m³, not other units like ppb.
+            // https://github.com/Koenkk/zigbee2mqtt/issues/16057
+            if (firstExpose.name === 'voc' && discoveryEntry.discovery_payload.unit_of_measurement !== 'µg/m³') {
+                delete discoveryEntry.discovery_payload.device_class;
+            }
+
             discoveryEntries.push(discoveryEntry);
 
             /**
