@@ -366,14 +366,15 @@
             "port": {
               "type": "number",
               "title": "Port",
-              "description": "Frontend binding port",
+              "description": "Frontend binding port. Ignored when using a unix domain socket",
               "default": 8080,
               "requiresRestart": true
             },
             "host": {
               "type": "string",
               "title": "Bind host",
-              "description": "Frontend binding host",
+              "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
+              "examples": ["127.0.0.1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
               "default": "0.0.0.0",
               "requiresRestart": true
             },
