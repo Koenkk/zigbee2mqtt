@@ -711,6 +711,7 @@ export default class HomeAssistant extends Extension {
                 temperature_min: {entity_category: 'config', icon: 'mdi:thermometer-minus'},
                 transition: {entity_category: 'config', icon: 'mdi:transition'},
                 voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
+                voc_index: {state_class: 'measurement'},
                 vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 voltage: {
                     device_class: 'voltage',
