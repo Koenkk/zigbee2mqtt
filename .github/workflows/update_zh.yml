@@ -20,7 +20,7 @@ jobs:
       with:
         node-version: 18
     - run: npm install zigbee-herdsman@${{ github.event.client_payload.version }} --save-exact
-    - uses: peter-evans/create-pull-request@v4
+    - uses: peter-evans/create-pull-request@v5
       id: cpr
       with:
         commit-message: Update zigbee-herdsman to ${{ github.event.client_payload.version }}
