@@ -23,7 +23,7 @@ jobs:
         node-version: 18
     - run: npx npm-check-updates -u -x connect-gzip-static # connect-gzip-static only supports node 16
     - run: npm install
-    - uses: peter-evans/create-pull-request@v4
+    - uses: peter-evans/create-pull-request@v5
       with:
         commit-message: Update dependencies
         branch: "update_deps"
