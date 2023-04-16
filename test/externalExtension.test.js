@@ -3,7 +3,7 @@ const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const path = require('path');
-const rimraf = require('rimraf');
+const {rimrafSync} = require('rimraf');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const stringify = require('json-stable-stringify-without-jsonify');
@@ -45,7 +45,7 @@ describe('User extensions', () => {
     });
     afterEach(() => {
         const extensionPath = path.join(data.mockDir, 'extension');
-        rimraf.sync(extensionPath);
+        rimrafSync(extensionPath);
     })
 
     it('Load user extension', async () => {

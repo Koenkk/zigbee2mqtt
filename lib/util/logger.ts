@@ -4,7 +4,7 @@ import * as settings from './settings';
 import path from 'path';
 import fs from 'fs';
 import fx from 'mkdir-recursive';
-import rimraf from 'rimraf';
+import {rimrafSync} from 'rimraf';
 import assert from 'assert';
 
 const colorizer = winston.format.colorize();
@@ -144,7 +144,7 @@ function cleanup(): void {
         directories = directories.slice(10, directories.length);
         directories.forEach((dir) => {
             logger.debug(`Removing old log directory '${dir.path}'`);
-            rimraf.sync(dir.path);
+            rimrafSync(dir.path);
         });
     }
 }
