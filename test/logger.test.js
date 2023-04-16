@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const data = require('./stub/data');
 let stdOutWriteOriginal;
-const rimraf = require('rimraf');
+const {rimrafSync} = require('rimraf');
 const Transport = require('winston-transport');
 
 describe('Logger', () => {
@@ -37,7 +37,7 @@ describe('Logger', () => {
         logger.logOutput();
 
         for (const d of fs.readdirSync(dir.name)) {
-            rimraf.sync(path.join(dir.name, d));
+            rimrafSync(path.join(dir.name, d));
         }
 
         for (let i = 0; i < 21; i++) {
