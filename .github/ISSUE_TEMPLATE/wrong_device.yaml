@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Only use this if the device is detected as **supported** and is fully functional but has a wrong picture, vendor, model or description.
+        Only use this if the device is detected as **supported** and is **fully functional** but has a wrong picture, vendor, model or description.
   - type: input
     id: link
     attributes:
@@ -61,4 +61,4 @@ body:
       label: Notes
       placeholder: Some additional notes...
     validations:
-      required: true
+      required: false
