@@ -82,7 +82,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [14, 16, 18, 19]
+        node: [16, 18, 20]
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     steps:
