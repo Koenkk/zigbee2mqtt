@@ -82,7 +82,7 @@ export default class Availability extends Extension {
                 const disableRecovery = !(i == 1 && available);
                 await device.zh.ping(disableRecovery);
                 pingedSuccessfully = true;
-                logger.debug(`Succesfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
+                logger.debug(`Successfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
                 logger.warn(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);

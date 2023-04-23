@@ -164,7 +164,7 @@ export default class Bridge extends Extension {
             logger.setLevel(newSettings.advanced.log_level);
         }
 
-        logger.info('Succesfully changed options');
+        logger.info('Successfully changed options');
         this.publishInfo();
         return utils.getResponse(message, {restart_required: this.restartRequired}, null);
     }
