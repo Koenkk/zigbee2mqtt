@@ -4,7 +4,7 @@ import utils from '../util/utils';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
-import * as zigbeeHersdman from 'zigbee-herdsman/dist';
+import * as zigbeeHerdsman from 'zigbee-herdsman/dist';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import Group from '../model/group';
@@ -97,12 +97,12 @@ const pollOnMessage: PollOnMessage = [
         read: {cluster: 'genLevelCtrl', attributes: ['currentLevel']},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
-            zigbeeHersdman.Zcl.ManufacturerCode.Philips,
-            zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
-            zigbeeHersdman.Zcl.ManufacturerCode.BUSCH_JAEGER,
+            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
+            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -133,12 +133,12 @@ const pollOnMessage: PollOnMessage = [
         },
         read: {cluster: 'genOnOff', attributes: ['onOff']},
         manufacturerIDs: [
-            zigbeeHersdman.Zcl.ManufacturerCode.Philips,
-            zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
-            zigbeeHersdman.Zcl.ManufacturerCode.BUSCH_JAEGER,
+            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
+            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -165,11 +165,11 @@ const pollOnMessage: PollOnMessage = [
             },
         },
         manufacturerIDs: [
-            zigbeeHersdman.Zcl.ManufacturerCode.Philips,
-            zigbeeHersdman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHersdman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHersdman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHersdman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
+            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: [
