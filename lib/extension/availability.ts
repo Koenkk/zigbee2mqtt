@@ -47,7 +47,7 @@ export default class Availability extends Extension {
     private resetTimer(device: Device): void {
         clearTimeout(this.timers[device.ieeeAddr]);
 
-        // If the timer triggers, the device is not avaiable anymore otherwise resetTimer already have been called
+        // If the timer triggers, the device is not available anymore otherwise resetTimer already have been called
         if (this.isActiveDevice(device)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
             this.timers[device.ieeeAddr] = setTimeout(

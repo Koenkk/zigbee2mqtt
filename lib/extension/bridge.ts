@@ -470,7 +470,7 @@ export default class Bridge extends Extension {
             this.publishInfo();
         }
 
-        // Repulish entity state
+        // Republish entity state
         this.publishEntityState(entity, {});
 
         return utils.getResponse(
