@@ -237,7 +237,7 @@ export default class HomeAssistant extends Extension {
             const mode = firstExpose.features.find((f) => f.name === 'system_mode');
             if (mode) {
                 if (mode.values.includes('sleep')) {
-                    // 'sleep' is not supported by homeassistent, but is valid according to ZCL
+                    // 'sleep' is not supported by Home Assistant, but is valid according to ZCL
                     // TRV that support sleep (e.g. Viessmann) will have it removed from here,
                     // this allows other expose consumers to still use it, e.g. the frontend.
                     mode.values.splice(mode.values.indexOf('sleep'), 1);
@@ -765,7 +765,7 @@ export default class HomeAssistant extends Extension {
                 delete discoveryEntry.discovery_payload.device_class;
             }
 
-            // Home Assisstant only supports µg/m³, not other units like ppb.
+            // Home Assistant only supports µg/m³, not other units like ppb.
             // https://github.com/Koenkk/zigbee2mqtt/issues/16057
             if (firstExpose.name === 'voc' && discoveryEntry.discovery_payload.unit_of_measurement !== 'µg/m³') {
                 delete discoveryEntry.discovery_payload.device_class;
@@ -968,7 +968,7 @@ export default class HomeAssistant extends Extension {
          * Implements the MQTT device trigger (https://www.home-assistant.io/integrations/device_trigger.mqtt/)
          * The MQTT device trigger does not support JSON parsing, so it cannot listen to zigbee2mqtt/my_device
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
-         * and republish it to zigbee2mqtt/my_devic/action
+         * and republish it to zigbee2mqtt/my_device/action
          */
         if (entity.isDevice() && entity.definition) {
             const keys = ['action', 'click'].filter((k) => data.message[k]);
@@ -1442,7 +1442,7 @@ export default class HomeAssistant extends Extension {
         const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
 
-        // Allow device name to be overriden by homeassistant config
+        // Allow device name to be overridden by homeassistant config
         let deviceName = entity.name;
         if (typeof entity.options.homeassistant?.name === 'string') {
             deviceName = entity.options.homeassistant.name;
@@ -1477,7 +1477,7 @@ export default class HomeAssistant extends Extension {
             }
         });
 
-        // Copy hue -> h, saturation -> s to make homeassitant happy
+        // Copy hue -> h, saturation -> s to make homeassistant happy
         if (message.hasOwnProperty('color')) {
             if (message.color.hasOwnProperty('hue')) {
                 message.color.h = message.color.hue;
