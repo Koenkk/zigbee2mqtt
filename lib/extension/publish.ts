@@ -90,7 +90,7 @@ export default class Publish extends Extension {
         // When reporting is requested for a device (report: true in device-specific settings) we won't
         // ever issue a read here, as we assume the device will properly report changes.
         // Only do this when the retrieve_state option is enabled for this device.
-        // retrieve_state == decprecated
+        // retrieve_state == deprecated
         if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') &&
             re.options.retrieve_state
         ) {
@@ -102,7 +102,7 @@ export default class Publish extends Extension {
         /**
          * Home Assistant always publishes 'state', even when e.g. only setting
          * the color temperature. This would lead to 2 zigbee publishes, where the first one
-         * (state) is probably unecessary.
+         * (state) is probably unnecessary.
          */
         if (settings.get().homeassistant) {
             const hasColorTemp = message.hasOwnProperty('color_temp');
@@ -166,7 +166,7 @@ export default class Publish extends Extension {
          * Order state & brightness based on current bulb state
          *
          * Not all bulbs support setting the color/color_temp while it is off
-         * this results in inconsistant behavior between different vendors.
+         * this results in inconsistent behavior between different vendors.
          *
          * bulb on => move state & brightness to the back
          * bulb off => move state & brightness to the front
@@ -220,7 +220,7 @@ export default class Publish extends Extension {
                 continue;
             }
 
-            // If the endpoint_name name is a nubmer, try to map it to a friendlyName
+            // If the endpoint_name name is a number, try to map it to a friendlyName
             if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isEndpoint(localTarget) &&
                 re.endpointName(localTarget)) {
                 endpointName = re.endpointName(localTarget);

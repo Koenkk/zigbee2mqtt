@@ -85,7 +85,7 @@ export default class Configure extends Extension {
     }
 
     private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
-        force=false, thowError=false): Promise<void> {
+        force=false, throwError=false): Promise<void> {
         if (!force) {
             if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
                 return;
@@ -126,7 +126,7 @@ export default class Configure extends Extension {
             const msg = `Failed to configure '${device.name}', attempt ${attempt} (${error.stack})`;
             logger.error(msg);
 
-            if (thowError) {
+            if (throwError) {
                 throw error;
             }
         }

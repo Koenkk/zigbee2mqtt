@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {exec} = require('child_process');
-const rimraf = require('rimraf');
+const {rimrafSync} = require('rimraf');
 require('source-map-support').install();
 
 let controller;
@@ -41,7 +41,7 @@ async function writeHash() {
 async function build(reason) {
     return new Promise((resolve, reject) => {
         process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
-        rimraf.sync('dist');
+        rimrafSync('dist');
         const env = {...process.env};
         const _600mb = 629145600;
         if (_600mb > os.totalmem() && !env.NODE_OPTIONS) {

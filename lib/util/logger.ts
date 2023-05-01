@@ -4,7 +4,7 @@ import * as settings from './settings';
 import path from 'path';
 import fs from 'fs';
 import fx from 'mkdir-recursive';
-import rimraf from 'rimraf';
+import {rimrafSync} from 'rimraf';
 import assert from 'assert';
 
 const colorizer = winston.format.colorize();
@@ -38,7 +38,7 @@ function init(): void {
     directory = settings.get().advanced.log_directory.replace('%TIMESTAMP%', timestamp);
     logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
 
-    // Make sure that log directoy exsists when not logging to stdout only
+    // Make sure that log directory exists when not logging to stdout only
     if (output.includes('file')) {
         fx.mkdirSync(directory);
 
@@ -144,7 +144,7 @@ function cleanup(): void {
         directories = directories.slice(10, directories.length);
         directories.forEach((dir) => {
             logger.debug(`Removing old log directory '${dir.path}'`);
-            rimraf.sync(dir.path);
+            rimrafSync(dir.path);
         });
     }
 }
@@ -177,7 +177,7 @@ function setLevel(level: Z2MLogLevel): void {
 }
 
 function warn(message: string): void {
-    // winston.config.syslog.levels doesnt have warn, but is required for syslog.
+    // winston.config.syslog.levels doesn't have warn, but is required for syslog.
     logger.warning(message);
 }
 

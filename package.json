@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.30.3",
+  "version": "1.30.3-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "engines": {
-    "node": "^14 || ^16 || ^18 || ^19"
+    "node": "^14 || ^16 || ^18 || ^19 || ^20"
   },
   "keywords": [
     "xiaomi",
@@ -51,40 +51,40 @@
     "moment": "^2.29.4",
     "mqtt": "4.3.7",
     "object-assign-deep": "^0.4.0",
-    "rimraf": "^4.4.1",
-    "semver": "^7.3.8",
+    "rimraf": "^5.0.0",
+    "semver": "^7.5.0",
     "source-map-support": "^0.5.21",
     "uri-js": "^4.4.1",
     "winston": "^3.8.2",
     "winston-syslog": "^2.7.0",
     "winston-transport": "^4.5.0",
     "ws": "^8.13.0",
-    "zigbee-herdsman": "0.14.103",
-    "zigbee-herdsman-converters": "15.0.78",
+    "zigbee-herdsman": "0.14.111",
+    "zigbee-herdsman-converters": "15.0.100",
     "zigbee2mqtt-frontend": "0.6.127"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.3",
+    "@babel/core": "^7.21.5",
     "@babel/plugin-proposal-decorators": "^7.21.0",
-    "@babel/preset-env": "^7.20.2",
-    "@babel/preset-typescript": "^7.21.0",
+    "@babel/preset-env": "^7.21.5",
+    "@babel/preset-typescript": "^7.21.5",
     "@types/debounce": "^1.2.1",
     "@types/finalhandler": "^1.2.0",
     "@types/humanize-duration": "^3.27.1",
-    "@types/jest": "^29.5.0",
+    "@types/jest": "^29.5.1",
     "@types/js-yaml": "^4.0.5",
     "@types/object-assign-deep": "^0.4.0",
     "@types/rimraf": "^3.0.2",
     "@types/ws": "^8.5.4",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
     "babel-jest": "^29.5.0",
-    "eslint": "^8.36.0",
+    "eslint": "^8.39.0",
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-jest": "^27.2.1",
     "jest": "^29.5.0",
     "tmp": "^0.2.1",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.4"
   },
   "jest": {
     "coverageThreshold": {
