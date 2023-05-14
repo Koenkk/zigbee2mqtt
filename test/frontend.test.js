@@ -59,6 +59,7 @@ jest.mock('http', () => ({
         mockHTTP.variables.onRequest = onRequest;
         return mockHTTP.implementation;
     }),
+    Agent: jest.fn(),
 }));
 
 jest.mock('https', () => ({
