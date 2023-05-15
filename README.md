@@ -56,10 +56,15 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 - [Home Assistant OS](https://www.home-assistant.io/installation/): Using [the official addon](https://github.com/zigbee2mqtt/hassio-zigbee2mqtt)
 - Other installation: using instructions [here](https://www.zigbee2mqtt.io/guide/usage/integrations/home_assistant.html)
 
+<br>
+
 <img align="left" height="100px" width="100px" src="https://user-images.githubusercontent.com/2734836/47615848-b8dd8700-dabd-11e8-9d77-175002dd8987.png">
 
 ### [Domoticz](https://www.domoticz.com/)
 - Integration implemented in [domoticz-zigbee2mqtt-plugin](https://github.com/stas-demydiuk/domoticz-zigbee2mqtt-plugin)
+
+<br>
+<br>
 
 <img align="left" height="100px" width="100px" src="./images/gladys-assistant-logo.jpg">
 
