@@ -64,8 +64,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 <img align="left" height="100px" width="100px" src="./images/gladys-assistant-logo.jpg">
 
 ### [Gladys Assistant](https://gladysassistant.com/)
-
-- Integration implemented natively in Gladys Assistant. Read documentation [here](https://gladysassistant.com/docs/integrations/zigbee2mqtt/).
+- Integration implemented natively in Gladys Assistant. Read documentation [here](https://gladysassistant.com/docs/integrations/zigbee2mqtt/)
 
 <br>
 
