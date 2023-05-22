@@ -25,6 +25,6 @@ jobs:
     - run: npm install
     - uses: peter-evans/create-pull-request@v5
       with:
-        commit-message: Update dependencies
+        commit-message: "feat(ignore): update dependencies"
         branch: "update_deps"
         title: Update dependencies
