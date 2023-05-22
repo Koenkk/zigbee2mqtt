@@ -44,7 +44,7 @@ jobs:
           cd ../zhc
           git log
           cd ../z2m
-          node scripts/generateChangelog.js ../zhc
+          node scripts/generateChangelog.js TODO ../zhc
 
-      - run: echo "${{ steps.release.outputs.pr['number'] }}"
+      - run: echo "${{ steps.release.outputs.pr.number }}"
 
