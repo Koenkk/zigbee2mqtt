@@ -33,8 +33,11 @@ jobs:
       - run: |
           cd z2m
           npm ci
+          echo "LS"
           ls
+          echo "LS scripts"
           ls scripts
+          echo "LS ZHC"
           ls ../zhc
           node scripts/generateChangelog.js ../zhc
 
