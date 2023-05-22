@@ -34,17 +34,21 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
-          path: './z2m'
+          path: './z2m-dev'
           ref: dev-temp
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: './z2m-master'
+          ref: master
       - name: Generate Z2M changelog
         run: |
-          cp z2m-changelog/CHANGELOG.md z2m
-          cd z2m
+          cp z2m-changelog/CHANGELOG.md z2m-dev
+          cd z2m-dev
           npm ci
-          cd ../zhc
-          git log
-          cd ../z2m
-          node scripts/generateChangelog.js TODO ../zhc
+          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r '.dependencies.zigbee-herdsman-converters')
+          echo $TILL_ZHC_VERSION
+          node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc
 
       - run: echo "${{ steps.release.outputs.pr.number }}"
 

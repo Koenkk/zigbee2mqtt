@@ -7,9 +7,9 @@ const zhc = require('zigbee-herdsman-converters');
 const zhcRepo = process.argv[3];
 
 const changelogs = [
-    fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n'),
-    fs.readFileSync(
-        path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n'),
+    {tillVersion: 'dummy', contents: fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n')},
+    {tillVersion: process.argv[2], contents: fs.readFileSync(
+        path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n')},
 ];
 
 const releaseRe = /## \[(.+)\]/;
@@ -21,11 +21,11 @@ const changeRe = [
 ];
 
 for (const changelog of changelogs) {
-    for (const line of changelog) {
+    for (const line of changelog.contents) {
         const releaseMatch = line.match(releaseRe);
         const changeMatch = changeRe.map((re) => line.match(re)).find((e) => e);
         if (releaseMatch) {
-            if (releaseMatch[1] === process.argv[2]) {
+            if (releaseMatch[1] === changelog.tillVersion) {
                 break;
             }
         } else if (line === '### Features') {
