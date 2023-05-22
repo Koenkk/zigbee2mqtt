@@ -13,14 +13,6 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
-        id: release
-        with:
-          release-type: node
-          package-name: release-please-action
-          default-branch: dev-temp
-          token: ${{secrets.CR_PAT}}
-        
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
@@ -45,6 +37,16 @@ jobs:
         with:
           repository: koenkk/zigbee-herdsman-converters
           path: './zigbee-herdsman-converters'
+
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: node
+          package-name: release-please-action
+          default-branch: dev-temp
+          token: ${{secrets.CR_PAT}}
+        
+
 
       - run: ls
       - run: ls ..
