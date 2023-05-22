@@ -30,6 +30,7 @@ jobs:
         with:
           repository: koenkk/zigbee-herdsman-converters
           path: './zhc'
+          fetch-depth: 200
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
@@ -40,10 +41,7 @@ jobs:
           cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
           npm ci
-          cd ../zhc
-          git log
-          
-      # node scripts/generateChangelog.js ../zhc
+          node scripts/generateChangelog.js ../zhc
 
-      - run: echo "${{ steps.release.outputs.pr.number }}"
+      - run: echo "${{ steps.release.outputs.pr['number'] }}"
 
