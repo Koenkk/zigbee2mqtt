@@ -14,8 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v3
+        id: release
         with:
           release-type: node
           package-name: release-please-action
           default-branch: dev-temp
           token: ${{secrets.CR_PAT}}
+      - run: echo "${{ steps.release.outputs['pr'] }}"
