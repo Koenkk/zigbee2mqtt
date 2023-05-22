@@ -46,6 +46,8 @@ jobs:
           repository: koenkk/zigbee-herdsman-converters
 
       - run: ls
+      - run: ls ..
+      - run: ls scripts
 
       - run: echo "${{ steps.release.outputs }}"
       - run: node scripts/generateChangelog.js
