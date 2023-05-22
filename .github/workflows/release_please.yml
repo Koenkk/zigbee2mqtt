@@ -13,13 +13,13 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
-        id: release
-        with:
-          release-type: node
-          package-name: release-please-action
-          default-branch: dev-temp
-          token: ${{secrets.CR_PAT}}
+      # - uses: google-github-actions/release-please-action@v3
+      #   id: release
+      #   with:
+      #     release-type: node
+      #     package-name: release-please-action
+      #     default-branch: dev-temp
+      #     token: ${{secrets.CR_PAT}}
 
       - uses: actions/checkout@v3
         with:
@@ -43,12 +43,12 @@ jobs:
           ref: master
       - name: Generate Z2M changelog
         run: |
-          cp z2m-changelog/CHANGELOG.md z2m-dev
+# cp z2m-changelog/CHANGELOG.md z2m-dev
           cd z2m-dev
           npm ci
-          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r '.dependencies.zigbee-herdsman-converters')
+          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r ".dependencies")
           echo $TILL_ZHC_VERSION
-          node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc
+# node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc
 
       - run: echo "${{ steps.release.outputs.pr.number }}"
 
