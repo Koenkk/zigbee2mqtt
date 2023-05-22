@@ -44,7 +44,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: koenkk/zigbee-herdsman-converters
-            path: './zigbee-herdsman-converters'
+          path: './zigbee-herdsman-converters'
 
       - run: ls
       - run: ls ..
