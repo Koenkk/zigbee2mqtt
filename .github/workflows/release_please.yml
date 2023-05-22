@@ -43,7 +43,8 @@ jobs:
           npm ci
           cd ../zhc
           git log
-        # node scripts/generateChangelog.js ../zhc
+          cd ../z2m
+          node scripts/generateChangelog.js ../zhc
 
       - run: echo "${{ steps.release.outputs.pr['number'] }}"
 
