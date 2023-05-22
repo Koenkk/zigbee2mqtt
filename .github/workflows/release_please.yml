@@ -38,7 +38,11 @@ jobs:
       - name: Generate Z2M changelog
         run: |
           cp z2m-changelog/CHANGELOG.MD z2m
+          echo "---- 1"
+          ls
           cd z2m
+          echo "---- 2"
+          ls
           npm ci
           node scripts/generateChangelog.js ../zhc
 
