@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - dev
+      - dev-temp
 
 permissions:
   contents: write
@@ -17,5 +17,5 @@ jobs:
         with:
           release-type: node
           package-name: release-please-action
-          default-branch: master
+          default-branch: dev-temp
           token: ${{secrets.CR_PAT}}
