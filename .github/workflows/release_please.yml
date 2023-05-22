@@ -24,21 +24,20 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
-          path: './z2m'
+          path: './z2m-changelog'
           ref: release-please--branches--dev-temp--components--release-please-action
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee-herdsman-converters
           path: './zhc'
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: './z2m'
       - run: |
+          cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
           npm ci
-          echo "LS"
-          ls
-          echo "LS scripts"
-          ls scripts
-          echo "LS ZHC"
-          ls ../zhc
           node scripts/generateChangelog.js ../zhc
 
       - run: echo "${{ steps.release.outputs.pr.number }}"
