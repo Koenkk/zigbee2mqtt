@@ -33,6 +33,9 @@ jobs:
       - run: |
           cd z2m
           npm ci
+          ls
+          ls scripts
+          ls ../zhc
           node scripts/generateChangelog.js ../zhc
 
       - run: echo "${{ steps.release.outputs.pr.number }}"
