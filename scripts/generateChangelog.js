@@ -4,11 +4,12 @@ const process = require('process');
 const {execSync} = require('child_process');
 const zhc = require('zigbee-herdsman-converters');
 
-const zhcDir = path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters');
+const zhcRepo = process.argv[3];
 
 const changelogs = [
     fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.MD'), 'utf-8').split('\n'),
-    fs.readFileSync(path.join(zhcDir, 'CHANGELOG.md'), 'utf-8').split('\n'),
+    fs.readFileSync(
+        path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n'),
 ];
 
 const releaseRe = /## \[(.+)\]/;
@@ -48,7 +49,7 @@ for (const changelog of changelogs) {
             let issue = changeMatch[4];
             if (!issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
 
-            let user = execSync(`git log --format='%an' ${changeMatch[5]}^!`, {cwd: zhcDir}).toString().trim();
+            let user = execSync(`git log --format='%an' ${changeMatch[5]}^!`, {cwd: zhcRepo}).toString().trim();
             if (user === 'Koen Kanters') user = 'koenkk';
 
             changes[localContext].push(`- ${issue} ${message} (@${user})`);

@@ -13,31 +13,6 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - name: Get NodeJS Version
-        id: nodeversion
-        run: |
-          echo "::set-output name=version::$(node --version)"
-      - name: Restore node_modules cache
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ steps.nodeversion.outputs.version }}-${{ hashFiles('package-lock.json') }}
-      - name: Install dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
-
-      - name: Checkout zigbee-herdsman-converters
-        uses: actions/checkout@master
-        with:
-          repository: koenkk/zigbee-herdsman-converters
-          path: './zigbee-herdsman-converters'
-
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
@@ -45,12 +20,20 @@ jobs:
           package-name: release-please-action
           default-branch: dev-temp
           token: ${{secrets.CR_PAT}}
-        
 
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: './z2m'
+          ref: release-please--branches--dev-temp--components--release-please-action
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee-herdsman-converters
+          path: './zhc'
+      - run: |
+          cd z2m
+          npm ci
+          node scripts/generateChangelog.js ../zhc
 
-      - run: ls
-      - run: ls ..
-      - run: ls scripts
+      - run: echo "${{ steps.release.outputs.pr.number }}"
 
-      - run: echo "${{ steps.release.outputs }}"
-      - run: node scripts/generateChangelog.js
