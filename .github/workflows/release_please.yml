@@ -49,7 +49,9 @@ jobs:
           echo $TILL_ZHC_VERSION
 # cp z2m-changelog/CHANGELOG.md z2m-dev
 # node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc
-      - run: gh pr edit 17757 --body "$(gh pr view 17757 --json body | jq -r '.body') BLAA BLAA BLAA"
+      - run: |
+          cd z2m-dev
+          gh pr edit 17757 --body "$(gh pr view 17757 --json body | jq -r '.body') BLAA BLAA BLAA"
         env:
           GH_TOKEN: ${{secrets.CR_PAT}}
       - run: echo "${{ steps.release.outputs.pr.number }}"
