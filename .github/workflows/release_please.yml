@@ -45,10 +45,12 @@ jobs:
         run: |
           cd z2m-dev
           npm ci
-          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r ".dependencies")
+          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r ".dependencies.zigbee-herdsman-converters")
           echo $TILL_ZHC_VERSION
 # cp z2m-changelog/CHANGELOG.md z2m-dev
 # node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc
       - run: gh pr edit 17757 --body "$(gh pr view 17757 --json body | jq -r '.body') BLAA BLAA BLAA"
+        env:
+          GH_TOKEN: ${{secrets.CR_PAT}}
       - run: echo "${{ steps.release.outputs.pr.number }}"
 
