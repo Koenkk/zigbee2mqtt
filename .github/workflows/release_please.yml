@@ -37,12 +37,8 @@ jobs:
           ref: dev-temp
       - name: Generate Z2M changelog
         run: |
-          cp z2m-changelog/CHANGELOG.MD z2m
-          echo "---- 1"
-          ls
+          cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
-          echo "---- 2"
-          ls
           npm ci
           node scripts/generateChangelog.js ../zhc
 

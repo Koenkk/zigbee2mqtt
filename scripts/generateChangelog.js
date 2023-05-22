@@ -7,7 +7,7 @@ const zhc = require('zigbee-herdsman-converters');
 const zhcRepo = process.argv[3];
 
 const changelogs = [
-    fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.MD'), 'utf-8').split('\n'),
+    fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n'),
     fs.readFileSync(
         path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n'),
 ];
