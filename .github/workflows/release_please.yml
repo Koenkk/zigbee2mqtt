@@ -34,6 +34,7 @@ jobs:
         with:
           repository: koenkk/zigbee2mqtt
           path: './z2m'
+          ref: dev-temp
       - run: |
           cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
