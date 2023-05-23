@@ -13,63 +13,45 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: node
+          package-name: release-please-action
+          default-branch: dev-temp
+          token: ${{secrets.CR_PAT}}
+
+      # Checkout repos
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m
-      - run: |
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: ./z2m-changelog
+          ref: release-please--branches--dev-temp--components--release-please-action
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee-herdsman-converters
+          path: ./zhc
+          fetch-depth: 300
+
+      # Update latest-dev release changelog
+      - name: Update latest-dev release changelog
+        run: |
+          PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.number')
+          MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
+          cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
-          git push --delete origin latest-dev
-          git tag latest-dev
-          git push origin latest-dev
-      - run: echo "this is the latest-dev upated" > body.md
+          npm ci
+          node scripts/generateChangelog.js $MASTER_ZHC_VERSION ../zhc >> ../changelog
+        env:
+          GH_TOKEN: ${{secrets.CR_PAT}}
       - uses: ncipollo/release-action@v1
         with:
-          bodyFile: "body.md"
+          bodyFile: changelog
           prerelease: true
           name: latest-dev
           allowUpdates: true
           tag: latest-dev
-      # - uses: google-github-actions/release-please-action@v3
-      #   id: release
-      #   with:
-      #     release-type: node
-      #     package-name: release-please-action
-      #     default-branch: dev-temp
-      #     token: ${{secrets.CR_PAT}}
-
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: koenkk/zigbee2mqtt
-      #     path: ./z2m-changelog
-      #     ref: release-please--branches--dev-temp--components--release-please-action
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: koenkk/zigbee-herdsman-converters
-      #     path: ./zhc
-      #     fetch-depth: 300
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: koenkk/zigbee2mqtt
-      #     path: ./z2m
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: koenkk/zigbee2mqtt
-      #     path: ./z2m-master
-      #     ref: master
-      # - name: Set Z2M changelog in PR
-      #   run: |
-      #     PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.number')
-      #     MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
-      #     cp z2m-changelog/CHANGELOG.md z2m
-      #     cd z2m
-      #     npm ci
-      #     gh pr view $PR --json body | jq -r '.body' > ../changelog
-      #     echo '<!--latest-dev-changelog-->' >> ../changelog
-      #     sed -i '/<!--latest-dev-changelog-->/q' ../changelog
-      #     echo '# Latest dev changelog' >> ../changelog
-      #     node scripts/generateChangelog.js $MASTER_ZHC_VERSION ../zhc >> ../changelog
-      #     gh pr edit $PR --body-file ../changelog
-      #   env:
-      #     GH_TOKEN: ${{secrets.CR_PAT}}
-
