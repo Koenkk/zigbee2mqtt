@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: IMPORTANT: Check development branch changelog first!!
+  - name: "IMPORTANT: Check development branch changelog first!!"
     url: https://github.com/Koenkk/zigbee2mqtt/releases/tag/latest-dev
     about: Before submitting an issue, check if the issue hasn't already been solved in the development branch. Click "Open" to see the release notes of the development branch
   - name: Questions/discussion
