@@ -29,6 +29,11 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
+          path: ./z2m-master
+          ref: master
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
           path: ./z2m-changelog
           ref: release-please--branches--dev-temp--components--release-please-action
       - uses: actions/checkout@v3
