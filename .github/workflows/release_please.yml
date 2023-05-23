@@ -13,6 +13,14 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # - uses: actions/checkout@v3
+      #   with:
+      #     repository: koenkk/zigbee2mqtt
+      #     path: ./z2m
+      # - run: |
+      #     cd z2m
+      #     git push --delete origin latest-dev
+
       - run: echo "this is the latest-dev" > body.md
       - uses: ncipollo/release-action@v1
         with:
@@ -20,6 +28,7 @@ jobs:
           prerelease: true
           name: latest-dev
           allowUpdates: true
+          tag: latest-dev
       # - uses: google-github-actions/release-please-action@v3
       #   id: release
       #   with:
