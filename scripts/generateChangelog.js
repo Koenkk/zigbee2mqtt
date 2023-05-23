@@ -1,15 +1,23 @@
+/* eslint max-len: 0 */
 const path = require('path');
 const fs = require('fs');
 const process = require('process');
 const {execSync} = require('child_process');
 const zhc = require('zigbee-herdsman-converters');
 
+const z2mRepo = process.argv[2];
 const zhcRepo = process.argv[3];
+const zhRepo = process.argv[4];
+const zhcTillVersion = process.argv[5];
+const zhTillVersion = process.argv[6];
 
 const changelogs = [
-    {tillVersion: 'dummy', contents: fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n')},
-    {tillVersion: process.argv[2], contents: fs.readFileSync(
-        path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n')},
+    {tillVersion: 'dummy', repo: z2mRepo,
+        contents: fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n')},
+    {tillVersion: zhcTillVersion, repo: zhcRepo,
+        contents: fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n')},
+    {tillVersion: zhTillVersion, repo: zhRepo,
+        contents: fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman', 'CHANGELOG.md'), 'utf-8').split('\n')},
 ];
 
 const releaseRe = /## \[(.+)\]/;
@@ -49,7 +57,7 @@ for (const changelog of changelogs) {
             let issue = changeMatch[4];
             if (!issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
 
-            let user = execSync(`git log --format='%an' ${changeMatch[5]}^!`, {cwd: zhcRepo}).toString().trim();
+            let user = execSync(`git log --format='%an' ${changeMatch[5]}^!`, {cwd: changelog.repo}).toString().trim();
             if (user === 'Koen Kanters') user = 'koenkk';
 
             changes[localContext].push(`- ${issue} ${message} (@${user})`);
