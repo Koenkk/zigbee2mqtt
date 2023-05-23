@@ -30,7 +30,7 @@ jobs:
         with:
           repository: koenkk/zigbee-herdsman-converters
           path: ./zhc
-          fetch-depth: 500
+          fetch-depth: 300
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
@@ -42,19 +42,16 @@ jobs:
           ref: master
       - name: Set Z2M changelog in PR
         run: |
+          PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r '.number')
+          MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
           cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
           npm ci
-          TILL_ZHC_VERSION=$(cat ../z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
-          echo $TILL_ZHC_VERSION
-          gh pr view 17757 --json body | jq -r '.body' > ../changelog
-          echo "CHNAGELLOG A"
-          cat ../changelog
-          node scripts/generateChangelog.js $TILL_ZHC_VERSION ../zhc >> ../changelog
-          echo "CHNAGELLOG B"
-          cat ../changelog
-          gh pr edit 17757 --body-file ../changelog
+          gh pr view $PR --json body | jq -r '.body' > ../changelog
+          echo '<!--latest-dev-changelog-->' >> ../changelog
+          sed '/<!--latest-dev-changelog-->/q' ../changelog > ../changelog
+          node scripts/generateChangelog.js $MASTER_ZHC_VERSION ../zhc >> ../changelog
+          gh pr edit $PR --body-file ../changelog
         env:
           GH_TOKEN: ${{secrets.CR_PAT}}
-      - run: echo '${{ steps.release.outputs.pr }}' | jq -r '.number'
 
