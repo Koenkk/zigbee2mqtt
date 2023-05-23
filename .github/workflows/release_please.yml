@@ -13,15 +13,16 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      # - uses: actions/checkout@v3
-      #   with:
-      #     repository: koenkk/zigbee2mqtt
-      #     path: ./z2m
-      # - run: |
-      #     cd z2m
-      #     git push --delete origin latest-dev
-
-      - run: echo "this is the latest-dev" > body.md
+      - uses: actions/checkout@v3
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: ./z2m
+      - run: |
+          cd z2m
+          git push --delete origin latest-dev
+          git tag latest-dev
+          git push origin latest-dev
+      - run: echo "this is the latest-dev upated" > body.md
       - uses: ncipollo/release-action@v1
         with:
           bodyFile: "body.md"
