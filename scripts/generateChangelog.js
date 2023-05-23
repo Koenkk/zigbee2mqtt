@@ -5,18 +5,15 @@ const process = require('process');
 const {execSync} = require('child_process');
 const zhc = require('zigbee-herdsman-converters');
 
-const z2mRepo = process.argv[2];
-const zhcRepo = process.argv[3];
-const zhRepo = process.argv[4];
-const zhcTillVersion = process.argv[5];
-const zhTillVersion = process.argv[6];
+const zhcTillVersion = process.argv[2];
+const zhTillVersion = process.argv[3];
 
 const changelogs = [
-    {tillVersion: 'dummy', repo: z2mRepo,
+    {tillVersion: 'dummy', project: 'koenkk/zigbee2mqtt',
         contents: fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf-8').split('\n')},
-    {tillVersion: zhcTillVersion, repo: zhcRepo,
+    {tillVersion: zhcTillVersion, project: 'koenkk/zigbee-herdsman-converters',
         contents: fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'CHANGELOG.md'), 'utf-8').split('\n')},
-    {tillVersion: zhTillVersion, repo: zhRepo,
+    {tillVersion: zhTillVersion, project: 'koenkk/zigbee-herdsman',
         contents: fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman', 'CHANGELOG.md'), 'utf-8').split('\n')},
 ];
 
@@ -57,8 +54,7 @@ for (const changelog of changelogs) {
             let issue = changeMatch[4];
             if (!issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
 
-            let user = execSync(`git log --format='%an' ${changeMatch[5]}^!`, {cwd: changelog.repo}).toString().trim();
-            if (user === 'Koen Kanters') user = 'koenkk';
+            const user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`);
 
             changes[localContext].push(`- ${issue} ${message} (@${user})`);
         } else if (line === '# Changelog' || !line) {

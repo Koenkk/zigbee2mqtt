@@ -26,7 +26,6 @@ jobs:
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m
-          fetch-depth: 100
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
@@ -37,16 +36,6 @@ jobs:
           repository: koenkk/zigbee2mqtt
           path: ./z2m-changelog
           ref: release-please--branches--dev-temp--components--release-please-action
-      - uses: actions/checkout@v3
-        with:
-          repository: koenkk/zigbee-herdsman-converters
-          path: ./zhc
-          fetch-depth: 300
-      - uses: actions/checkout@v3
-        with:
-          repository: koenkk/zigbee-herdsman
-          path: ./zh
-          fetch-depth: 100
 
       - name: Update latest-dev tag
         run: |
@@ -62,7 +51,7 @@ jobs:
           cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
           npm ci
-          node scripts/generateChangelog.js ../z2m ../zhc ../zh $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog
+          node scripts/generateChangelog.js $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog
         env:
           GH_TOKEN: ${{secrets.CR_PAT}}
       - uses: ncipollo/release-action@v1
