@@ -49,7 +49,7 @@ jobs:
           npm ci
           gh pr view $PR --json body | jq -r '.body' > ../changelog
           echo '<!--latest-dev-changelog-->' >> ../changelog
-          sed '/<!--latest-dev-changelog-->/q' ../changelog > ../changelog
+          sed '/<!--latest-dev-changelog-->/q' ../changelog >> ../changelog
           node scripts/generateChangelog.js $MASTER_ZHC_VERSION ../zhc >> ../changelog
           gh pr edit $PR --body-file ../changelog
         env:
