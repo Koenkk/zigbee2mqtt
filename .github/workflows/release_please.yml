@@ -16,7 +16,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: npm
 
       - uses: google-github-actions/release-please-action@v3
         id: release
