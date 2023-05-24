@@ -1,10 +1,12 @@
 on:
   repository_dispatch:
-    types: update_dependency
+    types: update_dep
+
+name: update-dep
 
 permissions: {}
 jobs:
-  update_dependency:
+  update_dep:
     permissions:
       contents: write
       pull-requests: write
@@ -24,7 +26,7 @@ jobs:
       id: cpr
       with:
         commit-message: "fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}"
-        branch: "update_dependency_${{ github.event.client_payload.package }}"
+        branch: "deps/${{ github.event.client_payload.package }}"
         title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
     - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
     - uses: peter-evans/enable-pull-request-automerge@v3

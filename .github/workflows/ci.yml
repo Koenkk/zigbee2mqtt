@@ -1,9 +1,14 @@
-name: CI
+name: ci
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - deps/*
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   ci:
@@ -12,9 +17,9 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 20
         registry-url: https://registry.npmjs.org/
-        cache: 'npm'
+        cache: npm
     - name: Install dependencies
       run: npm ci
     - name: Build
@@ -28,7 +33,7 @@ jobs:
       run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
     - name: Docker login ghcr.io
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-      run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u koenkk --password-stdin
+      run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u koenkk --password-stdin
     - name: Docker setup - QEMU
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       uses: docker/setup-qemu-action@v2
@@ -73,7 +78,7 @@ jobs:
       run: |
         curl \
           -X POST \
-          -H "Authorization: token ${{ secrets.CR_PAT }}" \
+          -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
           -d '{"ref":"master","inputs":{}}'
@@ -95,8 +100,6 @@ jobs:
       - name: Install dependencies
         # --ignore-scripts prevents the serialport build which often fails on Windows
         run: npm ci --ignore-scripts
-      - name: Lint
-        run: npm run eslint
       - name: Build
         run: npm run build
       - name: Test
