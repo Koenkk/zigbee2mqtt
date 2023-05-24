@@ -13,13 +13,18 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
           release-type: node
           package-name: release-please-action
           default-branch: dev
-          token: ${{secrets.CR_PAT}}
+          token: ${{secrets.GH_TOKEN}}
 
       # Checkout repos
       - uses: actions/checkout@v3
@@ -54,7 +59,7 @@ jobs:
           npm ci
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog
         env:
-          GH_TOKEN: ${{secrets.CR_PAT}}
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
       - uses: ncipollo/release-action@v1
         with:
           bodyFile: changelog

@@ -17,14 +17,15 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: dev
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        token: ${{ secrets.GH_TOKEN }}
     - uses: actions/setup-node@v3
       with:
-        node-version: 18
+        node-version: 20
+        cache: npm
     - run: npx npm-check-updates -u -x connect-gzip-static # connect-gzip-static only supports node 16
     - run: npm install
     - uses: peter-evans/create-pull-request@v5
       with:
-        commit-message: "feat(ignore): update dependencies"
-        branch: "update_deps"
+        commit-message: "fix(ignore): update dependencies"
+        branch: "deps/all"
         title: Update dependencies

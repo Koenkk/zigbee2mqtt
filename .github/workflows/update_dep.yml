@@ -1,0 +1,37 @@
+on:
+  repository_dispatch:
+    types: update_dep
+
+name: update-dep
+
+permissions: {}
+jobs:
+  update_dep:
+    permissions:
+      contents: write
+      pull-requests: write
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: dev
+        token: ${{ secrets.GH_TOKEN }}
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache: npm
+    - run: npm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
+    - uses: peter-evans/create-pull-request@v5
+      id: cpr
+      with:
+        commit-message: "fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}"
+        branch: "deps/${{ github.event.client_payload.package }}"
+        title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
+    - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
+    - uses: peter-evans/enable-pull-request-automerge@v3
+      if: steps.cpr.outputs.pull-request-operation == 'created'
+      with:
+        token: ${{ secrets.GH_TOKEN }}
+        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+        merge-method: squash

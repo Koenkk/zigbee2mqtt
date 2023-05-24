@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
 
-name: GHCR cleanup
+name: ghcr-cleanup
 
 permissions: {}
 jobs:
@@ -12,7 +12,7 @@ jobs:
       - name: Delete untagged images
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.CR_PAT }}
+          github-token: ${{ secrets.GH_TOKEN }}
           script: |
             const response = await github.request("GET /${{ env.OWNER }}/packages/container/${{ env.PACKAGE_NAME }}/versions",
               { per_page: ${{ env.PER_PAGE }}
