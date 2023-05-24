@@ -45,21 +45,33 @@ for (const changelog of changelogs) {
             const localContext = changeMatch[2] ? changeMatch[2] : context;
             if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
 
+            let user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
+
+            const messages = [];
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
+
+            const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/);
+            if (otherUser) {
+                user = otherUser[1];
+                message = message.replace(otherUser[0], '');
+            }
+
             if (localContext === 'add') {
-                const model = zhc.definitions.find((d) => d.model === message);
-                if (!model) throw new Error(`${message} does not exist`);
-                message = `\`${model.model}\` ${model.vendor} ${model.description}`;
+                for (const model of message.split(',')) {
+                    const definition = zhc.definitions.find((d) => d.model === model.trim());
+                    if (!definition) throw new Error(`Model '${message}' does not exist`);
+                    messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                }
+            } else {
+                messages.push(message);
             }
 
             let issue = changeMatch[4].trim();
             if (issue && !issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
             if (!issue) issue = '_NO_ISSUE_';
 
-            const user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
-
-            changes[localContext].push(`- ${issue} ${message} (@${user})`);
+            messages.forEach((m) => changes[localContext].push(`- ${issue} ${m} (@${user})`));
         } else if (line === '# Changelog' || !line) {
             continue;
         } else {
