@@ -12,6 +12,9 @@ name: release-please
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      version: "${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}"
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -56,13 +59,53 @@ jobs:
           cp z2m-changelog/CHANGELOG.md z2m
           cd z2m
           npm ci
-          node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog
+          node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - uses: ncipollo/release-action@v1
         with:
-          bodyFile: changelog
+          bodyFile: changelog.txt
           prerelease: true
           name: latest-dev
           allowUpdates: true
           tag: latest-dev
+      - name: Upload changelog
+        uses: actions/upload-artifact@v2
+        with:
+          name: changelog
+          path: changelog.txt
+    
+    create-release:
+      runs-on: ubuntu-latest
+      needs: [release-please]
+      if: ${{ needs.release-please.outputs.release_created }}
+      steps:
+      - uses: actions/checkout@v3
+        ref: dev
+        token: ${{secrets.GH_TOKEN}}
+      - name: Download changelog
+        uses: actions/download-artifact@v2
+        with:
+          name: changelog
+          path: ../changelog.txt
+      - uses: ncipollo/release-action@v1
+        name: Create release
+        with:
+          bodyFile: ../changelog.txt
+          draft: true
+          name: ${{ needs.release-please.outputs.version }}
+          tag: ${{ needs.release-please.outputs.version }}
+      - name: Merge dev -> master
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: dev
+          target_branch: master
+          github_token: ${{secrets.GH_TOKEN}}
+      - name: Promote to dev
+        run: |
+          jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package.json > package.json
+          jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package-lock.json > package-lock.json
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Promote to dev
