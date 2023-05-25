@@ -70,7 +70,7 @@ jobs:
           allowUpdates: true
           tag: latest-dev
       - name: Upload changelog
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: changelog
           path: changelog.txt
