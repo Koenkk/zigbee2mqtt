@@ -441,6 +441,7 @@ export default class HomeAssistant extends Extension {
                     `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`,
                 discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
+                discoveryEntry.discovery_payload.state_stopped = 'STOP';
             }
 
             if (!position && !tilt) {
