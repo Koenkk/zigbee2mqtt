@@ -1,6 +1,12 @@
 name: ci
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - deps/*
+    tags:
+      - '**'
 
 permissions:
   contents: write
