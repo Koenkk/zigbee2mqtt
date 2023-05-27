@@ -15,4 +15,5 @@ jobs:
           type: now
           head_to_merge: master
           target_branch: dev
+          message: "chore: merge master to dev"
           github_token: ${{ secrets.GH_TOKEN }}
