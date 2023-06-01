@@ -38,11 +38,6 @@ jobs:
           repository: koenkk/zigbee2mqtt
           path: ./z2m-master
           ref: master
-      - uses: actions/checkout@v3
-        with:
-          repository: koenkk/zigbee2mqtt
-          path: ./z2m-changelog
-          ref: release-please--branches--dev--components--release-please-action
 
       - name: Update latest-dev tag
         run: |
@@ -56,7 +51,7 @@ jobs:
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
           MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
           MASTER_ZH_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman"')
-          cp z2m-changelog/CHANGELOG.md z2m
+          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--release-please-action/CHANGELOG.md > z2m/CHANGELOG.md
           cd z2m
           npm ci
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
