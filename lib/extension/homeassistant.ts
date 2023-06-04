@@ -459,6 +459,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.payload_lock = state.value_on;
                 discoveryEntry.discovery_payload.payload_unlock = state.value_off;
                 discoveryEntry.discovery_payload.state_topic = true;
+                discoveryEntry.discovery_payload.entity_category = 'config';
                 discoveryEntry.object_id = 'keypad_lock';
             } else if (state.property === 'child_lock') {
                 // deprecated: child_lock is messy, but changing is breaking
@@ -468,6 +469,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.state_locked = 'LOCK';
                 discoveryEntry.discovery_payload.state_unlocked = 'UNLOCK';
                 discoveryEntry.discovery_payload.state_topic = true;
+                discoveryEntry.discovery_payload.entity_category = 'config';
                 discoveryEntry.object_id = 'child_lock';
             } else {
                 discoveryEntry.discovery_payload.state_locked = state.value_on;
