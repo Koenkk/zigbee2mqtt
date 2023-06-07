@@ -1,7 +1,7 @@
 
 import * as settings from '../util/settings';
 import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
-import philips from 'zigbee-herdsman-converters/lib/philips';
+import * as philips from 'zigbee-herdsman-converters/lib/philips';
 import logger from '../util/logger';
 import utils from '../util/utils';
 import Extension from './extension';
@@ -144,6 +144,7 @@ export default class Publish extends Extension {
         {
             if (Array.isArray(definition)) {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
+                // @ts-expect-error
                 if (c.size == 0) converters = defaultGroupConverters;
                 else converters = Array.from(c);
             } else if (definition) {
