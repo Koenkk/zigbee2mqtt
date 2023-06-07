@@ -655,7 +655,7 @@ describe('Controller', () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
     });
 
-    it('onlythis Should not republish retained messages on MQTT reconnect when retained message are sent', async () => {
+    it('Should not republish retained messages on MQTT reconnect when retained message are sent', async () => {
         await controller.start();
         MQTT.publish.mockClear();
         MQTT.events['connect']();
