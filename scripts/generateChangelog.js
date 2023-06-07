@@ -19,7 +19,7 @@ const changelogs = [
 ];
 
 const releaseRe = /## \[(.+)\]/;
-const changes = {features: [], fixes: [], detect: [], add: []};
+const changes = {features: [], fixes: [], detect: [], add: [], error: []};
 let context = null;
 const changeRe = [
     /^\* (\*\*(.+):\*\*)?(.+)\((\[#\d+\]\(.+\))\) \(\[.+\]\(https:.+\/(.+)\)\)$/,
@@ -60,8 +60,11 @@ for (const changelog of changelogs) {
             if (localContext === 'add') {
                 for (const model of message.split(',')) {
                     const definition = zhc.definitions.find((d) => d.model === model.trim());
-                    if (!definition) throw new Error(`Model '${message}' does not exist`);
-                    messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    if (definition) {
+                        messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    } else {
+                        changes['error'].push(`${line} (model '${model}' does not exist)`);
+                    }
                 }
             } else {
                 messages.push(message);
@@ -86,6 +89,7 @@ const names = [
     ['fixes', 'Fixes'],
     ['add', 'New supported devices'],
     ['detect', 'Fixed device detections'],
+    ['error', 'Changelog generator error'],
 ];
 for (const name of names) {
     result += `# ${name[1]}\n`;
