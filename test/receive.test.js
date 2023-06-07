@@ -299,7 +299,7 @@ describe('Receive', () => {
 
     it('Should publish 1 message when converted twice', async () => {
         const device = zigbeeHerdsman.devices.RTCGQ11LM;
-        const data = {'65281': {'1': 3045, '3': 19, '4': 17320, '5': 35, '6': [0, 3], '10': 51107, '11': 381, '100': 0}}
+        const data = {'65281': {'1': 3045, '3': 19, '5': 35, '6': [0, 3], '11': 381, '100': 0}}
         const payload = {data, cluster: 'genBasic', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
