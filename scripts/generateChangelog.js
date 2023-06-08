@@ -42,7 +42,7 @@ for (const changelog of changelogs) {
         } else if (line.startsWith('* **ignore:**')) {
             continue;
         } else if (changeMatch) {
-            const localContext = changeMatch[2] ? changeMatch[2] : context;
+            let localContext = changeMatch[2] ? changeMatch[2] : context;
             if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
 
             let user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
@@ -72,7 +72,10 @@ for (const changelog of changelogs) {
 
             let issue = changeMatch[4].trim();
             if (issue && !issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
-            if (!issue) issue = '_NO_ISSUE_';
+            if (!issue) {
+                issue = '_NO_ISSUE_';
+                localContext = 'error';
+            }
 
             messages.forEach((m) => changes[localContext].push(`- ${issue} ${m} (@${user})`));
         } else if (line === '# Changelog' || !line) {
