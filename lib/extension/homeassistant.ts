@@ -732,6 +732,10 @@ export default class HomeAssistant extends Extension {
                     entity_category: 'diagnostic',
                     state_class: 'measurement',
                 },
+                water_consumed: {
+                    device_class: 'water',
+                    state_class: 'total_increasing',
+                },
                 x_axis: {icon: 'mdi:axis-x-arrow'},
                 y_axis: {icon: 'mdi:axis-y-arrow'},
                 z_axis: {icon: 'mdi:axis-z-arrow'},
