@@ -660,7 +660,7 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         MQTT.events['connect']();
         await flushPromises();
-        await MQTT.events.message('zigbee2mqtt/bridge/state', 'online');
+        await MQTT.events.message('zigbee2mqtt/bridge/info', 'dummy');
         jest.runOnlyPendingTimers();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/state', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));

@@ -19,12 +19,12 @@ const changelogs = [
 ];
 
 const releaseRe = /## \[(.+)\]/;
-const changes = {features: [], fixes: [], detect: [], add: []};
+const changes = {features: [], fixes: [], detect: [], add: [], error: []};
 let context = null;
 const changeRe = [
-    /^\* (\*\*(.+):\*\*)?(.+)\((\[#\d+\]\(.+\))\) \(\[(.+)\]\(https:.+\)$/,
-    /^\* (\*\*(.+):\*\*)?(.+)(https:\/\/github\.com.+) \(\[(.+)\]\(https:.+\)$/,
-    /^\* (\*\*(.+):\*\*)?(.+)() \(\[(.+)\]\(https:.+\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)\((\[#\d+\]\(.+\))\) \(\[.+\]\(https:.+\/(.+)\)\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)(https:\/\/github\.com.+) \(\[.+\]\(https:.+\/(.+)\)\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)() \(\[.+\]\(https:.+\/(.+)\)\)$/,
 ];
 
 for (const changelog of changelogs) {
@@ -42,7 +42,7 @@ for (const changelog of changelogs) {
         } else if (line.startsWith('* **ignore:**')) {
             continue;
         } else if (changeMatch) {
-            const localContext = changeMatch[2] ? changeMatch[2] : context;
+            let localContext = changeMatch[2] ? changeMatch[2] : context;
             if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
 
             let user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
@@ -60,8 +60,11 @@ for (const changelog of changelogs) {
             if (localContext === 'add') {
                 for (const model of message.split(',')) {
                     const definition = zhc.definitions.find((d) => d.model === model.trim());
-                    if (!definition) throw new Error(`Model '${message}' does not exist`);
-                    messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    if (definition) {
+                        messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    } else {
+                        changes['error'].push(`${line} (model '${model}' does not exist)`);
+                    }
                 }
             } else {
                 messages.push(message);
@@ -69,7 +72,10 @@ for (const changelog of changelogs) {
 
             let issue = changeMatch[4].trim();
             if (issue && !issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
-            if (!issue) issue = '_NO_ISSUE_';
+            if (!issue) {
+                issue = '_NO_ISSUE_';
+                localContext = 'error';
+            }
 
             messages.forEach((m) => changes[localContext].push(`- ${issue} ${m} (@${user})`));
         } else if (line === '# Changelog' || !line) {
@@ -86,6 +92,7 @@ const names = [
     ['fixes', 'Fixes'],
     ['add', 'New supported devices'],
     ['detect', 'Fixed device detections'],
+    ['error', 'Changelog generator error'],
 ];
 for (const name of names) {
     result += `# ${name[1]}\n`;

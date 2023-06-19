@@ -29,3 +29,4 @@ jobs:
         commit-message: "fix(ignore): update dependencies"
         branch: "deps/all"
         title: Update dependencies
+        token: ${{ secrets.GH_TOKEN }}

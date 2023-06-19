@@ -889,7 +889,8 @@ export default class HomeAssistant extends Extension {
                 const lookup: {[s: string]: KeyValue} = {
                     action: {icon: 'mdi:gesture-double-tap'},
                     programming_mode: {icon: 'mdi:calendar-clock'},
-                    program: {value_template: `{{ value_json.${firstExpose.property} | truncate(254, True, '', 0) }}`},
+                    program: {value_template: `{{ value_json.${firstExpose.property}|default("") ` +
+                        `| truncate(254, True, '', 0) }}`},
                 };
 
                 const discoveryEntry: DiscoveryEntry = {
