@@ -27,6 +27,12 @@ const changeRe = [
     /^\* (\*\*(.+):\*\*)?(.+)() \(\[.+\]\(https:.+\/(.+)\)\)$/,
 ];
 
+let commitUserLookup = {};
+const commitUserFile = path.join(__dirname, 'commit-user-lookup.json');
+if (fs.existsSync(commitUserFile)) {
+    commitUserLookup = JSON.parse(fs.readFileSync(commitUserFile, 'utf8'));
+}
+
 for (const changelog of changelogs) {
     for (const line of changelog.contents) {
         const releaseMatch = line.match(releaseRe);
@@ -45,8 +51,10 @@ for (const changelog of changelogs) {
             let localContext = changeMatch[2] ? changeMatch[2] : context;
             if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
 
-            let user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
-
+            const commitUserKey = `${changelog.project}-${changeMatch[5]} `;
+            let user = commitUserKey in commitUserLookup ? commitUserLookup[commitUserKey] :
+                execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
+            if (user !== 'null') commitUserLookup[commitUserKey] = user;
             const messages = [];
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
@@ -102,5 +110,7 @@ for (const name of names) {
     changes[name[0]].forEach((e) => result += `${e}\n`);
     result += '\n';
 }
+
+fs.writeFileSync(commitUserFile, JSON.stringify(commitUserLookup), 'utf-8');
 
 console.log(result.trim());

@@ -47,6 +47,11 @@ jobs:
           git push --delete origin latest-dev
           git tag latest-dev
           git push origin latest-dev
+      - name: Cache commit-user-lookup.json
+        uses: actions/cache@v3
+        with:
+          path: scripts/commit-user-lookup.json
+          key: always
       - name: Update latest-dev release changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
