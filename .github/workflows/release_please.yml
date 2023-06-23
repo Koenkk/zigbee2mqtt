@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - dev
+      - fix-changelog
 
 permissions:
   contents: write
@@ -51,7 +51,6 @@ jobs:
         uses: actions/cache@v3
         with:
           path: scripts/commit-user-lookup.json
-          key: always
       - name: Update latest-dev release changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
@@ -63,6 +62,7 @@ jobs:
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
+      - run: cat scripts/commit-user-lookup.json
       - uses: ncipollo/release-action@v1
         with:
           bodyFile: changelog.txt
