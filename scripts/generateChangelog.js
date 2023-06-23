@@ -111,6 +111,7 @@ for (const name of names) {
     result += '\n';
 }
 
+console.log(`Write to ${commitUserFile}: ${JSON.stringify(commitUserLookup)}`);
 fs.writeFileSync(commitUserFile, JSON.stringify(commitUserLookup), 'utf-8');
 
 console.log(result.trim());
