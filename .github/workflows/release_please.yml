@@ -35,6 +35,7 @@ jobs:
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m
+          key: always
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
