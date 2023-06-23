@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - fix-changelog
+      - dev
 
 permissions:
   contents: write
@@ -20,15 +20,15 @@ jobs:
         with:
           node-version: 20
 
-      # - uses: google-github-actions/release-please-action@v3
-      #   id: release
-      #   with:
-      #     release-type: node
-      #     package-name: release-please-action
-      #     default-branch: dev
-      #     token: ${{secrets.GH_TOKEN}}
-      #     include-v-in-tag: false
-      #     skip-github-release: true
+      - uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          release-type: node
+          package-name: release-please-action
+          default-branch: dev
+          token: ${{secrets.GH_TOKEN}}
+          include-v-in-tag: false
+          skip-github-release: true
 
       # Checkout repos
       - uses: actions/checkout@v3
@@ -63,8 +63,6 @@ jobs:
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
-      - run: |
-          cat z2m/scripts/commit-user-lookup.json
       - uses: ncipollo/release-action@v1
         with:
           bodyFile: changelog.txt
