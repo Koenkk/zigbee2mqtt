@@ -20,22 +20,21 @@ jobs:
         with:
           node-version: 20
 
-      - uses: google-github-actions/release-please-action@v3
-        id: release
-        with:
-          release-type: node
-          package-name: release-please-action
-          default-branch: dev
-          token: ${{secrets.GH_TOKEN}}
-          include-v-in-tag: false
-          skip-github-release: true
+      # - uses: google-github-actions/release-please-action@v3
+      #   id: release
+      #   with:
+      #     release-type: node
+      #     package-name: release-please-action
+      #     default-branch: dev
+      #     token: ${{secrets.GH_TOKEN}}
+      #     include-v-in-tag: false
+      #     skip-github-release: true
 
       # Checkout repos
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m
-          key: always
       - uses: actions/checkout@v3
         with:
           repository: koenkk/zigbee2mqtt
@@ -52,6 +51,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: scripts/commit-user-lookup.json
+          key: always
       - name: Update latest-dev release changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
