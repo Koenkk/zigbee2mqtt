@@ -50,7 +50,7 @@ jobs:
       - name: Cache commit-user-lookup.json
         uses: actions/cache@v3
         with:
-          path: scripts/commit-user-lookup.json
+          path: z2m/scripts/commit-user-lookup.json
           key: always
       - name: Update latest-dev release changelog
         run: |
@@ -64,10 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
-          ls -l
-          echo bla
-          ls -l scripts
-          cat scripts/commit-user-lookup.json
+          cat z2m/scripts/commit-user-lookup.json
       - uses: ncipollo/release-action@v1
         with:
           bodyFile: changelog.txt
