@@ -59,7 +59,7 @@ for (const changelog of changelogs) {
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
 
-            const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/);
+            const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/) || message.match(/@(.+)/);
             if (otherUser) {
                 user = otherUser[1];
                 message = message.replace(otherUser[0], '');
