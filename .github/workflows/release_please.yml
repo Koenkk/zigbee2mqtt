@@ -50,7 +50,7 @@ jobs:
       - name: Cache commit-user-lookup.json
         uses: actions/cache@v3
         with:
-          path: scripts/commit-user-lookup.json
+          path: z2m/scripts/commit-user-lookup.json
           key: always
       - name: Update latest-dev release changelog
         run: |
