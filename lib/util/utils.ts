@@ -41,7 +41,7 @@ const endpointNames = [
     'button_16', 'button_17', 'button_18', 'button_19', 'button_20',
     'button_light', 'button_fan_high', 'button_fan_med', 'button_fan_low',
     'heat', 'cool', 'water', 'meter', 'wifi', 'no_occupancy_since', 'lall',
-    'button_all',
+    'button_all', 'master', 'master_switch',
 ];
 
 function capitalize(s: string): string {
