@@ -19,13 +19,19 @@ const changelogs = [
 ];
 
 const releaseRe = /## \[(.+)\]/;
-const changes = {features: [], fixes: [], detect: [], add: []};
+const changes = {features: [], fixes: [], detect: [], add: [], error: []};
 let context = null;
 const changeRe = [
-    /^\* (\*\*(.+):\*\*)?(.+)\((\[#\d+\]\(.+\))\) \(\[(.+)\]\(https:.+\)$/,
-    /^\* (\*\*(.+):\*\*)?(.+)(https:\/\/github\.com.+) \(\[(.+)\]\(https:.+\)$/,
-    /^\* (\*\*(.+):\*\*)?(.+)() \(\[(.+)\]\(https:.+\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)\((\[#\d+\]\(.+\))\) \(\[.+\]\(https:.+\/(.+)\)\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)(https:\/\/github\.com.+) \(\[.+\]\(https:.+\/(.+)\)\)$/,
+    /^\* (\*\*(.+):\*\*)?(.+)() \(\[.+\]\(https:.+\/(.+)\)\)$/,
 ];
+
+let commitUserLookup = {};
+const commitUserFile = path.join(__dirname, 'commit-user-lookup.json');
+if (fs.existsSync(commitUserFile)) {
+    commitUserLookup = JSON.parse(fs.readFileSync(commitUserFile, 'utf8'));
+}
 
 for (const changelog of changelogs) {
     for (const line of changelog.contents) {
@@ -42,16 +48,18 @@ for (const changelog of changelogs) {
         } else if (line.startsWith('* **ignore:**')) {
             continue;
         } else if (changeMatch) {
-            const localContext = changeMatch[2] ? changeMatch[2] : context;
+            let localContext = changeMatch[2] ? changeMatch[2] : context;
             if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
 
-            let user = execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
-
+            const commitUserKey = `${changelog.project}-${changeMatch[5]} `;
+            let user = commitUserKey in commitUserLookup ? commitUserLookup[commitUserKey] :
+                execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${changeMatch[5]} | jq -r '.author.login'`).toString().trim();
+            if (user !== 'null') commitUserLookup[commitUserKey] = user;
             const messages = [];
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
 
-            const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/);
+            const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/) || message.match(/@(.+)/);
             if (otherUser) {
                 user = otherUser[1];
                 message = message.replace(otherUser[0], '');
@@ -60,8 +68,11 @@ for (const changelog of changelogs) {
             if (localContext === 'add') {
                 for (const model of message.split(',')) {
                     const definition = zhc.definitions.find((d) => d.model === model.trim());
-                    if (!definition) throw new Error(`Model '${message}' does not exist`);
-                    messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    if (definition) {
+                        messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                    } else {
+                        changes['error'].push(`${line} (model '${model}' does not exist)`);
+                    }
                 }
             } else {
                 messages.push(message);
@@ -69,7 +80,10 @@ for (const changelog of changelogs) {
 
             let issue = changeMatch[4].trim();
             if (issue && !issue.startsWith('[#')) issue = `[#${issue.split('/').pop()}](${issue})`;
-            if (!issue) issue = '_NO_ISSUE_';
+            if (!issue) {
+                issue = '_NO_ISSUE_';
+                localContext = 'error';
+            }
 
             messages.forEach((m) => changes[localContext].push(`- ${issue} ${m} (@${user})`));
         } else if (line === '# Changelog' || !line) {
@@ -86,6 +100,7 @@ const names = [
     ['fixes', 'Fixes'],
     ['add', 'New supported devices'],
     ['detect', 'Fixed device detections'],
+    ['error', 'Changelog generator error'],
 ];
 for (const name of names) {
     result += `# ${name[1]}\n`;
@@ -95,5 +110,7 @@ for (const name of names) {
     changes[name[0]].forEach((e) => result += `${e}\n`);
     result += '\n';
 }
+
+fs.writeFileSync(commitUserFile, JSON.stringify(commitUserLookup), 'utf-8');
 
 console.log(result.trim());

@@ -80,3 +80,6 @@ data/extension
 
 # Ignore config
 data/*.yaml
+
+# commit-user-lookup.json
+scripts/commit-user-lookup.json

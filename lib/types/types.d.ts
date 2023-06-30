@@ -17,6 +17,10 @@ import type {
     Cluster as ZHCluster,
 } from 'zigbee-herdsman/dist/zcl/tstype';
 
+import type {
+    FrameControl as ZHFrameControl,
+} from 'zigbee-herdsman/dist/zcl';
+
 import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 
 import type TypeEventBus from 'lib/eventBus';
@@ -162,7 +166,7 @@ declare global {
             groupID: number;
             cluster: string | number;
             data: KeyValue | Array<string | number>;
-            meta: {zclTransactionSequenceNumber?: number;};
+            meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl;};
         };
     }
 

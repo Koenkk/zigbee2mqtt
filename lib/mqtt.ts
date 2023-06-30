@@ -140,7 +140,7 @@ export default class MQTT {
             this.eventBus.emitMQTTMessage({topic, message: message + ''});
         }
 
-        if (this.republishRetainedTimer && topic == `${settings.get().mqtt.base_topic}/bridge/state`) {
+        if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
             clearTimeout(this.republishRetainedTimer);
             this.republishRetainedTimer = null;
         }

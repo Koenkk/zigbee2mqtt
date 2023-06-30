@@ -21,4 +21,7 @@
         "lib/**/*",
         "lib/util/settings.schema.json"
     ],
+    "exclude": [
+        "node_modules"
+    ],
 }
