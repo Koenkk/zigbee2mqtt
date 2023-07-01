@@ -44,7 +44,7 @@ jobs:
       - name: Update latest-dev tag
         run: |
           cd z2m
-          git push --delete origin latest-dev
+          git push --delete origin latest-dev || true
           git tag latest-dev
           git push origin latest-dev
       - name: Cache commit-user-lookup.json
