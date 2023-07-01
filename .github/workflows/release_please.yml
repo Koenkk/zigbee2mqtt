@@ -41,18 +41,12 @@ jobs:
           path: ./z2m-master
           ref: master
 
-      - name: Update latest-dev tag
-        run: |
-          cd z2m
-          git push --delete origin latest-dev || true
-          git tag latest-dev
-          git push origin latest-dev
       - name: Cache commit-user-lookup.json
         uses: actions/cache@v3
         with:
           path: z2m/scripts/commit-user-lookup.json
           key: always
-      - name: Update latest-dev release changelog
+      - name: Generate changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
           MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
@@ -63,13 +57,6 @@ jobs:
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
-      - uses: ncipollo/release-action@v1
-        with:
-          bodyFile: changelog.txt
-          prerelease: true
-          name: latest-dev
-          allowUpdates: true
-          tag: latest-dev
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
