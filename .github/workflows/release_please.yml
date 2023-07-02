@@ -57,7 +57,8 @@ jobs:
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
-      - run: |
+      - name: Update changelog in release PR
+        run: |
           PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r .number)
           cd z2m
           gh pr edit $PR -F ../changelog.txt
