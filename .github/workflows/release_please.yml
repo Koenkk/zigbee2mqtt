@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - changelog
+      - dev
 
 permissions:
   contents: write
@@ -59,9 +59,8 @@ jobs:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
           PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r .number)
-          echo $PR
           cd z2m
-          gh pr edit 18182 -F ../changelog.txt
+          gh pr edit $PR -F ../changelog.txt
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload changelog
