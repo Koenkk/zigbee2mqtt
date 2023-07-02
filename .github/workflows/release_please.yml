@@ -58,7 +58,10 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
+          echo ${{ needs.release-please.outputs.pr }}
           gh pr edit 18182 -F changelog.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
