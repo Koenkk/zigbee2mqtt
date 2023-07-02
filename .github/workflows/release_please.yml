@@ -57,8 +57,8 @@ jobs:
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
-      # - run: |
-      #     gh pr edit -F changelog.txt
+      - run: |
+          gh pr edit 18182 -F changelog.txt
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
