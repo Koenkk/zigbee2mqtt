@@ -58,7 +58,6 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
-          echo ${{ steps.release.outputs.pr }}
           gh pr edit 18182 -F changelog.txt
         env:
           GH_TOKEN: ${{ github.token }}
