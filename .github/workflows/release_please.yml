@@ -58,7 +58,8 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
-          echo "${{ steps.release.outputs.pr }}"
+          PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r .number)
+          echo $PR
           cd z2m
           gh pr edit 18182 -F ../changelog.txt
         env:
