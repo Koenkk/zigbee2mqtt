@@ -58,7 +58,9 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - run: |
-          gh pr edit 18182 -F changelog.txt
+          echo "${{ steps.release.outputs }}"
+          cd z2m
+          gh pr edit 18182 -F ../changelog.txt
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload changelog
