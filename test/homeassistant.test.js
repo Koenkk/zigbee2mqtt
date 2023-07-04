@@ -152,7 +152,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -179,7 +178,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_humidity',
             'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
             'enabled_by_default': true,
             'device': {
@@ -206,7 +204,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_pressure',
             'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
             'enabled_by_default': true,
             'device': {
@@ -233,7 +230,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.battery }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_battery',
             'unique_id': '0x0017880104e45522_battery_zigbee2mqtt',
             'enabled_by_default': true,
             'entity_category': 'diagnostic',
@@ -402,7 +398,6 @@ describe('HomeAssistant extension', () => {
             'value_template': "{{ value_json.temperature }}",
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -428,7 +423,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_humidity',
             'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
             'enabled_by_default': true,
             'device': {
@@ -455,7 +449,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_pressure',
             'enabled_by_default': true,
             'unique_id': '0x0017880104e45522_pressure_zigbee2mqtt',
             'device': {
@@ -512,7 +505,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'enabled_by_default': true,
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
@@ -541,7 +533,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_humidity',
             'enabled_by_default': true,
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -584,7 +575,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'Weather Sensor temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -611,7 +601,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.humidity }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'Weather Sensor humidity',
             'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
             'enabled_by_default': true,
             'device': {
@@ -900,7 +889,6 @@ describe('HomeAssistant extension', () => {
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
             'enabled_by_default': true,
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -1027,7 +1015,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -1163,7 +1150,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -1245,7 +1231,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
-            'name': 'weather_sensor_renamed_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -1373,7 +1358,6 @@ describe('HomeAssistant extension', () => {
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor_renamed',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor_renamed',
-            'name': 'weather_sensor_renamed_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
@@ -1401,7 +1385,6 @@ describe('HomeAssistant extension', () => {
             "enabled_by_default": false,
             "state_topic":"zigbee2mqtt/bulb",
             "json_attributes_topic":"zigbee2mqtt/bulb",
-            "name":"bulb update available",
             "unique_id":"0x000b57fffec6a5b2_update_available_zigbee2mqtt",
             "device":{
                 "identifiers":[
@@ -1804,7 +1787,6 @@ describe('HomeAssistant extension', () => {
             'state_class': 'measurement',
             'value_template': '{{ value_json.temperature }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'enabled_by_default': true,
             'device': {
@@ -2032,7 +2014,6 @@ describe('HomeAssistant extension', () => {
             'value_template': "{{ value_json.temperature }}",
             'state_topic': 'zigbee2mqtt/weather_sensor',
             'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
-            'name': 'weather_sensor_temperature',
             'unique_id': '0x0017880104e45522_temperature_zigbee2mqtt',
             'device': {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
