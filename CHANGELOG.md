@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.32.1](https://github.com/Koenkk/zigbee2mqtt/compare/1.32.0...1.32.1) (2023-07-08)
+
+### Bug Fixes
+
+* **ignore:** update zigbee-herdsman-converters to 15.33.1-hotfix.0 ([15601d6](https://github.com/Koenkk/zigbee2mqtt/commit/15601d6339cfc7408872a71071a98abadd9b33ff))
+
 ## [1.32.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.31.2...1.32.0) (2023-07-01)
 
 
