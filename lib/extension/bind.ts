@@ -12,7 +12,7 @@ import Group from '../model/group';
 const legacyApi = settings.get().advanced.legacy_api;
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
-const clusterCandidates = ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl', 'closuresWindowCovering',
+const allClusterCandidates = ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl', 'closuresWindowCovering',
     'hvacThermostat', 'msIlluminanceMeasurement', 'msTemperatureMeasurement', 'msRelativeHumidity',
     'msSoilMoisture', 'msCO2'];
 
@@ -246,8 +246,8 @@ export default class Bind extends Extension {
 
             // Find which clusters are supported by both the source and target.
             // Groups are assumed to support all clusters.
+            const clusterCandidates = clusters ?? allClusterCandidates;
             for (const cluster of clusterCandidates) {
-                if (clusters && !clusters.includes(cluster)) continue;
                 let matchingClusters = false;
 
                 const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' ||
