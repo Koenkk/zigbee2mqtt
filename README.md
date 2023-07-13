@@ -73,18 +73,18 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 <br>
 
-<img align="left" height="100px" width="100px" src="https://forum.iobroker.net/assets/uploads/system/site-logo.png">
+<img align="left" height="100px" width="100px" src="./images/gladys-assistant-logo.jpg">
 
 ### [Gladys Assistant](https://gladysassistant.com/)
 - Integration implemented natively in Gladys Assistant. Read documentation [here](https://gladysassistant.com/docs/integrations/zigbee2mqtt/)
 
 <br>
 
-<img align="left" height="100px" width="100px" src="./images/gladys-assistant-logo.jpg">
+<img align="left" height="100px" width="100px" src="https://forum.iobroker.net/assets/uploads/system/site-logo.png">
 
 ### [IoBroker](https://www.iobroker.net/)
-- Integration implemented natively in IoBroker. Read documentation [here](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)
-- 
+- Integration implemented in IoBroker. Read documentation [here](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)
+  
 <br>
 
 ## Architecture
