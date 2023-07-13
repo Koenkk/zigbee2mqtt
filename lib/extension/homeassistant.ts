@@ -695,7 +695,7 @@ export default class HomeAssistant extends Extension {
                 power_factor: {device_class: 'power_factor', enabled_by_default: false,
                     entity_category: 'diagnostic', state_class: 'measurement'},
                 precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
-                pressure: {device_class: 'pressure', state_class: 'measurement'},
+                pressure: {device_class: 'atmospheric_pressure', state_class: 'measurement'},
                 presence_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 reporting_time: {entity_category: 'config', icon: 'mdi:clock-time-one-outline'},
                 requested_brightness_level: {

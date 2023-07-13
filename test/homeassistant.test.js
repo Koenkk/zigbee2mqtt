@@ -201,7 +201,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'unit_of_measurement': 'hPa',
-            'device_class': 'pressure',
+            'device_class': 'atmospheric_pressure',
             'state_class': 'measurement',
             'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
@@ -450,7 +450,7 @@ describe('HomeAssistant extension', () => {
 
         payload = {
             'unit_of_measurement': 'hPa',
-            'device_class': 'pressure',
+            'device_class': 'atmospheric_pressure',
             'state_class': 'measurement',
             'value_template': '{{ value_json.pressure }}',
             'state_topic': 'zigbee2mqtt/weather_sensor',
