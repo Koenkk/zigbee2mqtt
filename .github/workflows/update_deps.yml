@@ -24,7 +24,7 @@ jobs:
         cache: npm
     # connect-gzip-static only supports node 16
     # @types/ws 8.5.5 is broken
-    - run: npx npm-check-updates -u -x connect-gzip-static @types/ws 
+    - run: npx npm-check-updates -u -x connect-gzip-static -x @types/ws 
     - run: npm install
     - uses: peter-evans/create-pull-request@v5
       with:
