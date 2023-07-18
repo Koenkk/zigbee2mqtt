@@ -912,6 +912,7 @@ export default class HomeAssistant extends Extension {
                     object_id: firstExpose.property,
                     mockProperties: [], // Already mocked above in case access STATE is supported
                     discovery_payload: {
+                        state_topic: firstExpose.access & ACCESS_STATE,
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         command_topic_prefix: endpoint,
                         command_topic: true,
