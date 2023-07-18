@@ -1,6 +1,9 @@
 # Home Assistant integration (MQTT discovery)
 homeassistant: false
 
+# Enable the frontend, runs on port 8080 by default
+frontend: true
+
 # MQTT settings
 mqtt:
   # MQTT base topic for zigbee2mqtt MQTT messages
