@@ -9,6 +9,7 @@ import Device from './model/device';
 import Group from './model/group';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
+import {randomInt} from 'crypto';
 
 export default class Zigbee {
     private herdsman: Controller;
@@ -164,13 +165,13 @@ export default class Zigbee {
     }
 
     private generateNetworkKey(): number[] {
-        const key = Array.from({length: 16}, () => Math.floor(Math.random() * 255));
+        const key = Array.from({length: 16}, () => randomInt(256));
         settings.set(['advanced', 'network_key'], key);
         return key;
     }
 
     private generatePanID(): number {
-        const panID = Math.floor(Math.random() * (0xFFFF - 2)) + 1;
+        const panID = randomInt(1, 0xFFFF - 1);
         settings.set(['advanced', 'pan_id'], panID);
         return panID;
     }
