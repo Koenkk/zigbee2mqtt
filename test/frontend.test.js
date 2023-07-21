@@ -1,5 +1,5 @@
 const data = require('./stub/data');
-require('./stub/logger');
+const logger = require('./stub/logger');
 require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
@@ -197,7 +197,7 @@ describe('Frontend', () => {
 
     });
 
-    it('Websocket interaction', async () => {
+    it('onlythis Websocket interaction', async () => {
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
@@ -232,6 +232,10 @@ describe('Frontend', () => {
         mockWSClient.events.message("", false);
         mockWSClient.events.message(null, false);
         await flushPromises();
+
+        // Error
+        mockWSClient.events.error(new Error('This is an error'));
+        expect(logger.error).toHaveBeenCalledWith('WebSocket error: This is an error');
 
         // Received message on socket
         expect(mockWSClient.implementation.send).toHaveBeenCalledTimes(1);
