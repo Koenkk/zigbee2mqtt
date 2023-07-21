@@ -119,6 +119,7 @@ export default class Frontend extends Extension {
     }
 
     @bind private onWebSocketConnection(ws: WebSocket): void {
+        ws.on('error', (msg) => logger.error(`WebSocket error: ${msg.message}`));
         ws.on('message', (data: Buffer, isBinary: boolean) => {
             if (!isBinary && data) {
                 const message = data.toString();
