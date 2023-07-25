@@ -36,6 +36,7 @@ const endpointNames = [
     'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8',
     'l9', 'l10', 'l11', 'l12', 'l13', 'l14', 'l15', 'l16',
     'l17', 'l18', 'l19', 'l20', 'l21', 'l22', 'l23', 'l24',
+    'th1', 'th2', 'th3', 'th4', 'th5', 'th6', 'th7', 'th8', 'th9', 'th10',
     'button_1', 'button_2', 'button_3', 'button_4', 'button_5',
     'button_6', 'button_7', 'button_8', 'button_9', 'button_10',
     'button_11', 'button_12', 'button_13', 'button_14', 'button_15',
