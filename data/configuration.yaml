@@ -1,5 +1,5 @@
 homeassistant: false
-permit_join: true
+permit_join: false
 frontend: true
 mqtt:
   base_topic: zigbee2mqtt
@@ -10,11 +10,26 @@ advanced:
   homeassistant_legacy_entity_attributes: false
   legacy_api: false
   legacy_availability_payload: false
-  log_level: debug
+  log_level: warn
+  availability: true
+  cache_state: false
+  ext_pan_id:
+    - 51
+    - 149
+    - 18
+    - 21
+    - 169
+    - 78
+    - 5
+    - 186
 external_converters:
   - switch.js
 device_options:
   legacy: false
 devices:
+  '0x288a40feffca4c40':
+    friendly_name: '0x288a40feffca4c40'
   '0xac8b40feffca4c40':
     friendly_name: '0xac8b40feffca4c40'
+ota:
+  disable_automatic_update_check: true
