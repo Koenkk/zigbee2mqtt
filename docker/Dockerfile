@@ -36,4 +36,4 @@ ENV NODE_ENV production
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
-HEALTHCHECK --interval=1m --timeout=10s CMD curl -f http://192.168.178.5:8080/#/ || exit 1
+HEALTHCHECK --interval=1m --timeout=10s CMD curl -f http://127.0.0.1:8080/#/ || exit 1
