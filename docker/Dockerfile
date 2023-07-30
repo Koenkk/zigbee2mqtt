@@ -18,6 +18,8 @@ RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers 
 # Release
 FROM base as release
 
+RUN apk add --no-cache curl
+
 COPY --from=dependencies_and_build /app/node_modules ./node_modules
 COPY dist ./dist
 COPY package.json LICENSE index.js data/configuration.yaml ./
@@ -34,3 +36,4 @@ ENV NODE_ENV production
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
+HEALTHCHECK --interval=1m --timeout=10s CMD curl -f http://192.168.178.5:8080/#/ || exit 1
