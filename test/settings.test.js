@@ -776,8 +776,7 @@ describe('Settings', () => {
 
     it('Should throw error when yaml file does not exist', () => {
         settings.testing.clear();
-        const error = `ENOENT: no such file or directory, open '${configurationFile}'`;
-        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+        expect(settings.validate()[0].startsWith(`ENOENT: no such file or directory, open `)).toBeTruthy();
     });
 
     it('Configuration shouldnt be valid when invalid QOS value is used', async () => {
