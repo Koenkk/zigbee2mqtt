@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: z2m/scripts/commit-user-lookup.json
-          key: never-hit
+          key: commit-user-lookup-dummy
           restore-keys: |
             - commit-user-lookup-
       - name: Generate changelog
