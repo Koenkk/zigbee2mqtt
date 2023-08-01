@@ -61,9 +61,7 @@ jobs:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Update changelog in release PR
         run: |
-          PR=$(echo '${{ steps.release.outputs.pr }}' | jq -r .number)
-          cd z2m
-          gh pr edit $PR -F ../changelog.txt
+          gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.txt
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Upload changelog
