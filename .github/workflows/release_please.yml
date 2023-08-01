@@ -47,7 +47,7 @@ jobs:
           path: z2m/scripts/commit-user-lookup.json
           key: commit-user-lookup-dummy
           restore-keys: |
-            - commit-user-lookup-
+            commit-user-lookup-
       - name: Generate changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
