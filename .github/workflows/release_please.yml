@@ -41,8 +41,8 @@ jobs:
           path: ./z2m-master
           ref: master
 
-      - name: Cache commit-user-lookup.json
-        uses: actions/cache@v3
+      - name: Restore cache commit-user-lookup.json
+        uses: actions/cache/restore@v3
         with:
           path: z2m/scripts/commit-user-lookup.json
           key: always
@@ -69,6 +69,12 @@ jobs:
         with:
           name: changelog
           path: changelog.txt
+      - name: Save cache commit-user-lookup.json
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: z2m/scripts/commit-user-lookup.json
+          key: always
    
   create_release:
     runs-on: ubuntu-latest
