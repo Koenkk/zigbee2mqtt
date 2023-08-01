@@ -1226,11 +1226,12 @@ export default class HomeAssistant extends Extension {
             // Set (unique) name, separate by space if device name contains space.
             if (!payload.device_class || ['timestamp'].includes(payload.device_class)) {
                 const nameSeparator = devicePayload.name.includes('_') ? '_' : ' ';
-                payload.name = devicePayload.name;
                 if (config.object_id.startsWith(config.type) && config.object_id.includes('_')) {
-                    payload.name += `${nameSeparator}${config.object_id.split(/_(.+)/)[1]}`;
+                    payload.name = `${config.object_id.split(/_(.+)/)[1]}`;
                 } else if (!config.object_id.startsWith(config.type)) {
-                    payload.name += `${nameSeparator}${config.object_id.replace(/_/g, nameSeparator)}`;
+                    payload.name = `${config.object_id.replace(/_/g, nameSeparator)}`;
+                } else {
+                    payload.name = null;
                 }
             }
 
