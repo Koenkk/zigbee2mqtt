@@ -9,7 +9,7 @@ const Controller = require('../lib/controller');
 const fs = require('fs');
 const path = require('path');
 
-describe('onlythisHomeAssistant extension', () => {
+describe('HomeAssistant extension', () => {
     let version;
     let controller;
     let extension;
