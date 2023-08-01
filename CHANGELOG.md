@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.32.2...1.33.0) (2023-08-01)
+
+
+### Features
+
+* Let Home Assistant generate entity name when device_class is present ([#18208](https://github.com/Koenkk/zigbee2mqtt/issues/18208)) ([df93e4c](https://github.com/Koenkk/zigbee2mqtt/commit/df93e4c8f9490e503e5896e082fc2578f98c2e0e))
+
 ## [1.32.2](https://github.com/Koenkk/zigbee2mqtt/compare/1.32.1...1.32.2) (2023-08-01)
 
 
