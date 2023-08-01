@@ -63,7 +63,7 @@ jobs:
         run: |
           gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.txt
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
