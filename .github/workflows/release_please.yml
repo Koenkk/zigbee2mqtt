@@ -45,7 +45,9 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: z2m/scripts/commit-user-lookup.json
-          key: always
+          key: never-hit
+          restore-keys: |
+            - commit-user-lookup-
       - name: Generate changelog
         run: |
           MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
@@ -74,7 +76,7 @@ jobs:
         if: always()
         with:
           path: z2m/scripts/commit-user-lookup.json
-          key: always
+          key: commit-user-lookup-${{ hashFiles('z2m/scripts/commit-user-lookup.json') }}
    
   create_release:
     runs-on: ubuntu-latest
