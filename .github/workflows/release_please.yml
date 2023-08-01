@@ -56,19 +56,19 @@ jobs:
           wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--release-please-action/CHANGELOG.md > z2m/CHANGELOG.md || true
           cd z2m
           npm ci
-          node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.txt
+          node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION >> ../changelog.md
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Update changelog in release PR
         run: |
-          gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.txt
+          gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.md
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Upload changelog
         uses: actions/upload-artifact@v3
         with:
           name: changelog
-          path: changelog.txt
+          path: changelog.md
       - name: Save cache commit-user-lookup.json
         uses: actions/cache/save@v3
         if: always()
@@ -93,7 +93,7 @@ jobs:
     - uses: ncipollo/release-action@v1
       name: Create release
       with:
-        bodyFile: ../changelog/changelog.txt
+        bodyFile: ../changelog/changelog.md
         draft: true
         name: ${{ needs.release-please.outputs.version }}
         tag: ${{ needs.release-please.outputs.version }}
