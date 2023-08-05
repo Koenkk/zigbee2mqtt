@@ -23,3 +23,5 @@ serial:
 advanced:
   # Let Zigbee2MQTT generate a network key on first start
   network_key: GENERATE
+  # Let Zigbee2MQTT generate a pan_id on first start
+  pan_id: GENERATE
