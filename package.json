@@ -8,7 +8,7 @@
     "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
   },
   "engines": {
-    "node": "^14 || ^16 || ^18 || ^19 || ^20"
+    "node": "^16 || ^18 || ^19 || ^20"
   },
   "keywords": [
     "xiaomi",
@@ -59,8 +59,8 @@
     "winston-syslog": "^2.7.0",
     "winston-transport": "^4.5.0",
     "ws": "^8.13.0",
-    "zigbee-herdsman": "0.17.2",
-    "zigbee-herdsman-converters": "15.54.0",
+    "zigbee-herdsman": "0.17.3",
+    "zigbee-herdsman-converters": "15.55.0",
     "zigbee2mqtt-frontend": "0.6.133"
   },
   "devDependencies": {
