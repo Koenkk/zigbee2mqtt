@@ -5,7 +5,7 @@ mqtt:
   base_topic: zigbee2mqtt
   server: mqtt://localhost
 serial:
-  port: /dev/ttyACM0
+  port: /dev/ttyACM1
 advanced:
   homeassistant_legacy_entity_attributes: false
   legacy_api: false
@@ -33,3 +33,5 @@ devices:
     friendly_name: '0xac8b40feffca4c40'
 ota:
   disable_automatic_update_check: true
+blocklist:
+  - '0x348d40feffca4c40'

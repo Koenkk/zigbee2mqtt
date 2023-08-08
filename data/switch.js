@@ -75,6 +75,42 @@ const fzLocal = {
             };
         },
     },
+    modbus: {
+        cluster: 'cedar',
+        type: ['readResponse'],
+        convert: (model, msg, publish, options, meta) => {
+            result = {}
+            if(msg.data.hasOwnProperty('slave_id')) {
+                result['slave_id'] = msg.data.slave_id;
+            }
+            if(msg.data.hasOwnProperty('baudrate')) {
+                result['baudrate'] = msg.data.baudrate;
+            }
+            if(msg.data.hasOwnProperty('s_bit')) {
+                result['s_bit'] = msg.data.s_bit;
+            }
+            if(msg.data.hasOwnProperty('parity')) {
+                const lookup = {
+                    78: 'N',
+                    69: 'E',
+                    79: 'O',
+                };
+
+                result['parity'] = lookup[msg.data.parity];
+            }
+            if(msg.data.hasOwnProperty('e_bit')) {
+                result['e_bit'] = msg.data.e_bit;
+            }
+            if(msg.data.hasOwnProperty('force_single')) {
+                result['force_single'] = msg.data.force_single;
+            }
+
+            console.log("Result <<<<<<<<<<<<<");
+            console.log(result);
+
+            return result;
+        },
+    },
 };
 
 const tzLocal = {
@@ -91,6 +127,112 @@ const tzLocal = {
             }
         },
     },
+    test: {
+        key: ['test'],
+        convertSet: async (entity, key, value, meta) => {
+
+        },
+    },
+    slave_id: {
+        key: ['slave_id'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {slave_id: value}, {});
+            return {}
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['slave_id']);
+        },
+    },
+    baudrate: {
+        key:['baudrate'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {baudrate: value}, {});
+            return {};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['baudrate']);
+        },
+    },
+    s_bit: {
+        key:['s_bit'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {s_bit: value}, {});
+            return {};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['s_bit']);
+        },
+    },
+    parity: {
+        key:['parity'],
+        convertSet: async (entity, key, value, meta) => {
+            const lookup = {
+                'N': 78,
+                'E': 69,
+                'O' : 79
+            };
+            await entity.write('cedar', {parity: lookup[value]}, {});
+            return {};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['parity']);
+        },
+    },
+    e_bit: {
+        key:['e_bit'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {e_bit: value}, {});
+            return {};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['e_bit']);
+        },
+    },
+    force_single: {
+        key:['force_single'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {force_single: value}, {});
+            return {};
+        },
+        convertGet: async (entity, key, meta) => {
+            await entity.read('cedar', ['force_single']);
+        },
+    },
+    subscribe: {
+        key:['subscribe'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {subscribe: value});
+            return {};
+        },
+    },
+    unsubscribe: {
+        key:['unsubscribe'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {unsubscribe: value});
+            return {};
+        },
+    },
+    register_set: {
+        key: ['register_set'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {register_set: value});
+            return {};
+        },
+    },
+    register_set_32: {
+        key: ['register_set_32'],
+        convertSet: async (entity, key, value, mata) => {
+            await entity.write('cedar', {register_set_32: value});
+            return {};
+        },
+    },
+    register_set_data: {
+        key: ['register_set_data'],
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('cedar', {register_set_data: value});
+            return {};
+        },
+    },
 };
 
 const definition = {
@@ -98,9 +240,35 @@ const definition = {
     model: 'ESP32c6',
     vendor: 'CEDAR',
     description: 'My super switch!',
-    fromZigbee: [fzLocal.data_report],
-    toZigbee: [tzLocal.send_data],
-    exposes: [e.list("data", exposes.access.STATE, 'numeric'), e.list("definition", exposes.access.STATE, 'text'), e.enum('send_state', exposes.access.SET, ['NOTIFY', 'DEFINITION'])],
+    fromZigbee: [fzLocal.data_report, fzLocal.modbus],
+    toZigbee: [
+        tzLocal.send_data, 
+        tzLocal.baudrate, 
+        tzLocal.s_bit, 
+        tzLocal.parity, 
+        tzLocal.e_bit,
+        tzLocal.force_single, 
+        tzLocal.test,
+        tzLocal.subscribe,
+        tzLocal.unsubscribe,
+        tzLocal.register_set,
+        tzLocal.register_set_32,
+        tzLocal.register_set_data,
+        tzLocal.slave_id,
+    ],
+    exposes: [
+        e.enum('test', exposes.access.SET, ['Trigger']),
+        e.numeric('slave_id', exposes.access.ALL),
+        e.numeric('baudrate', exposes.access.ALL),
+        e.numeric('s_bit', exposes.access.ALL),
+        e.enum('parity', exposes.access.ALL, ['N', 'E', 'O']),
+        e.numeric('e_bit', exposes.access.ALL),
+        e.binary('force_single', exposes.access.ALL, 1, 0),
+        e.enum('send_state', exposes.access.SET, ['NOTIFY', 'DEFINITION']),
+        // e.numeric('subscribe', exposes.access.STATE_SET),
+        // e.numeric('unsubscribe', exposes.access.STATE_SET),
+        // e.numeric('register_set', exposes.access.STATE_SET),
+    ],
     // The configure method below is needed to make the device reports on/off state changes
     // when the device is controlled manually through the button on it.
     configure: async (device, coordinatorEndpoint, logger) => {
