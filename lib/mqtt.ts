@@ -4,6 +4,7 @@ import * as settings from './util/settings';
 import utils from './util/utils';
 import fs from 'fs';
 import bind from 'bind-decorator';
+import type {QoS} from 'mqtt-packet';
 
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
@@ -26,7 +27,7 @@ export default class MQTT {
         const options: mqtt.IClientOptions = {
             will: {
                 topic: `${settings.get().mqtt.base_topic}/bridge/state`,
-                payload: utils.availabilityPayload('offline', settings.get()),
+                payload: Buffer.from(utils.availabilityPayload('offline', settings.get())),
                 retain: settings.get().mqtt.force_disable_retain ? false : true,
                 qos: 1,
             },
@@ -133,11 +134,11 @@ export default class MQTT {
         this.client.subscribe(topic);
     }
 
-    @bind public onMessage(topic: string, message: string): void {
+    @bind public onMessage(topic: string, message: Buffer): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
-            logger.debug(`Received MQTT message on '${topic}' with data '${message}'`);
-            this.eventBus.emitMQTTMessage({topic, message: message + ''});
+            logger.debug(`Received MQTT message on '${topic}' with data '${message.toString()}'`);
+            this.eventBus.emitMQTTMessage({topic, message: message.toString()});
         }
 
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
@@ -153,7 +154,7 @@ export default class MQTT {
     async publish(topic: string, payload: string, options: MQTTOptions={},
         base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
     ): Promise<void> {
-        const defaultOptions: {qos: mqtt.QoS, retain: boolean} = {qos: 0, retain: false};
+        const defaultOptions: {qos: QoS, retain: boolean} = {qos: 0, retain: false};
         topic = `${base}/${topic}`;
 
         if (skipReceive) {
