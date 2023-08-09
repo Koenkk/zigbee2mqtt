@@ -31,7 +31,7 @@ import type TypeDevice from 'lib/model/device';
 import type TypeGroup from 'lib/model/group';
 import type TypeExtension from 'lib/extension/extension';
 
-import type {QoS} from 'mqtt-packet';
+import type mqtt from 'mqtt';
 
 declare global {
     // Define some class types as global
@@ -45,7 +45,7 @@ declare global {
 
     // Types
     interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
-    interface MQTTOptions {qos?: QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
+    interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue,
         stateChangeReason?: StateChangeReason) => Promise<void>;
@@ -189,7 +189,7 @@ declare global {
             base_topic: string,
             include_device_information: boolean,
             force_disable_retain: boolean
-            version?: 3 | 4 | 5,
+            version?: number,
             user?: string,
             password?: string,
             server: string,

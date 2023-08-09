@@ -71,7 +71,12 @@ describe('Publish', () => {
     });
 
     it('Should corretly handle mallformed messages', async () => {
+        await MQTT.events.message('zigbee2mqtt/foo', undefined);
+        await MQTT.events.message('zigbee2mqtt/foo', null);
         await MQTT.events.message('zigbee2mqtt/foo', "");
+
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', undefined);
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', null);
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', "");
         await flushPromises();
         expectNothingPublished();
