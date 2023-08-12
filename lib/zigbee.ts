@@ -28,7 +28,8 @@ export default class Zigbee {
             network: {
                 panID: settings.get().advanced.pan_id === 'GENERATE' ?
                     this.generatePanID() : settings.get().advanced.pan_id as number,
-                extendedPanID: settings.get().advanced.ext_pan_id,
+                extendedPanID: settings.get().advanced.ext_pan_id === 'GENERATE' ?
+                    this.generateExtPanID() : settings.get().advanced.ext_pan_id as number[],
                 channelList: [settings.get().advanced.channel],
                 networkKey: settings.get().advanced.network_key === 'GENERATE' ?
                     this.generateNetworkKey() : settings.get().advanced.network_key as number[],
@@ -167,6 +168,12 @@ export default class Zigbee {
     private generateNetworkKey(): number[] {
         const key = Array.from({length: 16}, () => randomInt(256));
         settings.set(['advanced', 'network_key'], key);
+        return key;
+    }
+
+    private generateExtPanID(): number[] {
+        const key = Array.from({length: 8}, () => randomInt(256));
+        settings.set(['advanced', 'ext_pan_id'], key);
         return key;
     }
 

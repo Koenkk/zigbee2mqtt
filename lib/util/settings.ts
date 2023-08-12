@@ -285,6 +285,11 @@ export function validate(): string[] {
         errors.push(`advanced.pan_id: should be number or 'GENERATE' (is '${_settings.advanced.pan_id}')`);
     }
 
+    if (_settings.advanced && _settings.advanced.ext_pan_id && typeof _settings.advanced.ext_pan_id === 'string' &&
+        _settings.advanced.ext_pan_id !== 'GENERATE') {
+        errors.push(`advanced.ext_pan_id: should be array or 'GENERATE' (is '${_settings.advanced.ext_pan_id}')`);
+    }
+
     // Verify that all friendly names are unique
     const names: string[] = [];
     const check = (e: DeviceOptions | GroupOptions): void => {

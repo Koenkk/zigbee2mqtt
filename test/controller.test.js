@@ -103,14 +103,17 @@ describe('Controller', () => {
         expect(MQTT.connect).toHaveBeenCalledWith("mqtt://localhost", expected);
     });
 
-    it('Should generate network_key and pan_id when set to GENERATE', async () => {
+    it('Should generate network_key, pan_id and ext_pan_id when set to GENERATE', async () => {
         settings.set(['advanced', 'network_key'], 'GENERATE');
         settings.set(['advanced', 'pan_id'], 'GENERATE');
+        settings.set(['advanced', 'ext_pan_id'], 'GENERATE');
         await controller.start();
         await flushPromises();
         expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
+        expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.extendedPanID.length).toStrictEqual(8);
         expect(zigbeeHerdsman.constructor.mock.calls[0][0].network.panID).toStrictEqual(expect.any(Number));
         expect(data.read().advanced.network_key.length).toStrictEqual(16);
+        expect(data.read().advanced.ext_pan_id.length).toStrictEqual(8);
         expect(data.read().advanced.pan_id).toStrictEqual(expect.any(Number));
     });
 

@@ -257,7 +257,7 @@ declare global {
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: KeyValue,
             pan_id: number | 'GENERATE',
-            ext_pan_id: number[],
+            ext_pan_id: number[] | 'GENERATE',
             channel: number,
             adapter_concurrent: number | null,
             adapter_delay: number | null,
