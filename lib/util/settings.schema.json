@@ -582,10 +582,18 @@
           "description": "ZigBee pan ID, changing requires repairing all devices!"
         },
         "ext_pan_id": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
+          "oneOf": [{
+            "type": "string",
+            "title": "Extended pan ID (string)"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "title": "Extended pan ID (array)"
+            }
+          ],
           "title": "Ext Pan ID",
           "requiresRestart": true,
           "description": "Zigbee extended pan ID, changing requires repairing all devices!"

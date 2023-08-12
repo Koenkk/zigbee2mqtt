@@ -25,3 +25,5 @@ advanced:
   network_key: GENERATE
   # Let Zigbee2MQTT generate a pan_id on first start
   pan_id: GENERATE
+  # Let Zigbee2MQTT generate a ext_pan_id on first start
+  ext_pan_id: GENERATE
