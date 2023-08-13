@@ -195,6 +195,11 @@ export default class Zigbee {
         return this.herdsman.backup();
     }
 
+    async coordinatorCheck(): Promise<{missingRouters: Device[]}> {
+        const check = await this.herdsman.coordinatorCheck();
+        return {missingRouters: check.missingRouters.map((d) => this.resolveDevice(d.ieeeAddr))};
+    }
+
     async getNetworkParameters(): Promise<zh.NetworkParameters> {
         return this.herdsman.getNetworkParameters();
     }
