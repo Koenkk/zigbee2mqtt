@@ -408,6 +408,18 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should allow a coordinator check', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.coordinatorCheck.mockReturnValueOnce({missingRouters: [zigbeeHerdsman.getDeviceByIeeeAddr('0x000b57fffec6a5b2')]})
+        MQTT.events.message('zigbee2mqtt/bridge/request/coordinator_check', '');
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/coordinator_check',
+            stringify({"data":{"missing_routers":[{"friendly_name":"bulb","ieee_address":"0x000b57fffec6a5b2"}]},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to remove device by string', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         settings.set(['groups'], {'1': {friendly_name: 'group_1', retain: false, devices: ['0x999b57fffec6a5b9/1', '0x000b57fffec6a5b2/1', 'bulb', 'bulb/right', 'other_bulb', 'bulb_1', '0x000b57fffec6a5b2', 'bulb/room/2']}});

@@ -46,6 +46,7 @@ export default class Bridge extends Extension {
             'install_code/add': this.installCodeAdd,
             'touchlink/scan': this.touchlinkScan,
             'health_check': this.healthCheck,
+            'coordinator_check': this.coordinatorCheck,
             'options': this.bridgeOptions,
             // Below are deprecated
             'config/last_seen': this.configLastSeen,
@@ -179,6 +180,14 @@ export default class Bridge extends Extension {
 
     @bind async healthCheck(message: string | KeyValue): Promise<MQTTResponse> {
         return utils.getResponse(message, {healthy: true}, null);
+    }
+
+    @bind async coordinatorCheck(message: string | KeyValue): Promise<MQTTResponse> {
+        const result = await this.zigbee.coordinatorCheck();
+        const missingRouters = result.missingRouters.map((d) => {
+            return {ieee_address: d.ieeeAddr, friendly_name: d.name};
+        });
+        return utils.getResponse(message, {missing_routers: missingRouters}, null);
     }
 
     @bind async groupAdd(message: string | KeyValue): Promise<MQTTResponse> {
