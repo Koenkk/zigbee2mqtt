@@ -197,7 +197,7 @@ describe('Frontend', () => {
 
     });
 
-    it('onlythis Websocket interaction', async () => {
+    it('Websocket interaction', async () => {
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
