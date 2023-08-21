@@ -1262,7 +1262,7 @@ export default class HomeAssistant extends Extension {
 
             const devicePayload = this.getDevicePayload(entity);
 
-            // Suggest to HA object_id for entity
+            // Suggest object_id (entity_id) for entity
             payload.object_id = devicePayload.name.replace(/\s+/g, '_').toLowerCase();
             if (config.object_id.startsWith(config.type) && config.object_id.includes('_')) {
                 payload.object_id += `_${config.object_id.split(/_(.+)/)[1]}`;
