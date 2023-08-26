@@ -60,10 +60,8 @@ describe('HomeAssistant extension', () => {
             configs.forEach((c) => {
                 const id = c['type'] + '/' + c['object_id'];
                 if (cfg_type_object_ids.includes(id)) {
-                    if (typeof d.exposes == 'function') {
-                        // A dynamic function must exposes all possible attributes for the docs
-                        console.warn(`${d.model} dynamic exposes contains duplicated ${id}`)
-                    } else {
+                    // A dynamic function must exposes all possible attributes for the docs
+                    if (typeof d.exposes != 'function') {
                         duplicated.push(d.model);
                     }
                 } else {
