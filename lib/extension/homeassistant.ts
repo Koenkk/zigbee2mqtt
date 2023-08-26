@@ -71,6 +71,7 @@ export default class HomeAssistant extends Extension {
     private statusTopic = settings.get().homeassistant.status_topic;
     private entityAttributes = settings.get().homeassistant.legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
+    private discoveryOrigin: {name: string, sw: string, url: string};
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
@@ -87,6 +88,7 @@ export default class HomeAssistant extends Extension {
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
+        this.discoveryOrigin = {name: 'Zigbee2MQTT', sw: this.zigbee2MQTTVersion, url: 'https://www.zigbee2mqtt.io'};
 
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -1273,8 +1275,9 @@ export default class HomeAssistant extends Extension {
             // Set unique_id
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
-            // Attributes for device registry
+            // Attributes for device registry and origin
             payload.device = devicePayload;
+            payload.origin = this.discoveryOrigin;
 
             // Availability payload
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
@@ -1597,6 +1600,7 @@ export default class HomeAssistant extends Extension {
             payload: value,
             topic: `${settings.get().mqtt.base_topic}/${device.name}/${key}`,
             device: this.getDevicePayload(device),
+            origin: this.discoveryOrigin,
         };
 
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
