@@ -117,7 +117,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -141,7 +141,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/switch/1221051039810110150109113116116_9/switch/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -168,7 +168,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -195,7 +195,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/humidity/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -222,7 +222,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/pressure/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -250,7 +250,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/battery/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -278,7 +278,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/linkquality/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -306,7 +306,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/switch/0x0017880104e45542/switch_left/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -334,7 +334,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/switch/0x0017880104e45542/switch_right/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -375,7 +375,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/0x000b57fffec6a5b2/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -417,7 +417,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -444,7 +444,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/humidity/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -471,7 +471,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/pressure/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -530,7 +530,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -558,7 +558,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/humidity/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -600,7 +600,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -627,7 +627,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/humidity/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -676,7 +676,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/0x0017880104e45541/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -749,7 +749,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/fan/0x0017880104e45548/fan/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -811,7 +811,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/climate/0x0017882104a44559/climate/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -847,7 +847,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/cover/0x0017880104e45551/cover/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -881,7 +881,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/cover/0xf4ce368a38be56a1/cover_l6/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -915,7 +915,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'my_custom_discovery_topic/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1042,7 +1042,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payloadHA),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1179,7 +1179,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1192,31 +1192,31 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/humidity/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/pressure/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/battery/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/linkquality/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1260,14 +1260,14 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1289,7 +1289,7 @@ describe('HomeAssistant extension', () => {
                     "manufacturer":"Xiaomi"
                 }
             }),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1341,14 +1341,14 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1361,7 +1361,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             null,
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1388,7 +1388,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1420,7 +1420,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/binary_sensor/0x000b57fffec6a5b2/update_available/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1458,7 +1458,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             stringify(discoverPayloadAction),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1482,7 +1482,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/click_single/config',
             stringify(discoverPayloadClick),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1528,14 +1528,14 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             stringify(discoverPayloadAction),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
         expect(MQTT.publish).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/click_single/config',
             stringify(discoverPayloadClick),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1646,7 +1646,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             stringify(discoverPayload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
 
@@ -1711,7 +1711,7 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_91231/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_91231/light/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_91231/light/config', null, {qos: 1, retain: true}, expect.any(Function));
 
         // Existing group -> dont clear
         MQTT.publish.mockClear();
@@ -1724,21 +1724,21 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/light/9/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/9/light/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/9/light/config', null, {qos: 1, retain: true}, expect.any(Function));
 
         // Existing group, non existing config ->  clear
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/light/1221051039810110150109113116116_9/switch/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/switch/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/switch/config', null, {qos: 1, retain: true}, expect.any(Function));
 
         // Non-existing device -> clear
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', null, {qos: 1, retain: true}, expect.any(Function));
 
         // Existing device -> don't clear
         MQTT.publish.mockClear();
@@ -1757,7 +1757,7 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 1, retain: true}, expect.any(Function));
 
         // Non-existing device but invalid payload -> clear
         MQTT.publish.mockClear();
@@ -1784,11 +1784,11 @@ describe('HomeAssistant extension', () => {
 
         await MQTT.events.message('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update_available/config', null, {qos: 1, retain: true}, expect.any(Function));
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', null, {qos: 0, retain: true}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', null, {qos: 1, retain: true}, expect.any(Function));
     });
 
     it('Should not have Home Assistant legacy entity attributes when disabled', async () => {
@@ -1820,7 +1820,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1870,7 +1870,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1919,7 +1919,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -1973,7 +1973,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/light/0x000b57fffec6a5b2/light/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -2011,7 +2011,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
@@ -2048,7 +2048,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
-            { retain: true, qos: 0 },
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
