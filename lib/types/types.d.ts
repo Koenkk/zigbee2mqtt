@@ -31,7 +31,7 @@ import type TypeDevice from 'lib/model/device';
 import type TypeGroup from 'lib/model/group';
 import type TypeExtension from 'lib/extension/extension';
 
-import type mqtt from 'mqtt';
+import type {QoS} from 'mqtt-packet';
 
 declare global {
     // Define some class types as global
@@ -45,7 +45,7 @@ declare global {
 
     // Types
     interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
-    interface MQTTOptions {qos?: mqtt.QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
+    interface MQTTOptions {qos?: QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue,
         stateChangeReason?: StateChangeReason) => Promise<void>;
@@ -98,12 +98,12 @@ declare global {
                 meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
         }
 
-        interface DefinitionExposeFeature {name: string, endpoint?: string,
+        interface DefinitionExposeFeature {name: string, label: string, endpoint?: string,
             property: string, value_max?: number, value_min?: number, unit?: string,
             value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
         interface DefinitionExpose {
-            type: string, name?: string, features?: DefinitionExposeFeature[],
+            type: string, name?: string, label?: string, features?: DefinitionExposeFeature[],
             endpoint?: string, values?: string[], value_off?: string, value_on?: string, value_step?: number,
             access: number, property: string, unit?: string,
             value_min?: number, value_max?: number}
@@ -189,7 +189,7 @@ declare global {
             base_topic: string,
             include_device_information: boolean,
             force_disable_retain: boolean
-            version?: number,
+            version?: 3 | 4 | 5,
             user?: string,
             password?: string,
             server: string,
@@ -257,7 +257,7 @@ declare global {
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: KeyValue,
             pan_id: number | 'GENERATE',
-            ext_pan_id: number[],
+            ext_pan_id: number[] | 'GENERATE',
             channel: number,
             adapter_concurrent: number | null,
             adapter_delay: number | null,
