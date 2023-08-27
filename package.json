@@ -75,7 +75,7 @@
     "@types/jest": "^29.5.4",
     "@types/js-yaml": "^4.0.5",
     "@types/object-assign-deep": "^0.4.0",
-    "@types/readable-stream": "^4.0.2",
+    "@types/readable-stream": "4.0.0",
     "@types/rimraf": "^3.0.2",
     "@types/ws": "8.5.4",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
