@@ -968,7 +968,7 @@ export default class HomeAssistant extends Extension {
     @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         logger.debug(`Clearing Home Assistant discovery topic for '${data.name}'`);
         this.discovered[data.ieeeAddr]?.topics.forEach((topic) => {
-            this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
+            this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         });
 
         delete this.discovered[data.ieeeAddr];
@@ -1049,7 +1049,7 @@ export default class HomeAssistant extends Extension {
         if (data.homeAssisantRename) {
             for (const config of this.getConfigs(data.entity)) {
                 const topic = this.getDiscoveryTopic(config, data.entity);
-                this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
+                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
 
             // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
@@ -1422,7 +1422,7 @@ export default class HomeAssistant extends Extension {
             }
 
             const topic = this.getDiscoveryTopic(config, entity);
-            this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
+            this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 1}, this.discoveryTopic, false, false);
             this.discovered[discoverKey].topics.add(topic);
             this.discovered[discoverKey].objectIDs.add(config.object_id);
             config.mockProperties?.forEach((mockProperty) =>
@@ -1482,7 +1482,7 @@ export default class HomeAssistant extends Extension {
             if (clear) {
                 logger.debug(`Clearing Home Assistant config '${data.topic}'`);
                 const topic = data.topic.substring(this.discoveryTopic.length + 1);
-                this.mqtt.publish(topic, null, {retain: true, qos: 0}, this.discoveryTopic, false, false);
+                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
         } else if ((data.topic === this.statusTopic || data.topic === defaultStatusTopic) &&
             data.message.toLowerCase() === 'online') {
@@ -1603,7 +1603,7 @@ export default class HomeAssistant extends Extension {
             origin: this.discoveryOrigin,
         };
 
-        await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0}, this.discoveryTopic, false, false);
+        await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 1}, this.discoveryTopic, false, false);
         this.discoveredTriggers[device.ieeeAddr].add(discoveredKey);
     }
 

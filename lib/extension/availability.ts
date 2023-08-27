@@ -105,7 +105,7 @@ export default class Availability extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onEntityRenamed(this, (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 0});
+                this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
                 this.publishAvailability(data.entity, false, true);
             }
         });
@@ -164,7 +164,7 @@ export default class Availability extends Extension {
         const topic = `${entity.name}/availability`;
         const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[entity.ID] = available;
-        this.mqtt.publish(topic, payload, {retain: true, qos: 0});
+        this.mqtt.publish(topic, payload, {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
             this.zigbee.groups().filter((g) => g.hasMember(entity))
