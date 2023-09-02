@@ -17,6 +17,9 @@ fi
 echo "Creating backup of configuration..."
 cp -R data data-backup
 
+echo "Stashing any local changes..."
+git stash
+
 echo "Updating..."
 git pull
 
