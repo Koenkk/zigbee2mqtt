@@ -17,8 +17,8 @@ fi
 echo "Creating backup of configuration..."
 cp -R data data-backup
 
-echo "Stashing any local changes..."
-git stash
+echo "Checking out changes to package-lock.json..."
+git checkout package-lock.json
 
 echo "Updating..."
 git pull
