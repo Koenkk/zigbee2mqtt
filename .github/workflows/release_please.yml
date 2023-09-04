@@ -31,11 +31,11 @@ jobs:
           skip-github-release: true
 
       # Checkout repos
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: koenkk/zigbee2mqtt
           path: ./z2m-master
@@ -81,7 +81,7 @@ jobs:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.release_created }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         ref: dev
         token: ${{secrets.GH_TOKEN}}
