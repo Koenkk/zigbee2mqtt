@@ -9,7 +9,7 @@ jobs:
   merge_master_to_dev:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: devmasx/merge-branch@master
         with:
           type: now
