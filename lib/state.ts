@@ -16,7 +16,7 @@ const dontCacheProperties = [
 class State {
     private state: {[s: string | number]: KeyValue} = {};
     private file = data.joinPath('state.json');
-    private timer: NodeJS.Timer = null;
+    private timer: NodeJS.Timeout = null;
 
     constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
         this.eventBus = eventBus;

@@ -74,6 +74,7 @@
     "@types/humanize-duration": "^3.27.1",
     "@types/jest": "^29.5.4",
     "@types/js-yaml": "^4.0.5",
+    "@types/node": "^20.6.0",
     "@types/object-assign-deep": "^0.4.1",
     "@types/readable-stream": "4.0.2",
     "@types/rimraf": "^3.0.2",
