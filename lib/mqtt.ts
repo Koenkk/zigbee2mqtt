@@ -12,7 +12,7 @@ export default class MQTT {
     private client: mqtt.MqttClient;
     private eventBus: EventBus;
     private initialConnect = true;
-    private republishRetainedTimer: NodeJS.Timer;
+    private republishRetainedTimer: NodeJS.Timeout;
     private retainedMessages: {[s: string]: {payload: string, options: MQTTOptions,
         skipLog: boolean, skipReceive: boolean, topic: string, base: string}} = {};
 
