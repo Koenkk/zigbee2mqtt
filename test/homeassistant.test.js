@@ -1117,7 +1117,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null, "installed_version": -1, "latest_version": -1}}),
+            stringify({"state":"ON","color_options":null,"brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null, "installed_version": -1, "latest_version": -1}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
@@ -1147,7 +1147,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
-            stringify({"state":"ON","brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null, "installed_version": -1, "latest_version": -1}}),
+            stringify({"state":"ON","color_options":null,"brightness":50,"color_temp":370,"linkquality":99,"power_on_behavior":null, "update_available": null, "update": {"state": null, "installed_version": -1, "latest_version": -1}}),
             { retain: true, qos: 0 },
             expect.any(Function)
         );
