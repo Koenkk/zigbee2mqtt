@@ -1103,7 +1103,7 @@ export default class HomeAssistant extends Extension {
                     for (const expose of exposes.filter((e) => groupSupportedTypes.includes(e.type))) {
                         let key = expose.type;
                         if (['switch', 'lock', 'cover'].includes(expose.type) && expose.endpoint) {
-                            // A device can have multiple of these types which have to discovered seperately.
+                            // A device can have multiple of these types which have to discovered separately.
                             // e.g. switch with property state and valve_detection.
                             const state = expose.features.find((f) => f.name === 'state');
                             key += featurePropertyWithoutEndpoint(state);

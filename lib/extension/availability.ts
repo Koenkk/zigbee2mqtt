@@ -122,7 +122,7 @@ export default class Availability extends Extension {
     @bind private publishAvailabilityForAllEntities(): void {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
-                // Publish initial availablility
+                // Publish initial availability
                 this.publishAvailability(entity, true, false, true);
 
                 if (entity.isDevice()) {

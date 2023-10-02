@@ -58,7 +58,7 @@ describe('Availability', () => {
         jest.useRealTimers();
     })
 
-    it('Should publish availabilty on startup for device where it is enabled for', async () => {
+    it('Should publish availability on startup for device where it is enabled for', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability',
             'online', {retain: true, qos: 1}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability',
@@ -236,7 +236,7 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
     });
 
-    it('Should to enable availabilty for just one device', async () => {
+    it('Should to enable availability for just one device', async () => {
         settings.set(['availability'], false);
         settings.set(['devices', devices.bulb_color.ieeeAddr, 'availability'], true);
 
@@ -291,7 +291,7 @@ describe('Availability', () => {
             'offline', {retain: true, qos: 1}, expect.any(Function));
     });
 
-    it('Should publish availabiltiy payload in JSON format', async () => {
+    it('Should publish availability payload in JSON format', async () => {
         settings.set(['advanced', 'legacy_availability_payload'], false);
         await resetExtension();
         MQTT.publish.mockClear();
@@ -328,7 +328,7 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
     });
 
-    it('Should publish availabilty for groups', async () => {
+    it('Should publish availability for groups', async () => {
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], true);
         await resetExtension();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability',
