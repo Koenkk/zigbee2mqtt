@@ -449,7 +449,7 @@
           "type": "boolean",
           "title": "Legacy availability payload",
           "requiresRestart": true,
-          "description": "Payload to be used for device availabilty and bridge/state topics. true = text, false = JSON",
+          "description": "Payload to be used for device availability and bridge/state topics. true = text, false = JSON",
           "default": true
         },
         "log_rotation": {
@@ -912,7 +912,7 @@
           "title": "Group off state",
           "default": "auto",
           "requiresRestart": true,
-          "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group memebers are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
+          "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group members are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
         },
         "filtered_attributes": {
           "type": "array",

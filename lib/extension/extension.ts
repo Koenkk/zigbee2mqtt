@@ -9,7 +9,7 @@ abstract class Extension {
     protected addExtension: (extension: Extension) => Promise<void>;
 
     /**
-     * Besides intializing variables, the constructor should do nothing!
+     * Besides initializing variables, the constructor should do nothing!
      *
      * @param {Zigbee} zigbee Zigbee controller
      * @param {MQTT} mqtt MQTT controller
