@@ -252,7 +252,7 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
@@ -260,7 +260,7 @@ describe('OTA update', () => {
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
         expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
 
         // Should not request again when device asks again after a short time
         await zigbeeHerdsman.events.message(payload);
@@ -286,14 +286,14 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('Nothing to find here')})
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"idle"}}),
@@ -308,14 +308,14 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 13, otaFileVersion: 13});
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"idle","installed_version": 13, "latest_version": 13}}),
@@ -330,7 +330,7 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 13});
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         logger.info.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
@@ -340,22 +340,22 @@ describe('OTA update', () => {
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
         const device = zigbeeHerdsman.devices.HGZB04D;
         const data = {imageType: 12382};
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152}, undefined, 10);
     });
 
     it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA and device has no OTA endpoint to standard endpoint', async () => {
         const device = zigbeeHerdsman.devices.SV01;
         const data = {imageType: 12382};
-        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10};
+        const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
         logger.error.mockClear();
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
-        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152});
+        expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 152}, undefined, 10);
     });
 
     it('Legacy api: Should OTA update a device', async () => {
