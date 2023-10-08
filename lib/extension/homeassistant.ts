@@ -854,7 +854,7 @@ export default class HomeAssistant extends Extension {
                 control_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 device_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 effect: {enabled_by_default: false, icon: 'mdi:palette'},
-                force: {enabled_by_default: false, icon: 'mdi:valve'},
+                force: {entity_category: 'config', icon: 'mdi:valve'},
                 keep_time: {entity_category: 'config', icon: 'mdi:av-timer'},
                 keypad_lockout: {entity_category: 'config', icon: 'mdi:lock'},
                 load_detection_mode: {entity_category: 'config', icon: 'mdi:tune'},
