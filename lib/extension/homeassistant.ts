@@ -902,7 +902,7 @@ export default class HomeAssistant extends Extension {
              * Note: currently both sensor and select are discovered, this is to avoid
              * breaking changes for sensors already existing in HA (legacy).
              */
-            if ((firstExpose.access & ACCESS_SET)) {
+            if (firstExpose.access & ACCESS_SET) {
                 discoveryEntries.push({
                     type: 'select',
                     object_id: firstExpose.property,
