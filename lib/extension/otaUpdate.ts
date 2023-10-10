@@ -119,7 +119,8 @@ export default class OTAUpdate extends Extension {
 
         // Respond to the OTA request: respond with NO_IMAGE_AVAILABLE (0x98) (so the client stops requesting OTAs)
         const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster('genOta')) || data.endpoint;
-        await endpoint.commandResponse('genOta', 'queryNextImageResponse', {status: 0x98});
+        await endpoint.commandResponse('genOta', 'queryNextImageResponse',
+            {status: 0x98}, undefined, data.meta.zclTransactionSequenceNumber);
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
     }
 

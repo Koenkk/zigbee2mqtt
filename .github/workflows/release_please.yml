@@ -110,6 +110,6 @@ jobs:
         jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package-lock.json > package-lock.json.tmp
         mv package.json.tmp package.json
         mv package-lock.json.tmp package-lock.json
-    - uses: stefanzweifel/git-auto-commit-action@v4
+    - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: promote to dev"
