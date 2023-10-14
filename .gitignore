@@ -48,6 +48,9 @@ typings/
 # Optional eslint cache
 .eslintcache
 
+# Build cache
+tsconfig.tsbuildinfo
+
 # Optional REPL history
 .node_repl_history
 

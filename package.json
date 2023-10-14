@@ -26,7 +26,9 @@
     "start": "node index.js",
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
-    "test-watch": "jest test --watch"
+    "test-watch": "jest test --watch",
+    "clean": "rimraf coverage dist tsconfig.tsbuildinfo",
+    "prepack": "npm run clean && npm run build"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
