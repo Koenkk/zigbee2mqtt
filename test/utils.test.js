@@ -1,6 +1,7 @@
 const utils = require('../lib/util/utils').default;
 const version = require('../package.json').version;
 const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').version;
+const versionHerdsmanConverters = require('../node_modules/zigbee-herdsman-converters/package.json').version;
 
 describe('Utils', () => {
     it('Object has properties', () => {
@@ -22,8 +23,8 @@ describe('Utils', () => {
     })
 
     it('Check dependency version', async () => {
-        var dependency = 'zigbee-herdsman';
-        expect(await utils.getDependencyVersion(dependency)).toStrictEqual({"version": versionHerdsman});
+        expect(await utils.getDependencyVersion('zigbee-herdsman')).toStrictEqual({"version": versionHerdsman});
+        expect(await utils.getDependencyVersion('zigbee-herdsman-converters')).toStrictEqual({"version": versionHerdsmanConverters});
     })
 
     it('To local iso string', async () => {
