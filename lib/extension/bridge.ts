@@ -23,6 +23,8 @@ type DefinitionPayload = {
 
 export default class Bridge extends Extension {
     private zigbee2mqttVersion: {commitHash: string, version: string};
+    private zigbeeHerdsmanVersion: {version: string};
+    private zigbeeHerdsmanConvertersVersion: {version: string};
     private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
     private lastJoinedDeviceIeeeAddr: string;
@@ -67,6 +69,8 @@ export default class Bridge extends Extension {
         logger.addTransport(new EventTransport());
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
+        this.zigbeeHerdsmanVersion = await utils.getDependencyVersion('zigbee-herdsman');
+        this.zigbeeHerdsmanConvertersVersion = await utils.getDependencyVersion('zigbee-herdsman-converters');
         this.coordinatorVersion = await this.zigbee.getCoordinatorVersion();
 
         this.eventBus.onEntityRenamed(this, () => this.publishInfo());
@@ -582,6 +586,8 @@ export default class Bridge extends Extension {
         const payload = {
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,
+            zigbee_herdsman_converters: this.zigbeeHerdsmanConvertersVersion,
+            zigbee_herdsman: this.zigbeeHerdsmanVersion,
             coordinator: {
                 ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
                 ...this.coordinatorVersion,
