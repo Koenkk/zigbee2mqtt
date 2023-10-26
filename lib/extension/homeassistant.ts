@@ -654,7 +654,7 @@ export default class HomeAssistant extends Extension {
                 battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery2: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement',
-                    disabled_by_default: true},
+                    enabled_by_default: true},
                 boost_heating_countdown: {device_class: 'duration'},
                 boost_heating_countdown_time_set: {entity_category: 'config', icon: 'mdi:timer'},
                 boost_time: {entity_category: 'config', icon: 'mdi:timer'},
