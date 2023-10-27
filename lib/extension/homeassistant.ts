@@ -639,10 +639,12 @@ export default class HomeAssistant extends Extension {
             const lookup: {[s: string]: KeyValue} = {
                 ac_frequency: {device_class: 'frequency', enabled_by_default: false, entity_category: 'diagnostic',
                     state_class: 'measurement'},
-                alarm_humidity_max: {device_class: 'humidity', icon: 'mdi:water-plus'},
-                alarm_humidity_min: {device_class: 'humidity', icon: 'mdi:water-minus'},
-                alarm_temperature_max: {device_class: 'temperature', icon: 'mdi:thermometer-high'},
-                alarm_temperature_min: {device_class: 'temperature', icon: 'mdi:thermometer-low'},
+                alarm_humidity_max: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-plus'},
+                alarm_humidity_min: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-minus'},
+                alarm_temperature_max: {device_class: 'temperature', entity_category: 'config',
+                    icon: 'mdi:thermometer-high'},
+                alarm_temperature_min: {device_class: 'temperature', entity_category: 'config',
+                    icon: 'mdi:thermometer-low'},
                 angle: {icon: 'angle-acute'},
                 angle_axis: {icon: 'angle-acute'},
                 aqi: {device_class: 'aqi', state_class: 'measurement'},
@@ -651,7 +653,8 @@ export default class HomeAssistant extends Extension {
                 away_preset_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery2: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
-                battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement'},
+                battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement',
+                    enabled_by_default: true},
                 boost_heating_countdown: {device_class: 'duration'},
                 boost_heating_countdown_time_set: {entity_category: 'config', icon: 'mdi:timer'},
                 boost_time: {entity_category: 'config', icon: 'mdi:timer'},
@@ -788,6 +791,12 @@ export default class HomeAssistant extends Extension {
                     ...extraAttrs,
                 },
             };
+
+            // If it has an entity category of config, but exposed as sensor, then change
+            // it to diagnostic. Sensors have no input, so can't be configured.
+            if (discoveryEntry.discovery_payload.entity_category === 'config') {
+                discoveryEntry.discovery_payload.entity_category = 'diagnostic';
+            }
 
             // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
             // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
