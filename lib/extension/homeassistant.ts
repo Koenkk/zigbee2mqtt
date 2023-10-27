@@ -1180,6 +1180,7 @@ export default class HomeAssistant extends Extension {
                     latest_version_topic: true,
                     state_topic: true,
                     device_class: 'firmware',
+                    entity_category: 'config',
                     command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
                     payload_install: `{"id": "${entity.ieeeAddr}"}`,
                     value_template: `{{ value_json['update']['installed_version'] }}`,
