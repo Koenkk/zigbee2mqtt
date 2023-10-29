@@ -855,8 +855,8 @@ export default class HomeAssistant extends Extension {
         } else if (firstExpose.type === 'enum') {
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
-                alarm_humidity: {icon: 'mdi:water-percent-alert'},
-                alarm_temperature: {icon: 'mdi:thermometer-alert'},
+                alarm_humidity: {entity_category: 'config', icon: 'mdi:water-percent-alert'},
+                alarm_temperature: {entity_category: 'config', icon: 'mdi:thermometer-alert'},
                 backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
                 backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
                 color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
@@ -867,8 +867,8 @@ export default class HomeAssistant extends Extension {
                 keep_time: {entity_category: 'config', icon: 'mdi:av-timer'},
                 keypad_lockout: {entity_category: 'config', icon: 'mdi:lock'},
                 load_detection_mode: {entity_category: 'config', icon: 'mdi:tune'},
-                load_dimmable: {entity_category: 'diagnostic', icon: 'mdi:chart-bell-curve'},
-                load_type: {entity_category: 'diagnostic', icon: 'mdi:led-on'},
+                load_dimmable: {entity_category: 'config', icon: 'mdi:chart-bell-curve'},
+                load_type: {entity_category: 'config', icon: 'mdi:led-on'},
                 melody: {entity_category: 'config', icon: 'mdi:music-note'},
                 mode_phase_control: {entity_category: 'config', icon: 'mdi:tune'},
                 mode: {entity_category: 'config', icon: 'mdi:tune'},
@@ -876,8 +876,8 @@ export default class HomeAssistant extends Extension {
                 operation_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 power_on_behavior: {entity_category: 'config', icon: 'mdi:power-settings'},
                 power_outage_memory: {entity_category: 'config', icon: 'mdi:power-settings'},
-                power_supply_mode: {entity_category: 'diagnostic', icon: 'mdi:power-settings'},
-                power_type: {entity_category: 'diagnostic', icon: 'mdi:lightning-bolt-circle'},
+                power_supply_mode: {entity_category: 'config', icon: 'mdi:power-settings'},
+                power_type: {entity_category: 'config', icon: 'mdi:lightning-bolt-circle'},
                 sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
                 sensors_type: {entity_category: 'config', icon: 'mdi:tune'},
                 sound_volume: {entity_category: 'config', icon: 'mdi:volume-high'},
@@ -893,7 +893,7 @@ export default class HomeAssistant extends Extension {
                 `{{ value_json.${firstExpose.property} }}` : undefined;
 
             if (firstExpose.access & ACCESS_STATE) {
-                discoveryEntries.push({
+                const discoveryEntry: DiscoveryEntry = {
                     type: 'sensor',
                     object_id: firstExpose.property,
                     mockProperties: [{property: firstExpose.property, value: null}],
@@ -903,7 +903,15 @@ export default class HomeAssistant extends Extension {
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
                         ...lookup[firstExpose.name],
                     },
-                });
+                };
+
+                // If it has an entity category of config, but exposed as sensor, then change
+                // it to diagnostic. Sensors have no input, so can't be configured.
+                if (discoveryEntry.discovery_payload.entity_category === 'config') {
+                    discoveryEntry.discovery_payload.entity_category = 'diagnostic';
+                }
+
+                discoveryEntries.push(discoveryEntry);
             }
 
             /**
