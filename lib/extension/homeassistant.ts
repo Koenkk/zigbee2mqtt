@@ -730,7 +730,7 @@ export default class HomeAssistant extends Extension {
                     enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
                 smoke_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
-                soil_moisture: {icon: 'mdi:water-percent', state_class: 'measurement'},
+                soil_moisture: {device_class: 'moisture', state_class: 'measurement'},
                 temperature: {device_class: 'temperature', state_class: 'measurement'},
                 temperature_calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
                 temperature_max: {entity_category: 'config', icon: 'mdi:thermometer-plus'},
