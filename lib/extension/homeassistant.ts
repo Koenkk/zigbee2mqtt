@@ -792,12 +792,6 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            // If it has an entity category of config, but exposed as sensor, then change
-            // it to diagnostic. Sensors have no input, so can't be configured.
-            if (discoveryEntry.discovery_payload.entity_category === 'config') {
-                discoveryEntry.discovery_payload.entity_category = 'diagnostic';
-            }
-
             // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
             // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
             if (discoveryEntry.discovery_payload.device_class &&
@@ -893,7 +887,7 @@ export default class HomeAssistant extends Extension {
                 `{{ value_json.${firstExpose.property} }}` : undefined;
 
             if (firstExpose.access & ACCESS_STATE) {
-                const discoveryEntry: DiscoveryEntry = {
+                discoveryEntries.push({
                     type: 'sensor',
                     object_id: firstExpose.property,
                     mockProperties: [{property: firstExpose.property, value: null}],
@@ -903,15 +897,7 @@ export default class HomeAssistant extends Extension {
                         enabled_by_default: !(firstExpose.access & ACCESS_SET),
                         ...lookup[firstExpose.name],
                     },
-                };
-
-                // If it has an entity category of config, but exposed as sensor, then change
-                // it to diagnostic. Sensors have no input, so can't be configured.
-                if (discoveryEntry.discovery_payload.entity_category === 'config') {
-                    discoveryEntry.discovery_payload.entity_category = 'diagnostic';
-                }
-
-                discoveryEntries.push(discoveryEntry);
+                });
             }
 
             /**
@@ -978,6 +964,15 @@ export default class HomeAssistant extends Extension {
         } else {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
         }
+
+        discoveryEntries.forEach((d) => {
+            // If a sensor has entity category `config`, then change
+            // it to `diagnostic`. Sensors have no input, so can't be configured.
+            // https://github.com/Koenkk/zigbee2mqtt/pull/19474
+            if (d.type === 'sensor' && d.discovery_payload.entity_category === 'config') {
+                d.discovery_payload.entity_category = 'diagnostic';
+            }
+        });
 
         return discoveryEntries;
     }
