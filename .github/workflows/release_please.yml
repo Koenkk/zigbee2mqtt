@@ -28,7 +28,6 @@ jobs:
           default-branch: dev
           token: ${{secrets.GH_TOKEN}}
           include-v-in-tag: false
-          skip-github-release: true
 
       # Checkout repos
       - uses: actions/checkout@v4
