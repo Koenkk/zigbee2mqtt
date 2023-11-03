@@ -785,7 +785,7 @@ describe('HomeAssistant extension', () => {
         let payload;
 
         payload = {
-            "action_template":"{% set values = {None:None,'idle':'off','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
+            "action_template":"{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
             "action_topic":"zigbee2mqtt/TS0601_thermostat",
             "availability":[
                 {
