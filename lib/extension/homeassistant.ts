@@ -969,7 +969,7 @@ export default class HomeAssistant extends Extension {
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
             // https://github.com/Koenkk/zigbee2mqtt/pull/19474
-            if (d.type === 'sensor' && d.discovery_payload.entity_category === 'config') {
+            if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
             }
         });
