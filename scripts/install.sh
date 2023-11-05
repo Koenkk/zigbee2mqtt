@@ -24,7 +24,7 @@ echo "Cloning Zigbee2MQTT git repository"
 git clone https://github.com/Koenkk/zigbee2mqtt.git /opt/zigbee2mqtt
 chown -R pi:pi /opt/zigbee2mqtt
 
-echo "Running install. This might take a while and can produce som expected errors"
+echo "Running install. This might take a while and can produce some expected errors"
 cd /opt/zigbee2mqtt || exit
 su pi -c "npm ci"
 

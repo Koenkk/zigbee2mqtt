@@ -1276,7 +1276,7 @@ describe('Publish', () => {
         expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
-    it('Shouldnt do anythign when device is not supported', async () => {
+    it('Shouldnt do anything when device is not supported', async () => {
         const payload = {state: 'ON'};
         await MQTT.events.message('zigbee2mqtt/unsupported2/set', stringify(payload));
         await flushPromises();
