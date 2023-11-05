@@ -174,7 +174,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
-        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF singals disturbed because of dogs barking')});
+        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF signals disturbed because of dogs barking')});
 
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', "bulb");
         await flushPromises();
@@ -182,7 +182,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({"data":{"id": "bulb"},"status":"error","error": `Failed to check if update available for 'bulb' (RF singals disturbed because of dogs barking)`}),
+            stringify({"data":{"id": "bulb"},"status":"error","error": `Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -386,7 +386,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);        
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
@@ -438,13 +438,13 @@ describe('OTA update', () => {
         const mapped = zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.error.mockClear();
-        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF singals disturbed because of dogs barking')});
+        mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF signals disturbed because of dogs barking')});
 
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'bulb');
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
-        expect(logger.error).toHaveBeenCalledWith(`Failed to check if update available for 'bulb' (RF singals disturbed because of dogs barking)`);
+        expect(logger.error).toHaveBeenCalledWith(`Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`);
     });
 
     it('Legacy api: Should not check for OTA when device does not support it', async () => {

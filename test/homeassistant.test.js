@@ -495,7 +495,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Should discover devices with overriden user configuration', async () => {
+    it('Should discover devices with overridden user configuration', async () => {
         settings.set(['devices', '0x0017880104e45522'], {
             homeassistant: {
                 expire_after: 30,
@@ -584,7 +584,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Should discover devices with overriden name', async () => {
+    it('Should discover devices with overridden name', async () => {
         settings.set(['devices', '0x0017880104e45522'], {
             homeassistant: {
                 name: "Weather Sensor",
@@ -655,7 +655,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Should discover devices with overriden user configuration affecting type and object_id', async () => {
+    it('Should discover devices with overridden user configuration affecting type and object_id', async () => {
         settings.set(['devices', '0x0017880104e45541'], {
             friendly_name: 'my_switch',
             homeassistant: {
@@ -1609,7 +1609,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
         expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
 
-        // Should rediscover when already discovered in previous session but with diferent name
+        // Should rediscover when already discovered in previous session but with different name
         controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button_other_name/action'}));
         await flushPromises();

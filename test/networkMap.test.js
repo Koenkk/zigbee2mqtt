@@ -281,7 +281,7 @@ describe('Networkmap', () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    it('Should throw error when rquesting invalid type', async () => {
+    it('Should throw error when requesting invalid type', async () => {
         mock();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');

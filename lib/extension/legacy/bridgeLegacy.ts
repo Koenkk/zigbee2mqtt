@@ -90,7 +90,7 @@ export default class BridgeLegacy extends Extension {
     @bind async reset(): Promise<void> {
         try {
             await this.zigbee.reset('soft');
-            logger.info('Soft resetted ZNP');
+            logger.info('Soft reset ZNP');
         } catch (error) {
             logger.error('Soft reset failed');
         }
