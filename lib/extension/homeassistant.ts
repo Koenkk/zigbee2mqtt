@@ -337,14 +337,19 @@ export default class HomeAssistant extends Extension {
             }
 
 
-            const frostProtectionTemperature = firstExpose.features.find((f) => f.name === 'frost_protection_temperature');
+            const frostProtectionTemperature =
+                firstExpose.features.find((f) => f.name === 'frost_protection_temperature');
             if (frostProtectionTemperature) {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
-                    object_id: endpoint ? `${frostProtectionTemperature.name}_${endpoint}` : `${frostProtectionTemperature.name}`,
+                    object_id: endpoint ?
+                        `${frostProtectionTemperature.name}_${endpoint}` :
+                        `${frostProtectionTemperature.name}`,
                     mockProperties: [{property: frostProtectionTemperature.property, value: null}],
                     discovery_payload: {
-                        name: endpoint ? `${frostProtectionTemperature.label} ${endpoint}` : frostProtectionTemperature.label,
+                        name: endpoint ?
+                            `${frostProtectionTemperature.label} ${endpoint}` :
+                            frostProtectionTemperature.label,
                         value_template: `{{ value_json.${frostProtectionTemperature.property} }}`,
                         command_topic: true,
                         command_topic_prefix: endpoint,
@@ -356,8 +361,12 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                if (frostProtectionTemperature.value_min != null) discoveryEntry.discovery_payload.min = frostProtectionTemperature.value_min;
-                if (frostProtectionTemperature.value_max != null) discoveryEntry.discovery_payload.max = frostProtectionTemperature.value_max;
+                if (frostProtectionTemperature.value_min != null) {
+                    discoveryEntry.discovery_payload.min = frostProtectionTemperature.value_min;
+                }
+                if (frostProtectionTemperature.value_max != null) {
+                    discoveryEntry.discovery_payload.max = frostProtectionTemperature.value_max;
+                }
                 if (frostProtectionTemperature.value_step != null) {
                     discoveryEntry.discovery_payload.step = frostProtectionTemperature.value_step;
                 }
