@@ -1198,7 +1198,8 @@ export default class HomeAssistant extends Extension {
                     value_template: `{{ value_json['update']['installed_version'] }}`,
                     latest_version_template: `{{ value_json['update']['latest_version'] }}`,
                     json_attributes_topic: `${settings.get().mqtt.base_topic}/${entity.name}`, // state topic
-                    json_attributes_template: `{"in_progress": {{ value_json['update']['state'] == 'updating' }}}`,
+                    json_attributes_template:
+                        `{{ {'in_progress': value_json['update']['state'] == 'updating'} | tojson }}`,
                 },
             };
             configs.push(updateSensor);
