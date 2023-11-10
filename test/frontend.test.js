@@ -135,6 +135,30 @@ describe('Frontend', () => {
         mockHTTPS.implementation.listen.mockClear();
     });
 
+    it('Start/stop without host', async () => {
+        settings.set(['frontend'], {port: 8081});
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+        expect(mockNodeStatic.variables.path).toBe("my/dummy/path");
+        expect(mockHTTP.implementation.listen).toHaveBeenCalledWith(8081);
+        const mockWSClient = {
+            implementation: {
+                terminate: jest.fn(),
+                send: jest.fn(),
+            },
+            events: {},
+        };
+        mockWS.implementation.clients.push(mockWSClient.implementation);
+        await controller.stop();
+        expect(mockWSClient.implementation.terminate).toHaveBeenCalledTimes(1);
+        expect(mockHTTP.implementation.close).toHaveBeenCalledTimes(1);
+        expect(mockWS.implementation.close).toHaveBeenCalledTimes(1);
+        mockWS.implementation.close.mockClear();
+        mockHTTP.implementation.close.mockClear();
+        mockHTTP.implementation.listen.mockClear();
+        mockHTTPS.implementation.listen.mockClear();
+    });
+
     it('Start/stop unix socket', async () => {
         settings.set(['frontend'], {host: "/tmp/zigbee2mqtt.sock"});
         controller = new Controller(jest.fn(), jest.fn());

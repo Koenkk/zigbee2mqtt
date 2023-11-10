@@ -74,7 +74,10 @@ export default class Frontend extends Extension {
         this.wss = new WebSocket.Server({noServer: true});
         this.wss.on('connection', this.onWebSocketConnection);
 
-        if (this.host.startsWith('/')) {
+        if (!this.host) {
+            this.server.listen(this.port);
+            logger.info(`Started frontend on port ${this.port}`);
+        } else if (this.host.startsWith('/')) {
             this.server.listen(this.host);
             logger.info(`Started frontend on socket ${this.host}`);
         } else {

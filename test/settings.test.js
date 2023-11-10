@@ -935,7 +935,7 @@ describe('Settings', () => {
         });
 
         settings.reRead();
-        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false, host: '0.0.0.0'})
+        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false})
     });
 
     it('Baudrate config', () => {
