@@ -371,11 +371,10 @@
               "requiresRestart": true
             },
             "host": {
-              "type": "string",
+              "type": ["string", "null"],
               "title": "Bind host",
               "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
-              "examples": ["127.0.0.1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
-              "default": "0.0.0.0",
+              "examples": ["127.0.0.1", "::1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
               "requiresRestart": true
             },
             "auth_token": {
