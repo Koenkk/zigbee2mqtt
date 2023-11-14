@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Delete untagged images
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           script: |
