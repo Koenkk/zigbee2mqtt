@@ -21,6 +21,8 @@ import type {
     FrameControl as ZHFrameControl,
 } from 'zigbee-herdsman/dist/zcl';
 
+import type * as ZHCTypes from 'zigbee-herdsman-converters/lib/types';
+
 import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 
 import type TypeEventBus from 'lib/eventBus';
@@ -72,69 +74,46 @@ declare global {
 
     // zigbee-herdsman-converters
     namespace zhc {
-        interface Logger {
-            info: (message: string) => void;
-            warn: (message: string) => void;
-            error: (message: string) => void;
-            debug: (message: string) => void;
-        }
+        type Definition = ZHCTypes.Definition;
+        type ToZigbeeConverter = ZHCTypes.Tz.Converter;
+        type DefinitionExpose = ZHCTypes.Expose;
 
-        interface ToZigbeeConverterGetMeta {message?: KeyValue, mapped?: Definition | Definition[]}
+        // interface Logger {
+        //     info: (message: string) => void;
+        //     warn: (message: string) => void;
+        //     error: (message: string) => void;
+        //     debug: (message: string) => void;
+        // }
 
-        interface ToZigbeeConverterResult {state: KeyValue,
-            membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
+        // interface ToZigbeeConverterGetMeta {message?: KeyValue, mapped?: Definition | Definition[]}
 
-        interface ToZigbeeConverter {
-            key: string[],
-            convertGet?: (entity: zh.Endpoint | zh.Group, key: string, meta: ToZigbeeConverterGetMeta) => Promise<void>
-            convertSet?: (entity: zh.Endpoint | zh.Group, key: string, value: KeyValue | string | number,
-                meta: {state: KeyValue}) => Promise<ToZigbeeConverterResult>
-        }
+        // interface ToZigbeeConverterResult {state: KeyValue,
+        //     membersState: {[s: string]: KeyValue}, readAfterWriteTime?: number}
 
-        interface FromZigbeeConverter {
-            cluster: string,
-            type: string[] | string,
-            convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
-                meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
-        }
 
-        interface DefinitionExposeFeature {name: string, label: string, endpoint?: string,
-            property: string, value_max?: number, value_min?: number, unit?: string,
-            value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
+        // interface FromZigbeeConverter {
+        //     cluster: string,
+        //     type: string[] | string,
+        //     convert: (model: Definition, msg: KeyValue, publish: (payload: KeyValue) => void, options: KeyValue,
+        //         meta: {state: KeyValue, logger: Logger, device: zh.Device}) => Promise<KeyValue>,
+        // }
 
-        interface DefinitionExpose {
-            type: string, name?: string, label?: string, features?: DefinitionExposeFeature[],
-            endpoint?: string, values?: string[], value_off?: string, value_on?: string, value_step?: number,
-            access: number, property: string, unit?: string,
-            value_min?: number, value_max?: number}
+        // interface DefinitionExposeFeature {name: string, label: string, endpoint?: string,
+        //     property: string, value_max?: number, value_min?: number, unit?: string,
+        //     value_off?: string, value_on?: string, value_step?: number, values: string[], access: number}
 
-        interface OtaUpdateAvailableResult {available: boolean, currentFileVersion: number, otaFileVersion: number}
+        // interface DefinitionExpose {
+        //     type: string, name?: string, label?: string, features?: DefinitionExposeFeature[],
+        //     endpoint?: string, values?: string[], value_off?: string, value_on?: string, value_step?: number,
+        //     access: number, property: string, unit?: string,
+        //     value_min?: number, value_max?: number}
 
-        interface Definition {
-            model: string,
-            zigbeeModel: string[],
-            endpoint?: (device: zh.Device) => {[s: string]: number}
-            toZigbee: ToZigbeeConverter[]
-            fromZigbee: FromZigbeeConverter[]
-            icon?: string
-            description: string
-            options: zhc.DefinitionExpose[],
-            vendor: string
-            exposes: DefinitionExpose[] | ((device: zh.Device, options: KeyValue) => DefinitionExpose[])
-            configure?: (device: zh.Device, coordinatorEndpoint: zh.Endpoint, logger: Logger,
-                options?: DeviceOptions) => Promise<void>;
-            onEvent?: (type: string, data: KeyValue, device: zh.Device,
-                settings: KeyValue, state: KeyValue) => Promise<void>;
-            ota?: {
-                isUpdateAvailable: (device: zh.Device, logger: Logger, data?: KeyValue)
-                    => Promise<OtaUpdateAvailableResult>;
-                updateToLatest: (device: zh.Device, logger: Logger,
-                    onProgress: (progress: number, remaining: number) => void) => Promise<number>;
-            }
-        }
+        // interface OtaUpdateAvailableResult {available: boolean, currentFileVersion: number, otaFileVersion: number}
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type ExternalDefinition = Definition & {homeassistant: any};
+        // 
+
+        // // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // type ExternalDefinition = Definition & {homeassistant: any};
     }
 
     namespace eventdata {
