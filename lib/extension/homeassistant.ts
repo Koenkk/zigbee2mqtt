@@ -1540,6 +1540,9 @@ export default class HomeAssistant extends Extension {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
             payload.sw_version = entity.zh.softwareBuildID;
+        } else {
+            payload.model = 'Group';
+            payload.manufacturer = 'Zigbee2MQTT';
         }
 
         if (settings.get().frontend?.url) {
