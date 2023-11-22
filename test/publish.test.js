@@ -1432,7 +1432,6 @@ describe('Publish', () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genScenes', 'recall', { groupid: 15071, sceneid: 1 }, {});
-        console.log(logger.error.mock.calls);
         expect(MQTT.publish).toHaveBeenCalledTimes(8);
         expect(MQTT.publish).toHaveBeenNthCalledWith(1,
             'zigbee2mqtt/group_tradfri_remote',
