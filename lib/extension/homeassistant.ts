@@ -1206,6 +1206,25 @@ export default class HomeAssistant extends Extension {
             configs.push(updateSensor);
         }
 
+        // Only add auto-discovery for group scenes for now.
+        if (!isDevice) {
+            utils.getScenes(entity.zh).forEach((sceneData) => {
+                const scene: DiscoveryEntry = {
+                    type: 'scene',
+                    object_id: `scene_${sceneData.id}`,
+                    mockProperties: [],
+                    discovery_payload: {
+                        name: `${sceneData.name}`,
+                        state_topic: false,
+                        command_topic: true,
+                        payload_on: `{ "scene_recall": ${sceneData.id} }`,
+                    },
+                };
+
+                configs.push(scene);
+            });
+        }
+
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
             configs = configs.filter((c) => c !== sensorClick);
         }
