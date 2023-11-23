@@ -99,6 +99,7 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
+        this.eventBus.onScenesChanged(this, this.onScenesChanged);
         this.eventBus.onEntityOptionsChanged(this, (data) => this.discover(data.entity, true));
 
         this.mqtt.subscribe(this.statusTopic);
@@ -1537,6 +1538,21 @@ export default class HomeAssistant extends Extension {
 
     @bind onZigbeeEvent(data: {device: Device}): void {
         this.discover(data.device);
+    }
+
+    @bind onScenesChanged(): void {
+        // Re-trigger MQTT discovery of all groups, similar to bridge.ts
+        for (const entity of [...this.zigbee.groups()]) {
+            // First, clear existing scene discovery topics
+            logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
+            this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
+                if (topic.startsWith('scene')) {
+                    this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                }
+            });
+
+            this.discover(entity, true);
+        }
     }
 
     private getDevicePayload(entity: Device | Group): KeyValue {
