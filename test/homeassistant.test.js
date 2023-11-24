@@ -2118,4 +2118,42 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
+
+    it('Should rediscover scenes when a scene is changed', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+        MQTT.publish.mockClear();
+        controller.eventBus.emitScenesChanged();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/${device.ID}/scene_1/config`,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+
+        const payload = {
+            'name': 'Chill scene',
+            'command_topic': 'zigbee2mqtt/bulb_color_2/set',
+            'payload_on': '{ "scene_recall": 1 }',
+            'json_attributes_topic': 'zigbee2mqtt/bulb_color_2',
+            'object_id': 'bulb_color_2_1',
+            'unique_id': '0x000b57fffec6a5b4_scene_1_zigbee2mqtt',
+            'device': {
+                'identifiers': [ 'zigbee2mqtt_0x000b57fffec6a5b4' ],
+                'name': 'bulb_color_2',
+                'sw_version': '5.127.1.26581',
+                'model': 'Hue Go (7146060PH)',
+                'manufacturer': 'Philips',
+            },
+            'origin': origin,
+            'availability': [ { 'topic': 'zigbee2mqtt/bridge/state' } ]
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/${device.ID}/scene_1/config`,
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
 });
