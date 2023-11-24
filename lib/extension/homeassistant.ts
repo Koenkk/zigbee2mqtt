@@ -1207,24 +1207,25 @@ export default class HomeAssistant extends Extension {
             configs.push(updateSensor);
         }
 
-        // Only add auto-discovery for group scenes for now.
-        if (!isDevice) {
-            utils.getScenes(entity.zh).forEach((sceneData) => {
-                const scene: DiscoveryEntry = {
+        // Discover scenes.
+        const endpointsOrGroups = isDevice ? entity.zh.endpoints : [entity.zh];
+        endpointsOrGroups.forEach((endpointOrGroup) => {
+            utils.getScenes(endpointOrGroup).forEach((scene) => {
+                const sceneEntry: DiscoveryEntry = {
                     type: 'scene',
-                    object_id: `scene_${sceneData.id}`,
+                    object_id: `scene_${scene.id}`,
                     mockProperties: [],
                     discovery_payload: {
-                        name: `${sceneData.name}`,
+                        name: `${scene.name}`,
                         state_topic: false,
                         command_topic: true,
-                        payload_on: `{ "scene_recall": ${sceneData.id} }`,
+                        payload_on: `{ "scene_recall": ${scene.id} }`,
                     },
                 };
 
-                configs.push(scene);
+                configs.push(sceneEntry);
             });
-        }
+        });
 
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
             configs = configs.filter((c) => c !== sensorClick);
@@ -1541,8 +1542,8 @@ export default class HomeAssistant extends Extension {
     }
 
     @bind onScenesChanged(): void {
-        // Re-trigger MQTT discovery of all groups, similar to bridge.ts
-        for (const entity of [...this.zigbee.groups()]) {
+        // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
+        for (const entity of [...this.zigbee.devices(), ...this.zigbee.groups()]) {
             // First, clear existing scene discovery topics
             logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
             this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
