@@ -1310,6 +1310,11 @@ export default class HomeAssistant extends Extension {
                 payload.object_id += `_${config.object_id}`;
             }
 
+            // Allow customization of the `payload.object_id` without touching the other uses of `config.object_id`
+            // (e.g. for setting the `payload.unique_id` and as an internal key).
+            payload.object_id = `${payload.object_id}${payload.object_id_postfix ?? ''}`;
+            delete payload.object_id_postfix;
+
             // Set unique_id
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
