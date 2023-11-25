@@ -2136,7 +2136,7 @@ describe('HomeAssistant extension', () => {
             'command_topic': 'zigbee2mqtt/bulb_color_2/set',
             'payload_on': '{ "scene_recall": 1 }',
             'json_attributes_topic': 'zigbee2mqtt/bulb_color_2',
-            'object_id': 'bulb_color_2_1',
+            'object_id': 'bulb_color_2_1_chill_scene',
             'unique_id': '0x000b57fffec6a5b4_scene_1_zigbee2mqtt',
             'device': {
                 'identifiers': [ 'zigbee2mqtt_0x000b57fffec6a5b4' ],

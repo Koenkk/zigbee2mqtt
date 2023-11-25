@@ -1220,6 +1220,7 @@ export default class HomeAssistant extends Extension {
                         state_topic: false,
                         command_topic: true,
                         payload_on: `{ "scene_recall": ${scene.id} }`,
+                        object_id_postfix: `_${scene.name.replace(/\s+/g, '_').toLowerCase()}`,
                     },
                 };
 
