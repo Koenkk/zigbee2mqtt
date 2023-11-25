@@ -404,8 +404,6 @@ function computeSettingsToChange(current: KeyValue, new_: KeyValue): KeyValue {
     return newSettings;
 }
 
-export type Scene = {id: number, name: string};
-
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     const scenes: {[id: number]: Scene} = {};
     const endpoints = isEndpoint(entity) ? [entity] : entity.members;

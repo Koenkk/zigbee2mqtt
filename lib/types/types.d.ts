@@ -46,6 +46,7 @@ declare global {
     // Types
     interface MQTTResponse {data: KeyValue, status: 'error' | 'ok', error?: string, transaction?: string}
     interface MQTTOptions {qos?: QoS, retain?: boolean, properties?: {messageExpiryInterval: number}}
+    type Scene = {id: number, name: string};
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue,
         stateChangeReason?: StateChangeReason) => Promise<void>;
@@ -316,4 +317,3 @@ declare global {
         qos?: 0 | 1 | 2,
     }
 }
-
