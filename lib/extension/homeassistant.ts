@@ -99,6 +99,7 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
+        this.eventBus.onScenesChanged(this, this.onScenesChanged);
         this.eventBus.onEntityOptionsChanged(this, (data) => this.discover(data.entity, true));
 
         this.mqtt.subscribe(this.statusTopic);
@@ -1206,6 +1207,27 @@ export default class HomeAssistant extends Extension {
             configs.push(updateSensor);
         }
 
+        // Discover scenes.
+        const endpointsOrGroups = isDevice ? entity.zh.endpoints : [entity.zh];
+        endpointsOrGroups.forEach((endpointOrGroup) => {
+            utils.getScenes(endpointOrGroup).forEach((scene) => {
+                const sceneEntry: DiscoveryEntry = {
+                    type: 'scene',
+                    object_id: `scene_${scene.id}`,
+                    mockProperties: [],
+                    discovery_payload: {
+                        name: `${scene.name}`,
+                        state_topic: false,
+                        command_topic: true,
+                        payload_on: `{ "scene_recall": ${scene.id} }`,
+                        object_id_postfix: `_${scene.name.replace(/\s+/g, '_').toLowerCase()}`,
+                    },
+                };
+
+                configs.push(sceneEntry);
+            });
+        });
+
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
             configs = configs.filter((c) => c !== sensorClick);
         }
@@ -1288,6 +1310,11 @@ export default class HomeAssistant extends Extension {
             } else if (!config.object_id.startsWith(config.type)) {
                 payload.object_id += `_${config.object_id}`;
             }
+
+            // Allow customization of the `payload.object_id` without touching the other uses of `config.object_id`
+            // (e.g. for setting the `payload.unique_id` and as an internal key).
+            payload.object_id = `${payload.object_id}${payload.object_id_postfix ?? ''}`;
+            delete payload.object_id_postfix;
 
             // Set unique_id
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
@@ -1520,6 +1547,21 @@ export default class HomeAssistant extends Extension {
         this.discover(data.device);
     }
 
+    @bind onScenesChanged(): void {
+        // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
+        for (const entity of [...this.zigbee.devices(), ...this.zigbee.groups()]) {
+            // First, clear existing scene discovery topics
+            logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
+            this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
+                if (topic.startsWith('scene')) {
+                    this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                }
+            });
+
+            this.discover(entity, true);
+        }
+    }
+
     private getDevicePayload(entity: Device | Group): KeyValue {
         const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
@@ -1540,6 +1582,9 @@ export default class HomeAssistant extends Extension {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
             payload.sw_version = entity.zh.softwareBuildID;
+        } else {
+            payload.model = 'Group';
+            payload.manufacturer = 'Zigbee2MQTT';
         }
 
         if (settings.get().frontend?.url) {
