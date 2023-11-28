@@ -127,6 +127,7 @@ export default class Configure extends Extension {
             logger.error(msg);
 
             if (throwError) {
+                this.configuring.delete(device.ieeeAddr);
                 throw error;
             }
         }
