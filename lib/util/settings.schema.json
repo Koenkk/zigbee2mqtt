@@ -378,6 +378,14 @@
               "default": "0.0.0.0",
               "requiresRestart": true
             },
+            "path":{
+              "type": "string",
+              "title": "Path",
+              "description": "Path under which the frontend is available.",
+              "examples": ["/zigbee2mqtt"],
+              "default": "/",
+              "requiresRestart": true
+            },
             "auth_token": {
               "type": ["string", "null"],
               "title": "Auth token",

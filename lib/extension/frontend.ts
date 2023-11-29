@@ -21,6 +21,7 @@ export default class Frontend extends Extension {
     private mqttBaseTopic = settings.get().mqtt.base_topic;
     private host = settings.get().frontend.host;
     private port = settings.get().frontend.port;
+    private path = settings.get().frontend.path;
     private sslCert = settings.get().frontend.ssl_cert;
     private sslKey = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
@@ -71,7 +72,7 @@ export default class Frontend extends Extension {
             },
         };
         this.fileServer = gzipStatic(frontend.getPath(), options);
-        this.wss = new WebSocket.Server({noServer: true});
+        this.wss = new WebSocket.Server({noServer: true, path: this.path});
         this.wss.on('connection', this.onWebSocketConnection);
 
         if (this.host.startsWith('/')) {
@@ -97,8 +98,12 @@ export default class Frontend extends Extension {
     }
 
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
-        // @ts-ignore
-        this.fileServer(request, response, finalhandler(request, response));
+        if (request.url === this.path) {
+            // @ts-ignore
+            this.fileServer(request, response, finalhandler(request, response));
+        } else {
+            response.writeHead(404).end();
+        }
     }
 
     private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {

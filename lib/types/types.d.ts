@@ -239,6 +239,7 @@ declare global {
             auth_token?: string,
             host?: string,
             port?: number,
+            path?: string,
             url?: string,
             ssl_cert?: string,
             ssl_key?: string,

@@ -54,6 +54,16 @@ const mockNodeStatic = {
     events: {},
 };
 
+const mockRequest = {
+    url: '/',
+};
+
+const mockResponse = {
+    writeHead: jest.fn(() => ({
+        end: jest.fn()
+    })),
+};
+
 jest.mock('http', () => ({
     createServer: jest.fn().mockImplementation((onRequest) => {
         mockHTTP.variables.onRequest = onRequest;
@@ -99,7 +109,7 @@ describe('Frontend', () => {
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
-        settings.set(['frontend'], {port: 8081, host: "127.0.0.1"});
+        settings.set(['frontend'], {port: 8081, host: "127.0.0.1", path: "/"});
         settings.set(['homeassistant'], true);
         zigbeeHerdsman.devices.bulb.linkquality = 10;
     });
@@ -269,9 +279,9 @@ describe('Frontend', () => {
         mockWS.implementation.handleUpgrade.mock.calls[0][3](99);
         expect(mockWS.implementation.emit).toHaveBeenCalledWith('connection', 99, {"url": "http://localhost:8080/api"});
 
-        mockHTTP.variables.onRequest(1, 2);
+        mockHTTP.variables.onRequest(mockRequest, mockResponse);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(1, 2, expect.any(Function));
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(mockRequest, mockResponse, expect.any(Function));
     });
 
     it('Static server', async () => {
