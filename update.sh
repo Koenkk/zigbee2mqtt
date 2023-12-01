@@ -1,4 +1,5 @@
 #!/bin/bash -e
+cd "$(dirname "$0")"
 
 if [ -d data-backup ]; then
    echo "ERROR: Backup directory exists. May be previous restoring was failed?"
