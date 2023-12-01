@@ -84,25 +84,13 @@ jobs:
       with:
         ref: dev
         token: ${{secrets.GH_TOKEN}}
-    - name: Download changelog
-      uses: actions/download-artifact@v3
-      with:
-        name: changelog
-        path: ../changelog
-    - uses: ncipollo/release-action@v1
-      name: Create release
-      with:
-        bodyFile: ../changelog/changelog.md
-        draft: true
-        name: ${{ needs.release-please.outputs.version }}
-        tag: ${{ needs.release-please.outputs.version }}
     - name: Merge dev -> master
-      uses: devmasx/merge-branch@master
-      with:
-        type: now
-        from_branch: dev
-        target_branch: master
-        github_token: ${{secrets.GH_TOKEN}}
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git checkout master
+        git merge -m 'chore: merge dev to master'
+        git push origin master
     - name: Promote to dev
       run: |
         jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package.json > package.json.tmp
@@ -112,3 +100,16 @@ jobs:
     - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore: promote to dev"
+    - name: Download changelog
+      uses: actions/download-artifact@v3
+      with:
+        name: changelog
+        path: ../changelog
+    - name: update release
+      id: update_release
+      uses: tubone24/update_release@v1.0
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        TAG_NAME: ${{ needs.release-please.outputs.version }}
+      with:
+        body_path: ../changelog/changelog.md
