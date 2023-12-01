@@ -796,7 +796,7 @@ describe('Bridge', () => {
     });
 
     it('Should allow to enable/disable Home Assistant extension', async () => {
-        // Test if disabled intially
+        // Test if disabled initially
         const device = zigbeeHerdsman.devices.WXKG11LM;
         settings.set(['devices', device.ieeeAddr, 'legacy'], false);
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -1077,7 +1077,7 @@ describe('Bridge', () => {
         );
     });
 
-    it('Should throw error when configure reporting is called with misformed payload', async () => {
+    it('Should throw error when configure reporting is called with malformed payload', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
         endpoint.configureReporting.mockClear();

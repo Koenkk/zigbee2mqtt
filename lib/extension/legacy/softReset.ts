@@ -43,7 +43,7 @@ export default class SoftReset extends Extension {
 
         try {
             await this.zigbee.reset('soft');
-            logger.warn('Soft resetted ZNP due to timeout');
+            logger.warn('Soft reset ZNP due to timeout');
         } catch (error) {
             logger.warn('Soft reset failed, trying stop/start');
 

@@ -145,7 +145,7 @@ describe('Publish', () => {
     it('Should publish messages to zigbee devices with color_temp in %', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
-        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color_temp_percent: '100'}));
+        await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({color_temp_percent: 100}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
         expect(endpoint.command).toHaveBeenCalledWith("lightingColorCtrl", "moveToColorTemp", {colortemp: 500, transtime: 0}, {});
@@ -1276,7 +1276,7 @@ describe('Publish', () => {
         expect(endpoint.command).toHaveBeenCalledWith("ssIasWd", "startWarning", {"startwarninginfo": 53, "warningduration": 10, "strobedutycycle": 0, "strobelevel": 1}, {disableDefaultResponse: true});
     });
 
-    it('Shouldnt do anythign when device is not supported', async () => {
+    it('Shouldnt do anything when device is not supported', async () => {
         const payload = {state: 'ON'};
         await MQTT.events.message('zigbee2mqtt/unsupported2/set', stringify(payload));
         await flushPromises();
@@ -1407,7 +1407,7 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[3]).toEqual([ 'zigbee2mqtt/bulb_color', stringify({"state":"ON","brightness":150}), { qos: 0, retain: false }, expect.any(Function)]);
     });
 
-    it('Scenes', async () => {
+    it('onlythis Scenes', async () => {
         const bulb_color_2 = zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1);
         const bulb_2 = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_tradfri_remote;

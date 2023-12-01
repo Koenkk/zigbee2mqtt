@@ -49,7 +49,7 @@ for (const changelog of changelogs) {
             continue;
         } else if (changeMatch) {
             let localContext = changeMatch[2] ? changeMatch[2] : context;
-            if (!changes[localContext]) throw new Error(`Unknown context: ${localContext}`);
+            if (!changes[localContext]) localContext = 'error';
 
             const commitUserKey = `${changelog.project}-${changeMatch[5]} `;
             let user = commitUserKey in commitUserLookup ? commitUserLookup[commitUserKey] :

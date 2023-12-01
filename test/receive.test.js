@@ -182,7 +182,7 @@ describe('Receive', () => {
 
         // Summary:
         // First send multiple measurements to device that is debouncing. Make sure only one message is sent out to MQTT. This also ensures first message is cached to "State".
-        // Then send another measurement to that same device and trigger asyncronous event to push data from Cache. Newest value should be sent out.
+        // Then send another measurement to that same device and trigger asynchronous event to push data from Cache. Newest value should be sent out.
 
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
@@ -201,11 +201,11 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
 
-        // Send another Zigbee messages...
+        // Send another Zigbee message...
         await zigbeeHerdsman.events.message({data: {measuredValue: 9}, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10});
         const realDevice = controller.zigbee.resolveEntity(device);
 
-        // Trigger asyncronous event while device is "debouncing" to trigger Message to be sent out from State cache.
+        // Trigger asynchronous event while device is "debouncing" to trigger Message to be sent out from State cache.
         await controller.publishEntityState( realDevice, {} );
         jest.runOnlyPendingTimers();
         await flushPromises();
@@ -213,7 +213,7 @@ describe('Receive', () => {
         // Total of 3 messages should have triggered.
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
 
-        // Test that message pushed by asyncronous message contains NEW measurement and not old.
+        // Test that message pushed by asynchronous message contains NEW measurement and not old.
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
         // Test that messages after debouncing contains NEW measurement and not old.
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});

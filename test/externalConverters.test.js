@@ -72,7 +72,6 @@ describe('Loads external converters', () => {
 
     it('Loads external converters', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
-        const devicesCount = zigbeeHerdsman.devices.lenght;
         settings.set(['external_converters'], ['mock-external-converter.js']);
         await resetExtension();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(1);
@@ -90,7 +89,6 @@ describe('Loads external converters', () => {
 
     it('Loads multiple external converters', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
-        const devicesCount = zigbeeHerdsman.devices.lenght;
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
         await resetExtension();
         expect(zigbeeHerdsmanConverters.addDeviceDefinition).toHaveBeenCalledTimes(2);
