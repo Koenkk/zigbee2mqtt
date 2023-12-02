@@ -1261,7 +1261,7 @@ export default class HomeAssistant extends Extension {
     }
 
     private getDiscoverKey(entity: Device | Group): string | number {
-        return entity.isDevice() ? entity.ieeeAddr : entity.ID;
+        return entity.ID;
     }
 
     private discover(entity: Device | Group, force=false): void {
