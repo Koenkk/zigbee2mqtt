@@ -61,6 +61,25 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     }
 };
 
+interface BridgeOptions {
+    ID?: string,
+    homeassistant?: KeyValue,
+}
+
+/**
+ * This class handles the bridge entity configuration for Home Assistant Discovery.
+ */
+class Bridge {
+    /* eslint-disable brace-style */
+    get ID(): string {return 'Bridge';}
+    get options(): BridgeOptions {return {};}
+    get name(): string {return this.ID;}
+
+    isDevice(): this is Device {return false;}
+    isGroup(): this is Group {return false;}
+    /* eslint-enable brace-style */
+}
+
 /**
  * This extensions handles integration with HomeAssistant
  */
@@ -73,6 +92,7 @@ export default class HomeAssistant extends Extension {
     private entityAttributes = settings.get().homeassistant.legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
     private discoveryOrigin: {name: string, sw: string, url: string};
+    private bridge: Bridge;
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
@@ -90,7 +110,7 @@ export default class HomeAssistant extends Extension {
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
         this.discoveryOrigin = {name: 'Zigbee2MQTT', sw: this.zigbee2MQTTVersion, url: 'https://www.zigbee2mqtt.io'};
-
+        this.bridge = this.getBridgeEntity();
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
@@ -108,7 +128,7 @@ export default class HomeAssistant extends Extension {
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
 
         // MQTT discovery of all paired devices on startup.
-        for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
+        for (const entity of [this.bridge, ...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             this.discover(entity, true);
         }
 
@@ -1088,8 +1108,9 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    private getConfigs(entity: Device | Group): DiscoveryEntry[] {
+    private getConfigs(entity: Device | Group | Bridge): DiscoveryEntry[] {
         const isDevice = entity.isDevice();
+        const isGroup = entity.isGroup();
         /* istanbul ignore next */
         if (!entity || (isDevice && !entity.definition)) return [];
 
@@ -1112,7 +1133,7 @@ export default class HomeAssistant extends Extension {
                 // @ts-ignore
                 configs.push(entity.definition.homeassistant);
             }
-        } else { // group
+        } else if (isGroup) { // group
             const exposesByType: {[s: string]: zhc.Expose[]} = {};
             const allExposes: zhc.Expose[] = [];
 
@@ -1214,7 +1235,7 @@ export default class HomeAssistant extends Extension {
         }
 
         // Discover scenes.
-        const endpointsOrGroups = isDevice ? entity.zh.endpoints : [entity.zh];
+        const endpointsOrGroups = isDevice ? entity.zh.endpoints : isGroup ? [entity.zh] : [];
         endpointsOrGroups.forEach((endpointOrGroup) => {
             utils.getScenes(endpointOrGroup).forEach((scene) => {
                 const sceneEntry: DiscoveryEntry = {
@@ -1260,19 +1281,23 @@ export default class HomeAssistant extends Extension {
         return configs;
     }
 
-    private getDiscoverKey(entity: Device | Group): string | number {
+    private getDiscoverKey(entity: Device | Group | Bridge): string | number {
         return entity.ID;
     }
 
-    private discover(entity: Device | Group, force=false): void {
+    private discover(entity: Device | Group | Bridge, force=false): void {
         // Check if already discovered and check if there are configs.
         const discoverKey = this.getDiscoverKey(entity);
         const discover = force || !this.discovered[discoverKey];
 
-        if (entity.isGroup()) {
-            if (!discover || entity.zh.members.length === 0) return;
-        } else if (!discover || !entity.definition || entity.zh.interviewing ||
-            (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant)) {
+        // Handle type differences.
+        const isDevice = entity.isDevice();
+        const isGroup = entity.isGroup();
+
+        if (isGroup && (!discover || entity.zh.members.length === 0)) {
+            return;
+        } else if (isDevice && (!discover || !entity.definition || entity.zh.interviewing ||
+            (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant))) {
             return;
         }
 
@@ -1333,12 +1358,12 @@ export default class HomeAssistant extends Extension {
             payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
             /* istanbul ignore next */
-            if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
+            if ((isDevice||isGroup) && utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 payload.availability_mode = 'all';
                 payload.availability.push({topic: `${baseTopic}/availability`});
             }
 
-            if (entity.isDevice() && entity.options.disabled) {
+            if (isDevice && entity.options.disabled) {
                 // Mark disabled device always as unavailable
                 payload.availability.forEach((a: KeyValue) => a.value_template = '{{ "offline" }}');
             } else if (!settings.get().advanced.legacy_availability_payload) {
@@ -1504,7 +1529,7 @@ export default class HomeAssistant extends Extension {
 
             // Group discovery topic uses "ENCODEDBASETOPIC_GROUPID", device use ieeeAddr
             const ID = discoveryMatch[2].includes('_') ? discoveryMatch[2].split('_')[1] : discoveryMatch[2];
-            const entity = this.zigbee.resolveEntity(ID);
+            const entity = ID === this.bridge.ID ? this.bridge : this.zigbee.resolveEntity(ID);
             let clear = !entity || entity.isDevice() && !entity.definition;
 
             // Only save when topic matches otherwise config is not updated when renamed by editing configuration.yaml
@@ -1568,7 +1593,7 @@ export default class HomeAssistant extends Extension {
         }
     }
 
-    private getDevicePayload(entity: Device | Group): KeyValue {
+    private getDevicePayload(entity: Device | Group | Bridge): KeyValue {
         const identifierPostfix = entity.isGroup() ?
             `zigbee2mqtt_${this.getEncodedBaseTopic()}` : 'zigbee2mqtt';
 
@@ -1584,25 +1609,30 @@ export default class HomeAssistant extends Extension {
             sw_version: `Zigbee2MQTT ${this.zigbee2MQTTVersion}`,
         };
 
+        const url = settings.get().frontend?.url ?? '';
         if (entity.isDevice()) {
             payload.model = `${entity.definition.description} (${entity.definition.model})`;
             payload.manufacturer = entity.definition.vendor;
             payload.sw_version = entity.zh.softwareBuildID;
-        } else {
+            payload.configuration_url = `${url}/#/device/${entity.ieeeAddr}/info`;
+        } else if (entity.isGroup()) {
             payload.model = 'Group';
             payload.manufacturer = 'Zigbee2MQTT';
+            payload.configuration_url = `${url}/#/group/${entity.ID}`;
+        } else {
+            payload.model = 'Bridge';
+            payload.manufacturer = 'Zigbee2MQTT';
+            payload.configuration_url = `${url}/#/settings`;
         }
 
-        if (settings.get().frontend?.url) {
-            const url = settings.get().frontend?.url;
-            payload.configuration_url = entity.isDevice() ? `${url}/#/device/${entity.ieeeAddr}/info` :
-                `${url}/#/group/${entity.ID}`;
+        if (!url) {
+            delete payload.configuration_url;
         }
 
         return payload;
     }
 
-    override adjustMessageBeforePublish(entity: Device | Group, message: KeyValue): void {
+    override adjustMessageBeforePublish(entity: Device | Group | Bridge, message: KeyValue): void {
         const discoverKey = this.getDiscoverKey(entity);
         this.discovered[discoverKey]?.mockProperties?.forEach((mockProperty) => {
             if (!message.hasOwnProperty(mockProperty.property)) {
@@ -1629,7 +1659,7 @@ export default class HomeAssistant extends Extension {
         return settings.get().mqtt.base_topic.split('').map((s) => s.charCodeAt(0).toString()).join('');
     }
 
-    private getDiscoveryTopic(config: DiscoveryEntry, entity: Device | Group): string {
+    private getDiscoveryTopic(config: DiscoveryEntry, entity: Device | Group | Bridge): string {
         const key = entity.isDevice() ? entity.ieeeAddr : `${this.getEncodedBaseTopic()}_${entity.ID}`;
         return `${config.type}/${key}/${config.object_id}/config`;
     }
@@ -1677,5 +1707,11 @@ export default class HomeAssistant extends Extension {
 
     _clearDiscoveredTrigger(): void {
         this.discoveredTriggers = {};
+    }
+
+    private getBridgeEntity(): Bridge {
+        const bridge = new Bridge();
+
+        return bridge;
     }
 }
