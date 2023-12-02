@@ -61,19 +61,41 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     }
 };
 
-interface BridgeOptions {
-    ID?: string,
-    homeassistant?: KeyValue,
-}
-
 /**
  * This class handles the bridge entity configuration for Home Assistant Discovery.
  */
 class Bridge {
+    private coordinatorIeeeAddress: string;
+    private coordinatorType: string;
+    private coordinatorFirmwareVersion: string;
+    private discoveryEntries: DiscoveryEntry[];
+
+    readonly options: {
+        ID?: string,
+        homeassistant?: KeyValue,
+    };
+
     /* eslint-disable brace-style */
-    get ID(): string {return 'Bridge';}
-    get options(): BridgeOptions {return {};}
-    get name(): string {return this.ID;}
+    get ID(): string {return this.coordinatorIeeeAddress;}
+    get name(): string {return 'bridge';}
+    get hardwareVersion(): string {return this.coordinatorType;}
+    get firmwareVersion(): string {return this.coordinatorFirmwareVersion;}
+    get configs(): DiscoveryEntry[] {return this.discoveryEntries;}
+
+    constructor(ieeeAdress: string, version: zh.CoordinatorVersion, discovery: DiscoveryEntry[]) {
+        this.coordinatorIeeeAddress = ieeeAdress;
+        this.coordinatorType = version.type;
+        /* istanbul ignore next */
+        this.coordinatorFirmwareVersion = version.meta.revision ? `${version.meta.revision}` : '';
+        this.discoveryEntries = discovery;
+
+        this.options = {
+            ID: `bridge_${ieeeAdress}`,
+            homeassistant: {
+                name: `Zigbee2MQTT Bridge`,
+            },
+        };
+    }
 
     isDevice(): this is Device {return false;}
     isGroup(): this is Group {return false;}
@@ -110,7 +132,7 @@ export default class HomeAssistant extends Extension {
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
         this.discoveryOrigin = {name: 'Zigbee2MQTT', sw: this.zigbee2MQTTVersion, url: 'https://www.zigbee2mqtt.io'};
-        this.bridge = this.getBridgeEntity();
+        this.bridge = this.getBridgeEntity(await this.zigbee.getCoordinatorVersion());
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
@@ -1157,6 +1179,9 @@ export default class HomeAssistant extends Extension {
 
             configs = [].concat(...Object.values(exposesByType)
                 .map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
+        } else {
+            // Discover bridge config.
+            configs.push(...entity.configs);
         }
 
         if (isDevice && settings.get().advanced.last_seen !== 'disable') {
@@ -1622,6 +1647,8 @@ export default class HomeAssistant extends Extension {
         } else {
             payload.model = 'Bridge';
             payload.manufacturer = 'Zigbee2MQTT';
+            payload.hw_version = `${entity.hardwareVersion} ${entity.firmwareVersion}`;
+            payload.sw_version = this.zigbee2MQTTVersion;
             payload.configuration_url = `${url}/#/settings`;
         }
 
@@ -1709,8 +1736,98 @@ export default class HomeAssistant extends Extension {
         this.discoveredTriggers = {};
     }
 
-    private getBridgeEntity(): Bridge {
-        const bridge = new Bridge();
+    private getBridgeEntity(coordinatorVersion: zh.CoordinatorVersion): Bridge {
+        const coordinatorIeeeAddress = this.zigbee.firstCoordinatorEndpoint().deviceIeeeAddress;
+        const discovery: DiscoveryEntry[] = [];
+        const bridge = new Bridge(coordinatorIeeeAddress, coordinatorVersion, discovery);
+        const baseTopic = `${settings.get().mqtt.base_topic}/${bridge.name}`;
+
+        discovery.push(
+            {
+                type: 'button',
+                object_id: 'restart',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Restart',
+                    device_class: 'restart',
+                    state_topic: false,
+                    command_topic: `${baseTopic}/request/restart`,
+                    payload_press: '',
+                },
+            },
+            {
+                type: 'sensor',
+                object_id: 'connection_state',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Connection state',
+                    icon: 'mdi:router-wireless',
+                    entity_category: 'diagnostic',
+                    state_topic: true,
+                    state_topic_postfix: 'state',
+                    value_template: '{{ value_json.state }}',
+                },
+            },
+            {
+                type: 'sensor',
+                object_id: 'version',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Version',
+                    icon: 'mdi:zigbee',
+                    entity_category: 'diagnostic',
+                    state_topic: true,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ value_json.version }}',
+                },
+
+            },
+            {
+                type: 'sensor',
+                object_id: 'coordinator_version',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Coordinator version',
+                    icon: 'mdi:chip',
+                    entity_category: 'diagnostic',
+                    enabled_by_default: false,
+                    state_topic: true,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ value_json.coordinator.meta.revision }}',
+                },
+
+            },
+            {
+                type: 'sensor',
+                object_id: 'network_map',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Network map',
+                    entity_category: 'diagnostic',
+                    enabled_by_default: false,
+                    state_topic: true,
+                    state_topic_postfix: 'response/networkmap',
+                    value_template: '{{ now().strftime(\'%Y-%m-%d %H:%M:%S\') }}',
+                    json_attributes_topic: `${baseTopic}/response/networkmap`,
+                    json_attributes_template: '{{ value_json.data.value | tojson }}',
+                },
+            },
+            {
+                type: 'switch',
+                object_id: 'permit_join',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Permit join',
+                    icon: 'mdi:human-greeting-proximity',
+                    state_topic: true,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ value_json.permit_join | lower }}',
+                    command_topic: `${baseTopic}/request/permit_join`,
+                    payload_on: 'true',
+                    payload_off: 'false',
+                },
+            },
+        );
 
         return bridge;
     }

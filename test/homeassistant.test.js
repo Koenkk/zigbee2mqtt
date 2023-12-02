@@ -11,6 +11,7 @@ const path = require('path');
 
 describe('HomeAssistant extension', () => {
     let version;
+    let z2m_version;
     let controller;
     let extension;
     let origin;
@@ -32,9 +33,9 @@ describe('HomeAssistant extension', () => {
     });
 
     beforeAll(async () => {
-        version = await require('../lib/util/utils').default.getZigbee2MQTTVersion();
-        origin = {name: 'Zigbee2MQTT', sw: version.version, url: 'https://www.zigbee2mqtt.io'}
-        version = `Zigbee2MQTT ${version.version}`;
+        z2m_version = (await require('../lib/util/utils').default.getZigbee2MQTTVersion()).version;
+        origin = {name: 'Zigbee2MQTT', sw: z2m_version, url: 'https://www.zigbee2mqtt.io'};
+        version = `Zigbee2MQTT ${z2m_version}`;
         jest.useFakeTimers();
         settings.set(['homeassistant'], true);
         data.writeDefaultConfiguration();
@@ -2153,6 +2154,184 @@ describe('HomeAssistant extension', () => {
             `homeassistant/scene/${device.ID}/scene_1/config`,
             stringify(payload),
             {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
+    it('Should not clear bridge entities unnecessarily', async () => {
+        MQTT.publish.mockClear();
+
+        const topic = 'homeassistant/button/1221051039810110150109113116116_0x00124b00120144ae/restart/config';
+        const payload = {
+            'name': 'Restart',
+            'object_id': 'zigbee2mqtt_bridge_restart',
+            'unique_id': 'bridge_0x00124b00120144ae_restart_zigbee2mqtt',
+            'device_class': 'restart',
+            'command_topic': 'zigbee2mqtt/bridge/request/restart',
+            'payload_press': '',
+            'origin': origin,
+            'device': {
+                'name': 'Zigbee2MQTT Bridge',
+                'identifiers': ['zigbee2mqtt_bridge_0x00124b00120144ae'],
+                'manufacturer': 'Zigbee2MQTT',
+                'model': 'Bridge',
+                'hw_version': 'z-Stack 20190425',
+                'sw_version': z2m_version,
+            },
+            'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
+        };
+
+        controller.eventBus.emitMQTTMessage({
+            topic: topic,
+            message: stringify(payload),
+        });
+        await flushPromises();
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            topic,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover bridge entities', async () => {
+        settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
+        await resetExtension();
+
+        const devicePayload = {
+            'name': 'Zigbee2MQTT Bridge',
+            'identifiers': ['zigbee2mqtt_bridge_0x00124b00120144ae'],
+            'manufacturer': 'Zigbee2MQTT',
+            'model': 'Bridge',
+            'hw_version': 'z-Stack 20190425',
+            'sw_version': z2m_version,
+        };
+
+        // Buttons.
+        let payload;
+        payload = {
+            'name': 'Restart',
+            'object_id': 'zigbee2mqtt_bridge_restart',
+            'unique_id': 'bridge_0x00124b00120144ae_restart_zigbee2mqtt',
+            'device_class': 'restart',
+            'command_topic': 'zigbee2mqtt/bridge/request/restart',
+            'payload_press': '',
+            'origin': origin,
+            'device': devicePayload,
+            'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/button/1221051039810110150109113116116_0x00124b00120144ae/restart/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+
+        // Sensors.
+        payload = {
+            'name': 'Connection state',
+            'object_id': 'zigbee2mqtt_bridge_connection_state',
+            'entity_category': 'diagnostic',
+            'icon': 'mdi:router-wireless',
+            'unique_id': 'bridge_0x00124b00120144ae_connection_state_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/bridge/state',
+            'value_template': '{{ value_json.state }}',
+            'origin': origin,
+            'device': devicePayload,
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/connection_state/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+
+        payload = {
+            'name': 'Version',
+            'object_id': 'zigbee2mqtt_bridge_version',
+            'entity_category': 'diagnostic',
+            'icon': 'mdi:zigbee',
+            'unique_id': 'bridge_0x00124b00120144ae_version_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/bridge/info',
+            'value_template': '{{ value_json.version }}',
+            'origin': origin,
+            'device': devicePayload,
+            'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/version/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+
+        payload = {
+            'name': 'Coordinator version',
+            'object_id': 'zigbee2mqtt_bridge_coordinator_version',
+            'entity_category': 'diagnostic',
+            'enabled_by_default': false,
+            'icon': 'mdi:chip',
+            'unique_id': 'bridge_0x00124b00120144ae_coordinator_version_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/bridge/info',
+            'value_template': '{{ value_json.coordinator.meta.revision }}',
+            'origin': origin,
+            'device': devicePayload,
+            'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/coordinator_version/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+
+        payload = {
+            'name': 'Network map',
+            'object_id': 'zigbee2mqtt_bridge_network_map',
+            'entity_category': 'diagnostic',
+            'enabled_by_default': false,
+            'unique_id': 'bridge_0x00124b00120144ae_network_map_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/bridge/response/networkmap',
+            'value_template': "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}",
+            'json_attributes_topic': 'zigbee2mqtt/bridge/response/networkmap',
+            'json_attributes_template': '{{ value_json.data.value | tojson }}',
+            'origin': origin,
+            'device': devicePayload,
+            'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],
+            'availability_mode': 'all',
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/network_map/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+
+        // Switches.
+        payload = {
+            'name': 'Permit join',
+            'object_id': 'zigbee2mqtt_bridge_permit_join',
+            'icon': 'mdi:human-greeting-proximity',
+            'unique_id': 'bridge_0x00124b00120144ae_permit_join_zigbee2mqtt',
+            'state_topic': 'zigbee2mqtt/bridge/info',
+            'value_template': '{{ value_json.permit_join | lower }}',
+            'command_topic': 'zigbee2mqtt/bridge/request/permit_join',
+            'payload_on': 'true',
+            'payload_off': 'false',
+            'origin': origin,
+            'device': devicePayload,
+            'availability': [ { 'topic': 'zigbee2mqtt/bridge/state' } ],
+            'availability_mode': 'all'
+        };
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/switch/1221051039810110150109113116116_0x00124b00120144ae/permit_join/config',
+            stringify(payload),
+            { retain: true, qos: 1 },
             expect.any(Function),
         );
     });
