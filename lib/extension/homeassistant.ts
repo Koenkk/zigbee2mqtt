@@ -1379,20 +1379,27 @@ export default class HomeAssistant extends Extension {
             payload.device = devicePayload;
             payload.origin = this.discoveryOrigin;
 
-            // Availability payload
-            payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
+            // Availability payload (can be disabled by setting `payload.availability = false`).
+            if (! payload.hasOwnProperty('availability') || payload.availability) {
+                payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
-            /* istanbul ignore next */
-            if ((isDevice||isGroup) && utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
-                payload.availability_mode = 'all';
-                payload.availability.push({topic: `${baseTopic}/availability`});
-            }
+                if (isDevice||isGroup) {
+                    if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
+                        payload.availability_mode = 'all';
+                        payload.availability.push({topic: `${baseTopic}/availability`});
+                    }
+                } else { // Bridge availability is different.
+                    payload.availability_mode = 'all';
+                }
 
-            if (isDevice && entity.options.disabled) {
-                // Mark disabled device always as unavailable
-                payload.availability.forEach((a: KeyValue) => a.value_template = '{{ "offline" }}');
-            } else if (!settings.get().advanced.legacy_availability_payload) {
-                payload.availability.forEach((a: KeyValue) => a.value_template = '{{ value_json.state }}');
+                if (isDevice && entity.options.disabled) {
+                    // Mark disabled device always as unavailable
+                    payload.availability.forEach((a: KeyValue) => a.value_template = '{{ "offline" }}');
+                } else if (!settings.get().advanced.legacy_availability_payload) {
+                    payload.availability.forEach((a: KeyValue) => a.value_template = '{{ value_json.state }}');
+                }
+            } else {
+                delete payload.availability;
             }
 
             const commandTopicPrefix = payload.command_topic_prefix ? `${payload.command_topic_prefix}/` : '';
@@ -1766,6 +1773,7 @@ export default class HomeAssistant extends Extension {
                     state_topic: true,
                     state_topic_postfix: 'state',
                     value_template: '{{ value_json.state }}',
+                    availability: false,
                 },
             },
             {
