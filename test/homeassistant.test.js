@@ -53,7 +53,7 @@ describe('HomeAssistant extension', () => {
         const duplicated = [];
         require('zigbee-herdsman-converters').devices.forEach((d) => {
             const exposes = typeof d.exposes == 'function' ? d.exposes() : d.exposes;
-            const device = {definition: d, isDevice: () => true, options: {}, exposes: () => exposes};
+            const device = {definition: d, isDevice: () => true, options: {}, exposes: () => exposes, zh: {endpoints: []}};
             const configs = extension.getConfigs(device);
             const cfg_type_object_ids = [];
 
@@ -87,6 +87,8 @@ describe('HomeAssistant extension', () => {
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version": version,
+               "model": "Group",
+               "manufacturer": "Zigbee2MQTT",
             },
             "max_mireds": 454,
             "min_mireds": 250,
@@ -130,6 +132,8 @@ describe('HomeAssistant extension', () => {
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version": version,
+               "model": "Group",
+               "manufacturer": "Zigbee2MQTT",
             },
             "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
             "name":null,
@@ -1349,6 +1353,8 @@ describe('HomeAssistant extension', () => {
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group_new",
                "sw_version": version,
+               "model": "Group",
+               "manufacturer": "Zigbee2MQTT",
             },
             "json_attributes_topic":"zigbee2mqtt/ha_discovery_group_new",
             "max_mireds": 454,
@@ -1887,6 +1893,8 @@ describe('HomeAssistant extension', () => {
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version": version,
+               "model": "Group",
+               "manufacturer": "Zigbee2MQTT",
             },
             "json_attributes_topic":"zigbee2mqtt/ha_discovery_group",
             "max_mireds": 454,
@@ -1938,6 +1946,8 @@ describe('HomeAssistant extension', () => {
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
                "name":"ha_discovery_group",
                "sw_version": version,
+               "model": "Group",
+               "manufacturer": "Zigbee2MQTT",
             },
             "max_mireds": 454,
             "min_mireds": 250,
@@ -2105,6 +2115,44 @@ describe('HomeAssistant extension', () => {
             'homeassistant/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
             { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+    });
+
+    it('Should rediscover scenes when a scene is changed', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+        MQTT.publish.mockClear();
+        controller.eventBus.emitScenesChanged();
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/${device.ID}/scene_1/config`,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+
+        const payload = {
+            'name': 'Chill scene',
+            'command_topic': 'zigbee2mqtt/bulb_color_2/set',
+            'payload_on': '{ "scene_recall": 1 }',
+            'json_attributes_topic': 'zigbee2mqtt/bulb_color_2',
+            'object_id': 'bulb_color_2_1_chill_scene',
+            'unique_id': '0x000b57fffec6a5b4_scene_1_zigbee2mqtt',
+            'device': {
+                'identifiers': [ 'zigbee2mqtt_0x000b57fffec6a5b4' ],
+                'name': 'bulb_color_2',
+                'sw_version': '5.127.1.26581',
+                'model': 'Hue Go (7146060PH)',
+                'manufacturer': 'Philips',
+            },
+            'origin': origin,
+            'availability': [ { 'topic': 'zigbee2mqtt/bridge/state' } ]
+        }
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/${device.ID}/scene_1/config`,
+            stringify(payload),
+            {retain: true, qos: 1},
             expect.any(Function),
         );
     });

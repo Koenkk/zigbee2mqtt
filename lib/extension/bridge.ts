@@ -15,7 +15,6 @@ import fs from 'fs';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
-type Scene = {id: number, name: string};
 type DefinitionPayload = {
     model: string, vendor: string, description: string, exposes: zhc.DefinitionExpose[], supports_ota:
     boolean, icon: string, options: zhc.DefinitionExpose[],
@@ -605,25 +604,6 @@ export default class Bridge extends Extension {
             'bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    private getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
-        const scenes: {[id: number]: Scene} = {};
-        const endpoints = utils.isEndpoint(entity) ? [entity] : entity.members;
-        const groupID = utils.isEndpoint(entity) ? 0 : entity.groupID;
-
-        for (const endpoint of endpoints) {
-            for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
-                const split = key.split('_');
-                const sceneID = parseInt(split[0], 10);
-                const sceneGroupID = parseInt(split[1], 10);
-                if (sceneGroupID === groupID) {
-                    scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
-                }
-            }
-        }
-
-        return Object.values(scenes);
-    }
-
     async publishDevices(): Promise<void> {
         interface Data {
             bindings: {cluster: string, target: {type: string, endpoint?: number, ieee_address?: string, id?: number}}[]
@@ -636,7 +616,7 @@ export default class Bridge extends Extension {
             const endpoints: {[s: number]: Data} = {};
             for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
-                    scenes: this.getScenes(endpoint),
+                    scenes: utils.getScenes(endpoint),
                     bindings: [],
                     configured_reportings: [],
                     clusters: {
@@ -695,7 +675,7 @@ export default class Bridge extends Extension {
                 id: g.ID,
                 friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
                 description: g.options.description,
-                scenes: this.getScenes(g.zh),
+                scenes: utils.getScenes(g.zh),
                 members: g.zh.members.map((e) => {
                     return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
                 }),

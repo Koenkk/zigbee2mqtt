@@ -404,11 +404,30 @@ function computeSettingsToChange(current: KeyValue, new_: KeyValue): KeyValue {
     return newSettings;
 }
 
+function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
+    const scenes: {[id: number]: Scene} = {};
+    const endpoints = isEndpoint(entity) ? [entity] : entity.members;
+    const groupID = isEndpoint(entity) ? 0 : entity.groupID;
+
+    for (const endpoint of endpoints) {
+        for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
+            const split = key.split('_');
+            const sceneID = parseInt(split[0], 10);
+            const sceneGroupID = parseInt(split[1], 10);
+            if (sceneGroupID === groupID) {
+                scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
+            }
+        }
+    }
+
+    return Object.values(scenes);
+}
+
 export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange,
+    getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
 };

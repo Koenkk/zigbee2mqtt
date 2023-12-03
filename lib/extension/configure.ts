@@ -129,8 +129,8 @@ export default class Configure extends Extension {
             if (throwError) {
                 throw error;
             }
+        } finally {
+            this.configuring.delete(device.ieeeAddr);
         }
-
-        this.configuring.delete(device.ieeeAddr);
     }
 }
