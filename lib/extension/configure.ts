@@ -2,7 +2,7 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import logger from '../util/logger';
 import stringify from 'json-stable-stringify-without-jsonify';
-import zhc from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import Extension from './extension';
 import bind from 'bind-decorator';
 import Device from '../model/device';
@@ -114,8 +114,7 @@ export default class Configure extends Extension {
 
         logger.info(`Configuring '${device.name}'`);
         try {
-            await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), logger,
-                device.options);
+            await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), logger);
             logger.info(`Successfully configured '${device.name}'`);
             device.zh.meta.configured = zhc.getConfigureKey(device.definition);
             device.zh.save();

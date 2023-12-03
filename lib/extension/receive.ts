@@ -147,8 +147,10 @@ export default class Receive extends Extension {
         let payload: KeyValue = {};
         for (const converter of converters) {
             try {
+                const convertData = {...data, device: data.device.zh};
+                const options: KeyValue = data.device.options;
                 const converted = await converter.convert(
-                    data.device.definition, data, publish, data.device.options, meta);
+                    data.device.definition, convertData, publish, options, meta);
                 if (converted) {
                     payload = {...payload, ...converted};
                 }

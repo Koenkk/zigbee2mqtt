@@ -1,4 +1,4 @@
-import zhc from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import Extension from './extension';
 
 /**
@@ -39,12 +39,13 @@ export default class OnEvent extends Extension {
         }
     }
 
-    private async callOnEvent(device: Device, type: string, data: KeyValue): Promise<void> {
+    private async callOnEvent(device: Device, type: zhc.OnEventType, data: KeyValue): Promise<void> {
         const state = this.state.get(device);
-        zhc.onEvent(type, data, device.zh, device.options, state);
+        zhc.onEvent(type, data, device.zh);
 
         if (device.definition?.onEvent) {
-            await device.definition.onEvent(type, data, device.zh, device.options, state);
+            const options: KeyValue = device.options;
+            await device.definition.onEvent(type, data, device.zh, options, state);
         }
     }
 }

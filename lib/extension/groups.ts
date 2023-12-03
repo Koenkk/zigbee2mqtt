@@ -7,13 +7,14 @@ import bind from 'bind-decorator';
 import Extension from './extension';
 import Device from '../model/device';
 import Group from '../model/group';
+import * as zhc from 'zigbee-herdsman-converters';
 
 const topicRegex =
     new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
 const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
 const legacyTopicRegexRemoveAll = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
 
-const stateProperties: {[s: string]: (value: string, exposes: zhc.DefinitionExpose[]) => boolean} = {
+const stateProperties: {[s: string]: (value: string, exposes: zhc.Expose[]) => boolean} = {
     'state': () => true,
     'brightness': (value, exposes) =>
         !!exposes.find((e) => e.type === 'light' && e.features.find((f) => f.name === 'brightness')),

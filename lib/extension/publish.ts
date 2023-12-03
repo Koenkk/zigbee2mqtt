@@ -1,6 +1,6 @@
 
 import * as settings from '../util/settings';
-import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import * as philips from 'zigbee-herdsman-converters/lib/philips';
 import logger from '../util/logger';
 import utils from '../util/utils';
@@ -17,19 +17,19 @@ const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_r
 
 // Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
 const defaultGroupConverters = [
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_onoff_brightness,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_color_colortemp,
+    zhc.toZigbee.light_onoff_brightness,
+    zhc.toZigbee.light_color_colortemp,
     philips.tz.effect, // Support Hue effects for groups
-    zigbeeHerdsmanConverters.toZigbeeConverters.ignore_transition,
-    zigbeeHerdsmanConverters.toZigbeeConverters.cover_position_tilt,
-    zigbeeHerdsmanConverters.toZigbeeConverters.thermostat_occupied_heating_setpoint,
-    zigbeeHerdsmanConverters.toZigbeeConverters.tint_scene,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_brightness_step,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_step,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_colortemp_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_move,
-    zigbeeHerdsmanConverters.toZigbeeConverters.light_hue_saturation_step,
+    zhc.toZigbee.ignore_transition,
+    zhc.toZigbee.cover_position_tilt,
+    zhc.toZigbee.thermostat_occupied_heating_setpoint,
+    zhc.toZigbee.tint_scene,
+    zhc.toZigbee.light_brightness_move,
+    zhc.toZigbee.light_brightness_step,
+    zhc.toZigbee.light_colortemp_step,
+    zhc.toZigbee.light_colortemp_move,
+    zhc.toZigbee.light_hue_saturation_move,
+    zhc.toZigbee.light_hue_saturation_step,
 ];
 
 interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
@@ -81,8 +81,8 @@ export default class Publish extends Extension {
         }
     }
 
-    legacyRetrieveState(re: Device | Group, converter: zhc.ToZigbeeConverter, result: zhc.ToZigbeeConverterResult,
-        target: zh.Endpoint | zh.Group, key: string, meta: zhc.ToZigbeeConverterGetMeta): void {
+    legacyRetrieveState(re: Device | Group, converter: zhc.Tz.Converter, result: zhc.Tz.ConvertSetResult,
+        target: zh.Endpoint | zh.Group, key: string, meta: zhc.Tz.Meta): void {
         // It's possible for devices to get out of sync when writing an attribute that's not reportable.
         // So here we re-read the value after a specified timeout, this timeout could for example be the
         // transition time of a color change or for forcing a state read for devices that don't
@@ -140,7 +140,7 @@ export default class Publish extends Extension {
         const membersState = re instanceof Group ?
             Object.fromEntries(re.zh.members.map((e) => [e.getDevice().ieeeAddr,
                 this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))])) : null;
-        let converters: zhc.ToZigbeeConverter[];
+        let converters: zhc.Tz.Converter[];
         {
             if (Array.isArray(definition)) {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
@@ -149,8 +149,7 @@ export default class Publish extends Extension {
             } else if (definition) {
                 converters = definition.toZigbee;
             } else {
-                converters = [zigbeeHerdsmanConverters.toZigbeeConverters.read,
-                    zigbeeHerdsmanConverters.toZigbeeConverters.write];
+                converters = [zhc.toZigbee.read, zhc.toZigbee.write];
             }
         }
 
@@ -176,7 +175,7 @@ export default class Publish extends Extension {
         entries.sort((a) => (['state', 'brightness', 'brightness_percent'].includes(a[0]) ? sorter : sorter * -1));
 
         // For each attribute call the corresponding converter
-        const usedConverters: {[s: number]: zhc.ToZigbeeConverter[]} = {};
+        const usedConverters: {[s: number]: zhc.Tz.Converter[]} = {};
         const toPublish: {[s: number | string]: KeyValue} = {};
         const toPublishEntity: {[s: number | string]: Device | Group} = {};
         const addToToPublish = (entity: Device | Group, payload: KeyValue): void => {
@@ -227,8 +226,11 @@ export default class Publish extends Extension {
             }
 
             // Converter didn't return a result, skip
-            const meta = {endpoint_name: endpointName, options: entitySettings, message: {...message}, logger, device,
-                state: entityState, membersState, mapped: definition};
+            const entitySettingsKeyValue: KeyValue = entitySettings;
+            const meta = {
+                endpoint_name: endpointName, options: entitySettingsKeyValue,
+                message: {...message}, logger, device, state: entityState, membersState, mapped: definition,
+            };
 
             // Strip endpoint name from meta.message properties.
             if (endpointName) {

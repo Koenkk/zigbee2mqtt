@@ -1,6 +1,6 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import utils from '../../util/utils';
 import assert from 'assert';
 import Extension from '../extension';
@@ -140,7 +140,7 @@ export default class BridgeLegacy extends Extension {
             };
 
             if (device.zh.type !== 'Coordinator') {
-                const definition = zigbeeHerdsmanConverters.findByDevice(device.zh);
+                const definition = zhc.findByDevice(device.zh);
                 payload.model = definition ? definition.model : device.zh.modelID;
                 payload.vendor = definition ? definition.vendor : '-';
                 payload.description = definition ? definition.description : '-';
