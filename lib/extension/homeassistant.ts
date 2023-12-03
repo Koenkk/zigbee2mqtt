@@ -115,6 +115,7 @@ export default class HomeAssistant extends Extension {
     private zigbee2MQTTVersion: string;
     private discoveryOrigin: {name: string, sw: string, url: string};
     private bridge: Bridge;
+    private bridgeIdentifier: string;
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
@@ -133,6 +134,7 @@ export default class HomeAssistant extends Extension {
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
         this.discoveryOrigin = {name: 'Zigbee2MQTT', sw: this.zigbee2MQTTVersion, url: 'https://www.zigbee2mqtt.io'};
         this.bridge = this.getBridgeEntity(await this.zigbee.getCoordinatorVersion());
+        this.bridgeIdentifier = this.getDevicePayload(this.bridge).identifiers[0];
         this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
@@ -1661,6 +1663,11 @@ export default class HomeAssistant extends Extension {
 
         if (!url) {
             delete payload.configuration_url;
+        }
+
+        // Link devices & groups to bridge.
+        if (entity !== this.bridge) {
+            payload.via_device = this.bridgeIdentifier;
         }
 
         return payload;
