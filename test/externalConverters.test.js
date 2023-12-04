@@ -134,4 +134,12 @@ describe('Loads external converters', () => {
             mock: 2
         });
     });
+
+    it('Loads external converters with error', async () => {
+        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
+        settings.set(['external_converters'], ['mock-external-converter.js']);
+        zigbeeHerdsmanConverters.addDefinition.mockImplementationOnce(() => {throw new Error('Invalid definition!')});
+        await resetExtension();
+        expect(logger.error).toHaveBeenCalledWith(`Failed to load external converter file 'mock-external-converter.js' (Invalid definition!)`);
+    });
 });

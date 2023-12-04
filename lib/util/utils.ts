@@ -162,25 +162,21 @@ function loadModuleFromFile(modulePath: string): unknown {
     return loadModuleFromText(moduleCode);
 }
 
-function* getExternalConvertersDefinitions(settings: Settings): Generator<ExternalDefinition> {
-    const externalConverters = settings.external_converters;
+export function* loadExternalConverter(moduleName: string): Generator<ExternalDefinition> {
+    let converter;
 
-    for (const moduleName of externalConverters) {
-        let converter;
+    if (moduleName.endsWith('.js')) {
+        converter = loadModuleFromFile(data.joinPath(moduleName));
+    } else {
+        converter = require(moduleName);
+    }
 
-        if (moduleName.endsWith('.js')) {
-            converter = loadModuleFromFile(data.joinPath(moduleName));
-        } else {
-            converter = require(moduleName);
+    if (Array.isArray(converter)) {
+        for (const item of converter) {
+            yield item;
         }
-
-        if (Array.isArray(converter)) {
-            for (const item of converter) {
-                yield item;
-            }
-        } else {
-            yield converter;
-        }
+    } else {
+        yield converter;
     }
 }
 
@@ -439,7 +435,7 @@ function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
 export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
-    getExternalConvertersDefinitions, removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
+    removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
     getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
