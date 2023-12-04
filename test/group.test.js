@@ -41,7 +41,7 @@ describe('Groups', () => {
         settings.reRead();
         MQTT.publish.mockClear();
         zigbeeHerdsman.groups.gledopto_group.command.mockClear();
-        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+        zigbeeHerdsmanConverters.toZigbee.__clearStore__();
         controller.state.state = {};
     })
 

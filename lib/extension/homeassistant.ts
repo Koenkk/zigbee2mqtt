@@ -170,8 +170,8 @@ export default class HomeAssistant extends Extension {
             }
 
             if (hasColorTemp) {
-                const colorTemps = exposes.map((expose) => expose.features
-                    .filter(isNumericExposeFeature).find((e) => e.name === 'color_temp'));
+                const colorTemps = exposes.map((expose) => expose.features.find((e) => e.name === 'color_temp'))
+                    .filter((e) => e).filter(isNumericExposeFeature);
                 const max = Math.min(...colorTemps.map((e) => e.value_max));
                 const min = Math.max(...colorTemps.map((e) => e.value_min));
                 discoveryEntry.discovery_payload.max_mireds = max;

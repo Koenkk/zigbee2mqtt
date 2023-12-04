@@ -50,7 +50,7 @@ describe('Publish', () => {
             g.command.mockClear();
         });
 
-        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+        zigbeeHerdsmanConverters.toZigbee.__clearStore__();
     });
 
     afterAll(async () => {
@@ -1343,7 +1343,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
         await flushPromises();
 
-        zigbeeHerdsmanConverters.toZigbeeConverters.__clearStore__();
+        zigbeeHerdsmanConverters.toZigbee.__clearStore__();
 
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({"state": "ON", "transition": 1.0}));
         await flushPromises();
