@@ -1,4 +1,4 @@
-import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
 import Extension from '../extension';
@@ -7,14 +7,14 @@ const defaultConfiguration = {
     minimumReportInterval: 3, maximumReportInterval: 300, reportableChange: 1,
 };
 
-const ZNLDP12LM = zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'ZNLDP12LM');
+const ZNLDP12LM = zhc.definitions.find((d) => d.model === 'ZNLDP12LM');
 
 const devicesNotSupportingReporting = [
-    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'CC2530.ROUTER'),
-    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'BASICZBR3'),
-    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'ZM-CSW032-D'),
-    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'TS0001'),
-    zigbeeHerdsmanConverters.definitions.find((d) => d.model === 'TS0115'),
+    zhc.definitions.find((d) => d.model === 'CC2530.ROUTER'),
+    zhc.definitions.find((d) => d.model === 'BASICZBR3'),
+    zhc.definitions.find((d) => d.model === 'ZM-CSW032-D'),
+    zhc.definitions.find((d) => d.model === 'TS0001'),
+    zhc.definitions.find((d) => d.model === 'TS0115'),
 ];
 
 const reportKey = 1;

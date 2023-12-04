@@ -1,6 +1,6 @@
 /* eslint-disable brace-style */
 import * as settings from '../util/settings';
-import zigbeeHerdsmanConverters from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 
 export default class Device {
     public zh: zh.Device;
@@ -17,7 +17,7 @@ export default class Device {
         // Some devices can change modelID, reconsider the definition in that case.
         // https://github.com/Koenkk/zigbee-herdsman-converters/issues/3016
         if (!this.zh.interviewing && (!this._definition || this._definitionModelID !== this.zh.modelID)) {
-            this._definition = zigbeeHerdsmanConverters.findByDevice(this.zh);
+            this._definition = zhc.findByDevice(this.zh);
             this._definitionModelID = this.zh.modelID;
         }
         return this._definition;
@@ -27,10 +27,11 @@ export default class Device {
         this.zh = device;
     }
 
-    exposes(): zhc.DefinitionExpose[] {
+    exposes(): zhc.Expose[] {
         /* istanbul ignore if */
         if (typeof this.definition.exposes == 'function') {
-            return this.definition.exposes(this.zh, this.options);
+            const options: KeyValue = this.options;
+            return this.definition.exposes(this.zh, options);
         } else {
             return this.definition.exposes;
         }

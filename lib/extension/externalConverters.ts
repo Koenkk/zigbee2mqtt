@@ -1,4 +1,4 @@
-import zhc from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
@@ -12,7 +12,7 @@ export default class ExternalConverters extends Extension {
         for (const definition of utils.getExternalConvertersDefinitions(settings.get())) {
             const toAdd = {...definition};
             delete toAdd['homeassistant'];
-            zhc.addDeviceDefinition(toAdd);
+            zhc.addDefinition(toAdd);
         }
     }
 }

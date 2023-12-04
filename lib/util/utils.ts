@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import {detailedDiff} from 'deep-object-diff';
 import objectAssignDeep from 'object-assign-deep';
+import type * as zhc from 'zigbee-herdsman-converters';
 
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:
@@ -161,7 +162,7 @@ function loadModuleFromFile(modulePath: string): unknown {
     return loadModuleFromText(moduleCode);
 }
 
-function* getExternalConvertersDefinitions(settings: Settings): Generator<zhc.ExternalDefinition> {
+function* getExternalConvertersDefinitions(settings: Settings): Generator<ExternalDefinition> {
     const externalConverters = settings.external_converters;
 
     for (const moduleName of externalConverters) {
@@ -369,6 +370,18 @@ function filterProperties(filter: string[], data: KeyValue): void {
 
 function clone(obj: KeyValue): KeyValue {
     return JSON.parse(JSON.stringify(obj));
+}
+
+export function isNumericExposeFeature(feature: zhc.Feature): feature is zhc.Numeric {
+    return feature?.type === 'numeric';
+}
+
+export function isEnumExposeFeature(feature: zhc.Feature): feature is zhc.Enum {
+    return feature?.type === 'enum';
+}
+
+export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Binary {
+    return feature?.type === 'binary';
 }
 
 function computeSettingsToChange(current: KeyValue, new_: KeyValue): KeyValue {

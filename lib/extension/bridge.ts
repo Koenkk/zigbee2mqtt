@@ -12,12 +12,13 @@ import Group from '../model/group';
 import data from '../util/data';
 import JSZip from 'jszip';
 import fs from 'fs';
+import type * as zhc from 'zigbee-herdsman-converters';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
 type DefinitionPayload = {
-    model: string, vendor: string, description: string, exposes: zhc.DefinitionExpose[], supports_ota:
-    boolean, icon: string, options: zhc.DefinitionExpose[],
+    model: string, vendor: string, description: string, exposes: zhc.Expose[], supports_ota:
+    boolean, icon: string, options: zhc.Expose[],
 };
 
 export default class Bridge extends Extension {
@@ -687,7 +688,9 @@ export default class Bridge extends Extension {
 
     getDefinitionPayload(device: Device): DefinitionPayload {
         if (!device.definition) return null;
-        let icon = device.options.icon ? device.options.icon : device.definition.icon;
+        // @ts-expect-error icon is valid for external definitions
+        const definitionIcon = device.definition.icon;
+        let icon = device.options.icon ?? definitionIcon;
         if (icon) {
             icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));

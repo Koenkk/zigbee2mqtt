@@ -1,10 +1,11 @@
 import * as settings from '../util/settings';
 import logger from '../util/logger';
-import utils from '../util/utils';
+import utils, {isNumericExposeFeature, isBinaryExposeFeature, isEnumExposeFeature} from '../util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
 import Extension from './extension';
 import bind from 'bind-decorator';
+import * as zhc from 'zigbee-herdsman-converters';
 
 interface MockProperty {property: string, value: KeyValue | string}
 
@@ -52,7 +53,7 @@ const legacyMapping = [
     },
 ];
 
-const featurePropertyWithoutEndpoint = (feature: zhc.DefinitionExposeFeature): string => {
+const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
     } else {
@@ -115,8 +116,8 @@ export default class HomeAssistant extends Extension {
         this.eventBus.emitPublishAvailability();
     }
 
-    private exposeToConfig(exposes: zhc.DefinitionExpose[], entityType: 'device' | 'group',
-        allExposes: zhc.DefinitionExpose[], definition?: zhc.Definition): DiscoveryEntry[] {
+    private exposeToConfig(exposes: zhc.Expose[], entityType: 'device' | 'group',
+        allExposes: zhc.Expose[], definition?: zhc.Definition): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
         assert(entityType === 'group' || exposes.length === 1, 'Multiple exposes for device not allowed');
@@ -126,7 +127,7 @@ export default class HomeAssistant extends Extension {
 
         const discoveryEntries: DiscoveryEntry[] = [];
         const endpoint = entityType === 'device' ? exposes[0].endpoint : undefined;
-        const getProperty = (feature: zhc.DefinitionExposeFeature): string => entityType === 'group' ?
+        const getProperty = (feature: zhc.Feature): string => entityType === 'group' ?
             featurePropertyWithoutEndpoint(feature) : feature.property;
 
         /* istanbul ignore else */
@@ -169,8 +170,8 @@ export default class HomeAssistant extends Extension {
             }
 
             if (hasColorTemp) {
-                const colorTemps = exposes.map((expose) => expose.features.find((e) => e.name === 'color_temp'))
-                    .filter((e) => e);
+                const colorTemps = exposes.map((expose) => expose.features
+                    .filter(isNumericExposeFeature).find((e) => e.name === 'color_temp'));
                 const max = Math.min(...colorTemps.map((e) => e.value_max));
                 const min = Math.max(...colorTemps.map((e) => e.value_min));
                 discoveryEntry.discovery_payload.max_mireds = max;
@@ -178,7 +179,7 @@ export default class HomeAssistant extends Extension {
             }
 
             const effects = utils.arrayUnique(utils.flatten(
-                allExposes.filter((e) => e.type === 'enum' && e.name === 'effect').map((e) => e.values)));
+                allExposes.filter(isEnumExposeFeature).filter((e) => e.name === 'effect').map((e) => e.values)));
             if (effects.length) {
                 discoveryEntry.discovery_payload.effect = true;
                 discoveryEntry.discovery_payload.effect_list = effects;
@@ -186,7 +187,7 @@ export default class HomeAssistant extends Extension {
 
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'switch') {
-            const state = firstExpose.features.find((f) => f.name === 'state');
+            const state = firstExpose.features.filter(isBinaryExposeFeature).find((f) => f.name === 'state');
             const property = getProperty(state);
             const discoveryEntry: DiscoveryEntry = {
                 type: 'switch',
@@ -218,7 +219,8 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'climate') {
             const setpointProperties = ['occupied_heating_setpoint', 'current_heating_setpoint'];
-            const setpoint = firstExpose.features.find((f) => setpointProperties.includes(f.name));
+            const setpoint = firstExpose.features.filter(isNumericExposeFeature)
+                .find((f) => setpointProperties.includes(f.name));
             assert(setpoint, 'No setpoint found');
             const temperature = firstExpose.features.find((f) => f.name === 'local_temperature');
             assert(temperature, 'No temperature found');
@@ -243,7 +245,7 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            const mode = firstExpose.features.find((f) => f.name === 'system_mode');
+            const mode = firstExpose.features.filter(isEnumExposeFeature).find((f) => f.name === 'system_mode');
             if (mode) {
                 if (mode.values.includes('sleep')) {
                     // 'sleep' is not supported by Home Assistant, but is valid according to ZCL
@@ -283,7 +285,8 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.temperature_state_topic = true;
             }
 
-            const fanMode = firstExpose.features.find((f) => f.name === 'fan_mode');
+            const fanMode = firstExpose.features.filter(isEnumExposeFeature)
+                .find((f) => f.name === 'fan_mode');
             if (fanMode) {
                 discoveryEntry.discovery_payload.fan_modes = fanMode.values;
                 discoveryEntry.discovery_payload.fan_mode_command_topic = true;
@@ -292,7 +295,8 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.fan_mode_state_topic = true;
             }
 
-            const swingMode = firstExpose.features.find((f) => f.name === 'swing_mode');
+            const swingMode = firstExpose.features.filter(isEnumExposeFeature)
+                .find((f) => f.name === 'swing_mode');
             if (swingMode) {
                 discoveryEntry.discovery_payload.swing_modes = swingMode.values;
                 discoveryEntry.discovery_payload.swing_mode_command_topic = true;
@@ -301,7 +305,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.swing_mode_state_topic = true;
             }
 
-            const preset = firstExpose.features.find((f) => f.name === 'preset');
+            const preset = firstExpose.features.filter(isEnumExposeFeature).find((f) => f.name === 'preset');
             if (preset) {
                 discoveryEntry.discovery_payload.preset_modes = preset.values;
                 discoveryEntry.discovery_payload.preset_mode_command_topic = 'preset';
@@ -310,7 +314,8 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
             }
 
-            const tempCalibration = firstExpose.features.find((f) => f.name === 'local_temperature_calibration');
+            const tempCalibration = firstExpose.features.filter(isNumericExposeFeature)
+                .find((f) => f.name === 'local_temperature_calibration');
             if (tempCalibration) {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'number',
@@ -337,7 +342,8 @@ export default class HomeAssistant extends Extension {
                 discoveryEntries.push(discoveryEntry);
             }
 
-            const piHeatingDemand = firstExpose.features.find((f) => f.name === 'pi_heating_demand');
+            const piHeatingDemand = firstExpose.features.filter(isNumericExposeFeature)
+                .find((f) => f.name === 'pi_heating_demand');
             if (piHeatingDemand) {
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'sensor',
@@ -358,7 +364,7 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (firstExpose.type === 'lock') {
             assert(!endpoint, `Endpoint not supported for lock type`);
-            const state = firstExpose.features.find((f) => f.name === 'state');
+            const state = firstExpose.features.filter(isBinaryExposeFeature).find((f) => f.name === 'state');
             assert(state, 'No state found');
             const discoveryEntry: DiscoveryEntry = {
                 type: 'lock',
@@ -404,8 +410,8 @@ export default class HomeAssistant extends Extension {
                 ?.features.find((f) => f.name === 'position');
             const tilt = exposes.find((expose) => expose.features.find((e) => e.name === 'tilt'))
                 ?.features.find((f) => f.name === 'tilt');
-            const motorState = allExposes?.find((e) => e.type === 'enum' &&
-                ['motor_state', 'moving'].includes(e.name) && e.access === ACCESS_STATE);
+            const motorState = allExposes?.filter(isEnumExposeFeature)
+                .find((e) => ['motor_state', 'moving'].includes(e.name) && e.access === ACCESS_STATE);
             const running = allExposes?.find((e) => e.type === 'binary' && e.name === 'running');
 
             const discoveryEntry: DiscoveryEntry = {
@@ -436,9 +442,9 @@ export default class HomeAssistant extends Extension {
                 const closingLookup = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
                 const stoppedLookup = ['stopped', 'stop', 'pause', 'paused'];
 
-                const openingState = motorState.values.find((s) => openingLookup.includes(s.toLowerCase()));
-                const closingState = motorState.values.find((s) => closingLookup.includes(s.toLowerCase()));
-                const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toLowerCase()));
+                const openingState = motorState.values.find((s) => openingLookup.includes(s.toString().toLowerCase()));
+                const closingState = motorState.values.find((s) => closingLookup.includes(s.toString().toLowerCase()));
+                const stoppedState = motorState.values.find((s) => stoppedLookup.includes(s.toString().toLowerCase()));
 
                 if (openingState && closingState && stoppedState) {
                     discoveryEntry.discovery_payload.state_opening = openingState;
@@ -496,7 +502,7 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            const speed = firstExpose.features.find((e) => e.name === 'mode');
+            const speed = firstExpose.features.filter(isEnumExposeFeature).find((e) => e.name === 'mode');
             if (speed) {
                 // A fan entity in Home Assistant 2021.3 and above may have a speed,
                 // controlled by a percentage from 1 to 100, and/or non-speed presets.
@@ -524,7 +530,7 @@ export default class HomeAssistant extends Extension {
                 }
 
                 const allowed = [...speeds, ...presets];
-                speed.values.forEach((s) => assert(allowed.includes(s)));
+                speed.values.forEach((s) => assert(allowed.includes(s.toString())));
                 const percentValues = speeds.map((s, i) => `'${s}':${i}`).join(', ');
                 const percentCommands = speeds.map((s, i) => `${i}:'${s}'`).join(', ');
                 const presetList = presets.map((s) => `'${s}'`).join(', ');
@@ -547,7 +553,7 @@ export default class HomeAssistant extends Extension {
             }
 
             discoveryEntries.push(discoveryEntry);
-        } else if (firstExpose.type === 'binary') {
+        } else if (isBinaryExposeFeature(firstExpose)) {
             const lookup: {[s: string]: KeyValue}= {
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
@@ -636,7 +642,7 @@ export default class HomeAssistant extends Extension {
 
                 discoveryEntries.push(discoveryEntry);
             }
-        } else if (firstExpose.type === 'numeric') {
+        } else if (isNumericExposeFeature(firstExpose)) {
             const lookup: {[s: string]: KeyValue} = {
                 ac_frequency: {device_class: 'frequency', enabled_by_default: false, entity_category: 'diagnostic',
                     state_class: 'measurement'},
@@ -847,7 +853,7 @@ export default class HomeAssistant extends Extension {
 
                 discoveryEntries.push(discoveryEntry);
             }
-        } else if (firstExpose.type === 'enum') {
+        } else if (isEnumExposeFeature(firstExpose)) {
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
                 alarm_humidity: {entity_category: 'config', icon: 'mdi:water-percent-alert'},
@@ -1107,8 +1113,8 @@ export default class HomeAssistant extends Extension {
                 configs.push(entity.definition.homeassistant);
             }
         } else { // group
-            const exposesByType: {[s: string]: zhc.DefinitionExpose[]} = {};
-            const allExposes: zhc.DefinitionExpose[] = [];
+            const exposesByType: {[s: string]: zhc.Expose[]} = {};
+            const allExposes: zhc.Expose[] = [];
 
             entity.zh.members.map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
                 .filter((d) => d.definition).forEach((device) => {

@@ -4,6 +4,7 @@ import utils from '../util/utils';
 import * as settings from '../util/settings';
 import debounce from 'debounce';
 import bind from 'bind-decorator';
+import * as zhc from 'zigbee-herdsman-converters';
 
 const retrieveOnReconnect = [
     {keys: ['state']},
@@ -199,8 +200,13 @@ export default class Availability extends Extension {
                 for (const item of retrieveOnReconnect) {
                     if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) continue;
                     const converter = device.definition.toZigbee.find((c) => c.key.find((k) => item.keys.includes(k)));
-                    await converter?.convertGet?.(device.endpoint(), item.keys[0],
-                        {message: this.state.get(device), mapped: device.definition})
+                    const options: KeyValue = device.options;
+                    const state = this.state.get(device);
+                    const meta: zhc.Tz.Meta = {
+                        message: this.state.get(device), mapped: device.definition, logger, endpoint_name: null,
+                        options, state, device: device.zh,
+                    };
+                    await converter?.convertGet?.(device.endpoint(), item.keys[0], meta)
                         .catch((e) => {
                             logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`);
                         });
