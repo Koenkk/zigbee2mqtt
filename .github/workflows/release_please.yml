@@ -24,10 +24,8 @@ jobs:
         id: release
         with:
           release-type: node
-          package-name: release-please-action
           default-branch: dev
           token: ${{secrets.GH_TOKEN}}
-          include-v-in-tag: false
 
       # Checkout repos
       - uses: actions/checkout@v4
