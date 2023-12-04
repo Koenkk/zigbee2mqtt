@@ -86,7 +86,7 @@ for (const changelog of changelogs) {
             }
 
             messages.forEach((m) => changes[localContext].push(`- ${issue} ${m} (@${user})`));
-        } else if (line === '# Changelog' || !line) {
+        } else if (line === '# Changelog' || line === '### ⚠ BREAKING CHANGES' || !line) {
             continue;
         } else {
             throw new Error(`Unmatched line: ${line}`);
