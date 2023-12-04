@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.34.1](https://github.com/Koenkk/zigbee2mqtt/compare/1.34.0...1.34.1) (2023-12-04)
+
+
+### Bug Fixes
+
+* Fix build on Node 20+ ([#19983](https://github.com/Koenkk/zigbee2mqtt/issues/19983)) ([9c8aee1](https://github.com/Koenkk/zigbee2mqtt/commit/9c8aee17dc9ee0cea311d99c282f1558d2fb841b))
+* **ignore:** fix dd1e0db407f80add7355879823cf519ae869a7f6 ([04d8522](https://github.com/Koenkk/zigbee2mqtt/commit/04d8522b3ba95f83e0b569373726e4da7a1ece13))
+* **ignore:** update dependencies ([#19896](https://github.com/Koenkk/zigbee2mqtt/issues/19896)) ([6e843d0](https://github.com/Koenkk/zigbee2mqtt/commit/6e843d0f1cdf0e76a2a07cf3d33f3287f0a5e70c))
+* **ignore:** update zigbee-herdsman to 0.25.1 ([#19985](https://github.com/Koenkk/zigbee2mqtt/issues/19985)) ([a822873](https://github.com/Koenkk/zigbee2mqtt/commit/a8228737480dac0d61768131c7b4850a614db4fc))
+* **ignore:** update zigbee-herdsman to 0.25.2 ([#19997](https://github.com/Koenkk/zigbee2mqtt/issues/19997)) ([9a2425a](https://github.com/Koenkk/zigbee2mqtt/commit/9a2425a202bc70a6d7f4ba534e145bcb3736f041))
+* **ignore:** update zigbee-herdsman-converters to 15.131.0 ([#19987](https://github.com/Koenkk/zigbee2mqtt/issues/19987)) ([af02370](https://github.com/Koenkk/zigbee2mqtt/commit/af02370777fc5e81363810c759359e5ba17e3bf7))
+* **ignore:** update zigbee-herdsman-converters to 15.132.0 ([#20005](https://github.com/Koenkk/zigbee2mqtt/issues/20005)) ([5afd16a](https://github.com/Koenkk/zigbee2mqtt/commit/5afd16ac652560250ec9a21f4d05fba7e25af853))
+* **ignore:** update zigbee-herdsman-converters to 16.0.0 ([#20008](https://github.com/Koenkk/zigbee2mqtt/issues/20008)) ([2fa8afe](https://github.com/Koenkk/zigbee2mqtt/commit/2fa8afe37f99425234b2841a3ffd8c954a7b78c6))
+* **ignore:** update zigbee-herdsman-converters to 16.0.1 ([#20012](https://github.com/Koenkk/zigbee2mqtt/issues/20012)) ([5e3bd75](https://github.com/Koenkk/zigbee2mqtt/commit/5e3bd75f098b28a5df544ef5b06eab9f35020419))
+* **ignore:** Use zhc types ([#20006](https://github.com/Koenkk/zigbee2mqtt/issues/20006)) ([dd1e0db](https://github.com/Koenkk/zigbee2mqtt/commit/dd1e0db407f80add7355879823cf519ae869a7f6))
+* Make update script work from anywhere ([#19965](https://github.com/Koenkk/zigbee2mqtt/issues/19965)) ([346cb90](https://github.com/Koenkk/zigbee2mqtt/commit/346cb90e9e78fd08ffb49cb954bcbee2f3bc9191))
+* Support Node 21 and drop 16 ([adc0812](https://github.com/Koenkk/zigbee2mqtt/commit/adc08125fe892dfe456edf3a4d85da23b6f5798d))
+
 ## [1.34.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.33.2...1.34.0) (2023-12-01)
 
 
