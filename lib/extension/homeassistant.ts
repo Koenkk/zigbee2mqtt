@@ -1757,6 +1757,41 @@ export default class HomeAssistant extends Extension {
         const baseTopic = `${settings.get().mqtt.base_topic}/${bridge.name}`;
 
         discovery.push(
+            // Binary sensors.
+            {
+                type: 'binary_sensor',
+                object_id: 'connection_state',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Connection state',
+                    device_class: 'connectivity',
+                    entity_category: 'diagnostic',
+                    state_topic: true,
+                    state_topic_postfix: 'state',
+                    value_template: '{{ value_json.state }}',
+                    payload_on: 'online',
+                    payload_off: 'offline',
+                    availability: false,
+                },
+            },
+            {
+                type: 'binary_sensor',
+                object_id: 'restart_required',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Restart required',
+                    device_class: 'problem',
+                    entity_category: 'diagnostic',
+                    enabled_by_default: false,
+                    state_topic: true,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ value_json.restart_required }}',
+                    payload_on: true,
+                    payload_off: false,
+                },
+            },
+
+            // Buttons.
             {
                 type: 'button',
                 object_id: 'restart',
@@ -1769,20 +1804,25 @@ export default class HomeAssistant extends Extension {
                     payload_press: '',
                 },
             },
+
+            // Selects.
             {
-                type: 'sensor',
-                object_id: 'connection_state',
+                type: 'select',
+                object_id: 'log_level',
                 mockProperties: [],
                 discovery_payload: {
-                    name: 'Connection state',
-                    icon: 'mdi:router-wireless',
-                    entity_category: 'diagnostic',
+                    name: 'Log level',
+                    entity_category: 'config',
                     state_topic: true,
-                    state_topic_postfix: 'state',
-                    value_template: '{{ value_json.state }}',
-                    availability: false,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ value_json.log_level | lower }}',
+                    command_topic: `${baseTopic}/request/options`,
+                    command_template:
+                        '{"options": {"advanced": {"log_level": "{{ value }}" } } }',
+                    options: ['info', 'warn', 'error', 'debug'],
                 },
             },
+            // Sensors:
             {
                 type: 'sensor',
                 object_id: 'version',
@@ -1827,6 +1867,23 @@ export default class HomeAssistant extends Extension {
                     json_attributes_template: '{{ value_json.data.value | tojson }}',
                 },
             },
+            {
+                type: 'sensor',
+                object_id: 'permit_join_timeout',
+                mockProperties: [],
+                discovery_payload: {
+                    name: 'Permit join timeout',
+                    device_class: 'duration',
+                    unit_of_measurement: 's',
+                    entity_category: 'diagnostic',
+                    state_topic: true,
+                    state_topic_postfix: 'info',
+                    value_template: '{{ int(value_json.permit_join_timeout, default="unknown") }}',
+                    expire_after: 2,
+                },
+            },
+
+            // Switches.
             {
                 type: 'switch',
                 object_id: 'permit_join',
