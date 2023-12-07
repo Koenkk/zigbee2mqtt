@@ -6,6 +6,7 @@ import zigbeeHerdsman from './stub/zigbeeHerdsman';
 import utils from '../lib/util/utils';
 import * as settings from '../lib/util/settings';
 import Controller from '../lib/controller';
+import Availability from '../lib/extension/availability';
 import flushPromises from './lib/flushPromises';
 import stringify from 'json-stable-stringify-without-jsonify';
 
@@ -343,5 +344,21 @@ describe('Availability', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability',
             'online', {retain: true, qos: 1}, expect.any(Function));
+    });
+
+    it('Should clear the ping queue on stop', async () => {
+        const availability = controller.extensions.find((extension) => extension instanceof Availability);
+        const publishAvailabilitySpy = jest.spyOn(availability, 'publishAvailability').mockReturnValue(undefined);
+
+        devices.bulb_color.zh = { ping: jest.fn().mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)))};
+        availability.addToPingQueue(devices.bulb_color);
+        availability.addToPingQueue(devices.bulb_color_2);
+
+        await availability.stop();
+        await advancedTime(utils.minutes(1));
+
+        expect(availability.pingQueue).toEqual([]);
+        // Assert that the stop-interrupt works correctly by checking that the following call does not happen
+        expect(publishAvailabilitySpy).not.toHaveBeenCalled();
     });
 });
