@@ -11,11 +11,16 @@ const retrieveOnReconnect = [
     {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
 ];
 
+interface PinqQueueEntry {
+    device: Device;
+    interrupted: boolean;
+}
+
 export default class Availability extends Extension {
     private timers: {[s: string]: NodeJS.Timeout} = {};
     private availabilityCache: {[s: string]: boolean} = {};
     private retrieveStateDebouncers: {[s: string]: () => void} = {};
-    private pingQueue: Device[] = [];
+    private pingQueue: PinqQueueEntry[] = [];
     private pingQueueExecuting = false;
 
     private getTimeout(device: Device): number {
@@ -59,12 +64,12 @@ export default class Availability extends Extension {
     }
 
     private addToPingQueue(device: Device): void {
-        this.pingQueue.push(device);
+        this.pingQueue.push({device, interrupted: false});
         this.pingQueueExecuteNext();
     }
 
     private removeFromPingQueue(device: Device): void {
-        const index = this.pingQueue.findIndex((d) => d.ieeeAddr === device.ieeeAddr);
+        const index = this.pingQueue.findIndex((entry) => entry.device.ieeeAddr === device.ieeeAddr);
         index != -1 && this.pingQueue.splice(index, 1);
     }
 
@@ -72,7 +77,8 @@ export default class Availability extends Extension {
         if (this.pingQueue.length === 0 || this.pingQueueExecuting) return;
         this.pingQueueExecuting = true;
 
-        const device = this.pingQueue[0];
+        const entry = this.pingQueue[0];
+        const device = entry.device;
         let pingedSuccessfully = false;
         const available = this.availabilityCache[device.ieeeAddr] || this.isAvailable(device);
         const attempts = available ? 2 : 1;
@@ -90,6 +96,12 @@ export default class Availability extends Extension {
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await utils.sleep(3);
             }
+        }
+
+        if (entry.interrupted) {
+            // On stop, an async executing ping must not trigger any follow-up tasks.
+            // Exit here to cut the loop and avoid re-queuing another ping attempt.
+            return;
         }
 
         this.publishAvailability(device, !pingedSuccessfully);
@@ -183,8 +195,13 @@ export default class Availability extends Extension {
     }
 
     override async stop(): Promise<void> {
+        // Stop ongoing ping and clear queued pings
+        this.pingQueue.forEach((entry) => entry.interrupted = true);
+        this.pingQueue = [];
+
         Object.values(this.timers).forEach((t) => clearTimeout(t));
-        super.stop();
+
+        await super.stop();
     }
 
     private retrieveState(device: Device): void {
