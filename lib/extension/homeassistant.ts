@@ -1612,19 +1612,30 @@ export default class HomeAssistant extends Extension {
         this.discover(data.device);
     }
 
-    @bind onScenesChanged(): void {
+    @bind async onScenesChanged(): Promise<void> {
         // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
-        for (const entity of [...this.zigbee.devices(), ...this.zigbee.groups()]) {
-            // First, clear existing scene discovery topics
+        const entities = [...this.zigbee.devices(), ...this.zigbee.groups()];
+
+        // First, clear existing scene discovery topics
+        entities.forEach((entity) => {
             logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
             this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
                 if (topic.startsWith('scene')) {
                     this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 }
             });
+        });
 
+        // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
+        // https://github.com/Koenkk/zigbee2mqtt/issues/12610
+        logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`);
+        await utils.sleep(2);
+
+        // Re-discover all entities (including their new scenes).
+        logger.debug(`Re-discovering entities with their scenes.`);
+        entities.forEach((entity) => {
             this.discover(entity, true);
-        }
+        });
     }
 
     private getDevicePayload(entity: Device | Group | Bridge): KeyValue {
