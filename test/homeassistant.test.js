@@ -2171,6 +2171,9 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
 
+        jest.runOnlyPendingTimers();
+        await flushPromises();
+
         const payload = {
             'name': 'Chill scene',
             'command_topic': 'zigbee2mqtt/bulb_color_2/set',
