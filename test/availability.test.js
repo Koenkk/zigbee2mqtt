@@ -358,7 +358,7 @@ describe('Availability', () => {
         await advancedTime(utils.minutes(1));
 
         expect(availability.pingQueue).toEqual([]);
-        // Assert that the stop-interrupt works correctly by checking that the following call does not happen
+        // Validate the stop-interrupt implicitly by checking that it prevents further function invocations
         expect(publishAvailabilitySpy).not.toHaveBeenCalled();
     });
 });

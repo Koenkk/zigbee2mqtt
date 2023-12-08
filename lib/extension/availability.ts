@@ -99,8 +99,8 @@ export default class Availability extends Extension {
         }
 
         if (entry.interrupted) {
-            // On stop, an async executing ping must not trigger any follow-up tasks.
-            // Exit here to cut the loop and avoid re-queuing another ping attempt.
+            // On stop, an async ping may have just been executing. To prevent side effects, exit here
+            // to avoid triggering any follow-up activity (e.g., re-queuing another ping attempt).
             return;
         }
 
