@@ -348,7 +348,7 @@ describe('Availability', () => {
 
     it('Should clear the ping queue on stop', async () => {
         const availability = controller.extensions.find((extension) => extension instanceof Availability);
-        const publishAvailabilitySpy = jest.spyOn(availability, 'publishAvailability').mockReturnValue(undefined);
+        const publishAvailabilitySpy = jest.spyOn(availability, 'publishAvailability');
 
         devices.bulb_color.zh = { ping: jest.fn().mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)))};
         availability.addToPingQueue(devices.bulb_color);
