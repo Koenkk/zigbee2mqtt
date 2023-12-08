@@ -1878,8 +1878,8 @@ export default class HomeAssistant extends Extension {
                     entity_category: 'diagnostic',
                     state_topic: true,
                     state_topic_postfix: 'info',
-                    value_template: '{{ int(value_json.permit_join_timeout, default="unknown") }}',
-                    expire_after: 2,
+                    value_template:
+                        '{{ iif(value_json.permit_join_timeout is defined, value_json.permit_join_timeout, None) }}',
                 },
             },
 
