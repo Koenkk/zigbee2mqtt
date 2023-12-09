@@ -361,4 +361,12 @@ describe('Availability', () => {
         // Validate the stop-interrupt implicitly by checking that it prevents further function invocations
         expect(publishAvailabilitySpy).not.toHaveBeenCalled();
     });
+
+    it('Should prevent instance restart', async () => {
+        const availability = controller.extensions.find((extension) => extension instanceof Availability);
+
+        await availability.stop();
+
+        await expect(() => availability.start()).rejects.toThrowError();
+    });
 });
