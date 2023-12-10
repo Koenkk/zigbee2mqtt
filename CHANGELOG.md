@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.1](https://github.com/Koenkk/zigbee2mqtt/compare/1.34.0...v1.34.1) (2023-12-10)
+
+
+### Bug Fixes
+
+* Fix availability checks not stopped on extension stop ([#20093](https://github.com/Koenkk/zigbee2mqtt/issues/20093)) ([5aeec13](https://github.com/Koenkk/zigbee2mqtt/commit/5aeec130b19e112ad52cbc506a810dcdfc2e2605))
+
 ## [1.34.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.33.2...1.34.0) (2023-12-01)
 
 
