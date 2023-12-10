@@ -17,6 +17,7 @@ export default class Availability extends Extension {
     private retrieveStateDebouncers: {[s: string]: () => void} = {};
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
+    private stopped = false;
 
     private getTimeout(device: Device): number {
         if (typeof device.options.availability === 'object' && device.options.availability?.timeout != null) {
@@ -92,6 +93,11 @@ export default class Availability extends Extension {
             }
         }
 
+        if (this.stopped) {
+            // Exit here to avoid triggering any follow-up activity (e.g., re-queuing another ping attempt).
+            return;
+        }
+
         this.publishAvailability(device, !pingedSuccessfully);
         this.resetTimer(device);
         this.removeFromPingQueue(device);
@@ -103,6 +109,10 @@ export default class Availability extends Extension {
     }
 
     override async start(): Promise<void> {
+        if (this.stopped) {
+            throw new Error('This extension cannot be restarted.');
+        }
+
         this.eventBus.onEntityRenamed(this, (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
                 this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
@@ -183,8 +193,10 @@ export default class Availability extends Extension {
     }
 
     override async stop(): Promise<void> {
+        this.stopped = true;
+        this.pingQueue = [];
         Object.values(this.timers).forEach((t) => clearTimeout(t));
-        super.stop();
+        await super.stop();
     }
 
     private retrieveState(device: Device): void {
