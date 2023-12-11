@@ -1208,7 +1208,7 @@ export default class HomeAssistant extends Extension {
             configs.push(config);
         }
 
-        if (isDevice && entity.definition.hasOwnProperty('ota')) {
+        if (isDevice && entity.definition.ota) {
             const updateStateSensor: DiscoveryEntry = {
                 type: 'sensor',
                 object_id: 'update_state',
