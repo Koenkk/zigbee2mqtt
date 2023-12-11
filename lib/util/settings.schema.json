@@ -345,7 +345,7 @@
           "default": false
         },
         "zigbee_ota_override_index_location": {
-          "type": "string",
+          "type": ["string", "null"],
           "title": "OTA index override file name",
           "requiresRestart": true,
           "description": "Location of override OTA index file",
