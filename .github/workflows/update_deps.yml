@@ -22,7 +22,8 @@ jobs:
       with:
         node-version: 20
         cache: npm
-    - run: npx npm-check-updates -u
+    # connect-gzip-static@4.0.0 requires Node 20 >=
+    - run: npx npm-check-updates -u -x connect-gzip-static
     - run: npm install
     - uses: peter-evans/create-pull-request@v5
       with:
