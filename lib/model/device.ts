@@ -72,6 +72,10 @@ export default class Device {
         return name === 'default' ? null : name;
     }
 
+    setDefinition(definition: zhc.Definition) {
+        this._definition = definition
+    }
+
     isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
 
     isDevice(): this is Device {return true;}

@@ -10,15 +10,18 @@ import Group from './model/group';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
+import DefinitionGenerator from './definition_generator';
 
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
     private groupLookup: {[s: number]: Group} = {};
     private deviceLookup: {[s: string]: Device} = {};
+    private definitionGenerator: DefinitionGenerator;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
+        this.definitionGenerator = new DefinitionGenerator();
     }
 
     async start(): Promise<'reset' | 'resumed' | 'restored'> {
@@ -245,6 +248,11 @@ export default class Zigbee {
         const device = this.deviceLookup[ieeeAddr];
         if (device && !device.zh.isDeleted) {
             device.ensureInSettings();
+
+            if (device.zh.interviewCompleted && !device.definition) {
+                device.setDefinition(this.definitionGenerator.generate(device.zh));
+            }
+
             return device;
         }
     }
