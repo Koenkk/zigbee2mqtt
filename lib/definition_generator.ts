@@ -5,6 +5,7 @@ import * as exposes from 'zigbee-herdsman-converters/lib/exposes';
 import { Configure, Logger } from 'zigbee-herdsman-converters/lib/types';
 import * as reporting from 'zigbee-herdsman-converters/lib/reporting';
 import logger from './util/logger';
+import * as zhc from 'zigbee-herdsman-converters';
 
 const e = exposes.presets;
 
@@ -78,7 +79,7 @@ export default class DefinitionGenerator {
                 into.exposes = [];
             }
     
-            (into.exposes as zhc.DefinitionExpose[]).push(...(from.exposes as zhc.DefinitionExpose[]))
+            (into.exposes as zhc.Expose[]).push(...(from.exposes as zhc.Expose[]))
         }
     
         if (from.configure !== undefined) {
