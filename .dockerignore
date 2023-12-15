@@ -1,8 +1,9 @@
 .eslintignore
-.eslintrc.json
+.eslintrc.js
 .git
 .github
 .gitignore
+.idea
 .npmrc
 .travis*
 .travis.yml
@@ -12,4 +13,5 @@ images
 node_modules
 scripts
 test
+coverage
 update.sh

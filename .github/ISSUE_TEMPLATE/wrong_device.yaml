@@ -1,0 +1,64 @@
+name: Wrong device picture/vendor/model/description
+description: Use if device is detected as supported and is fully functional but has a wrong picture, vendor, model or description
+title: "[Wrong device]: "
+labels: [wrong device]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Only use this if the device is detected as **supported** and is **fully functional** but has a wrong picture, vendor, model or description.
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Link of this device (product page)
+      placeholder: https://www.linktomydevice.org
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      description: Expected model, model that is printed on the device, for TuYa device this is NOT something like TS0601 or _TZE200_cf1sl3tj
+      placeholder: RTCGQ01LM
+    validations:
+      required: true
+  - type: input
+    id: description
+    attributes:
+      label: Description
+      description: Expected description
+      placeholder: Motion sensor
+    validations:
+      required: true
+  - type: input
+    id: vendor
+    attributes:
+      label: Vendor
+      description: Expected vendor
+      placeholder: Xiaomi
+    validations:
+      required: true
+  - type: input
+    id: picture
+    attributes:
+      label: Picture (link)
+      description: Expected picture
+      placeholder: https://www.linktomydevice.org/RTCGQ01LM.jpg
+    validations:
+      required: true
+  - type: input
+    id: database
+    attributes:
+      label: Database entry
+      description: Entry of this device in `data/database.db` after pairing it
+      placeholder: '{"id":53,"type":"Router","ieeeAddr":"0x10458d00024284f69","nwkAddr":10148,"manufId":4151,"manufName":"LUMI","powerSource":"DC Source","modelId":"lumi.relay.c2acn01","epList":[1,2],"endpoints":{"1":{"profId":260,"epId":1,"devId":257,"inClusterList":[0,3,4,5,1,2,10,6,16,2820,12],"outClusterList":[25,10],"clusters":{"genBasic":{"attributes":{"modelId":"lumi.relay.c2acn01","appVersion":1,"manufacturerName":"LUMI","powerSource":4,"zclVersion":0,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020"}},"genAnalogInput":{"attributes":{"presentValue":129.04425048828125}},"genOnOff":{"attributes":{"61440":117440715,"onOff":1}}},"binds":[],"configuredReportings":[],"meta":{}},"2":{"profId":260,"epId":2,"devId":257,"inClusterList":[6,16,4,5],"outClusterList":[],"clusters":{"genOnOff":{"attributes":{"61440":237478966,"onOff":0}}},"binds":[],"configuredReportings":[],"meta":{}}},"appVersion":1,"stackVersion":2,"hwVersion":18,"dateCode":"8-6-2020","zclVersion":0,"interviewCompleted":true,"meta":{},"lastSeen":1640285631405}'
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      placeholder: Some additional notes...
+    validations:
+      required: false

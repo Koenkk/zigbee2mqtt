@@ -1,0 +1,19 @@
+name: merge-master-to-dev
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  merge_master_to_dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: devmasx/merge-branch@master
+        with:
+          type: now
+          head_to_merge: master
+          target_branch: dev
+          message: "chore: merge master to dev"
+          github_token: ${{ secrets.GH_TOKEN }}

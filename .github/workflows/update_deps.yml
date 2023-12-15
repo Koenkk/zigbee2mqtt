@@ -1,0 +1,33 @@
+name: Update dependencies
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 0 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  update_deps:
+    permissions:
+      contents: write  # for peter-evans/create-pull-request to create branch
+      pull-requests: write  # for peter-evans/create-pull-request to create a PR
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: dev
+        token: ${{ secrets.GH_TOKEN }}
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+    # connect-gzip-static@4.0.0 requires Node 20 >=
+    - run: npx npm-check-updates -u -x connect-gzip-static
+    - run: npm install
+    - uses: peter-evans/create-pull-request@v5
+      with:
+        commit-message: "fix(ignore): update dependencies"
+        branch: "deps/all"
+        title: Update dependencies
+        token: ${{ secrets.GH_TOKEN }}

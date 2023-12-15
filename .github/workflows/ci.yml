@@ -1,0 +1,102 @@
+name: ci
+
+on: [pull_request, push]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: https://registry.npmjs.org/
+        cache: npm
+    - name: Install dependencies
+      run: npm ci
+    - name: Build
+      run: npm run build
+    - name: Test
+      run: npm run test-with-coverage
+    - name: Lint
+      run: npm run eslint
+    - name: Docker login
+      if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+      run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
+    - name: Docker login ghcr.io
+      if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+      run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u koenkk --password-stdin
+    - name: Docker setup - QEMU
+      if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: all
+    - name: Docker setup - Buildx
+      if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+      id: buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        version: latest
+    - name: Docker build dev
+      if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+      run: |
+        docker buildx build \
+          --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          -f docker/Dockerfile \
+          --provenance=false \
+          --push \
+          -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
+          .
+    - name: Docker build release
+      if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+      run: |
+        TAG="$(git describe --tags)"
+        docker buildx build \
+          --build-arg COMMIT=$(git rev-parse --short HEAD) \
+          --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
+          -f docker/Dockerfile \
+          --provenance=false \
+          --push \
+          -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
+          .
+    - name: Publish to npm
+      if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
+    - name: Trigger zigbee2mqtt/hassio-zigbee2mqtt build
+      if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+      run: |
+        curl \
+          -X POST \
+          -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
+          -d '{"ref":"master","inputs":{}}'
+
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [18, 20]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: https://registry.npmjs.org/
+          cache: 'npm'
+      - name: Install dependencies
+        # --ignore-scripts prevents the serialport build which often fails on Windows
+        run: npm ci --ignore-scripts
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm run test-with-coverage

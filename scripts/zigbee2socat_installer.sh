@@ -53,7 +53,7 @@ function handle_opts {
 
         -v|--verbose)
             verbose=1; shift; continue ;;
-        
+
         -m|--man)
             makemanual ;;
 
@@ -84,7 +84,6 @@ port=""
 function main {
     handle_opts "$@"
 
-    # TODO: Check IP-address valid?
     if [[ "$ip" = "" ]]; then
         echo "IP-address not specified"
         exit 5
@@ -161,7 +160,7 @@ function usage {
     -v, --verbose       Print more information
     -m, --man           Make and display manual
     -h, --help          Display this help message
-    
+
     \rOriginal concept by JFLN\
     "
     exit 0

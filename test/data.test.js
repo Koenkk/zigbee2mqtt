@@ -1,5 +1,5 @@
 const logger = require('./stub/logger');
-const data = require('../lib/util/data.js');
+const data = require('../lib/util/data').default;
 const path = require('path');
 const tmp = require('tmp');
 const fs = require('fs');
@@ -15,12 +15,13 @@ describe('Data', () => {
         it('Should return correct path when ZIGBEE2MQTT_DATA set', () => {
             const expected = tmp.dirSync().name;
             process.env.ZIGBEE2MQTT_DATA = expected;
-            data._reload();
+            data.testingOnlyReload();
             const actual = data.getPath();
             expect(actual).toBe(expected);
             expect(data.joinPath('test')).toStrictEqual(path.join(expected, 'test'));
+            expect(data.joinPath('/test')).toStrictEqual(path.resolve(expected, '/test'));
             delete process.env.ZIGBEE2MQTT_DATA;
-            data._reload();
+            data.testingOnlyReload();
         });
     });
 });

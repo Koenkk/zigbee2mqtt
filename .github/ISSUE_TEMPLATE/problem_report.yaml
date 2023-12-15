@@ -1,0 +1,67 @@
+name: Problem report
+description: Create a report to help us improve
+labels: [problem]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **IMPORTANT:** Before submitting:
+        - You read the [FAQ](https://www.zigbee2mqtt.io/guide/faq/)
+        - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html)
+        - Make sure the bug also occurs in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
+        - Make sure you are using the [latest firmware](https://www.zigbee2mqtt.io/guide/adapters/#recommended) on your adapter
+        - The issue has not been [reported already](https://github.com/Koenkk/zigbee2mqtt/issues)
+        - Is your issue related to the fronted? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=bug%2Ctriage&template=bug_report.yaml&title=%5BBug%5D%3A+)
+        - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
+  - type: textarea
+    id: what_happend
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expect_to_happen
+    attributes:
+      label: What did you expect to happen?
+      placeholder: I expected that ...
+    validations:
+      required: false
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it (minimal and precise)
+      placeholder: First do this, than this..
+    validations:
+      required: false
+  - type: input
+    id: z2m_version
+    attributes:
+      label: Zigbee2MQTT version
+      description: Can be found in the frontend -> settings -> about -> Zigbee2MQTT version. Are you running Zigbee2MQTT 1.18.1? Then read [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0).
+      placeholder: '1.22.1'
+    validations:
+      required: true
+  - type: input
+    id: adapter_fwversion
+    attributes:
+      label: Adapter firmware version
+      description: Can be found in the frontend -> settings -> about -> coordinator revision
+      placeholder: '20211210'
+    validations:
+      required: true
+  - type: input
+    id: adapter
+    attributes:
+      label: Adapter
+      description: The adapter you are using
+      placeholder: Electrolama zig-a-zig-ah! (zzh!), Slaesh's CC2652RB stick, ...
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Debug log
+      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Attach the file below
+      placeholder: Click here and drag the file into it or click on "Attach files by.." below
+    validations:
+      required: false

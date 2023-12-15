@@ -1,10 +1,11 @@
 const tmp = require('tmp');
-const yaml = require('../../lib/util/yaml');
+const yaml = require('../../lib/util/yaml').default;
 const path = require('path');
 const fs = require('fs');
+const stringify = require('json-stable-stringify-without-jsonify');
 
 const mockDir = tmp.dirSync().name;
-const mockDirStorage = tmp.dirSync().name;
+const stateFile = path.join(mockDir, 'state.json');
 
 function writeDefaultConfiguration() {
     const config = {
@@ -20,7 +21,8 @@ function writeDefaultConfiguration() {
         devices: {
             "0x000b57fffec6a5b2": {
                 retain: true,
-                friendly_name: "bulb"
+                friendly_name: "bulb",
+                description: "this is my bulb",
             },
             "0x0017880104e45517": {
                 retain: true,
@@ -108,7 +110,7 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45551': {
                 retain: false,
-                friendly_name: 'smart_vent'
+                friendly_name: 'smart vent'
             },
             '0x0017880104e45552': {
                 retain: false,
@@ -151,8 +153,43 @@ function writeDefaultConfiguration() {
             '0x0017880104e43559': {
                 friendly_name: 'U202DST600ZB'
             },
+            '0xf4ce368a38be56a1': {
+                retain: false,
+                friendly_name: 'zigfred_plus',
+                front_surface_enabled: 'true',
+                dimmer_1_enabled: 'true',
+                dimmer_1_dimming_enabled: 'true',
+                dimmer_2_enabled: 'true',
+                dimmer_2_dimming_enabled: 'true',
+                dimmer_3_enabled: 'true',
+                dimmer_3_dimming_enabled: 'true',
+                dimmer_4_enabled: 'true',
+                dimmer_4_dimming_enabled: 'true',
+                cover_1_enabled: 'true',
+                cover_1_tilt_enabled: 'true',
+                cover_2_enabled: 'true',
+                cover_2_tilt_enabled: 'true',
+            },
             '0x0017880104e44559': {
                 friendly_name: '3157100_thermostat',
+            },
+            '0x0017880104a44559': {
+                friendly_name: 'J1_cover',
+            },
+            '0x0017882104a44559': {
+                friendly_name: 'TS0601_thermostat',
+            },
+            '0x0017882194e45543': {
+                friendly_name: 'QS-Zigbee-D02-TRIAC-2C-LN',
+            },
+            '0x0017880104e45724': {
+                friendly_name: 'GLEDOPTO_2ID',
+            },
+            '0x0017880104e45561': {
+                friendly_name: 'temperature_sensor',
+            },
+            '0x0017880104e45562': {
+                friendly_name: 'heating_actuator',
             }
         },
         groups: {
@@ -174,34 +211,66 @@ function writeDefaultConfiguration() {
                 retain: false,
                 devices: ['bulb_2']
             },
-        }
+            '12': {
+                friendly_name: 'thermostat_group',
+                retain: false,
+                devices: ['TS0601_thermostat'],
+            },
+            '14': {
+                friendly_name: 'switch_group',
+                retain: false,
+                devices: ['power_plug', 'bulb_2'],
+            },
+            '21': {
+                friendly_name: 'gledopto_group',
+                devices: ['GLEDOPTO_2ID/cct'],
+            },
+            '9': {
+                friendly_name: 'ha_discovery_group',
+                devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right']
+            },
+        },
+        external_converters: [],
     };
 
     yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
 }
 
 function writeEmptyState() {
-    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify({}));
-}
-
-function writeDefaultState() {
-    const state = {
-        "0x000b57fffec6a5b2": {
-            "state": "ON",
-            "brightness": 50,
-            "color_temp": 370,
-            "linkquality": 99,
-        },
-        "0x0017880104e45517": {
-            "brightness": 255
-        },
-    }
-
-    fs.writeFileSync(path.join(mockDir, 'state.json'), JSON.stringify(state));
+    fs.writeFileSync(stateFile, stringify({}));
 }
 
 function removeState() {
-    fs.unlinkSync(path.join(mockDir, 'state.json'))
+    if (stateExists()) {
+        fs.unlinkSync(stateFile);
+    }
+}
+
+function stateExists() {
+    return fs.existsSync(stateFile);
+}
+
+const defaultState = {
+    "0x000b57fffec6a5b2": {
+        "state": "ON",
+        "brightness": 50,
+        "color_temp": 370,
+        "linkquality": 99,
+    },
+    "0x0017880104e45517": {
+        "brightness": 255
+    },
+    "1": {
+        'state': 'ON',
+    }
+}
+
+function getDefaultState() {
+    return defaultState;
+}
+
+function writeDefaultState() {
+    fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(defaultState));
 }
 
 jest.mock('../../lib/util/data', () => ({
@@ -219,4 +288,6 @@ module.exports = {
     writeDefaultState,
     removeState,
     writeEmptyState,
+    stateExists,
+    getDefaultState,
 };
