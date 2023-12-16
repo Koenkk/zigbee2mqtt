@@ -2160,21 +2160,27 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
-        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
         MQTT.publish.mockClear();
         controller.eventBus.emitScenesChanged();
         await flushPromises();
+
+        // Discovery messages for scenes have been purged.
         expect(MQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/${device.ID}/scene_1/config`,
+            `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
             null,
             {retain: true, qos: 1},
             expect.any(Function),
         );
-
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
         jest.runOnlyPendingTimers();
         await flushPromises();
 
-        const payload = {
+        let payload = {
             'name': 'Chill scene',
             'command_topic': 'zigbee2mqtt/bulb_color_2/set',
             'payload_on': '{ "scene_recall": 1 }',
@@ -2192,13 +2198,40 @@ describe('HomeAssistant extension', () => {
             'origin': origin,
             'availability': [ { 'topic': 'zigbee2mqtt/bridge/state' } ]
         }
-
         expect(MQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/${device.ID}/scene_1/config`,
+            `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
             stringify(payload),
             {retain: true, qos: 1},
             expect.any(Function),
         );
+
+        payload = {
+            'name': 'Scene 4',
+            'command_topic': 'zigbee2mqtt/ha_discovery_group/set',
+            'payload_on': '{ "scene_recall": 4 }',
+            'json_attributes_topic':'zigbee2mqtt/ha_discovery_group',
+            'object_id': 'ha_discovery_group_4_scene_4',
+            'unique_id': '9_scene_4_zigbee2mqtt',
+            'device': {
+              'identifiers': [ 'zigbee2mqtt_1221051039810110150109113116116_9' ],
+              'name': 'ha_discovery_group',
+              'sw_version': 'Zigbee2MQTT 1.34.0-dev',
+              'model': 'Group',
+              'manufacturer': 'Zigbee2MQTT',
+              'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae'
+            },
+            'origin': origin,
+            'availability': [ { 'topic': 'zigbee2mqtt/bridge/state' } ]
+        }
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+
+        // Only discovery entries for entities with scenes need to be republished.
+        expect(MQTT.publish).toHaveBeenCalledTimes( 16 );
     });
 
     it('Should not clear bridge entities unnecessarily', async () => {
