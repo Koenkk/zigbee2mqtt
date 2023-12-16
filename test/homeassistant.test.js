@@ -2449,4 +2449,17 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
+
+    it('Should remove discovery entries for removed exposes when device options change', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/options', stringify({"id": "0xf4ce368a38be56a1", "options": {"dimmer_1_enabled": "false", "dimmer_1_dimming_enabled": "false"}}));
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/0xf4ce368a38be56a1/light_l2/config',
+            null,
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+    });
 });
