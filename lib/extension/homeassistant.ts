@@ -859,7 +859,7 @@ export default class HomeAssistant extends Extension {
             // entity_category config is not allowed for sensors
             // https://github.com/Koenkk/zigbee2mqtt/issues/20252
             if (discoveryEntry.discovery_payload.entity_category === 'config') {
-                delete discoveryEntry.discovery_payload.entity_category;
+                discoveryEntry.discovery_payload.entity_category = 'diagnostic';
             }
 
             // Let Home Assistant generate entity name when device_class is present
