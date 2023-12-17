@@ -1615,6 +1615,7 @@ export default class HomeAssistant extends Extension {
     @bind async onScenesChanged(): Promise<void> {
         // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
         const entities = [...this.zigbee.devices(), ...this.zigbee.groups()];
+        const clearedEntities = new Set<Device|Group>();
 
         // First, clear existing scene discovery topics
         entities.forEach((entity) => {
@@ -1622,6 +1623,7 @@ export default class HomeAssistant extends Extension {
             this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
                 if (topic.startsWith('scene')) {
                     this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                    clearedEntities.add(entity);
                 }
             });
         });
@@ -1633,7 +1635,7 @@ export default class HomeAssistant extends Extension {
 
         // Re-discover all entities (including their new scenes).
         logger.debug(`Re-discovering entities with their scenes.`);
-        entities.forEach((entity) => {
+        clearedEntities.forEach((entity) => {
             this.discover(entity, true);
         });
     }
