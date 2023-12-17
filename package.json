@@ -91,6 +91,11 @@
     "tmp": "^0.2.1",
     "typescript": "^5.3.3"
   },
+  "overrides": {
+    "zigbee-herdsman-converters": {
+      "zigbee-herdsman": "$zigbee-herdsman"
+    }
+  },
   "jest": {
     "coverageThreshold": {
       "global": {
