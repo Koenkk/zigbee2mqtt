@@ -24,6 +24,7 @@ jobs:
         cache: npm
     # connect-gzip-static@4.0.0 requires Node 20 >=
     - run: npx npm-check-updates -u -x connect-gzip-static
+    - run: rm -f package-lock.json
     - run: npm install
     - uses: peter-evans/create-pull-request@v5
       with:
