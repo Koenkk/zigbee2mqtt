@@ -1407,7 +1407,7 @@ describe('Publish', () => {
         expect(MQTT.publish.mock.calls[3]).toEqual([ 'zigbee2mqtt/bulb_color', stringify({"state":"ON","brightness":150}), { qos: 0, retain: false }, expect.any(Function)]);
     });
 
-    it('onlythis Scenes', async () => {
+    it('Scenes', async () => {
         const bulb_color_2 = zigbeeHerdsman.devices.bulb_color_2.getEndpoint(1);
         const bulb_2 = zigbeeHerdsman.devices.bulb_2.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_tradfri_remote;
