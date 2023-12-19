@@ -4,7 +4,8 @@ import equals from 'fast-deep-equal/es6';
 
 function read(file: string): KeyValue {
     try {
-        return yaml.load(fs.readFileSync(file, 'utf8'));
+        const result = yaml.load(fs.readFileSync(file, 'utf8'));
+        return result as KeyValue ?? {};
     } catch (error) {
         if (error.name === 'YAMLException') {
             error.file = file;
