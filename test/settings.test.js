@@ -335,22 +335,15 @@ describe('Settings', () => {
         expect(read(devicesFile)).toStrictEqual(expected);
     });
 
-    it('Should add devices for first file when using 2 separates file', () => {
+    function extractFromMultipleDeviceConfigs(contentDevices2) {
         const contentConfiguration = {
-            devices: ['devices.yaml', 'devices2.yaml']
+            devices: ['devices.yaml', 'devices2.yaml'],
         };
 
         const contentDevices = {
             '0x12345678': {
                 friendly_name: '0x12345678',
-                retain: false,
-            },
-        };
-
-        const contentDevices2 = {
-            '0x87654321': {
-                friendly_name: '0x87654321',
-                retain: false,
+                retain:        false,
             },
         };
 
@@ -365,15 +358,28 @@ describe('Settings', () => {
         const expected = {
             '0x12345678': {
                 friendly_name: '0x12345678',
-                retain: false,
+                retain:        false,
             },
-            '0x1234': {
+            '0x1234':     {
                 friendly_name: '0x1234',
             },
         };
 
         expect(read(devicesFile)).toStrictEqual(expected);
         expect(read(devicesFile2)).toStrictEqual(contentDevices2);
+    }
+
+    it('Should add devices for first file when using 2 separates file', () => {
+        extractFromMultipleDeviceConfigs({
+            '0x87654321': {
+                friendly_name: '0x87654321',
+                retain:        false,
+            },
+        });
+    });
+
+    it('Should add devices for first file when using 2 separates file and the second file is empty', () => {
+        extractFromMultipleDeviceConfigs(null)
     });
 
     it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
