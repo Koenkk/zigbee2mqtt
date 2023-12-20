@@ -1333,6 +1333,7 @@ export default class HomeAssistant extends Extension {
             (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant))) {
             return;
         }
+        const lastDiscovered = this.discovered[discoverKey];
 
         this.discovered[discoverKey] = {topics: new Set(), mockProperties: new Set(), objectIDs: new Set()};
         this.getConfigs(entity).forEach((config) => {
@@ -1542,6 +1543,11 @@ export default class HomeAssistant extends Extension {
             this.discovered[discoverKey].objectIDs.add(config.object_id);
             config.mockProperties?.forEach((mockProperty) =>
                 this.discovered[discoverKey].mockProperties.add(mockProperty));
+        });
+        lastDiscovered?.topics?.forEach((topic) => {
+            if (!this.discovered[discoverKey].topics.has(topic)) {
+                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+            }
         });
     }
 
