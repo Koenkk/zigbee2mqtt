@@ -12,7 +12,7 @@ import Group from '../model/group';
 import data from '../util/data';
 import JSZip from 'jszip';
 import fs from 'fs';
-import type * as zhc from 'zigbee-herdsman-converters';
+import * as zhc from 'zigbee-herdsman-converters';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
@@ -35,6 +35,7 @@ export default class Bridge extends Extension {
             'device/options': this.deviceOptions,
             'device/configure_reporting': this.deviceConfigureReporting,
             'device/remove': this.deviceRemove,
+            'device/generate_external_definition': this.deviceGenerateExternalDefinition,
             'device/rename': this.deviceRename,
             'group/add': this.groupAdd,
             'group/options': this.groupOptions,
@@ -449,6 +450,18 @@ export default class Bridge extends Extension {
             minimum_report_interval: message.minimum_report_interval, reportable_change: message.reportable_change,
             attribute: message.attribute,
         }, null);
+    }
+
+    @bind async deviceGenerateExternalDefinition(message: string | KeyValue): Promise<MQTTResponse> {
+        if (typeof message !== 'object' || !message.hasOwnProperty('id')) {
+            throw new Error(`Invalid payload`);
+        }
+
+        const parsedID = utils.parseEntityID(message.id);
+        const device = this.getEntity('device', parsedID.ID) as Device;
+        const source = zhc.generateExternalDefinitionSource(device.zh);
+
+        return utils.getResponse(message, {id: message.id, source}, null);
     }
 
     async renameEntity(entityType: 'group' | 'device', message: string | KeyValue): Promise<MQTTResponse> {
