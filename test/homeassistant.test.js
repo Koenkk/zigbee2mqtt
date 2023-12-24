@@ -1287,13 +1287,6 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('Should not clear discovery when unsupported device is removed', async () => {
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'unsupported2');
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-    });
-
     it('Should refresh discovery when device is renamed', async () => {
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45522/action_double/config', stringify({topic: 'zigbee2mqtt/weather_sensor/action'}));
         await flushPromises();

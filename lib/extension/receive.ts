@@ -77,17 +77,8 @@ export default class Receive extends Extension {
     }
 
     shouldProcess(data: eventdata.DeviceMessage): boolean {
-        if (!data.device.definition) {
-            if (data.device.zh.interviewing) {
-                logger.debug(`Skipping message, definition is undefined and still interviewing`);
-            } else {
-                logger.warn(
-                    `Received message from unsupported device with Zigbee model '${data.device.zh.modelID}' ` +
-                    `and manufacturer name '${data.device.zh.manufacturerName}'`);
-                // eslint-disable-next-line max-len
-                logger.warn(`Please see: https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);
-            }
-
+        if (!data.device.definition || data.device.zh.interviewing) {
+            logger.debug(`Skipping message, still interviewing`);
             return false;
         }
 

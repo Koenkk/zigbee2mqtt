@@ -63,6 +63,10 @@ export default class Zigbee {
             throw error;
         }
 
+        for (const device of this.devices(false)) {
+            await device.resolveDefinition();
+        }
+
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
             this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr), reason: data.reason});
@@ -80,15 +84,17 @@ export default class Zigbee {
             logger.debug(`Device '${device.name}' announced itself`);
             this.eventBus.emitDeviceAnnounce({device});
         });
-        this.herdsman.on('deviceInterview', (data: ZHEvents.DeviceInterviewPayload) => {
+        this.herdsman.on('deviceInterview', async (data: ZHEvents.DeviceInterviewPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
+            await device.resolveDefinition();
             /* istanbul ignore if */ if (!device) return; // Prevent potential race
             const d = {device, status: data.status};
             this.logDeviceInterview(d);
             this.eventBus.emitDeviceInterview(d);
         });
-        this.herdsman.on('deviceJoined', (data: ZHEvents.DeviceJoinedPayload) => {
+        this.herdsman.on('deviceJoined', async (data: ZHEvents.DeviceJoinedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
+            await device.resolveDefinition();
             /* istanbul ignore if */ if (!device) return; // Prevent potential race
             logger.info(`Device '${device.name}' joined`);
             this.eventBus.emitDeviceJoined({device});
@@ -98,8 +104,9 @@ export default class Zigbee {
             logger.warn(`Device '${name}' left the network`);
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
         });
-        this.herdsman.on('message', (data: ZHEvents.MessagePayload) => {
+        this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
+            await device.resolveDefinition();
             logger.debug(`Received Zigbee message from '${device.name}', type '${data.type}', ` +
                 `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
                 (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
@@ -149,7 +156,7 @@ export default class Zigbee {
         if (data.status === 'successful') {
             logger.info(`Successfully interviewed '${name}', device has successfully been paired`);
 
-            if (data.device.definition) {
+            if (data.device.isSupported) {
                 const {vendor, description, model} = data.device.definition;
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {

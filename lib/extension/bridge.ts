@@ -101,7 +101,7 @@ export default class Bridge extends Extension {
             const payload: KeyValue =
                 {friendly_name: data.device.name, status: data.status, ieee_address: data.device.ieeeAddr};
             if (data.status === 'successful') {
-                payload.supported = !!data.device.definition;
+                payload.supported = data.device.isSupported;
                 payload.definition = this.getDefinitionPayload(data.device);
             }
             publishEvent('device_interview', payload);
@@ -459,7 +459,7 @@ export default class Bridge extends Extension {
 
         const parsedID = utils.parseEntityID(message.id);
         const device = this.getEntity('device', parsedID.ID) as Device;
-        const source = zhc.generateExternalDefinitionSource(device.zh);
+        const source = await zhc.generateExternalDefinitionSource(device.zh);
 
         return utils.getResponse(message, {id: message.id, source}, null);
     }
@@ -663,7 +663,7 @@ export default class Bridge extends Extension {
                 ieee_address: device.ieeeAddr,
                 type: device.zh.type,
                 network_address: device.zh.networkAddress,
-                supported: !!device.definition,
+                supported: device.isSupported,
                 friendly_name: device.name,
                 disabled: !!device.options.disabled,
                 description: device.options.description,

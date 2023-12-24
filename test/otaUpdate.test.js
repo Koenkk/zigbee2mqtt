@@ -65,7 +65,7 @@ describe('OTA update', () => {
             count++;
             return {swBuildId: count, dateCode: '2019010' + count}
         });
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.info.mockClear();
         device.save.mockClear();
@@ -120,7 +120,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         endpoint.read.mockImplementation(() => {return {swBuildId: 1, dateCode: '2019010'}});
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         device.save.mockClear();
         mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
@@ -143,7 +143,7 @@ describe('OTA update', () => {
 
     it('Should be able to check if OTA update is available', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
 
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
@@ -172,7 +172,7 @@ describe('OTA update', () => {
 
     it('Should handle if OTA update check fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF signals disturbed because of dogs barking')});
 
@@ -209,7 +209,7 @@ describe('OTA update', () => {
 
     it('Should refuse to check/update when already in progress', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
 
         mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {
@@ -234,7 +234,7 @@ describe('OTA update', () => {
         const endpoint = device.endpoints[0];
         endpoint.read.mockImplementation(() => {throw new Error('Failed!')});
 
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', "bulb");
         await flushPromises();
@@ -249,7 +249,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.endpoints[0].commandResponse.mockClear();
         const data = {imageType: 12382};
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
@@ -283,7 +283,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.endpoints[0].commandResponse.mockClear();
         const data = {imageType: 12382};
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('Nothing to find here')})
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
@@ -305,7 +305,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         device.endpoints[0].commandResponse.mockClear();
         const data = {imageType: 12382};
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 13, otaFileVersion: 13});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
@@ -327,7 +327,7 @@ describe('OTA update', () => {
         settings.set(['ota', 'disable_automatic_update_check'], true);
         const device = zigbeeHerdsman.devices.bulb;
         const data = {imageType: 12382};
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 13});
         const payload = {data, cluster: 'genOta', device, endpoint: device.getEndpoint(1), type: 'commandQueryNextImageRequest', linkquality: 10, meta: {zclTransactionSequenceNumber: 10}};
@@ -366,7 +366,7 @@ describe('OTA update', () => {
             count++;
             return {swBuildId: count, dateCode: '2019010' + count}
         });
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.info.mockClear();
         logger.error.mockClear();
@@ -396,7 +396,7 @@ describe('OTA update', () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         endpoint.read.mockImplementation(() => {return {swBuildId: 1, dateCode: '2019010'}});
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.info.mockClear();
         logger.error.mockClear();
@@ -413,7 +413,7 @@ describe('OTA update', () => {
 
     it('Legacy api: Should be able to check if OTA update is available', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
 
         logger.info.mockClear();
@@ -435,7 +435,7 @@ describe('OTA update', () => {
 
     it('Legacy api: Should handle if OTA update check fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.error.mockClear();
         mapped.ota.isUpdateAvailable.mockImplementationOnce(() => {throw new Error('RF signals disturbed because of dogs barking')});
@@ -463,7 +463,7 @@ describe('OTA update', () => {
             return {swBuildId: 1, dateCode: '2019010'}
         });
 
-        const mapped = zigbeeHerdsmanConverters.findByDevice(device)
+        const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         logger.info.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');

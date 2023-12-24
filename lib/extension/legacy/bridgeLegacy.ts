@@ -1,6 +1,5 @@
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import * as zhc from 'zigbee-herdsman-converters';
 import utils from '../../util/utils';
 import assert from 'assert';
 import Extension from '../extension';
@@ -140,7 +139,7 @@ export default class BridgeLegacy extends Extension {
             };
 
             if (device.zh.type !== 'Coordinator') {
-                const definition = zhc.findByDevice(device.zh);
+                const definition = device.definition;
                 payload.model = definition ? definition.model : device.zh.modelID;
                 payload.vendor = definition ? definition.vendor : '-';
                 payload.description = definition ? definition.description : '-';
@@ -385,7 +384,7 @@ export default class BridgeLegacy extends Extension {
             );
         } else if (type === 'deviceInterview') {
             if (data.status === 'successful') {
-                if (resolvedEntity.definition) {
+                if (resolvedEntity.isSupported) {
                     const {vendor, description, model} = resolvedEntity.definition;
                     const log = {friendly_name: resolvedEntity.name, model, vendor, description, supported: true};
                     this.mqtt.publish(
