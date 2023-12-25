@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         **IMPORTANT:** Before submitting:
-        - Make sure this device is not already supported in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
+        - Make sure this device is not already supported in the dev branch by checking the [dev branch changelog](https://gist.github.com/Koenkk/bfd4c3d1725a2cccacc11d6ba51008ba#new-supported-devices)
         - Make sure there is no existing issue or PR for this device already, search for your device here: https://github.com/Koenkk/zigbee2mqtt/issues
         - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
         - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
@@ -36,20 +36,8 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: External converter
-      description: In case you tried to create an external converter, put it below
+      label: External defintion
+      description: See [Creating the external definition](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_2-creating-the-external-definition)
       render: shell
-  - type: markdown
-    attributes:
-      value: |
-        # Lights
-        In case this device is a light, fill in the fields below:
-  - type: input
-    attributes:
-      label: Supported color modes
-      placeholder: color temperature, color (rgb)
-  - type: input
-    attributes:
-      label: Color temperature range
-      description: In case this light supports color temperature, provide the color temperature range. [How to do this](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_3-1-retrieving-color-temperature-range-only-required-for-lights-which-support-color-temperature).
-      placeholder: '{"colorTempPhysicalMin":153,"colorTempPhysicalMax":454}'
+    validations:
+      required: true

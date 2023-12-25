@@ -7,13 +7,12 @@ const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
-const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
 
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const mockOnEvent = jest.fn();
-const mappedLivolo = zigbeeHerdsmanConverters.findByDevice(zigbeeHerdsman.devices.LIVOLO);
+const mappedLivolo = zigbeeHerdsmanConverters.findByModel('TI0001');
 mappedLivolo.onEvent = mockOnEvent;
 zigbeeHerdsmanConverters.onEvent = jest.fn();
 

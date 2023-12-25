@@ -99,12 +99,7 @@ export default class NetworkMap extends Extension {
 
             // Add the device model
             if (node.type !== 'Coordinator') {
-                if (node.definition) {
-                    labels.push(`${node.definition.vendor} ${node.definition.description} (${node.definition.model})`);
-                } else {
-                    // This model is not supported by zigbee-herdsman-converters, add zigbee model information
-                    labels.push(`${node.manufacturerName} ${node.modelID}`);
-                }
+                labels.push(`${node.definition?.vendor} ${node.definition?.description} (${node.definition?.model})`);
             }
 
             // Add the device last_seen timestamp
@@ -177,12 +172,7 @@ export default class NetworkMap extends Extension {
             if (node.type !== 'Coordinator') {
                 text.push(`---`);
                 const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
-                if (definition) {
-                    text.push(`${definition.vendor} ${definition.description} (${definition.model})`);
-                } else {
-                    // This model is not supported by zigbee-herdsman-converters, add zigbee model information
-                    text.push(`${node.manufacturerName} ${node.modelID}`);
-                }
+                text.push(`${definition?.vendor} ${definition?.description} (${definition?.model})`);
             }
 
             // Add the device last_seen timestamp

@@ -546,7 +546,7 @@ describe('Controller', () => {
         device = controller.zigbee.resolveEntity('unsupported2');
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', stringify({"state":"ON","device":{"friendlyName":"unsupported2","model":"unknown","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null, "softwareBuildID": null}}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/unsupported2', stringify({"state":"ON","device":{"friendlyName":"unsupported2","model":"notSupportedModelID","ieeeAddr":"0x0017880104e45529","networkAddress":6536,"type":"EndDevice","manufacturerID":0,"powerSource":"Battery","dateCode":null, "softwareBuildID": null}}), {"qos": 0, "retain": false}, expect.any(Function));
     });
 
     it('Should publish entity state without retain', async () => {

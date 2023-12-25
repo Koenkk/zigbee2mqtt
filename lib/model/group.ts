@@ -24,8 +24,7 @@ export default class Group {
     }
 
     membersDefinitions(): zhc.Definition[] {
-        return this.zh.members.map((m) =>
-            zhc.findByDevice(m.getDevice())).filter((d) => d) as zhc.Definition[];
+        return this.membersDevices().map((d) => d.definition).filter((d) => d);
     }
 
     isDevice(): this is Device {return false;}

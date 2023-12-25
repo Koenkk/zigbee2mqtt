@@ -146,10 +146,8 @@ export default class Publish extends Extension {
                 const c = new Set(definition.map((d) => d.toZigbee).flat());
                 if (c.size == 0) converters = defaultGroupConverters;
                 else converters = Array.from(c);
-            } else if (definition) {
-                converters = definition.toZigbee;
             } else {
-                converters = [zhc.toZigbee.read, zhc.toZigbee.write];
+                converters = definition.toZigbee;
             }
         }
 

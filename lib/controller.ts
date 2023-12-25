@@ -121,7 +121,7 @@ export class Controller {
         const devices = this.zigbee.devices(false);
         logger.info(`Currently ${devices.length} devices are joined:`);
         for (const device of devices) {
-            const model = device.definition ?
+            const model = device.isSupported ?
                 `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}` :
                 'Not supported';
             logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
@@ -241,7 +241,7 @@ export class Controller {
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
             message.device = {
-                friendlyName: entity.name, model: entity.definition ? entity.definition.model : 'unknown',
+                friendlyName: entity.name, model: entity.definition?.model,
                 ieeeAddr: entity.ieeeAddr, networkAddress: entity.zh.networkAddress, type: entity.zh.type,
                 manufacturerID: entity.zh.manufacturerID,
                 powerSource: entity.zh.powerSource, applicationVersion: entity.zh.applicationVersion,
