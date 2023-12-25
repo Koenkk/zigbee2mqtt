@@ -206,7 +206,9 @@ export default class Publish extends Extension {
             }
 
             if (!usedConverters.hasOwnProperty(endpointOrGroupID)) usedConverters[endpointOrGroupID] = [];
-            const converter = converters.find((c) => c.key.includes(key));
+            /* istanbul ignore next */
+            const converter = converters.find((c) =>
+                c.key.includes(key) && (!c.endpoint || c.endpoint == endpointName));
 
             if (parsedTopic.type === 'set' && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
