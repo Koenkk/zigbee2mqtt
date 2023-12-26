@@ -5,6 +5,7 @@ import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
 import utils from '../util/utils';
+import * as zhc from 'zigbee-herdsman-converters';
 
 type DebounceFunction = (() => void) & { clear(): void; } & { flush(): void; };
 
@@ -116,6 +117,9 @@ export default class Receive extends Extension {
         // - If NO payload is returned do nothing. This is for non-standard behaviour
         //   for e.g. click switches where we need to count number of clicks and detect long presses.
         const publish = (payload: KeyValue): void => {
+            const options: KeyValue = data.device.options;
+            zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
+
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
