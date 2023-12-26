@@ -6,6 +6,5 @@ module.exports = {
     assumptions: {setPublicClassFields: true},
     plugins: [
         ['@babel/plugin-proposal-decorators', {'legacy': true}],
-        ['@babel/plugin-proposal-class-properties'],
     ],
 };
