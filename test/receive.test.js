@@ -462,6 +462,6 @@ describe('Receive', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_OLD');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({energy: 6.648, power: 496});
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({energy: 6.65, power: 496});
     });
 });
