@@ -1,9 +1,10 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "allowSyntheticDefaultImports": true,
+        "module": "ES2022",
         "esModuleInterop": true,
-        "target": "es2018",
-        "lib": ["es2018"],
+        "target": "ES2022",
+        "lib": ["ES2022"],
         "noImplicitAny": true,
         "noImplicitThis": true,
         "moduleResolution": "node",
