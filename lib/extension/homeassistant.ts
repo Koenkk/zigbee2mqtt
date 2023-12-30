@@ -1039,6 +1039,13 @@ export default class HomeAssistant extends Extension {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
         }
 
+        // Exposes which start with 'config' or 'diagnostic' are always added to the respective category
+        if(firstExpose.name?.startsWith('config_')) {
+            discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'config');
+        } else if(firstExpose.name?.startsWith('diagnostic_')) {
+            discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'diagnostic');
+        }
+
         discoveryEntries.forEach((d) => {
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
