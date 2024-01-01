@@ -1,3 +1,4 @@
+process.env.NOTIFY_SOCKET = "mocked";
 const data = require('./stub/data');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
@@ -15,6 +16,16 @@ const mocksClear = [
 ];
 
 const fs = require('fs');
+
+jest.mock('sd-notify', () => {
+    return {
+        watchdogInterval: () => {return 3000;},
+        startWatchdogMode: (interval) => {},
+        stopWatchdogMode: () => {},
+        ready: () => {},
+        stopping: () => {},
+    };
+}, {virtual: true});
 
 describe('Controller', () => {
     let controller;

@@ -36,10 +36,12 @@ Description=zigbee2mqtt
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/npm start
+Type=notify
+ExecStart=/usr/bin/node index.js
 WorkingDirectory=/opt/zigbee2mqtt
 StandardOutput=inherit
 StandardError=inherit
+WatchdogSec=10s
 Restart=always
 User=pi
 
