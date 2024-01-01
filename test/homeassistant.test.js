@@ -2208,7 +2208,7 @@ describe('HomeAssistant extension', () => {
             'device': {
               'identifiers': [ 'zigbee2mqtt_1221051039810110150109113116116_9' ],
               'name': 'ha_discovery_group',
-              'sw_version': 'Zigbee2MQTT 1.34.0-dev',
+              'sw_version': z2m_version,
               'model': 'Group',
               'manufacturer': 'Zigbee2MQTT',
               'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae'
