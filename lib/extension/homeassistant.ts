@@ -1002,7 +1002,7 @@ export default class HomeAssistant extends Extension {
                 action: {icon: 'mdi:gesture-double-tap'},
                 level_config: {entity_category: 'diagnostic'},
                 programming_mode: {icon: 'mdi:calendar-clock'},
-                program: {value_template: `{{ value_json.${firstExpose.property}|default('',true) ` +
+                program: {value_template: `{{ value_json.${firstExpose.property}|default('',True) ` +
                     `| truncate(254, True, '', 0) }}`},
             };
             if (firstExpose.access & ACCESS_STATE) {
