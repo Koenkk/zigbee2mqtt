@@ -161,10 +161,14 @@ export default class EventBus {
         this.on('stateChange', callback, key);
     }
 
-    private on(event: string, callback: (...args: unknown[]) => void, key: ListenerKey): void {
+    private on(event: string, callback: (...args: unknown[]) => (Promise<void> | void), key: ListenerKey): void {
         if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
-        this.callbacksByExtension[key.constructor.name].push({event, callback});
-        this.emitter.on(event, callback);
+        const wrappedCallback = (...args: unknown[]): void => {
+            // Wrap callback as it may return a Promise which can throw an exception
+            Promise.resolve(callback(...args)).catch();
+        };
+        this.callbacksByExtension[key.constructor.name].push({event, callback: wrappedCallback});
+        this.emitter.on(event, wrappedCallback);
     }
 
     public removeListeners(key: ListenerKey): void {
