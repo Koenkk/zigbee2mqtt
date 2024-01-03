@@ -161,5 +161,39 @@ export default class Receive extends Extension {
             utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
                 settings.get(), true, this.publishEntityState);
         }
+
+        // Check for events which should be triggered by this Zigbee message.
+        // If a valid event is returned, emit the event.
+        const emit = (events: string[]): void => {
+            if (events.includes('devicesChanged')) {
+                this.eventBus.emitDevicesChanged();
+            }
+        };
+
+        if (!data.device.definition.triggers) {
+            return;
+        }
+
+        let events: string[] = [];
+        const triggers = data.device.definition.triggers.filter((t) => {
+            return t.cluster === data.cluster && t.attribute in data.data;
+        });
+        for (const trigger of triggers) {
+            try {
+                if (!Array.isArray(data.data)) {
+                    const result = trigger.getEvents(
+                        data.data, data.device.zh);
+                    if (result) {
+                        events = [...events, ...result];
+                    }
+                }
+            } catch (error) /* istanbul ignore next */ {
+                logger.error(`Exception while calling fromZigbee trigger: ${error.message}}`);
+                logger.debug(error.stack);
+            }
+        }
+        if (events.length) {
+            emit(events);
+        }
     }
 }
