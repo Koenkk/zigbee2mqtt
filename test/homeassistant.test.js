@@ -2290,7 +2290,7 @@ describe('HomeAssistant extension', () => {
             'device_class': 'connectivity',
             'unique_id': 'bridge_0x00124b00120144ae_connection_state_zigbee2mqtt',
             'state_topic': 'zigbee2mqtt/bridge/state',
-            'value_template': '{{ value_json.state }}',
+            'value_template': '{{ value }}',
             'payload_on': 'online',
             'payload_off': 'offline',
             'origin': origin,
