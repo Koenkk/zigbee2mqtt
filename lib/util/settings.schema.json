@@ -350,6 +350,20 @@
           "requiresRestart": true,
           "description": "Location of override OTA index file",
           "examples": ["index.json"]
+        },
+        "ca": {
+          "type": "string",
+          "title": "CA certificate bundle path or URL",
+          "description": "Allows providing additional CA certificates to validate OTA image download sources. URL must be HTTPS.",
+          "examples": ["/etc/ssl/ca.pem", "https://example.com/ca.pem"],
+          "default": "https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master/cacerts.pem",
+          "requiresRestart": true
+        },
+        "insecure_tls": {
+          "type": "boolean",
+          "title": "Allow insecure TLS connections",
+          "description": "Ignores certificate errors while downloading OTA updates. This may allow malicious OTA updates to be downloaded, so use with caution.",
+          "default": false
         }
       }
     },

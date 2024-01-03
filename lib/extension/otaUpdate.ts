@@ -58,6 +58,19 @@ export default class OTAUpdate extends Extension {
             zhc.ota.zigbeeOTA.useIndexOverride(overrideOTAIndex);
         }
 
+        if (settings.get().ota.insecure_tls) {
+            zhc.ota.useInsecureTls();
+        } else {
+            let customCaBundleUri = settings.get().ota.ca;
+            if (customCaBundleUri) {
+                if (!isValidUrl(customCaBundleUri) && !path.isAbsolute(customCaBundleUri)) {
+                    customCaBundleUri = dataDir.joinPath(customCaBundleUri);
+                }
+
+                await zhc.ota.useCustomCaBundle(customCaBundleUri);
+            }
+        }
+
         // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
         zhc.ota.setDataDir(dataDir.getPath());
 
