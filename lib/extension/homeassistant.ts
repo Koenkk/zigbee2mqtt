@@ -1039,10 +1039,11 @@ export default class HomeAssistant extends Extension {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
         }
 
-        // Exposes which start with 'config' or 'diagnostic' are always added to the respective category
-        if(firstExpose.name?.startsWith('config_')) {
+        // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
+        // This takes precedence over definitions in this file.
+        if(firstExpose.category === 'config') {
             discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'config');
-        } else if(firstExpose.name?.startsWith('diagnostic_')) {
+        } else if(firstExpose.category === 'diagnostic') {
             discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'diagnostic');
         }
 
