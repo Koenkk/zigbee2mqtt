@@ -1378,7 +1378,7 @@ export default class HomeAssistant extends Extension {
                 payload.tilt_status_topic = stateTopic;
             }
 
-            if (this.entityAttributes) {
+            if (this.entityAttributes && (isDevice || isGroup) ) {
                 payload.json_attributes_topic = stateTopic;
             }
 
