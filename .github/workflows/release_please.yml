@@ -23,7 +23,6 @@ jobs:
       - uses: google-github-actions/release-please-action@v4
         id: release
         with:
-          release-type: node
           target-branch: dev
           token: ${{secrets.GH_TOKEN}}
 
