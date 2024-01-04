@@ -1,7 +1,7 @@
 {
   "packages": {
     ".": {
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "CHANGELOGtest.md",
       "release-type": "node",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": false,
