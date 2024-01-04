@@ -24,7 +24,7 @@ jobs:
         id: release
         with:
           release-type: node
-          target-branch: dev
+          target-branch: release-please-test
           token: ${{secrets.GH_TOKEN}}
 
       # Checkout repos
