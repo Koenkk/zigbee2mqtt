@@ -1,6 +1,9 @@
 {
   "packages": {
-    ".": {}
+    ".": {
+      "changelog-path": "CHANGELOGTT.md",
+      "include-v-in-tag": false
+    }
   },
   "changelog-path": "CHANGELOGTT.md",
   "release-type": "node",
