@@ -41,7 +41,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
       with:
         version: latest
-    - name: Docker build dev
+    - name: "dev: Docker build"
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
         docker buildx build \
@@ -52,7 +52,7 @@ jobs:
           --push \
           -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
           .
-    - name: Docker build release
+    - name: "release: Docker build"
       if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
       run: |
         TAG="$(git describe --tags)"
@@ -64,12 +64,12 @@ jobs:
           --push \
           -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
           .
-    - name: Publish to npm
+    - name: "release: Publish to npm"
       if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
-    - name: Trigger zigbee2mqtt/hassio-zigbee2mqtt build
+    - name: "dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build"
       if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
       run: |
         curl \
@@ -78,6 +78,35 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
           -d '{"ref":"master","inputs":{}}'
+    - name: "release: Trigger zigbee2mqtt/hassio-zigbee2mqtt build"
+      if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+      run: |
+        TAG=${GITHUB_REF#refs/*/}
+        echo "Triggering with tag '$TAG'"
+        curl \
+          -X POST \
+          -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+          -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Content-Type: application/json" \
+          https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches \
+          --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
+    - name: "release: merge dev -> master and promote dev"
+      if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'  
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git fetch origin
+        git checkout master
+        git merge -m 'chore: merge dev to master' dev
+        git push origin master
+        git checkout dev
+        jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package.json > package.json.tmp
+        jq '.version = "${{ needs.release-please.outputs.version }}-dev"' package-lock.json > package-lock.json.tmp
+        mv package.json.tmp package.json
+        mv package-lock.json.tmp package-lock.json
+        git add -A
+        git commit -m "chore: promote to dev"
+        git push origin dev
 
   tests:
     strategy:
