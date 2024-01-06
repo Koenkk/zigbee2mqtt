@@ -67,6 +67,7 @@ jest.mock('https', () => ({
         mockHTTPS.variables.onRequest = onRequest;
         return mockHTTPS.implementation;
     }),
+    Agent: jest.fn(),
 }));
 
 jest.mock("connect-gzip-static", () =>
@@ -87,7 +88,7 @@ jest.mock('ws', () => ({
     }),
 }));
 
-describe('Frontend', () => {
+describe('onlythis Frontend', () => {
     let controller;
 
     beforeAll(async () => {
