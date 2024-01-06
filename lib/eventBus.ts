@@ -1,5 +1,5 @@
 import events from 'events';
-events.captureRejections = true;
+import logger from './util/logger';
 
 // eslint-disable-next-line
 type ListenerKey = object;
@@ -8,9 +8,8 @@ export default class EventBus {
     private callbacksByExtension: { [s: string]: { event: string, callback: (...args: unknown[]) => void }[] } = {};
     private emitter = new events.EventEmitter();
 
-    constructor(onError: (error: Error) => void) {
+    constructor() {
         this.emitter.setMaxListeners(100);
-        this.emitter.on('error', onError);
     }
 
     public emitAdapterDisconnected(): void {
@@ -163,9 +162,13 @@ export default class EventBus {
 
     private on(event: string, callback: (...args: unknown[]) => (Promise<void> | void), key: ListenerKey): void {
         if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
-        const wrappedCallback = (...args: unknown[]): void => {
-            // Wrap callback as it may return a Promise which can throw an exception
-            Promise.resolve(callback(...args)).catch();
+        const wrappedCallback = async (...args: unknown[]): Promise<void> => {
+            try {
+                await callback(...args);
+            } catch (error) {
+                logger.error(`EventBus error '${key.constructor.name}/${event}': ${error.message}`);
+                logger.debug(error.stack);
+            }
         };
         this.callbacksByExtension[key.constructor.name].push({event, callback: wrappedCallback});
         this.emitter.on(event, wrappedCallback);

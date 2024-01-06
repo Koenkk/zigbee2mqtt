@@ -730,4 +730,14 @@ describe('Controller', () => {
         await controller.stop();
         expect(controller.state.state[device.ieeeAddr]).toStrictEqual(undefined);
     });
+
+    it('EventBus should handle errors', async () => {
+        const eventbus = controller.eventBus;
+        const callback = jest.fn().mockImplementation(async () => {throw new Error('Whoops!')});
+        eventbus.onStateChange('test', callback);
+        eventbus.emitStateChange({});
+        await flushPromises();
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(logger.error).toHaveBeenCalledWith(`EventBus error 'String/stateChange': Whoops!`);
+    });
 });
