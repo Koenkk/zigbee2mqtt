@@ -50,7 +50,7 @@ jobs:
           MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
           MASTER_ZH_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman"')
           MASTER_FRONTEND_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee2mqtt-frontend"')
-          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--release-please-action/CHANGELOG.md > z2m/CHANGELOG.md || true
+          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--zigbee2mqtt/CHANGELOG.md > z2m/CHANGELOG.md
           cd z2m
           npm ci
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION $MASTER_FRONTEND_VERSION >> ../changelog.md
