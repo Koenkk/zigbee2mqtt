@@ -1,4 +1,5 @@
 const data = require('./stub/data');
+const sleep = require('./stub/sleep');
 const logger = require('./stub/logger');
 const stringify = require('json-stable-stringify-without-jsonify');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
@@ -15,6 +16,7 @@ describe('Receive', () => {
     beforeAll(async () => {
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
+        sleep.mock();
         await controller.start();
         await jest.runOnlyPendingTimers();
         await flushPromises();
@@ -30,6 +32,7 @@ describe('Receive', () => {
 
     afterAll(async () => {
         jest.useRealTimers();
+        sleep.restore();
     });
 
     it('Should handle a zigbee message', async () => {

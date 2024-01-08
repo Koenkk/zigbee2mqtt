@@ -2,6 +2,7 @@ const path = require('path');
 
 const data = require('./stub/data');
 const logger = require('./stub/logger');
+const sleep = require('./stub/sleep');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const settings = require('../lib/util/settings');
@@ -35,6 +36,7 @@ describe('OTA update', () => {
         settings.reRead();
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
+        sleep.mock();
         await controller.start();
         await jest.runOnlyPendingTimers();
         await flushPromises();
@@ -47,6 +49,7 @@ describe('OTA update', () => {
 
     afterAll(async () => {
         jest.useRealTimers();
+        sleep.restore();
     });
 
     beforeEach(async () => {
@@ -57,7 +60,7 @@ describe('OTA update', () => {
         MQTT.publish.mockClear();
     });
 
-    it('Should OTA update a device', async () => {
+    it('onlythis Should OTA update a device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         let count = 0;

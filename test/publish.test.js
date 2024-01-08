@@ -1,4 +1,5 @@
 const data = require('./stub/data');
+const sleep = require('./stub/sleep');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
@@ -30,6 +31,7 @@ describe('Publish', () => {
         jest.useFakeTimers();
         data.writeEmptyState();
         controller = new Controller(jest.fn(), jest.fn());
+        sleep.mock();
         await controller.start();
         await flushPromises();
     });
@@ -56,6 +58,7 @@ describe('Publish', () => {
     afterAll(async () => {
         jest.runOnlyPendingTimers();
         jest.useRealTimers();
+        sleep.restore();
     });
 
     it('Should publish messages to zigbee devices', async () => {

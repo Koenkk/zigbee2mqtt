@@ -51,10 +51,7 @@ export class Controller {
 
     constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
         logger.init();
-        this.eventBus = new EventBus( /* istanbul ignore next */ (error) => {
-            logger.error(`Error: ${error.message}`);
-            logger.debug(error.stack);
-        });
+        this.eventBus = new EventBus();
         this.zigbee = new Zigbee(this.eventBus);
         this.mqtt = new MQTT(this.eventBus);
         this.state = new State(this.eventBus, this.zigbee);

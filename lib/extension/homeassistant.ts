@@ -1002,7 +1002,7 @@ export default class HomeAssistant extends Extension {
                 action: {icon: 'mdi:gesture-double-tap'},
                 level_config: {entity_category: 'diagnostic'},
                 programming_mode: {icon: 'mdi:calendar-clock'},
-                program: {value_template: `{{ value_json.${firstExpose.property}|default('',true) ` +
+                program: {value_template: `{{ value_json.${firstExpose.property}|default('',True) ` +
                     `| truncate(254, True, '', 0) }}`},
             };
             if (firstExpose.access & ACCESS_STATE) {
@@ -1386,7 +1386,7 @@ export default class HomeAssistant extends Extension {
                 payload.tilt_status_topic = stateTopic;
             }
 
-            if (this.entityAttributes) {
+            if (this.entityAttributes && (isDevice || isGroup) ) {
                 payload.json_attributes_topic = stateTopic;
             }
 
@@ -1804,6 +1804,7 @@ export default class HomeAssistant extends Extension {
         const discovery: DiscoveryEntry[] = [];
         const bridge = new Bridge(coordinatorIeeeAddress, coordinatorVersion, discovery);
         const baseTopic = `${settings.get().mqtt.base_topic}/${bridge.name}`;
+        const legacyAvailability = settings.get().advanced.legacy_availability_payload;
 
         discovery.push(
             // Binary sensors.
@@ -1817,7 +1818,7 @@ export default class HomeAssistant extends Extension {
                     entity_category: 'diagnostic',
                     state_topic: true,
                     state_topic_postfix: 'state',
-                    value_template: '{{ value_json.state }}',
+                    value_template: !legacyAvailability ? '{{ value_json.state }}' : '{{ value }}',
                     payload_on: 'online',
                     payload_off: 'offline',
                     availability: false,

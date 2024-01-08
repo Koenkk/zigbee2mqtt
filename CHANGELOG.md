@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.35.1](https://github.com/Koenkk/zigbee2mqtt/compare/1.35.0...1.35.1) (2024-01-07)
+
+
+### Bug Fixes
+
+* Fix configure on startup crashing coordinator https://github.com/Koenkk/zigbee2mqtt/issues/20526 ([e9aee4c](https://github.com/Koenkk/zigbee2mqtt/commit/e9aee4c6dc1b7dcfedfa821723b029e1a0423d15))
+* Fix crash due to unhandled Promise exception https://github.com/Koenkk/zigbee2mqtt/issues/20473 ([e6bcf91](https://github.com/Koenkk/zigbee2mqtt/commit/e6bcf91e17747eff38ce7774107d697aeff4be15))
+* Fix Home Assistant `program` not truncated when too large https://github.com/Koenkk/zigbee2mqtt/issues/19788 ([32b1d5b](https://github.com/Koenkk/zigbee2mqtt/commit/32b1d5b0732544a2026f8582f8bb12a3e5691b2b))
+* **ignore:** update zigbee-herdsman-converters to 18.4.0 ([#20523](https://github.com/Koenkk/zigbee2mqtt/issues/20523)) ([7e37365](https://github.com/Koenkk/zigbee2mqtt/commit/7e37365a5faec6d8d33db406ed18d5492fa2fc19))
+* **ignore:** update zigbee-herdsman-converters to 18.6.0 ([#20585](https://github.com/Koenkk/zigbee2mqtt/issues/20585)) ([b17c22b](https://github.com/Koenkk/zigbee2mqtt/commit/b17c22bb501599fcc68685ff0fc65642d1dea9ca))
+* **ignore:** update zigbee-herdsman-converters to 18.8.0 ([#20613](https://github.com/Koenkk/zigbee2mqtt/issues/20613)) ([14ac9a8](https://github.com/Koenkk/zigbee2mqtt/commit/14ac9a8f68480c433450cb1f33f8feda00359268))
+* **ignore:** update zigbee-herdsman-converters to 18.9.0 ([#20635](https://github.com/Koenkk/zigbee2mqtt/issues/20635)) ([759c235](https://github.com/Koenkk/zigbee2mqtt/commit/759c2359234a5f83b9a7f2a5b97e75aef9d0d567))
+* **ignore:** update zigbee2mqtt-frontend to 0.6.151 ([#20509](https://github.com/Koenkk/zigbee2mqtt/issues/20509)) ([cb7b773](https://github.com/Koenkk/zigbee2mqtt/commit/cb7b773e0defb1e28dc17af42e3807e7628338df))
+* Prevent extension errors from crashing Zigbee2MQTT https://github.com/Koenkk/zigbee2mqtt/issues/20477 ([212c709](https://github.com/Koenkk/zigbee2mqtt/commit/212c70913c06a97dea8dac7d532a7d601c69a3d1))
+* Prevent warnings for bridge entities with legacy_entity_attributes enabled ([#20548](https://github.com/Koenkk/zigbee2mqtt/issues/20548)) ([99a57bf](https://github.com/Koenkk/zigbee2mqtt/commit/99a57bfd080fcf311f7cc45e7d0d04cdc0a6138a))
+* Support legacy_availability_payload for Home Assistant connection_state ([#20547](https://github.com/Koenkk/zigbee2mqtt/issues/20547)) ([b8edf27](https://github.com/Koenkk/zigbee2mqtt/commit/b8edf273c6de799e30c95c607f315f02b0dcacdd))
+
 ## [1.35.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.34.0...v1.35.0) (2024-01-01)
 
 
