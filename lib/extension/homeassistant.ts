@@ -1041,9 +1041,9 @@ export default class HomeAssistant extends Extension {
 
         // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
         // This takes precedence over definitions in this file.
-        if(firstExpose.category === 'config') {
+        if (firstExpose.category === 'config') {
             discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'config');
-        } else if(firstExpose.category === 'diagnostic') {
+        } else if (firstExpose.category === 'diagnostic') {
             discoveryEntries.forEach((d) => d.discovery_payload.entity_category = 'diagnostic');
         }
 
