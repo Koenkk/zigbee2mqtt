@@ -57,6 +57,14 @@ body:
       placeholder: Electrolama zig-a-zig-ah! (zzh!), Slaesh's CC2652RB stick, ...
     validations:
       required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Setup
+      description: How do you run Z2M (plain, add-on...) and on what machine (Pi, x86-64, containerized...)?
+      placeholder: Add-on on Home Assistant OS on Intel NUC, Plain on Docker container, ...
+    validations:
+      required: true
   - type: textarea
     id: log
     attributes:
