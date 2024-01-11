@@ -602,6 +602,7 @@ export default class HomeAssistant extends Extension {
                 auto_off: {entity_category: 'diagnostic', icon: 'mdi:flash-auto'},
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
+                calibrated: {entity_category: 'diagnostic'},
                 calibration: {entity_category: 'config', icon: 'mdi:progress-wrench'},
                 capabilities_configurable_curve: {entity_category: 'diagnostic', icon: 'mdi:tune'},
                 capabilities_forward_phase_control: {entity_category: 'diagnostic', icon: 'mdi:tune'},
