@@ -643,12 +643,15 @@ export default class HomeAssistant extends Extension {
                 temperature_scale: {entity_category: 'config', icon: 'mdi:temperature-celsius'},
                 test: {entity_category: 'diagnostic', icon: 'mdi:test-tube'},
                 trigger_indicator: {entity_category: 'config', icon: 'mdi:led-on'},
+                valve_alarm: {entity_category: 'diagnostic', device_class: 'problem'},
                 valve_detection: {entity_category: 'config', icon: 'mdi:pipe-valve'},
+                valve_setup: {entity_category: 'diagnostic', device_class: 'running'},
                 valve_state: {device_class: 'opening'},
                 vibration: {device_class: 'vibration'},
                 water_leak: {device_class: 'moisture'},
                 window: {device_class: 'window'},
                 window_detection: {entity_category: 'config', icon: 'mdi:window-open-variant'},
+                window_open: {entity_category: 'diagnostic', icon: 'mdi:window-open-variant', device_class: 'window'},
             };
 
             /**
@@ -806,6 +809,7 @@ export default class HomeAssistant extends Extension {
                 requested_brightness_percent: {
                     enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
+                sensor_temp: {entity_category: 'config', icon: 'mdi:thermometer'},
                 smoke_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
                 soil_moisture: {device_class: 'moisture', state_class: 'measurement'},
                 temperature: {device_class: 'temperature', state_class: 'measurement'},
@@ -933,7 +937,7 @@ export default class HomeAssistant extends Extension {
                 alarm_temperature: {entity_category: 'config', icon: 'mdi:thermometer-alert'},
                 backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
                 backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
-                calibrate: {ntity_category: 'config', icon: 'mdi:tune'},
+                calibrate: {entity_category: 'config', icon: 'mdi:tune'},
                 color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
                 control_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 device_mode: {entity_category: 'config', icon: 'mdi:tune'},
