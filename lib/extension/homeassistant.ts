@@ -646,7 +646,6 @@ export default class HomeAssistant extends Extension {
                 trigger_indicator: {entity_category: 'config', icon: 'mdi:led-on'},
                 valve_alarm: {entity_category: 'diagnostic', device_class: 'problem'},
                 valve_detection: {entity_category: 'config', icon: 'mdi:pipe-valve'},
-                valve_setup: {entity_category: 'diagnostic', device_class: 'running'},
                 valve_state: {device_class: 'opening'},
                 vibration: {device_class: 'vibration'},
                 water_leak: {device_class: 'moisture'},
