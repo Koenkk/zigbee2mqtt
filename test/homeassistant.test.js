@@ -2491,4 +2491,40 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
+
+    it('Should publish discovery message when a converter announces changed exposes', async () => {
+        MQTT.publish.mockClear();
+        const device = zigbeeHerdsman.devices['BMCT-SLZ'];
+        const data = {deviceMode: 0}
+        const msg = {data, cluster: 'manuSpecificBosch10', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(msg);
+        const payload = {
+            'availability':[{'topic':'zigbee2mqtt/bridge/state'}],
+            'command_topic':'zigbee2mqtt/0x18fc26000000cafe/set/device_mode',
+            'device':{
+                'identifiers':['zigbee2mqtt_0x18fc26000000cafe'],
+                'manufacturer':'Bosch',
+                'model':'Light/shutter control unit II (BMCT-SLZ)',
+                'name':'0x18fc26000000cafe',
+                'sw_version':null,
+                'via_device':'zigbee2mqtt_bridge_0x00124b00120144ae'
+            },
+            'entity_category':'config',
+            'icon':'mdi:tune',
+            'json_attributes_topic':'zigbee2mqtt/0x18fc26000000cafe',
+            'name':'Device mode',
+            'object_id':'0x18fc26000000cafe_device_mode',
+            'options':['light','shutter','disabled'],
+            'origin': origin,
+            'state_topic':'zigbee2mqtt/0x18fc26000000cafe',
+            'unique_id':'0x18fc26000000cafe_device_mode_zigbee2mqtt',
+            'value_template':'{{ value_json.device_mode }}'
+        }
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            "homeassistant/select/0x18fc26000000cafe/device_mode/config",
+            stringify(payload),
+            { retain: true, qos: 1 },
+            expect.any(Function),
+        );
+    });
 });

@@ -204,6 +204,8 @@ const devices = {
     'heating_actuator': new Device('Router', '0x0017880104e45562', 6545,4151, [new Endpoint(1, [0,3,4,513], [1026])], true, "Mains (single phase)", "heating.actuator"),
     'bj_scene_switch': new Device('EndDevice', '0xd85def11a1002caa', 50117, 4398, [new Endpoint(10, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa', [{target: bulb_color_2.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 768, name: 'lightingColorCtrl'}},]), new Endpoint(11, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa')], true, 'Battery', 'RB01', false, 'Busch-Jaeger', '20161222', '1.2.0'),
     'GW003-AS-IN-TE-FC': new Device('Router', '0x0017548104a44669', 6545,4699, [new Endpoint(1, [3], [0,3,513,514], '0x0017548104a44669')], true, "Mains (single phase)", 'Adapter Zigbee FUJITSU'),
+    'BMCT-SLZ': new Device('Router', '0x18fc26000000cafe', 6546,4617, [new Endpoint(1, [0,3,4,5,258,1794,2820,2821,64672], [10,25], '0x18fc26000000cafe')], true, "Mains (single phase)", 'RBSH-MMS-ZB-EU'),
+
 }
 
 const mock = {

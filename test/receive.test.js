@@ -467,4 +467,11 @@ describe('Receive', () => {
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/SP600_OLD');
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({energy: 6.65, power: 496});
     });
+    it('Should emit DevicesChanged event when a converter announces changed exposes', async () => {
+        const device = zigbeeHerdsman.devices['BMCT-SLZ'];
+        const data = {deviceMode: 0}
+        const payload = {data, cluster: 'manuSpecificBosch10', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/bridge/devices");
+    });
 });
