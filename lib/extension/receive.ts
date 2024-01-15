@@ -138,7 +138,13 @@ export default class Receive extends Extension {
             }
         };
 
-        const meta = {device: data.device.zh, logger, state: this.state.get(data.device)};
+        const deviceExposesChanged = (): void => {
+            this.eventBus.emitDevicesChanged();
+            this.eventBus.emitExposesChanged({device: data.device});
+        };
+
+        const meta = {device: data.device.zh, logger, state: this.state.get(data.device),
+            deviceExposesChanged: deviceExposesChanged};
         let payload: KeyValue = {};
         for (const converter of converters) {
             try {
