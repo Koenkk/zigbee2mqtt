@@ -600,6 +600,7 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (isBinaryExposeFeature(firstExpose)) {
             const lookup: {[s: string]: KeyValue}= {
+                auto_off: {icon: 'mdi:flash-auto'},
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
                 calibration: {entity_category: 'config', icon: 'mdi:progress-wrench'},
@@ -631,6 +632,7 @@ export default class HomeAssistant extends Extension {
                 occupancy: {device_class: 'motion'},
                 power_outage_memory: {entity_category: 'config', icon: 'mdi:memory'},
                 presence: {device_class: 'presence'},
+                setup: {device_class: 'running'},
                 smoke: {device_class: 'smoke'},
                 sos: {device_class: 'safety'},
                 status_capacitive_load: {entity_category: 'diagnostic', icon: 'mdi:tune'},
@@ -641,10 +643,15 @@ export default class HomeAssistant extends Extension {
                 tamper: {device_class: 'tamper'},
                 temperature_scale: {entity_category: 'config', icon: 'mdi:temperature-celsius'},
                 test: {entity_category: 'diagnostic', icon: 'mdi:test-tube'},
+                trigger_indicator: {icon: 'mdi:led-on'},
+                valve_alarm: {device_class: 'problem'},
+                valve_detection: {icon: 'mdi:pipe-valve'},
                 valve_state: {device_class: 'opening'},
                 vibration: {device_class: 'vibration'},
                 water_leak: {device_class: 'moisture'},
                 window: {device_class: 'window'},
+                window_detection: {icon: 'mdi:window-open-variant'},
+                window_open: {device_class: 'window'},
             };
 
             /**
@@ -751,6 +758,7 @@ export default class HomeAssistant extends Extension {
                     state_class: 'measurement',
                 },
                 deadzone_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
+                detection_interval: {icon: 'mdi:timer'},
                 device_temperature: {
                     device_class: 'temperature', entity_category: 'diagnostic', state_class: 'measurement',
                 },
@@ -782,6 +790,7 @@ export default class HomeAssistant extends Extension {
                 minimum_on_level: {entity_category: 'config'},
                 measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
                 occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
+                overload_protection: {icon: 'mdi:flash'},
                 pm10: {device_class: 'pm10', state_class: 'measurement'},
                 pm25: {device_class: 'pm25', state_class: 'measurement'},
                 people: {state_class: 'measurement', icon: 'mdi:account-multiple'},
@@ -789,6 +798,7 @@ export default class HomeAssistant extends Extension {
                 power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
                 power_factor: {device_class: 'power_factor', enabled_by_default: false,
                     entity_category: 'diagnostic', state_class: 'measurement'},
+                power_outage_count: {icon: 'mdi:counter'},
                 precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
                 pressure: {device_class: 'atmospheric_pressure', state_class: 'measurement'},
                 presence_timeout: {entity_category: 'config', icon: 'mdi:timer'},
@@ -799,6 +809,7 @@ export default class HomeAssistant extends Extension {
                 requested_brightness_percent: {
                     enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
+                sensor_temp: {icon: 'mdi:thermometer'},
                 smoke_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
                 soil_moisture: {device_class: 'moisture', state_class: 'measurement'},
                 temperature: {device_class: 'temperature', state_class: 'measurement'},
@@ -926,6 +937,7 @@ export default class HomeAssistant extends Extension {
                 alarm_temperature: {entity_category: 'config', icon: 'mdi:thermometer-alert'},
                 backlight_auto_dim: {entity_category: 'config', icon: 'mdi:brightness-auto'},
                 backlight_mode: {entity_category: 'config', icon: 'mdi:lightbulb'},
+                calibrate: {icon: 'mdi:tune'},
                 color_power_on_behavior: {entity_category: 'config', icon: 'mdi:palette'},
                 control_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 device_mode: {entity_category: 'config', icon: 'mdi:tune'},
@@ -939,6 +951,7 @@ export default class HomeAssistant extends Extension {
                 melody: {entity_category: 'config', icon: 'mdi:music-note'},
                 mode_phase_control: {entity_category: 'config', icon: 'mdi:tune'},
                 mode: {entity_category: 'config', icon: 'mdi:tune'},
+                mode_switch: {icon: 'mdi:tune'},
                 motion_sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
                 operation_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 power_on_behavior: {entity_category: 'config', icon: 'mdi:power-settings'},
@@ -946,6 +959,7 @@ export default class HomeAssistant extends Extension {
                 power_supply_mode: {entity_category: 'config', icon: 'mdi:power-settings'},
                 power_type: {entity_category: 'config', icon: 'mdi:lightning-bolt-circle'},
                 sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
+                sensor: {icon: 'mdi:tune'},
                 sensors_type: {entity_category: 'config', icon: 'mdi:tune'},
                 sound_volume: {entity_category: 'config', icon: 'mdi:volume-high'},
                 status: {icon: 'mdi:state-machine'},
