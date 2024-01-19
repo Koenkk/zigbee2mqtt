@@ -635,6 +635,7 @@ export default class HomeAssistant extends Extension {
                 setup: {device_class: 'running'},
                 smoke: {device_class: 'smoke'},
                 sos: {device_class: 'safety'},
+                schedule: {icon: 'mdi:calendar'},
                 status_capacitive_load: {entity_category: 'diagnostic', icon: 'mdi:tune'},
                 status_forward_phase_control: {entity_category: 'diagnostic', icon: 'mdi:tune'},
                 status_inductive_load: {entity_category: 'diagnostic', icon: 'mdi:tune'},
@@ -1019,6 +1020,7 @@ export default class HomeAssistant extends Extension {
                 programming_mode: {icon: 'mdi:calendar-clock'},
                 program: {value_template: `{{ value_json.${firstExpose.property}|default('',True) ` +
                     `| truncate(254, True, '', 0) }}`},
+                schedule_settings: {icon: 'mdi:calendar-clock'},
             };
             if (firstExpose.access & ACCESS_STATE) {
                 const discoveryEntry: DiscoveryEntry = {
