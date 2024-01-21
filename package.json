@@ -1,6 +1,6 @@
 {
   "name": "zigbee2mqtt",
-  "version": "1.35.1",
+  "version": "1.35.1-dev",
   "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
   "main": "index.js",
   "repository": {
@@ -26,9 +26,7 @@
     "start": "node index.js",
     "test-with-coverage": "jest test --coverage",
     "test": "jest test",
-    "test-watch": "jest test --watch",
-    "clean": "rimraf coverage dist tsconfig.tsbuildinfo",
-    "prepack": "npm run clean && npm run build"
+    "test-watch": "jest test --watch"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
@@ -61,8 +59,8 @@
     "winston-syslog": "^2.7.0",
     "winston-transport": "^4.6.0",
     "ws": "^8.16.0",
-    "zigbee-herdsman": "0.30.0",
-    "zigbee-herdsman-converters": "18.9.0",
+    "zigbee-herdsman": "0.33.0",
+    "zigbee-herdsman-converters": "18.17.0",
     "zigbee2mqtt-frontend": "0.6.151"
   },
   "devDependencies": {

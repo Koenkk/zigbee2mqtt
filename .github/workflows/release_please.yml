@@ -38,7 +38,7 @@ jobs:
           ref: master
 
       - name: Restore cache commit-user-lookup.json
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: z2m/scripts/commit-user-lookup.json
           key: commit-user-lookup-dummy
@@ -62,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Save cache commit-user-lookup.json
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: always()
         with:
           path: z2m/scripts/commit-user-lookup.json

@@ -90,6 +90,13 @@ export default class EventBus {
         this.on('entityOptionsChanged', callback, key);
     }
 
+    public emitExposesChanged(data: eventdata.ExposesChanged): void {
+        this.emitter.emit('exposesChanged', data);
+    }
+    public onExposesChanged(key: ListenerKey, callback: (data: eventdata.ExposesChanged) => void): void {
+        this.on('exposesChanged', callback, key);
+    }
+
     public emitDeviceLeave(data: eventdata.DeviceLeave): void {
         this.emitter.emit('deviceLeave', data);
     }
