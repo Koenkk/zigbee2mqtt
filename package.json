@@ -109,5 +109,8 @@
   },
   "bin": {
     "zigbee2mqtt": "cli.js"
+  },
+  "optionalDependencies": {
+    "sd-notify": "^2.8.0"
   }
 }
