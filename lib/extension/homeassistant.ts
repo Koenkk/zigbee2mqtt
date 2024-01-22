@@ -1667,20 +1667,15 @@ export default class HomeAssistant extends Extension {
         this.discover(data.device);
     }
 
-    @bind async onScenesChanged(): Promise<void> {
-        // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
-        const entities = [...this.zigbee.devices(), ...this.zigbee.groups()];
-        const clearedEntities = new Set<Device|Group>();
+    @bind async onScenesChanged(data: eventdata.ScenesChanged): Promise<void> {
+        // Re-trigger MQTT discovery of changed devices and groups, similar to bridge.ts
 
         // First, clear existing scene discovery topics
-        entities.forEach((entity) => {
-            logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
-            this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
-                if (topic.startsWith('scene')) {
-                    this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
-                    clearedEntities.add(entity);
-                }
-            });
+        logger.debug(`Clearing Home Assistant scene discovery topics for '${data.entity.name}'`);
+        this.discovered[this.getDiscoverKey(data.entity)]?.topics.forEach((topic) => {
+            if (topic.startsWith('scene')) {
+                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+            }
         });
 
         // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
@@ -1688,11 +1683,9 @@ export default class HomeAssistant extends Extension {
         logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`);
         await utils.sleep(2);
 
-        // Re-discover all entities (including their new scenes).
+        // Re-discover entity (including any new scenes).
         logger.debug(`Re-discovering entities with their scenes.`);
-        clearedEntities.forEach((entity) => {
-            this.discover(entity, true);
-        });
+        this.discover(data.entity, true);
     }
 
     private getDevicePayload(entity: Device | Group | Bridge): KeyValue {
