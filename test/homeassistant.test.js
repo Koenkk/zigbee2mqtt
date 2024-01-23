@@ -2156,19 +2156,17 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
+
+        // Device/endpoint scenes.
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+
         MQTT.publish.mockClear();
-        controller.eventBus.emitScenesChanged();
+        controller.eventBus.emitScenesChanged({entity: device});
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
         expect(MQTT.publish).toHaveBeenCalledWith(
             `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
-            null,
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
             null,
             {retain: true, qos: 1},
             expect.any(Function),
@@ -2200,6 +2198,24 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
+        expect(MQTT.publish).toHaveBeenCalledTimes( 12 );
+
+        // Group scenes.
+        const group = controller.zigbee.resolveEntity('ha_discovery_group');
+
+        MQTT.publish.mockClear();
+        controller.eventBus.emitScenesChanged({entity: group});
+        await flushPromises();
+
+        // Discovery messages for scenes have been purged.
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+        jest.runOnlyPendingTimers();
+        await flushPromises();
 
         payload = {
             'name': 'Scene 4',
@@ -2225,9 +2241,7 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
-
-        // Only discovery entries for entities with scenes need to be republished.
-        expect(MQTT.publish).toHaveBeenCalledTimes( 16 );
+        expect(MQTT.publish).toHaveBeenCalledTimes( 6 );
     });
 
     it('Should not clear bridge entities unnecessarily', async () => {

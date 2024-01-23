@@ -107,6 +107,7 @@ declare global {
             data: KeyValue | Array<string | number>;
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl;};
         };
+        type ScenesChanged = { entity: Device | Group };
     }
 
     // Settings

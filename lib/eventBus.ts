@@ -146,10 +146,10 @@ export default class EventBus {
         this.on('devicesChanged', callback, key);
     }
 
-    public emitScenesChanged(): void {
-        this.emitter.emit('scenesChanged');
+    public emitScenesChanged(data: eventdata.ScenesChanged): void {
+        this.emitter.emit('scenesChanged', data);
     }
-    public onScenesChanged(key: ListenerKey, callback: () => void): void {
+    public onScenesChanged(key: ListenerKey, callback: (data: eventdata.ScenesChanged) => void): void {
         this.on('scenesChanged', callback, key);
     }
 

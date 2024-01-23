@@ -298,7 +298,7 @@ export default class Publish extends Extension {
         const scenesChanged = Object.values(usedConverters)
             .some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
         if (scenesChanged) {
-            this.eventBus.emitScenesChanged();
+            this.eventBus.emitScenesChanged({entity: re});
         }
     }
 }
