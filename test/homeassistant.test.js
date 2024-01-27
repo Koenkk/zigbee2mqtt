@@ -1754,7 +1754,7 @@ describe('HomeAssistant extension', () => {
 
         await MQTT.events.message('zigbee2mqtt/U202DST600ZB/l2/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20, linkquality: null, state_l1: null}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20, linkquality: null, state_l1: null, power_on_behavior: null}), {"qos": 0, "retain": false}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l2', stringify({state:"ON", brightness:20}), {"qos": 0, "retain": false}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null}), {"qos": 0, "retain": false}, expect.any(Function));
     });
