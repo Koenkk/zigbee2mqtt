@@ -30,9 +30,7 @@ jobs:
         title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
         token: ${{ secrets.GH_TOKEN }}
     - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
-    - uses: peter-evans/enable-pull-request-automerge@v3
+    - run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
       if: steps.cpr.outputs.pull-request-operation == 'created'
-      with:
-        token: ${{ secrets.GH_TOKEN }}
-        pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
-        merge-method: squash
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
