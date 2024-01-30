@@ -60,7 +60,7 @@ describe('OTA update', () => {
         MQTT.publish.mockClear();
     });
 
-    it('onlythis Should OTA update a device', async () => {
+    it('Should OTA update a device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         let count = 0;
