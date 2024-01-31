@@ -26,7 +26,7 @@ jobs:
     - run: npx npm-check-updates -u -x connect-gzip-static
     - run: rm -f package-lock.json
     - run: npm install
-    - uses: peter-evans/create-pull-request@v5
+    - uses: peter-evans/create-pull-request@v6
       with:
         commit-message: "fix(ignore): update dependencies"
         branch: "deps/all"
