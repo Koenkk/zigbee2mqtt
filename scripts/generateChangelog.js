@@ -100,7 +100,7 @@ for (const changelog of changelogs) {
         } else if (line === '# Changelog' || line === '### ⚠ BREAKING CHANGES' || !line) {
             continue;
         } else {
-            changes['error'].push(`Unmatched line: ${line}`);
+            changes['error'].push(`- Unmatched line: ${line}`);
         }
     }
 }
