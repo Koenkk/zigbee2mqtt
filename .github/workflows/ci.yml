@@ -96,9 +96,10 @@ jobs:
         TAG=${GITHUB_REF#refs/*/}
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
+        git fetch --unshallow
         git fetch origin
         git checkout master
-        git merge -m 'chore: merge dev to master' origin/dev
+        git merge --ff-only origin/dev
         git push origin master
         git checkout dev
         jq ".version = \"$TAG-dev\"" package.json > package.json.tmp
