@@ -104,7 +104,9 @@ export default class Publish extends Extension {
     }
 
     getDeviceEndpointNames(device: Device): string[] {
-        let endpointNames = device.zh.endpoints.map(ep => device.endpointName(ep));
+        let endpointNames = device.zh.endpoints
+            .map(ep => device.endpointName(ep))
+            .filter(name => name !== null);
         //endpointNames.append(utils.endpointNames);
         return endpointNames;
     }
@@ -221,7 +223,6 @@ export default class Publish extends Extension {
         };
 
         const endpointNames = re instanceof Device ? this.getDeviceEndpointNames(re) : [];
-        logger.debug(`Endpoint names: [${endpointNames}]`);
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
 
         for (let [key, value] of entries) {
