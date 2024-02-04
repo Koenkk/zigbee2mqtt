@@ -228,10 +228,6 @@ export default class Publish extends Extension {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
                 localTarget = re.endpoint(endpointName);
-                if (localTarget == null) {
-                    logger.error(`Device '${re.name}' has no endpoint '${endpointName}'`);
-                    continue;
-                }
                 endpointOrGroupID = localTarget.ID;
             }
 
