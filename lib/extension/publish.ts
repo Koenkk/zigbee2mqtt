@@ -67,17 +67,9 @@ export default class Publish extends Extension {
         // Try to ensure the device with one of these names exist
         let re = this.zigbee.resolveEntity(deviceName);
         if (re == null) {
-            // Possibly the endpointName is just a continuation of the device name
+            // Possibly the last before get/set is just a continuation of the device name
             deviceName = `${deviceName}/${endpointName}`;
             endpointName = null;
-
-            // Ensure the device with such name exists. If not - give up
-            let re = this.zigbee.resolveEntity(deviceName);
-            if(re == null) {
-                this.legacyLog({type: `entity_not_found`, message: {friendly_name: deviceName}});
-                logger.error(`Entity '${deviceName}' is unknown`);
-                return null;
-            }
         }
 
         return {ID: deviceName, endpoint: endpointName, type: match[3] as 'get' | 'set', attribute: attribute};
