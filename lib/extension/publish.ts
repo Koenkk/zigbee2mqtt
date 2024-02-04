@@ -10,8 +10,7 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}|\\d+))?/(get|set)(?:/(.+))?`);
-const propertyEndpointRegex = new RegExp(`^(.*?)_(${utils.endpointNames.join('|')})$`);
+const topicGetSetRegex = new RegExp(`^(.+?)(?:\/([^\/]+))?\/(get|set)(?:\/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
@@ -40,18 +39,48 @@ export default class Publish extends Extension {
     }
 
     parseTopic(topic: string): ParsedTopic | null {
-        const match = topic.match(topicRegex);
-        if (!match) {
+        // The function supports the following topic formats (below are for 'set'. 'get' will look the same):
+        // - <base_topic>/device_name/set (endpoint and attribute is defined in the payload)
+        // - <base_topic>/device_name/set/attribute (default endpoint used)
+        // - <base_topic>/device_name/endpoint/set (attribute is defined in the payload)
+        // - <base_topic>/device_name/endpoint/set/attribute (payload is the value)
+
+        // The first step is to get rid of base topic part
+        topic = topic.replace(`${settings.get().mqtt.base_topic}/`, '');
+
+        // Also bridge requests are something we don't care about
+        if (topic.match(/bridge/))
             return null;
+
+        // Make the rough split on get/set keyword. 
+        // Before the get/set is the device name and optional endpoint name.
+        // After it there will be an optional attribute name.
+        const topicGetSetRegex = new RegExp(`^(.+?)(?:\/([^\/]+))?\/(get|set)(?:\/(.+))?`);
+        const match = topic.match(topicGetSetRegex);
+        if (!match)
+            return null;
+        let deviceName = match[1];
+        let endpointName = match[2];
+        const attribute = match[4];
+
+        // There can be some ambiguoty between 'device_name/endpoint' and 'device/name/with/slashes' with no endpoint
+        // Try to ensure the device with one of these names exist
+        let re = this.zigbee.resolveEntity(deviceName);
+        if (re == null) {
+            // Possibly the endpointName is just a continuation of the device name
+            deviceName = `${deviceName}/${endpointName}`;
+            endpointName = null;
+
+            // Ensure the device with such name exists. If not - give up
+            let re = this.zigbee.resolveEntity(deviceName);
+            if(re == null) {
+                this.legacyLog({type: `entity_not_found`, message: {friendly_name: deviceName}});
+                logger.error(`Entity '${deviceName}' is unknown`);
+                return null;
+            }
         }
 
-        const ID = match[1].replace(`${settings.get().mqtt.base_topic}/`, '');
-        // If we didn't replace base_topic we received something we don't care about
-        if (ID === match[1] || ID.match(/bridge/)) {
-            return null;
-        }
-
-        return {ID: ID, endpoint: match[2], type: match[3] as 'get' | 'set', attribute: match[4]};
+        return {ID: deviceName, endpoint: endpointName, type: match[3] as 'get' | 'set', attribute: attribute};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | null {
@@ -72,6 +101,12 @@ export default class Publish extends Extension {
                 }
             }
         }
+    }
+
+    getDeviceEndpointNames(device: Device): string[] {
+        let endpointNames = device.zh.endpoints.map(ep => device.endpointName(ep));
+        //endpointNames.append(utils.endpointNames);
+        return endpointNames;
     }
 
     legacyLog(payload: KeyValue): void {
@@ -129,7 +164,16 @@ export default class Publish extends Extension {
 
         // Get entity details
         const definition = re instanceof Device ? re.definition : re.membersDefinitions();
+        logger.debug(`Entity: [${JSON.stringify(re)}]`);
+        logger.debug(`Definition: [${JSON.stringify(definition)}]`);
+        //logger.debug(`IEEE Addr: [${JSON.stringify(definition.endpoint())}]`);
+        //const endpoints = definition.endpoint(definition);
+        //logger.debug(`Endpoints: [${JSON.stringify(endpoints)}]`);
+        //logger.debug(`Endpoints list: [${JSON.stringify(endpoints.keys())}]`);
+
         const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
+        logger.debug(`Parsed endpoint: [${JSON.stringify(parsedTopic.endpoint)}]`);
+        logger.debug(`Target: [${JSON.stringify(target)}]`);
         if (target == null) {
             logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
             return;
@@ -184,6 +228,10 @@ export default class Publish extends Extension {
             }
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
+
+        const endpointNames = re instanceof Device ? this.getDeviceEndpointNames(re) : [];
+        logger.debug(`Endpoint names: [${endpointNames}]`);
+        const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
 
         for (let [key, value] of entries) {
             let endpointName = parsedTopic.endpoint;
