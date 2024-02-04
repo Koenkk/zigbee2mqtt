@@ -164,16 +164,7 @@ export default class Publish extends Extension {
 
         // Get entity details
         const definition = re instanceof Device ? re.definition : re.membersDefinitions();
-        logger.debug(`Entity: [${JSON.stringify(re)}]`);
-        logger.debug(`Definition: [${JSON.stringify(definition)}]`);
-        //logger.debug(`IEEE Addr: [${JSON.stringify(definition.endpoint())}]`);
-        //const endpoints = definition.endpoint(definition);
-        //logger.debug(`Endpoints: [${JSON.stringify(endpoints)}]`);
-        //logger.debug(`Endpoints list: [${JSON.stringify(endpoints.keys())}]`);
-
         const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
-        logger.debug(`Parsed endpoint: [${JSON.stringify(parsedTopic.endpoint)}]`);
-        logger.debug(`Target: [${JSON.stringify(target)}]`);
         if (target == null) {
             logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
             return;
