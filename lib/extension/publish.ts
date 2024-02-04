@@ -10,7 +10,7 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicGetSetRegex = new RegExp(`^(.+?)(?:\/([^\/]+))?\/(get|set)(?:\/(.+))?`);
+const topicGetSetRegex = new RegExp(`^(.+?)(?:/([^/]+))?/(get|set)(?:/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
@@ -49,23 +49,20 @@ export default class Publish extends Extension {
         topic = topic.replace(`${settings.get().mqtt.base_topic}/`, '');
 
         // Also bridge requests are something we don't care about
-        if (topic.match(/bridge/))
-            return null;
+        if (topic.match(/bridge/)) return null;
 
-        // Make the rough split on get/set keyword. 
+        // Make the rough split on get/set keyword.
         // Before the get/set is the device name and optional endpoint name.
         // After it there will be an optional attribute name.
-        const topicGetSetRegex = new RegExp(`^(.+?)(?:\/([^\/]+))?\/(get|set)(?:\/(.+))?`);
         const match = topic.match(topicGetSetRegex);
-        if (!match)
-            return null;
+        if (!match) return null;
         let deviceName = match[1];
         let endpointName = match[2];
         const attribute = match[4];
 
         // There can be some ambiguoty between 'device_name/endpoint' and 'device/name/with/slashes' with no endpoint
         // Try to ensure the device with one of these names exist
-        let re = this.zigbee.resolveEntity(deviceName);
+        const re = this.zigbee.resolveEntity(deviceName);
         if (re == null) {
             // Possibly the last before get/set is just a continuation of the device name
             deviceName = `${deviceName}/${endpointName}`;
@@ -96,10 +93,10 @@ export default class Publish extends Extension {
     }
 
     getDeviceEndpointNames(device: Device): string[] {
-        let endpointNames = device.zh.endpoints
-            .map(ep => device.endpointName(ep))
-            .filter(name => name !== null);
-        //endpointNames.append(utils.endpointNames);
+        const endpointNames = device.zh.endpoints
+            .map((ep) => device.endpointName(ep))
+            .filter((name) => name !== null);
+        // endpointNames.concat(utils.endpointNames);
         return endpointNames;
     }
 
