@@ -65,16 +65,17 @@ export default class Device {
     }
 
     endpointName(endpoint: zh.Endpoint): string {
-        let name = null;
+        let epName = null;
         if (this.definition?.endpoint) {
             const mapping = this.definition?.endpoint(this.zh);
             for (const [name, id] of Object.entries(mapping)) {
-                if(id == endpoint.ID)
-                    return name;
+                if (id == endpoint.ID) {
+                    epName = name;
+                }
             }
         }
         /* istanbul ignore next */
-        return name === 'default' ? null : name;
+        return epName === 'default' ? null : epName;
     }
 
     isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
