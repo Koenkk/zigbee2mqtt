@@ -19,13 +19,19 @@ export default class DeviceGroupMembership extends Extension {
             return null;
         }
 
-        const parsed = utils.parseEntityID(match[1]);
-        const device = this.zigbee.resolveEntity(parsed.ID) as Device;
+        const parsed = utils.resolveEntityByID(this.zigbee, match[1])
+        const device = parsed?.entity as Device;
         if (!device || !(device instanceof Device)) {
             logger.error(`Device '${match[1]}' does not exist`);
             return;
         }
-        const endpoint = device.endpoint(parsed.endpoint);
+
+        const endpoint = parsed.endpoint;
+        if (parsed.endpointID && !endpoint) {
+            logger.error(`Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`);
+            return;
+        }
+
         const response = await endpoint.command(
             `genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {},
         );
