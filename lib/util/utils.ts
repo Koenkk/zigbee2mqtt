@@ -326,7 +326,6 @@ function resolveEntityByID(zigbee: Zigbee, ID: string)
 
     // First split the input token by the latest slash
     const match = ID.match(entityIDRegex);
-    if (!match) return null;
 
     // Try to match 'device_name/endpoint' pattern
     let entityName = match[1];
