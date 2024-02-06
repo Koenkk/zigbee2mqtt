@@ -71,7 +71,9 @@ export default class Groups extends Extension {
                 const parsed = utils.resolveEntityByID(this.zigbee, d);
                 const entity = parsed.entity as Device;
                 if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendly_name}'`);
-                if (parsed.endpointID && !parsed.endpoint) logger.error(`Cannot find endpoint '${parsed.endpointID}' of device '${parsed.ID}'`);
+                if (parsed.endpointID && !parsed.endpoint) {
+                    logger.error(`Cannot find endpoint '${parsed.endpointID}' of device '${parsed.ID}'`);
+                }
                 return {'endpoint': parsed.endpoint, 'name': entity?.name};
             }).filter((e) => e.endpoint != null);
 
@@ -256,7 +258,7 @@ export default class Groups extends Extension {
 
                 return null;
             }
-            
+
             resolvedEntityEndpoint = parsedEntity.endpoint;
             if (parsedEntity.endpointID && !resolvedEntityEndpoint) {
                 logger.error(`Device '${parsedEntity.ID}' does not have endpoint '${parsedEntity.endpointID}'`);

@@ -434,7 +434,9 @@ export default class Bridge extends Extension {
         if (!device.entity) throw new Error(`Device '${message.id}' does not exist`);
 
         const endpoint = device.endpoint;
-        if (device.endpointID && !endpoint) throw new Error(`Device '${device.ID}' does not have endpoint '${device.endpointID}'`);
+        if (device.endpointID && !endpoint) {
+            throw new Error(`Device '${device.ID}' does not have endpoint '${device.endpointID}'`);
+        }
 
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
         await endpoint.bind(message.cluster, coordinatorEndpoint);

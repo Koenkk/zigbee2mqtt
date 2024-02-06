@@ -19,7 +19,7 @@ export default class DeviceGroupMembership extends Extension {
             return null;
         }
 
-        const parsed = utils.resolveEntityByID(this.zigbee, match[1])
+        const parsed = utils.resolveEntityByID(this.zigbee, match[1]);
         const device = parsed?.entity as Device;
         if (!device || !(device instanceof Device)) {
             logger.error(`Device '${match[1]}' does not exist`);
