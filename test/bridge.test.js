@@ -681,6 +681,17 @@ describe('Bridge', () => {
         );
     });
 
+    it('Should error when generate_external_definition requested for unknown device', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/generate_external_definition', stringify({id: 'non_existing_device'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/generate_external_definition',
+            stringify({ data: {}, error: "Device 'non_existing_device' does not exist", status: 'error' }),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
     it('Should allow to generate device definition', async () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/generate_external_definition', stringify({id: ZNCZ02LM.ieeeAddr}));
@@ -1128,6 +1139,38 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when configure reporting is called for non-existing device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: 'non_existing_device', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{},"status":"error","error":"Device 'non_existing_device' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when configure reporting is called for non-existing endpoint', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: '0x000b57fffec6a5b2/non_existing_endpoint', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{},"status":"error","error":"Device '0x000b57fffec6a5b2' does not have endpoint 'non_existing_endpoint'"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
