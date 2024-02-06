@@ -222,8 +222,8 @@ export default class Bind extends Extension {
         const message = utils.parseJSON(data.message, data.message);
 
         let error = null;
-        const parsedSource = utils.resolveEntityByID(this.zigbee, sourceKey);
-        const parsedTarget = utils.resolveEntityByID(this.zigbee, targetKey);
+        const parsedSource = this.zigbee.resolveEntityAndEndpoint(sourceKey);
+        const parsedTarget = this.zigbee.resolveEntityAndEndpoint(targetKey);
         const source = parsedSource.entity;
         const target = targetKey === 'default_bind_group' ? defaultBindGroup : parsedTarget.entity;
         const responseData: KeyValue = {from: sourceKey, to: targetKey};

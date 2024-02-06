@@ -68,7 +68,7 @@ export default class Groups extends Extension {
             const groupID = settingGroup.ID;
             const zigbeeGroup = zigbeeGroups.find((g) => g.ID === groupID) || this.zigbee.createGroup(groupID);
             const settingsEndpoint = settingGroup.devices.map((d) => {
-                const parsed = utils.resolveEntityByID(this.zigbee, d);
+                const parsed = this.zigbee.resolveEntityAndEndpoint(d);
                 const entity = parsed.entity as Device;
                 if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendly_name}'`);
                 if (parsed.endpointID && !parsed.endpoint) {
@@ -240,7 +240,7 @@ export default class Groups extends Extension {
                 type = 'remove_all';
             }
 
-            const parsedEntity = utils.resolveEntityByID(this.zigbee, data.message);
+            const parsedEntity = this.zigbee.resolveEntityAndEndpoint(data.message);
             resolvedEntityDevice = parsedEntity.entity as Device;
             if (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device)) {
                 logger.error(`Device '${data.message}' does not exist`);
@@ -278,7 +278,7 @@ export default class Groups extends Extension {
                 }
             }
 
-            const parsed = utils.resolveEntityByID(this.zigbee, message.device);
+            const parsed = this.zigbee.resolveEntityAndEndpoint(message.device);
             resolvedEntityDevice = parsed?.entity as Device;
             if (!error && (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device))) {
                 error = `Device '${message.device}' does not exist`;

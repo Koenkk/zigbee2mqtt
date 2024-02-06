@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import utils from '../../util/utils';
 import Extension from '../extension';
 import bind from 'bind-decorator';
 import Device from '../../model/device';
@@ -19,7 +18,7 @@ export default class DeviceGroupMembership extends Extension {
             return null;
         }
 
-        const parsed = utils.resolveEntityByID(this.zigbee, match[1]);
+        const parsed = this.zigbee.resolveEntityAndEndpoint(match[1]);
         const device = parsed?.entity as Device;
         if (!device || !(device instanceof Device)) {
             logger.error(`Device '${match[1]}' does not exist`);

@@ -430,7 +430,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = utils.resolveEntityByID(this.zigbee, message.id);
+        const device = this.zigbee.resolveEntityAndEndpoint(message.id);
         if (!device.entity) throw new Error(`Device '${message.id}' does not exist`);
 
         const endpoint = device.endpoint;
@@ -462,7 +462,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = utils.resolveEntityByID(this.zigbee, message.id).entity as Device;
+        const device = this.zigbee.resolveEntityAndEndpoint(message.id).entity as Device;
         if (!device) throw new Error(`Device '${message.id}' does not exist`);
 
         const source = await zhc.generateExternalDefinitionSource(device.zh);

@@ -309,39 +309,6 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
 }
 
-const entityIDRegex = new RegExp(`^(.+?)(?:/(.+))?$`);
-function resolveEntityByID(zigbee: Zigbee, ID: string)
-    : {ID: string, entity: Device | Group, endpointID: string | number, endpoint: zh.Endpoint} {
-    // This function matches the following entity formats:
-    // device_name          (just device name)
-    // device_name/ep_name  (device name and endpoint numeric ID or name)
-    // device/name          (device name with slashes)
-    // device/name/ep_name  (device name with slashes, and endpoint numeric ID or name)
-
-    // First split the input token by the latest slash
-    const match = ID.match(entityIDRegex);
-
-    // Try to match 'device_name/endpoint' pattern
-    let entityName = match[1];
-    let deviceOrGroup = zigbee.resolveEntity(match[1]);
-    let endpointNameOrID = match[2];
-
-    // If 'device_name/endpoint' pattern does not match, perhaps this is device name with slashes
-    if (!deviceOrGroup) {
-        entityName = ID;
-        deviceOrGroup = zigbee.resolveEntity(ID);
-        endpointNameOrID = null;
-    }
-
-    // If the function returns non-null endpoint name, but the endpoint field is null, then
-    // it means that endpoint was not matched because there is no such endpoint on the device
-    // (or the entity is a group)
-    const endpoint = deviceOrGroup?.isDevice() ? deviceOrGroup.endpoint(endpointNameOrID) : null;
-
-    return {ID: entityName, entity: deviceOrGroup, endpointID: endpointNameOrID, endpoint: endpoint};
-}
-
-
 function isEndpoint(obj: unknown): obj is zh.Endpoint {
     return obj.constructor.name.toLowerCase() === 'endpoint';
 }
@@ -463,7 +430,7 @@ export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
-    resolveEntityByID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
+    isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
     getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
 };
