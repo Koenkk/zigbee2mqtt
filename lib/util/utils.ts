@@ -309,12 +309,6 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
 }
 
-const parseEntityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
-function parseEntityID(ID: string): {ID: string, endpoint: string} {
-    const match = ID.match(parseEntityIDRegex);
-    return match && {ID: match[1], endpoint: match[2]};
-}
-
 const entityIDRegex = new RegExp(`^(.+?)(?:/(.+))?$`);
 function resolveEntityByID(zigbee: Zigbee, ID: string)
     : {ID: string, entity: Device | Group, endpointID: string | number, endpoint: zh.Endpoint} {
@@ -469,7 +463,7 @@ export default {
     endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
-    parseEntityID, resolveEntityByID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
+    resolveEntityByID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
     getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
 };
