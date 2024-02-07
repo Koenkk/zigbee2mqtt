@@ -7,12 +7,12 @@ body:
     attributes:
       value: |
         **IMPORTANT:** Before submitting:
-        - Is your feature request related to the fronted? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=&template=feature_request.md&title=)
+        - Is your feature request related to the frontend? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=&template=feature_request.md&title=)
   - type: textarea
     id: textarea1
     attributes:
       label: Is your feature request related to a problem? Please describe
-      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+      placeholder: A clear and concise description of what the problem is. Eg. I'm always frustrated when [...]
     validations:
       required: true
   - type: textarea

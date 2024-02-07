@@ -11,7 +11,7 @@ body:
         - Make sure the bug also occurs in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
         - Make sure you are using the [latest firmware](https://www.zigbee2mqtt.io/guide/adapters/#recommended) on your adapter
         - The issue has not been [reported already](https://github.com/Koenkk/zigbee2mqtt/issues)
-        - Is your issue related to the fronted? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=bug%2Ctriage&template=bug_report.yaml&title=%5BBug%5D%3A+)
+        - Is your issue related to the frontend? Then click [here](https://github.com/nurikk/zigbee2mqtt-frontend/issues/new?assignees=&labels=bug%2Ctriage&template=bug_report.yaml&title=%5BBug%5D%3A+)
         - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
   - type: textarea
     id: what_happend
@@ -30,7 +30,7 @@ body:
     id: reproduce
     attributes:
       label: How to reproduce it (minimal and precise)
-      placeholder: First do this, than this..
+      placeholder: First do this, then this..
     validations:
       required: false
   - type: input

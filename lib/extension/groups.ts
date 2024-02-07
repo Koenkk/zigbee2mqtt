@@ -112,8 +112,9 @@ export default class Groups extends Extension {
         const payload: KeyValue = {};
 
         let endpointName: string = null;
+        const endpointNames: string[] = data.entity instanceof Device ? data.entity.getEndpointNames() : [];
         for (let [prop, value] of Object.entries(data.update)) {
-            const endpointNameMatch = utils.endpointNames.find((n) => prop.endsWith(`_${n}`));
+            const endpointNameMatch = endpointNames.find((n) => prop.endsWith(`_${n}`));
             if (endpointNameMatch) {
                 prop = prop.substring(0, prop.length - endpointNameMatch.length - 1);
                 endpointName = endpointNameMatch;

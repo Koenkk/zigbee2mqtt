@@ -8,6 +8,7 @@ import utils from './util/utils';
 import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
 import bind from 'bind-decorator';
+import * as zhc from 'zigbee-herdsman-converters';
 
 // Extensions
 import ExtensionFrontend from './extension/frontend';
@@ -91,6 +92,8 @@ export class Controller {
             /* istanbul ignore next */
             settings.get().advanced.soft_reset_timeout !== 0 && new ExtensionSoftReset(...this.extensionArgs),
         ].filter((n) => n);
+
+        zhc.setLogger(logger);
     }
 
     async start(): Promise<void> {

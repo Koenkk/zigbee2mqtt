@@ -320,7 +320,7 @@ export default class BridgeLegacy extends Extension {
         try {
             logger.info(`${lookup[action][1]} '${entity.name}'`);
             if (action === 'force_remove') {
-                await entity.zh.removeFromDatabase();
+                entity.zh.removeFromDatabase();
             } else {
                 await entity.zh.removeFromNetwork();
             }
