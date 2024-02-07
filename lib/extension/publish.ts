@@ -92,14 +92,6 @@ export default class Publish extends Extension {
         }
     }
 
-    getDeviceEndpointNames(device: Device): string[] {
-        const endpointNames = device.zh.endpoints
-            .map((ep) => device.endpointName(ep))
-            .filter((name) => name !== null);
-        // endpointNames.concat(utils.endpointNames);
-        return endpointNames;
-    }
-
     legacyLog(payload: KeyValue): void {
         /* istanbul ignore else */
         if (settings.get().advanced.legacy_api) {
@@ -211,7 +203,7 @@ export default class Publish extends Extension {
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
 
-        const endpointNames = re instanceof Device ? this.getDeviceEndpointNames(re) : [];
+        const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
 
         for (let [key, value] of entries) {
