@@ -651,7 +651,7 @@ export default class HomeAssistant extends Extension {
                 water_leak: {device_class: 'moisture'},
                 window: {device_class: 'window'},
                 window_detection: {icon: 'mdi:window-open-variant'},
-                window_open: {device_class: 'window'},
+                window_open: {device_class: 'switch'},
             };
 
             /**
