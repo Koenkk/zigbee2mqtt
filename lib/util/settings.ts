@@ -593,7 +593,7 @@ export function removeDevice(IDorName: string): void {
     // Remove device from groups
     if (settings.groups) {
         const regex =
-            new RegExp(`^(${device.friendly_name}|${device.ID})(/(\\d|${utils.endpointNames.join('|')}))?$`);
+            new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
             group.devices = group.devices.filter((device) => !device.match(regex));
         }
