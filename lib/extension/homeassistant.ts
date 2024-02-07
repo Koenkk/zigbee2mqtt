@@ -635,6 +635,7 @@ export default class HomeAssistant extends Extension {
                 setup: {device_class: 'running'},
                 smoke: {device_class: 'smoke'},
                 sos: {device_class: 'safety'},
+                schedule: {icon: 'mdi:calendar'},
                 status_capacitive_load: {entity_category: 'diagnostic', icon: 'mdi:tune'},
                 status_forward_phase_control: {entity_category: 'diagnostic', icon: 'mdi:tune'},
                 status_inductive_load: {entity_category: 'diagnostic', icon: 'mdi:tune'},
@@ -708,6 +709,7 @@ export default class HomeAssistant extends Extension {
             const lookup: {[s: string]: KeyValue} = {
                 ac_frequency: {device_class: 'frequency', enabled_by_default: false, entity_category: 'diagnostic',
                     state_class: 'measurement'},
+                action_duration: {icon: 'mdi:timer', device_class: 'duration'},
                 alarm_humidity_max: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-plus'},
                 alarm_humidity_min: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-minus'},
                 alarm_temperature_max: {device_class: 'temperature', entity_category: 'config',
@@ -766,6 +768,7 @@ export default class HomeAssistant extends Extension {
                 eco2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
                 eco_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
                 energy: {device_class: 'energy', state_class: 'total_increasing'},
+                external_temperature_input: {icon: 'mdi:thermometer'},
                 formaldehyd: {state_class: 'measurement'},
                 gas_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
                 hcho: {icon: 'mdi:air-filter', state_class: 'measurement'},
@@ -809,7 +812,6 @@ export default class HomeAssistant extends Extension {
                 requested_brightness_percent: {
                     enabled_by_default: false, entity_category: 'diagnostic', icon: 'mdi:brightness-5',
                 },
-                sensor_temp: {icon: 'mdi:thermometer'},
                 smoke_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
                 soil_moisture: {device_class: 'moisture', state_class: 'measurement'},
                 temperature: {device_class: 'temperature', state_class: 'measurement'},
@@ -1015,10 +1017,12 @@ export default class HomeAssistant extends Extension {
             const settableText = firstExpose.type === 'text' && firstExpose.access & ACCESS_SET;
             const lookup: {[s: string]: KeyValue} = {
                 action: {icon: 'mdi:gesture-double-tap'},
+                color_options: {icon: 'mdi:palette'},
                 level_config: {entity_category: 'diagnostic'},
                 programming_mode: {icon: 'mdi:calendar-clock'},
                 program: {value_template: `{{ value_json.${firstExpose.property}|default('',True) ` +
                     `| truncate(254, True, '', 0) }}`},
+                schedule_settings: {icon: 'mdi:calendar-clock'},
             };
             if (firstExpose.access & ACCESS_STATE) {
                 const discoveryEntry: DiscoveryEntry = {
@@ -1663,20 +1667,15 @@ export default class HomeAssistant extends Extension {
         this.discover(data.device);
     }
 
-    @bind async onScenesChanged(): Promise<void> {
-        // Re-trigger MQTT discovery of all devices and groups, similar to bridge.ts
-        const entities = [...this.zigbee.devices(), ...this.zigbee.groups()];
-        const clearedEntities = new Set<Device|Group>();
+    @bind async onScenesChanged(data: eventdata.ScenesChanged): Promise<void> {
+        // Re-trigger MQTT discovery of changed devices and groups, similar to bridge.ts
 
         // First, clear existing scene discovery topics
-        entities.forEach((entity) => {
-            logger.debug(`Clearing Home Assistant scene discovery topics for '${entity.name}'`);
-            this.discovered[this.getDiscoverKey(entity)]?.topics.forEach((topic) => {
-                if (topic.startsWith('scene')) {
-                    this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
-                    clearedEntities.add(entity);
-                }
-            });
+        logger.debug(`Clearing Home Assistant scene discovery topics for '${data.entity.name}'`);
+        this.discovered[this.getDiscoverKey(data.entity)]?.topics.forEach((topic) => {
+            if (topic.startsWith('scene')) {
+                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+            }
         });
 
         // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
@@ -1684,11 +1683,9 @@ export default class HomeAssistant extends Extension {
         logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`);
         await utils.sleep(2);
 
-        // Re-discover all entities (including their new scenes).
+        // Re-discover entity (including any new scenes).
         logger.debug(`Re-discovering entities with their scenes.`);
-        clearedEntities.forEach((entity) => {
-            this.discover(entity, true);
-        });
+        this.discover(data.entity, true);
     }
 
     private getDevicePayload(entity: Device | Group | Bridge): KeyValue {

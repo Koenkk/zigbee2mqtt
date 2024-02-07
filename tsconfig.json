@@ -16,8 +16,7 @@
         "rootDir": "lib",
         "inlineSourceMap": true,
         "resolveJsonModule": true,
-        "experimentalDecorators": true,
-        "incremental": true
+        "experimentalDecorators": true
     },
     "include": [
         "lib/**/*",

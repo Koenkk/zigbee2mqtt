@@ -7,8 +7,6 @@ const flushPromises = require('./lib/flushPromises');
 const MQTT = require('./stub/mqtt');
 const sleep = require('./stub/sleep');
 const Controller = require('../lib/controller');
-const fs = require('fs');
-const path = require('path');
 
 describe('HomeAssistant extension', () => {
     let version;
@@ -173,8 +171,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -203,8 +201,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -232,8 +230,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -262,8 +260,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -293,8 +291,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -314,8 +312,8 @@ describe('HomeAssistant extension', () => {
                 "identifiers":[
                     "zigbee2mqtt_0x0017880104e45542"
                 ],
-                "manufacturer":"Xiaomi",
-                "model":"Aqara double key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG03LM)",
+                "manufacturer":"Aqara",
+                "model":"Smart wall switch (no neutral, double rocker) (QBKG03LM)",
                 "name":"wall_switch_double",
                 "sw_version": null,
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -345,8 +343,8 @@ describe('HomeAssistant extension', () => {
                 "identifiers":[
                     "zigbee2mqtt_0x0017880104e45542"
                 ],
-                "manufacturer":"Xiaomi",
-                "model":"Aqara double key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG03LM)",
+                "manufacturer":"Aqara",
+                "model":"Smart wall switch (no neutral, double rocker) (QBKG03LM)",
                 "name":"wall_switch_double",
                 "sw_version": null,
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -443,8 +441,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -472,8 +470,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -501,8 +499,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -524,7 +522,7 @@ describe('HomeAssistant extension', () => {
                 temperature: {
                     expire_after: 90,
                     device: {
-                        manufacturer: 'From Xiaomi',
+                        manufacturer: 'From Aqara',
                         sw_version: 'test'
                     }
                 },
@@ -532,7 +530,7 @@ describe('HomeAssistant extension', () => {
                     unique_id: null,
                 },
                 device: {
-                    manufacturer: 'Not from Xiaomi',
+                    manufacturer: 'Not from Aqara',
                     model: 'custom model',
                 },
             },
@@ -561,7 +559,7 @@ describe('HomeAssistant extension', () => {
                 'name': 'weather_sensor',
                 'sw_version': 'test',
                 'model': 'custom model',
-                'manufacturer': 'From Xiaomi',
+                'manufacturer': 'From Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -589,7 +587,7 @@ describe('HomeAssistant extension', () => {
                 'name': 'weather_sensor',
                 'sw_version': null,
                 'model': 'custom model',
-                'manufacturer': 'Not from Xiaomi',
+                'manufacturer': 'Not from Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'origin': origin,
@@ -635,8 +633,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'Weather Sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -665,8 +663,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'Weather Sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -707,8 +705,8 @@ describe('HomeAssistant extension', () => {
               "identifiers": [
                 "zigbee2mqtt_0x0017880104e45541"
               ],
-              "manufacturer": "Xiaomi",
-              "model": "Aqara single key wired wall switch without neutral wire. Doesn't work as a router and doesn't support power meter (QBKG04LM)",
+              "manufacturer": "Aqara",
+              "model": "Smart wall switch (no neutral, single rocker) (QBKG04LM)",
               "name": "my_switch",
               "sw_version": null,
               "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -970,8 +968,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -1099,8 +1097,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -1237,8 +1235,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability_mode': 'all',
@@ -1314,8 +1312,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor_renamed',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -1350,8 +1348,8 @@ describe('HomeAssistant extension', () => {
                     ],
                     "name":"weather_sensor_renamed",
                     "sw_version": null,
-                    "model":"Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)",
-                    "manufacturer":"Xiaomi",
+                    "model":"Temperature and humidity sensor (WSDCGQ11LM)",
+                    "manufacturer":"Aqara",
                     "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
                 }
             }),
@@ -1451,8 +1449,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor_renamed',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -1527,8 +1525,8 @@ describe('HomeAssistant extension', () => {
                 ],
                 "name":"button",
                 "sw_version": null,
-                "model":"Aqara wireless switch (WXKG11LM)",
-                "manufacturer":"Xiaomi",
+                "model":"Wireless mini switch (WXKG11LM)",
+                "manufacturer":"Aqara",
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
             }
         };
@@ -1553,8 +1551,8 @@ describe('HomeAssistant extension', () => {
                 ],
                 "name":"button",
                 "sw_version": null,
-                "model":"Aqara wireless switch (WXKG11LM)",
-                "manufacturer":"Xiaomi",
+                "model":"Wireless mini switch (WXKG11LM)",
+                "manufacturer":"Aqara",
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
             }
         };
@@ -1719,8 +1717,8 @@ describe('HomeAssistant extension', () => {
                 ],
                 "name":"button",
                 "sw_version": null,
-                "model":"Aqara wireless switch (WXKG11LM)",
-                "manufacturer":"Xiaomi",
+                "model":"Wireless mini switch (WXKG11LM)",
+                "manufacturer":"Aqara",
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
             }
         };
@@ -1754,7 +1752,7 @@ describe('HomeAssistant extension', () => {
 
         await MQTT.events.message('zigbee2mqtt/U202DST600ZB/l2/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20, linkquality: null, state_l1: null}), {"qos": 0, "retain": false}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB', stringify({state_l2:"ON", brightness_l2:20, linkquality: null, state_l1: null, power_on_behavior: null}), {"qos": 0, "retain": false}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l2', stringify({state:"ON", brightness:20}), {"qos": 0, "retain": false}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null}), {"qos": 0, "retain": false}, expect.any(Function));
     });
@@ -1894,8 +1892,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae'
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
@@ -2139,8 +2137,8 @@ describe('HomeAssistant extension', () => {
                 'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
                 'name': 'weather_sensor',
                 'sw_version': null,
-                'model': 'Aqara temperature, humidity and pressure sensor (WSDCGQ11LM)',
-                'manufacturer': 'Xiaomi',
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
                 'configuration_url': 'http://zigbee.mqtt/#/device/0x0017880104e45522/info',
                 'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
@@ -2156,19 +2154,17 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
+
+        // Device/endpoint scenes.
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+
         MQTT.publish.mockClear();
-        controller.eventBus.emitScenesChanged();
+        controller.eventBus.emitScenesChanged({entity: device});
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
         expect(MQTT.publish).toHaveBeenCalledWith(
             `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
-            null,
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
             null,
             {retain: true, qos: 1},
             expect.any(Function),
@@ -2200,6 +2196,24 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
+        expect(MQTT.publish).toHaveBeenCalledTimes( 12 );
+
+        // Group scenes.
+        const group = controller.zigbee.resolveEntity('ha_discovery_group');
+
+        MQTT.publish.mockClear();
+        controller.eventBus.emitScenesChanged({entity: group});
+        await flushPromises();
+
+        // Discovery messages for scenes have been purged.
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+        jest.runOnlyPendingTimers();
+        await flushPromises();
 
         payload = {
             'name': 'Scene 4',
@@ -2225,9 +2239,7 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
-
-        // Only discovery entries for entities with scenes need to be republished.
-        expect(MQTT.publish).toHaveBeenCalledTimes( 16 );
+        expect(MQTT.publish).toHaveBeenCalledTimes( 6 );
     });
 
     it('Should not clear bridge entities unnecessarily', async () => {

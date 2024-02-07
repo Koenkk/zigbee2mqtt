@@ -125,11 +125,11 @@ export default class OTAUpdate extends Extension {
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
     }
 
-    private async readSoftwareBuildIDAndDateCode(device: Device, sendWhen: 'active' | 'immediate'):
+    private async readSoftwareBuildIDAndDateCode(device: Device, sendPolicy?: 'immediate'):
         Promise<{softwareBuildID: string, dateCode: string}> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
-            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendWhen});
+            const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendPolicy});
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
         } catch (e) {
             return null;
@@ -273,7 +273,7 @@ export default class OTAUpdate extends Extension {
                     const payload = this.getEntityPublishPayload(device,
                         {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion});
                     this.publishEntityState(device, payload);
-                    const to = await this.readSoftwareBuildIDAndDateCode(device, 'active');
+                    const to = await this.readSoftwareBuildIDAndDateCode(device);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;

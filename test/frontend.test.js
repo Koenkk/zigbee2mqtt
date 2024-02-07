@@ -88,7 +88,7 @@ jest.mock('ws', () => ({
     }),
 }));
 
-describe('onlythis Frontend', () => {
+describe('Frontend', () => {
     let controller;
 
     beforeAll(async () => {

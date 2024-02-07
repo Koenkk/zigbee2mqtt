@@ -60,7 +60,7 @@ describe('OTA update', () => {
         MQTT.publish.mockClear();
     });
 
-    it('onlythis Should OTA update a device', async () => {
+    it('Should OTA update a device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.endpoints[0];
         let count = 0;
@@ -89,8 +89,8 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
         expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'active'});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"updating","progress":0}}),
@@ -392,7 +392,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendWhen': 'immediate'});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
     });
 
     it('Legacy api: Should handle when OTA update fails', async () => {
