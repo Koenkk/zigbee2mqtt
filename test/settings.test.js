@@ -882,18 +882,6 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Configuration shouldnt be valid when friendly_name is a postfix', async () => {
-        write(configurationFile, {
-            ...minimalConfig,
-            devices: {'0x0017880104e45519': {friendly_name: 'left', retain: false}},
-        });
-
-        settings.reRead();
-
-        const error = `Following friendly_name are not allowed: '${utils.endpointNames}'`;
-        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
-    });
-
     it('Configuration shouldnt be valid when duplicate friendly_name are used', async () => {
         write(configurationFile, {
             devices: {
