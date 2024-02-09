@@ -63,7 +63,7 @@ export default class Publish extends Extension {
         // There can be some ambiguoty between 'device_name/endpoint' and 'device/name/with/slashes' with no endpoint
         // Try to ensure the device with one of these names exist
         const re = this.zigbee.resolveEntity(deviceName);
-        if (re == null) {
+        if (re == null && endpointName) {
             // Possibly the last before get/set is just a continuation of the device name
             deviceName = `${deviceName}/${endpointName}`;
             endpointName = null;
