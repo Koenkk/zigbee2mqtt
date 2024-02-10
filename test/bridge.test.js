@@ -586,13 +586,13 @@ describe('Bridge', () => {
         );
     });
 
-    it('Shouldnt allow rename device with to now allowed name', async () => {
+    it('Shouldnt allow rename device with to not allowed name containing a wildcard', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'living_room/blinds/center'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'living_room/blinds#'}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
-            stringify({"data":{},"status":"error","error":"friendly_name is not allowed to end with: '/center'"}),
+            stringify({"data":{},"status":"error","error":"MQTT wildcard (+ and #) not allowed in friendly_name ('living_room/blinds#')"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
