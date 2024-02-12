@@ -68,10 +68,13 @@ export default class Groups extends Extension {
             const groupID = settingGroup.ID;
             const zigbeeGroup = zigbeeGroups.find((g) => g.ID === groupID) || this.zigbee.createGroup(groupID);
             const settingsEndpoint = settingGroup.devices.map((d) => {
-                const parsed = utils.parseEntityID(d);
-                const entity = this.zigbee.resolveEntity(parsed.ID) as Device;
+                const parsed = this.zigbee.resolveEntityAndEndpoint(d);
+                const entity = parsed.entity as Device;
                 if (!entity) logger.error(`Cannot find '${d}' of group '${settingGroup.friendly_name}'`);
-                return {'endpoint': entity?.endpoint(parsed.endpoint), 'name': entity?.name};
+                if (parsed.endpointID && !parsed.endpoint) {
+                    logger.error(`Cannot find endpoint '${parsed.endpointID}' of device '${parsed.ID}'`);
+                }
+                return {'endpoint': parsed.endpoint, 'name': entity?.name};
             }).filter((e) => e.endpoint != null);
 
             // In settings but not in zigbee
@@ -109,8 +112,9 @@ export default class Groups extends Extension {
         const payload: KeyValue = {};
 
         let endpointName: string = null;
+        const endpointNames: string[] = data.entity instanceof Device ? data.entity.getEndpointNames() : [];
         for (let [prop, value] of Object.entries(data.update)) {
-            const endpointNameMatch = utils.endpointNames.find((n) => prop.endsWith(`_${n}`));
+            const endpointNameMatch = endpointNames.find((n) => prop.endsWith(`_${n}`));
             if (endpointNameMatch) {
                 prop = prop.substring(0, prop.length - endpointNameMatch.length - 1);
                 endpointName = endpointNameMatch;
@@ -237,8 +241,8 @@ export default class Groups extends Extension {
                 type = 'remove_all';
             }
 
-            const parsedEntity = utils.parseEntityID(data.message);
-            resolvedEntityDevice = this.zigbee.resolveEntity(parsedEntity.ID) as Device;
+            const parsedEntity = this.zigbee.resolveEntityAndEndpoint(data.message);
+            resolvedEntityDevice = parsedEntity.entity as Device;
             if (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device)) {
                 logger.error(`Device '${data.message}' does not exist`);
 
@@ -255,7 +259,12 @@ export default class Groups extends Extension {
 
                 return null;
             }
-            resolvedEntityEndpoint = resolvedEntityDevice.endpoint(parsedEntity.endpoint);
+
+            resolvedEntityEndpoint = parsedEntity.endpoint;
+            if (parsedEntity.endpointID && !resolvedEntityEndpoint) {
+                logger.error(`Device '${parsedEntity.ID}' does not have endpoint '${parsedEntity.endpointID}'`);
+                return null;
+            }
         } else if (topicRegexMatch) {
             type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
             const message = JSON.parse(data.message);
@@ -270,13 +279,16 @@ export default class Groups extends Extension {
                 }
             }
 
-            const parsed = utils.parseEntityID(message.device);
-            resolvedEntityDevice = this.zigbee.resolveEntity(parsed.ID) as Device;
+            const parsed = this.zigbee.resolveEntityAndEndpoint(message.device);
+            resolvedEntityDevice = parsed?.entity as Device;
             if (!error && (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device))) {
                 error = `Device '${message.device}' does not exist`;
             }
             if (!error) {
-                resolvedEntityEndpoint = resolvedEntityDevice.endpoint(parsed.endpoint);
+                resolvedEntityEndpoint = parsed.endpoint;
+                if (parsed.endpointID && !resolvedEntityEndpoint) {
+                    error = `Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`;
+                }
             }
         }
 

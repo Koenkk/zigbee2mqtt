@@ -11,6 +11,8 @@ import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
 
+const entityIDRegex = new RegExp(`^(.+?)(?:/(.+))?$`);
+
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
@@ -281,6 +283,37 @@ export default class Zigbee {
                 return group ? group : this.createGroup(groupSettings.ID);
             }
         }
+    }
+
+    resolveEntityAndEndpoint(ID: string)
+        : {ID: string, entity: Device | Group, endpointID: string, endpoint: zh.Endpoint} {
+        // This function matches the following entity formats:
+        // device_name          (just device name)
+        // device_name/ep_name  (device name and endpoint numeric ID or name)
+        // device/name          (device name with slashes)
+        // device/name/ep_name  (device name with slashes, and endpoint numeric ID or name)
+
+        // First split the input token by the latest slash
+        const match = ID.match(entityIDRegex);
+
+        // Try to match 'device_name/endpoint' pattern
+        let entityName = match[1];
+        let deviceOrGroup = this.resolveEntity(match[1]);
+        let endpointNameOrID = match[2];
+
+        // If 'device_name/endpoint' pattern does not match, perhaps this is device name with slashes
+        if (!deviceOrGroup) {
+            entityName = ID;
+            deviceOrGroup = this.resolveEntity(ID);
+            endpointNameOrID = null;
+        }
+
+        // If the function returns non-null endpoint name, but the endpoint field is null, then
+        // it means that endpoint was not matched because there is no such endpoint on the device
+        // (or the entity is a group)
+        const endpoint = deviceOrGroup?.isDevice() ? deviceOrGroup.endpoint(endpointNameOrID) : null;
+
+        return {ID: entityName, entity: deviceOrGroup, endpointID: endpointNameOrID, endpoint: endpoint};
     }
 
     firstCoordinatorEndpoint(): zh.Endpoint {

@@ -65,12 +65,23 @@ export default class Device {
     }
 
     endpointName(endpoint: zh.Endpoint): string {
-        let name = null;
+        let epName = null;
         if (this.definition?.endpoint) {
-            name = Object.entries(this.definition?.endpoint(this.zh)).find((e) => e[1] == endpoint.ID)[0];
+            const mapping = this.definition?.endpoint(this.zh);
+            for (const [name, id] of Object.entries(mapping)) {
+                if (id == endpoint.ID) {
+                    epName = name;
+                }
+            }
         }
         /* istanbul ignore next */
-        return name === 'default' ? null : name;
+        return epName === 'default' ? null : epName;
+    }
+
+    getEndpointNames(): string[] {
+        return this.zh.endpoints
+            .map((ep) => this.endpointName(ep))
+            .filter((name) => name !== null);
     }
 
     isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
