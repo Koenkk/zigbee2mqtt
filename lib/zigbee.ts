@@ -11,7 +11,7 @@ import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
 
-const entityIDRegex = new RegExp(`^(.+?)(?:/(.+))?$`);
+const entityIDRegex = new RegExp(`^(.+?)(?:/([^/]+))?$`);
 
 export default class Zigbee {
     private herdsman: Controller;
