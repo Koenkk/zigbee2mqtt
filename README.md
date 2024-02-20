@@ -84,7 +84,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [IoBroker](https://www.iobroker.net/)
 - Integration implemented in IoBroker ([documentation](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)).
-  
+
 <br>
 
 ## Architecture
