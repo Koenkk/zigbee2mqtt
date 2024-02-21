@@ -10,7 +10,7 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicGetSetRegex = new RegExp(`^(.+?)(?:/([^/]+))?/(get|set)(?:/(.+))?`);
+const topicGetSetRegex = new RegExp(`^(.+?)/(get|set)(?:/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
@@ -56,20 +56,13 @@ export default class Publish extends Extension {
         // After it there will be an optional attribute name.
         const match = topic.match(topicGetSetRegex);
         if (!match) return null;
-        let deviceName = match[1];
-        let endpointName = match[2];
-        const attribute = match[4];
 
-        // There can be some ambiguoty between 'device_name/endpoint' and 'device/name/with/slashes' with no endpoint
-        // Try to ensure the device with one of these names exist
-        const re = this.zigbee.resolveEntity(deviceName);
-        if (re == null && endpointName) {
-            // Possibly the last before get/set is just a continuation of the device name
-            deviceName = `${deviceName}/${endpointName}`;
-            endpointName = null;
-        }
+        const deviceNameAndEndpoint = match[1];
+        const attribute = match[3];
 
-        return {ID: deviceName, endpoint: endpointName, type: match[3] as 'get' | 'set', attribute: attribute};
+        // Now parse the device/group name, and endpoint name
+        const entity = this.zigbee.resolveEntityAndEndpoint(deviceNameAndEndpoint);
+        return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as 'get' | 'set', attribute: attribute};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | null {
