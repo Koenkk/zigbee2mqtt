@@ -293,19 +293,20 @@ export default class Zigbee {
         // device/name          (device name with slashes)
         // device/name/ep_name  (device name with slashes, and endpoint numeric ID or name)
 
-        // First split the input token by the latest slash
-        const match = ID.match(entityIDRegex);
+        // The function tries to find an exact match first
+        let entityName = ID;
+        let deviceOrGroup = this.resolveEntity(ID);
+        let endpointNameOrID = null;
 
-        // Try to match 'device_name/endpoint' pattern
-        let entityName = match[1];
-        let deviceOrGroup = this.resolveEntity(match[1]);
-        let endpointNameOrID = match[2];
-
-        // If 'device_name/endpoint' pattern does not match, perhaps this is device name with slashes
+        // If exact match did not happenc, try matching a device_name/endpoint pattern
         if (!deviceOrGroup) {
-            entityName = ID;
-            deviceOrGroup = this.resolveEntity(ID);
-            endpointNameOrID = null;
+            // First split the input token by the latest slash
+            const match = ID.match(entityIDRegex);
+
+            // Get the resulting IDs from the match
+            entityName = match[1];
+            deviceOrGroup = this.resolveEntity(match[1]);
+            endpointNameOrID = match[2];
         }
 
         // If the function returns non-null endpoint name, but the endpoint field is null, then
