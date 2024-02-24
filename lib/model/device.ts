@@ -79,9 +79,7 @@ export default class Device {
     }
 
     getEndpointNames(): string[] {
-        return this.zh.endpoints
-            .map((ep) => this.endpointName(ep))
-            .filter((name) => name !== null);
+        return Object.keys(this.definition?.endpoint(this.zh)).filter((name) => name !== 'default');
     }
 
     isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
