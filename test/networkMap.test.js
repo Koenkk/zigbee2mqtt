@@ -20,7 +20,7 @@ const flushPromises = require('./lib/flushPromises');
 const mocksClear = [MQTT.publish, logger.warn, logger.debug];
 const setTimeoutNative = setTimeout;
 
-describe('onlythisNetworkmap', () => {
+describe('Networkmap', () => {
     let controller;
 
     beforeAll(async () => {
