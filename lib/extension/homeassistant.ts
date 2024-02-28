@@ -803,7 +803,7 @@ export default class HomeAssistant extends Extension {
                 power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
                 power_factor: {device_class: 'power_factor', enabled_by_default: false,
                     entity_category: 'diagnostic', state_class: 'measurement'},
-                power_outage_count: {icon: 'mdi:counter'},
+                power_outage_count: {icon: 'mdi:counter', enabled_by_default: false},
                 precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
                 pressure: {device_class: 'atmospheric_pressure', state_class: 'measurement'},
                 presence_timeout: {entity_category: 'config', icon: 'mdi:timer'},
@@ -821,6 +821,7 @@ export default class HomeAssistant extends Extension {
                 temperature_max: {entity_category: 'config', icon: 'mdi:thermometer-plus'},
                 temperature_min: {entity_category: 'config', icon: 'mdi:thermometer-minus'},
                 transition: {entity_category: 'config', icon: 'mdi:transition'},
+                trigger_count: {icon: 'mdi:counter', enabled_by_default: false},
                 voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
                 voc_index: {state_class: 'measurement'},
                 vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
@@ -948,6 +949,7 @@ export default class HomeAssistant extends Extension {
                 effect: {enabled_by_default: false, icon: 'mdi:palette'},
                 force: {entity_category: 'config', icon: 'mdi:valve'},
                 keep_time: {entity_category: 'config', icon: 'mdi:av-timer'},
+                identify: {device_class: 'identify'},
                 keypad_lockout: {entity_category: 'config', icon: 'mdi:lock'},
                 load_detection_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 load_dimmable: {entity_category: 'config', icon: 'mdi:chart-bell-curve'},
@@ -962,6 +964,7 @@ export default class HomeAssistant extends Extension {
                 power_outage_memory: {entity_category: 'config', icon: 'mdi:power-settings'},
                 power_supply_mode: {entity_category: 'config', icon: 'mdi:power-settings'},
                 power_type: {entity_category: 'config', icon: 'mdi:lightning-bolt-circle'},
+                restart: {device_class: 'restart'},
                 sensitivity: {entity_category: 'config', icon: 'mdi:tune'},
                 sensor: {icon: 'mdi:tune'},
                 sensors_type: {entity_category: 'config', icon: 'mdi:tune'},
@@ -971,6 +974,7 @@ export default class HomeAssistant extends Extension {
                 temperature_display_mode: {entity_category: 'config', icon: 'mdi:thermometer'},
                 temperature_sensor_select: {entity_category: 'config', icon: 'mdi:home-thermometer'},
                 thermostat_unit: {entity_category: 'config', icon: 'mdi:thermometer'},
+                update: {device_class: 'update'},
                 volume: {entity_category: 'config', icon: 'mdi: volume-high'},
                 week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
             };
@@ -1010,6 +1014,29 @@ export default class HomeAssistant extends Extension {
                         command_topic: true,
                         command_topic_postfix: firstExpose.property,
                         options: firstExpose.values.map((v) => v.toString()),
+                        enabled_by_default: firstExpose.values.length !== 1, // hide if button is exposed
+                        ...lookup[firstExpose.name],
+                    },
+                });
+            }
+
+            /**
+             * If enum has only item and only supports SET then expose as button entity.
+             * Note: select entity is hidden by default to avoid breaking changes
+             * for selects already existing in HA (legacy).
+             */
+            if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
+                discoveryEntries.push({
+                    type: 'button',
+                    object_id: firstExpose.property,
+                    mockProperties: [],
+                    discovery_payload: {
+                        name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                        state_topic: false,
+                        command_topic_prefix: endpoint,
+                        command_topic: true,
+                        command_topic_postfix: firstExpose.property,
+                        payload_press: firstExpose.values[0].toString(),
                         ...lookup[firstExpose.name],
                     },
                 });

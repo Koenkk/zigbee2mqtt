@@ -10,8 +10,7 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicRegex = new RegExp(`^(.+?)(?:/(${utils.endpointNames.join('|')}|\\d+))?/(get|set)(?:/(.+))?`);
-const propertyEndpointRegex = new RegExp(`^(.*?)_(${utils.endpointNames.join('|')})$`);
+const topicGetSetRegex = new RegExp(`^(.+?)/(get|set)(?:/(.+))?`);
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
@@ -40,18 +39,30 @@ export default class Publish extends Extension {
     }
 
     parseTopic(topic: string): ParsedTopic | null {
-        const match = topic.match(topicRegex);
-        if (!match) {
-            return null;
-        }
+        // The function supports the following topic formats (below are for 'set'. 'get' will look the same):
+        // - <base_topic>/device_name/set (endpoint and attribute is defined in the payload)
+        // - <base_topic>/device_name/set/attribute (default endpoint used)
+        // - <base_topic>/device_name/endpoint/set (attribute is defined in the payload)
+        // - <base_topic>/device_name/endpoint/set/attribute (payload is the value)
 
-        const ID = match[1].replace(`${settings.get().mqtt.base_topic}/`, '');
-        // If we didn't replace base_topic we received something we don't care about
-        if (ID === match[1] || ID.match(/bridge/)) {
-            return null;
-        }
+        // The first step is to get rid of base topic part
+        topic = topic.replace(`${settings.get().mqtt.base_topic}/`, '');
 
-        return {ID: ID, endpoint: match[2], type: match[3] as 'get' | 'set', attribute: match[4]};
+        // Also bridge requests are something we don't care about
+        if (topic.match(/bridge/)) return null;
+
+        // Make the rough split on get/set keyword.
+        // Before the get/set is the device name and optional endpoint name.
+        // After it there will be an optional attribute name.
+        const match = topic.match(topicGetSetRegex);
+        if (!match) return null;
+
+        const deviceNameAndEndpoint = match[1];
+        const attribute = match[3];
+
+        // Now parse the device/group name, and endpoint name
+        const entity = this.zigbee.resolveEntityAndEndpoint(deviceNameAndEndpoint);
+        return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as 'get' | 'set', attribute: attribute};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | null {
@@ -185,6 +196,9 @@ export default class Publish extends Extension {
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
 
+        const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
+        const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
+
         for (let [key, value] of entries) {
             let endpointName = parsedTopic.endpoint;
             let localTarget = target;
@@ -196,10 +210,6 @@ export default class Publish extends Extension {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
                 localTarget = re.endpoint(endpointName);
-                if (localTarget == null) {
-                    logger.error(`Device '${re.name}' has no endpoint '${endpointName}'`);
-                    continue;
-                }
                 endpointOrGroupID = localTarget.ID;
             }
 

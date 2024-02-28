@@ -2530,7 +2530,8 @@ describe('HomeAssistant extension', () => {
             'origin': origin,
             'state_topic':'zigbee2mqtt/0x18fc26000000cafe',
             'unique_id':'0x18fc26000000cafe_device_mode_zigbee2mqtt',
-            'value_template':'{{ value_json.device_mode }}'
+            'value_template':'{{ value_json.device_mode }}',
+            'enabled_by_default': true,
         }
         expect(MQTT.publish).toHaveBeenCalledWith(
             "homeassistant/select/0x18fc26000000cafe/device_mode/config",

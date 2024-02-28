@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import * as settings from '../../util/settings';
 import logger from '../../util/logger';
-import utils from '../../util/utils';
 import Extension from '../extension';
 import bind from 'bind-decorator';
 import Device from '../../model/device';
@@ -19,13 +18,19 @@ export default class DeviceGroupMembership extends Extension {
             return null;
         }
 
-        const parsed = utils.parseEntityID(match[1]);
-        const device = this.zigbee.resolveEntity(parsed.ID) as Device;
+        const parsed = this.zigbee.resolveEntityAndEndpoint(match[1]);
+        const device = parsed?.entity as Device;
         if (!device || !(device instanceof Device)) {
             logger.error(`Device '${match[1]}' does not exist`);
             return;
         }
-        const endpoint = device.endpoint(parsed.endpoint);
+
+        const endpoint = parsed.endpoint;
+        if (parsed.endpointID && !endpoint) {
+            logger.error(`Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`);
+            return;
+        }
+
         const response = await endpoint.command(
             `genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {},
         );

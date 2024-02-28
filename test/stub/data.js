@@ -179,6 +179,9 @@ function writeDefaultConfiguration() {
             '0x0017882104a44559': {
                 friendly_name: 'TS0601_thermostat',
             },
+            '0x0017882104a44560': {
+                friendly_name: 'TS0601_switch',
+            },
             '0x0017882194e45543': {
                 friendly_name: 'QS-Zigbee-D02-TRIAC-2C-LN',
             },

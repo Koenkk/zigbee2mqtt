@@ -222,25 +222,28 @@ export default class Bind extends Extension {
         const message = utils.parseJSON(data.message, data.message);
 
         let error = null;
-        const parsedSource = utils.parseEntityID(sourceKey);
-        const parsedTarget = utils.parseEntityID(targetKey);
-        const source = this.zigbee.resolveEntity(parsedSource.ID);
-        const target = targetKey === 'default_bind_group' ?
-            defaultBindGroup : this.zigbee.resolveEntity(parsedTarget.ID);
+        const parsedSource = this.zigbee.resolveEntityAndEndpoint(sourceKey);
+        const parsedTarget = this.zigbee.resolveEntityAndEndpoint(targetKey);
+        const source = parsedSource.entity;
+        const target = targetKey === 'default_bind_group' ? defaultBindGroup : parsedTarget.entity;
         const responseData: KeyValue = {from: sourceKey, to: targetKey};
 
         if (!source || !(source instanceof Device)) {
             error = `Source device '${sourceKey}' does not exist`;
+        } else if (parsedSource.endpointID && !parsedSource.endpoint) {
+            error = `Source device '${parsedSource.ID}' does not have endpoint '${parsedSource.endpointID}'`;
         } else if (!target) {
             error = `Target device or group '${targetKey}' does not exist`;
+        } else if (target instanceof Device && parsedTarget.endpointID && !parsedTarget.endpoint) {
+            error = `Target device '${parsedTarget.ID}' does not have endpoint '${parsedTarget.endpointID}'`;
         } else {
             const successfulClusters: string[] = [];
             const failedClusters = [];
             const attemptedClusters = [];
 
-            const bindSource: zh.Endpoint = source.endpoint(parsedSource.endpoint);
+            const bindSource: zh.Endpoint = parsedSource.endpoint;
             let bindTarget: number | zh.Group | zh.Endpoint = null;
-            if (target instanceof Device) bindTarget = target.endpoint(parsedTarget.endpoint);
+            if (target instanceof Device) bindTarget = parsedTarget.endpoint;
             else if (target instanceof Group) bindTarget = target.zh;
             else bindTarget = Number(target.ID);
 

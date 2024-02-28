@@ -223,6 +223,21 @@ describe('Publish', () => {
         );
     });
 
+    it('Should publish messages to TuYa switch with dummy endpoints', async () => {
+        const device = zigbeeHerdsman.devices.TS0601_switch;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/TS0601_switch/set', stringify({state_l2: 'ON'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [1], datatype: 1, dp: 2}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/TS0601_switch',
+            stringify({state_l2: 'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+    });
+
     it('Should publish messages to zigbee devices with color xy', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
@@ -534,7 +549,7 @@ describe('Publish', () => {
         logger.error.mockClear();
         await MQTT.events.message('zigbee2mqtt/0x0017880104e45542/get', stringify({state_center: '', state_right: ''}));
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith(`Device 'wall_switch_double' has no endpoint 'center'`);
+        expect(logger.error).toHaveBeenCalledWith(`No converter available for 'state_center' ("")`);
         expect(endpoint2.read).toHaveBeenCalledTimes(0);
         expect(endpoint3.read).toHaveBeenCalledTimes(1);
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);

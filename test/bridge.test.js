@@ -82,9 +82,10 @@ describe('Bridge', () => {
         const zhVersion = await utils.getDependencyVersion('zigbee-herdsman');
         const zhcVersion = await utils.getDependencyVersion('zigbee-herdsman-converters');
         const directory = settings.get().advanced.log_directory;
+        // console.log(MQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/info')[1])
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
-            stringify({ "restart_required": false, "commit": version.commitHash, "config": { "advanced": { "legacy_availability_payload": true,"output":"json","adapter_concurrent": null, "adapter_delay": null, "availability_blacklist": [], "availability_blocklist": [], "availability_passlist": [], "availability_whitelist": [], "cache_state": true, "cache_state_persistent": true, "cache_state_send_on_startup": true, "channel": 11, "elapsed": false, "ext_pan_id": [221, 221, 221, 221, 221, 221, 221, 221], "last_seen": "disable", "legacy_api": false, "log_directory": directory, "log_file": "log.txt", "log_level": "info", "log_output": ["console", "file"], "log_rotation": true, "log_symlink_current": false, "log_syslog": {}, "pan_id": 6754, "report": false, "soft_reset_timeout": 0, "timestamp_format": "YYYY-MM-DD HH:mm:ss" }, "blocklist": [], "device_options": {}, "devices": { "0x000b57fffec6a5b2": { "friendly_name": "bulb", "description": "this is my bulb", "retain": true }, "0x000b57fffec6a5b3": { "friendly_name": "bulb_color", "retain": false }, "0x000b57fffec6a5b4": { "friendly_name": "bulb_color_2", "retain": false }, "0x000b57fffec6a5b7": { "friendly_name": "bulb_2", "retain": false }, "0x0017880104a44559": { "friendly_name": "J1_cover" }, "0x0017880104e43559": { "friendly_name": "U202DST600ZB" }, "0x0017880104e44559": { "friendly_name": "3157100_thermostat" }, "0x0017880104e45517": { "friendly_name": "remote", "retain": true }, "0x0017880104e45520": { "friendly_name": "button", "retain": false }, "0x0017880104e45521": { "friendly_name": "button_double_key", "retain": false }, "0x0017880104e45522": { "friendly_name": "weather_sensor", "qos": 1, "retain": false }, "0x0017880104e45523": { "friendly_name": "occupancy_sensor", "retain": false }, "0x0017880104e45524": { "friendly_name": "power_plug", "retain": false }, "0x0017880104e45526": { "friendly_name": "GL-S-007ZS" }, "0x0017880104e45529": { "friendly_name": "unsupported2", "retain": false }, "0x0017880104e45530": { "friendly_name": "button_double_key_interviewing", "retain": false }, "0x0017880104e45540": { "friendly_name": "ikea_onoff" }, "0x0017880104e45541": { "friendly_name": "wall_switch", "retain": false }, "0x0017880104e45542": { "friendly_name": "wall_switch_double", "retain": false }, "0x0017880104e45543": { "friendly_name": "led_controller_1", "retain": false }, "0x0017880104e45544": { "friendly_name": "led_controller_2", "retain": false }, "0x0017880104e45545": { "friendly_name": "dimmer_wall_switch", "retain": false }, "0x0017880104e45547": { "friendly_name": "curtain", "retain": false }, "0x0017880104e45548": { "friendly_name": "fan", "retain": false }, "0x0017880104e45549": { "friendly_name": "siren", "retain": false }, "0x0017880104e45550": { "friendly_name": "thermostat", "retain": false }, "0x0017880104e45551": { "friendly_name": "smart vent", "retain": false }, "0x0017880104e45552": { "friendly_name": "j1", "retain": false }, "0x0017880104e45553": { "friendly_name": "bulb_enddevice", "retain": false }, "0x0017880104e45559": { "friendly_name": "cc2530_router", "retain": false }, "0x0017880104e45560": { "friendly_name": "livolo", "retain": false }, "0x0017880104e45724":{"friendly_name":"GLEDOPTO_2ID"}, "0xf4ce368a38be56a1":{"cover_1_enabled":"true","cover_1_tilt_enabled":"true","cover_2_enabled":"true","cover_2_tilt_enabled":"true","dimmer_1_dimming_enabled":"true","dimmer_1_enabled":"true","dimmer_2_dimming_enabled":"true","dimmer_2_enabled":"true","dimmer_3_dimming_enabled":"true","dimmer_3_enabled":"true","dimmer_4_dimming_enabled":"true","dimmer_4_enabled":"true","friendly_name":"zigfred_plus","front_surface_enabled":"true","retain":false}, "0x0017882104a44559": { "friendly_name": "TS0601_thermostat" }, "0x0017882194e45543": { "friendly_name": "QS-Zigbee-D02-TRIAC-2C-LN" }, "0x90fd9ffffe4b64aa": { "friendly_name": "SP600_OLD" }, "0x90fd9ffffe4b64ab": { "friendly_name": "SP600_NEW" }, "0x90fd9ffffe4b64ac": { "friendly_name": "MKS-CM-W5" }, "0x90fd9ffffe4b64ae": { "friendly_name": "tradfri_remote", "retain": false }, "0x90fd9ffffe4b64af": { "friendly_name": "roller_shutter" }, "0x90fd9ffffe4b64ax": { "friendly_name": "ZNLDP12LM" }, "0x0017880104e45561": { "friendly_name": "temperature_sensor" }, "0x0017880104e45562": { "friendly_name": "heating_actuator" } }, "external_converters": [], "groups": { "1": { "friendly_name": "group_1", "retain": false }, "9": { "devices": ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'], "friendly_name": "ha_discovery_group"}, "11": { "devices": ["bulb_2"], "friendly_name": "group_with_tradfri", "retain": false }, "14": { "devices": ["power_plug", "bulb_2"], "friendly_name": "switch_group", "retain": false }, "12": { "devices": ["TS0601_thermostat"], "friendly_name": "thermostat_group", "retain": false }, "15071": { "devices": ["bulb_color_2", "bulb_2"], "friendly_name": "group_tradfri_remote", "retain": false }, "2": { "friendly_name": "group_2", "retain": false }, "21":{"devices":["GLEDOPTO_2ID/cct"],"friendly_name":"gledopto_group"} }, "homeassistant": false, "map_options": { "graphviz": { "colors": { "fill": { "coordinator": "#e04e5d", "enddevice": "#fff8ce", "router": "#4ea3e0" }, "font": { "coordinator": "#ffffff", "enddevice": "#000000", "router": "#ffffff" }, "line": { "active": "#009900", "inactive": "#994444" } } } }, "mqtt": { "base_topic": "zigbee2mqtt", "include_device_information": false, "server": "mqtt://localhost", "force_disable_retain": false,  }, "ota":{"disable_automatic_update_check":false,"update_check_interval":1440},  "passlist": [], "permit_join": true, "serial": { "disable_led": false, "port": "/dev/dummy" } }, "coordinator": { "ieee_address":"0x00124b00120144ae","meta": { "revision": 20190425, "version": 1 }, "type": "z-Stack" }, "log_level": "info", "network": { "channel": 15, "extended_pan_id": [0, 11, 22], "pan_id": 5674 }, "permit_join": false, "version": version.version, "zigbee_herdsman_converters": zhcVersion, "zigbee_herdsman": zhVersion, config_schema: settings.schema }),
+            stringify({ "restart_required": false, "commit": version.commitHash, "config": { "advanced": { "legacy_availability_payload": true,"output":"json","adapter_concurrent": null, "adapter_delay": null, "availability_blacklist": [], "availability_blocklist": [], "availability_passlist": [], "availability_whitelist": [], "cache_state": true, "cache_state_persistent": true, "cache_state_send_on_startup": true, "channel": 11, "elapsed": false, "ext_pan_id": [221, 221, 221, 221, 221, 221, 221, 221], "last_seen": "disable", "legacy_api": false, "log_directory": directory, "log_file": "log.txt", "log_level": "info", "log_output": ["console", "file"], "log_rotation": true, "log_symlink_current": false, "log_syslog": {}, "pan_id": 6754, "report": false, "soft_reset_timeout": 0, "timestamp_format": "YYYY-MM-DD HH:mm:ss" }, "blocklist": [], "device_options": {}, "devices": { "0x000b57fffec6a5b2": { "friendly_name": "bulb", "description": "this is my bulb", "retain": true }, "0x000b57fffec6a5b3": { "friendly_name": "bulb_color", "retain": false }, "0x000b57fffec6a5b4": { "friendly_name": "bulb_color_2", "retain": false }, "0x000b57fffec6a5b7": { "friendly_name": "bulb_2", "retain": false }, "0x0017880104a44559": { "friendly_name": "J1_cover" }, "0x0017880104e43559": { "friendly_name": "U202DST600ZB" }, "0x0017880104e44559": { "friendly_name": "3157100_thermostat" }, "0x0017880104e45517": { "friendly_name": "remote", "retain": true }, "0x0017880104e45520": { "friendly_name": "button", "retain": false }, "0x0017880104e45521": { "friendly_name": "button_double_key", "retain": false }, "0x0017880104e45522": { "friendly_name": "weather_sensor", "qos": 1, "retain": false }, "0x0017880104e45523": { "friendly_name": "occupancy_sensor", "retain": false }, "0x0017880104e45524": { "friendly_name": "power_plug", "retain": false }, "0x0017880104e45526": { "friendly_name": "GL-S-007ZS" }, "0x0017880104e45529": { "friendly_name": "unsupported2", "retain": false }, "0x0017880104e45530": { "friendly_name": "button_double_key_interviewing", "retain": false }, "0x0017880104e45540": { "friendly_name": "ikea_onoff" }, "0x0017880104e45541": { "friendly_name": "wall_switch", "retain": false }, "0x0017880104e45542": { "friendly_name": "wall_switch_double", "retain": false }, "0x0017880104e45543": { "friendly_name": "led_controller_1", "retain": false }, "0x0017880104e45544": { "friendly_name": "led_controller_2", "retain": false }, "0x0017880104e45545": { "friendly_name": "dimmer_wall_switch", "retain": false }, "0x0017880104e45547": { "friendly_name": "curtain", "retain": false }, "0x0017880104e45548": { "friendly_name": "fan", "retain": false }, "0x0017880104e45549": { "friendly_name": "siren", "retain": false }, "0x0017880104e45550": { "friendly_name": "thermostat", "retain": false }, "0x0017880104e45551": { "friendly_name": "smart vent", "retain": false }, "0x0017880104e45552": { "friendly_name": "j1", "retain": false }, "0x0017880104e45553": { "friendly_name": "bulb_enddevice", "retain": false }, "0x0017880104e45559": { "friendly_name": "cc2530_router", "retain": false }, "0x0017880104e45560": { "friendly_name": "livolo", "retain": false }, "0x0017880104e45724":{"friendly_name":"GLEDOPTO_2ID"}, "0xf4ce368a38be56a1":{"cover_1_enabled":"true","cover_1_tilt_enabled":"true","cover_2_enabled":"true","cover_2_tilt_enabled":"true","dimmer_1_dimming_enabled":"true","dimmer_1_enabled":"true","dimmer_2_dimming_enabled":"true","dimmer_2_enabled":"true","dimmer_3_dimming_enabled":"true","dimmer_3_enabled":"true","dimmer_4_dimming_enabled":"true","dimmer_4_enabled":"true","friendly_name":"zigfred_plus","front_surface_enabled":"true","retain":false}, "0x0017882104a44559": { "friendly_name": "TS0601_thermostat" }, "0x0017882104a44560":{"friendly_name":"TS0601_switch"}, "0x0017882194e45543": { "friendly_name": "QS-Zigbee-D02-TRIAC-2C-LN" }, "0x90fd9ffffe4b64aa": { "friendly_name": "SP600_OLD" }, "0x90fd9ffffe4b64ab": { "friendly_name": "SP600_NEW" }, "0x90fd9ffffe4b64ac": { "friendly_name": "MKS-CM-W5" }, "0x90fd9ffffe4b64ae": { "friendly_name": "tradfri_remote", "retain": false }, "0x90fd9ffffe4b64af": { "friendly_name": "roller_shutter" }, "0x90fd9ffffe4b64ax": { "friendly_name": "ZNLDP12LM" }, "0x0017880104e45561": { "friendly_name": "temperature_sensor" }, "0x0017880104e45562": { "friendly_name": "heating_actuator" } }, "external_converters": [], "groups": { "1": { "friendly_name": "group_1", "retain": false }, "9": { "devices": ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'], "friendly_name": "ha_discovery_group"}, "11": { "devices": ["bulb_2"], "friendly_name": "group_with_tradfri", "retain": false }, "14": { "devices": ["power_plug", "bulb_2"], "friendly_name": "switch_group", "retain": false }, "12": { "devices": ["TS0601_thermostat"], "friendly_name": "thermostat_group", "retain": false }, "15071": { "devices": ["bulb_color_2", "bulb_2"], "friendly_name": "group_tradfri_remote", "retain": false }, "2": { "friendly_name": "group_2", "retain": false }, "21":{"devices":["GLEDOPTO_2ID/cct"],"friendly_name":"gledopto_group"} }, "homeassistant": false, "map_options": { "graphviz": { "colors": { "fill": { "coordinator": "#e04e5d", "enddevice": "#fff8ce", "router": "#4ea3e0" }, "font": { "coordinator": "#ffffff", "enddevice": "#000000", "router": "#ffffff" }, "line": { "active": "#009900", "inactive": "#994444" } } } }, "mqtt": { "base_topic": "zigbee2mqtt", "include_device_information": false, "server": "mqtt://localhost", "force_disable_retain": false,  }, "ota":{"disable_automatic_update_check":false,"update_check_interval":1440},  "passlist": [], "permit_join": true, "serial": { "disable_led": false, "port": "/dev/dummy" } }, "coordinator": { "ieee_address":"0x00124b00120144ae","meta": { "revision": 20190425, "version": 1 }, "type": "z-Stack" }, "log_level": "info", "network": { "channel": 15, "extended_pan_id": [0, 11, 22], "pan_id": 5674 }, "permit_join": false, "version": version.version, "zigbee_herdsman_converters": zhcVersion, "zigbee_herdsman": zhVersion, config_schema: settings.schema }),
           { retain: true, qos: 0 },
           expect.any(Function)
         );
@@ -586,13 +587,13 @@ describe('Bridge', () => {
         );
     });
 
-    it('Shouldnt allow rename device with to now allowed name', async () => {
+    it('Shouldnt allow rename device with to not allowed name containing a wildcard', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'living_room/blinds/center'}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb', to: 'living_room/blinds#'}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
-            stringify({"data":{},"status":"error","error":"friendly_name is not allowed to end with: '/center'"}),
+            stringify({"data":{},"status":"error","error":"MQTT wildcard (+ and #) not allowed in friendly_name ('living_room/blinds#')"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -677,6 +678,17 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/generate_external_definition',
             stringify({ data: {}, error: 'Invalid payload', status: 'error' }),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should error when generate_external_definition requested for unknown device', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/generate_external_definition', stringify({id: 'non_existing_device'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/generate_external_definition',
+            stringify({ data: {}, error: "Device 'non_existing_device' does not exist", status: 'error' }),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
@@ -1128,6 +1140,38 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when configure reporting is called for non-existing device', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: 'non_existing_device', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{},"status":"error","error":"Device 'non_existing_device' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error when configure reporting is called for non-existing endpoint', async () => {
+        const device = zigbeeHerdsman.devices.bulb;
+        const endpoint = device.getEndpoint(1);
+        endpoint.configureReporting.mockClear();
+        zigbeeHerdsman.permitJoin.mockClear();
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/configure_reporting', stringify({id: '0x000b57fffec6a5b2/non_existing_endpoint', cluster: 'genLevelCtrl', attribute: 'currentLevel', maximum_report_interval: 10, minimum_report_interval: 1, reportable_change: 1}));
+        await flushPromises();
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(0);
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({"data":{},"status":"error","error":"Device '0x000b57fffec6a5b2' does not have endpoint 'non_existing_endpoint'"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });

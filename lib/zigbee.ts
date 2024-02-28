@@ -11,6 +11,8 @@ import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
 
+const entityIDRegex = new RegExp(`^(.+?)(?:/([^/]+))?$`);
+
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
@@ -281,6 +283,38 @@ export default class Zigbee {
                 return group ? group : this.createGroup(groupSettings.ID);
             }
         }
+    }
+
+    resolveEntityAndEndpoint(ID: string)
+        : {ID: string, entity: Device | Group, endpointID: string, endpoint: zh.Endpoint} {
+        // This function matches the following entity formats:
+        // device_name          (just device name)
+        // device_name/ep_name  (device name and endpoint numeric ID or name)
+        // device/name          (device name with slashes)
+        // device/name/ep_name  (device name with slashes, and endpoint numeric ID or name)
+
+        // The function tries to find an exact match first
+        let entityName = ID;
+        let deviceOrGroup = this.resolveEntity(ID);
+        let endpointNameOrID = null;
+
+        // If exact match did not happenc, try matching a device_name/endpoint pattern
+        if (!deviceOrGroup) {
+            // First split the input token by the latest slash
+            const match = ID.match(entityIDRegex);
+
+            // Get the resulting IDs from the match
+            entityName = match[1];
+            deviceOrGroup = this.resolveEntity(match[1]);
+            endpointNameOrID = match[2];
+        }
+
+        // If the function returns non-null endpoint name, but the endpoint field is null, then
+        // it means that endpoint was not matched because there is no such endpoint on the device
+        // (or the entity is a group)
+        const endpoint = deviceOrGroup?.isDevice() ? deviceOrGroup.endpoint(endpointNameOrID) : null;
+
+        return {ID: entityName, entity: deviceOrGroup, endpointID: endpointNameOrID, endpoint: endpoint};
     }
 
     firstCoordinatorEndpoint(): zh.Endpoint {

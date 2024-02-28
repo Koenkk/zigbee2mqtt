@@ -227,7 +227,7 @@
         },
         "adapter": {
           "type": ["string"],
-          "enum": ["deconz", "zstack", "zigate", "ezsp", "auto"],
+          "enum": ["deconz", "zstack", "zigate", "ezsp", "auto", "ember"],
           "title": "Adapter",
           "default": "auto",
           "requiresRestart": true,

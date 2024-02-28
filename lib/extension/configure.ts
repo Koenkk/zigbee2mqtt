@@ -65,7 +65,9 @@ export default class Configure extends Extension {
 
     override async start(): Promise<void> {
         setImmediate(async () => {
-            for (const device of this.zigbee.devices(false)) {
+            // Only configure routers on startup, end devices are likely sleeping and
+            // will reconfigure once they send a message
+            for (const device of this.zigbee.devices(false).filter((d) => d.zh.type === 'Router')) {
                 // Sleep 10 seconds between configuring on startup to not DDoS the coordinator
                 // when many devices have to be configured.
                 await utils.sleep(10);

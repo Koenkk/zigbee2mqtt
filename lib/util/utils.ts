@@ -30,22 +30,6 @@ function toLocalISOString(date: Date): string {
         ':' + pad(tzOffset % 60);
 }
 
-const endpointNames = [
-    'left', 'right', 'center', 'bottom_left', 'bottom_right', 'default',
-    'top_left', 'top_right', 'white', 'rgb', 'cct', 'system', 'top', 'bottom', 'center_left', 'center_right',
-    'ep1', 'ep2', 'row_1', 'row_2', 'row_3', 'row_4', 'relay', 'usb',
-    'l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8',
-    'l9', 'l10', 'l11', 'l12', 'l13', 'l14', 'l15', 'l16',
-    'l17', 'l18', 'l19', 'l20', 'l21', 'l22', 'l23', 'l24',
-    'th1', 'th2', 'th3', 'th4', 'th5', 'th6', 'th7', 'th8', 'th9', 'th10',
-    'button_1', 'button_2', 'button_3', 'button_4', 'button_5',
-    'button_6', 'button_7', 'button_8', 'button_9', 'button_10',
-    'button_11', 'button_12', 'button_13', 'button_14', 'button_15',
-    'button_16', 'button_17', 'button_18', 'button_19', 'button_20',
-    'button_light', 'button_fan_high', 'button_fan_med', 'button_fan_low',
-    'heat', 'cool', 'water', 'meter', 'wifi', 'no_occupancy_since',
-];
-
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
@@ -252,16 +236,10 @@ function getAllFiles(path_: string): string[] {
 
 function validateFriendlyName(name: string, throwFirstError=false): string[] {
     const errors = [];
-    for (const endpointName of endpointNames) {
-        if (name.toLowerCase().endsWith('/' + endpointName)) {
-            errors.push(`friendly_name is not allowed to end with: '/${endpointName}'`);
-        }
-    }
 
     if (name.length === 0) errors.push(`friendly_name must be at least 1 char long`);
     if (name.endsWith('/') || name.startsWith('/')) errors.push(`friendly_name is not allowed to end or start with /`);
     if (containsControlCharacter(name)) errors.push(`friendly_name is not allowed to contain control char`);
-    if (endpointNames.includes(name)) errors.push(`Following friendly_name are not allowed: '${endpointNames}'`);
     if (name.match(/.*\/\d*$/)) errors.push(`Friendly name cannot end with a "/DIGIT" ('${name}')`);
     if (name.includes('#') || name.includes('+')) {
         errors.push(`MQTT wildcard (+ and #) not allowed in friendly_name ('${name}')`);
@@ -307,12 +285,6 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
 
     const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
     return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
-}
-
-const entityIDRegex = new RegExp(`^(.+?)(?:/(${endpointNames.join('|')}|\\d+))?$`);
-function parseEntityID(ID: string): {ID: string, endpoint: string} {
-    const match = ID.match(entityIDRegex);
-    return match && {ID: match[1], endpoint: match[2]};
 }
 
 function isEndpoint(obj: unknown): obj is zh.Endpoint {
@@ -433,10 +405,10 @@ function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
 }
 
 export default {
-    endpointNames, capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
+    capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
     equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
     removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
-    parseEntityID, isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
+    isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
     getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
 };
