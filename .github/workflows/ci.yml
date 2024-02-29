@@ -36,7 +36,6 @@ jobs:
       with:
         platforms: all
     - name: Docker setup - Buildx
-      if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       id: buildx
       uses: docker/setup-buildx-action@v3
       with:
