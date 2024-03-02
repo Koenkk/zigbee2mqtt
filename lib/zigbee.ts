@@ -296,7 +296,7 @@ export default class Zigbee {
         // The function tries to find an exact match first
         let entityName = ID;
         let deviceOrGroup = this.resolveEntity(ID);
-        let endpointNameOrID = null;
+        let endpointNameOrID = undefined;
 
         // If exact match did not happenc, try matching a device_name/endpoint pattern
         if (!deviceOrGroup) {
