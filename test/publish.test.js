@@ -238,6 +238,25 @@ describe('Publish', () => {
         );
     });
 
+    it('Should publish messages to TuYa cover switch with dummy endpoints', async () => {
+        const device = zigbeeHerdsman.devices.TS0601_cover_switch;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/set', stringify({state: 'OPEN'}));
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/set', stringify({state_l1: 'ON'}));
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/l2/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [0], datatype: 4, dp: 1}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [1], datatype: 1, dp: 102}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [0], datatype: 1, dp: 101}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/TS0601_cover_switch',
+            stringify({state_l2: 'OFF', state_l1: 'ON', state: 'OPEN'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+    });
+
     it('Should publish messages to zigbee devices with color xy', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
