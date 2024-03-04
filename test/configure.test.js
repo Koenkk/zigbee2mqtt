@@ -24,7 +24,7 @@ describe('Configure', () => {
         const endpoint2 = device.getEndpoint(2);
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
         expect(endpoint2.write).toHaveBeenCalledWith("genBasic", {"49": {"type": 25, "value": 11}}, {"disableDefaultResponse": true, "manufacturerCode": 4107});
-        expect(device.meta.configured).toBe(1);
+        expect(device.meta.configured).toBe(1324213189);
     }
 
     const expectBulbConfigured = () => {
