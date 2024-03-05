@@ -485,4 +485,11 @@ describe('OTA update', () => {
         expect(spyUseIndexOverride).toHaveBeenCalledWith('http://my.site/index.json');
         spyUseIndexOverride.mockClear();
     });
+
+    it('Clear update state on startup', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color.ieeeAddr);
+        controller.state.set(device, {update: {progress: 100, remaining: 10, state: 'updating'}})
+        await resetExtension();
+        expect(controller.state.get(device)).toStrictEqual({update: {state: 'available'}});
+    });
 });
