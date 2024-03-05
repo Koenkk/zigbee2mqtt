@@ -65,6 +65,10 @@ export default class OTAUpdate extends Extension {
         // remove them.
         for (const device of this.zigbee.devices(false)) {
             this.removeProgressAndRemainingFromState(device);
+            // Reset update state, e.g. when Z2M restarted during update.
+            if (this.state.get(device).update?.state === 'updating') {
+                this.state.get(device).update.state = 'available';
+            }
         }
     }
 
