@@ -88,16 +88,16 @@ export default class Zigbee {
         });
         this.herdsman.on('deviceInterview', async (data: ZHEvents.DeviceInterviewPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            await device.resolveDefinition();
             /* istanbul ignore if */ if (!device) return; // Prevent potential race
+            await device.resolveDefinition();
             const d = {device, status: data.status};
             this.logDeviceInterview(d);
             this.eventBus.emitDeviceInterview(d);
         });
         this.herdsman.on('deviceJoined', async (data: ZHEvents.DeviceJoinedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            await device.resolveDefinition();
             /* istanbul ignore if */ if (!device) return; // Prevent potential race
+            await device.resolveDefinition();
             logger.info(`Device '${device.name}' joined`);
             this.eventBus.emitDeviceJoined({device});
         });
