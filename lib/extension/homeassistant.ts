@@ -1033,7 +1033,7 @@ export default class HomeAssistant extends Extension {
              * for selects already existing in HA (legacy).
              */
             if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
-                discoveryEntries.push({
+                const buttonDiscoveryEntry: DiscoveryEntry = {
                     type: 'button',
                     object_id: firstExpose.property,
                     mockProperties: [],
@@ -1046,7 +1046,13 @@ export default class HomeAssistant extends Extension {
                         payload_press: firstExpose.values[0].toString(),
                         ...lookup[firstExpose.name],
                     },
-                });
+                };
+                // Let Home Assistant generate entity name when device_class is present
+                if (buttonDiscoveryEntry.discovery_payload.device_class) {
+                    delete buttonDiscoveryEntry.discovery_payload.name;
+                }
+
+                discoveryEntries.push(buttonDiscoveryEntry);
             }
         } else if (firstExpose.type === 'text' || firstExpose.type === 'composite' || firstExpose.type === 'list') {
             // Deprecated: remove text sensor
