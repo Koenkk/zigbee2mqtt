@@ -614,7 +614,7 @@ export default class HomeAssistant extends Extension {
                 card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
-                consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
+                consumer_connected: {device_class: 'plug'},
                 contact: {device_class: 'door'},
                 garage_door_contact: {device_class: 'garage_door', payload_on: false, payload_off: true},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
