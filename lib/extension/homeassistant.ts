@@ -614,7 +614,7 @@ export default class HomeAssistant extends Extension {
                 card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
-                consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
+                consumer_connected: {device_class: 'plug'},
                 contact: {device_class: 'door'},
                 garage_door_contact: {device_class: 'garage_door', payload_on: false, payload_off: true},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
@@ -685,9 +685,6 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
                 discoveryEntries.push(discoveryEntry);
             } else {
                 const discoveryEntry: DiscoveryEntry = {
@@ -702,9 +699,6 @@ export default class HomeAssistant extends Extension {
                         ...(lookup[firstExpose.name] || {}),
                     },
                 };
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 discoveryEntries.push(discoveryEntry);
             }
@@ -901,9 +895,6 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.entity_category = 'diagnostic';
             }
 
-            // Let Home Assistant generate entity name when device_class is present
-            if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
             discoveryEntries.push(discoveryEntry);
 
             /**
@@ -933,9 +924,6 @@ export default class HomeAssistant extends Extension {
                 } else {
                     delete discoveryEntry.discovery_payload.device_class;
                 }
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
                 if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
@@ -1108,6 +1096,13 @@ export default class HomeAssistant extends Extension {
             // https://github.com/Koenkk/zigbee2mqtt/pull/19474
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
+            }
+        });
+
+        discoveryEntries.forEach((d) => {
+            // Let Home Assistant generate entity name when device_class is present
+            if (d.discovery_payload.device_class) {
+                delete d.discovery_payload.name;
             }
         });
 
