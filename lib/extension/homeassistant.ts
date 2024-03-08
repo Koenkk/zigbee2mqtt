@@ -685,9 +685,6 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
                 discoveryEntries.push(discoveryEntry);
             } else {
                 const discoveryEntry: DiscoveryEntry = {
@@ -702,9 +699,6 @@ export default class HomeAssistant extends Extension {
                         ...(lookup[firstExpose.name] || {}),
                     },
                 };
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 discoveryEntries.push(discoveryEntry);
             }
@@ -901,9 +895,6 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.entity_category = 'diagnostic';
             }
 
-            // Let Home Assistant generate entity name when device_class is present
-            if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
             discoveryEntries.push(discoveryEntry);
 
             /**
@@ -933,9 +924,6 @@ export default class HomeAssistant extends Extension {
                 } else {
                     delete discoveryEntry.discovery_payload.device_class;
                 }
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
                 if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
@@ -1033,7 +1021,7 @@ export default class HomeAssistant extends Extension {
              * for selects already existing in HA (legacy).
              */
             if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
-                const buttonDiscoveryEntry: DiscoveryEntry = {
+                discoveryEntries.push({
                     type: 'button',
                     object_id: firstExpose.property,
                     mockProperties: [],
@@ -1046,13 +1034,7 @@ export default class HomeAssistant extends Extension {
                         payload_press: firstExpose.values[0].toString(),
                         ...lookup[firstExpose.name],
                     },
-                };
-                // Let Home Assistant generate entity name when device_class is present
-                if (buttonDiscoveryEntry.discovery_payload.device_class) {
-                    delete buttonDiscoveryEntry.discovery_payload.name;
-                }
-
-                discoveryEntries.push(buttonDiscoveryEntry);
+                });
             }
         } else if (firstExpose.type === 'text' || firstExpose.type === 'composite' || firstExpose.type === 'list') {
             // Deprecated: remove text sensor
@@ -1114,6 +1096,13 @@ export default class HomeAssistant extends Extension {
             // https://github.com/Koenkk/zigbee2mqtt/pull/19474
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
+            }
+        });
+
+        discoveryEntries.forEach((d) => {
+            // Let Home Assistant generate entity name when device_class is present
+            if (d.discovery_payload.device_class) {
+                delete d.discovery_payload.name;
             }
         });
 
