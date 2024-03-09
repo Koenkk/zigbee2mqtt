@@ -97,12 +97,12 @@ const pollOnMessage: PollOnMessage = [
         read: {cluster: 'genLevelCtrl', attributes: ['currentLevel']},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
-            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
+            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -133,12 +133,12 @@ const pollOnMessage: PollOnMessage = [
         },
         read: {cluster: 'genOnOff', attributes: ['onOff']},
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
-            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
+            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -165,11 +165,11 @@ const pollOnMessage: PollOnMessage = [
             },
         },
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.Philips,
+            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
             zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INT,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK,
+            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: [
