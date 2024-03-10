@@ -262,7 +262,7 @@ const mockConstructor = jest.fn().mockImplementation(() => mock);
 
 jest.mock('zigbee-herdsman', () => ({
     Controller: mockConstructor,
-    Zcl: {ManufacturerCode: {Philips: 4107}},
+    Zcl: {ManufacturerCode: {SIGNIFY_NETHERLANDS_B_V: 4107}},
 }));
 
 module.exports = {
