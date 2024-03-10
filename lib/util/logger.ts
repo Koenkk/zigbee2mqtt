@@ -177,11 +177,13 @@ function setLevel(level: Z2MLogLevel): void {
 }
 
 function warn(message: string): void {
-    logger.warn(message);
+    // @ts-expect-error
+    logger.warning(message);
 }
 
 function warning(message: string): void {
-    logger.warn(message);
+    // @ts-expect-error
+    logger.warning(message);
 }
 
 function info(message: string): void {
