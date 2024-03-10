@@ -177,12 +177,11 @@ function setLevel(level: Z2MLogLevel): void {
 }
 
 function warn(message: string): void {
-    // winston.config.syslog.levels doesn't have warn, but is required for syslog.
-    logger.warning(message);
+    logger.warn(message);
 }
 
 function warning(message: string): void {
-    logger.warning(message);
+    logger.warn(message);
 }
 
 function info(message: string): void {
