@@ -1009,7 +1009,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 100}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 100});
     });
 
     it('ZNCLDJ11LM position', async () => {
@@ -1019,7 +1019,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 10}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 10});
     });
 
     it('ZNCLDJ11LM position', async () => {
@@ -1029,7 +1029,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 0}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 0});
     });
 
     it('ZNCLDJ11LM position', async () => {
