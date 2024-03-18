@@ -1,0 +1,88 @@
+#nameOverride: "nameoverride"
+#fullnameOverride: "fullnameoverride"
+customLabels: {}
+
+image:
+  # -- Image repository for the `zigbee2mqtt` container.
+  repository: koenkk/zigbee2mqtt
+  tag: 1.36.0
+  pullPolicy: IfNotPresent
+  imagePullSecrets: { }
+
+service:
+  annotations: {}
+  type: LoadBalancer
+  port: 8080
+
+statefulset:
+  storage:
+    storageClassName: nfs-csi
+  dnsPolicy: ClusterFirst
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 200m
+    limits:
+      memory: 600Mi
+      cpu: 200m
+  tolerations: {}
+  nodeSelector: {}
+
+zigbee2mqtt:
+  homeassistant:
+    enabled: true
+    # Optional: Home Assistant discovery topic (default: shown below)
+    # Note: should be different from [MQTT base topic](../mqtt.md) to prevent errors in HA software
+    discovery_topic: 'homeassistant'
+    # Optional: Home Assistant status topic (default: shown below)
+    # Note: in addition to the `status_topic`, 'homeassistant/status' will also be used
+    status_topic: 'hass/status'
+    # Optional: Home Assistant legacy entity attributes, (default: shown below), when enabled:
+    # Zigbee2MQTT will send additional states as attributes with each entity. For example,
+    # A temperature & humidity sensor will have 2 entities for the temperature and
+    # humidity, with this setting enabled both entities will also have
+    # an temperature and humidity attribute.
+    # Note: Disabling this option, requires a Home Assistant restart
+    legacy_entity_attributes: true
+    # Optional: Home Assistant legacy triggers (default: shown below), when enabled:
+    # - Zigbee2mqt will send an empty 'action' or 'click' after one has been send
+    # - A 'sensor_action' and 'sensor_click' will be discoverd
+    legacy_triggers: true
+
+  permit_join: true
+  timezone: UTC
+  frontend:
+    url: http://0.0.0.0:8080
+  mqtt:
+    base_topic: zigbee2mqtt
+    server: mqtt://mosquitto
+    user: "test"
+    password: "test"
+  serial:
+    port: tcp://10.10.10.10:6638
+    baudrate: 115200
+    adapter: ezsp
+    disable_led: false
+    rtscts: false
+  advanced:
+    transmit_power: 20
+    homeassistant_legacy_entity_attributes: false
+    legacy_api: false
+    legacy_availability_payload: false
+    log_level: debug
+    channel: 25
+
+ingress:
+  enabled: true
+  ingressClassName: contour
+  labels: {}
+  path: /
+  pathType: Prefix
+  annotations: {}
+  tls:
+    - secretName: some-tls-secret
+      hosts:
+        - yourdomain.com
+  hosts:
+    - yourdomain.com
+
