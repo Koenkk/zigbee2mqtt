@@ -15,36 +15,23 @@ data:
     # Are read only by design, we need to extract dynamic config to external files
     devices: devices.yaml
     groups: groups.yaml
-    {{- if .Values.zigbee2mqtt.homeassistant.enabled }}
+    {{- if .Values.zigbee2mqtt.homeassistant }}
     homeassistant:
-      discovery_topic: {{ .Values.zigbee2mqtt.homeassistant.discovery_topic }}
-      status_topic:  {{ .Values.zigbee2mqtt.homeassistant.status_topic }}
-      legacy_entity_attributes: {{ .Values.zigbee2mqtt.homeassistant.legacy_entity_attributes }}
-      legacy_triggers: {{ .Values.zigbee2mqtt.homeassistant.legacy_triggers }}
+      {{- .Values.zigbee2mqtt.homeassistant | toYaml | nindent 6}}
     {{- end }}
+    ota:
+      {{- .Values.zigbee2mqtt.ota | toYaml | nindent 6}}
     permit_join: {{ .Values.zigbee2mqtt.permit_join }}
-    frontend:
-     url: {{ .Values.zigbee2mqtt.frontend.url }}
-     port: 8080
-     host: 0.0.0.0
+    {{- if .Values.zigbee2mqtt.availability }}
+    availability:
+      {{- .Values.zigbee2mqtt.availability | toYaml | nindent 6}}
+    {{- end }}
+    external_converters: {{- .Values.zigbee2mqtt.external_converters }}
     mqtt:
-      base_topic: {{ .Values.zigbee2mqtt.mqtt.base_topic }}
-      server: {{ .Values.zigbee2mqtt.mqtt.server }}
-      user: {{ .Values.zigbee2mqtt.mqtt.user }}
-      password: {{ .Values.zigbee2mqtt.mqtt.password }}
+      {{- .Values.zigbee2mqtt.mqtt | toYaml | nindent 6}}
     serial:
-      port: {{ .Values.zigbee2mqtt.serial.port }}
-      disable_led: {{ .Values.zigbee2mqtt.serial.disable_led }}
-      adapter: {{ .Values.zigbee2mqtt.serial.adapter }}
-      baudrate: {{ .Values.zigbee2mqtt.serial.baudrate }}
-      rtscts: {{ .Values.zigbee2mqtt.serial.rtscts }}
+      {{- .Values.zigbee2mqtt.serial | toYaml | nindent 6}}
+    frontend:
+      {{- .Values.zigbee2mqtt.frontend | toYaml | nindent 6}}
     advanced:
-      log_output:
-        - console
-      log_level: {{ .Values.zigbee2mqtt.advanced.log_level }}
-      timestamp_format: 'YYYY-MM-DD HH:mm:ss'
-      transmit_power: {{ .Values.zigbee2mqtt.advanced.transmit_power }}
-      homeassistant_legacy_entity_attributes: {{ .Values.zigbee2mqtt.advanced.homeassistant_legacy_entity_attributes }}
-      legacy_api:  {{ .Values.zigbee2mqtt.advanced.legacy_api }}
-      legacy_availability_payload: {{ .Values.zigbee2mqtt.advanced.legacy_availability_payload }}
-
+      {{- .Values.zigbee2mqtt.advanced | toYaml | nindent 6}}
