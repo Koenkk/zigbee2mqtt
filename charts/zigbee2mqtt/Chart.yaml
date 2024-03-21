@@ -13,5 +13,5 @@ icon: https://www.zigbee2mqtt.io/logo.png
 sources:
   - https://github.com/Koenkk/zigbee2mqtt
 maintainers:
-  - name: XXXX
+  - name: Koen Kanters
     email: XXXX

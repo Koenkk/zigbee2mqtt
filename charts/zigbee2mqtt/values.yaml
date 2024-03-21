@@ -48,9 +48,9 @@ zigbee2mqtt:
     discovery_topic: 'homeassistant'
     status_topic: 'hass/status'
     legacy_entity_attributes: true
-    legacy_triggers: true
+    legacy_triggers: false
   # -- Optional: allow new devices to join.
-  permit_join: true
+  permit_join: false
   availability:
     active:
       # -- Time after which an active device will be marked as offline in
@@ -157,7 +157,7 @@ zigbee2mqtt:
     # when binding devices. Docs can still be found here: https://github.com/Koenkk/zigbee2mqtt.io/blob/master/docs/information/report.md
     report: true
     # -- Optional: disables the legacy api (default: shown below)
-    legacy_api: true
+    legacy_api: false
     # -- Optional: MQTT output type: json, attribute or attribute_and_json (default: shown below)
     # Examples when 'state' of a device is published
     # json: topic: 'zigbee2mqtt/my_bulb' payload '{"state": "ON"}'
