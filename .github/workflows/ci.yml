@@ -19,6 +19,8 @@ jobs:
         node-version: 20
         registry-url: https://registry.npmjs.org/
         cache: npm
+    - name: yq - portable yaml processor
+      uses: mikefarah/yq@v4.43.1
     - name: Install dependencies
       run: npm ci
     - name: Build
@@ -109,6 +111,8 @@ jobs:
         jq ".version = \"$TAG-dev\"" package-lock.json > package-lock.json.tmp
         mv package.json.tmp package.json
         mv package-lock.json.tmp package-lock.json
+        yq -i ".image.tag=${$TAG-dev}" charts/zigbee2mqtt/values.yaml
+        yq -i ".appVersion=${TAG-dev}" charts/zigbee2mqtt/Chart.yaml
         git add -A
         git commit -m "chore: promote to dev"
         git push origin dev

@@ -3,17 +3,15 @@ nameOverride: null
 # -- override the name of the objects generated
 fullnameOverride: null
 customLabels: {}
-
 image:
   # -- Image repository for the `zigbee2mqtt` container.
   repository: koenkk/zigbee2mqtt
   # -- Version for the `zigbee2mqtt` container.
-  tag: 1.36.0
+  tag: 33
   # -- Container pull policy
   pullPolicy: IfNotPresent
   # -- Container additional secrets to pull image
-  imagePullSecrets: { }
-
+  imagePullSecrets: {}
 service:
   # -- annotations for the service created
   annotations: {}
@@ -21,7 +19,6 @@ service:
   type: LoadBalancer
   # -- port in which the service will be listening
   port: 8080
-
 statefulset:
   storage:
     # -- the name for the storage class to be used in the persistent volume claim
@@ -41,7 +38,6 @@ statefulset:
   # -- Select specific kube node, this will allow enforcing zigbee2mqtt running
   # only on the node with the USB adapter connected
   nodeSelector: {}
-
 zigbee2mqtt:
   homeassistant:
     enabled: true
@@ -175,9 +171,6 @@ zigbee2mqtt:
     # In case you are having issues try `200`.
     # For more information see https://github.com/Koenkk/zigbee2mqtt/issues/4884
     adapter_delay: 0
-
-
-
 ingress:
   # -- When enabled a new Ingress will be created
   enabled: true
@@ -199,4 +192,3 @@ ingress:
   # list of hosts that should be allowed for the zigbee2mqtt service
   hosts:
     - yourdomain.com
-
