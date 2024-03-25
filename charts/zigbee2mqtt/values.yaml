@@ -1,0 +1,194 @@
+# -- override the release name
+nameOverride: null
+# -- override the name of the objects generated
+fullnameOverride: null
+customLabels: {}
+image:
+  # -- Image repository for the `zigbee2mqtt` container.
+  repository: koenkk/zigbee2mqtt
+  # -- Version for the `zigbee2mqtt` container.
+  tag: 33
+  # -- Container pull policy
+  pullPolicy: IfNotPresent
+  # -- Container additional secrets to pull image
+  imagePullSecrets: {}
+service:
+  # -- annotations for the service created
+  annotations: {}
+  # -- type of Service to be created
+  type: LoadBalancer
+  # -- port in which the service will be listening
+  port: 8080
+statefulset:
+  storage:
+    # -- the name for the storage class to be used in the persistent volume claim
+    storageClassName: nfs-csi
+  # -- pod dns policy
+  dnsPolicy: ClusterFirst
+  # -- CPU/Memory configuration for the pods
+  resources:
+    requests:
+      memory: 600Mi
+      cpu: 200m
+    limits:
+      memory: 600Mi
+      cpu: 200m
+  # -- Node taint tolerations for the pods
+  tolerations: {}
+  # -- Select specific kube node, this will allow enforcing zigbee2mqtt running
+  # only on the node with the USB adapter connected
+  nodeSelector: {}
+zigbee2mqtt:
+  homeassistant:
+    enabled: true
+    discovery_topic: 'homeassistant'
+    status_topic: 'hass/status'
+    legacy_entity_attributes: true
+    legacy_triggers: false
+  # -- Optional: allow new devices to join.
+  permit_join: false
+  availability:
+    active:
+      # -- Time after which an active device will be marked as offline in
+      # minutes (default = 10 minutes)
+      timeout: 10
+    passive:
+      # -- Time after which a passive device will be marked as offline in
+      # minutes (default = 1500 minutes aka 25 hours)
+      timeout: 1500
+  timezone: UTC
+  external_converters: []
+  mqtt:
+    # -- Required: MQTT server URL (use mqtts:// for SSL/TLS connection)
+    server: 'mqtt://localhost:1883'
+    # -- Optional: MQTT base topic for Zigbee2MQTT MQTT messages (default: zigbee2mqtt)
+    # base_topic: zigbee2mqtt
+    # -- Optional: absolute path to SSL/TLS certificate of CA used to sign server and client certificates (default: nothing)
+    # ca: '/etc/ssl/mqtt-ca.crt'
+    # -- Optional: absolute paths to SSL/TLS key and certificate for client-authentication (default: nothing)
+    # key: '/etc/ssl/mqtt-client.key'
+    # cert: '/etc/ssl/mqtt-client.crt'
+    # -- Optional: MQTT server authentication user (default: nothing)
+    # user: my_user
+    # -- Optional: MQTT server authentication password (default: nothing)
+    # password: my_password
+    # -- Optional: MQTT client ID (default: nothing)
+    # client_id: 'MY_CLIENT_ID'
+    # -- Optional: disable self-signed SSL certificates (default: true)
+    # reject_unauthorized: true
+    # -- Optional: Include device information to mqtt messages (default: false)
+    # include_device_information: true
+    # -- Optional: MQTT keepalive in seconds (default: 60)
+    # keepalive: 60
+    # -- Optional: MQTT protocol version (default: 4), set this to 5 if you
+    # use the 'retention' device specific configuration
+    # version: 4
+    # -- Optional: Disable retain for all send messages. ONLY enable if you MQTT broker doesn't
+    # support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform).
+    # Enabling will break the Home Assistant integration. (default: false)
+    # force_disable_retain: false
+  serial:
+    # -- Required: location of the adapter (e.g. CC2531).
+    # USB adapters - use format "port: /dev/ttyACM0"
+    # To autodetect the USB port, set 'port: null'.
+    # Ethernet adapters - use format "port: tcp://192.168.1.12:6638"
+    port: /dev/ttyACM0
+    # -- Optional: disable LED of the adapter if supported (default: false)
+    disable_led: false
+    # -- Optional: adapter type, not needed unless you are experiencing problems (default: shown below, options: zstack, deconz, ezsp)
+    adapter: null
+    # -- Optional: Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600.
+    baudrate: 115200
+    # -- Optional: RTS / CTS Hardware Flow Control for serial port (default: false)
+    rtscts: false
+  # -- Optional: OTA update settings
+  # See https://www.zigbee2mqtt.io/guide/usage/ota_updates.html for more info
+  ota:
+    # -- Optional: use IKEA TRADFRI OTA test server, see OTA updates documentation (default: false)
+    ikea_ota_use_test_url: false
+    # -- Minimum time between OTA update checks
+    update_check_interval: 1440
+    # -- Disable automatic update checks
+    disable_automatic_update_check: false
+  frontend:
+    # -- Mandatory, default 8080
+    port: 8080
+    # -- Optional, empty by default to listen on both IPv4 and IPv6. Opens a unix socket when given a path instead of an address (e.g. '/run/zigbee2mqtt/zigbee2mqtt.sock')
+    # Don't set this if you use Docker or the Home Assistant add-on unless you're sure the chosen IP is available inside the container
+    host: 0.0.0.0
+    # -- Optional, enables authentication, disabled by default, cleartext (no hashing required)
+    auth_token: null
+    # -- Optional, url on which the frontend can be reached, currently only used for the Home Assistant device configuration page
+    url: null
+  advanced:
+    # -- Optional: ZigBee pan ID (default: shown below)
+    # Setting pan_id: GENERATE will make Zigbee2MQTT generate a new panID on next startup
+    pan_id: null
+    #  Optional: Zigbee extended pan ID, GENERATE will make Zigbee2MQTT generate a new extended panID on next startup (default: shown below)
+    ext_pan_id: null
+    # --  Optional: ZigBee channel, changing requires re-pairing of all devices. (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)
+    # (default: 11)
+    channel: 11
+    # --  Optional: network encryption key
+    # GENERATE will make Zigbee2MQTT generate a new network key on next startup
+    # Note: changing requires repairing of all devices (default: shown below)
+    network_key: null
+    log_output:
+      - console
+    log_level: info
+    timestamp_format: 'YYYY-MM-DD HH:mm:ss'
+    # -- Optional: state caching, MQTT message payload will contain all attributes, not only changed ones.
+    # -- Has to be true when integrating via Home Assistant (default: true)
+    cache_state: true
+    # -- Optional: persist cached state, only used when cache_state: true (default: true)
+    cache_state_persistent: true
+    # -- Optional: send cached state on startup, only used when cache_state_persistent: true (default: true)
+    cache_state_send_on_startup: true
+    # -- Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message
+    # possible values are: disable (default), ISO_8601, ISO_8601_local, epoch (default: disable)
+    last_seen: 'disable'
+    # -- Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg (default: false)
+    elapsed: false
+    # -- Optional: Enables report feature, this feature is DEPRECATED since reporting is now setup by default
+    # when binding devices. Docs can still be found here: https://github.com/Koenkk/zigbee2mqtt.io/blob/master/docs/information/report.md
+    report: true
+    # -- Optional: disables the legacy api (default: shown below)
+    legacy_api: false
+    # -- Optional: MQTT output type: json, attribute or attribute_and_json (default: shown below)
+    # Examples when 'state' of a device is published
+    # json: topic: 'zigbee2mqtt/my_bulb' payload '{"state": "ON"}'
+    # attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON"
+    # attribute_and_json:
+    # -- Optional: configure adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)
+    adapter_concurrent: null
+    # -- Optional: Transmit power setting in dBm (default: 5).
+    # This will set the transmit power for devices that bring an inbuilt amplifier.
+    # It can't go over the maximum of the respective hardware and might be limited
+    # by firmware (for example to migrate heat, or by using an unsupported firmware).
+    # For the CC2652R(B) this is 5 dBm, CC2652P/CC1352P-2 20 dBm.
+    transmit_power: 5
+    # -- Optional: Set the adapter delay, only used for Conbee/Raspbee adapters (default 0).
+    # In case you are having issues try `200`.
+    # For more information see https://github.com/Koenkk/zigbee2mqtt/issues/4884
+    adapter_delay: 0
+ingress:
+  # -- When enabled a new Ingress will be created
+  enabled: true
+  # The ingress class name for the ingress
+  ingressClassName: contour
+  # Additional labels for the ingres
+  labels: {}
+  # URL in which the ingress will be accepting requests for zigbee2mqtt
+  path: /
+  # Ingress implementation specific (potentially) for most use cases Prefix should be ok
+  pathType: Prefix
+  # Additional annotations for the ingress. ExternalDNS, and CertManager are tipically integrated here
+  annotations: {}
+  # configuration for tls service (ig any)
+  tls:
+    - secretName: some-tls-secret
+      hosts:
+        - yourdomain.com
+  # list of hosts that should be allowed for the zigbee2mqtt service
+  hosts:
+    - yourdomain.com
