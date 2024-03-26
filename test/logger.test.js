@@ -15,12 +15,12 @@ describe('Logger', () => {
         settings = require('../lib/util/settings');
         settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
         settings.reRead();
-        stdOutWriteOriginal = console._stdout.write;
-        console._stdout.write = () => {};
+        // stdOutWriteOriginal = console._stdout.write;
+        // console._stdout.write = () => {};
     });
 
     afterEach(async () => {
-        console._stdout.write = stdOutWriteOriginal;
+        // console._stdout.write = stdOutWriteOriginal;
     });
 
     it('Create log directory', () => {
@@ -68,7 +68,18 @@ describe('Logger', () => {
         logger.init();
         logger.logOutput();
         logger.setLevel('debug');
+        logger.debug('debug');
         expect(logger.getLevel()).toBe('debug');
+        logger.setLevel('info');
+        logger.info('info');
+        expect(logger.getLevel()).toBe('info');
+        logger.setLevel('warning');
+        logger.warning('warning');
+        expect(logger.getLevel()).toBe('warning');
+        logger.setLevel('error');
+        logger.error('error');
+        expect(logger.getLevel()).toBe('error');
+        logger.error(new Error('Error()'))
     });
 
     it('Add transport', () => {
@@ -82,15 +93,6 @@ describe('Logger', () => {
         expect(logger.winston().transports.length).toBe(2);
         logger.addTransport(new DummyTransport());
         expect(logger.winston().transports.length).toBe(3);
-    });
-
-    it('Set and get log level warn <-> warning', () => {
-        const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        logger.setLevel('warn');
-        expect(logger.winston().transports[0].level).toBe('warning');
-        expect(logger.getLevel()).toBe('warn');
     });
 
     it('Logger should be console and file by default', () => {
@@ -164,24 +166,38 @@ describe('Logger', () => {
     it('Log', () => {
         const logger = require('../lib/util/logger').default;
         logger.init();
-        const warn = jest.spyOn(logger.winston(), 'warning');
-        logger.warn('warn');
-        expect(warn).toHaveBeenCalledWith('warn');
+        logger.setLevel('debug');
 
         const debug = jest.spyOn(logger.winston(), 'debug');
         logger.debug('debug');
-        expect(debug).toHaveBeenCalledWith('debug');
-
-        const warning = jest.spyOn(logger.winston(), 'warning');
-        logger.warning('warning');
-        expect(warning).toHaveBeenCalledWith('warning');
+        expect(debug).toHaveBeenCalledWith('debug', {service: 'zigbee2mqtt'});
+        expect(debug).toHaveBeenCalledTimes(1);
 
         const info = jest.spyOn(logger.winston(), 'info');
         logger.info('info');
-        expect(info).toHaveBeenCalledWith('info');
+        expect(info).toHaveBeenCalledWith('info', {service: 'zigbee2mqtt'});
+        expect(info).toHaveBeenCalledTimes(1);
+
+        const warning = jest.spyOn(logger.winston(), 'warning');
+        logger.warning('warning');
+        expect(warning).toHaveBeenCalledWith('warning', {service: 'zigbee2mqtt'});
+        expect(warning).toHaveBeenCalledTimes(1);
 
         const error = jest.spyOn(logger.winston(), 'error');
         logger.error('error');
-        expect(error).toHaveBeenCalledWith('error');
+        expect(error).toHaveBeenCalledWith('error', {service: 'zigbee2mqtt'});
+
+        logger.error(new Error('error'));// test for stack=true
+        expect(error).toHaveBeenCalledWith('error', {service: 'zigbee2mqtt'});
+        expect(error).toHaveBeenCalledTimes(2);
+
+        const child = jest.spyOn(logger.winston(), 'child');
+        const cLogger = logger.child({service: 'zigbee-herdsman:test'});
+        const cError = jest.spyOn(cLogger, 'error');
+        cLogger.error('error');
+        expect(child).toHaveBeenCalledTimes(1);
+        expect(child).toHaveBeenCalledWith({service: 'zigbee-herdsman:test'});
+        expect(cError).toHaveBeenCalledTimes(3);// same function as parent, called twice above
+        expect(cError).toHaveBeenCalledWith('error');
     });
 });

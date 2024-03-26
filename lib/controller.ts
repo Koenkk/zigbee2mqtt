@@ -9,6 +9,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
 import bind from 'bind-decorator';
 import * as zhc from 'zigbee-herdsman-converters';
+import {setLogger as zhSetLogger} from 'zigbee-herdsman';
 
 // Extensions
 import ExtensionFrontend from './extension/frontend';
@@ -60,6 +61,7 @@ export class Controller {
 
     constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
         logger.init();
+        zhSetLogger(logger);
         this.eventBus = new EventBus();
         this.zigbee = new Zigbee(this.eventBus);
         this.mqtt = new MQTT(this.eventBus);

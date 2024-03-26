@@ -58,7 +58,7 @@ export default class Zigbee {
 
         let startResult;
         try {
-            this.herdsman = new Controller(herdsmanSettings, logger);
+            this.herdsman = new Controller(herdsmanSettings);
             startResult = await this.herdsman.start();
         } catch (error) {
             logger.error(`Error while starting zigbee-herdsman`);
