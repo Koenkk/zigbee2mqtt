@@ -1684,6 +1684,19 @@ export default class HomeAssistant extends Extension {
             const timer = setTimeout(async () => {
                 // Publish all device states.
                 for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
+
+                    // Expose device configurations to homeassistant
+                    // https://github.com/Koenkk/zigbee2mqtt/issues/18862
+                    this.discover(entity, true);
+
+                    if (entity.isDevice() && this.discoveredTriggers[entity.ieeeAddr]) {
+                        for (const config of this.discoveredTriggers[entity.ieeeAddr]) {
+                            const key = config.substring(0, config.indexOf('_'));
+                            const value = config.substring(config.indexOf('_') + 1);
+                            this.publishDeviceTriggerDiscover(entity, key, value, true);
+                        }
+                    }
+
                     if (this.state.exists(entity)) {
                         this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                     }
