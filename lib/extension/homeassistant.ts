@@ -128,7 +128,7 @@ export default class HomeAssistant extends Extension {
 
     override async start(): Promise<void> {
         if (!settings.get().advanced.cache_state) {
-            logger.warn('In order for Home Assistant integration to work properly set `cache_state: true');
+            logger.warning('In order for Home Assistant integration to work properly set `cache_state: true');
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;

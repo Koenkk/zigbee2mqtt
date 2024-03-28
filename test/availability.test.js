@@ -10,7 +10,7 @@ import Availability from '../lib/extension/availability';
 import flushPromises from './lib/flushPromises';
 import stringify from 'json-stable-stringify-without-jsonify';
 
-const mocks = [MQTT.publish, logger.warn, logger.debug];
+const mocks = [MQTT.publish, logger.warning, logger.debug];
 const devices = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(
     ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr])

@@ -394,7 +394,7 @@ export default class Bind extends Extension {
                     await endpoint.configureReporting(bind.cluster.name, items);
                     logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                 } catch (error) {
-                    logger.warn(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
+                    logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                 }
             }
         }
@@ -436,7 +436,7 @@ export default class Bind extends Extension {
                     await endpoint.configureReporting(cluster, items);
                     logger.info(`Successfully disabled reporting for '${entity}' cluster '${cluster}'`);
                 } catch (error) {
-                    logger.warn(`Failed to disable reporting for '${entity}' cluster '${cluster}'`);
+                    logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}'`);
                 }
             }
 

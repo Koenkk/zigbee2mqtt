@@ -35,7 +35,7 @@ export default class Configure extends Extension {
             }
 
             if (!device.definition || !device.definition.configure) {
-                logger.warn(`Skipping configure of '${device.name}', device does not require this.`);
+                logger.warning(`Skipping configure of '${device.name}', device does not require this.`);
                 return;
             }
 

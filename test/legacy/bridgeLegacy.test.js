@@ -25,7 +25,7 @@ describe('Bridge legacy', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         logger.info.mockClear();
-        logger.warn.mockClear();
+        logger.warning.mockClear();
     });
 
     afterAll(async () => {
@@ -478,6 +478,6 @@ describe('Bridge legacy', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
         expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
-        expect(logger.warn).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
+        expect(logger.warning).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
     });
 });

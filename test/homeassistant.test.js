@@ -993,9 +993,9 @@ describe('HomeAssistant extension', () => {
 
     it('Should warn when starting with cache_state false', async () => {
         settings.set(['advanced', 'cache_state'], false);
-        logger.warn.mockClear();
+        logger.warning.mockClear();
         await resetExtension();
-        expect(logger.warn).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
+        expect(logger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
     });
 
     it('Should set missing values to null', async () => {
