@@ -8,7 +8,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 
-const mocksClear = [MQTT.publish, logger.warn, logger.debug];
+const mocksClear = [MQTT.publish, logger.warning, logger.debug];
 
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const mockOnEvent = jest.fn();

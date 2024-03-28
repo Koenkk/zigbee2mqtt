@@ -261,6 +261,7 @@ const mock = {
 const mockConstructor = jest.fn().mockImplementation(() => mock);
 
 jest.mock('zigbee-herdsman', () => ({
+    ...jest.requireActual('zigbee-herdsman'),
     Controller: mockConstructor,
     Zcl: {ManufacturerCode: {SIGNIFY_NETHERLANDS_B_V: 4107}},
 }));

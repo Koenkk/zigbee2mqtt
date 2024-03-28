@@ -80,7 +80,7 @@ const defaults: RecursivePartial<Settings> = {
         log_symlink_current: false,
         log_output: ['console', 'file'],
         log_directory: path.join(data.getPath(), 'log', '%TIMESTAMP%'),
-        log_file: 'log.txt',
+        log_file: 'log.log',
         log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
         log_syslog: {},
         pan_id: 0x1a62,
