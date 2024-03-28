@@ -445,7 +445,7 @@ export default class BridgeLegacy extends Extension {
                 stringify({type: `touchlink`, message: 'reset_success', meta: {status: 'success'}}),
             );
         } else {
-            logger.warn('Failed to factory reset device through Touchlink');
+            logger.warning('Failed to factory reset device through Touchlink');
             this.mqtt.publish(
                 'bridge/log',
                 stringify({type: `touchlink`, message: 'reset_failed', meta: {status: 'failed'}}),

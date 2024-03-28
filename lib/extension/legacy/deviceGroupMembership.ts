@@ -36,7 +36,7 @@ export default class DeviceGroupMembership extends Extension {
         );
 
         if (!response) {
-            logger.warn(`Couldn't get group membership of ${device.ieeeAddr}`);
+            logger.warning(`Couldn't get group membership of ${device.ieeeAddr}`);
             return;
         }
 

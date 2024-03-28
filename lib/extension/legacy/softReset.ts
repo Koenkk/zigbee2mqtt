@@ -39,16 +39,16 @@ export default class SoftReset extends Extension {
     }
 
     private async handleTimeout(): Promise<void> {
-        logger.warn('Soft reset timeout triggered');
+        logger.warning('Soft reset timeout triggered');
 
         try {
             await this.zigbee.reset('soft');
-            logger.warn('Soft reset ZNP due to timeout');
+            logger.warning('Soft reset ZNP due to timeout');
         } catch (error) {
-            logger.warn('Soft reset failed, trying stop/start');
+            logger.warning('Soft reset failed, trying stop/start');
 
             await this.zigbee.stop();
-            logger.warn('Zigbee stopped');
+            logger.warning('Zigbee stopped');
 
             try {
                 await this.zigbee.start();
