@@ -111,8 +111,9 @@ jobs:
         jq ".version = \"$TAG-dev\"" package-lock.json > package-lock.json.tmp
         mv package.json.tmp package.json
         mv package-lock.json.tmp package-lock.json
-        yq -i ".image.tag=${$TAG-dev}" charts/zigbee2mqtt/values.yaml
-        yq -i ".appVersion=${TAG-dev}" charts/zigbee2mqtt/Chart.yaml
+        yq -i ".image.tag=${$TAG}" charts/zigbee2mqtt/values.yaml
+        yq -i ".appVersion=${TAG}" charts/zigbee2mqtt/Chart.yaml
+        yq -i ".version=${TAG}+chart1" charts/zigbee2mqtt/Chart.yaml
         git add -A
         git commit -m "chore: promote to dev"
         git push origin dev
