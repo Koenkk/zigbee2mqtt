@@ -178,29 +178,25 @@ describe('Logger', () => {
 
         const debug = jest.spyOn(logger.winston(), 'debug');
         logger.debug('debug');
-        expect(debug).toHaveBeenCalledWith('debug', {namespace: 'zigbee2mqtt'});
+        expect(debug).toHaveBeenCalledWith('debug', {namespace: 'z2m'});
         expect(debug).toHaveBeenCalledTimes(1);
 
         const info = jest.spyOn(logger.winston(), 'info');
         logger.info('info');
-        expect(info).toHaveBeenCalledWith('info', {namespace: 'zigbee2mqtt'});
+        expect(info).toHaveBeenCalledWith('info', {namespace: 'z2m'});
         expect(info).toHaveBeenCalledTimes(1);
 
         const warning = jest.spyOn(logger.winston(), 'warning');
         logger.warning('warning');
-        expect(warning).toHaveBeenCalledWith('warning', {namespace: 'zigbee2mqtt'});
+        expect(warning).toHaveBeenCalledWith('warning', {namespace: 'z2m'});
         expect(warning).toHaveBeenCalledTimes(1);
-
-        logger.warn('warn');
-        expect(warning).toHaveBeenCalledWith('warn', {namespace: 'zigbee2mqtt'});
-        expect(warning).toHaveBeenCalledTimes(2);
 
         const error = jest.spyOn(logger.winston(), 'error');
         logger.error('error');
-        expect(error).toHaveBeenCalledWith('error', {namespace: 'zigbee2mqtt'});
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
 
         logger.error(new Error('error'));// test for stack=true
-        expect(error).toHaveBeenCalledWith('error', {namespace: 'zigbee2mqtt'});
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
         expect(error).toHaveBeenCalledTimes(2);
     });
 });

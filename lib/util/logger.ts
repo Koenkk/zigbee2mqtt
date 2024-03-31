@@ -138,27 +138,20 @@ function setLevel(level: LogLevel | 'warn'): void {
     logger.transports.forEach((transport) => transport.level = level);
 }
 
-// eslint-disable-next-line valid-jsdoc
-/** @deprecated TODO: change all code references to `warning` in zhc */
-function warn(message: string, namespace: string = 'zigbee2mqtt'): void {
+function warning(message: string, namespace: string = 'z2m'): void {
     // @ts-expect-error syslog level
     logger.warning(message, {namespace});
 }
 
-function warning(message: string, namespace: string = 'zigbee2mqtt'): void {
-    // @ts-expect-error syslog level
-    logger.warning(message, {namespace});
-}
-
-function info(message: string, namespace: string = 'zigbee2mqtt'): void {
+function info(message: string, namespace: string = 'z2m'): void {
     logger.info(message, {namespace});
 }
 
-function debug(message: string, namespace: string = 'zigbee2mqtt'): void {
+function debug(message: string, namespace: string = 'z2m'): void {
     logger.debug(message, {namespace});
 }
 
-function error(message: string, namespace: string = 'zigbee2mqtt'): void {
+function error(message: string, namespace: string = 'z2m'): void {
     logger.error(message, {namespace});
 }
 
@@ -210,6 +203,6 @@ async function end(): Promise<void> {
 }
 
 export default {
-    init, logOutput, warn, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end,
+    init, logOutput, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end,
     winston: (): winston.Logger => logger,
 };
