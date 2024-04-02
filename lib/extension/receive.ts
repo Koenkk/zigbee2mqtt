@@ -118,7 +118,7 @@ export default class Receive extends Extension {
         //   for e.g. click switches where we need to count number of clicks and detect long presses.
         const publish = (payload: KeyValue): void => {
             const options: KeyValue = data.device.options;
-            zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options, logger);
+            zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
 
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
