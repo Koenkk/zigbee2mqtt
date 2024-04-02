@@ -87,7 +87,7 @@ export default class Availability extends Extension {
                 logger.debug(`Successfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
-                logger.warn(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
+                logger.warning(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await utils.sleep(3);

@@ -58,7 +58,7 @@ export default class Zigbee {
 
         let startResult;
         try {
-            this.herdsman = new Controller(herdsmanSettings, logger);
+            this.herdsman = new Controller(herdsmanSettings);
             startResult = await this.herdsman.start();
         } catch (error) {
             logger.error(`Error while starting zigbee-herdsman`);
@@ -103,7 +103,7 @@ export default class Zigbee {
         });
         this.herdsman.on('deviceLeave', (data: ZHEvents.DeviceLeavePayload) => {
             const name = settings.getDevice(data.ieeeAddr)?.friendly_name || data.ieeeAddr;
-            logger.warn(`Device '${name}' left the network`);
+            logger.warning(`Device '${name}' left the network`);
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
         });
         this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
@@ -134,11 +134,11 @@ export default class Zigbee {
             };
             if (passlist.length > 0) {
                 if (!passlist.includes(device.ieeeAddr)) {
-                    logger.warn(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`);
+                    logger.warning(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`);
                     await remove(device);
                 }
             } else if (blocklist.includes(device.ieeeAddr)) {
-                logger.warn(`Device on blocklist is connected (${device.ieeeAddr}), removing...`);
+                logger.warning(`Device on blocklist is connected (${device.ieeeAddr}), removing...`);
                 await remove(device);
             }
         }
@@ -162,7 +162,7 @@ export default class Zigbee {
                 const {vendor, description, model} = data.device.definition;
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {
-                logger.warn(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
+                logger.warning(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
                     `'${data.device.zh.manufacturerName}' is NOT supported, ` +
                     // eslint-disable-next-line max-len
                     `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);

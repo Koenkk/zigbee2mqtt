@@ -69,6 +69,25 @@ describe('Logger', () => {
         logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
+        logger.setLevel('info');
+        expect(logger.getLevel()).toBe('info');
+        logger.setLevel('warning');
+        expect(logger.getLevel()).toBe('warning');
+        logger.setLevel('warn');
+        expect(logger.getLevel()).toBe('warning');
+        logger.setLevel('error');
+        expect(logger.getLevel()).toBe('error');
+    });
+
+    it('Set warning when log level is warn', () => {
+        settings.set(['advanced', 'log_level'], 'warn');
+        settings.reRead();
+        const logger = require('../lib/util/logger').default;
+        logger.init();
+        logger.logOutput();
+        expect(logger.getLevel()).toBe('warning');
+        settings.set(['advanced', 'log_level'], 'info');
+        settings.reRead();
     });
 
     it('Add transport', () => {
@@ -82,15 +101,6 @@ describe('Logger', () => {
         expect(logger.winston().transports.length).toBe(2);
         logger.addTransport(new DummyTransport());
         expect(logger.winston().transports.length).toBe(3);
-    });
-
-    it('Set and get log level warn <-> warning', () => {
-        const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        logger.setLevel('warn');
-        expect(logger.winston().transports[0].level).toBe('warning');
-        expect(logger.getLevel()).toBe('warn');
     });
 
     it('Logger should be console and file by default', () => {
@@ -164,24 +174,29 @@ describe('Logger', () => {
     it('Log', () => {
         const logger = require('../lib/util/logger').default;
         logger.init();
-        const warn = jest.spyOn(logger.winston(), 'warning');
-        logger.warn('warn');
-        expect(warn).toHaveBeenCalledWith('warn');
+        logger.setLevel('debug');
 
         const debug = jest.spyOn(logger.winston(), 'debug');
         logger.debug('debug');
-        expect(debug).toHaveBeenCalledWith('debug');
-
-        const warning = jest.spyOn(logger.winston(), 'warning');
-        logger.warning('warning');
-        expect(warning).toHaveBeenCalledWith('warning');
+        expect(debug).toHaveBeenCalledWith('debug', {namespace: 'z2m'});
+        expect(debug).toHaveBeenCalledTimes(1);
 
         const info = jest.spyOn(logger.winston(), 'info');
         logger.info('info');
-        expect(info).toHaveBeenCalledWith('info');
+        expect(info).toHaveBeenCalledWith('info', {namespace: 'z2m'});
+        expect(info).toHaveBeenCalledTimes(1);
+
+        const warning = jest.spyOn(logger.winston(), 'warning');
+        logger.warning('warning');
+        expect(warning).toHaveBeenCalledWith('warning', {namespace: 'z2m'});
+        expect(warning).toHaveBeenCalledTimes(1);
 
         const error = jest.spyOn(logger.winston(), 'error');
         logger.error('error');
-        expect(error).toHaveBeenCalledWith('error');
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
+
+        logger.error(new Error('error'));// test for stack=true
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
+        expect(error).toHaveBeenCalledTimes(2);
     });
 });
