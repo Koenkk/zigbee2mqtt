@@ -381,7 +381,7 @@ describe('HomeAssistant extension', () => {
                     "zigbee2mqtt_0x000b57fffec6a5b2"
                 ],
                 "manufacturer":"IKEA",
-                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                 "name":"bulb",
                 "sw_version": null,
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -1482,7 +1482,7 @@ describe('HomeAssistant extension', () => {
                 ],
                 "name":"bulb",
                 'sw_version': null,
-                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                 "manufacturer":"IKEA",
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
@@ -2037,7 +2037,7 @@ describe('HomeAssistant extension', () => {
                   "zigbee2mqtt_0x000b57fffec6a5b2"
                ],
                "manufacturer":"IKEA",
-               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                "name":"bulb",
                "sw_version":null,
                "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -2088,7 +2088,7 @@ describe('HomeAssistant extension', () => {
                   "zigbee2mqtt_0x000b57fffec6a5b2"
                ],
                "manufacturer":"IKEA",
-               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                "name":"bulb",
                "sw_version": null,
                "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
