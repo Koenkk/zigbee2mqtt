@@ -58,9 +58,9 @@ describe('Logger', () => {
         }
 
         settings.set(['advanced', 'log_directory'], dir.name + '/bla');
-        expect(fs.readdirSync(dir.name).length).toBe(20);
+        expect(fs.readdirSync(dir.name).length).toBe(21);
         logger.cleanup();
-        expect(fs.readdirSync(dir.name).length).toBe(20);
+        expect(fs.readdirSync(dir.name).length).toBe(21);
     })
 
     it('Set and get log level', () => {
