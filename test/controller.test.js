@@ -280,7 +280,7 @@ describe('Controller', () => {
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(logger.debug).toHaveBeenCalledTimes(0);
+        expect(logger.debug).toHaveBeenCalledTimes(1);
     });
 
     it('On zigbee event message', async () => {
