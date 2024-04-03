@@ -28,6 +28,7 @@ export default class Bridge extends Extension {
     private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
     private lastJoinedDeviceIeeeAddr: string;
+    private lastBridgeLoggingPayload: string;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<MQTTResponse>};
 
     override async start(): Promise<void> {
@@ -59,11 +60,18 @@ export default class Bridge extends Extension {
         };
 
         const mqtt = this.mqtt;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
         class EventTransport extends Transport {
             log(info: {message: string, level: string}, callback: () => void): void {
-                const payload = stringify({message: info.message, level: info.level});
-                mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
-                callback();
+                if (info.level !== 'debug') {
+                    const payload = stringify({message: info.message, level: info.level});
+                    if (payload !== self.lastBridgeLoggingPayload) {
+                        self.lastBridgeLoggingPayload = payload;
+                        mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
+                        callback();
+                    }
+                }
             }
         }
 
