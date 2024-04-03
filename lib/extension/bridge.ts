@@ -71,9 +71,9 @@ export default class Bridge extends Extension {
                     if (payload !== self.lastBridgeLoggingPayload) {
                         self.lastBridgeLoggingPayload = payload;
                         mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
-                        next();
                     }
                 }
+                next();
             }
         }
 
