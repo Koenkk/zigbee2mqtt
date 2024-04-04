@@ -215,7 +215,7 @@ export default class Availability extends Extension {
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
-                        message: this.state.get(device), mapped: device.definition, logger, endpoint_name: null,
+                        message: this.state.get(device), mapped: device.definition, endpoint_name: null,
                         options, state, device: device.zh,
                     };
                     await converter?.convertGet?.(device.endpoint(), item.keys[0], meta)
