@@ -72,7 +72,7 @@ describe('OTA update', () => {
         mockClear(mapped);
         logger.info.mockClear();
         device.save.mockClear();
-        mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
+        mapped.ota.updateToLatest.mockImplementationOnce((a, onUpdate) => {
             onUpdate(0, null);
             onUpdate(10, 3600.2123);
             return 90;
@@ -83,7 +83,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
+        expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, expect.any(Function));
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
@@ -126,7 +126,7 @@ describe('OTA update', () => {
         const mapped = await zigbeeHerdsmanConverters.findByDevice(device)
         mockClear(mapped);
         device.save.mockClear();
-        mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
+        mapped.ota.updateToLatest.mockImplementationOnce((a, onUpdate) => {
             throw new Error('Update failed');
         });
 
@@ -260,7 +260,7 @@ describe('OTA update', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, {"imageType": 12382});
         expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
@@ -294,7 +294,7 @@ describe('OTA update', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, {"imageType": 12382});
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -316,7 +316,7 @@ describe('OTA update', () => {
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, logger, {"imageType": 12382});
+        expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, {"imageType": 12382});
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -374,7 +374,7 @@ describe('OTA update', () => {
         logger.info.mockClear();
         logger.error.mockClear();
         device.save.mockClear();
-        mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
+        mapped.ota.updateToLatest.mockImplementationOnce((a, onUpdate) => {
             onUpdate(0, null);
             onUpdate(10, 3600);
             return 91;
@@ -385,7 +385,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
-        expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, logger, expect.any(Function));
+        expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, expect.any(Function));
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
@@ -404,7 +404,7 @@ describe('OTA update', () => {
         logger.info.mockClear();
         logger.error.mockClear();
         device.save.mockClear();
-        mapped.ota.updateToLatest.mockImplementationOnce((a, b, onUpdate) => {
+        mapped.ota.updateToLatest.mockImplementationOnce((a, onUpdate) => {
             throw new Error('Update failed');
         });
 
