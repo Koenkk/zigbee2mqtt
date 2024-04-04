@@ -98,7 +98,7 @@ export default class OTAUpdate extends Extension {
             try {
                 // @ts-expect-error typing guaranteed by data.type
                 const dataData: zhc.ota.ImageInfo = data.data;
-                availableResult = await data.device.definition.ota.isUpdateAvailable(data.device.zh, logger, dataData);
+                availableResult = await data.device.definition.ota.isUpdateAvailable(data.device.zh, dataData);
             } catch (e) {
                 supportsOTA = false;
                 logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`);
@@ -206,7 +206,7 @@ export default class OTAUpdate extends Extension {
                 }
 
                 try {
-                    const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, logger, null);
+                    const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, null);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -270,7 +270,7 @@ export default class OTAUpdate extends Extension {
                     };
 
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
-                    const fileVersion = await device.definition.ota.updateToLatest(device.zh, logger, onProgress);
+                    const fileVersion = await device.definition.ota.updateToLatest(device.zh, onProgress);
                     logger.info(`Finished update of '${device.name}'`);
                     this.eventBus.emitReconfigure({device});
                     this.removeProgressAndRemainingFromState(device);
