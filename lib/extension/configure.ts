@@ -96,8 +96,7 @@ export default class Configure extends Extension {
                 return;
             }
 
-            if (device.zh.meta?.hasOwnProperty('configured') &&
-                device.zh.meta.configured === zhc.getConfigureKey(device.definition)) {
+            if (device.zh.meta?.hasOwnProperty('configured')) {
                 return;
             }
 
