@@ -119,6 +119,10 @@ function addTransport(transport: winston.transport): void {
     logger.add(transport);
 }
 
+function removeTransport(transport: winston.transport): void {
+    logger.remove(transport);
+}
+
 // TODO refactor Z2M level to 'warning' to simplify logic
 function getLevel(): LogLevel | 'warn' {
     let level = transportsToUse[0].level;
@@ -203,6 +207,6 @@ async function end(): Promise<void> {
 }
 
 export default {
-    init, logOutput, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end,
+    init, logOutput, warning, error, info, debug, setLevel, getLevel, cleanup, addTransport, end, removeTransport,
     winston: (): winston.Logger => logger,
 };

@@ -1,6 +1,6 @@
 let level = 'info';
 
-const transports = [];
+let transports = [];
 
 let transportsEnabled = false;
 const callTransports = (level, message, namespace) => {
@@ -21,6 +21,9 @@ const mock = {
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
     addTransport: (transport) => transports.push(transport),
+    removeTransport: (transport) => {
+        transports = transports.filter((t) => t !== transport);
+    },
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
     setTransportsEnabled: (value) => {transportsEnabled = value},

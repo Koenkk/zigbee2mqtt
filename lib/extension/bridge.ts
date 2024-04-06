@@ -13,6 +13,7 @@ import data from '../util/data';
 import JSZip from 'jszip';
 import fs from 'fs';
 import * as zhc from 'zigbee-herdsman-converters';
+import winston from 'winston';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
@@ -28,6 +29,8 @@ export default class Bridge extends Extension {
     private coordinatorVersion: zh.CoordinatorVersion;
     private restartRequired = false;
     private lastJoinedDeviceIeeeAddr: string;
+    private lastBridgeLoggingPayload: string;
+    private logTransport: winston.transport;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<MQTTResponse>};
 
     override async start(): Promise<void> {
@@ -59,15 +62,23 @@ export default class Bridge extends Extension {
         };
 
         const mqtt = this.mqtt;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
         class EventTransport extends Transport {
-            log(info: {message: string, level: string}, callback: () => void): void {
-                const payload = stringify({message: info.message, level: info.level});
-                mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
-                callback();
+            log(info: {message: string, level: string}, next: () => void): void {
+                if (info.level !== 'debug') {
+                    const payload = stringify({message: info.message, level: info.level});
+                    if (payload !== self.lastBridgeLoggingPayload) {
+                        self.lastBridgeLoggingPayload = payload;
+                        mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
+                    }
+                }
+                next();
             }
         }
 
-        logger.addTransport(new EventTransport());
+        this.logTransport = new EventTransport();
+        logger.addTransport(this.logTransport);
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
         this.zigbeeHerdsmanVersion = await utils.getDependencyVersion('zigbee-herdsman');
@@ -116,6 +127,11 @@ export default class Bridge extends Extension {
         await this.publishGroups();
 
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
+    }
+
+    override async stop(): Promise<void> {
+        super.stop();
+        logger.removeTransport(this.logTransport);
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {

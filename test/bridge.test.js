@@ -107,13 +107,19 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         logger.info.mockClear();
         logger.info("this is a test");
+        logger.info("this is a test"); // Should not publish dupes
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/logging',
             stringify({message: 'this is a test', level: 'info'}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );
-        expect(logger.info).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+
+        // Should not publish debug logging
+        MQTT.publish.mockClear();
+        logger.debug("this is a test");
+        expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
 
     it('Shouldnt log to MQTT when not connected', async () => {

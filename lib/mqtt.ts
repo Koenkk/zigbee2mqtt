@@ -173,6 +173,7 @@ export default class MQTT {
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: {...defaultOptions, ...options}});
 
         if (!this.isConnected()) {
+            /* istanbul ignore else */
             if (!skipLog) {
                 logger.error(`Not connected to MQTT server!`);
                 logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);

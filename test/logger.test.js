@@ -90,7 +90,7 @@ describe('Logger', () => {
         settings.reRead();
     });
 
-    it('Add transport', () => {
+    it('Add/remove transport', () => {
         class DummyTransport extends Transport {
             log(info, callback) {
             }
@@ -99,8 +99,11 @@ describe('Logger', () => {
         const logger = require('../lib/util/logger').default;
         logger.init();
         expect(logger.winston().transports.length).toBe(2);
-        logger.addTransport(new DummyTransport());
+        const transport = new DummyTransport();
+        logger.addTransport(transport);
         expect(logger.winston().transports.length).toBe(3);
+        logger.removeTransport(transport);
+        expect(logger.winston().transports.length).toBe(2);
     });
 
     it('Logger should be console and file by default', () => {
