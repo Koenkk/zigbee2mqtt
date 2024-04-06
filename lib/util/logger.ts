@@ -143,7 +143,6 @@ function setLevel(level: LogLevel | 'warn'): void {
 }
 
 function warning(message: string, namespace: string = 'z2m'): void {
-    // @ts-expect-error syslog level
     logger.warning(message, {namespace});
 }
 
