@@ -127,7 +127,7 @@ export default class MQTT {
             {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
-        this.client.end();
+        this.client?.end();
     }
 
     subscribe(topic: string): void {
