@@ -60,7 +60,6 @@ export class Controller {
     private extensionArgs: ExtensionArgs;
 
     constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
-        logger.init();
         zhSetLogger(logger);
         zhcSetLogger(logger);
         this.eventBus = new EventBus();
@@ -99,7 +98,6 @@ export class Controller {
 
     async start(): Promise<void> {
         this.state.start();
-        logger.logOutput();
 
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
