@@ -83,7 +83,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -371,7 +370,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode": true,
             "supported_color_modes": ["color_temp"],
             "min_mireds": 250,
             "max_mireds": 454,
@@ -1369,7 +1367,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group_new/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -1916,7 +1913,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -1970,7 +1966,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state","value_template":'{{ value_json.state }}'}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -2030,7 +2025,6 @@ describe('HomeAssistant extension', () => {
             ],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/bulb/set",
             "device":{
                "identifiers":[
