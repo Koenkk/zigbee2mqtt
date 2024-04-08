@@ -210,7 +210,6 @@ export default class HomeAssistant extends Extension {
             ].filter((c) => c);
 
             if (colorModes.length) {
-                discoveryEntry.discovery_payload.color_mode = true;
                 discoveryEntry.discovery_payload.supported_color_modes = colorModes;
             }
 
