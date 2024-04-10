@@ -98,7 +98,6 @@ describe('Logger', () => {
     it('Logger should be console and file by default', () => {
         const logger = require('../lib/util/logger').default;
         const pipes = logger.winston._readableState.pipes;
-        console.log(pipes);
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(false);
