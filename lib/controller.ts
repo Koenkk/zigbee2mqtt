@@ -30,12 +30,14 @@ import ExtensionOnEvent from './extension/onEvent';
 import ExtensionOTAUpdate from './extension/otaUpdate';
 import ExtensionExternalConverters from './extension/externalConverters';
 import ExtensionExternalExtension from './extension/externalExtension';
+import ExtensionMatter from './extension/matter';
 
 const AllExtensions = [
     ExtensionPublish, ExtensionReceive, ExtensionNetworkMap, ExtensionSoftReset, ExtensionHomeAssistant,
     ExtensionConfigure, ExtensionDeviceGroupMembership, ExtensionBridgeLegacy, ExtensionBridge, ExtensionGroups,
     ExtensionBind, ExtensionReport, ExtensionOnEvent, ExtensionOTAUpdate,
     ExtensionExternalConverters, ExtensionFrontend, ExtensionExternalExtension, ExtensionAvailability,
+    ExtensionMatter,
 ];
 
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
@@ -93,6 +95,7 @@ export class Controller {
             settings.get().homeassistant && new ExtensionHomeAssistant(...this.extensionArgs),
             /* istanbul ignore next */
             settings.get().advanced.soft_reset_timeout !== 0 && new ExtensionSoftReset(...this.extensionArgs),
+            settings.get().matterbridge && new ExtensionMatter(...this.extensionArgs),
         ].filter((n) => n);
     }
 
