@@ -219,6 +219,7 @@ const mock = {
     touchlinkScan: jest.fn(),
     touchlinkIdentify: jest.fn(),
     start: jest.fn(),
+    getAdapterName: () => "",
     backup: jest.fn(),
     coordinatorCheck: jest.fn(),
     isStopping: jest.fn(),

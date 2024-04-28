@@ -18,6 +18,7 @@ export default class Zigbee {
     private eventBus: EventBus;
     private groupLookup: {[s: number]: Group} = {};
     private deviceLookup: {[s: string]: Device} = {};
+    private ezspDeprecatedTimer: NodeJS.Timeout;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -63,6 +64,18 @@ export default class Zigbee {
         } catch (error) {
             logger.error(`Error while starting zigbee-herdsman`);
             throw error;
+        }
+
+        /* istanbul ignore next */
+        if (this.herdsman.getAdapterName() === 'EZSPAdapter') {
+            const logEzspDeprecated = (): void => {
+                logger.warning(
+                    `Using the deprecated 'ezsp' adapter, consider switching to 'ember', ` +
+                    `see https://github.com/Koenkk/zigbee2mqtt/discussions/21462`,
+                );
+            };
+            logEzspDeprecated();
+            this.ezspDeprecatedTimer = setInterval(logEzspDeprecated, 60 * 60 * 1000); // Every 60 mins
         }
 
         for (const device of this.devices(false)) {
@@ -117,7 +130,7 @@ export default class Zigbee {
             this.eventBus.emitDeviceMessage({...data, device});
         });
 
-        logger.info(`zigbee-herdsman started (${startResult})`);
+        logger.info(`zigbee-herdsman started with adapter '${this.herdsman.getAdapterName()}' (${startResult})`);
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
         logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
 
@@ -219,6 +232,7 @@ export default class Zigbee {
 
     async stop(): Promise<void> {
         logger.info('Stopping zigbee-herdsman...');
+        clearTimeout(this.ezspDeprecatedTimer);
         await this.herdsman.stop();
         logger.info('Stopped zigbee-herdsman');
     }
