@@ -59,7 +59,7 @@
     "winston-syslog": "^2.7.0",
     "winston-transport": "^4.7.0",
     "ws": "^8.17.0",
-    "zigbee-herdsman": "0.45.0",
+    "zigbee-herdsman": "0.46.0",
     "zigbee-herdsman-converters": "19.32.0",
     "zigbee2mqtt-frontend": "0.6.165"
   },
