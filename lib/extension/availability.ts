@@ -87,7 +87,7 @@ export default class Availability extends Extension {
                 logger.debug(`Successfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
                 break;
             } catch (error) {
-                logger.warn(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
+                logger.warning(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await utils.sleep(3);
@@ -215,7 +215,7 @@ export default class Availability extends Extension {
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
-                        message: this.state.get(device), mapped: device.definition, logger, endpoint_name: null,
+                        message: this.state.get(device), mapped: device.definition, endpoint_name: null,
                         options, state, device: device.zh,
                     };
                     await converter?.convertGet?.(device.endpoint(), item.keys[0], meta)

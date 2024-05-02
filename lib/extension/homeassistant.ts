@@ -128,7 +128,7 @@ export default class HomeAssistant extends Extension {
 
     override async start(): Promise<void> {
         if (!settings.get().advanced.cache_state) {
-            logger.warn('In order for Home Assistant integration to work properly set `cache_state: true');
+            logger.warning('In order for Home Assistant integration to work properly set `cache_state: true');
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
@@ -210,7 +210,6 @@ export default class HomeAssistant extends Extension {
             ].filter((c) => c);
 
             if (colorModes.length) {
-                discoveryEntry.discovery_payload.color_mode = true;
                 discoveryEntry.discovery_payload.supported_color_modes = colorModes;
             }
 
@@ -600,6 +599,7 @@ export default class HomeAssistant extends Extension {
             discoveryEntries.push(discoveryEntry);
         } else if (isBinaryExposeFeature(firstExpose)) {
             const lookup: {[s: string]: KeyValue}= {
+                activity_led_indicator: {icon: 'mdi:led-on'},
                 auto_off: {icon: 'mdi:flash-auto'},
                 battery_low: {entity_category: 'diagnostic', device_class: 'battery'},
                 button_lock: {entity_category: 'config', icon: 'mdi:lock'},
@@ -613,7 +613,7 @@ export default class HomeAssistant extends Extension {
                 card: {entity_category: 'config', icon: 'mdi:clipboard-check'},
                 child_lock: {entity_category: 'config', icon: 'mdi:account-lock'},
                 color_sync: {entity_category: 'config', icon: 'mdi:sync-circle'},
-                consumer_connected: {entity_category: 'diagnostic', device_class: 'connectivity'},
+                consumer_connected: {device_class: 'plug'},
                 contact: {device_class: 'door'},
                 garage_door_contact: {device_class: 'garage_door', payload_on: false, payload_off: true},
                 eco_mode: {entity_category: 'config', icon: 'mdi:leaf'},
@@ -645,6 +645,7 @@ export default class HomeAssistant extends Extension {
                 tamper: {device_class: 'tamper'},
                 temperature_scale: {entity_category: 'config', icon: 'mdi:temperature-celsius'},
                 test: {entity_category: 'diagnostic', icon: 'mdi:test-tube'},
+                th_heater: {icon: 'mdi:heat-wave'},
                 trigger_indicator: {icon: 'mdi:led-on'},
                 valve_alarm: {device_class: 'problem'},
                 valve_detection: {icon: 'mdi:pipe-valve'},
@@ -683,9 +684,6 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
                 discoveryEntries.push(discoveryEntry);
             } else {
                 const discoveryEntry: DiscoveryEntry = {
@@ -700,9 +698,6 @@ export default class HomeAssistant extends Extension {
                         ...(lookup[firstExpose.name] || {}),
                     },
                 };
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 discoveryEntries.push(discoveryEntry);
             }
@@ -794,6 +789,10 @@ export default class HomeAssistant extends Extension {
                 minimum_on_level: {entity_category: 'config'},
                 measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
                 noise: {device_class: 'sound_pressure', state_class: 'measurement'},
+                noise_detect_level: {icon: 'mdi:volume-equal'},
+                noise_timeout: {icon: 'mdi:timer'},
+                occupancy_level: {icon: 'mdi:motion-sensor'},
+                occupancy_sensitivity: {icon: 'mdi:motion-sensor'},
                 occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 overload_protection: {icon: 'mdi:flash'},
                 pm10: {device_class: 'pm10', state_class: 'measurement'},
@@ -820,6 +819,7 @@ export default class HomeAssistant extends Extension {
                 temperature_calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
                 temperature_max: {entity_category: 'config', icon: 'mdi:thermometer-plus'},
                 temperature_min: {entity_category: 'config', icon: 'mdi:thermometer-minus'},
+                temperature_offset: {icon: 'mdi:thermometer-lines'},
                 transition: {entity_category: 'config', icon: 'mdi:transition'},
                 trigger_count: {icon: 'mdi:counter', enabled_by_default: false},
                 voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
@@ -894,9 +894,6 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.entity_category = 'diagnostic';
             }
 
-            // Let Home Assistant generate entity name when device_class is present
-            if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
-
             discoveryEntries.push(discoveryEntry);
 
             /**
@@ -926,9 +923,6 @@ export default class HomeAssistant extends Extension {
                 } else {
                     delete discoveryEntry.discovery_payload.device_class;
                 }
-
-                // Let Home Assistant generate entity name when device_class is present
-                if (discoveryEntry.discovery_payload.device_class) delete discoveryEntry.discovery_payload.name;
 
                 if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
                 if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
@@ -1101,6 +1095,13 @@ export default class HomeAssistant extends Extension {
             // https://github.com/Koenkk/zigbee2mqtt/pull/19474
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
+            }
+        });
+
+        discoveryEntries.forEach((d) => {
+            // Let Home Assistant generate entity name when device_class is present
+            if (d.discovery_payload.device_class) {
+                delete d.discovery_payload.name;
             }
         });
 

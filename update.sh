@@ -28,7 +28,7 @@ echo "Checking out changes to package-lock.json..."
 git checkout package-lock.json
 
 echo "Updating..."
-git pull
+git pull --no-rebase
 
 echo "Installing dependencies..."
 npm ci

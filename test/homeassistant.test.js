@@ -83,7 +83,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -371,7 +370,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode": true,
             "supported_color_modes": ["color_temp"],
             "min_mireds": 250,
             "max_mireds": 454,
@@ -381,7 +379,7 @@ describe('HomeAssistant extension', () => {
                     "zigbee2mqtt_0x000b57fffec6a5b2"
                 ],
                 "manufacturer":"IKEA",
-                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                 "name":"bulb",
                 "sw_version": null,
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -993,9 +991,9 @@ describe('HomeAssistant extension', () => {
 
     it('Should warn when starting with cache_state false', async () => {
         settings.set(['advanced', 'cache_state'], false);
-        logger.warn.mockClear();
+        logger.warning.mockClear();
         await resetExtension();
-        expect(logger.warn).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
+        expect(logger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
     });
 
     it('Should set missing values to null', async () => {
@@ -1369,7 +1367,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group_new/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -1482,7 +1479,7 @@ describe('HomeAssistant extension', () => {
                 ],
                 "name":"bulb",
                 'sw_version': null,
-                "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+                "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                 "manufacturer":"IKEA",
                 "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
@@ -1916,7 +1913,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -1970,7 +1966,6 @@ describe('HomeAssistant extension', () => {
             "availability":[{"topic":"zigbee2mqtt/bridge/state","value_template":'{{ value_json.state }}'}],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/ha_discovery_group/set",
             "device":{
                "identifiers":["zigbee2mqtt_1221051039810110150109113116116_9"],
@@ -2030,14 +2025,13 @@ describe('HomeAssistant extension', () => {
             ],
             "brightness":true,
             "brightness_scale":254,
-            "color_mode":true,
             "command_topic":"zigbee2mqtt/bulb/set",
             "device":{
                "identifiers":[
                   "zigbee2mqtt_0x000b57fffec6a5b2"
                ],
                "manufacturer":"IKEA",
-               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                "name":"bulb",
                "sw_version":null,
                "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
@@ -2088,7 +2082,7 @@ describe('HomeAssistant extension', () => {
                   "zigbee2mqtt_0x000b57fffec6a5b2"
                ],
                "manufacturer":"IKEA",
-               "model":"TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white (LED1545G12)",
+               "model":"TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)",
                "name":"bulb",
                "sw_version": null,
                "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",

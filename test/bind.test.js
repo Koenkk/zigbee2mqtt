@@ -157,7 +157,7 @@ describe('Bind', () => {
         expect(target.configureReporting).toHaveBeenCalledWith("genOnOff",[{"attribute": "onOff", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 0, "reportableChange": 0}]);
         expect(target.configureReporting).toHaveBeenCalledWith("genLevelCtrl",[{"attribute": "currentLevel", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 5, "reportableChange": 1}]);
         expect(target.configureReporting).toHaveBeenCalledWith("lightingColorCtrl",[{"attribute":"colorTemperature","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1},{"attribute":"currentX","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1},{"attribute":"currentY","minimumReportInterval":5,"maximumReportInterval":0xFFFF,"reportableChange":1}]);
-        expect(zigbeeHerdsman.devices.bulb_color.meta.configured).toBe(1324213189);
+        expect(zigbeeHerdsman.devices.bulb_color.meta.configured).toBe(332242049);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/unbind',
             stringify({"data":{"from":"remote","to":"bulb_color","clusters":["genScenes","genOnOff","genLevelCtrl"],"failed":[]},"status":"ok"}),

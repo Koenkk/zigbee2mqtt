@@ -25,16 +25,12 @@ describe('Logger', () => {
 
     it('Create log directory', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
     });
 
     it('Should cleanup', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
 
         for (const d of fs.readdirSync(dir.name)) {
             rimrafSync(path.join(dir.name, d));
@@ -51,53 +47,57 @@ describe('Logger', () => {
 
     it('Should not cleanup when there is no timestamp set', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
         for (let i = 30; i < 40; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
         settings.set(['advanced', 'log_directory'], dir.name + '/bla');
-        expect(fs.readdirSync(dir.name).length).toBe(20);
+        expect(fs.readdirSync(dir.name).length).toBe(21);
         logger.cleanup();
-        expect(fs.readdirSync(dir.name).length).toBe(20);
+        expect(fs.readdirSync(dir.name).length).toBe(21);
     })
 
     it('Set and get log level', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
+        logger.setLevel('info');
+        expect(logger.getLevel()).toBe('info');
+        logger.setLevel('warning');
+        expect(logger.getLevel()).toBe('warn');// match old Z2M levels
+        logger.setLevel('warn');
+        expect(logger.getLevel()).toBe('warn');// match old Z2M levels
+        logger.setLevel('error');
+        expect(logger.getLevel()).toBe('error');
     });
 
-    it('Add transport', () => {
+    it('Set warning when log level is warn', () => {
+        settings.set(['advanced', 'log_level'], 'warn');
+        settings.reRead();
+        const logger = require('../lib/util/logger').default;
+        expect(logger.level).toBe('warning');// getLevel() reports old Z2M level to match display/value
+        settings.set(['advanced', 'log_level'], 'info');
+        settings.reRead();
+    });
+
+    it('Add/remove transport', () => {
         class DummyTransport extends Transport {
             log(info, callback) {
             }
         }
 
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        expect(logger.winston().transports.length).toBe(2);
-        logger.addTransport(new DummyTransport());
-        expect(logger.winston().transports.length).toBe(3);
-    });
-
-    it('Set and get log level warn <-> warning', () => {
-        const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        logger.setLevel('warn');
-        expect(logger.winston().transports[0].level).toBe('warning');
-        expect(logger.getLevel()).toBe('warn');
+        expect(logger.winston.transports.length).toBe(2);
+        const transport = new DummyTransport();
+        logger.addTransport(transport);
+        expect(logger.winston.transports.length).toBe(3);
+        logger.removeTransport(transport);
+        expect(logger.winston.transports.length).toBe(2);
     });
 
     it('Logger should be console and file by default', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        const pipes = logger.winston()._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(false);
@@ -108,9 +108,7 @@ describe('Logger', () => {
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        const pipes = logger.winston()._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
         expect(pipes[0].silent).toBe(true);
@@ -121,9 +119,7 @@ describe('Logger', () => {
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        const pipes = logger.winston()._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
     });
@@ -131,9 +127,7 @@ describe('Logger', () => {
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        const pipes = logger.winston()._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
     });
@@ -141,9 +135,7 @@ describe('Logger', () => {
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
-        const pipes = logger.winston()._readableState.pipes;
+        const pipes = logger.winston._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
         expect(pipes[1].tailable).toBeFalsy();
@@ -153,8 +145,6 @@ describe('Logger', () => {
     it('Should allow to symlink logs to current directory', () => {
         settings.set(['advanced', 'log_symlink_current'], true);
         let logger = require('../lib/util/logger').default;
-        logger.init();
-        logger.logOutput();
         expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
 
         jest.resetModules();
@@ -163,25 +153,29 @@ describe('Logger', () => {
 
     it('Log', () => {
         const logger = require('../lib/util/logger').default;
-        logger.init();
-        const warn = jest.spyOn(logger.winston(), 'warning');
-        logger.warn('warn');
-        expect(warn).toHaveBeenCalledWith('warn');
+        logger.setLevel('debug');
 
-        const debug = jest.spyOn(logger.winston(), 'debug');
+        const debug = jest.spyOn(logger.winston, 'debug');
         logger.debug('debug');
-        expect(debug).toHaveBeenCalledWith('debug');
+        expect(debug).toHaveBeenCalledWith('debug', {namespace: 'z2m'});
+        expect(debug).toHaveBeenCalledTimes(1);
 
-        const warning = jest.spyOn(logger.winston(), 'warning');
-        logger.warning('warning');
-        expect(warning).toHaveBeenCalledWith('warning');
-
-        const info = jest.spyOn(logger.winston(), 'info');
+        const info = jest.spyOn(logger.winston, 'info');
         logger.info('info');
-        expect(info).toHaveBeenCalledWith('info');
+        expect(info).toHaveBeenCalledWith('info', {namespace: 'z2m'});
+        expect(info).toHaveBeenCalledTimes(1);
 
-        const error = jest.spyOn(logger.winston(), 'error');
+        const warning = jest.spyOn(logger.winston, 'warning');
+        logger.warning('warning');
+        expect(warning).toHaveBeenCalledWith('warning', {namespace: 'z2m'});
+        expect(warning).toHaveBeenCalledTimes(1);
+
+        const error = jest.spyOn(logger.winston, 'error');
         logger.error('error');
-        expect(error).toHaveBeenCalledWith('error');
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
+
+        logger.error(new Error('error'));// test for stack=true
+        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
+        expect(error).toHaveBeenCalledTimes(2);
     });
 });

@@ -23,7 +23,8 @@ jobs:
         node-version: 20
         cache: npm
     # connect-gzip-static@4.0.0 requires Node 20 >=
-    - run: npx npm-check-updates -u -x connect-gzip-static
+    # eslint: https://github.com/typescript-eslint/typescript-eslint/issues/8211
+    - run: npx npm-check-updates -u -x connect-gzip-static -x eslint
     - run: rm -f package-lock.json
     - run: npm install
     - uses: peter-evans/create-pull-request@v6

@@ -9,7 +9,7 @@ const settings = require('../lib/util/settings');
 const Controller = require('../lib/controller');
 const flushPromises = require('./lib/flushPromises');
 
-const mocksClear = [MQTT.publish, logger.warn, logger.debug];
+const mocksClear = [MQTT.publish, logger.warning, logger.debug];
 
 const expectNothingPublished = () => {
     Object.values(zigbeeHerdsman.devices).forEach((d) => {
@@ -233,6 +233,25 @@ describe('Publish', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/TS0601_switch',
             stringify({state_l2: 'ON'}),
+            { retain: false, qos: 0 },
+            expect.any(Function)
+        );
+    });
+
+    it('Should publish messages to TuYa cover switch with dummy endpoints', async () => {
+        const device = zigbeeHerdsman.devices.TS0601_cover_switch;
+        const endpoint = device.getEndpoint(1);
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/set', stringify({state: 'OPEN'}));
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/set', stringify({state_l1: 'ON'}));
+        await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/l2/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [0], datatype: 4, dp: 1}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [1], datatype: 1, dp: 102}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(endpoint.command).toHaveBeenCalledWith("manuSpecificTuya", "dataRequest", {dpValues: [{data: [0], datatype: 1, dp: 101}], seq: expect.any(Number)}, {disableDefaultResponse: true});
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/TS0601_cover_switch',
+            stringify({state_l2: 'OFF', state_l1: 'ON', state: 'OPEN'}),
             { retain: false, qos: 0 },
             expect.any(Function)
         );
@@ -990,7 +1009,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 100}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 100});
     });
 
     it('ZNCLDJ11LM position', async () => {
@@ -1000,7 +1019,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 10}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 10});
     });
 
     it('ZNCLDJ11LM position', async () => {
@@ -1010,7 +1029,7 @@ describe('Publish', () => {
         await MQTT.events.message('zigbee2mqtt/curtain/set', stringify(payload));
         await flushPromises();
         expect(endpoint.write).toHaveBeenCalledTimes(1);
-        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {"85": {"type": 57, "value": 0}});
+        expect(endpoint.write).toHaveBeenCalledWith("genAnalogOutput", {presentValue: 0});
     });
 
     it('ZNCLDJ11LM position', async () => {

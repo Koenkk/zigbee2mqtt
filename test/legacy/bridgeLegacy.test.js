@@ -25,7 +25,7 @@ describe('Bridge legacy', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         logger.info.mockClear();
-        logger.warn.mockClear();
+        logger.warning.mockClear();
     });
 
     afterAll(async () => {
@@ -183,7 +183,7 @@ describe('Bridge legacy', () => {
         const payload = JSON.parse(MQTT.publish.mock.calls[0][1]);
         expect(payload.length).toStrictEqual(Object.values(zigbeeHerdsman.devices).length);
         expect(payload[1]).toStrictEqual({"ieeeAddr": "0x00124b00120144ae", "type": "Coordinator", "dateCode": "20190425", "friendly_name": "Coordinator", networkAddress: 0, softwareBuildID: "z-Stack", lastSeen: 100});
-        expect(payload[2]).toStrictEqual({"dateCode": null, "friendly_name": "bulb", "ieeeAddr": "0x000b57fffec6a5b2", "lastSeen": 1000, "manufacturerID": 4476, "model": "LED1545G12", "modelID": "TRADFRI bulb E27 WS opal 980lm", "networkAddress": 40369, "powerSource": "Mains (single phase)", "softwareBuildID": null, "type": "Router", "description": "TRADFRI LED bulb E26/E27 980 lumen, dimmable, white spectrum, opal white", "vendor": "IKEA"});
+        expect(payload[2]).toStrictEqual({"dateCode": null, "friendly_name": "bulb", "ieeeAddr": "0x000b57fffec6a5b2", "lastSeen": 1000, "manufacturerID": 4476, "model": "LED1545G12", "modelID": "TRADFRI bulb E27 WS opal 980lm", "networkAddress": 40369, "powerSource": "Mains (single phase)", "softwareBuildID": null, "type": "Router", "description": "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm", "vendor": "IKEA"});
         Date.now = now;
     });
 
@@ -478,6 +478,6 @@ describe('Bridge legacy', () => {
         MQTT.events.message('zigbee2mqtt/bridge/config/touchlink/factory_reset', '');
         await flushPromises();
         expect(zigbeeHerdsman.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
-        expect(logger.warn).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
+        expect(logger.warning).toHaveBeenCalledWith('Failed to factory reset device through Touchlink');
     });
 });

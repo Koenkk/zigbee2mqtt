@@ -127,7 +127,7 @@ export default class MQTT {
             {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
-        this.client.end();
+        this.client?.end();
     }
 
     subscribe(topic: string): void {
@@ -173,6 +173,7 @@ export default class MQTT {
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: {...defaultOptions, ...options}});
 
         if (!this.isConnected()) {
+            /* istanbul ignore else */
             if (!skipLog) {
                 logger.error(`Not connected to MQTT server!`);
                 logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
@@ -181,7 +182,7 @@ export default class MQTT {
         }
 
         if (!skipLog) {
-            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`);
+            logger.debug(`MQTT publish: topic '${topic}', payload '${payload}'`);
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};

@@ -8,7 +8,7 @@ const flushPromises = require('./lib/flushPromises');
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const stringify = require('json-stable-stringify-without-jsonify');
 
-const mocksClear = [MQTT.publish, logger.warn, logger.debug];
+const mocksClear = [MQTT.publish, logger.warning, logger.debug];
 
 describe('Configure', () => {
     let controller;
@@ -24,7 +24,7 @@ describe('Configure', () => {
         const endpoint2 = device.getEndpoint(2);
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
         expect(endpoint2.write).toHaveBeenCalledWith("genBasic", {"49": {"type": 25, "value": 11}}, {"disableDefaultResponse": true, "manufacturerCode": 4107});
-        expect(device.meta.configured).toBe(1);
+        expect(device.meta.configured).toBe(332242049);
     }
 
     const expectBulbConfigured = () => {
@@ -202,7 +202,7 @@ describe('Configure', () => {
     it('Legacy api: Should skip reconfigure when device does not require this', async () => {
         await MQTT.events.message('zigbee2mqtt/bridge/configure', '0x0017882104a44559');
         await flushPromises();
-        expect(logger.warn).toHaveBeenCalledWith(`Skipping configure of 'TS0601_thermostat', device does not require this.`)
+        expect(logger.warning).toHaveBeenCalledWith(`Skipping configure of 'TS0601_thermostat', device does not require this.`)
     });
 
     it('Should not configure when interview not completed', async () => {
