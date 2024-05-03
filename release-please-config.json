@@ -10,7 +10,14 @@
       "release-type": "helm",
       "include-component-in-tag": false,
       "include-v-in-tag": false,
-      "draft": true
+      "draft": true,
+      "extra-files": [
+        {
+          "type": "yaml",
+          "path": "charts/zigbee2mqtt",
+          "jsonpath": "$.appVersion"
+        }
+      ]
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
