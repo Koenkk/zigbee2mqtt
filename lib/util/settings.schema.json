@@ -497,6 +497,23 @@
           "description": "Logging level",
           "default": "info"
         },
+        "log_debug_to_mqtt_frontend": {
+          "type": "boolean",
+          "title": "Log debug to MQTT and frontend",
+          "description": "Log debug level to MQTT and frontend (may decrease overall performance)",
+          "requiresRestart": true,
+          "default": false
+        },
+        "log_debug_namespace_ignore": {
+          "type": "string",
+          "title": "Log debug namespace ignore",
+          "description": "Do not log these namespaces (regex-based) for debug level",
+          "default": "",
+          "examples": [
+            "^zhc:legacy:fz:(tuya|moes)",
+            "^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller"
+          ]
+        },
         "log_syslog": {
           "type": "object",
           "title": "syslog",

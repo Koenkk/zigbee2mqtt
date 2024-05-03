@@ -1,4 +1,5 @@
 let level = 'info';
+let debugNamespaceIgnore = '';
 
 let transports = [];
 
@@ -26,6 +27,8 @@ const mock = {
     },
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
+    setDebugNamespaceIgnore: (newIgnore) => {debugNamespaceIgnore = newIgnore},
+    getDebugNamespaceIgnore: () => debugNamespaceIgnore,
     setTransportsEnabled: (value) => {transportsEnabled = value},
     end: jest.fn(),
 };

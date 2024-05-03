@@ -61,23 +61,42 @@ export default class Bridge extends Extension {
             'config/log_level': this.configLogLevel,
         };
 
+        const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
         const mqtt = this.mqtt;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
-        class EventTransport extends Transport {
-            log(info: {message: string, level: string}, next: () => void): void {
-                if (info.level !== 'debug') {
+
+        if (debugToMQTTFrontend) {
+            class EventTransport extends Transport {
+                log(info: {message: string, level: string}, next: () => void): void {
                     const payload = stringify({message: info.message, level: info.level});
                     if (payload !== self.lastBridgeLoggingPayload) {
                         self.lastBridgeLoggingPayload = payload;
                         mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
                     }
+
+                    next();
                 }
-                next();
             }
+
+            this.logTransport = new EventTransport();
+        } else {
+            class EventTransport extends Transport {
+                log(info: {message: string, level: string}, next: () => void): void {
+                    if (info.level !== 'debug') {
+                        const payload = stringify({message: info.message, level: info.level});
+                        if (payload !== self.lastBridgeLoggingPayload) {
+                            self.lastBridgeLoggingPayload = payload;
+                            mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
+                        }
+                    }
+                    next();
+                }
+            }
+
+            this.logTransport = new EventTransport();
         }
 
-        this.logTransport = new EventTransport();
         logger.addTransport(this.logTransport);
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
@@ -184,6 +203,11 @@ export default class Bridge extends Extension {
 
         if (newSettings.hasOwnProperty('advanced') && newSettings.advanced.hasOwnProperty('log_level')) {
             logger.setLevel(newSettings.advanced.log_level);
+        }
+
+        if (newSettings.hasOwnProperty('advanced') &&
+            newSettings.advanced.hasOwnProperty('log_debug_namespace_ignore')) {
+            logger.setDebugNamespaceIgnore(newSettings.advanced.log_debug_namespace_ignore);
         }
 
         logger.info('Successfully changed options');
