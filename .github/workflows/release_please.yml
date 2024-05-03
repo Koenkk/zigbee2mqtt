@@ -26,14 +26,6 @@ jobs:
           target-branch: dev
           token: ${{secrets.GH_TOKEN}}
 
-      - uses: google-github-actions/release-please-action@v4
-        id: release-helm
-        with:
-          target-branch: dev
-          skip-github-release: true
-          release-type: helm
-          token: ${{secrets.GH_TOKEN}}
-
       # Checkout repos
       - uses: actions/checkout@v4
         with:
