@@ -111,7 +111,7 @@ jobs:
         jq ".version = \"$TAG-dev\"" package.json > package.json.tmp
         jq ".version = \"$TAG-dev\"" package-lock.json > package-lock.json.tmp
         mv package.json.tmp package.json
-        mv package-lock.json.tmp package-lock.json       
+        mv package-lock.json.tmp package-lock.json
         git add -A
         git commit -m "chore: promote to dev"
         git push origin dev
