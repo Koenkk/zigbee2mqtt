@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zigbee2mqtt.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zigbee2mqtt.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  configuration.yaml: |
+    # Define the files which contains the configs. As k8s config maps
+    # Are read only by design, we need to extract dynamic config to external files
+    devices: devices.yaml
+    groups: groups.yaml
+    {{- if .Values.zigbee2mqtt.homeassistant }}
+    homeassistant:
+      {{- .Values.zigbee2mqtt.homeassistant | toYaml | nindent 6}}
+    {{- end }}
+    ota:
+      {{- .Values.zigbee2mqtt.ota | toYaml | nindent 6}}
+    permit_join: {{ .Values.zigbee2mqtt.permit_join }}
+    {{- if .Values.zigbee2mqtt.availability }}
+    availability:
+      {{- .Values.zigbee2mqtt.availability | toYaml | nindent 6}}
+    {{- end }}
+    external_converters: {{- .Values.zigbee2mqtt.external_converters }}
+    mqtt:
+      {{- .Values.zigbee2mqtt.mqtt | toYaml | nindent 6}}
+    serial:
+      {{- .Values.zigbee2mqtt.serial | toYaml | nindent 6}}
+    frontend:
+      {{- .Values.zigbee2mqtt.frontend | toYaml | nindent 6}}
+    advanced:
+      {{- .Values.zigbee2mqtt.advanced | toYaml | nindent 6}}
