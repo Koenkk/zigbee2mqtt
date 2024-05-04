@@ -66,13 +66,16 @@ spec:
               subPath: configuration.yaml
             - mountPath: /app/data/
               name: data-volume
-              subPath: configuration.yaml
           resources: {{- toYaml .Values.statefulset.resources | nindent 12 }}
       volumes:
         - name: config-volume
           configMap:
             name: {{ include "zigbee2mqtt.fullname" . }}
-
+        {{- if not .Values.statefulset.storage.enabled }}
+        - name: data-volume
+          emptyDir: { }
+        {{- end }}
+  {{- if .Values.statefulset.storage.enabled }}
   volumeClaimTemplates:
   - metadata:
       name: data-volume
@@ -82,17 +85,18 @@ spec:
       {{- if .Values.statefulset.storage.existingVolume -}}
       volumeName: {{ .Values.statefulset.storage.existingVolume }}
       {{- end }}
-      {{- if or .Values.persistence.matchLabels (.Values.persistence.matchExpressions) }}
+      {{- if or .Values.statefulset.storage.matchLabels (.Values.statefulset.storage.matchExpressions) }}
       selector:
-      {{- if .Values.persistence.matchLabels }}
+      {{- if .Values.statefulset.storage.matchLabels }}
         matchLabels:
-        {{ toYaml .Values.persistence.matchLabels | indent 8 }}
+        {{ toYaml .Values.statefulset.storage.matchLabels | indent 8 }}
       {{- end -}}
-      {{- if .Values.persistence.matchExpressions }}
+      {{- if .Values.statefulset.storage.matchExpressions }}
         matchExpressions:
-          {{ toYaml .Values.persistence.matchExpressions | indent 8 }}
+          {{ toYaml .Values.statefulset.storage.matchExpressions | indent 8 }}
         {{- end -}}
       {{- end }}
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.statefulset.storage.size }}
+  {{- end }}

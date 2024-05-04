@@ -26,7 +26,9 @@ data:
     availability:
       {{- .Values.zigbee2mqtt.availability | toYaml | nindent 6}}
     {{- end }}
+    {{- if gt (len .Values.zigbee2mqtt.external_converters) 0 }}
     external_converters: {{- .Values.zigbee2mqtt.external_converters }}
+    {{- end }}
     mqtt:
       {{- .Values.zigbee2mqtt.mqtt | toYaml | nindent 6}}
     serial:
