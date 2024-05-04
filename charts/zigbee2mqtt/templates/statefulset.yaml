@@ -82,7 +82,7 @@ spec:
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: {{ .Values.statefulset.storage.storageClassName }}
-      {{- if .Values.statefulset.storage.existingVolume -}}
+      {{- if .Values.statefulset.storage.existingVolume }}
       volumeName: {{ .Values.statefulset.storage.existingVolume }}
       {{- end }}
       {{- if or .Values.statefulset.storage.matchLabels (.Values.statefulset.storage.matchExpressions) }}
