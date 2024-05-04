@@ -23,6 +23,11 @@ statefulset:
   storage:
     # -- the name for the storage class to be used in the persistent volume claim
     storageClassName: nfs-csi
+    existingVolume: ""
+    ## Persistent Volume selectors
+    ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
+    matchLabels: { }
+    matchExpressions: { }
   # -- pod dns policy
   dnsPolicy: ClusterFirst
   # -- CPU/Memory configuration for the pods

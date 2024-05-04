@@ -79,6 +79,20 @@ spec:
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: {{ .Values.statefulset.storage.storageClassName }}
+      {{- if .Values.statefulset.storage.existingVolume -}}
+      volumeName: {{ .Values.statefulset.storage.existingVolume }}
+      {{- end }}
+      {{- if or .Values.persistence.matchLabels (.Values.persistence.matchExpressions) }}
+      selector:
+      {{- if .Values.persistence.matchLabels }}
+        matchLabels:
+        {{ toYaml .Values.persistence.matchLabels | indent 8 }}
+      {{- end -}}
+      {{- if .Values.persistence.matchExpressions }}
+        matchExpressions:
+          {{ toYaml .Values.persistence.matchExpressions | indent 8 }}
+        {{- end -}}
+      {{- end }}
       resources:
         requests:
           storage: 1Gi
