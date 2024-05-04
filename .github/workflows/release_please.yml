@@ -26,6 +26,39 @@ jobs:
           target-branch: dev
           token: ${{secrets.GH_TOKEN}}
 
+      # we use grep,awk,sed here because the output from release-please despite being JSON, it's not valid (probably shell-escaping) and
+      # jq fails to parse it. Creates the output pr_branch
+      - name: Get the branch of the release-please PR
+        id: get_pr_branch
+        if: ${{ steps.release.outputs.prs_created == 'true'  }}
+        run: |          
+          BRANCH=$(echo '${{ steps.release.outputs.prs }}' | grep -o -P '\"headBranchName\":\"(.*?)\"' | awk -F':' '{print $2}' | tr -d \")
+          echo "pr_branch=${BRANCH}" >> $GITHUB_OUTPUT
+
+      # Checkout PR branch
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.prs_created == 'true'   }}
+        with:
+          repository: koenkk/zigbee2mqtt
+          path: ./z2m-pr
+          ref: ${{ steps.get_pr_branch.outputs.pr_branch }}
+
+      - name: Add updated helm chart release versions and documentation to release PR
+        if: ${{ steps.release.outputs.prs_created == 'true'   }}
+        run: |
+          pushd ./z2m-pr
+          Z2M_VERSION="$(jq -r '."."' .release-please-manifest.json)" 
+          yq -i ".appVersion=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/Chart.yaml
+          yq -i ".image.tag=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/values.yaml
+          # Keep chart version in step lock with zigbee2mqtt
+          jq  ".\"charts/zigbee2mqtt\"=\"${Z2M_VERSION}\"" .release-please-manifest.json > .release-please-manifest.json
+          make helm-docs
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "chore(release): update helm-chart docs"
+          git push
+
       # Checkout repos
       - uses: actions/checkout@v4
         with:
