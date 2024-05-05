@@ -110,7 +110,7 @@ describe('Bridge', () => {
         logger.info("this is a test"); // Should not publish dupes
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/logging',
-            stringify({message: 'this is a test', level: 'info'}),
+            stringify({message: 'this is a test', level: 'info', namespace: 'z2m'}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );
@@ -133,7 +133,7 @@ describe('Bridge', () => {
         logger.info("this is a test"); // Should not publish dupes
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/logging',
-            stringify({message: 'this is a test', level: 'info'}),
+            stringify({message: 'this is a test', level: 'info', namespace: 'z2m'}),
           { retain: false, qos: 0 },
           expect.any(Function)
         );

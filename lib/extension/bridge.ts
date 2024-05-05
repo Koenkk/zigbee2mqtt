@@ -62,33 +62,31 @@ export default class Bridge extends Extension {
         };
 
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
-        const mqtt = this.mqtt;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
+        const baseTopic = settings.get().mqtt.base_topic;
+
+        const bridgeLogging = (message: string, level: string, namespace: string): void => {
+            const payload = stringify({message, level, namespace});
+
+            if (payload !== this.lastBridgeLoggingPayload) {
+                this.lastBridgeLoggingPayload = payload;
+                this.mqtt.publish(`bridge/logging`, payload, {}, baseTopic, true);
+            }
+        };
 
         if (debugToMQTTFrontend) {
-            class EventTransport extends Transport {
-                log(info: {message: string, level: string}, next: () => void): void {
-                    const payload = stringify({message: info.message, level: info.level});
-                    if (payload !== self.lastBridgeLoggingPayload) {
-                        self.lastBridgeLoggingPayload = payload;
-                        mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
-                    }
-
+            class DebugEventTransport extends Transport {
+                log(info: {message: string, level: string, namespace: string}, next: () => void): void {
+                    bridgeLogging(info.message, info.level, info.namespace);
                     next();
                 }
             }
 
-            this.logTransport = new EventTransport();
+            this.logTransport = new DebugEventTransport();
         } else {
             class EventTransport extends Transport {
-                log(info: {message: string, level: string}, next: () => void): void {
+                log(info: {message: string, level: string, namespace: string}, next: () => void): void {
                     if (info.level !== 'debug') {
-                        const payload = stringify({message: info.message, level: info.level});
-                        if (payload !== self.lastBridgeLoggingPayload) {
-                            self.lastBridgeLoggingPayload = payload;
-                            mqtt.publish(`bridge/logging`, payload, {}, settings.get().mqtt.base_topic, true);
-                        }
+                        bridgeLogging(info.message, info.level, info.namespace);
                     }
                     next();
                 }
@@ -193,20 +191,19 @@ export default class Bridge extends Extension {
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
-        if (newSettings.hasOwnProperty('permit_join')) {
+        if (newSettings.permit_join != undefined) {
             await this.zigbee.permitJoin(newSettings.permit_join);
         }
 
-        if (newSettings.hasOwnProperty('homeassistant')) {
+        if (newSettings.homeassistant != undefined) {
             await this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
         }
 
-        if (newSettings.hasOwnProperty('advanced') && newSettings.advanced.hasOwnProperty('log_level')) {
+        if (newSettings.advanced?.log_level != undefined) {
             logger.setLevel(newSettings.advanced.log_level);
         }
 
-        if (newSettings.hasOwnProperty('advanced') &&
-            newSettings.advanced.hasOwnProperty('log_debug_namespace_ignore')) {
+        if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {
             logger.setDebugNamespaceIgnore(newSettings.advanced.log_debug_namespace_ignore);
         }
 
