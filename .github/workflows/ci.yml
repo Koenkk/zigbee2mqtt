@@ -22,8 +22,6 @@ jobs:
         node-version: 20
         registry-url: https://registry.npmjs.org/
         cache: npm
-    - name: yq - portable yaml processor
-      uses: mikefarah/yq@v4.43.1
     - name: Install dependencies
       run: npm ci
     - name: Build
