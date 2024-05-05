@@ -4,7 +4,7 @@ import utils from '../util/utils';
 import Extension from './extension';
 import stringify from 'json-stable-stringify-without-jsonify';
 import debounce from 'debounce';
-import * as zigbeeHerdsman from 'zigbee-herdsman/dist';
+import {Zcl} from 'zigbee-herdsman';
 import bind from 'bind-decorator';
 import Device from '../model/device';
 import Group from '../model/group';
@@ -97,12 +97,12 @@ const pollOnMessage: PollOnMessage = [
         read: {cluster: 'genLevelCtrl', attributes: ['currentLevel']},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
-            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
-            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            Zcl.ManufacturerCode.ATMEL,
+            Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            Zcl.ManufacturerCode.TELINK_MICRO,
+            Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -133,12 +133,12 @@ const pollOnMessage: PollOnMessage = [
         },
         read: {cluster: 'genOnOff', attributes: ['onOff']},
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
-            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
-            zigbeeHerdsman.Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            Zcl.ManufacturerCode.ATMEL,
+            Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            Zcl.ManufacturerCode.TELINK_MICRO,
+            Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
         manufacturerNames: [
             'GLEDOPTO',
@@ -165,11 +165,11 @@ const pollOnMessage: PollOnMessage = [
             },
         },
         manufacturerIDs: [
-            zigbeeHerdsman.Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
-            zigbeeHerdsman.Zcl.ManufacturerCode.ATMEL,
-            zigbeeHerdsman.Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
-            zigbeeHerdsman.Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
-            zigbeeHerdsman.Zcl.ManufacturerCode.TELINK_MICRO,
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            Zcl.ManufacturerCode.ATMEL,
+            Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
+            Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
+            Zcl.ManufacturerCode.TELINK_MICRO,
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: [

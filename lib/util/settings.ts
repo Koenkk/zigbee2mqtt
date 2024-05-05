@@ -83,6 +83,8 @@ const defaults: RecursivePartial<Settings> = {
         log_file: 'log.log',
         log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
         log_syslog: {},
+        log_debug_to_mqtt_frontend: false,
+        log_debug_namespace_ignore: '',
         pan_id: 0x1a62,
         ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD],
         channel: 11,

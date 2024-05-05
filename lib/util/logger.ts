@@ -16,6 +16,7 @@ class Logger {
     private readonly directory: string;
     private readonly logger: winston.Logger;
     private readonly fileTransport: winston.transports.FileTransportInstance;
+    private debugNamespaceIgnoreRegex?: RegExp;
 
     constructor() {
         // What transports to enable
@@ -120,6 +121,8 @@ class Logger {
             this.logger.add(new winston.transports.Syslog(options));
         }
 
+        this.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
+
         this.info(logging);
     }
 
@@ -134,6 +137,14 @@ class Logger {
 
     public removeTransport(transport: winston.transport): void {
         this.logger.remove(transport);
+    }
+
+    public getDebugNamespaceIgnore(): string {
+        return this.debugNamespaceIgnoreRegex?.toString().slice(1, -1)/* remove slashes */ ?? '';
+    }
+
+    public setDebugNamespaceIgnore(value: string): void {
+        this.debugNamespaceIgnoreRegex = value != '' ? new RegExp(value) : undefined;
     }
 
     // TODO refactor Z2M level to 'warning' to simplify logic
@@ -160,6 +171,9 @@ class Logger {
 
     public debug(message: string, namespace: string = 'z2m'): void {
         if (this.level !== 'debug') {
+            return;
+        }
+        if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
 

@@ -178,4 +178,66 @@ describe('Logger', () => {
         expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
         expect(error).toHaveBeenCalledTimes(2);
     });
+
+    it.each([
+        [
+            '^zhc:legacy:fz:(tuya|moes)',
+            new RegExp(/^zhc:legacy:fz:(tuya|moes)/),
+            [
+                { ns: 'zhc:legacy:fz:tuya_device12', match: true },
+                { ns: 'zhc:legacy:fz:moes_dimmer', match: true },
+                { ns: 'zhc:legacy:fz:not_moes', match: false },
+                { ns: 'zhc:legacy:fz', match: false },
+                { ns: 'zhc:legacy:fz:', match: false },
+                { ns: '1zhc:legacy:fz:tuya_device12', match: false },
+            ]
+        ],
+        [
+            '^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller',
+            new RegExp(/^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller/),
+            [
+                { ns: 'zh:ember:uart:ash', match: true },
+                { ns: 'zh:ember:uart', match: false },
+                { ns: 'zh:controller', match: true },
+                { ns: 'zh:controller:', match: true },
+                { ns: 'azh:controller:', match: false },
+            ]
+        ],
+        [
+            '',
+            undefined,
+            [
+                { ns: 'zhc:legacy:fz:tuya_device12', match: false },
+                { ns: 'zhc:legacy:fz:moes_dimmer', match: false },
+                { ns: 'zhc:legacy:fz:not_moes', match: false },
+                { ns: 'zhc:legacy:fz', match: false },
+                { ns: 'zhc:legacy:fz:', match: false },
+                { ns: '1zhc:legacy:fz:tuya_device12', match: false },
+                { ns: 'zh:ember:uart:ash', match: false },
+                { ns: 'zh:ember:uart', match: false },
+                { ns: 'zh:controller', match: false },
+                { ns: 'zh:controller:', match: false },
+                { ns: 'azh:controller:', match: false },
+            ]
+        ],
+    ])('Sets namespace ignore for debug level %s', (ignore, expected, tests) => {
+        const logger = require('../lib/util/logger').default;
+        logger.setLevel('debug');
+        const debugSpy = jest.spyOn(logger.winston, 'debug');
+        logger.setDebugNamespaceIgnore(ignore);
+        expect(logger.debugNamespaceIgnoreRegex).toStrictEqual(expected);
+        expect(logger.getDebugNamespaceIgnore()).toStrictEqual(ignore);
+
+        for (const test of tests) {
+            logger.debug('Test message', test.ns);
+
+            if (test.match) {
+                expect(debugSpy).not.toHaveBeenCalled();
+            } else {
+                expect(debugSpy).toHaveBeenCalled();
+            }
+
+            debugSpy.mockClear();
+        }
+    })
 });

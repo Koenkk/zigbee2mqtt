@@ -1,4 +1,5 @@
 let level = 'info';
+let debugNamespaceIgnore = '';
 
 let transports = [];
 
@@ -13,10 +14,10 @@ const callTransports = (level, message, namespace) => {
 
 const mock = {
     init: jest.fn(),
-    info: jest.fn().mockImplementation((msg) => callTransports('info', msg)),
-    warning: jest.fn().mockImplementation((msg) => callTransports('warning', msg)),
-    error: jest.fn().mockImplementation((msg) => callTransports('error', msg)),
-    debug: jest.fn().mockImplementation((msg) => callTransports('debug', msg)),
+    info: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('info', msg, namespace)),
+    warning: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('warning', msg, namespace)),
+    error: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('error', msg, namespace)),
+    debug: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('debug', msg, namespace)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
@@ -26,6 +27,8 @@ const mock = {
     },
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
+    setDebugNamespaceIgnore: (newIgnore) => {debugNamespaceIgnore = newIgnore},
+    getDebugNamespaceIgnore: () => debugNamespaceIgnore,
     setTransportsEnabled: (value) => {transportsEnabled = value},
     end: jest.fn(),
 };
