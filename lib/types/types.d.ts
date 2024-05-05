@@ -196,6 +196,8 @@ declare global {
             log_file: string,
             log_level: 'debug' | 'info' | 'error' | 'warn',
             log_syslog: KeyValue,
+            log_debug_to_mqtt_frontend: boolean,
+            log_debug_namespace_ignore: string,
             pan_id: number | 'GENERATE',
             ext_pan_id: number[] | 'GENERATE',
             channel: number,
