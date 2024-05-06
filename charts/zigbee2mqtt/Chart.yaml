@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.37.0
+appVersion: 1.37.1
 description: Bridges events and allows you to control your Zigbee devices via MQTT
 name: zigbee2mqtt
 version: 1.37.1

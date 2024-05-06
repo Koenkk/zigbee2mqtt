@@ -1,6 +1,6 @@
 # zigbee2mqtt
 
-![Version: 1.37.0](https://img.shields.io/badge/Version-1.37.0-informational?style=flat-square) ![AppVersion: 1.37.0](https://img.shields.io/badge/AppVersion-1.37.0-informational?style=flat-square)
+![Version: 1.37.1](https://img.shields.io/badge/Version-1.37.1-informational?style=flat-square) ![AppVersion: 1.37.1](https://img.shields.io/badge/AppVersion-1.37.1-informational?style=flat-square)
 
 Bridges events and allows you to control your Zigbee devices via MQTT
 
@@ -29,9 +29,9 @@ Kubernetes: `>=1.26.0-0`
 | image.imagePullSecrets | object | `{}` | Container additional secrets to pull image |
 | image.pullPolicy | string | `"IfNotPresent"` | Container pull policy |
 | image.repository | string | `"koenkk/zigbee2mqtt"` | Image repository for the `zigbee2mqtt` container. |
-| image.tag | string | `"33"` | Version for the `zigbee2mqtt` container. |
+| image.tag | string | `"1.37.1"` | Version for the `zigbee2mqtt` container. |
 | ingress.annotations | object | `{}` |  |
-| ingress.enabled | bool | `true` | When enabled a new Ingress will be created |
+| ingress.enabled | bool | `false` | When enabled a new Ingress will be created |
 | ingress.hosts[0] | string | `"yourdomain.com"` |  |
 | ingress.ingressClassName | string | `"contour"` |  |
 | ingress.labels | object | `{}` |  |
@@ -46,7 +46,12 @@ Kubernetes: `>=1.26.0-0`
 | statefulset.dnsPolicy | string | `"ClusterFirst"` | pod dns policy |
 | statefulset.nodeSelector | object | `{}` | Select specific kube node, this will allow enforcing zigbee2mqtt running only on the node with the USB adapter connected |
 | statefulset.resources | object | `{"limits":{"cpu":"200m","memory":"600Mi"},"requests":{"cpu":"200m","memory":"600Mi"}}` | CPU/Memory configuration for the pods |
-| statefulset.storage.storageClassName | string | `"nfs-csi"` | the name for the storage class to be used in the persistent volume claim |
+| statefulset.storage.enabled | bool | `false` |  |
+| statefulset.storage.existingVolume | string | `""` |  |
+| statefulset.storage.matchExpressions | object | `{}` |  |
+| statefulset.storage.matchLabels | object | `{}` |  |
+| statefulset.storage.size | string | `"1Gi"` |  |
+| statefulset.storage.storageClassName | string | `"freenas-nfs-csi"` | the name for the storage class to be used in the persistent volume claim |
 | statefulset.tolerations | object | `{}` | Node taint tolerations for the pods |
 | zigbee2mqtt.advanced.adapter_concurrent | string | `nil` | Optional: configure adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value) |
 | zigbee2mqtt.advanced.adapter_delay | int | `0` | Optional: Set the adapter delay, only used for Conbee/Raspbee adapters (default 0). In case you are having issues try `200`. For more information see https://github.com/Koenkk/zigbee2mqtt/issues/4884 |
@@ -55,13 +60,10 @@ Kubernetes: `>=1.26.0-0`
 | zigbee2mqtt.advanced.cache_state_send_on_startup | bool | `true` | Optional: send cached state on startup, only used when cache_state_persistent: true (default: true) |
 | zigbee2mqtt.advanced.channel | int | `11` | Optional: ZigBee channel, changing requires re-pairing of all devices. (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems) (default: 11) |
 | zigbee2mqtt.advanced.elapsed | bool | `false` | Optional: Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg (default: false) |
-| zigbee2mqtt.advanced.ext_pan_id | string | `nil` |  |
 | zigbee2mqtt.advanced.last_seen | string | `"disable"` | Optional: Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message possible values are: disable (default), ISO_8601, ISO_8601_local, epoch (default: disable) |
 | zigbee2mqtt.advanced.legacy_api | bool | `false` | Optional: disables the legacy api (default: shown below) |
 | zigbee2mqtt.advanced.log_level | string | `"info"` |  |
-| zigbee2mqtt.advanced.log_output[0] | string | `"console"` |  |
-| zigbee2mqtt.advanced.network_key | string | `nil` | Optional: network encryption key GENERATE will make Zigbee2MQTT generate a new network key on next startup Note: changing requires repairing of all devices (default: shown below) |
-| zigbee2mqtt.advanced.pan_id | string | `nil` | Optional: ZigBee pan ID (default: shown below) Setting pan_id: GENERATE will make Zigbee2MQTT generate a new panID on next startup |
+| zigbee2mqtt.advanced.log_output | list | `["console"]` | Optional: network encryption key GENERATE will make Zigbee2MQTT generate a new network key on next startup Note: changing requires repairing of all devices (default: shown below) network_key: null |
 | zigbee2mqtt.advanced.report | bool | `true` | Optional: Enables report feature, this feature is DEPRECATED since reporting is now setup by default when binding devices. Docs can still be found here: https://github.com/Koenkk/zigbee2mqtt.io/blob/master/docs/information/report.md |
 | zigbee2mqtt.advanced.timestamp_format | string | `"YYYY-MM-DD HH:mm:ss"` |  |
 | zigbee2mqtt.advanced.transmit_power | int | `5` | Optional: Transmit power setting in dBm (default: 5). This will set the transmit power for devices that bring an inbuilt amplifier. It can't go over the maximum of the respective hardware and might be limited by firmware (for example to migrate heat, or by using an unsupported firmware). For the CC2652R(B) this is 5 dBm, CC2652P/CC1352P-2 20 dBm. |
@@ -83,7 +85,6 @@ Kubernetes: `>=1.26.0-0`
 | zigbee2mqtt.ota.ikea_ota_use_test_url | bool | `false` | Optional: use IKEA TRADFRI OTA test server, see OTA updates documentation (default: false) |
 | zigbee2mqtt.ota.update_check_interval | int | `1440` | Minimum time between OTA update checks |
 | zigbee2mqtt.permit_join | bool | `false` | Optional: allow new devices to join. |
-| zigbee2mqtt.serial.adapter | string | `nil` | Optional: adapter type, not needed unless you are experiencing problems (default: shown below, options: zstack, deconz, ezsp) |
 | zigbee2mqtt.serial.baudrate | int | `115200` | Optional: Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600. |
 | zigbee2mqtt.serial.disable_led | bool | `false` | Optional: disable LED of the adapter if supported (default: false) |
 | zigbee2mqtt.serial.port | string | `"/dev/ttyACM0"` | Required: location of the adapter (e.g. CC2531). USB adapters - use format "port: /dev/ttyACM0" To autodetect the USB port, set 'port: null'. Ethernet adapters - use format "port: tcp://192.168.1.12:6638" |
