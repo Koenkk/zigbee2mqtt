@@ -1,0 +1,102 @@
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: {{ include "zigbee2mqtt.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zigbee2mqtt.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "zigbee2mqtt.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "zigbee2mqtt.labels" . | nindent 8 }}
+        app: {{ include "zigbee2mqtt.fullname" . }}
+    spec:
+      {{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.image.imagePullSecrets | indent 8 }}
+      {{- end }}
+      dnsPolicy: {{ .Values.statefulset.dnsPolicy }}
+{{- with .Values.statefulset.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      nodeSelector:
+{{- with .Values.statefulset.nodeSelector }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+{{- with .Values.statefulset.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      containers:
+        - name: zigbee2mqtt
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: TZ
+              value: {{ .Values.zigbee2mqtt.timezone }}
+          ports:
+            - containerPort: {{ .Values.zigbee2mqtt.frontend.port }}
+              name: web
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /
+              port: web
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - mountPath: /app/data/configuration.yaml
+              name: config-volume
+              subPath: configuration.yaml
+            - mountPath: /app/data/
+              name: data-volume
+          resources: {{- toYaml .Values.statefulset.resources | nindent 12 }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "zigbee2mqtt.fullname" . }}
+        {{- if not .Values.statefulset.storage.enabled }}
+        - name: data-volume
+          emptyDir: { }
+        {{- end }}
+  {{- if .Values.statefulset.storage.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.statefulset.storage.storageClassName }}
+      {{- if .Values.statefulset.storage.existingVolume }}
+      volumeName: {{ .Values.statefulset.storage.existingVolume }}
+      {{- end }}
+      {{- if or .Values.statefulset.storage.matchLabels (.Values.statefulset.storage.matchExpressions) }}
+      selector:
+      {{- if .Values.statefulset.storage.matchLabels }}
+        matchLabels:
+        {{ toYaml .Values.statefulset.storage.matchLabels | indent 8 }}
+      {{- end -}}
+      {{- if .Values.statefulset.storage.matchExpressions }}
+        matchExpressions:
+          {{ toYaml .Values.statefulset.storage.matchExpressions | indent 8 }}
+        {{- end -}}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.statefulset.storage.size }}
+  {{- end }}
