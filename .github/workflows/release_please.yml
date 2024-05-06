@@ -51,7 +51,8 @@ jobs:
           yq -i ".appVersion=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/Chart.yaml
           yq -i ".image.tag=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/values.yaml
           # Keep chart version in step lock with zigbee2mqtt
-          jq  ".\"charts/zigbee2mqtt\"=\"${Z2M_VERSION}\"" .release-please-manifest.json > .release-please-manifest.json
+          jq  ".\"charts/zigbee2mqtt\"=\"${Z2M_VERSION}\"" .release-please-manifest.json > .release-please-manifest.json.tmp
+          mv .release-please-manifest.json.tmp .release-please-manifest.json
           go run github.com/norwoodj/helm-docs/cmd/helm-docs@latest
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
