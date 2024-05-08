@@ -24,9 +24,10 @@
     "build-watch": "tsc --watch",
     "eslint": "eslint lib/ --max-warnings=0",
     "start": "node index.js",
-    "test-with-coverage": "jest test --coverage",
-    "test": "jest test",
-    "test-watch": "jest test --watch"
+    "test-with-coverage": "jest test --silent --maxWorkers=50% --coverage",
+    "test-with-coverage:ci": "jest test --silent --runInBand --coverage",
+    "test": "jest test --silent --maxWorkers=50%",
+    "test-watch": "jest test --silent --maxWorkers=25% --watch"
   },
   "author": "Koen Kanters",
   "license": "GPL-3.0",
