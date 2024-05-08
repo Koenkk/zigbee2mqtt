@@ -42,6 +42,7 @@ jobs:
           repository: koenkk/zigbee2mqtt
           path: ./z2m-pr
           ref: ${{ steps.get_pr_branch.outputs.pr_branch }}
+          token: ${{secrets.GH_TOKEN}}
 
       - name: Add updated helm chart release versions and documentation to release PR
         if: ${{ steps.release.outputs.prs_created == 'true'   }}
