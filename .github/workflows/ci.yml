@@ -27,7 +27,7 @@ jobs:
     - name: Build
       run: npm run build
     - name: Test
-      run: npm run test-with-coverage:ci
+      run: npm run test-with-coverage
     - name: Lint
       run: npm run eslint
     - name: Docker login

@@ -25,7 +25,6 @@
     "eslint": "eslint lib/ --max-warnings=0",
     "start": "node index.js",
     "test-with-coverage": "jest test --silent --maxWorkers=50% --coverage",
-    "test-with-coverage:ci": "jest test --silent --runInBand --coverage",
     "test": "jest test --silent --maxWorkers=50%",
     "test-watch": "jest test --silent --maxWorkers=25% --watch"
   },
