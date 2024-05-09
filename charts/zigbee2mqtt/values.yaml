@@ -7,7 +7,7 @@ image:
   # -- Image repository for the `zigbee2mqtt` container.
   repository: koenkk/zigbee2mqtt
   # -- Version for the `zigbee2mqtt` container.
-  tag: "1.37.0"
+  tag: "1.37.1"
   # -- Container pull policy
   pullPolicy: IfNotPresent
   # -- Container additional secrets to pull image
@@ -28,8 +28,8 @@ statefulset:
     existingVolume: ""
     ## Persistent Volume selectors
     ## https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
-    matchLabels: { }
-    matchExpressions: { }
+    matchLabels: {}
+    matchExpressions: {}
   # -- pod dns policy
   dnsPolicy: ClusterFirst
   # -- CPU/Memory configuration for the pods
