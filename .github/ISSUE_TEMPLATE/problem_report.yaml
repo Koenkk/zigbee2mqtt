@@ -54,7 +54,7 @@ body:
     id: adapter
     attributes:
       label: Adapter
-      description: The adapter you are using
+      description: The adapter you are using. In case of EZSP, try the [new `ember` driver](https://github.com/Koenkk/zigbee2mqtt/discussions/21462) first.
       placeholder: Electrolama zig-a-zig-ah! (zzh!), Slaesh's CC2652RB stick, ...
     validations:
       required: true
