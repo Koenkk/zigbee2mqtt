@@ -12,13 +12,13 @@ type LogLevel = typeof LOG_LEVELS[number];
 
 class Logger {
     private level: LogLevel;
-    private readonly output: string[];
-    private readonly directory: string;
-    private readonly logger: winston.Logger;
-    private readonly fileTransport: winston.transports.FileTransportInstance;
+    private output: string[];
+    private directory: string;
+    private logger: winston.Logger;
+    private fileTransport: winston.transports.FileTransportInstance;
     private debugNamespaceIgnoreRegex?: RegExp;
 
-    constructor() {
+    public init(): void {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
         // Directory to log to

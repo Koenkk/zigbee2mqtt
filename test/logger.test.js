@@ -9,6 +9,8 @@ const {rimrafSync} = require('rimraf');
 const Transport = require('winston-transport');
 
 describe('Logger', () => {
+    let logger;
+
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         jest.resetModules();
@@ -17,6 +19,8 @@ describe('Logger', () => {
         settings.reRead();
         stdOutWriteOriginal = console._stdout.write;
         console._stdout.write = () => {};
+        logger = require('../lib/util/logger').default;
+        logger.init();
     });
 
     afterEach(async () => {
@@ -24,14 +28,11 @@ describe('Logger', () => {
     });
 
     it('Create log directory', () => {
-        const logger = require('../lib/util/logger').default;
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
     });
 
     it('Should cleanup', () => {
-        const logger = require('../lib/util/logger').default;
-
         for (const d of fs.readdirSync(dir.name)) {
             rimrafSync(path.join(dir.name, d));
         }
@@ -46,7 +47,6 @@ describe('Logger', () => {
     })
 
     it('Should not cleanup when there is no timestamp set', () => {
-        const logger = require('../lib/util/logger').default;
         for (let i = 30; i < 40; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
@@ -58,7 +58,6 @@ describe('Logger', () => {
     })
 
     it('Set and get log level', () => {
-        const logger = require('../lib/util/logger').default;
         logger.setLevel('debug');
         expect(logger.getLevel()).toBe('debug');
         logger.setLevel('info');
@@ -74,7 +73,7 @@ describe('Logger', () => {
     it('Set warning when log level is warn', () => {
         settings.set(['advanced', 'log_level'], 'warn');
         settings.reRead();
-        const logger = require('../lib/util/logger').default;
+        logger.init();
         expect(logger.level).toBe('warning');// getLevel() reports old Z2M level to match display/value
         settings.set(['advanced', 'log_level'], 'info');
         settings.reRead();
@@ -86,7 +85,6 @@ describe('Logger', () => {
             }
         }
 
-        const logger = require('../lib/util/logger').default;
         expect(logger.winston.transports.length).toBe(2);
         const transport = new DummyTransport();
         logger.addTransport(transport);
@@ -96,7 +94,6 @@ describe('Logger', () => {
     });
 
     it('Logger should be console and file by default', () => {
-        const logger = require('../lib/util/logger').default;
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -107,7 +104,7 @@ describe('Logger', () => {
 
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
-        const logger = require('../lib/util/logger').default;
+        logger.init();
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -118,7 +115,7 @@ describe('Logger', () => {
 
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
-        const logger = require('../lib/util/logger').default;
+        logger.init();
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
@@ -126,7 +123,7 @@ describe('Logger', () => {
 
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
-        const logger = require('../lib/util/logger').default;
+        logger.init();
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
@@ -134,7 +131,7 @@ describe('Logger', () => {
 
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
-        const logger = require('../lib/util/logger').default;
+        logger.init();
         const pipes = logger.winston._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
@@ -144,7 +141,7 @@ describe('Logger', () => {
 
     it('Should allow to symlink logs to current directory', () => {
         settings.set(['advanced', 'log_symlink_current'], true);
-        let logger = require('../lib/util/logger').default;
+        logger.init();
         expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
 
         jest.resetModules();
@@ -152,7 +149,6 @@ describe('Logger', () => {
     });
 
     it('Log', () => {
-        const logger = require('../lib/util/logger').default;
         logger.setLevel('debug');
 
         const debug = jest.spyOn(logger.winston, 'debug');
@@ -221,7 +217,6 @@ describe('Logger', () => {
             ]
         ],
     ])('Sets namespace ignore for debug level %s', (ignore, expected, tests) => {
-        const logger = require('../lib/util/logger').default;
         logger.setLevel('debug');
         const debugSpy = jest.spyOn(logger.winston, 'debug');
         logger.setDebugNamespaceIgnore(ignore);

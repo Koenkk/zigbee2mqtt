@@ -60,6 +60,7 @@ export class Controller {
     private extensionArgs: ExtensionArgs;
 
     constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
+        logger.init();
         zhSetLogger(logger);
         zhcSetLogger(logger);
         this.eventBus = new EventBus();
