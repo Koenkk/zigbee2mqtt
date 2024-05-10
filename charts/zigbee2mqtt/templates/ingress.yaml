@@ -26,31 +26,20 @@ spec:
     {{- tpl (toYaml .) $ | nindent 4 }}
   {{- end }}
   rules:
-  {{- if .Values.ingress.hosts  }}
   {{- range .Values.ingress.hosts }}
-    - host: {{ tpl . $ | quote }}
+    - host: {{ .host | quote }}
       http:
         paths:
-          - path: {{ $ingressPath }}
-            pathType: {{ $ingressPathType }}
+          {{- range .paths }}
+          - path: {{ .path }}
+           {{- if .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
             backend:
               service:
                 name: {{ $fullName }}
                 port:
                   number: {{ $servicePort }}
+          {{- end }}
   {{- end }}
-  {{- else }}
-    - http:
-        paths:
-          - backend:
-              service:
-                name: {{ $fullName }}
-                port:
-                  number: {{ $servicePort }}
-            {{- with $ingressPath }}
-            path: {{ . }}
-            {{- end }}
-            pathType: {{ $ingressPathType }}
-
-  {{- end -}}
 {{- end }}
