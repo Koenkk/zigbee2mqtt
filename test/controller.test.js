@@ -667,7 +667,7 @@ describe('Controller', () => {
         MQTT.events['connect']();
         await flushPromises();
         jest.runOnlyPendingTimers();
-        expect(MQTT.publish).toHaveBeenCalledTimes(13);
+        expect(MQTT.publish).toHaveBeenCalledTimes(14);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
     });
 
