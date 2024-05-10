@@ -75,6 +75,7 @@ export class Controller {
             this.enableDisableExtension, this.restartCallback, this.addExtension];
 
         this.extensions = [
+            new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
             new ExtensionReceive(...this.extensionArgs),
@@ -83,7 +84,6 @@ export class Controller {
             new ExtensionNetworkMap(...this.extensionArgs),
             new ExtensionGroups(...this.extensionArgs),
             new ExtensionBind(...this.extensionArgs),
-            new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
             new ExtensionReport(...this.extensionArgs),
             new ExtensionExternalExtension(...this.extensionArgs),
