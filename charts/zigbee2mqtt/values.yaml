@@ -178,6 +178,9 @@ zigbee2mqtt:
     # In case you are having issues try `200`.
     # For more information see https://github.com/Koenkk/zigbee2mqtt/issues/4884
     adapter_delay: 0
+# -- Ingress configuration. Zigbee2mqtt does use webssockets, which is not part of the Ingress standart settings.
+# most of the popular ingresses supports them through annotations. Please check https://www.zigbee2mqtt.io/guide/installation/08_kubernetes.html
+# for examples.
 ingress:
   # -- When enabled a new Ingress will be created
   enabled: false
