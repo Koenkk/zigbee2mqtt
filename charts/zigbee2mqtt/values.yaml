@@ -181,21 +181,21 @@ zigbee2mqtt:
 ingress:
   # -- When enabled a new Ingress will be created
   enabled: false
-  # The ingress class name for the ingress
+  # -- The ingress class name for the ingress
   ingressClassName: contour
-  # Additional labels for the ingres
+  # -- Additional labels for the ingres
   labels: {}
-  # URL in which the ingress will be accepting requests for zigbee2mqtt
+  # -- URL in which the ingress will be accepting requests for zigbee2mqtt
   path: /
-  # Ingress implementation specific (potentially) for most use cases Prefix should be ok
+  # -- Ingress implementation specific (potentially) for most use cases Prefix should be ok
   pathType: Prefix
   # Additional annotations for the ingress. ExternalDNS, and CertManager are tipically integrated here
   annotations: {}
-  # configuration for tls service (ig any)
+  # -- configuration for tls service (ig any)
   tls:
     - secretName: some-tls-secret
       hosts:
         - yourdomain.com
-  # list of hosts that should be allowed for the zigbee2mqtt service
+  # -- list of hosts that should be allowed for the zigbee2mqtt service
   hosts:
     - yourdomain.com
