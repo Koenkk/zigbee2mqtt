@@ -15,11 +15,11 @@ import type {
 
 import type {
     Cluster as ZHCluster,
-} from 'zigbee-herdsman/dist/zcl/tstype';
+} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import type {
     FrameControl as ZHFrameControl,
-} from 'zigbee-herdsman/dist/zcl';
+} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import type * as zhc from 'zigbee-herdsman-converters';
 
