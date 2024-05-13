@@ -2363,7 +2363,7 @@ describe('HomeAssistant extension', () => {
             'command_topic': 'zigbee2mqtt/bridge/request/options',
             'command_template':
                 '{"options": {"advanced": {"log_level": "{{ value }}" } } }',
-            'options': ['info', 'warn', 'error', 'debug'],
+            'options': settings.LOG_LEVELS,
             'origin': origin,
             'device': devicePayload,
             'availability': [{'topic': 'zigbee2mqtt/bridge/state'}],

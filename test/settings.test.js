@@ -996,4 +996,14 @@ describe('Settings', () => {
         expect(settings.get().blocklist).toStrictEqual(['blocklist', 'ban'])
         expect(settings.get().passlist).toStrictEqual(['passlist', 'whitelist'])
     });
+
+    it('Deprecated: warn log level', () => {
+        write(configurationFile, {...minimalConfig,
+            advanced: {log_level: 'warn'}
+        });
+
+        settings.reRead();
+
+        expect(settings.get().advanced.log_level).toStrictEqual('warning')
+    })
 });

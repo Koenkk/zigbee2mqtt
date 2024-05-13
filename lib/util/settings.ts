@@ -26,6 +26,10 @@ objectAssignDeep(schema, schemaJson);
     delete schemaJson.properties.ban;
 }
 
+/** NOTE: by order of priority, lower index is lower level (more important) */
+export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
+export type LogLevel = typeof LOG_LEVELS[number];
+
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
@@ -82,6 +86,7 @@ const defaults: RecursivePartial<Settings> = {
         log_directory: path.join(data.getPath(), 'log', '%TIMESTAMP%'),
         log_file: 'log.log',
         log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
+        log_namespaced_levels: {},
         log_syslog: {},
         log_debug_to_mqtt_frontend: false,
         log_debug_namespace_ignore: '',
@@ -184,6 +189,10 @@ function loadSettingsWithDefaults(): void {
     if (_settings.experimental?.hasOwnProperty('output') && _settings.advanced?.output == null) {
         // @ts-ignore
         _settingsWithDefaults.advanced.output = _settings.experimental.output;
+    }
+
+    if (_settings.advanced?.log_level === 'warn') {
+        _settingsWithDefaults.advanced.log_level = 'warning';
     }
 
     // @ts-ignore

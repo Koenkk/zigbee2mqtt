@@ -6,6 +6,8 @@ import fs from 'fs';
 import bind from 'bind-decorator';
 import type {QoS} from 'mqtt-packet';
 
+const NS = 'z2m:mqtt';
+
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
     private connectionTimer: NodeJS.Timeout;
@@ -22,7 +24,7 @@ export default class MQTT {
 
     async connect(): Promise<void> {
         const mqttSettings = settings.get().mqtt;
-        logger.info(`Connecting to MQTT server at ${mqttSettings.server}`);
+        logger.info(`Connecting to MQTT server at ${mqttSettings.server}`, NS);
 
         const options: mqtt.IClientOptions = {
             will: {
@@ -38,37 +40,37 @@ export default class MQTT {
         }
 
         if (mqttSettings.keepalive) {
-            logger.debug(`Using MQTT keepalive: ${mqttSettings.keepalive}`);
+            logger.debug(`Using MQTT keepalive: ${mqttSettings.keepalive}`, NS);
             options.keepalive = mqttSettings.keepalive;
         }
 
         if (mqttSettings.ca) {
-            logger.debug(`MQTT SSL/TLS: Path to CA certificate = ${mqttSettings.ca}`);
+            logger.debug(`MQTT SSL/TLS: Path to CA certificate = ${mqttSettings.ca}`, NS);
             options.ca = fs.readFileSync(mqttSettings.ca);
         }
 
         if (mqttSettings.key && mqttSettings.cert) {
-            logger.debug(`MQTT SSL/TLS: Path to client key = ${mqttSettings.key}`);
-            logger.debug(`MQTT SSL/TLS: Path to client certificate = ${mqttSettings.cert}`);
+            logger.debug(`MQTT SSL/TLS: Path to client key = ${mqttSettings.key}`, NS);
+            logger.debug(`MQTT SSL/TLS: Path to client certificate = ${mqttSettings.cert}`, NS);
             options.key = fs.readFileSync(mqttSettings.key);
             options.cert = fs.readFileSync(mqttSettings.cert);
         }
 
         if (mqttSettings.user && mqttSettings.password) {
-            logger.debug(`Using MQTT login with username: ${mqttSettings.user}`);
+            logger.debug(`Using MQTT login with username: ${mqttSettings.user}`, NS);
             options.username = mqttSettings.user;
             options.password = mqttSettings.password;
         } else {
-            logger.debug(`Using MQTT anonymous login`);
+            logger.debug(`Using MQTT anonymous login`, NS);
         }
 
         if (mqttSettings.client_id) {
-            logger.debug(`Using MQTT client ID: '${mqttSettings.client_id}'`);
+            logger.debug(`Using MQTT client ID: '${mqttSettings.client_id}'`, NS);
             options.clientId = mqttSettings.client_id;
         }
 
         if (mqttSettings.hasOwnProperty('reject_unauthorized') && !mqttSettings.reject_unauthorized) {
-            logger.debug(`MQTT reject_unauthorized set false, ignoring certificate warnings.`);
+            logger.debug(`MQTT reject_unauthorized set false, ignoring certificate warnings.`, NS);
             options.rejectUnauthorized = false;
         }
 
@@ -85,7 +87,7 @@ export default class MQTT {
             });
 
             this.client.on('error', (err) => {
-                logger.error(`MQTT error: ${err.message}`);
+                logger.error(`MQTT error: ${err.message}`, NS);
                 reject(err);
             });
             this.client.on('message', this.onMessage);
@@ -97,11 +99,11 @@ export default class MQTT {
         clearTimeout(this.connectionTimer);
         this.connectionTimer = setInterval(() => {
             if (this.client.reconnecting) {
-                logger.error('Not connected to MQTT server!');
+                logger.error('Not connected to MQTT server!', NS);
             }
         }, utils.seconds(10));
 
-        logger.info('Connected to MQTT server');
+        logger.info('Connected to MQTT server', NS);
         await this.publishStateOnline();
 
         if (!this.initialConnect) {
@@ -126,7 +128,7 @@ export default class MQTT {
         await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()),
             {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
-        logger.info('Disconnecting from MQTT server');
+        logger.info('Disconnecting from MQTT server', NS);
         this.client?.end();
     }
 
@@ -137,7 +139,7 @@ export default class MQTT {
     @bind public onMessage(topic: string, message: Buffer): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
-            logger.debug(`Received MQTT message on '${topic}' with data '${message.toString()}'`);
+            logger.debug(`Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
             this.eventBus.emitMQTTMessage({topic, message: message.toString()});
         }
 
@@ -175,14 +177,14 @@ export default class MQTT {
         if (!this.isConnected()) {
             /* istanbul ignore else */
             if (!skipLog) {
-                logger.error(`Not connected to MQTT server!`);
-                logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
+                logger.error(`Not connected to MQTT server!`, NS);
+                logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`, NS);
             }
             return;
         }
 
         if (!skipLog) {
-            logger.debug(`MQTT publish: topic '${topic}', payload '${payload}'`);
+            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};

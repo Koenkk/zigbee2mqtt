@@ -492,10 +492,20 @@
         },
         "log_level": {
           "type": "string",
-          "enum": ["info", "warn", "error", "debug"],
+          "enum": ["error", "warning", "info", "debug"],
           "title": "Log level",
           "description": "Logging level",
           "default": "info"
+        },
+        "log_namespaced_levels": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^(z2m|zhc|zh)(:[a-z0-9]{1,})*$"
+          },
+          "title": "Log Namespaced Levels",
+          "requiresRestart": true,
+          "description": "Override logging level for specific namespaces",
+          "default": {}
         },
         "log_debug_to_mqtt_frontend": {
           "type": "boolean",

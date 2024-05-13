@@ -63,20 +63,9 @@ describe('Logger', () => {
         logger.setLevel('info');
         expect(logger.getLevel()).toBe('info');
         logger.setLevel('warning');
-        expect(logger.getLevel()).toBe('warn');// match old Z2M levels
-        logger.setLevel('warn');
-        expect(logger.getLevel()).toBe('warn');// match old Z2M levels
+        expect(logger.getLevel()).toBe('warning');
         logger.setLevel('error');
         expect(logger.getLevel()).toBe('error');
-    });
-
-    it('Set warning when log level is warn', () => {
-        settings.set(['advanced', 'log_level'], 'warn');
-        settings.reRead();
-        logger.init();
-        expect(logger.level).toBe('warning');// getLevel() reports old Z2M level to match display/value
-        settings.set(['advanced', 'log_level'], 'info');
-        settings.reRead();
     });
 
     it('Add/remove transport', () => {
@@ -151,28 +140,29 @@ describe('Logger', () => {
     it('Log', () => {
         logger.setLevel('debug');
 
-        const debug = jest.spyOn(logger.winston, 'debug');
-        logger.debug('debug');
-        expect(debug).toHaveBeenCalledWith('debug', {namespace: 'z2m'});
-        expect(debug).toHaveBeenCalledTimes(1);
+        const logSpy = jest.spyOn(logger.winston, 'log');
+        logger.debug('msg');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', 'msg', {namespace: 'z2m'});
+        logger.debug('msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', 'msg', {namespace: 'abcd'});
 
-        const info = jest.spyOn(logger.winston, 'info');
-        logger.info('info');
-        expect(info).toHaveBeenCalledWith('info', {namespace: 'z2m'});
-        expect(info).toHaveBeenCalledTimes(1);
+        logger.info('msg');
+        expect(logSpy).toHaveBeenLastCalledWith('info', 'msg', {namespace: 'z2m'});
+        logger.info('msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith('info', 'msg', {namespace: 'abcd'});
 
-        const warning = jest.spyOn(logger.winston, 'warning');
-        logger.warning('warning');
-        expect(warning).toHaveBeenCalledWith('warning', {namespace: 'z2m'});
-        expect(warning).toHaveBeenCalledTimes(1);
+        logger.warning('msg');
+        expect(logSpy).toHaveBeenLastCalledWith('warning', 'msg', {namespace: 'z2m'});
+        logger.warning('msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith('warning', 'msg', {namespace: 'abcd'});
 
-        const error = jest.spyOn(logger.winston, 'error');
-        logger.error('error');
-        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
-
-        logger.error(new Error('error'));// test for stack=true
-        expect(error).toHaveBeenCalledWith('error', {namespace: 'z2m'});
-        expect(error).toHaveBeenCalledTimes(2);
+        logger.error('msg');
+        expect(logSpy).toHaveBeenLastCalledWith('error', 'msg', {namespace: 'z2m'});
+        logger.error(new Error('msg'));// test for stack=true
+        expect(logSpy).toHaveBeenLastCalledWith('error', new Error('msg'), {namespace: 'z2m'});
+        logger.error('msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith('error', 'msg', {namespace: 'abcd'});
+        expect(logSpy).toHaveBeenCalledTimes(9);
     });
 
     it.each([
@@ -218,7 +208,7 @@ describe('Logger', () => {
         ],
     ])('Sets namespace ignore for debug level %s', (ignore, expected, tests) => {
         logger.setLevel('debug');
-        const debugSpy = jest.spyOn(logger.winston, 'debug');
+        const logSpy = jest.spyOn(logger.winston, 'log');
         logger.setDebugNamespaceIgnore(ignore);
         expect(logger.debugNamespaceIgnoreRegex).toStrictEqual(expected);
         expect(logger.getDebugNamespaceIgnore()).toStrictEqual(ignore);
@@ -227,12 +217,28 @@ describe('Logger', () => {
             logger.debug('Test message', test.ns);
 
             if (test.match) {
-                expect(debugSpy).not.toHaveBeenCalled();
+                expect(logSpy).not.toHaveBeenCalled();
             } else {
-                expect(debugSpy).toHaveBeenCalled();
+                expect(logSpy).toHaveBeenLastCalledWith('debug', 'Test message', {namespace: test.ns});
             }
 
-            debugSpy.mockClear();
+            logSpy.mockClear();
         }
-    })
+    });
+
+    it('Logs with namespaced levels or default', () => {
+        settings.set(['advanced', 'log_namespaced_levels'], {
+            'z2m:mqtt': 'warning',
+        });
+        logger.init();
+        logger.setLevel('debug');
+        const logSpy = jest.spyOn(logger.winston, 'log');
+
+        logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(0);
+        logger.error(`Not connected to MQTT server!`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        logger.info(`Just another info message`, 'z2m:notmqtt');
+        expect(logSpy).toHaveBeenCalledTimes(2);
+    });
 });
