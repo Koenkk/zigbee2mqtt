@@ -504,9 +504,11 @@
           },
           "patternProperties": {
             "^.*$": {
-              "type": "string",
               "enum": ["error", "warning", "info", "debug"]
             }
+          },
+          "additionalProperties": {
+            "type": "string"
           },
           "title": "Log Namespaced Levels",
           "requiresRestart": true,
