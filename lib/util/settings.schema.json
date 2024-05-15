@@ -507,7 +507,6 @@
             "enum": ["error", "warning", "info", "debug"]
           },
           "title": "Log Namespaced Levels",
-          "requiresRestart": false,
           "description": "Set individual log levels for certain namespaces",
           "default": {},
           "examples": [
