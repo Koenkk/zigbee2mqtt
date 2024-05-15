@@ -508,7 +508,7 @@
           },
           "title": "Log Namespaced Levels",
           "requiresRestart": false,
-          "description": "Configure logging levels for specific namespaces",
+          "description": "Set individual log levels for certain namespaces",
           "default": {},
           "examples": [
             {"z2m:mqtt": "warning"},
