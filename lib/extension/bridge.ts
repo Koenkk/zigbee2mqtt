@@ -199,8 +199,8 @@ export default class Bridge extends Extension {
             await this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
         }
 
-        if (newSettings.advanced?.log_level != undefined) {
-            logger.setLevel(newSettings.advanced.log_level);
+        if (newSettings.advanced?.log_level != undefined || newSettings.advanced?.log_namespaced_levels != undefined) {
+            logger.reloadSettings();
         }
 
         if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {

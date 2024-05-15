@@ -502,17 +502,13 @@
           "propertyNames": {
             "pattern": "^(z2m|zhc|zh)(:[a-z0-9]{1,})*$"
           },
-          "patternProperties": {
-            "^.*$": {
-              "enum": ["error", "warning", "info", "debug"]
-            }
-          },
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "enum": ["error", "warning", "info", "debug"]
           },
           "title": "Log Namespaced Levels",
-          "requiresRestart": true,
-          "description": "Override logging level for specific namespaces",
+          "requiresRestart": false,
+          "description": "Configure logging levels for specific namespaces",
           "default": {},
           "examples": [
             {"z2m:mqtt": "warning"},
