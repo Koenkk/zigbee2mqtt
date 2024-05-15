@@ -226,12 +226,15 @@ describe('Logger', () => {
         }
     });
 
-    it('Logs with namespaced levels or default', () => {
+    it('Logs with namespaced levels or default - higher', () => {
         settings.set(['advanced', 'log_namespaced_levels'], {
             'z2m:mqtt': 'warning',
         });
         logger.init();
         logger.setLevel('debug');
+        expect(logger.getNamespacedLevels()).toStrictEqual({"z2m:mqtt": 'warning'});
+        expect(logger.getLevel()).toStrictEqual('debug');
+
         const logSpy = jest.spyOn(logger.winston, 'log');
 
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
@@ -240,5 +243,24 @@ describe('Logger', () => {
         expect(logSpy).toHaveBeenCalledTimes(1);
         logger.info(`Just another info message`, 'z2m:notmqtt');
         expect(logSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('Logs with namespaced levels or default - lower', () => {
+        expect(logger.getNamespacedLevels()).toStrictEqual({});
+        logger.setNamespacedLevels({'z2m:mqtt': 'info'})
+        logger.setLevel('warning');
+        expect(logger.getNamespacedLevels()).toStrictEqual({"z2m:mqtt": 'info'});
+        expect(logger.getLevel()).toStrictEqual('warning');
+
+        const logSpy = jest.spyOn(logger.winston, 'log');
+
+        logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        logger.error(`Not connected to MQTT server!`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(2);
+        logger.info(`Just another info message`, 'z2m:notmqtt');
+        expect(logSpy).toHaveBeenCalledTimes(2);
+        logger.warning(`Just another warning message`, 'z2m:notmqtt');
+        expect(logSpy).toHaveBeenCalledTimes(3);
     });
 });

@@ -151,10 +151,12 @@ class Logger {
         this.logger.transports.forEach((transport) => transport.level = this.level);
     }
 
-    public reloadSettings(): void {
-        this.level = settings.get().advanced.log_level;
-        this.namespacedLevels = settings.get().advanced.log_namespaced_levels;
-        this.setLevel(this.level);
+    public getNamespacedLevels(): Record<string, settings.LogLevel> {
+        return this.namespacedLevels;
+    }
+
+    public setNamespacedLevels(nsLevels: Record<string, settings.LogLevel>): void {
+        this.namespacedLevels = nsLevels;
     }
 
     private log(level: settings.LogLevel, message: string, namespace: string): void {

@@ -1284,7 +1284,7 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_level: 'debug'}}}));
         await flushPromises();
-        expect(logger.getLevel()).toBe('debug');
+        expect(logger.getLevel()).toStrictEqual('debug');
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
@@ -1299,6 +1299,20 @@ describe('Bridge', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_debug_namespace_ignore: nsIgnore}}}));
         await flushPromises();
         expect(logger.getDebugNamespaceIgnore()).toStrictEqual(nsIgnore);
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({"data":{"restart_required":false},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Change options and apply - log_namespaced_levels', async () => {
+        logger.setLevel('info');
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_namespaced_levels: { "z2m:mqtt": 'warning' }}}}));
+        await flushPromises();
+        expect(logger.getNamespacedLevels()).toStrictEqual({ "z2m:mqtt": 'warning' });
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
