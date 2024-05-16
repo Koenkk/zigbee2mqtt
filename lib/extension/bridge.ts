@@ -771,7 +771,9 @@ export default class Bridge extends Extension {
         };
 
         for (const device of this.zigbee.devices()) {
-            if (device.customClusters) data.custom_clusters[device.ieeeAddr] = device.customClusters;
+            if (Object.keys(device.customClusters).length !== 0) {
+                data.custom_clusters[device.ieeeAddr] = device.customClusters;
+            }
         }
 
         await this.mqtt.publish('bridge/definitions', stringify(data),
