@@ -1469,6 +1469,7 @@ describe('Bridge', () => {
         expect(payload['icon']).not.toBeUndefined()
         expect(payload.icon).toBe('_------_-._Z-NC-Z02-LM_');
     });
+
     it('Should publish event, devices and definition when device with custom_clusters interview successful', async () => {
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.deviceInterview({device: zigbeeHerdsman.devices.BMCT_SLZ, status: 'successful'});
