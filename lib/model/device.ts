@@ -17,7 +17,9 @@ export default class Device {
     get isSupported(): boolean {
         return this.zh.type === 'Coordinator' || (this.definition && !this.definition.generated);
     }
-    get customClusters(): CustomClusters {return this.zh.customClusters;}
+    get customClusters(): CustomClusters {
+        return this.zh.customClusters;
+   }
 
     constructor(device: zh.Device) {
         this.zh = device;
