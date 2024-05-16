@@ -121,7 +121,6 @@ export default class Bridge extends Extension {
         this.eventBus.onDeviceJoined(this, (data) => {
             this.lastJoinedDeviceIeeeAddr = data.device.ieeeAddr;
             this.publishDevices();
-            this.publishDefinitions();
             publishEvent('device_joined', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
         });
         this.eventBus.onDeviceLeave(this, (data) => {
@@ -129,10 +128,9 @@ export default class Bridge extends Extension {
             this.publishDefinitions();
             publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
-        this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices() && this.publishDefinitions());
+        this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
         this.eventBus.onDeviceInterview(this, (data) => {
             this.publishDevices();
-            this.publishDefinitions();
             const payload: KeyValue =
                 {friendly_name: data.device.name, status: data.status, ieee_address: data.device.ieeeAddr};
             if (data.status === 'successful') {
@@ -143,14 +141,12 @@ export default class Bridge extends Extension {
         });
         this.eventBus.onDeviceAnnounce(this, (data) => {
             this.publishDevices();
-            this.publishDefinitions();
             publishEvent('device_announce', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
         });
 
         await this.publishInfo();
         await this.publishDevices();
         await this.publishGroups();
-        // Refresh Cluster definition
         await this.publishDefinitions();
 
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -495,9 +491,6 @@ export default class Bridge extends Extension {
 
         this.publishDevices();
 
-        // Refresh Cluster definition
-        this.publishDefinitions();
-
         logger.info(`Configured reporting for '${message.id}', '${message.cluster}.${message.attribute}'`);
 
         return utils.getResponse(message, {
@@ -547,8 +540,6 @@ export default class Bridge extends Extension {
 
         if (entity instanceof Device) {
             this.publishDevices();
-            // Refresh Cluster definition
-            this.publishDefinitions();
         } else {
             this.publishGroups();
             this.publishInfo();

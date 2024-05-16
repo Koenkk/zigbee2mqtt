@@ -19,7 +19,7 @@ export default class Device {
     }
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
-   }
+    }
 
     constructor(device: zh.Device) {
         this.zh = device;

@@ -226,7 +226,7 @@ const devices = {
     'GW003-AS-IN-TE-FC': new Device('Router', '0x0017548104a44669', 6545,4699, [new Endpoint(1, [3], [0,3,513,514], '0x0017548104a44669')], true, "Mains (single phase)", 'Adapter Zigbee FUJITSU'),
     'BMCT-SLZ': new Device('Router', '0x18fc26000000cafe', 6546,4617, [new Endpoint(1, [0,3,4,5,258,1794,2820,2821,64672], [10,25], '0x18fc26000000cafe')], true, "Mains (single phase)", 'RBSH-MMS-ZB-EU'),
     'BMCT_SLZ': new Device('Router', '0x0026decafe000473', 6546,4617, [new Endpoint(1, [0,3,4,5,258,1794,2820,2821,64672], [10,25], '0x0026decafe000473')], true, "Mains (single phase)", 'RBSH-MMS-ZB-EU', false, null, null, null, custom_clusters),
-    
+    'bulb_custom_cluster': new Device('Router', '0x000b57fffec6a5c2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5c2')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm", false, null, null, null, custom_clusters),
 }
 
 const mock = {
