@@ -191,25 +191,24 @@ export default class Bridge extends Extension {
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
-        utils.removeNullPropertiesFromObject(newSettings);
         if (newSettings.permit_join != undefined) {
-            await this.zigbee.permitJoin(newSettings.permit_join);
+            await this.zigbee.permitJoin(settings.get().permit_join);
         }
 
         if (newSettings.homeassistant != undefined) {
-            await this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
+            await this.enableDisableExtension(!!settings.get().homeassistant, 'HomeAssistant');
         }
 
         if (newSettings.advanced?.log_level != undefined) {
-            logger.setLevel(newSettings.advanced.log_level);
+            logger.setLevel(settings.get().advanced.log_level);
         }
 
         if (newSettings.advanced?.log_namespaced_levels != undefined) {
-            logger.setNamespacedLevels(newSettings.advanced.log_namespaced_levels);
+            logger.setNamespacedLevels(settings.get().advanced.log_namespaced_levels);
         }
 
         if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {
-            logger.setDebugNamespaceIgnore(newSettings.advanced.log_debug_namespace_ignore);
+            logger.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
         }
 
         logger.info('Successfully changed options');
