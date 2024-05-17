@@ -186,11 +186,12 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const newSettings = utils.computeSettingsToChange(settings.get(), message.options);
+        const newSettings = message.options;
         const restartRequired = settings.apply(newSettings);
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
+        utils.removeNullPropertiesFromObject(newSettings);
         if (newSettings.permit_join != undefined) {
             await this.zigbee.permitJoin(newSettings.permit_join);
         }
@@ -444,11 +445,8 @@ export default class Bridge extends Extension {
 
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
-        const currentOptions = entityType === 'device' ? settings.get().devices[entity.ID] :
-            settings.get().groups[entity.ID];
-        const options = utils.computeSettingsToChange(currentOptions, message.options);
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
-        const restartRequired = settings.changeEntityOptions(ID, options);
+        const restartRequired = settings.changeEntityOptions(ID, message.options);
         if (restartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
         await this.publishInfo();

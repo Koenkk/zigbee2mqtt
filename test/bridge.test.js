@@ -1309,9 +1309,11 @@ describe('Bridge', () => {
 
     it('Change options and apply - log_namespaced_levels', async () => {
         logger.setLevel('info');
+        settings.apply({advanced: {log_namespaced_levels: {'zh:zstack': 'warning', 'z2m:mqtt': 'debug'}}});
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_namespaced_levels: { "z2m:mqtt": 'warning' }}}}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_namespaced_levels: { "z2m:mqtt": 'warning', "zh:zstack": null }}}}));
         await flushPromises();
+        expect(settings.get().advanced.log_namespaced_levels).toStrictEqual({"z2m:mqtt": "warning"});
         expect(logger.getNamespacedLevels()).toStrictEqual({ "z2m:mqtt": 'warning' });
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1355,7 +1357,7 @@ describe('Bridge', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({"options":{"serial":{"disable_led":false,"port":null}}}));
         await flushPromises();
-        expect(settings.get().serial).toStrictEqual({"disable_led": false, "port": null});
+        expect(settings.get().serial).toStrictEqual({"disable_led": false});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
             stringify({"data":{"restart_required":true},"status":"ok"}),
