@@ -1321,6 +1321,11 @@ describe('Bridge', () => {
             stringify({"data":{"restart_required":false},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+
+        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_namespaced_levels: { "z2m:mqtt": null }}}}));
+        await flushPromises();
+        expect(settings.get().advanced.log_namespaced_levels).toStrictEqual({});
+        expect(logger.getNamespacedLevels()).toStrictEqual({});
     });
 
     it('Change options restart required', async () => {
