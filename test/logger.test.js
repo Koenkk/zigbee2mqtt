@@ -4,12 +4,20 @@ let settings;
 const fs = require('fs');
 const path = require('path');
 const data = require('./stub/data');
-let stdOutWriteOriginal;
 const {rimrafSync} = require('rimraf');
 const Transport = require('winston-transport');
 
 describe('Logger', () => {
     let logger;
+    let consoleWriteSpy;
+
+    beforeAll(() => {
+        consoleWriteSpy = jest.spyOn(console._stdout, 'write').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+        consoleWriteSpy.mockRestore();
+    });
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
@@ -17,14 +25,12 @@ describe('Logger', () => {
         settings = require('../lib/util/settings');
         settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
         settings.reRead();
-        stdOutWriteOriginal = console._stdout.write;
-        console._stdout.write = () => {};
         logger = require('../lib/util/logger').default;
         logger.init();
+        consoleWriteSpy.mockClear();
     });
 
     afterEach(async () => {
-        console._stdout.write = stdOutWriteOriginal;
     });
 
     it('Create log directory', () => {
@@ -66,6 +72,12 @@ describe('Logger', () => {
         expect(logger.getLevel()).toBe('warning');
         logger.setLevel('error');
         expect(logger.getLevel()).toBe('error');
+
+        // winston level always stays at 'debug', logic handled by custom logger
+        expect(logger.winston.level).toStrictEqual('debug');
+        for (const transport of logger.winston.transports) {
+            expect(transport.level).toStrictEqual(undefined);
+        }
     });
 
     it('Add/remove transport', () => {
@@ -134,36 +146,56 @@ describe('Logger', () => {
         expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
 
         jest.resetModules();
-        logger = require('../lib/util/logger').default;
     });
 
-    it('Log', () => {
-        logger.setLevel('debug');
+    it.each([
+        ['debug', {higher: ['info', 'warning', 'error'], lower: []}],
+        ['info', {higher: ['warning', 'error'], lower: ['debug']}],
+        ['warning', {higher: ['error'], lower: ['debug', 'info']}],
+        ['error', {higher: [], lower: ['debug', 'info', 'warning']}],
+    ])('Logs relevant levels for %s', (level, otherLevels) => {
+        logger.setLevel(level);
 
         const logSpy = jest.spyOn(logger.winston, 'log');
-        logger.debug('msg');
-        expect(logSpy).toHaveBeenLastCalledWith('debug', 'msg', {namespace: 'z2m'});
-        logger.debug('msg', 'abcd');
-        expect(logSpy).toHaveBeenLastCalledWith('debug', 'msg', {namespace: 'abcd'});
+        consoleWriteSpy.mockClear();
+        let i = 1;
 
-        logger.info('msg');
-        expect(logSpy).toHaveBeenLastCalledWith('info', 'msg', {namespace: 'z2m'});
-        logger.info('msg', 'abcd');
-        expect(logSpy).toHaveBeenLastCalledWith('info', 'msg', {namespace: 'abcd'});
+        logger[level]('msg');
+        expect(logSpy).toHaveBeenLastCalledWith(level, 'msg', {namespace: 'z2m'});
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+        logger[level]('msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith(level, 'msg', {namespace: 'abcd'});
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
 
-        logger.warning('msg');
-        expect(logSpy).toHaveBeenLastCalledWith('warning', 'msg', {namespace: 'z2m'});
-        logger.warning('msg', 'abcd');
-        expect(logSpy).toHaveBeenLastCalledWith('warning', 'msg', {namespace: 'abcd'});
+        for (const higherLevel of otherLevels.higher) {
+            logger[higherLevel]('higher msg');
+            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'higher msg', {namespace: 'z2m'});
+            expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+            logger[higherLevel]('higher msg', 'abcd');
+            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'higher msg', {namespace: 'abcd'});
+            expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+        }
 
-        logger.error('msg');
-        expect(logSpy).toHaveBeenLastCalledWith('error', 'msg', {namespace: 'z2m'});
+        logSpy.mockClear();
+        consoleWriteSpy.mockClear();
+
+        for (const lowerLevel of otherLevels.lower) {
+            logger[lowerLevel]('lower msg');
+            expect(logSpy).not.toHaveBeenCalled();
+            expect(consoleWriteSpy).not.toHaveBeenCalled();
+            logger[lowerLevel]('lower msg', 'abcd');
+            expect(logSpy).not.toHaveBeenCalled();
+            expect(consoleWriteSpy).not.toHaveBeenCalled();
+        }
+    });
+
+    it('Logs Error object', () => {
+        const logSpy = jest.spyOn(logger.winston, 'log');
+
         logger.error(new Error('msg'));// test for stack=true
         expect(logSpy).toHaveBeenLastCalledWith('error', new Error('msg'), {namespace: 'z2m'});
-        logger.error('msg', 'abcd');
-        expect(logSpy).toHaveBeenLastCalledWith('error', 'msg', {namespace: 'abcd'});
-        expect(logSpy).toHaveBeenCalledTimes(9);
-    });
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
+    })
 
     it.each([
         [
@@ -237,12 +269,16 @@ describe('Logger', () => {
 
         const logSpy = jest.spyOn(logger.winston, 'log');
 
+        consoleWriteSpy.mockClear();
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
         expect(logSpy).toHaveBeenCalledTimes(0);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(0);
         logger.error(`Not connected to MQTT server!`, 'z2m:mqtt');
         expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.info(`Just another info message`, 'z2m:notmqtt');
         expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
     });
 
     it('Logs with namespaced levels or default - lower', () => {
@@ -254,13 +290,18 @@ describe('Logger', () => {
 
         const logSpy = jest.spyOn(logger.winston, 'log');
 
+        consoleWriteSpy.mockClear();
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
         expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.error(`Not connected to MQTT server!`, 'z2m:mqtt');
         expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
         logger.info(`Just another info message`, 'z2m:notmqtt');
         expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
         logger.warning(`Just another warning message`, 'z2m:notmqtt');
         expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
     });
 });

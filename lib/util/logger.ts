@@ -34,7 +34,7 @@ class Logger {
         const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
 
         this.logger = winston.createLogger({
-            level: this.level,
+            level: 'debug',
             format: winston.format.combine(
                 winston.format.errors({stack: true}),
                 winston.format.timestamp({format: timestampFormat}),
@@ -126,7 +126,6 @@ class Logger {
     }
 
     public addTransport(transport: winston.transport): void {
-        transport.level = this.level;
         this.logger.add(transport);
     }
 
@@ -148,7 +147,6 @@ class Logger {
 
     public setLevel(level: settings.LogLevel): void {
         this.level = level;
-        this.logger.transports.forEach((transport) => transport.level = this.level);
     }
 
     public getNamespacedLevels(): Record<string, settings.LogLevel> {
