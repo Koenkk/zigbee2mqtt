@@ -207,6 +207,10 @@ export default class Bridge extends Extension {
             logger.setNamespacedLevels(settings.get().advanced.log_namespaced_levels);
         }
 
+        if (newSettings.advanced?.log_namespaced_levels != undefined) {
+            logger.setNamespacedLevels(settings.get().advanced.log_namespaced_levels);
+        }
+
         if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {
             logger.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
         }
