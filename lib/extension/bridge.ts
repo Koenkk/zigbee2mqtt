@@ -186,29 +186,29 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const newSettings = utils.computeSettingsToChange(settings.get(), message.options);
+        const newSettings = message.options;
         const restartRequired = settings.apply(newSettings);
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
         if (newSettings.permit_join != undefined) {
-            await this.zigbee.permitJoin(newSettings.permit_join);
+            await this.zigbee.permitJoin(settings.get().permit_join);
         }
 
         if (newSettings.homeassistant != undefined) {
-            await this.enableDisableExtension(newSettings.homeassistant, 'HomeAssistant');
+            await this.enableDisableExtension(!!settings.get().homeassistant, 'HomeAssistant');
         }
 
         if (newSettings.advanced?.log_level != undefined) {
-            logger.setLevel(newSettings.advanced.log_level);
+            logger.setLevel(settings.get().advanced.log_level);
         }
 
         if (newSettings.advanced?.log_namespaced_levels != undefined) {
-            logger.setNamespacedLevels(newSettings.advanced.log_namespaced_levels);
+            logger.setNamespacedLevels(settings.get().advanced.log_namespaced_levels);
         }
 
         if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {
-            logger.setDebugNamespaceIgnore(newSettings.advanced.log_debug_namespace_ignore);
+            logger.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
         }
 
         logger.info('Successfully changed options');
@@ -444,11 +444,8 @@ export default class Bridge extends Extension {
 
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
-        const currentOptions = entityType === 'device' ? settings.get().devices[entity.ID] :
-            settings.get().groups[entity.ID];
-        const options = utils.computeSettingsToChange(currentOptions, message.options);
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
-        const restartRequired = settings.changeEntityOptions(ID, options);
+        const restartRequired = settings.changeEntityOptions(ID, message.options);
         if (restartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
         await this.publishInfo();

@@ -480,20 +480,22 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
     write();
 }
 
-export function apply(newSettings: Record<string, unknown>): boolean {
+export function apply(settings: Record<string, unknown>): boolean {
+    getInternalSettings(); // Ensure _settings is initialized.
+    /* eslint-disable-line */ // @ts-ignore
+    const newSettings = objectAssignDeep.noMutate(_settings, settings);
+    utils.removeNullPropertiesFromObject(newSettings);
     ajvSetting(newSettings);
     const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
-    if (errors.length) {
+    if (errors?.length) {
         const error = errors[0];
         throw new Error(`${error.instancePath.substring(1)} ${error.message}`);
     }
 
-    getInternalSettings(); // Ensure _settings is initialized.
-    /* eslint-disable-line */ // @ts-ignore
-    _settings = objectAssignDeep.noMutate(_settings, newSettings);
+    _settings = newSettings;
     write();
 
-    ajvRestartRequired(newSettings);
+    ajvRestartRequired(settings);
     const restartRequired = ajvRestartRequired.errors &&
         !!ajvRestartRequired.errors.find((e) => e.keyword === 'requiresRestart');
     return restartRequired;

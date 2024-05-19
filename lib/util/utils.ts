@@ -4,8 +4,6 @@ import data from './data';
 import vm from 'vm';
 import fs from 'fs';
 import path from 'path';
-import {detailedDiff} from 'deep-object-diff';
-import objectAssignDeep from 'object-assign-deep';
 import type * as zhc from 'zigbee-herdsman-converters';
 
 // construct a local ISO8601 string (instead of UTC-based)
@@ -336,10 +334,6 @@ function filterProperties(filter: string[], data: KeyValue): void {
     }
 }
 
-function clone(obj: KeyValue): KeyValue {
-    return JSON.parse(JSON.stringify(obj));
-}
-
 export function isNumericExposeFeature(feature: zhc.Feature): feature is zhc.Numeric {
     return feature?.type === 'numeric';
 }
@@ -350,39 +344,6 @@ export function isEnumExposeFeature(feature: zhc.Feature): feature is zhc.Enum {
 
 export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Binary {
     return feature?.type === 'binary';
-}
-
-function computeSettingsToChange(current: KeyValue, new_: KeyValue): KeyValue {
-    const diff: KeyValue = detailedDiff(current, new_);
-
-    // Remove any settings that are in the deleted.diff but not in the passed options
-    const cleanupDeleted = (options: KeyValue, deleted: KeyValue): void => {
-        for (const key of Object.keys(deleted)) {
-            if (!(key in options)) {
-                delete deleted[key];
-            } else if (!Array.isArray(options[key])) {
-                cleanupDeleted(options[key], deleted[key]);
-            }
-        }
-    };
-    cleanupDeleted(new_, diff.deleted);
-
-    // objectAssignDeep requires object prototype which is missing from detailedDiff, therefore clone
-    const newSettings = objectAssignDeep({}, clone(diff.added), clone(diff.updated), clone(diff.deleted));
-
-    // deep-object-diff converts arrays to objects, set original array back here
-    const convertBackArray = (before: KeyValue, after: KeyValue): void => {
-        for (const [key, afterValue] of Object.entries(after)) {
-            const beforeValue = before[key];
-            if (Array.isArray(beforeValue)) {
-                after[key] = beforeValue;
-            } else if (afterValue && typeof beforeValue === 'object') {
-                convertBackArray(beforeValue, afterValue);
-            }
-        }
-    };
-    convertBackArray(new_, newSettings);
-    return newSettings;
 }
 
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
@@ -410,5 +371,5 @@ export default {
     removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
     isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
     sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles, filterProperties, flatten, arrayUnique, clone, computeSettingsToChange, getScenes,
+    getAllFiles, filterProperties, flatten, arrayUnique, getScenes,
 };
