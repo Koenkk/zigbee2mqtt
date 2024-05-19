@@ -136,6 +136,10 @@ export default class MQTT {
         this.client.subscribe(topic);
     }
 
+    unsubscribe(topic: string): void {
+        this.client.unsubscribe(topic);
+    }
+
     @bind public onMessage(topic: string, message: Buffer): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {

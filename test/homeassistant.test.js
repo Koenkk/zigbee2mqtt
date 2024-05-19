@@ -15,11 +15,14 @@ describe('HomeAssistant extension', () => {
     let extension;
     let origin;
 
-    let resetExtension = async () => {
+    let resetExtension = async (runTimers=true) => {
         await controller.enableDisableExtension(false, 'HomeAssistant');
         MQTT.publish.mockClear();
         await controller.enableDisableExtension(true, 'HomeAssistant');
         extension = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
+        if (runTimers) {
+            jest.runOnlyPendingTimers();
+        }
     }
 
     beforeEach(async () => {
@@ -77,7 +80,6 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices and groups', async () => {
         let payload;
-        await flushPromises();
 
         payload = {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
@@ -408,6 +410,50 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 1 },
             expect.any(Function),
         );
+    });
+
+    it('Should not discovery devices which are already discovered', async() => {
+        const topic = 'homeassistant/sensor/0x0017880104e45522/humidity/config';
+        const payload = stringify({
+            'unit_of_measurement': '%',
+            'device_class': 'humidity',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.humidity }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'object_id': 'weather_sensor_humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'origin': origin,
+            'enabled_by_default': true,
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': null,
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
+                'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+        });
+
+        // Should subscribe to `homeassistant/#` to find out what devices are already discovered.
+        expect(MQTT.subscribe).toHaveBeenCalledWith(`homeassistant/#`);
+
+        // Retained Home Assistant discovery message arrives
+        await MQTT.events.message(topic, payload);
+
+        jest.runOnlyPendingTimers();        
+
+        // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
+        expect(MQTT.unsubscribe).toHaveBeenCalledWith(`homeassistant/#`);
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            expect.any(String),
+            expect.any(Object),
+            expect.any(Function),
+        );
+        expect(logger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`)
     });
 
     it('Should discover devices with precision', async () => {
