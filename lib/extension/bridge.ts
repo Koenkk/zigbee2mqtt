@@ -203,6 +203,10 @@ export default class Bridge extends Extension {
             logger.setLevel(newSettings.advanced.log_level);
         }
 
+        if (newSettings.advanced?.log_namespaced_levels != undefined) {
+            logger.setNamespacedLevels(newSettings.advanced.log_namespaced_levels);
+        }
+
         if (newSettings.advanced?.log_debug_namespace_ignore != undefined) {
             logger.setDebugNamespaceIgnore(newSettings.advanced.log_debug_namespace_ignore);
         }
@@ -358,10 +362,9 @@ export default class Bridge extends Extension {
 
     // Deprecated
     @bind async configLogLevel(message: KeyValue | string): Promise<MQTTResponse> {
-        const allowed = ['error', 'warn', 'info', 'debug'];
-        const value = this.getValue(message) as 'error' | 'warn' | 'info' | 'debug';
-        if (typeof value !== 'string' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
+        const value = this.getValue(message) as settings.LogLevel;
+        if (typeof value !== 'string' || !settings.LOG_LEVELS.includes(value)) {
+            throw new Error(`'${value}' is not an allowed value, allowed: ${settings.LOG_LEVELS}`);
         }
 
         logger.setLevel(value);

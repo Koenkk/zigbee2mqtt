@@ -1911,7 +1911,7 @@ export default class HomeAssistant extends Extension {
                     command_topic: `${baseTopic}/request/options`,
                     command_template:
                         '{"options": {"advanced": {"log_level": "{{ value }}" } } }',
-                    options: ['info', 'warn', 'error', 'debug'],
+                    options: settings.LOG_LEVELS,
                 },
             },
             // Sensors:

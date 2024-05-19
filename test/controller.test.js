@@ -17,6 +17,8 @@ const mocksClear = [
 
 const fs = require('fs');
 
+const LOG_MQTT_NS = 'z2m:mqtt';
+
 jest.mock('sd-notify', () => {
     return {
         watchdogInterval: () => {return 3000;},
@@ -161,7 +163,7 @@ describe('Controller', () => {
         logger.error.mockClear();
         controller.mqtt.client.reconnecting = true;
         jest.advanceTimersByTime(11 * 1000);
-        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS);
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -174,8 +176,8 @@ describe('Controller', () => {
         await controller.publishEntityState(device, {state: 'ON', brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(2);
-        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
-        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}");
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS);
+        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}", LOG_MQTT_NS);
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -215,7 +217,7 @@ describe('Controller', () => {
         });
         await controller.start();
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found');
+        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found', LOG_MQTT_NS);
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect, exiting...');
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
@@ -269,18 +271,18 @@ describe('Controller', () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'")
+        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS)
     });
 
     it('Skip MQTT messages on topic we published to', async () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'")
+        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", LOG_MQTT_NS)
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(logger.debug).toHaveBeenCalledTimes(1);
+        expect(logger.debug).toHaveBeenCalledTimes(0);
     });
 
     it('On zigbee event message', async () => {

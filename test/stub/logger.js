@@ -1,5 +1,6 @@
 let level = 'info';
 let debugNamespaceIgnore = '';
+let namespacedLevels = {};
 
 let transports = [];
 
@@ -27,6 +28,8 @@ const mock = {
     },
     setLevel: (newLevel) => {level = newLevel},
     getLevel: () => level,
+    setNamespacedLevels: (nsLevels) => {namespacedLevels = nsLevels},
+    getNamespacedLevels: () => namespacedLevels,
     setDebugNamespaceIgnore: (newIgnore) => {debugNamespaceIgnore = newIgnore},
     getDebugNamespaceIgnore: () => debugNamespaceIgnore,
     setTransportsEnabled: (value) => {transportsEnabled = value},

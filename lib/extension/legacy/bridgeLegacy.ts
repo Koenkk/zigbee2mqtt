@@ -8,7 +8,6 @@ import bind from 'bind-decorator';
 
 const configRegex =
     new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
-const allowedLogLevels = ['error', 'warn', 'info', 'debug'];
 
 export default class BridgeLegacy extends Extension {
     private lastJoinedDeviceName: string = null;
@@ -118,12 +117,12 @@ export default class BridgeLegacy extends Extension {
     }
 
     @bind logLevel(topic: string, message: string): void {
-        const level = message.toLowerCase() as 'error' | 'warn' | 'info' | 'debug';
-        if (allowedLogLevels.includes(level)) {
+        const level = message.toLowerCase() as settings.LogLevel;
+        if (settings.LOG_LEVELS.includes(level)) {
             logger.info(`Switching log level to '${level}'`);
             logger.setLevel(level);
         } else {
-            logger.error(`Could not set log level to '${level}'. Allowed level: '${allowedLogLevels.join(',')}'`);
+            logger.error(`Could not set log level to '${level}'. Allowed level: '${settings.LOG_LEVELS.join(',')}'`);
         }
 
         this.publish();
