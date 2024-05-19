@@ -2,6 +2,7 @@ const data = require('./stub/data');
 const sleep = require('./stub/sleep');
 const logger = require('./stub/logger');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const {loadTopicGetSetRegex} = require('../lib/extension/publish');
 const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const stringify = require('json-stable-stringify-without-jsonify');
 const MQTT = require('./stub/mqtt');
@@ -40,6 +41,7 @@ describe('Publish', () => {
         data.writeDefaultConfiguration();
         controller.state.state = {};
         settings.reRead();
+        loadTopicGetSetRegex();
         mocksClear.forEach((m) => m.mockClear());
         Object.values(zigbeeHerdsman.devices).forEach((d) => {
             d.endpoints.forEach((e) => {
@@ -594,6 +596,7 @@ describe('Publish', () => {
 
     it('Should parse topic with when base topic has multiple slashes', async () => {
         settings.set(['mqtt', 'base_topic'], 'zigbee2mqtt/at/my/home');
+        loadTopicGetSetRegex();
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/at/my/home/bulb_color/get', stringify({state: ''}));
@@ -614,6 +617,7 @@ describe('Publish', () => {
 
     it('Should parse topic with when base and deviceID have multiple slashes', async () => {
         settings.set(['mqtt', 'base_topic'], 'zigbee2mqtt/at/my/basement');
+        loadTopicGetSetRegex();
         const device = zigbeeHerdsman.devices.bulb_color;
         settings.set(['devices', device.ieeeAddr, 'friendly_name'], 'floor0/basement/my_device_id2');
         const endpoint = device.getEndpoint(1);
@@ -712,6 +716,7 @@ describe('Publish', () => {
 
     it('Should parse set with and slashes in base and deviceID postfix topic', async () => {
         settings.set(['mqtt', 'base_topic'], 'zigbee2mqtt/at/my/home')
+        loadTopicGetSetRegex();
         const device = zigbeeHerdsman.devices.QBKG03LM;
         settings.set(['devices', device.ieeeAddr, 'friendly_name'], 'in/basement/wall_switch_double');
         const endpoint = device.getEndpoint(2);
@@ -1535,5 +1540,11 @@ describe('Publish', () => {
             stringify({"color":{"x":0.4152,"y":0.3954},"color_mode":"color_temp","color_temp":300}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+    });
+
+    it('Log an error when entity is not found', async () => {
+        await MQTT.events.message('zigbee2mqtt/an_unknown_entity/set', stringify({}));
+        await flushPromises();
+        expect(logger.error).toHaveBeenCalledWith("Entity 'an_unknown_entity' is unknown");
     });
 });

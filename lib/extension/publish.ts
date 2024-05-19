@@ -10,7 +10,13 @@ import Group from '../model/group';
 import Device from '../model/device';
 import bind from 'bind-decorator';
 
-const topicGetSetRegex = new RegExp(`^(.+?)/(get|set)(?:/(.+))?`);
+let topicGetSetRegex: RegExp;
+// Used by `publish.test.js` to reload regex when changing `mqtt.base_topic`.
+export const loadTopicGetSetRegex = (): void => {
+    topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge)(.+?)/(get|set)(?:/(.+))?$`);
+};
+loadTopicGetSetRegex();
+
 const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
@@ -44,12 +50,6 @@ export default class Publish extends Extension {
         // - <base_topic>/device_name/set/attribute (default endpoint used)
         // - <base_topic>/device_name/endpoint/set (attribute is defined in the payload)
         // - <base_topic>/device_name/endpoint/set/attribute (payload is the value)
-
-        // The first step is to get rid of base topic part
-        topic = topic.replace(`${settings.get().mqtt.base_topic}/`, '');
-
-        // Also bridge requests are something we don't care about
-        if (topic.match(/bridge/)) return null;
 
         // Make the rough split on get/set keyword.
         // Before the get/set is the device name and optional endpoint name.
