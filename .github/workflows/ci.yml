@@ -34,10 +34,10 @@ jobs:
               run: npm run test-with-coverage
             - name: Docker login
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
+              run: echo ${{ secrets.DOCKER_KEY }} | docker login -u ${{ github.repository_owner }} --password-stdin
             - name: Docker login ghcr.io
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ github.token }} | docker login ghcr.io -u koenkk --password-stdin
+              run: echo ${{ github.token }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             - name: Docker setup - QEMU
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               uses: docker/setup-qemu-action@v3
@@ -58,7 +58,7 @@ jobs:
                     -f docker/Dockerfile \
                     --provenance=false \
                     --push \
-                    -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
+                    -t ${{ github.repository }}:latest-dev -t ghcr.io/${{ github.repository }}:latest-dev \
                     .
             - name: 'release: Docker build'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -70,7 +70,7 @@ jobs:
                     -f docker/Dockerfile \
                     --provenance=false \
                     --push \
-                    -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
+                    -t ${{ github.repository }}:latest -t "${{ github.repository }}:$TAG" -t ghcr.io/${{ github.repository }}:latest -t "ghcr.io/${{ github.repository }}:$TAG" \
                     .
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
