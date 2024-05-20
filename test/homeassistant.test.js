@@ -30,6 +30,10 @@ describe('HomeAssistant extension', () => {
         Object.values(extension.discovered[id].messages).forEach((m) => m.payload = 'changed');
     }
 
+    let clearDiscoveredTrigger = (id) => {
+        extension.discovered[id].triggers = new Set();
+    }
+
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
@@ -1126,7 +1130,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover when not discovered yet', async () => {
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        extension.discovered = {};
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         const data = {measuredValue: -85}
         const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -1164,7 +1168,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt discover when device leaves', async () => {
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        extension.discovered = {};
         const device = zigbeeHerdsman.devices.bulb;
         const payload = {ieeeAddr: device.ieeeAddr};
         MQTT.publish.mockClear();
@@ -1683,7 +1687,7 @@ describe('HomeAssistant extension', () => {
         );
 
         // Shouldn't rediscover when already discovered in previous session
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        clearDiscoveredTrigger('0x0017880104e45520');
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
         await flushPromises();
@@ -1694,7 +1698,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
 
         // Should rediscover when already discovered in previous session but with different name
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        clearDiscoveredTrigger('0x0017880104e45520');
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button_other_name/action'}));
         await flushPromises();
         MQTT.publish.mockClear();
@@ -1957,8 +1961,6 @@ describe('HomeAssistant extension', () => {
             expect.any(Function),
         );
     });
-
-    // TODO: add test case to not republish when discover payload didn't change
 
     it('Should rediscover group when device is added to it', async () => {
         resetDiscoveryPayloads(9);

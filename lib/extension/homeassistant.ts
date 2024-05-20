@@ -23,6 +23,13 @@ const sensorClick: DiscoveryEntry = {
     },
 };
 
+interface Discovered {
+    mockProperties: Set<MockProperty>,
+    messages: {[s: string]: {payload: string, published: boolean}},
+    triggers: Set<string>,
+    discovered: boolean,
+}
+
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const groupSupportedTypes = ['light', 'switch', 'lock', 'cover'];
@@ -106,11 +113,7 @@ class Bridge {
  * This extensions handles integration with HomeAssistant
  */
 export default class HomeAssistant extends Extension {
-    private discovered: {[s: string]: {
-        mockProperties: Set<MockProperty>,
-        messages: {[s: string]: {payload: string, published: boolean}}},
-    } = {};
-    private discoveredTriggers : {[s: string]: Set<string>}= {}; // TODO: Merge with discovered
+    private discovered: {[s: string]: Discovered} = {};
     private discoveryTopic = settings.get().homeassistant.discovery_topic;
     private discoveryRegex = new RegExp(`${settings.get().homeassistant.discovery_topic}/(.*)/(.*)/(.*)/config`);
     private discoveryRegexNoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
@@ -173,6 +176,14 @@ export default class HomeAssistant extends Extension {
 
         // Send availability messages, this is required if the legacy_availability_payload option has been changed.
         this.eventBus.emitPublishAvailability();
+    }
+
+    private getDiscovered(entity: Device | Group | Bridge | string): Discovered {
+        const ID = typeof entity === 'string' ? entity : entity.ID;
+        if (!(ID in this.discovered)) {
+            this.discovered[ID] = {messages: {}, triggers: new Set(), mockProperties: new Set(), discovered: false};
+        }
+        return this.discovered[ID];
     }
 
     private exposeToConfig(exposes: zhc.Expose[], entityType: 'device' | 'group',
@@ -1124,11 +1135,10 @@ export default class HomeAssistant extends Extension {
 
     @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
-        const discoveredDevice = this.discovered[data.ieeeAddr];
-        discoveredDevice && Object.keys(discoveredDevice.messages).forEach((topic) => {
+        const discovered = this.getDiscovered(data.ieeeAddr);
+        Object.keys(discovered.messages).forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         });
-
         delete this.discovered[data.ieeeAddr];
     }
 
@@ -1146,9 +1156,8 @@ export default class HomeAssistant extends Extension {
          * zigbee2mqtt/mydevice/l1.
          */
         const entity = this.zigbee.resolveEntity(data.entity.name);
-        const discoveredDevice = this.discovered[entity.ID];
-        if (entity.isDevice() && discoveredDevice) {
-            Object.keys(discoveredDevice.messages).forEach((topic) => {
+        if (entity.isDevice()) {
+            Object.keys(this.getDiscovered(entity).messages).forEach((topic) => {
                 const objectID = topic.match(this.discoveryRegexNoTopic)?.[3];
                 const lightMatch = /^light_(.*)/.exec(objectID);
                 const coverMatch = /^cover_(.*)/.exec(objectID);
@@ -1204,8 +1213,8 @@ export default class HomeAssistant extends Extension {
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
-        if (data.homeAssisantRename && this.discovered[data.entity.ID]) {
-            for (const topic of Object.keys(this.discovered[data.entity.ID].messages)) {
+        if (data.homeAssisantRename) {
+            for (const topic of Object.keys(this.getDiscovered(data.entity).messages)) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
 
@@ -1216,8 +1225,8 @@ export default class HomeAssistant extends Extension {
 
         this.discover(data.entity);
 
-        if (data.entity.isDevice() && this.discoveredTriggers[data.entity.ieeeAddr]) {
-            for (const config of this.discoveredTriggers[data.entity.ieeeAddr]) {
+        if (data.entity.isDevice()) {
+            for (const config of this.getDiscovered(data.entity).triggers) {
                 const key = config.substring(0, config.indexOf('_'));
                 const value = config.substring(config.indexOf('_') + 1);
                 this.publishDeviceTriggerDiscover(data.entity, key, value, true);
@@ -1413,11 +1422,9 @@ export default class HomeAssistant extends Extension {
             return;
         }
 
-        if (!(entity.ID in this.discovered)) {
-            this.discovered[entity.ID] = {messages: {}, mockProperties: new Set()};
-        }
-
-        const lastDiscoverdTopics = Object.keys(this.discovered[entity.ID].messages);
+        const discovered = this.getDiscovered(entity);
+        discovered.discovered = true;
+        const lastDiscoverdTopics = Object.keys(discovered.messages);
         const newDiscoveredTopics: Set<string> = new Set();
         this.getConfigs(entity).forEach((config) => {
             const payload = {...config.discovery_payload};
@@ -1625,17 +1632,16 @@ export default class HomeAssistant extends Extension {
             newDiscoveredTopics.add(topic);
 
             // Only discover when not discovered yet
-            const discoveredMessage = this.discovered[entity.ID].messages[topic];
+            const discoveredMessage = discovered.messages[topic];
             if (!discoveredMessage || discoveredMessage.payload !== payloadStr || !discoveredMessage.published) {
-                this.discovered[entity.ID].messages[topic] = {payload: payloadStr, published: publish};
+                discovered.messages[topic] = {payload: payloadStr, published: publish};
                 if (publish) {
                     this.mqtt.publish(topic, payloadStr, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 }
             } else {
                 logger.debug(`Skipping discovery of '${topic}', already discovered`);
             }
-            config.mockProperties?.forEach((mockProperty) =>
-                this.discovered[entity.ID].mockProperties.add(mockProperty));
+            config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
         });
         lastDiscoverdTopics.forEach((topic) => {
             if (!newDiscoveredTopics.has(topic)) {
@@ -1675,16 +1681,12 @@ export default class HomeAssistant extends Extension {
                 const key = `${discoveryMatch[3].substring(0, discoveryMatch[3].indexOf('_'))}`;
                 const triggerTopic = `${settings.get().mqtt.base_topic}/${entity.name}/${key}`;
                 if (isDeviceAutomation && message.topic === triggerTopic) {
-                    if (!this.discoveredTriggers[ID]) {
-                        this.discoveredTriggers[ID] = new Set();
-                    }
-                    this.discoveredTriggers[ID].add(discoveryMatch[3]);
+                    this.getDiscovered(ID).triggers.add(discoveryMatch[3]);
                 }
             }
 
             const topic = data.topic.substring(this.discoveryTopic.length + 1);
-
-            if (!clear && !isDeviceAutomation && !this.discovered[entity.ID]?.messages[topic]) {
+            if (!clear && !isDeviceAutomation && !(topic in this.getDiscovered(entity).messages)) {
                 clear = true;
             }
 
@@ -1695,7 +1697,7 @@ export default class HomeAssistant extends Extension {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             } else {
-                this.discovered[entity.ID].messages[topic] = {payload: stringify(message), published: true};
+                this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
             }
         } else if ((data.topic === this.statusTopic || data.topic === defaultStatusTopic) &&
             data.message.toLowerCase() === 'online') {
@@ -1713,7 +1715,7 @@ export default class HomeAssistant extends Extension {
     }
 
     @bind onZigbeeEvent(data: {device: Device}): void {
-        if (!(data.device.ID in this.discovered)) {
+        if (!this.getDiscovered(data.device).discovered) {
             this.discover(data.device);
         }
     }
@@ -1723,8 +1725,7 @@ export default class HomeAssistant extends Extension {
 
         // First, clear existing scene discovery topics
         logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`);
-        const discovered = this.discovered[data.entity.ID];
-        discovered && Object.keys(discovered.messages).forEach((topic) => {
+        Object.keys(this.getDiscovered(data.entity).messages).forEach((topic) => {
             if (topic.startsWith('scene')) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
@@ -1787,7 +1788,7 @@ export default class HomeAssistant extends Extension {
     }
 
     override adjustMessageBeforePublish(entity: Device | Group | Bridge, message: KeyValue): void {
-        this.discovered[entity.ID]?.mockProperties.forEach((mockProperty) => {
+        this.getDiscovered(entity).mockProperties.forEach((mockProperty) => {
             if (!message.hasOwnProperty(mockProperty.property)) {
                 message[mockProperty.property] = mockProperty.value;
             }
@@ -1825,12 +1826,9 @@ export default class HomeAssistant extends Extension {
             return;
         }
 
-        if (!this.discoveredTriggers[device.ieeeAddr]) {
-            this.discoveredTriggers[device.ieeeAddr] = new Set();
-        }
-
+        const discovered = this.getDiscovered(device);
         const discoveredKey = `${key}_${value}`;
-        if (this.discoveredTriggers[device.ieeeAddr].has(discoveredKey) && !force) {
+        if (discovered.triggers.has(discoveredKey) && !force) {
             return;
         }
 
@@ -1855,11 +1853,7 @@ export default class HomeAssistant extends Extension {
         };
 
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 1}, this.discoveryTopic, false, false);
-        this.discoveredTriggers[device.ieeeAddr].add(discoveredKey);
-    }
-
-    _clearDiscoveredTrigger(): void {
-        this.discoveredTriggers = {};
+        discovered.triggers.add(discoveredKey);
     }
 
     private getBridgeEntity(coordinatorVersion: zh.CoordinatorVersion): Bridge {
