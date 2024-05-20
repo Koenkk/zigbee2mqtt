@@ -33,7 +33,7 @@ jobs:
             - name: Test
               run: npm run test-with-coverage
             - name: Docker login
-              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push' && false
               run: echo ${{ secrets.DOCKER_KEY }} | docker login -u ${{ github.repository_owner }} --password-stdin
             - name: Docker login ghcr.io
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
