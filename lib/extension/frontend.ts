@@ -152,6 +152,7 @@ export default class Frontend extends Extension {
     }
 
     @bind private onMQTTPublishMessage(data: eventdata.MQTTMessagePublished): void {
+        /* istanbul ignore else */
         if (data.topic.startsWith(`${this.mqttBaseTopic}/`)) {
             // Send topic without base_topic
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);

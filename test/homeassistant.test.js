@@ -25,6 +25,11 @@ describe('HomeAssistant extension', () => {
         }
     }
 
+    let resetDiscoveryPayloads = (id) => {
+        // Change discovered payload, otherwise it's not re-published because it's the same.
+        Object.values(extension.discovered[id].messages).forEach((m) => m.payload = 'changed');
+    }
+
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
@@ -32,6 +37,7 @@ describe('HomeAssistant extension', () => {
         data.writeEmptyState();
         controller.state.load();
         await resetExtension();
+        await flushPromises();
     });
 
     beforeAll(async () => {
@@ -413,6 +419,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should not discovery devices which are already discovered', async() => {
+        await resetExtension(false);
         const topic = 'homeassistant/sensor/0x0017880104e45522/humidity/config';
         const payload = stringify({
             'unit_of_measurement': '%',
@@ -1167,6 +1174,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover when options change', async () => {
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
+        resetDiscoveryPayloads(device.ieeeAddr);
         MQTT.publish.mockClear();
         controller.eventBus.emitEntityOptionsChanged({entity: device, from: {}, to: {'test': 123}});
         await flushPromises();
@@ -1950,7 +1958,10 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    // TODO: add test case to not republish when discover payload didn't change
+
     it('Should rediscover group when device is added to it', async () => {
+        resetDiscoveryPayloads(9);
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'ha_discovery_group', device: 'wall_switch_double/left'}));
         await flushPromises();
@@ -2197,6 +2208,7 @@ describe('HomeAssistant extension', () => {
 
         // Device/endpoint scenes.
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+        resetDiscoveryPayloads(device.ieeeAddr);
 
         MQTT.publish.mockClear();
         controller.eventBus.emitScenesChanged({entity: device});
@@ -2240,6 +2252,7 @@ describe('HomeAssistant extension', () => {
 
         // Group scenes.
         const group = controller.zigbee.resolveEntity('ha_discovery_group');
+        resetDiscoveryPayloads(9);
 
         MQTT.publish.mockClear();
         controller.eventBus.emitScenesChanged({entity: group});
@@ -2549,6 +2562,7 @@ describe('HomeAssistant extension', () => {
         const device = zigbeeHerdsman.devices['BMCT-SLZ'];
         const data = {deviceMode: 0}
         const msg = {data, cluster: 'manuSpecificBosch10', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        resetDiscoveryPayloads('0x18fc26000000cafe');
         await zigbeeHerdsman.events.message(msg);
         const payload = {
             'availability':[{'topic':'zigbee2mqtt/bridge/state'}],
