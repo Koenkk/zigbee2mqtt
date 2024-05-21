@@ -1730,7 +1730,7 @@ export default class HomeAssistant extends Extension {
         // First, clear existing scene discovery topics
         logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`);
         const discovered = this.getDiscovered(data.entity);
-        Object.keys(this.discovered.messages).forEach((topic) => {
+        Object.keys(discovered.messages).forEach((topic) => {
             if (topic.startsWith('scene')) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 delete discovered.messages[topic];

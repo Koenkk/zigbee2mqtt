@@ -2207,7 +2207,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
-
         // Device/endpoint scenes.
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
         resetDiscoveryPayloads(device.ieeeAddr);
