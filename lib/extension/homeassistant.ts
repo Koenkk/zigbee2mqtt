@@ -116,7 +116,7 @@ export default class HomeAssistant extends Extension {
     private discovered: {[s: string]: Discovered} = {};
     private discoveryTopic = settings.get().homeassistant.discovery_topic;
     private discoveryRegex = new RegExp(`${settings.get().homeassistant.discovery_topic}/(.*)/(.*)/(.*)/config`);
-    private discoveryRegexNoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
+    private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic = settings.get().homeassistant.status_topic;
     private entityAttributes = settings.get().homeassistant.legacy_entity_attributes;
     private zigbee2MQTTVersion: string;
@@ -160,17 +160,18 @@ export default class HomeAssistant extends Extension {
 
         /**
          * Prevent unecessary re-discovery of entities by waiting 5 seconds for retained discovery messages to come in.
-         * Any received discoveries will not be discovered again.
+         * Any received discovery messages will not be published again.
          * Unsubscribe from the discoveryTopic to prevent receiving our own messages.
          */
         const discoverWait = 5;
-        // Discovery with `published` false, this will populate `this.discovered` without publishing the discoveries.
+        // Discover with `published = false`, this will populate `this.discovered` without publishing the discoveries.
         // This is needed for clearing outdated entries in `this.onMQTTMessage()`
         [this.bridge, ...this.zigbee.devices(false), ...this.zigbee.groups()].forEach((e) => this.discover(e, false));
         logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`);
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
         setTimeout(() => {
             this.mqtt.unsubscribe(`${this.discoveryTopic}/#`);
+            logger.debug(`Discovering entities to Home Assistant`);
             [this.bridge, ...this.zigbee.devices(false), ...this.zigbee.groups()].forEach((e) => this.discover(e));
         }, utils.seconds(discoverWait));
 
@@ -1139,6 +1140,7 @@ export default class HomeAssistant extends Extension {
         Object.keys(discovered.messages).forEach((topic) => {
             this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         });
+
         delete this.discovered[data.ieeeAddr];
     }
 
@@ -1158,7 +1160,7 @@ export default class HomeAssistant extends Extension {
         const entity = this.zigbee.resolveEntity(data.entity.name);
         if (entity.isDevice()) {
             Object.keys(this.getDiscovered(entity).messages).forEach((topic) => {
-                const objectID = topic.match(this.discoveryRegexNoTopic)?.[3];
+                const objectID = topic.match(this.discoveryRegexWoTopic)?.[3];
                 const lightMatch = /^light_(.*)/.exec(objectID);
                 const coverMatch = /^cover_(.*)/.exec(objectID);
 
