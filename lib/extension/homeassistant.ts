@@ -1214,9 +1214,11 @@ export default class HomeAssistant extends Extension {
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
         if (data.homeAssisantRename) {
-            for (const topic of Object.keys(this.getDiscovered(data.entity).messages)) {
+            const discovered = this.getDiscovered(data.entity);
+            for (const topic of Object.keys(discovered.messages)) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
+            discovered.messages = {};
 
             // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
             // https://github.com/Koenkk/zigbee2mqtt/issues/12610
@@ -1725,9 +1727,11 @@ export default class HomeAssistant extends Extension {
 
         // First, clear existing scene discovery topics
         logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`);
-        Object.keys(this.getDiscovered(data.entity).messages).forEach((topic) => {
+        const discovered = this.getDiscovered(data.entity);
+        Object.keys(this.discovered.messages).forEach((topic) => {
             if (topic.startsWith('scene')) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                delete discovered.messages[topic];
             }
         });
 
