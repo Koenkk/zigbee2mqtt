@@ -34,6 +34,20 @@ const clusters = {
     'msCO2': 1037
 }
 
+const custom_clusters = {
+    custom_1: {
+        ID: 64672,
+        manufacturerCode: 4617,
+        attributes: {
+            attribute_0: {ID: 0, type: 49},
+        },
+        commands: {
+            command_0: { ID: 0, response: 0, parameters: [{name: 'reset', type: 40}], },
+        },
+        commandsResponse: {},
+    },
+}
+
 class Endpoint {
     constructor(ID, inputClusters, outputClusters, deviceIeeeAddress, binds=[], clusterValues={}, configuredReportings=[], profileID=null, deviceID=null, meta={}) {
         this.deviceIeeeAddress = deviceIeeeAddress;
@@ -102,7 +116,7 @@ class Endpoint {
 }
 
 class Device {
-    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName, dateCode= null, softwareBuildID=null) {
+    constructor(type, ieeeAddr, networkAddress, manufacturerID, endpoints, interviewCompleted, powerSource = null, modelID = null, interviewing=false, manufacturerName, dateCode= null, softwareBuildID=null, customClusters = {}) {
         this.type = type;
         this.ieeeAddr = ieeeAddr;
         this.dateCode = dateCode;
@@ -118,7 +132,7 @@ class Device {
         this.ping = jest.fn();
         this.removeFromNetwork = jest.fn();
         this.removeFromDatabase = jest.fn();
-        this.customClusters = {};
+        this.customClusters = customClusters;
         this.addCustomCluster = jest.fn();
         this.save = jest.fn();
         this.manufacturerName = manufacturerName;
@@ -211,7 +225,8 @@ const devices = {
     'bj_scene_switch': new Device('EndDevice', '0xd85def11a1002caa', 50117, 4398, [new Endpoint(10, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa', [{target: bulb_color_2.endpoints[0], cluster: {ID: 8, name: 'genLevelCtrl'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 6, name: 'genOnOff'}}, {target: bulb_color_2.endpoints[0], cluster: {ID: 768, name: 'lightingColorCtrl'}},]), new Endpoint(11, [0,4096], [3,4,5,6,8,25,768,4096], '0xd85def11a1002caa')], true, 'Battery', 'RB01', false, 'Busch-Jaeger', '20161222', '1.2.0'),
     'GW003-AS-IN-TE-FC': new Device('Router', '0x0017548104a44669', 6545,4699, [new Endpoint(1, [3], [0,3,513,514], '0x0017548104a44669')], true, "Mains (single phase)", 'Adapter Zigbee FUJITSU'),
     'BMCT-SLZ': new Device('Router', '0x18fc26000000cafe', 6546,4617, [new Endpoint(1, [0,3,4,5,258,1794,2820,2821,64672], [10,25], '0x18fc26000000cafe')], true, "Mains (single phase)", 'RBSH-MMS-ZB-EU'),
-
+    'BMCT_SLZ': new Device('Router', '0x0026decafe000473', 6546,4617, [new Endpoint(1, [0,3,4,5,258,1794,2820,2821,64672], [10,25], '0x0026decafe000473')], true, "Mains (single phase)", 'RBSH-MMS-ZB-EU', false, null, null, null, custom_clusters),
+    'bulb_custom_cluster': new Device('Router', '0x000b57fffec6a5c2', 40369, 4476, [new Endpoint(1, [0,3,4,5,6,8,768,2821,4096], [5,25,32,4096], '0x000b57fffec6a5c2')], true, "Mains (single phase)", "TRADFRI bulb E27 WS opal 980lm", false, null, null, null, custom_clusters),
 }
 
 const mock = {
@@ -268,5 +283,5 @@ jest.mock('zigbee-herdsman', () => ({
 }));
 
 module.exports = {
-    events, ...mock, constructor: mockConstructor, devices, groups, returnDevices
+    events, ...mock, constructor: mockConstructor, devices, groups, returnDevices, custom_clusters
 };

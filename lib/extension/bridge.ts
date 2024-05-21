@@ -13,6 +13,8 @@ import data from '../util/data';
 import JSZip from 'jszip';
 import fs from 'fs';
 import * as zhc from 'zigbee-herdsman-converters';
+import {CustomClusters, ClusterDefinition, ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
 import winston from 'winston';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
@@ -104,7 +106,9 @@ export default class Bridge extends Extension {
 
         this.eventBus.onEntityRenamed(this, () => this.publishInfo());
         this.eventBus.onGroupMembersChanged(this, () => this.publishGroups());
-        this.eventBus.onDevicesChanged(this, () => this.publishDevices() && this.publishInfo());
+        this.eventBus.onDevicesChanged(this, () => this.publishDevices() &&
+                                                    this.publishInfo() &&
+                                                    this.publishDefinitions());
         this.eventBus.onPermitJoinChanged(this, () => !this.zigbee.isStopping() && this.publishInfo());
         this.eventBus.onScenesChanged(this, () => {
             this.publishDevices();
@@ -121,6 +125,7 @@ export default class Bridge extends Extension {
         });
         this.eventBus.onDeviceLeave(this, (data) => {
             this.publishDevices();
+            this.publishDefinitions();
             publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
@@ -142,6 +147,7 @@ export default class Bridge extends Extension {
         await this.publishInfo();
         await this.publishDevices();
         await this.publishGroups();
+        await this.publishDefinitions();
 
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
@@ -614,6 +620,8 @@ export default class Bridge extends Extension {
             if (entity instanceof Device) {
                 this.publishGroups();
                 this.publishDevices();
+                // Refresh Cluster definition
+                this.publishDefinitions();
                 return utils.getResponse(message, {id: ID, block, force}, null);
             } else {
                 this.publishGroups();
@@ -742,6 +750,27 @@ export default class Bridge extends Extension {
             'bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
+    async publishDefinitions(): Promise<void> {
+        interface ClusterDefinitionPayload {
+            clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>,
+            custom_clusters: {[key: string] : CustomClusters}
+        }
+
+        const data: ClusterDefinitionPayload = {
+            clusters: Clusters,
+            custom_clusters: {},
+        };
+
+        for (const device of this.zigbee.devices()) {
+            if (Object.keys(device.customClusters).length !== 0) {
+                data.custom_clusters[device.ieeeAddr] = device.customClusters;
+            }
+        }
+
+        await this.mqtt.publish('bridge/definitions', stringify(data),
+            {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+    }
+
     getDefinitionPayload(device: Device): DefinitionPayload {
         if (!device.definition) return null;
         // @ts-expect-error icon is valid for external definitions
@@ -752,7 +781,7 @@ export default class Bridge extends Extension {
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
-        return {
+        const payload: DefinitionPayload = {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
@@ -761,5 +790,7 @@ export default class Bridge extends Extension {
             options: device.definition.options,
             icon,
         };
+
+        return payload;
     }
 }
