@@ -1,6 +1,7 @@
 /* eslint-disable brace-style */
 import * as settings from '../util/settings';
 import * as zhc from 'zigbee-herdsman-converters';
+import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 export default class Device {
     public zh: zh.Device;
@@ -15,6 +16,9 @@ export default class Device {
     }
     get isSupported(): boolean {
         return this.zh.type === 'Coordinator' || (this.definition && !this.definition.generated);
+    }
+    get customClusters(): CustomClusters {
+        return this.zh.customClusters;
     }
 
     constructor(device: zh.Device) {
