@@ -4,6 +4,7 @@ const mock = {
     publish: jest.fn().mockImplementation((topic, payload, options, cb) => cb()),
     end: jest.fn(),
     subscribe: jest.fn(),
+    unsubscribe: jest.fn(),
     reconnecting: false,
     on: jest.fn(),
     stream: {setMaxListeners: jest.fn()}

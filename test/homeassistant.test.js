@@ -15,11 +15,23 @@ describe('HomeAssistant extension', () => {
     let extension;
     let origin;
 
-    let resetExtension = async () => {
+    let resetExtension = async (runTimers=true) => {
         await controller.enableDisableExtension(false, 'HomeAssistant');
         MQTT.publish.mockClear();
         await controller.enableDisableExtension(true, 'HomeAssistant');
         extension = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
+        if (runTimers) {
+            jest.runOnlyPendingTimers();
+        }
+    }
+
+    let resetDiscoveryPayloads = (id) => {
+        // Change discovered payload, otherwise it's not re-published because it's the same.
+        Object.values(extension.discovered[id].messages).forEach((m) => m.payload = 'changed');
+    }
+
+    let clearDiscoveredTrigger = (id) => {
+        extension.discovered[id].triggers = new Set();
     }
 
     beforeEach(async () => {
@@ -29,6 +41,7 @@ describe('HomeAssistant extension', () => {
         data.writeEmptyState();
         controller.state.load();
         await resetExtension();
+        await flushPromises();
     });
 
     beforeAll(async () => {
@@ -77,7 +90,6 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover devices and groups', async () => {
         let payload;
-        await flushPromises();
 
         payload = {
             "availability":[{"topic":"zigbee2mqtt/bridge/state"}],
@@ -408,6 +420,51 @@ describe('HomeAssistant extension', () => {
             { retain: true, qos: 1 },
             expect.any(Function),
         );
+    });
+
+    it('Should not discovery devices which are already discovered', async() => {
+        await resetExtension(false);
+        const topic = 'homeassistant/sensor/0x0017880104e45522/humidity/config';
+        const payload = stringify({
+            'unit_of_measurement': '%',
+            'device_class': 'humidity',
+            'state_class': 'measurement',
+            'value_template': '{{ value_json.humidity }}',
+            'state_topic': 'zigbee2mqtt/weather_sensor',
+            'json_attributes_topic': 'zigbee2mqtt/weather_sensor',
+            'object_id': 'weather_sensor_humidity',
+            'unique_id': '0x0017880104e45522_humidity_zigbee2mqtt',
+            'origin': origin,
+            'enabled_by_default': true,
+            'device': {
+                'identifiers': ['zigbee2mqtt_0x0017880104e45522'],
+                'name': 'weather_sensor',
+                'sw_version': null,
+                'model': 'Temperature and humidity sensor (WSDCGQ11LM)',
+                'manufacturer': 'Aqara',
+                'via_device': 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
+        });
+
+        // Should subscribe to `homeassistant/#` to find out what devices are already discovered.
+        expect(MQTT.subscribe).toHaveBeenCalledWith(`homeassistant/#`);
+
+        // Retained Home Assistant discovery message arrives
+        await MQTT.events.message(topic, payload);
+
+        jest.runOnlyPendingTimers();        
+
+        // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
+        expect(MQTT.unsubscribe).toHaveBeenCalledWith(`homeassistant/#`);
+
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'homeassistant/sensor/0x0017880104e45522/humidity/config',
+            expect.any(String),
+            expect.any(Object),
+            expect.any(Function),
+        );
+        expect(logger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`)
     });
 
     it('Should discover devices with precision', async () => {
@@ -1073,7 +1130,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover when not discovered yet', async () => {
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        extension.discovered = {};
         const device = zigbeeHerdsman.devices.WSDCGQ11LM;
         const data = {measuredValue: -85}
         const payload = {data, cluster: 'msTemperatureMeasurement', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -1111,7 +1168,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Shouldnt discover when device leaves', async () => {
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant').discovered = {};
+        extension.discovered = {};
         const device = zigbeeHerdsman.devices.bulb;
         const payload = {ieeeAddr: device.ieeeAddr};
         MQTT.publish.mockClear();
@@ -1121,6 +1178,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should discover when options change', async () => {
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
+        resetDiscoveryPayloads(device.ieeeAddr);
         MQTT.publish.mockClear();
         controller.eventBus.emitEntityOptionsChanged({entity: device, from: {}, to: {'test': 123}});
         await flushPromises();
@@ -1629,7 +1687,7 @@ describe('HomeAssistant extension', () => {
         );
 
         // Shouldn't rediscover when already discovered in previous session
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        clearDiscoveredTrigger('0x0017880104e45520');
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button/action'}));
         await flushPromises();
@@ -1640,7 +1698,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith('homeassistant/device_automation/0x0017880104e45520/action_double/config', expect.any(String), expect.any(Object), expect.any(Function));
 
         // Should rediscover when already discovered in previous session but with different name
-        controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')._clearDiscoveredTrigger();
+        clearDiscoveredTrigger('0x0017880104e45520');
         await MQTT.events.message('homeassistant/device_automation/0x0017880104e45520/action_double/config', stringify({topic: 'zigbee2mqtt/button_other_name/action'}));
         await flushPromises();
         MQTT.publish.mockClear();
@@ -1905,6 +1963,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover group when device is added to it', async () => {
+        resetDiscoveryPayloads(9);
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'ha_discovery_group', device: 'wall_switch_double/left'}));
         await flushPromises();
@@ -2148,9 +2207,9 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
-
         // Device/endpoint scenes.
         const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb_color_2);
+        resetDiscoveryPayloads(device.ieeeAddr);
 
         MQTT.publish.mockClear();
         controller.eventBus.emitScenesChanged({entity: device});
@@ -2194,6 +2253,7 @@ describe('HomeAssistant extension', () => {
 
         // Group scenes.
         const group = controller.zigbee.resolveEntity('ha_discovery_group');
+        resetDiscoveryPayloads(9);
 
         MQTT.publish.mockClear();
         controller.eventBus.emitScenesChanged({entity: group});
@@ -2503,6 +2563,7 @@ describe('HomeAssistant extension', () => {
         const device = zigbeeHerdsman.devices['BMCT-SLZ'];
         const data = {deviceMode: 0}
         const msg = {data, cluster: 'manuSpecificBosch10', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        resetDiscoveryPayloads('0x18fc26000000cafe');
         await zigbeeHerdsman.events.message(msg);
         const payload = {
             'availability':[{'topic':'zigbee2mqtt/bridge/state'}],
