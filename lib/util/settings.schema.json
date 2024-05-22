@@ -492,7 +492,7 @@
         },
         "log_level": {
           "type": "string",
-          "enum": ["error", "warning", "info", "debug"],
+          "enum": ["error", "warning", "info", "debug", "warn"],
           "title": "Log level",
           "description": "Logging level",
           "default": "info"
