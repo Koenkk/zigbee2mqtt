@@ -127,6 +127,7 @@ class Device {
         this.softwareBuildID = softwareBuildID;
         this.interviewCompleted = interviewCompleted;
         this.modelID = modelID;
+        this.interview = jest.fn();
         this.interviewing = interviewing;
         this.meta = {};
         this.ping = jest.fn();

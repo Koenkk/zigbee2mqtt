@@ -40,6 +40,7 @@ export default class Bridge extends Extension {
             'device/options': this.deviceOptions,
             'device/configure_reporting': this.deviceConfigureReporting,
             'device/remove': this.deviceRemove,
+            'device/reinterview': this.deviceReinterview,
             'device/generate_external_definition': this.deviceGenerateExternalDefinition,
             'device/rename': this.deviceRename,
             'group/add': this.groupAdd,
@@ -498,6 +499,23 @@ export default class Bridge extends Extension {
             minimum_report_interval: message.minimum_report_interval, reportable_change: message.reportable_change,
             attribute: message.attribute,
         }, null);
+    }
+
+    @bind async deviceReinterview(message: string | KeyValue): Promise<MQTTResponse> {
+        if (typeof message !== 'object' || !message.hasOwnProperty('id')) {
+            throw new Error(`Invalid payload`);
+        }
+
+        const device = this.zigbee.resolveEntityAndEndpoint(message.id).entity as Device;
+        if (!device) throw new Error(`Device '${message.id}' does not exist`);
+
+        try {
+            await device.zh.interview();
+        } catch (error) {
+            throw new Error(`re-interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
+        }
+
+        return utils.getResponse(message, {id: message.id}, null);
     }
 
     @bind async deviceGenerateExternalDefinition(message: string | KeyValue): Promise<MQTTResponse> {

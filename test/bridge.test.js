@@ -66,6 +66,7 @@ describe('Bridge', () => {
         logger.setTransportsEnabled(false);
         MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.bulb;
+        device.interview.mockClear();
         device.removeFromDatabase.mockClear();
         device.removeFromNetwork.mockClear();
         extension.lastJoinedDeviceIeeeAddr = null;
@@ -723,6 +724,54 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/rename',
             stringify({"data":{},"status":"error","error":"No device has joined since start"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should allow reinterviewing a device', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.devices.bulb.interview.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/reinterview', stringify({id: 'bulb'}));
+        await flushPromises();
+        expect(zigbeeHerdsman.devices.bulb.interview).toHaveBeenCalled();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/reinterview',
+            stringify({"data":{"id":"bulb"},"status":"ok"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on invalid device reinterview payload', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/reinterview', stringify({foo: 'bulb'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/reinterview',
+            stringify({"data":{},"status":"error","error":"Invalid payload"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on non-existing device reinterview', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/reinterview', stringify({id: 'bulb_not_existing'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/reinterview',
+            stringify({"data":{},"status":"error","error":"Device 'bulb_not_existing' does not exist"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+    });
+
+    it('Should throw error on when reinterview fails', async () => {
+        MQTT.publish.mockClear();
+        zigbeeHerdsman.devices.bulb.interview.mockClear();
+        zigbeeHerdsman.devices.bulb.interview.mockImplementation(() => Promise.reject(new Error('something went wrong')))
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/reinterview', stringify({id: 'bulb'}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/reinterview',
+            stringify({"data":{},"status":"error","error":"re-interview of 'bulb' (0x000b57fffec6a5b2) failed: Error: something went wrong"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
     });
