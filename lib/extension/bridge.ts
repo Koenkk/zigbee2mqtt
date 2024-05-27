@@ -40,7 +40,7 @@ export default class Bridge extends Extension {
             'device/options': this.deviceOptions,
             'device/configure_reporting': this.deviceConfigureReporting,
             'device/remove': this.deviceRemove,
-            'device/reinterview': this.deviceReinterview,
+            'device/interview': this.deviceInterview,
             'device/generate_external_definition': this.deviceGenerateExternalDefinition,
             'device/rename': this.deviceRename,
             'group/add': this.groupAdd,
@@ -501,7 +501,7 @@ export default class Bridge extends Extension {
         }, null);
     }
 
-    @bind async deviceReinterview(message: string | KeyValue): Promise<MQTTResponse> {
+    @bind async deviceInterview(message: string | KeyValue): Promise<MQTTResponse> {
         if (typeof message !== 'object' || !message.hasOwnProperty('id')) {
             throw new Error(`Invalid payload`);
         }
@@ -512,7 +512,7 @@ export default class Bridge extends Extension {
         try {
             await device.zh.interview();
         } catch (error) {
-            throw new Error(`re-interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
+            throw new Error(`interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
         }
 
         return utils.getResponse(message, {id: message.id}, null);
