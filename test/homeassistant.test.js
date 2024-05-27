@@ -424,8 +424,8 @@ describe('HomeAssistant extension', () => {
 
     it('Should not discovery devices which are already discovered', async() => {
         await resetExtension(false);
-        const topic = 'homeassistant/sensor/0x0017880104e45522/humidity/config';
-        const payload = stringify({
+        const topic1 = 'homeassistant/sensor/0x0017880104e45522/humidity/config';
+        const payload1 = stringify({
             'unit_of_measurement': '%',
             'device_class': 'humidity',
             'state_class': 'measurement',
@@ -446,24 +446,41 @@ describe('HomeAssistant extension', () => {
             },
             'availability': [{topic: 'zigbee2mqtt/bridge/state'}],
         });
+        const topic2 = 'homeassistant/device_automation/0x0017880104e45522/action_double/config';
+        const payload2 = stringify({
+            "automation_type":"trigger",
+            "type":"action",
+            "subtype":"double",
+            "payload":"double",
+            "topic":"zigbee2mqtt/weather_sensor_renamed/action",
+            'origin': origin,
+            "device":{
+                "identifiers":[
+                    "zigbee2mqtt_0x0017880104e45522"
+                ],
+                "name":"weather_sensor_renamed",
+                "sw_version": null,
+                "model":"Temperature and humidity sensor (WSDCGQ11LM)",
+                "manufacturer":"Aqara",
+                "via_device": "zigbee2mqtt_bridge_0x00124b00120144ae",
+            }
+        });
 
         // Should subscribe to `homeassistant/#` to find out what devices are already discovered.
         expect(MQTT.subscribe).toHaveBeenCalledWith(`homeassistant/#`);
 
         // Retained Home Assistant discovery message arrives
-        await MQTT.events.message(topic, payload);
+        await MQTT.events.message(topic1, payload1);
+        await MQTT.events.message(topic2, payload2);
 
         jest.runOnlyPendingTimers();        
 
         // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
         expect(MQTT.unsubscribe).toHaveBeenCalledWith(`homeassistant/#`);
 
-        expect(MQTT.publish).not.toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            expect.any(String),
-            expect.any(Object),
-            expect.any(Function),
-        );
+        expect(MQTT.publish).not.toHaveBeenCalledWith(topic1, expect.anything(), expect.any(Object), expect.any(Function));
+        // Device automation should not be cleared
+        expect(MQTT.publish).not.toHaveBeenCalledWith(topic2, null, expect.any(Object), expect.any(Function));
         expect(logger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`)
     });
 

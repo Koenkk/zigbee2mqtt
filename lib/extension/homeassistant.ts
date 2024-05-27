@@ -1648,7 +1648,8 @@ export default class HomeAssistant extends Extension {
             config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
         });
         lastDiscoverdTopics.forEach((topic) => {
-            if (!newDiscoveredTopics.has(topic)) {
+            const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)[1] === 'device_automation';
+            if (!newDiscoveredTopics.has(topic) && !isDeviceAutomation) {
                 this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
         });
