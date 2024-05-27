@@ -739,6 +739,13 @@ describe('Bridge', () => {
             stringify({"data":{"id":"bulb"},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
+
+        // The following indicates that devices have published.
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/devices',
+            expect.any(String),
+            {retain: true, qos: 0}, expect.any(Function)
+        );
     });
 
     it('Should throw error on invalid device interview payload', async () => {

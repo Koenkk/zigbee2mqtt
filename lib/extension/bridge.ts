@@ -515,6 +515,9 @@ export default class Bridge extends Extension {
             throw new Error(`interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
         }
 
+        // publish devices so that the front-end has up-to-date info.
+        await this.publishDevices();
+
         return utils.getResponse(message, {id: message.id}, null);
     }
 
