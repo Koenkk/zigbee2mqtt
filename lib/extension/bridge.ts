@@ -506,8 +506,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.zigbee.resolveEntityAndEndpoint(message.id).entity as Device;
-        if (!device) throw new Error(`Device '${message.id}' does not exist`);
+        const device = this.getEntity('device', message.id) as Device;
 
         try {
             await device.zh.interview();
