@@ -2579,7 +2579,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices['BMCT-SLZ'];
         const data = {deviceMode: 0}
-        const msg = {data, cluster: 'manuSpecificBosch10', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        const msg = {data, cluster: 'boschSpecific', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         resetDiscoveryPayloads('0x18fc26000000cafe');
         await zigbeeHerdsman.events.message(msg);
         const payload = {
