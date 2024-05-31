@@ -15,6 +15,7 @@ class Logger {
     private fileTransport: winston.transports.FileTransportInstance;
     private debugNamespaceIgnoreRegex?: RegExp;
     private namespacedLevels: Record<string, settings.LogLevel>;
+    private cachedNSLevels: Record<string, settings.LogLevel>;
 
     public init(): void {
         // What transports to enable
@@ -25,6 +26,7 @@ class Logger {
         const logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
         this.level = settings.get().advanced.log_level;
         this.namespacedLevels = settings.get().advanced.log_namespaced_levels;
+        this.resetCachedNSLevels();
 
         assert(
             settings.LOG_LEVELS.includes(this.level),
@@ -147,6 +149,7 @@ class Logger {
 
     public setLevel(level: settings.LogLevel): void {
         this.level = level;
+        this.resetCachedNSLevels();
     }
 
     public getNamespacedLevels(): Record<string, settings.LogLevel> {
@@ -155,23 +158,29 @@ class Logger {
 
     public setNamespacedLevels(nsLevels: Record<string, settings.LogLevel>): void {
         this.namespacedLevels = nsLevels;
+        this.resetCachedNSLevels();
     }
 
-    // returns and store the level of the first matching namespace up the hierarchy 
-    private getsetLevel(namespace: string) : string{
+    private resetCachedNSLevels(): void {
+        this.cachedNSLevels={...this.namespacedLevels};
+    }
+
+    // returns and store the level of the first matching namespace moving up the hierarchy
+    private getsetLevel(namespace: string) : string {
         let ns=namespace;
-        while(true) {
-            if (this.namespacedLevels[ns]) {
-                return this.namespacedLevels[namespace]=this.namespacedLevels[ns];
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            if (this.cachedNSLevels[ns]) {
+                return this.cachedNSLevels[namespace]=this.cachedNSLevels[ns];
             }
-            let sep=ns.lastIndexOf(":");
-            if(sep==-1) {
-                return this.namespacedLevels[namespace]=this.level;
+            const sep=ns.lastIndexOf(':');
+            if (sep==-1) {
+                return this.cachedNSLevels[namespace]=this.level;
             }
-            ns=ns.slice(0,sep);
+            ns=ns.slice(0, sep);
         }
     }
- 
+
     private log(level: settings.LogLevel, message: string, namespace: string): void {
         const nsLevel = this.namespacedLevels[namespace] ?? this.getsetLevel(namespace);
 
