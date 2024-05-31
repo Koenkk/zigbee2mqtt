@@ -157,8 +157,23 @@ class Logger {
         this.namespacedLevels = nsLevels;
     }
 
+    // returns and store the level of the first matching namespace up the hierarchy 
+    private getsetLevel(namespace: string) : string{
+        let ns=namespace;
+        while(true) {
+            if (this.namespacedLevels[ns]) {
+                return this.namespacedLevels[namespace]=this.namespacedLevels[ns];
+            }
+            let sep=ns.lastIndexOf(":");
+            if(sep==-1) {
+                return this.namespacedLevels[namespace]=this.level;
+            }
+            ns=ns.slice(0,sep);
+        }
+    }
+ 
     private log(level: settings.LogLevel, message: string, namespace: string): void {
-        const nsLevel = this.namespacedLevels[namespace] ?? this.level;
+        const nsLevel = this.namespacedLevels[namespace] ?? this.getsetLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
             this.logger.log(level, message, {namespace});
