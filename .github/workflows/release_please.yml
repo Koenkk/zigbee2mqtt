@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 20
 
-      - uses: google-github-actions/release-please-action@v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           target-branch: dev
