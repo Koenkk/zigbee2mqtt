@@ -507,9 +507,11 @@ export default class Bridge extends Extension {
         }
 
         const device = this.getEntity('device', message.id) as Device;
+        logger.info(`Interviewing '${device.name}'`);
 
         try {
             await device.zh.interview();
+            logger.info(`Successfully interviewed '${device.name}'`);
         } catch (error) {
             throw new Error(`interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
         }
