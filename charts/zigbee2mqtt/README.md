@@ -1,8 +1,8 @@
 # zigbee2mqtt
 
-![Version: 1.37.1](https://img.shields.io/badge/Version-1.37.1-informational?style=flat-square) ![AppVersion: 1.37.1](https://img.shields.io/badge/AppVersion-1.37.1-informational?style=flat-square)
+![Version: 1.37.1](https://img.shields.io/badge/Version-1.37.1-informational?style=flat-square) ![AppVersion: 1.38.0](https://img.shields.io/badge/AppVersion-1.38.0-informational?style=flat-square)
 
-Bridges events and allows you to control your Zigbee devices via MQTT 
+Bridges events and allows you to control your Zigbee devices via MQTT
 
 **Homepage:** <https://github.com/Koenkk/zigbee2mqtt>
 
@@ -29,7 +29,7 @@ Kubernetes: `>=1.26.0-0`
 | image.imagePullSecrets | object | `{}` | Container additional secrets to pull image |
 | image.pullPolicy | string | `"IfNotPresent"` | Container pull policy |
 | image.repository | string | `"koenkk/zigbee2mqtt"` | Image repository for the `zigbee2mqtt` container. |
-| image.tag | string | `"1.37.1"` | Version for the `zigbee2mqtt` container. |
+| image.tag | string | `"1.38.0"` | Version for the `zigbee2mqtt` container. |
 | ingress.annotations | object | `{}` |  |
 | ingress.enabled | bool | `false` | When enabled a new Ingress will be created |
 | ingress.hosts[0] | string | `"yourdomain.com"` |  |

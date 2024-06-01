@@ -7,7 +7,7 @@ image:
   # -- Image repository for the `zigbee2mqtt` container.
   repository: koenkk/zigbee2mqtt
   # -- Version for the `zigbee2mqtt` container.
-  tag: "1.37.1"
+  tag: "1.38.0"
   # -- Container pull policy
   pullPolicy: IfNotPresent
   # -- Container additional secrets to pull image
