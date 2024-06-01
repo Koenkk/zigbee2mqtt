@@ -19,7 +19,7 @@ body:
     id: model
     attributes:
       label: Model
-      description: Expected model, model that is printed on the device, for TuYa device this is NOT something like TS0601 or _TZE200_cf1sl3tj
+      description: Expected model, model that is printed on the device, for Tuya device this is NOT something like TS0601 or _TZE200_cf1sl3tj
       placeholder: RTCGQ01LM
     validations:
       required: true

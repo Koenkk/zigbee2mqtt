@@ -225,7 +225,7 @@ describe('Publish', () => {
         );
     });
 
-    it('Should publish messages to TuYa switch with dummy endpoints', async () => {
+    it('Should publish messages to Tuya switch with dummy endpoints', async () => {
         const device = zigbeeHerdsman.devices.TS0601_switch;
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/TS0601_switch/set', stringify({state_l2: 'ON'}));
@@ -240,7 +240,7 @@ describe('Publish', () => {
         );
     });
 
-    it('Should publish messages to TuYa cover switch with dummy endpoints', async () => {
+    it('Should publish messages to Tuya cover switch with dummy endpoints', async () => {
         const device = zigbeeHerdsman.devices.TS0601_cover_switch;
         const endpoint = device.getEndpoint(1);
         await MQTT.events.message('zigbee2mqtt/TS0601_cover_switch/set', stringify({state: 'OPEN'}));
