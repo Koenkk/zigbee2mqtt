@@ -182,7 +182,7 @@ class Logger {
     }
 
     private log(level: settings.LogLevel, message: string, namespace: string): void {
-        const nsLevel = this.namespacedLevels[namespace] ?? this.getsetLevel(namespace);
+        const nsLevel = this.cachedNSLevels[namespace] ?? this.getsetLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
             this.logger.log(level, message, {namespace});
