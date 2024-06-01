@@ -72,7 +72,7 @@ export default class Bridge extends Extension {
 
             if (payload !== this.lastBridgeLoggingPayload) {
                 this.lastBridgeLoggingPayload = payload;
-                this.mqtt.publish(`bridge/logging`, payload, {}, baseTopic, true);
+                void this.mqtt.publish(`bridge/logging`, payload, {}, baseTopic, true);
             }
         };
 
@@ -111,38 +111,38 @@ export default class Bridge extends Extension {
                                                     this.publishInfo() &&
                                                     this.publishDefinitions());
         this.eventBus.onPermitJoinChanged(this, () => !this.zigbee.isStopping() && this.publishInfo());
-        this.eventBus.onScenesChanged(this, () => {
-            this.publishDevices();
-            this.publishGroups();
+        this.eventBus.onScenesChanged(this, async () => {
+            await this.publishDevices();
+            await this.publishGroups();
         });
 
         // Zigbee events
-        const publishEvent = (type: string, data: KeyValue): Promise<void> =>
+        const publishEvent = async (type: string, data: KeyValue): Promise<void> =>
             this.mqtt.publish('bridge/event', stringify({type, data}), {retain: false, qos: 0});
-        this.eventBus.onDeviceJoined(this, (data) => {
+        this.eventBus.onDeviceJoined(this, async (data) => {
             this.lastJoinedDeviceIeeeAddr = data.device.ieeeAddr;
-            this.publishDevices();
-            publishEvent('device_joined', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
+            await this.publishDevices();
+            await publishEvent('device_joined', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
         });
-        this.eventBus.onDeviceLeave(this, (data) => {
-            this.publishDevices();
-            this.publishDefinitions();
-            publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
+        this.eventBus.onDeviceLeave(this, async (data) => {
+            await this.publishDevices();
+            await this.publishDefinitions();
+            await publishEvent('device_leave', {ieee_address: data.ieeeAddr, friendly_name: data.name});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, () => this.publishDevices());
-        this.eventBus.onDeviceInterview(this, (data) => {
-            this.publishDevices();
+        this.eventBus.onDeviceInterview(this, async (data) => {
+            await this.publishDevices();
             const payload: KeyValue =
                 {friendly_name: data.device.name, status: data.status, ieee_address: data.device.ieeeAddr};
             if (data.status === 'successful') {
                 payload.supported = data.device.isSupported;
                 payload.definition = this.getDefinitionPayload(data.device);
             }
-            publishEvent('device_interview', payload);
+            await publishEvent('device_interview', payload);
         });
-        this.eventBus.onDeviceAnnounce(this, (data) => {
-            this.publishDevices();
-            publishEvent('device_announce', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
+        this.eventBus.onDeviceAnnounce(this, async (data) => {
+            await this.publishDevices();
+            await publishEvent('device_announce', {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr});
         });
 
         await this.publishInfo();
@@ -154,7 +154,7 @@ export default class Bridge extends Extension {
     }
 
     override async stop(): Promise<void> {
-        super.stop();
+        await super.stop();
         logger.removeTransport(this.logTransport);
     }
 
@@ -219,7 +219,7 @@ export default class Bridge extends Extension {
         }
 
         logger.info('Successfully changed options');
-        this.publishInfo();
+        await this.publishInfo();
         return utils.getResponse(message, {restart_required: this.restartRequired}, null);
     }
 
@@ -252,7 +252,7 @@ export default class Bridge extends Extension {
         const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : null;
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
-        this.publishGroups();
+        await this.publishGroups();
         return utils.getResponse(message, {friendly_name: group.friendly_name, id: group.ID}, null);
     }
 
@@ -336,7 +336,7 @@ export default class Bridge extends Extension {
         }
 
         settings.set(['advanced', 'last_seen'], value);
-        this.publishInfo();
+        await this.publishInfo();
         return utils.getResponse(message, {value}, null);
     }
 
@@ -350,7 +350,7 @@ export default class Bridge extends Extension {
 
         await this.enableDisableExtension(value, 'HomeAssistant');
         settings.set(['homeassistant'], value);
-        this.publishInfo();
+        await this.publishInfo();
         return utils.getResponse(message, {value}, null);
     }
 
@@ -363,7 +363,7 @@ export default class Bridge extends Extension {
         }
 
         settings.set(['advanced', 'elapsed'], value);
-        this.publishInfo();
+        await this.publishInfo();
         return utils.getResponse(message, {value}, null);
     }
 
@@ -375,7 +375,7 @@ export default class Bridge extends Extension {
         }
 
         logger.setLevel(value);
-        this.publishInfo();
+        await this.publishInfo();
         return utils.getResponse(message, {value}, null);
     }
 
@@ -490,7 +490,7 @@ export default class Bridge extends Extension {
             maximumReportInterval: message.maximum_report_interval, reportableChange: message.reportable_change,
         }], message.options);
 
-        this.publishDevices();
+        await this.publishDevices();
 
         logger.info(`Configured reporting for '${message.id}', '${message.cluster}.${message.attribute}'`);
 
@@ -556,19 +556,19 @@ export default class Bridge extends Extension {
         settings.changeFriendlyName(from, to);
 
         // Clear retained messages
-        this.mqtt.publish(oldFriendlyName, '', {retain: true});
+        await this.mqtt.publish(oldFriendlyName, '', {retain: true});
 
         this.eventBus.emitEntityRenamed({entity: entity, homeAssisantRename, from: oldFriendlyName, to});
 
         if (entity instanceof Device) {
-            this.publishDevices();
+            await this.publishDevices();
         } else {
-            this.publishGroups();
-            this.publishInfo();
+            await this.publishGroups();
+            await this.publishInfo();
         }
 
         // Republish entity state
-        this.publishEntityState(entity, {});
+        await this.publishEntityState(entity, {});
 
         return utils.getResponse(
             message,
@@ -635,18 +635,18 @@ export default class Bridge extends Extension {
             this.state.remove(entityID);
 
             // Clear any retained messages
-            this.mqtt.publish(friendlyName, '', {retain: true});
+            await this.mqtt.publish(friendlyName, '', {retain: true});
 
             logger.info(`Successfully removed ${entityType} '${friendlyName}'${blockForceLog}`);
 
             if (entity instanceof Device) {
-                this.publishGroups();
-                this.publishDevices();
+                await this.publishGroups();
+                await this.publishDevices();
                 // Refresh Cluster definition
-                this.publishDefinitions();
+                await this.publishDefinitions();
                 return utils.getResponse(message, {id: ID, block, force}, null);
             } else {
-                this.publishGroups();
+                await this.publishGroups();
                 return utils.getResponse(message, {id: ID, force: force}, null);
             }
         } catch (error) {

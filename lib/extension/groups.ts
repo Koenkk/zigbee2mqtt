@@ -80,7 +80,7 @@ export default class Groups extends Extension {
             // In settings but not in zigbee
             for (const entity of settingsEndpoint) {
                 if (!zigbeeGroup.zh.hasMember(entity.endpoint)) {
-                    addRemoveFromGroup('add', entity.name, settingGroup.friendly_name, entity.endpoint, zigbeeGroup);
+                    await addRemoveFromGroup('add', entity.name, settingGroup.friendly_name, entity.endpoint, zigbeeGroup);
                 }
             }
 
@@ -88,7 +88,7 @@ export default class Groups extends Extension {
             for (const endpoint of zigbeeGroup.zh.members) {
                 if (!settingsEndpoint.find((e) => e.endpoint === endpoint)) {
                     const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
-                    addRemoveFromGroup('remove', deviceName, settingGroup.friendly_name, endpoint, zigbeeGroup);
+                    await addRemoveFromGroup('remove', deviceName, settingGroup.friendly_name, endpoint, zigbeeGroup);
                 }
             }
         }
@@ -97,7 +97,7 @@ export default class Groups extends Extension {
             if (!settingsGroups.find((g) => g.ID === zigbeeGroup.ID)) {
                 for (const endpoint of zigbeeGroup.zh.members) {
                     const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
-                    addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
+                    await addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
                 }
             }
         }
@@ -200,7 +200,7 @@ export default class Groups extends Extension {
         return true;
     }
 
-    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage {
+    private async parseMQTTMessage(data: eventdata.MQTTMessage): Promise<ParsedMQTTMessage> {
         let type: 'remove' | 'add' | 'remove_all' = null;
         let resolvedEntityGroup: Group = null;
         let resolvedEntityDevice: Device = null;
@@ -229,7 +229,7 @@ export default class Groups extends Extension {
                     if (settings.get().advanced.legacy_api) {
                         const payload = {friendly_name: data.message,
                             group: legacyTopicRegexMatch[1], error: 'group doesn\'t exists'};
-                        this.mqtt.publish(
+                        await this.mqtt.publish(
                             'bridge/log',
                             stringify({type: `device_group_${type}_failed`, message: payload}),
                         );
@@ -251,7 +251,7 @@ export default class Groups extends Extension {
                     const payload = {
                         friendly_name: data.message, group: legacyTopicRegexMatch[1], error: 'entity doesn\'t exists',
                     };
-                    this.mqtt.publish(
+                    await this.mqtt.publish(
                         'bridge/log',
                         stringify({type: `device_group_${type}_failed`, message: payload}),
                     );
@@ -299,7 +299,7 @@ export default class Groups extends Extension {
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const parsed = this.parseMQTTMessage(data);
+        const parsed = await this.parseMQTTMessage(data);
         if (!parsed || !parsed.type) return;
         let {
             resolvedEntityGroup, resolvedEntityDevice, type, error, triggeredViaLegacyApi,
@@ -340,7 +340,7 @@ export default class Groups extends Extension {
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
                         const payload = {friendly_name: resolvedEntityDevice.name, group: resolvedEntityGroup.name};
-                        this.mqtt.publish(
+                        await this.mqtt.publish(
                             'bridge/log',
                             stringify({type: `device_group_add`, message: payload}),
                         );
@@ -354,7 +354,7 @@ export default class Groups extends Extension {
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
                         const payload = {friendly_name: resolvedEntityDevice.name, group: resolvedEntityGroup.name};
-                        this.mqtt.publish(
+                        await this.mqtt.publish(
                             'bridge/log',
                             stringify({type: `device_group_remove`, message: payload}),
                         );
@@ -369,7 +369,7 @@ export default class Groups extends Extension {
                         /* istanbul ignore else */
                         if (settings.get().advanced.legacy_api) {
                             const payload = {friendly_name: resolvedEntityDevice.name};
-                            this.mqtt.publish(
+                            await this.mqtt.publish(
                                 'bridge/log',
                                 stringify({type: `device_group_remove_all`, message: payload}),
                             );

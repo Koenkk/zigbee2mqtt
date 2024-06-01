@@ -1137,8 +1137,8 @@ export default class HomeAssistant extends Extension {
     @bind onDeviceRemoved(data: eventdata.DeviceRemoved): void {
         logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
         const discovered = this.getDiscovered(data.ieeeAddr);
-        Object.keys(discovered.messages).forEach((topic) => {
-            this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+        Object.keys(discovered.messages).forEach(async (topic) => {
+            await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         });
 
         delete this.discovered[data.ieeeAddr];
@@ -1159,7 +1159,7 @@ export default class HomeAssistant extends Extension {
          */
         const entity = this.zigbee.resolveEntity(data.entity.name);
         if (entity.isDevice()) {
-            Object.keys(this.getDiscovered(entity).messages).forEach((topic) => {
+            Object.keys(this.getDiscovered(entity).messages).forEach(async (topic) => {
                 const objectID = topic.match(this.discoveryRegexWoTopic)?.[3];
                 const lightMatch = /^light_(.*)/.exec(objectID);
                 const coverMatch = /^cover_(.*)/.exec(objectID);
@@ -1177,7 +1177,7 @@ export default class HomeAssistant extends Extension {
                         }
                     }
 
-                    this.mqtt.publish(`${data.entity.name}/${endpoint}`, stringify(payload), {});
+                    await this.mqtt.publish(`${data.entity.name}/${endpoint}`, stringify(payload), {});
                 }
             });
         }
@@ -1190,7 +1190,7 @@ export default class HomeAssistant extends Extension {
         if (settings.get().homeassistant.legacy_triggers) {
             const keys = ['action', 'click'].filter((k) => data.message[k]);
             for (const key of keys) {
-                this.publishEntityState(data.entity, {[key]: ''});
+                await this.publishEntityState(data.entity, {[key]: ''});
             }
         }
 
@@ -1218,7 +1218,7 @@ export default class HomeAssistant extends Extension {
         if (data.homeAssisantRename) {
             const discovered = this.getDiscovered(data.entity);
             for (const topic of Object.keys(discovered.messages)) {
-                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
             discovered.messages = {};
 
@@ -1233,7 +1233,7 @@ export default class HomeAssistant extends Extension {
             for (const config of this.getDiscovered(data.entity).triggers) {
                 const key = config.substring(0, config.indexOf('_'));
                 const value = config.substring(config.indexOf('_') + 1);
-                this.publishDeviceTriggerDiscover(data.entity, key, value, true);
+                await this.publishDeviceTriggerDiscover(data.entity, key, value, true);
             }
         }
     }
@@ -1430,7 +1430,7 @@ export default class HomeAssistant extends Extension {
         discovered.discovered = true;
         const lastDiscoverdTopics = Object.keys(discovered.messages);
         const newDiscoveredTopics: Set<string> = new Set();
-        this.getConfigs(entity).forEach((config) => {
+        this.getConfigs(entity).forEach(async (config) => {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
@@ -1640,22 +1640,22 @@ export default class HomeAssistant extends Extension {
             if (!discoveredMessage || discoveredMessage.payload !== payloadStr || !discoveredMessage.published) {
                 discovered.messages[topic] = {payload: payloadStr, published: publish};
                 if (publish) {
-                    this.mqtt.publish(topic, payloadStr, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                    await this.mqtt.publish(topic, payloadStr, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 }
             } else {
                 logger.debug(`Skipping discovery of '${topic}', already discovered`);
             }
             config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
         });
-        lastDiscoverdTopics.forEach((topic) => {
+        lastDiscoverdTopics.forEach(async (topic) => {
             const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)[1] === 'device_automation';
             if (!newDiscoveredTopics.has(topic) && !isDeviceAutomation) {
-                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
         });
     }
 
-    @bind private onMQTTMessage(data: eventdata.MQTTMessage): void {
+    @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const discoveryMatch = data.topic.match(this.discoveryRegex);
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
@@ -1700,7 +1700,7 @@ export default class HomeAssistant extends Extension {
 
             if (clear) {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
-                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             } else {
                 this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
             }
@@ -1710,7 +1710,7 @@ export default class HomeAssistant extends Extension {
                 // Publish all device states.
                 for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
                     if (this.state.exists(entity)) {
-                        this.publishEntityState(entity, this.state.get(entity), 'publishCached');
+                        await this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                     }
                 }
 
@@ -1731,9 +1731,9 @@ export default class HomeAssistant extends Extension {
         // First, clear existing scene discovery topics
         logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`);
         const discovered = this.getDiscovered(data.entity);
-        Object.keys(discovered.messages).forEach((topic) => {
+        Object.keys(discovered.messages).forEach(async (topic) => {
             if (topic.startsWith('scene')) {
-                this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 delete discovered.messages[topic];
             }
         });

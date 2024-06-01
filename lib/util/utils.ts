@@ -309,8 +309,8 @@ const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 const minutes = (minutes: number): number => 1000 * 60 * minutes;
 const seconds = (seconds: number): number => 1000 * seconds;
 
-function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, allowMessageEmitted: boolean,
-    publishEntityState: PublishEntityState): void {
+async function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, allowMessageEmitted: boolean,
+    publishEntityState: PublishEntityState): Promise<void> {
     /**
      * Prevent 2 MQTT publishes when 1 message event is received;
      * - In case reason == messageEmitted, receive.ts will only call this when it did not publish a
@@ -320,7 +320,7 @@ function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, al
      */
     const allow = data.reason !== 'messageEmitted' || (data.reason === 'messageEmitted' && allowMessageEmitted);
     if (settings.advanced.last_seen && settings.advanced.last_seen !== 'disable' && allow) {
-        publishEntityState(data.device, {}, 'lastSeenChanged');
+        await publishEntityState(data.device, {}, 'lastSeenChanged');
     }
 }
 

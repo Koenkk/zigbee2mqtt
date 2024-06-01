@@ -122,7 +122,7 @@ export class Controller {
             settings.set(['advanced', 'legacy_api'], false);
             settings.set(['advanced', 'legacy_availability_payload'], false);
             settings.set(['device_options', 'legacy'], false);
-            this.enableDisableExtension(false, 'BridgeLegacy');
+            await this.enableDisableExtension(false, 'BridgeLegacy');
         }
 
         // Log zigbee clients on startup
@@ -164,7 +164,7 @@ export class Controller {
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const entity of [...devices, ...this.zigbee.groups()]) {
                 if (this.state.exists(entity)) {
-                    this.publishEntityState(entity, this.state.get(entity), 'publishCached');
+                    await this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                 }
             }
         }

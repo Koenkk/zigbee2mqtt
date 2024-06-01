@@ -285,7 +285,7 @@ export default class Bind extends Extension {
 
                         /* istanbul ignore else */
                         if (settings.get().advanced.legacy_api) {
-                            this.mqtt.publish(
+                            await this.mqtt.publish(
                                 'bridge/log',
                                 stringify({type: `device_${type}`,
                                     message: {from: source.name, to: target.name, cluster}}),
@@ -300,7 +300,7 @@ export default class Bind extends Extension {
 
                         /* istanbul ignore else */
                         if (settings.get().advanced.legacy_api) {
-                            this.mqtt.publish(
+                            await this.mqtt.publish(
                                 'bridge/log',
                                 stringify({type: `device_${type}_failed`,
                                     message: {from: source.name, to: target.name, cluster}}),
@@ -316,7 +316,7 @@ export default class Bind extends Extension {
 
                 /* istanbul ignore else */
                 if (settings.get().advanced.legacy_api) {
-                    this.mqtt.publish(
+                    await this.mqtt.publish(
                         'bridge/log',
                         stringify({type: `device_${type}_failed`, message: {from: source.name, to: target.name}}),
                     );
