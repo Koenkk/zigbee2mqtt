@@ -5,19 +5,6 @@
       "include-component-in-tag": false,
       "include-v-in-tag": false,
       "draft": true
-    },
-    "charts/zigbee2mqtt": {
-      "release-type": "helm",
-      "include-component-in-tag": false,
-      "include-v-in-tag": false,
-      "draft": true,
-      "extra-files": [
-        {
-          "type": "yaml",
-          "path": "charts/zigbee2mqtt",
-          "jsonpath": "$.appVersion"
-        }
-      ]
     }
   },
   "pull-request-title-pattern": "chore${scope}: release ${version}",

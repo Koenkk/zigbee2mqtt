@@ -26,41 +26,6 @@ jobs:
           target-branch: dev
           token: ${{secrets.GH_TOKEN}}
 
-      # we use grep,awk,sed here because the output from release-please despite being JSON, it's not valid (probably shell-escaping) and
-      # jq fails to parse it. Creates the output pr_branch
-      - name: Get the branch of the release-please PR
-        id: get_pr_branch
-        if: ${{ steps.release.outputs.prs_created == 'true'  }}
-        run: |          
-          BRANCH=$(echo '${{ steps.release.outputs.prs }}' | grep -o -P '\"headBranchName\":\"(.*?)\"' | awk -F':' '{print $2}' | tr -d \")
-          echo "pr_branch=${BRANCH}" >> $GITHUB_OUTPUT
-
-      # Checkout PR branch
-      - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.prs_created == 'true'   }}
-        with:
-          repository: koenkk/zigbee2mqtt
-          path: ./z2m-pr
-          ref: ${{ steps.get_pr_branch.outputs.pr_branch }}
-          token: ${{secrets.GH_TOKEN}}
-
-      - name: Add updated helm chart release versions and documentation to release PR
-        if: ${{ steps.release.outputs.prs_created == 'true'   }}
-        run: |
-          pushd ./z2m-pr
-          Z2M_VERSION="$(jq -r '."."' .release-please-manifest.json)" 
-          yq -i ".appVersion=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/Chart.yaml
-          yq -i ".image.tag=\"${Z2M_VERSION}\"" charts/zigbee2mqtt/values.yaml
-          # Keep chart version in step lock with zigbee2mqtt
-          jq  ".\"charts/zigbee2mqtt\"=\"${Z2M_VERSION}\"" .release-please-manifest.json > .release-please-manifest.json.tmp
-          mv .release-please-manifest.json.tmp .release-please-manifest.json
-          go run github.com/norwoodj/helm-docs/cmd/helm-docs@latest
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add .
-          git commit -m "chore(release): update helm-chart docs"
-          git push
-
       # Checkout repos
       - uses: actions/checkout@v4
         with:
@@ -85,7 +50,7 @@ jobs:
           MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
           MASTER_ZH_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman"')
           MASTER_FRONTEND_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee2mqtt-frontend"')
-          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev/CHANGELOG.md > z2m/CHANGELOG.md
+          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--zigbee2mqtt/CHANGELOG.md > z2m/CHANGELOG.md
           cd z2m
           npm ci
           node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION $MASTER_FRONTEND_VERSION >> ../changelog.md
