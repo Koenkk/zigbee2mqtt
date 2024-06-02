@@ -656,7 +656,7 @@ export default class HomeAssistant extends Extension {
                 moving: {device_class: 'moving'},
                 no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
                 noise_detected: {device_class: 'sound'},
-                occupancy: {device_class: 'motion'},
+                occupancy: {device_class: 'occupancy'},
                 power_outage_memory: {entity_category: 'config', icon: 'mdi:memory'},
                 presence: {device_class: 'presence'},
                 setup: {device_class: 'running'},
