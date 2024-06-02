@@ -7,6 +7,8 @@ import fx from 'mkdir-recursive';
 import {rimrafSync} from 'rimraf';
 import assert from 'assert';
 
+const NAMESPACE_SEPARATOR = ':';
+
 class Logger {
     private level: settings.LogLevel;
     private output: string[];
@@ -15,7 +17,7 @@ class Logger {
     private fileTransport: winston.transports.FileTransportInstance;
     private debugNamespaceIgnoreRegex?: RegExp;
     private namespacedLevels: Record<string, settings.LogLevel>;
-    private cachedNSLevels: Record<string, settings.LogLevel>;
+    private cachedNamespacedLevels: Record<string, settings.LogLevel>;
 
     public init(): void {
         // What transports to enable
@@ -26,7 +28,7 @@ class Logger {
         const logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
         this.level = settings.get().advanced.log_level;
         this.namespacedLevels = settings.get().advanced.log_namespaced_levels;
-        this.resetCachedNSLevels();
+        this.cachedNamespacedLevels = Object.assign({}, this.namespacedLevels);
 
         assert(
             settings.LOG_LEVELS.includes(this.level),
@@ -149,7 +151,7 @@ class Logger {
 
     public setLevel(level: settings.LogLevel): void {
         this.level = level;
-        this.resetCachedNSLevels();
+        this.resetCachedNamespacedLevels();
     }
 
     public getNamespacedLevels(): Record<string, settings.LogLevel> {
@@ -158,31 +160,32 @@ class Logger {
 
     public setNamespacedLevels(nsLevels: Record<string, settings.LogLevel>): void {
         this.namespacedLevels = nsLevels;
-        this.resetCachedNSLevels();
+        this.resetCachedNamespacedLevels();
     }
 
-    private resetCachedNSLevels(): void {
-        this.cachedNSLevels={...this.namespacedLevels};
+    private resetCachedNamespacedLevels(): void {
+        this.cachedNamespacedLevels = Object.assign({}, this.namespacedLevels);
     }
 
-    // returns and store the level of the first matching namespace moving up the hierarchy
-    private getsetLevel(namespace: string) : string {
-        let ns=namespace;
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            if (this.cachedNSLevels[ns]) {
-                return this.cachedNSLevels[namespace]=this.cachedNSLevels[ns];
+    private cacheNamespacedLevel(namespace: string) : string {
+        let cached = namespace;
+
+        while (this.cachedNamespacedLevels[namespace] == undefined) {
+            const sep = cached.lastIndexOf(NAMESPACE_SEPARATOR);
+
+            if (sep === -1) {
+                return this.cachedNamespacedLevels[namespace] = this.level;
             }
-            const sep=ns.lastIndexOf(':');
-            if (sep==-1) {
-                return this.cachedNSLevels[namespace]=this.level;
-            }
-            ns=ns.slice(0, sep);
+
+            cached = cached.slice(0, sep);
+            this.cachedNamespacedLevels[namespace] = this.cachedNamespacedLevels[cached];
         }
+
+        return this.cachedNamespacedLevels[namespace];
     }
 
     private log(level: settings.LogLevel, message: string, namespace: string): void {
-        const nsLevel = this.cachedNSLevels[namespace] ?? this.getsetLevel(namespace);
+        const nsLevel = this.cacheNamespacedLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
             this.logger.log(level, message, {namespace});
