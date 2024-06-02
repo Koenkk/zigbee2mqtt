@@ -70,7 +70,7 @@ body:
     id: log
     attributes:
       label: Debug log
-      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/usage/debug.html) the log can be found under `data/log`. Attach the file below
+      description: After enabling [debug logging](https://www.zigbee2mqtt.io/guide/configuration/logging.html) the log can be found under `data/log`. Attach the file below
       placeholder: Click here and drag the file into it or click on "Attach files by.." below
     validations:
       required: false
