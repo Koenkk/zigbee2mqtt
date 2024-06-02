@@ -850,6 +850,7 @@ export default class HomeAssistant extends Extension {
                 trigger_count: {icon: 'mdi:counter', enabled_by_default: false},
                 voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
                 voc_index: {state_class: 'measurement'},
+                voc_parts: {device_class: 'volatile_organic_compounds_parts', state_class: 'measurement'},
                 vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 voltage: {
                     device_class: 'voltage',
@@ -885,7 +886,15 @@ export default class HomeAssistant extends Extension {
                 Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
             }
 
+
             const allowsSet = firstExpose.access & ACCESS_SET;
+
+            let key = firstExpose.name;
+
+            // Home Assistant uses a different voc device_class for µg/m³ versus ppb or ppm.
+            if (firstExpose.name === 'voc' && firstExpose.unit && ['ppb', 'ppm'].includes(firstExpose.unit)) {
+                key = 'voc_parts';
+            }
 
             const discoveryEntry: DiscoveryEntry = {
                 type: 'sensor',
@@ -896,7 +905,7 @@ export default class HomeAssistant extends Extension {
                     value_template: `{{ value_json.${firstExpose.property} }}`,
                     enabled_by_default: !allowsSet,
                     ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
-                    ...lookup[firstExpose.name],
+                    ...lookup[key],
                     ...extraAttrs,
                 },
             };
@@ -905,12 +914,6 @@ export default class HomeAssistant extends Extension {
             // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
             if (discoveryEntry.discovery_payload.device_class &&
                 !discoveryEntry.discovery_payload.unit_of_measurement) {
-                delete discoveryEntry.discovery_payload.device_class;
-            }
-
-            // Home Assistant only supports µg/m³, not other units like ppb.
-            // https://github.com/Koenkk/zigbee2mqtt/issues/16057
-            if (firstExpose.name === 'voc' && discoveryEntry.discovery_payload.unit_of_measurement !== 'µg/m³') {
                 delete discoveryEntry.discovery_payload.device_class;
             }
 
