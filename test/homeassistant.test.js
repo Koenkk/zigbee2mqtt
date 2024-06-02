@@ -895,7 +895,7 @@ describe('HomeAssistant extension', () => {
                 "identifiers":[
                     "zigbee2mqtt_0x0017882104a44559"
                 ],
-                "manufacturer":"TuYa",
+                "manufacturer":"Tuya",
                 "model":"Radiator valve with thermostat (TS0601_thermostat)",
                 "name":"TS0601_thermostat",
                 "sw_version":null,
