@@ -304,4 +304,40 @@ describe('Logger', () => {
         expect(logSpy).toHaveBeenCalledTimes(3);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
     });
+    it('Logs with namespaced levels hierarchy', () => {
+        logger.setNamespacedLevels({'zh:zstack': 'debug', 'zh:zstack:unpi:writer': 'error'})
+        logger.setLevel('warning');
+
+        const logSpy = jest.spyOn(logger.winston, 'log');
+
+        consoleWriteSpy.mockClear();
+        logger.debug(`--- parseNext [] debug picked from hierarchy`, 'zh:zstack:unpi:parser');
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
+        logger.warning(`--> frame [36,15] warning explicitely supressed`, 'zh:zstack:unpi:writer');
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
+        logger.warning(`Another supressed warning message in a sub namespace`, 'zh:zstack:unpi:writer:sub:ns');
+        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
+        logger.error(`but error should go through`, 'zh:zstack:unpi:writer:another:sub:ns');
+        expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
+        logger.warning(`new unconfigured namespace warning`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
+        logger.info(`cached unconfigured namespace info should be supressed`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
+
+        logger.setLevel('info');
+        logger.info(`unconfigured namespace info should now pass after default level change and cache reset`, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenCalledTimes(4);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(4);
+        logger.error(`configured namespace hierachy should still work after the cache reset`, 'zh:zstack:unpi:writer:another:sub:ns');
+        expect(logSpy).toHaveBeenCalledTimes(5);
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(5);
+
+	
+    });
 });
