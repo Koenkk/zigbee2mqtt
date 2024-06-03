@@ -21,7 +21,7 @@ describe('HomeAssistant extension', () => {
         await controller.enableDisableExtension(true, 'HomeAssistant');
         extension = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
         if (runTimers) {
-            jest.runOnlyPendingTimers();
+            await jest.runOnlyPendingTimersAsync();
         }
     }
 
@@ -473,7 +473,7 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message(topic1, payload1);
         await MQTT.events.message(topic2, payload2);
 
-        jest.runOnlyPendingTimers();        
+        await jest.runOnlyPendingTimersAsync();
 
         // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
         expect(MQTT.unsubscribe).toHaveBeenCalledWith(`homeassistant/#`);
@@ -1216,7 +1216,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message('homeassistant/status', 'online');
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -1246,7 +1246,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status', 'online');
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -1270,7 +1270,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status', 'offline');
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
@@ -1282,7 +1282,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message('hass/status_different', 'offline');
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
     });
@@ -1367,7 +1367,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({"from": "weather_sensor", "to": "weather_sensor_renamed","homeassistant_rename":true}));
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
         const payload = {
@@ -1435,7 +1435,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/rename', stringify({"from": "ha_discovery_group", "to": "ha_discovery_group_new","homeassistant_rename":true}));
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
         const payload = {
@@ -2239,7 +2239,7 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
         let payload = {
@@ -2283,7 +2283,7 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
         payload = {
@@ -2582,6 +2582,7 @@ describe('HomeAssistant extension', () => {
         const msg = {data, cluster: 'boschSpecific', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         resetDiscoveryPayloads('0x18fc26000000cafe');
         await zigbeeHerdsman.events.message(msg);
+        await flushPromises();
         const payload = {
             'availability':[{'topic':'zigbee2mqtt/bridge/state'}],
             'command_topic':'zigbee2mqtt/0x18fc26000000cafe/set/device_mode',

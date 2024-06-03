@@ -87,10 +87,10 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
-        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': undefined});
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":false,"update":{"state":"updating","progress":0}}),
@@ -108,7 +108,7 @@ describe('OTA update', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            stringify({"data":{"from":{"date_code":"20190101","software_build_id":1},"id":"bulb","to":{"date_code":"20190103","software_build_id":3}},"status":"ok"}),
+            stringify({"data":{"from":{"date_code":"20190101","software_build_id":1},"id":"bulb","to":{"date_code":"20190104","software_build_id":4}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -389,10 +389,11 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190103","softwareBuildID":3}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
+        expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': undefined});
     });
 
     it('Legacy api: Should handle when OTA update fails', async () => {

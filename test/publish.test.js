@@ -58,7 +58,7 @@ describe('Publish', () => {
     });
 
     afterAll(async () => {
-        jest.runOnlyPendingTimers();
+        await jest.runOnlyPendingTimersAsync();
         jest.useRealTimers();
         sleep.restore();
     });
@@ -1486,18 +1486,18 @@ describe('Publish', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(3,
+            'zigbee2mqtt/ha_discovery_group',
+            stringify({"brightness":50,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
+            {retain: false, qos: 0}, expect.any(Function)
+        );
+        expect(MQTT.publish).toHaveBeenNthCalledWith(4,
             'zigbee2mqtt/group_tradfri_remote',
             stringify({"brightness":100,"color_temp":290,"state":"ON","color_mode": "color_temp"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
-        expect(MQTT.publish).toHaveBeenNthCalledWith(4,
+        expect(MQTT.publish).toHaveBeenNthCalledWith(5,
             'zigbee2mqtt/bulb_2',
             stringify({"brightness":100,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
-            {retain: false, qos: 0}, expect.any(Function)
-        );
-        expect(MQTT.publish).toHaveBeenNthCalledWith(5,
-            'zigbee2mqtt/ha_discovery_group',
-            stringify({"brightness":50,"color_mode":"color_temp","color_temp":290,"state":"ON"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenNthCalledWith(6,
