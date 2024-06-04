@@ -304,40 +304,55 @@ describe('Logger', () => {
         expect(logSpy).toHaveBeenCalledTimes(3);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
     });
-    it('Logs with namespaced levels hierarchy', () => {
-        logger.setNamespacedLevels({'zh:zstack': 'debug', 'zh:zstack:unpi:writer': 'error'})
-        logger.setLevel('warning');
 
-        const logSpy = jest.spyOn(logger.winston, 'log');
+    it('Logs with namespaced levels hierarchy', () => {
+        const nsLevels = {'zh:zstack': 'debug', 'zh:zstack:unpi:writer': 'error'};
+        let cachedNSLevels = Object.assign({}, nsLevels);
+        logger.setNamespacedLevels(nsLevels);
+        logger.setLevel('warning');
 
         consoleWriteSpy.mockClear();
         logger.debug(`--- parseNext [] debug picked from hierarchy`, 'zh:zstack:unpi:parser');
-        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:parser': 'debug'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.warning(`--> frame [36,15] warning explicitely supressed`, 'zh:zstack:unpi:writer');
-        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.warning(`Another supressed warning message in a sub namespace`, 'zh:zstack:unpi:writer:sub:ns');
-        expect(logSpy).toHaveBeenCalledTimes(1);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.error(`but error should go through`, 'zh:zstack:unpi:writer:another:sub:ns');
-        expect(logSpy).toHaveBeenCalledTimes(2);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
         logger.warning(`new unconfigured namespace warning`, 'z2m:mqtt');
-        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
         logger.info(`cached unconfigured namespace info should be supressed`, 'z2m:mqtt');
-        expect(logSpy).toHaveBeenCalledTimes(3);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
 
         logger.setLevel('info');
+        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels = Object.assign({}, nsLevels));
         logger.info(`unconfigured namespace info should now pass after default level change and cache reset`, 'z2m:mqtt');
-        expect(logSpy).toHaveBeenCalledTimes(4);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(4);
         logger.error(`configured namespace hierachy should still work after the cache reset`, 'zh:zstack:unpi:writer:another:sub:ns');
-        expect(logSpy).toHaveBeenCalledTimes(5);
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(5);
 
-	
+        logger.setNamespacedLevels({'zh:zstack': 'warning'})
+        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels = {'zh:zstack': 'warning'});
+        logger.error(`error logged`, 'zh:zstack:unpi:writer');
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer': 'warning'}));
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
+        logger.debug(`debug suppressed`, 'zh:zstack:unpi');
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi': 'warning'}));
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
+        logger.warning(`warning logged`, 'zh:zstack');
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack': 'warning'}));
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(7);
+        logger.info(`unconfigured namespace`, 'z2m:mqtt');
+        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(8);
     });
 });
