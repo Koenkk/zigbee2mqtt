@@ -16,7 +16,7 @@ export default class ExternalExtension extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.requestLookup = {'save': this.saveExtension, 'remove': this.removeExtension};
-        this.loadUserDefinedExtensions();
+        await this.loadUserDefinedExtensions();
         await this.publishExtensions();
     }
 
@@ -46,7 +46,7 @@ export default class ExternalExtension extends Extension {
             const basePath = this.getExtensionsBasePath();
             const extensionFilePath = path.join(basePath, path.basename(name));
             fs.unlinkSync(extensionFilePath);
-            this.publishExtensions();
+            await this.publishExtensions();
             logger.info(`Extension ${name} removed`);
             return utils.getResponse(message, {}, null);
         } else {
@@ -65,7 +65,7 @@ export default class ExternalExtension extends Extension {
         }
         const extensionFilePath = path.join(basePath, path.basename(name));
         fs.writeFileSync(extensionFilePath, code);
-        this.publishExtensions();
+        await this.publishExtensions();
         logger.info(`Extension ${name} loaded`);
         return utils.getResponse(message, {}, null);
     }
@@ -92,11 +92,10 @@ export default class ExternalExtension extends Extension {
             this.eventBus, settings, logger));
     }
 
-    private loadUserDefinedExtensions(): void {
-        const extensions = this.getListOfUserDefinedExtensions();
-        extensions
-            .map(({code, name}) => utils.loadModuleFromText(code, name))
-            .map(this.loadExtension);
+    private async loadUserDefinedExtensions(): Promise<void> {
+        for (const extension of this.getListOfUserDefinedExtensions()) {
+            await this.loadExtension(utils.loadModuleFromText(extension.code, extension.name) as typeof Extension);
+        }
     }
 
     private async publishExtensions(): Promise<void> {

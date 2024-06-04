@@ -45,13 +45,13 @@ export default class BridgeLegacy extends Extension {
         await this.publish();
     }
 
-    @bind whitelist(topic: string, message: string): void {
+    @bind async whitelist(topic: string, message: string): Promise<void> {
         try {
             const entity = settings.getDevice(message);
             assert(entity, `Entity '${message}' does not exist`);
             settings.addDeviceToPasslist(entity.ID.toString());
             logger.info(`Whitelisted '${entity.friendly_name}'`);
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 'bridge/log',
                 stringify({type: 'device_whitelisted', message: {friendly_name: entity.friendly_name}}),
             );
@@ -82,7 +82,7 @@ export default class BridgeLegacy extends Extension {
 
     @bind async permitJoin(topic: string, message: string): Promise<void> {
         await this.zigbee.permitJoin(message.toLowerCase() === 'true');
-        this.publish();
+        await this.publish();
     }
 
     @bind async reset(): Promise<void> {
@@ -116,7 +116,7 @@ export default class BridgeLegacy extends Extension {
         logger.info(`Set elapsed to ${message}`);
     }
 
-    @bind logLevel(topic: string, message: string): void {
+    @bind async logLevel(topic: string, message: string): Promise<void> {
         const level = message.toLowerCase() as settings.LogLevel;
         if (settings.LOG_LEVELS.includes(level)) {
             logger.info(`Switching log level to '${level}'`);
@@ -125,7 +125,7 @@ export default class BridgeLegacy extends Extension {
             logger.error(`Could not set log level to '${level}'. Allowed level: '${settings.LOG_LEVELS.join(',')}'`);
         }
 
-        this.publish();
+        await this.publish();
     }
 
     @bind async devices(topic: string): Promise<void> {
@@ -162,23 +162,23 @@ export default class BridgeLegacy extends Extension {
         });
 
         if (topic.split('/').pop() == 'get') {
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 `bridge/config/devices`, stringify(devices), {}, settings.get().mqtt.base_topic, false, false,
             );
         } else {
-            this.mqtt.publish('bridge/log', stringify({type: 'devices', message: devices}));
+            await this.mqtt.publish('bridge/log', stringify({type: 'devices', message: devices}));
         }
     }
 
-    @bind groups(): void {
+    @bind async groups(): Promise<void> {
         const payload = settings.getGroups().map((g) => {
             return {...g, ID: Number(g.ID)};
         });
 
-        this.mqtt.publish('bridge/log', stringify({type: 'groups', message: payload}));
+        await this.mqtt.publish('bridge/log', stringify({type: 'groups', message: payload}));
     }
 
-    @bind rename(topic: string, message: string): void {
+    @bind async rename(topic: string, message: string): Promise<void> {
         const invalid =
             `Invalid rename message format expected {"old": "friendly_name", "new": "new_name"} got ${message}`;
 
@@ -196,19 +196,19 @@ export default class BridgeLegacy extends Extension {
             return;
         }
 
-        this._renameInternal(json.old, json.new);
+        await this._renameInternal(json.old, json.new);
     }
 
-    @bind renameLast(topic: string, message: string): void {
+    @bind async renameLast(topic: string, message: string): Promise<void> {
         if (!this.lastJoinedDeviceName) {
             logger.error(`Cannot rename last joined device, no device has joined during this session`);
             return;
         }
 
-        this._renameInternal(this.lastJoinedDeviceName, message);
+        await this._renameInternal(this.lastJoinedDeviceName, message);
     }
 
-    _renameInternal(from: string, to: string): void {
+    async _renameInternal(from: string, to: string): Promise<void> {
         try {
             const isGroup = settings.getGroup(from) !== null;
             settings.changeFriendlyName(from, to);
@@ -218,7 +218,7 @@ export default class BridgeLegacy extends Extension {
                 this.eventBus.emitEntityRenamed({homeAssisantRename: false, from, to, entity});
             }
 
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 'bridge/log',
                 stringify({type: `${isGroup ? 'group' : 'device'}_renamed`, message: {from, to}}),
             );
@@ -227,7 +227,7 @@ export default class BridgeLegacy extends Extension {
         }
     }
 
-    @bind addGroup(topic: string, message: string): void {
+    @bind async addGroup(topic: string, message: string): Promise<void> {
         let id = null;
         let name = null;
         try {
@@ -252,11 +252,11 @@ export default class BridgeLegacy extends Extension {
 
         const group = settings.addGroup(name, id);
         this.zigbee.createGroup(group.ID);
-        this.mqtt.publish('bridge/log', stringify({type: `group_added`, message: name}));
+        await this.mqtt.publish('bridge/log', stringify({type: `group_added`, message: name}));
         logger.info(`Added group '${name}'`);
     }
 
-    @bind removeGroup(topic: string, message: string): void {
+    @bind async removeGroup(topic: string, message: string): Promise<void> {
         const name = message;
         const entity = this.zigbee.resolveEntity(message) as Group;
         assert(entity && entity.isGroup(), `Group '${message}' does not exist`);
@@ -264,11 +264,11 @@ export default class BridgeLegacy extends Extension {
         if (topic.includes('force')) {
             entity.zh.removeFromDatabase();
         } else {
-            entity.zh.removeFromNetwork();
+            await entity.zh.removeFromNetwork();
         }
         settings.removeGroup(message);
 
-        this.mqtt.publish('bridge/log', stringify({type: `group_removed`, message}));
+        await this.mqtt.publish('bridge/log', stringify({type: `group_removed`, message}));
         logger.info(`Removed group '${name}'`);
     }
 
@@ -295,14 +295,14 @@ export default class BridgeLegacy extends Extension {
         if (!entity) {
             logger.error(`Cannot ${lookup[action][2]}, device '${message}' does not exist`);
 
-            this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
+            await this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
             return;
         }
 
         const ieeeAddr = entity.ieeeAddr;
         const name = entity.name;
 
-        const cleanup = (): void => {
+        const cleanup = async (): Promise<void> => {
             // Fire event
             this.eventBus.emitDeviceRemoved({ieeeAddr, name});
 
@@ -313,7 +313,7 @@ export default class BridgeLegacy extends Extension {
             this.state.remove(ieeeAddr);
 
             logger.info(`Successfully ${lookup[action][0]} ${entity.name}`);
-            this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}`, message}));
+            await this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}`, message}));
         };
 
         try {
@@ -324,13 +324,13 @@ export default class BridgeLegacy extends Extension {
                 await entity.zh.removeFromNetwork();
             }
 
-            cleanup();
+            await cleanup();
         } catch (error) {
             logger.error(`Failed to ${lookup[action][2]} ${entity.name} (${error})`);
             // eslint-disable-next-line
             logger.error(`See https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html#zigbee2mqtt-bridge-request for more info`);
 
-            this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
+            await this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
         }
 
         if (action === 'ban') {
@@ -371,13 +371,13 @@ export default class BridgeLegacy extends Extension {
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0});
     }
 
-    onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device): void {
+    async onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device): Promise<void> {
         if (type === 'deviceJoined' && resolvedEntity) {
             this.lastJoinedDeviceName = resolvedEntity.name;
         }
 
         if (type === 'deviceJoined') {
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 'bridge/log',
                 stringify({type: `device_connected`, message: {friendly_name: resolvedEntity.name}}),
             );
@@ -386,20 +386,20 @@ export default class BridgeLegacy extends Extension {
                 if (resolvedEntity.isSupported) {
                     const {vendor, description, model} = resolvedEntity.definition;
                     const log = {friendly_name: resolvedEntity.name, model, vendor, description, supported: true};
-                    this.mqtt.publish(
+                    await this.mqtt.publish(
                         'bridge/log',
                         stringify({type: `pairing`, message: 'interview_successful', meta: log}),
                     );
                 } else {
                     const meta = {friendly_name: resolvedEntity.name, supported: false};
-                    this.mqtt.publish(
+                    await this.mqtt.publish(
                         'bridge/log',
                         stringify({type: `pairing`, message: 'interview_successful', meta}),
                     );
                 }
             } else if (data.status === 'failed') {
                 const meta = {friendly_name: resolvedEntity.name};
-                this.mqtt.publish(
+                await this.mqtt.publish(
                     'bridge/log',
                     stringify({type: `pairing`, message: 'interview_failed', meta}),
                 );
@@ -407,7 +407,7 @@ export default class BridgeLegacy extends Extension {
                 /* istanbul ignore else */
                 if (data.status === 'started') {
                     const meta = {friendly_name: resolvedEntity.name};
-                    this.mqtt.publish(
+                    await this.mqtt.publish(
                         'bridge/log',
                         stringify({type: `pairing`, message: 'interview_started', meta}),
                     );
@@ -415,13 +415,13 @@ export default class BridgeLegacy extends Extension {
             }
         } else if (type === 'deviceAnnounce') {
             const meta = {friendly_name: resolvedEntity.name};
-            this.mqtt.publish('bridge/log', stringify({type: `device_announced`, message: 'announce', meta}));
+            await this.mqtt.publish('bridge/log', stringify({type: `device_announced`, message: 'announce', meta}));
         } else {
             /* istanbul ignore else */
             if (type === 'deviceLeave') {
                 const name = data.ieeeAddr;
                 const meta = {friendly_name: name};
-                this.mqtt.publish(
+                await this.mqtt.publish(
                     'bridge/log',
                     stringify({type: `device_removed`, message: 'left_network', meta}),
                 );
@@ -431,7 +431,7 @@ export default class BridgeLegacy extends Extension {
 
     @bind async touchlinkFactoryReset(): Promise<void> {
         logger.info('Starting touchlink factory reset...');
-        this.mqtt.publish(
+        await this.mqtt.publish(
             'bridge/log',
             stringify({type: `touchlink`, message: 'reset_started', meta: {status: 'started'}}),
         );
@@ -439,13 +439,13 @@ export default class BridgeLegacy extends Extension {
 
         if (result) {
             logger.info('Successfully factory reset device through Touchlink');
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 'bridge/log',
                 stringify({type: `touchlink`, message: 'reset_success', meta: {status: 'success'}}),
             );
         } else {
             logger.warning('Failed to factory reset device through Touchlink');
-            this.mqtt.publish(
+            await this.mqtt.publish(
                 'bridge/log',
                 stringify({type: `touchlink`, message: 'reset_failed', meta: {status: 'failed'}}),
             );

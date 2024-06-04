@@ -7,7 +7,7 @@ import Extension from './extension';
 export default class OnEvent extends Extension {
     override async start(): Promise<void> {
         for (const device of this.zigbee.devices(false)) {
-            this.callOnEvent(device, 'start', {});
+            await this.callOnEvent(device, 'start', {});
         }
 
         this.eventBus.onDeviceMessage(this, (data) => this.callOnEvent(data.device, 'message', this.convertData(data)));
@@ -20,9 +20,9 @@ export default class OnEvent extends Extension {
         this.eventBus.onDeviceNetworkAddressChanged(this,
             (data) => this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)));
         this.eventBus.onEntityOptionsChanged(this,
-            (data) => {
+            async (data) => {
                 if (data.entity.isDevice()) {
-                    this.callOnEvent(data.entity, 'deviceOptionsChanged', data)
+                    await this.callOnEvent(data.entity, 'deviceOptionsChanged', data)
                         .then(() => this.eventBus.emitDevicesChanged());
                 }
             });
@@ -33,7 +33,7 @@ export default class OnEvent extends Extension {
     }
 
     override async stop(): Promise<void> {
-        super.stop();
+        await super.stop();
         for (const device of this.zigbee.devices(false)) {
             await this.callOnEvent(device, 'stop', {});
         }
@@ -41,7 +41,7 @@ export default class OnEvent extends Extension {
 
     private async callOnEvent(device: Device, type: zhc.OnEventType, data: KeyValue): Promise<void> {
         const state = this.state.get(device);
-        zhc.onEvent(type, data, device.zh);
+        await zhc.onEvent(type, data, device.zh);
 
         if (device.definition?.onEvent) {
             const options: KeyValue = device.options;

@@ -85,10 +85,10 @@ export default class Publish extends Extension {
         }
     }
 
-    legacyLog(payload: KeyValue): void {
+    async legacyLog(payload: KeyValue): Promise<void> {
         /* istanbul ignore else */
         if (settings.get().advanced.legacy_api) {
-            this.mqtt.publish('bridge/log', stringify(payload));
+            await this.mqtt.publish('bridge/log', stringify(payload));
         }
     }
 
@@ -133,7 +133,7 @@ export default class Publish extends Extension {
 
         const re = this.zigbee.resolveEntity(parsedTopic.ID);
         if (re == null) {
-            this.legacyLog({type: `entity_not_found`, message: {friendly_name: parsedTopic.ID}});
+            await this.legacyLog({type: `entity_not_found`, message: {friendly_name: parsedTopic.ID}});
             logger.error(`Entity '${parsedTopic.ID}' is unknown`);
             return;
         }
@@ -293,7 +293,7 @@ export default class Publish extends Extension {
                     `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
                 logger.debug(error.stack);
-                this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
+                await this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
             }
 
             usedConverters[endpointOrGroupID].push(converter);
@@ -301,7 +301,7 @@ export default class Publish extends Extension {
 
         for (const [ID, payload] of Object.entries(toPublish)) {
             if (Object.keys(payload).length != 0) {
-                this.publishEntityState(toPublishEntity[ID], payload);
+                await this.publishEntityState(toPublishEntity[ID], payload);
             }
         }
 

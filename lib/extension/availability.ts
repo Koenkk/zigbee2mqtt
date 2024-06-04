@@ -60,9 +60,9 @@ export default class Availability extends Extension {
         }
     }
 
-    private addToPingQueue(device: Device): void {
+    private async addToPingQueue(device: Device): Promise<void> {
         this.pingQueue.push(device);
-        this.pingQueueExecuteNext();
+        await this.pingQueueExecuteNext();
     }
 
     private removeFromPingQueue(device: Device): void {
@@ -99,14 +99,14 @@ export default class Availability extends Extension {
             return;
         }
 
-        this.publishAvailability(device, !pingedSuccessfully);
+        await this.publishAvailability(device, !pingedSuccessfully);
         this.resetTimer(device);
         this.removeFromPingQueue(device);
 
         // Sleep 2 seconds before executing next ping
         await utils.sleep(2);
         this.pingQueueExecuting = false;
-        this.pingQueueExecuteNext();
+        await this.pingQueueExecuteNext();
     }
 
     override async start(): Promise<void> {
@@ -114,10 +114,10 @@ export default class Availability extends Extension {
             throw new Error('This extension cannot be restarted.');
         }
 
-        this.eventBus.onEntityRenamed(this, (data) => {
+        this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
-                this.publishAvailability(data.entity, false, true);
+                await this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
+                await this.publishAvailability(data.entity, false, true);
             }
         });
 
@@ -127,29 +127,29 @@ export default class Availability extends Extension {
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
-        this.publishAvailabilityForAllEntities();
+        await this.publishAvailabilityForAllEntities();
     }
 
-    @bind private publishAvailabilityForAllEntities(): void {
+    @bind private async publishAvailabilityForAllEntities(): Promise<void> {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 // Publish initial availability
-                this.publishAvailability(entity, true, false, true);
+                await this.publishAvailability(entity, true, false, true);
 
                 if (entity.isDevice()) {
                     this.resetTimer(entity);
 
                     // If an active device is initially unavailable, ping it.
                     if (this.isActiveDevice(entity) && !this.isAvailable(entity)) {
-                        this.addToPingQueue(entity);
+                        await this.addToPingQueue(entity);
                     }
                 }
             }
         }
     }
 
-    private publishAvailability(entity: Device | Group, logLastSeen: boolean,
-        forcePublish=false, skipGroups=false): void {
+    private async publishAvailability(entity: Device | Group, logLastSeen: boolean,
+        forcePublish=false, skipGroups=false): Promise<void> {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
@@ -175,7 +175,7 @@ export default class Availability extends Extension {
         const topic = `${entity.name}/availability`;
         const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[entity.ID] = available;
-        this.mqtt.publish(topic, payload, {retain: true, qos: 1});
+        await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
             this.zigbee.groups().filter((g) => g.hasMember(entity))
@@ -184,12 +184,12 @@ export default class Availability extends Extension {
         }
     }
 
-    @bind private onLastSeenChanged(data: eventdata.LastSeenChanged): void {
+    @bind private async onLastSeenChanged(data: eventdata.LastSeenChanged): Promise<void> {
         if (utils.isAvailabilityEnabledForEntity(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(data.device);
             this.resetTimer(data.device);
-            this.publishAvailability(data.device, false);
+            await this.publishAvailability(data.device, false);
         }
     }
 

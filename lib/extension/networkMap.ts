@@ -47,7 +47,7 @@ export default class NetworkMap extends Extension {
                 const topology = await this.networkScan(includeRoutes);
                 let converted = this.supportedFormats[data.message](topology);
                 converted = data.message === 'raw' ? stringify(converted) : converted;
-                this.mqtt.publish(`bridge/networkmap/${data.message}`, converted as string, {});
+                await this.mqtt.publish(`bridge/networkmap/${data.message}`, converted as string, {});
             }
         }
 

@@ -56,6 +56,6 @@ export default class DeviceGroupMembership extends Extension {
         }
         logger.info(`${msgGroupList} and ${msgCapacity}`);
 
-        this.publishEntityState(device, {group_list: grouplist, group_capacity: capacity});
+        await this.publishEntityState(device, {group_list: grouplist, group_capacity: capacity});
     }
 }

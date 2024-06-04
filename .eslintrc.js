@@ -13,9 +13,10 @@ module.exports = {
     'rules': {
         'require-jsdoc': 'off',
         'indent': ['error', 4],
-        'max-len': ['error', {'code': 120}],
+        'max-len': ['error', {'code': 150}],
         'no-prototype-builtins': 'off',
         'linebreak-style': ['error', (process.platform === 'win32' ? 'windows' : 'unix')], // https://stackoverflow.com/q/39114446/2771889
+        '@typescript-eslint/no-floating-promises': 'error',
     },
     'plugins': [
         'jest',
@@ -38,9 +39,10 @@ module.exports = {
             '@typescript-eslint/semi': ['error'],
             'array-bracket-spacing': ['error', 'never'],
             'indent': ['error', 4],
-            'max-len': ['error', {'code': 120}],
+            'max-len': ['error', {'code': 150}],
             'no-return-await': 'error',
             'object-curly-spacing': ['error', 'never'],
+            '@typescript-eslint/no-floating-promises': 'error',
         },
     }],
 };

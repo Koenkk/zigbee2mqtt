@@ -36,8 +36,8 @@ export default class Receive extends Extension {
         if (!this.debouncers[device.ieeeAddr]) {
             this.debouncers[device.ieeeAddr] = {
                 payload: {},
-                publish: debounce(() => {
-                    this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, 'publishDebounce');
+                publish: debounce(async () => {
+                    await this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, 'publishDebounce');
                     this.debouncers[device.ieeeAddr].payload = {};
                 }, time * 1000),
             };
@@ -91,7 +91,7 @@ export default class Receive extends Extension {
         if (!data.device) return;
 
         if (!this.shouldProcess(data)) {
-            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
                 settings.get(), true, this.publishEntityState);
             return;
         }
@@ -106,7 +106,7 @@ export default class Receive extends Extension {
         if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
             logger.debug(`No converter available for '${data.device.definition.model}' with ` +
                 `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
-            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
                 settings.get(), true, this.publishEntityState);
             return;
         }
@@ -116,7 +116,7 @@ export default class Receive extends Extension {
         // - If a payload is returned publish it to the MQTT broker
         // - If NO payload is returned do nothing. This is for non-standard behaviour
         //   for e.g. click switches where we need to count number of clicks and detect long presses.
-        const publish = (payload: KeyValue): void => {
+        const publish = async (payload: KeyValue): Promise<void> => {
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
 
@@ -134,7 +134,7 @@ export default class Receive extends Extension {
                 this.publishDebounce(data.device, payload, data.device.options.debounce,
                     data.device.options.debounce_ignore);
             } else {
-                this.publishEntityState(data.device, payload);
+                await this.publishEntityState(data.device, payload);
             }
         };
 
@@ -162,9 +162,9 @@ export default class Receive extends Extension {
         }
 
         if (Object.keys(payload).length) {
-            publish(payload);
+            await publish(payload);
         } else {
-            utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
                 settings.get(), true, this.publishEntityState);
         }
     }

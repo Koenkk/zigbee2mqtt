@@ -39,7 +39,7 @@ export default class Configure extends Extension {
                 return;
             }
 
-            this.configure(device, 'mqtt_message', true);
+            await this.configure(device, 'mqtt_message', true);
         } else if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
             const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message;
@@ -75,13 +75,13 @@ export default class Configure extends Extension {
             }
         });
 
-        this.eventBus.onDeviceJoined(this, (data) => {
+        this.eventBus.onDeviceJoined(this, async (data) => {
             if (data.device.zh.meta.hasOwnProperty('configured')) {
                 delete data.device.zh.meta.configured;
                 data.device.zh.save();
             }
 
-            this.configure(data.device, 'zigbee_event');
+            await this.configure(data.device, 'zigbee_event');
         });
         this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, 'zigbee_event'));
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, 'zigbee_event'));
