@@ -849,7 +849,7 @@ export default class HomeAssistant extends Extension {
                 transition: {entity_category: 'config', icon: 'mdi:transition'},
                 trigger_count: {icon: 'mdi:counter', enabled_by_default: false},
                 voc: {device_class: 'volatile_organic_compounds', state_class: 'measurement'},
-                voc_index: {state_class: 'measurement'},
+                voc_index: {state_class: 'measurement', icon: 'mdi:molecule'},
                 voc_parts: {device_class: 'volatile_organic_compounds_parts', state_class: 'measurement'},
                 vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
                 voltage: {
