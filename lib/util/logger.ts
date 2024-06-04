@@ -57,7 +57,7 @@ class Logger {
             format: winston.format.combine(
                 winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
                 winston.format.printf(/* istanbul ignore next */(info) => {
-                    return `[${info.timestamp}] ${info.level}: \t${info.namespace}: ${info.message}`;
+                    return `[${info.timestamp}] ${info.level}: \t${info.message}`;
                 }),
             ),
         }));
@@ -84,7 +84,7 @@ class Logger {
             const transportFileOptions: winston.transports.FileTransportOptions = {
                 filename: path.join(this.directory, logFilename),
                 format: winston.format.printf(/* istanbul ignore next */(info) => {
-                    return `[${info.timestamp}] ${info.level}: \t${info.namespace}: ${info.message}`;
+                    return `[${info.timestamp}] ${info.level}: \t${info.message}`;
                 }),
             };
 
@@ -106,9 +106,6 @@ class Logger {
 
             const options: KeyValue = {
                 app_name: 'Zigbee2MQTT',
-                format: winston.format.printf(/* istanbul ignore next */(info) => {
-                    return `${info.namespace}: ${info.message}`;
-                }),
                 ...settings.get().advanced.log_syslog,
             };
 
@@ -188,7 +185,7 @@ class Logger {
         const nsLevel = this.cacheNamespacedLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
-            this.logger.log(level, message, {namespace});
+            this.logger.log(level, `${namespace}: ${message}`);
         }
     }
 

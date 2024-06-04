@@ -161,18 +161,18 @@ describe('Logger', () => {
         let i = 1;
 
         logger[level]('msg');
-        expect(logSpy).toHaveBeenLastCalledWith(level, 'msg', {namespace: 'z2m'});
+        expect(logSpy).toHaveBeenLastCalledWith(level, 'z2m: msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
         logger[level]('msg', 'abcd');
-        expect(logSpy).toHaveBeenLastCalledWith(level, 'msg', {namespace: 'abcd'});
+        expect(logSpy).toHaveBeenLastCalledWith(level, 'abcd: msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
 
         for (const higherLevel of otherLevels.higher) {
             logger[higherLevel]('higher msg');
-            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'higher msg', {namespace: 'z2m'});
+            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'z2m: higher msg');
             expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
             logger[higherLevel]('higher msg', 'abcd');
-            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'higher msg', {namespace: 'abcd'});
+            expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'abcd: higher msg');
             expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
         }
 
@@ -193,7 +193,7 @@ describe('Logger', () => {
         const logSpy = jest.spyOn(logger.winston, 'log');
 
         logger.error(new Error('msg'));// test for stack=true
-        expect(logSpy).toHaveBeenLastCalledWith('error', new Error('msg'), {namespace: 'z2m'});
+        expect(logSpy).toHaveBeenLastCalledWith('error', `z2m: ${new Error('msg')}`);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
     })
 
@@ -251,7 +251,7 @@ describe('Logger', () => {
             if (test.match) {
                 expect(logSpy).not.toHaveBeenCalled();
             } else {
-                expect(logSpy).toHaveBeenLastCalledWith('debug', 'Test message', {namespace: test.ns});
+                expect(logSpy).toHaveBeenLastCalledWith('debug', `${test.ns}: Test message`);
             }
 
             logSpy.mockClear();
@@ -354,5 +354,21 @@ describe('Logger', () => {
         logger.info(`unconfigured namespace`, 'z2m:mqtt');
         expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(8);
+    });
+
+    it('Ignores SPLAT chars', () => {
+        logger.setLevel('debug');
+
+        const logSpy = jest.spyOn(logger.winston, 'log');
+        consoleWriteSpy.mockClear();
+
+        let net_map = '%d';
+        logger.debug(net_map, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:mqtt: ${net_map}`);
+        expect(consoleWriteSpy.mock.calls[0][0]).toMatch(new RegExp(`^.*\tz2m:mqtt: ${net_map}`));
+        net_map = 'anything %s goes here';
+        logger.debug(net_map, 'z2m:test');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:test: ${net_map}`);
+        expect(consoleWriteSpy.mock.calls[1][0]).toMatch(new RegExp(`^.*\tz2m:test: ${net_map}`));
     });
 });
