@@ -7,7 +7,7 @@ import logger from '../util/logger';
 export default class ExternalConverters extends Extension {
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: Extension) => Promise<void>) {
+        restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
 
         for (const file of settings.get().external_converters) {

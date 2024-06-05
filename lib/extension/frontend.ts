@@ -32,7 +32,7 @@ export default class Frontend extends Extension {
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: Extension) => Promise<void>) {
+        restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
     }
