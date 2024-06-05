@@ -126,7 +126,7 @@ export default class HomeAssistant extends Extension {
 
     constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
         eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => void, addExtension: (extension: Extension) => Promise<void>) {
+        restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         if (settings.get().advanced.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');

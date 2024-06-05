@@ -39,7 +39,8 @@ const AllExtensions = [
 ];
 
 type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
-    (enable: boolean, name: string) => Promise<void>, () => void, (extension: Extension) => Promise<void>];
+    enableDisableExtension: (enable: boolean, name: string) => Promise<void>, restartCallback: () => Promise<void>,
+    addExtension: (extension: Extension) => Promise<void>];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sdNotify: any = null;
@@ -54,12 +55,12 @@ export class Controller {
     private zigbee: Zigbee;
     private state: State;
     private mqtt: MQTT;
-    private restartCallback: () => void;
-    private exitCallback: (code: number, restart: boolean) => void;
+    private restartCallback: () => Promise<void>;
+    private exitCallback: (code: number, restart: boolean) => Promise<void>;
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
 
-    constructor(restartCallback: () => void, exitCallback: (code: number, restart: boolean) => void) {
+    constructor(restartCallback: () => Promise<void>, exitCallback: (code: number, restart: boolean) => Promise<void>) {
         logger.init();
         zhSetLogger(logger);
         zhcSetLogger(logger);
@@ -113,7 +114,7 @@ export class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
-            await this.exit(1);
+            return this.exit(1);
         }
 
         // Disable some legacy options on new network creation
@@ -154,7 +155,7 @@ export class Controller {
         } catch (error) {
             logger.error(`MQTT failed to connect, exiting...`);
             await this.zigbee.stop();
-            await this.exit(1);
+            return this.exit(1);
         }
 
         // Call extensions
@@ -212,22 +213,23 @@ export class Controller {
         // Wrap-up
         this.state.stop();
         await this.mqtt.disconnect();
+        let code = 0;
 
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
-            await this.exit(0, restart);
         } catch (error) {
             logger.error('Failed to stop Zigbee2MQTT');
-            await this.exit(1, restart);
+            code = 1;
         }
 
         sdNotify?.stopWatchdogMode();
+        return this.exit(code, restart);
     }
 
     async exit(code: number, restart = false): Promise<void> {
         await logger.end();
-        this.exitCallback(code, restart);
+        return this.exitCallback(code, restart);
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {
