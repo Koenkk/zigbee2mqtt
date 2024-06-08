@@ -6,6 +6,8 @@ import debounce from 'debounce';
 import bind from 'bind-decorator';
 import * as zhc from 'zigbee-herdsman-converters';
 
+const NS = 'z2m:availability';
+
 const retrieveOnReconnect = [
     {keys: ['state']},
     {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
@@ -84,10 +86,10 @@ export default class Availability extends Extension {
                 const disableRecovery = !(i == 1 && available);
                 await device.zh.ping(disableRecovery);
                 pingedSuccessfully = true;
-                logger.debug(`Successfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`);
+                logger.debug(`Successfully pinged '${device.name}' (attempt ${i + 1}/${attempts})`, NS);
                 break;
             } catch (error) {
-                logger.warning(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`);
+                logger.warning(`Failed to ping '${device.name}' (attempt ${i + 1}/${attempts}, ${error.message})`, NS);
                 // Try again in 3 seconds.
                 const lastAttempt = i - 1 === attempts;
                 !lastAttempt && await utils.sleep(3);
@@ -154,10 +156,10 @@ export default class Availability extends Extension {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
                 logger.debug(`Active device '${entity.name}' was last seen ` +
-                    `'${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);
+                    `'${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`, NS);
             } else {
                 logger.debug(
-                    `Passive device '${entity.name}' was last seen '${(ago / utils.hours(1)).toFixed(2)}' hours ago.`);
+                    `Passive device '${entity.name}' was last seen '${(ago / utils.hours(1)).toFixed(2)}' hours ago.`, NS);
             }
         }
 
@@ -168,7 +170,7 @@ export default class Availability extends Extension {
 
         if (entity.isDevice() && entity.ieeeAddr in this.availabilityCache && available &&
             this.availabilityCache[entity.ieeeAddr] === false) {
-            logger.debug(`Device '${entity.name}' reconnected`);
+            logger.debug(`Device '${entity.name}' reconnected`, NS);
             this.retrieveState(entity);
         }
 
@@ -207,7 +209,7 @@ export default class Availability extends Extension {
          */
         if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
             this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
-                logger.debug(`Retrieving state of '${device.name}' after reconnect`);
+                logger.debug(`Retrieving state of '${device.name}' after reconnect`, NS);
                 // Color and color temperature converters do both, only needs to be called once.
                 for (const item of retrieveOnReconnect) {
                     if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) continue;
@@ -220,7 +222,7 @@ export default class Availability extends Extension {
                     };
                     await converter?.convertGet?.(device.endpoint(), item.keys[0], meta)
                         .catch((e) => {
-                            logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`);
+                            logger.error(`Failed to read state of '${device.name}' after reconnect (${e.message})`, NS);
                         });
                     await utils.sleep(500);
                 }

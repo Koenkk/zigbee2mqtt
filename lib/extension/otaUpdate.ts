@@ -11,6 +11,8 @@ import path from 'path';
 import * as zhc from 'zigbee-herdsman-converters';
 import {Zcl} from 'zigbee-herdsman';
 
+const NS = 'z2m:ota';
+
 function isValidUrl(url: string): boolean {
     let parsed;
     try {
@@ -81,7 +83,7 @@ export default class OTAUpdate extends Extension {
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
         if (data.type !== 'commandQueryNextImageRequest' || !data.device.definition ||
             this.inProgress.has(data.device.ieeeAddr)) return;
-        logger.debug(`Device '${data.device.name}' requested OTA`);
+        logger.debug(`Device '${data.device.name}' requested OTA`, NS);
 
         const automaticOTACheckDisabled = settings.get().ota.disable_automatic_update_check;
         let supportsOTA = !!data.device.definition.ota;
@@ -100,7 +102,7 @@ export default class OTAUpdate extends Extension {
                 availableResult = await data.device.definition.ota.isUpdateAvailable(data.device.zh, data.data as zhc.ota.ImageInfo);
             } catch (e) {
                 supportsOTA = false;
-                logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`);
+                logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`, NS);
             }
 
             const payload = this.getEntityPublishPayload(data.device, availableResult ?? 'idle');
@@ -108,7 +110,7 @@ export default class OTAUpdate extends Extension {
 
             if (availableResult?.available) {
                 const message = `Update available for '${data.device.name}'`;
-                logger.info(message);
+                logger.info(message, NS);
 
                 /* istanbul ignore else */
                 if (settings.get().advanced.legacy_api) {
@@ -125,7 +127,7 @@ export default class OTAUpdate extends Extension {
         const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster('genOta')) || data.endpoint;
         await endpoint.commandResponse('genOta', 'queryNextImageResponse',
             {status: Zcl.Status.NO_IMAGE_AVAILABLE}, undefined, data.meta.zclTransactionSequenceNumber);
-        logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
+        logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`, NS);
     }
 
     private async readSoftwareBuildIDAndDateCode(device: Device, sendPolicy?: 'immediate'):
@@ -193,7 +195,7 @@ export default class OTAUpdate extends Extension {
 
             if (type === 'check') {
                 const msg = `Checking if update available for '${device.name}'`;
-                logger.info(msg);
+                logger.info(msg, NS);
 
                 /* istanbul ignore else */
                 if (settings.get().advanced.legacy_api) {
@@ -207,7 +209,7 @@ export default class OTAUpdate extends Extension {
                 try {
                     const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, null);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
-                    logger.info(msg);
+                    logger.info(msg, NS);
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -238,7 +240,7 @@ export default class OTAUpdate extends Extension {
                 }
             } else { // type === 'update'
                 const msg = `Updating '${device.name}' to latest firmware`;
-                logger.info(msg);
+                logger.info(msg, NS);
 
                 /* istanbul ignore else */
                 if (settings.get().advanced.legacy_api) {
@@ -256,7 +258,7 @@ export default class OTAUpdate extends Extension {
                             msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
                         }
 
-                        logger.info(msg);
+                        logger.info(msg, NS);
 
                         const payload = this.getEntityPublishPayload(device, 'updating', progress, remaining);
                         await this.publishEntityState(device, payload);
@@ -270,7 +272,7 @@ export default class OTAUpdate extends Extension {
 
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
                     const fileVersion = await device.definition.ota.updateToLatest(device.zh, onProgress);
-                    logger.info(`Finished update of '${device.name}'`);
+                    logger.info(`Finished update of '${device.name}'`, NS);
                     this.eventBus.emitReconfigure({device});
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload(device,
@@ -278,7 +280,7 @@ export default class OTAUpdate extends Extension {
                     await this.publishEntityState(device, payload);
                     const to = await this.readSoftwareBuildIDAndDateCode(device);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
-                    logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
+                    logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`, NS);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
                     this.eventBus.emitDevicesChanged();
@@ -289,7 +291,7 @@ export default class OTAUpdate extends Extension {
                         await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message, meta}));
                     }
                 } catch (e) {
-                    logger.debug(`Update of '${device.name}' failed (${e})`);
+                    logger.debug(`Update of '${device.name}' failed (${e})`, NS);
                     error = `Update of '${device.name}' failed (${e.message})`;
                     errorStack = e.stack;
 
@@ -315,8 +317,8 @@ export default class OTAUpdate extends Extension {
         }
 
         if (error) {
-            logger.error(error);
-            errorStack && logger.debug(errorStack);
+            logger.error(error, NS);
+            errorStack && logger.debug(errorStack, NS);
         }
     }
 }

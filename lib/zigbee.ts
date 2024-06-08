@@ -13,6 +13,8 @@ import {randomInt} from 'crypto';
 
 const entityIDRegex = new RegExp(`^(.+?)(?:/([^/]+))?$`);
 
+const NS = 'z2m:zigbee';
+
 export default class Zigbee {
     private herdsman: Controller;
     private eventBus: EventBus;
@@ -25,7 +27,7 @@ export default class Zigbee {
 
     async start(): Promise<'reset' | 'resumed' | 'restored'> {
         const infoHerdsman = await utils.getDependencyVersion('zigbee-herdsman');
-        logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
+        logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`, NS);
         const herdsmanSettings = {
             network: {
                 panID: settings.get().advanced.pan_id === 'GENERATE' ?
@@ -54,14 +56,14 @@ export default class Zigbee {
         };
 
         const herdsmanSettingsLog = objectAssignDeep({}, herdsmanSettings, {network: {networkKey: 'HIDDEN'}});
-        logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
+        logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`, NS);
 
         let startResult;
         try {
             this.herdsman = new Controller(herdsmanSettings);
             startResult = await this.herdsman.start();
         } catch (error) {
-            logger.error(`Error while starting zigbee-herdsman`);
+            logger.error(`Error while starting zigbee-herdsman`, NS);
             throw error;
         }
 
@@ -78,12 +80,12 @@ export default class Zigbee {
         });
         this.herdsman.on('deviceNetworkAddressChanged', (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            logger.debug(`Device '${device.name}' changed network address`);
+            logger.debug(`Device '${device.name}' changed network address`, NS);
             this.eventBus.emitDeviceNetworkAddressChanged({device});
         });
         this.herdsman.on('deviceAnnounce', (data: ZHEvents.DeviceAnnouncePayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            logger.debug(`Device '${device.name}' announced itself`);
+            logger.debug(`Device '${device.name}' announced itself`, NS);
             this.eventBus.emitDeviceAnnounce({device});
         });
         this.herdsman.on('deviceInterview', async (data: ZHEvents.DeviceInterviewPayload) => {
@@ -98,28 +100,28 @@ export default class Zigbee {
             const device = this.resolveDevice(data.device.ieeeAddr);
             /* istanbul ignore if */ if (!device) return; // Prevent potential race
             await device.resolveDefinition();
-            logger.info(`Device '${device.name}' joined`);
+            logger.info(`Device '${device.name}' joined`, NS);
             this.eventBus.emitDeviceJoined({device});
         });
         this.herdsman.on('deviceLeave', (data: ZHEvents.DeviceLeavePayload) => {
             const name = settings.getDevice(data.ieeeAddr)?.friendly_name || data.ieeeAddr;
-            logger.warning(`Device '${name}' left the network`);
+            logger.warning(`Device '${name}' left the network`, NS);
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
         });
         this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
             await device.resolveDefinition();
-            logger.debug(`Received Zigbee message from '${device.name}', type '${data.type}', ` +
+            logger.debug(`Received message from '${device.name}', type '${data.type}', ` +
                 `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
                 (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
-                (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``));
+                (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``), NS);
             if (device.zh.type === 'Coordinator') return;
             this.eventBus.emitDeviceMessage({...data, device});
         });
 
-        logger.info(`zigbee-herdsman started (${startResult})`);
-        logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
-        logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
+        logger.info(`zigbee-herdsman started (${startResult})`, NS);
+        logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`, NS);
+        logger.debug(`Network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`, NS);
 
         for (const device of this.devices(false)) {
             // If a passlist is used, all other device will be removed from the network.
@@ -129,16 +131,16 @@ export default class Zigbee {
                 try {
                     await device.zh.removeFromNetwork();
                 } catch (error) {
-                    logger.error(`Failed to remove '${device.ieeeAddr}' (${error.message})`);
+                    logger.error(`Failed to remove '${device.ieeeAddr}' (${error.message})`, NS);
                 }
             };
             if (passlist.length > 0) {
                 if (!passlist.includes(device.ieeeAddr)) {
-                    logger.warning(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`);
+                    logger.warning(`Device which is not on passlist connected (${device.ieeeAddr}), removing...`, NS);
                     await remove(device);
                 }
             } else if (blocklist.includes(device.ieeeAddr)) {
-                logger.warning(`Device on blocklist is connected (${device.ieeeAddr}), removing...`);
+                logger.warning(`Device on blocklist is connected (${device.ieeeAddr}), removing...`, NS);
                 await remove(device);
             }
         }
@@ -147,7 +149,7 @@ export default class Zigbee {
         if (settings.get().advanced.hasOwnProperty('transmit_power')) {
             const transmitPower = settings.get().advanced.transmit_power;
             await this.herdsman.setTransmitPower(transmitPower);
-            logger.info(`Set transmit power to '${transmitPower}'`);
+            logger.info(`Set transmit power to '${transmitPower}'`, NS);
         }
 
         return startResult;
@@ -156,21 +158,21 @@ export default class Zigbee {
     private logDeviceInterview(data: eventdata.DeviceInterview): void {
         const name = data.device.name;
         if (data.status === 'successful') {
-            logger.info(`Successfully interviewed '${name}', device has successfully been paired`);
+            logger.info(`Successfully interviewed '${name}', device has successfully been paired`, NS);
 
             if (data.device.isSupported) {
                 const {vendor, description, model} = data.device.definition;
-                logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
+                logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`, NS);
             } else {
                 logger.warning(`Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
                     `'${data.device.zh.manufacturerName}' is NOT supported, ` +
                     // eslint-disable-next-line max-len
-                    `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`);
+                    `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`, NS);
             }
         } else if (data.status === 'failed') {
-            logger.error(`Failed to interview '${name}', device has not successfully been paired`);
+            logger.error(`Failed to interview '${name}', device has not successfully been paired`, NS);
         } else { // data.status === 'started'
-            logger.info(`Starting interview of '${name}'`);
+            logger.info(`Starting interview of '${name}'`, NS);
         }
     }
 
@@ -218,9 +220,9 @@ export default class Zigbee {
     }
 
     async stop(): Promise<void> {
-        logger.info('Stopping zigbee-herdsman...');
+        logger.info('Stopping zigbee-herdsman...', NS);
         await this.herdsman.stop();
-        logger.info('Stopped zigbee-herdsman');
+        logger.info('Stopped zigbee-herdsman', NS);
     }
 
     getPermitJoin(): boolean {
@@ -233,9 +235,9 @@ export default class Zigbee {
 
     async permitJoin(permit: boolean, device?: Device, time: number=undefined): Promise<void> {
         if (permit) {
-            logger.info(`Zigbee: allowing new devices to join${device ? ` via ${device.name}` : ''}.`);
+            logger.info(`Allowing new devices to join${device ? ` via ${device.name}` : ''}.`, NS);
         } else {
-            logger.info('Zigbee: disabling joining new devices.');
+            logger.info('Disabling joining new devices.', NS);
         }
 
         if (device && permit) {
@@ -337,18 +339,18 @@ export default class Zigbee {
         const blocklist = settings.get().blocklist;
         if (passlist.length > 0) {
             if (passlist.includes(ieeeAddr)) {
-                logger.info(`Accepting joining device which is on passlist '${ieeeAddr}'`);
+                logger.info(`Accepting joining device which is on passlist '${ieeeAddr}'`, NS);
                 return true;
             } else {
-                logger.info(`Rejecting joining not in passlist device '${ieeeAddr}'`);
+                logger.info(`Rejecting joining not in passlist device '${ieeeAddr}'`, NS);
                 return false;
             }
         } else if (blocklist.length > 0) {
             if (blocklist.includes(ieeeAddr)) {
-                logger.info(`Rejecting joining device which is on blocklist '${ieeeAddr}'`);
+                logger.info(`Rejecting joining device which is on blocklist '${ieeeAddr}'`, NS);
                 return false;
             } else {
-                logger.info(`Accepting joining not in blocklist device '${ieeeAddr}'`);
+                logger.info(`Accepting joining not in blocklist device '${ieeeAddr}'`, NS);
                 return true;
             }
         } else {

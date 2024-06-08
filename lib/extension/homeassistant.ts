@@ -7,6 +7,7 @@ import Extension from './extension';
 import bind from 'bind-decorator';
 import * as zhc from 'zigbee-herdsman-converters';
 
+const NS = 'z2m:ha';
 interface MockProperty {property: string, value: KeyValue | string}
 
 // eslint-disable-next-line camelcase
@@ -135,7 +136,7 @@ export default class HomeAssistant extends Extension {
 
     override async start(): Promise<void> {
         if (!settings.get().advanced.cache_state) {
-            logger.warning('In order for Home Assistant integration to work properly set `cache_state: true');
+            logger.warning('In order for Home Assistant integration to work properly set `cache_state: true', NS);
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
@@ -170,11 +171,11 @@ export default class HomeAssistant extends Extension {
             await this.discover(e, false);
         }
 
-        logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`);
+        logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`, NS);
         this.mqtt.subscribe(`${this.discoveryTopic}/#`);
         setTimeout(async () => {
             this.mqtt.unsubscribe(`${this.discoveryTopic}/#`);
-            logger.debug(`Discovering entities to Home Assistant`);
+            logger.debug(`Discovering entities to Home Assistant`, NS);
 
             for (const e of [this.bridge, ...this.zigbee.devices(false), ...this.zigbee.groups()]) {
                 await this.discover(e);
@@ -1144,7 +1145,7 @@ export default class HomeAssistant extends Extension {
     }
 
     @bind async onDeviceRemoved(data: eventdata.DeviceRemoved): Promise<void> {
-        logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
+        logger.debug(`Clearing Home Assistant discovery for '${data.name}'`, NS);
         const discovered = this.getDiscovered(data.ieeeAddr);
 
         for (const topic of Object.keys(discovered.messages)) {
@@ -1221,7 +1222,7 @@ export default class HomeAssistant extends Extension {
     }
 
     @bind async onEntityRenamed(data: eventdata.EntityRenamed): Promise<void> {
-        logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`);
+        logger.debug(`Refreshing Home Assistant discovery topic for '${data.entity.name}'`, NS);
 
         // Clear before rename so Home Assistant uses new friendly_name
         // https://github.com/Koenkk/zigbee2mqtt/issues/4096#issuecomment-674044916
@@ -1654,7 +1655,7 @@ export default class HomeAssistant extends Extension {
                     await this.mqtt.publish(topic, payloadStr, {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 }
             } else {
-                logger.debug(`Skipping discovery of '${topic}', already discovered`);
+                logger.debug(`Skipping discovery of '${topic}', already discovered`, NS);
             }
             config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
         }
@@ -1711,7 +1712,7 @@ export default class HomeAssistant extends Extension {
             clear = clear || (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant);
 
             if (clear) {
-                logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
+                logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`, NS);
                 await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
             } else {
                 this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
@@ -1741,7 +1742,7 @@ export default class HomeAssistant extends Extension {
         // Re-trigger MQTT discovery of changed devices and groups, similar to bridge.ts
 
         // First, clear existing scene discovery topics
-        logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`);
+        logger.debug(`Clearing Home Assistant scene discovery for '${data.entity.name}'`, NS);
         const discovered = this.getDiscovered(data.entity);
 
         for (const topic of Object.keys(discovered.messages)) {
@@ -1753,11 +1754,11 @@ export default class HomeAssistant extends Extension {
 
         // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
         // https://github.com/Koenkk/zigbee2mqtt/issues/12610
-        logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`);
+        logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`, NS);
         await utils.sleep(2);
 
         // Re-discover entity (including any new scenes).
-        logger.debug(`Re-discovering entities with their scenes.`);
+        logger.debug(`Re-discovering entities with their scenes.`, NS);
         await this.discover(data.entity);
     }
 
