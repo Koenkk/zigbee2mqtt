@@ -8,6 +8,8 @@ const MQTT = require('./stub/mqtt');
 const sleep = require('./stub/sleep');
 const Controller = require('../lib/controller');
 
+const LOG_HA_NS='z2m:ha';
+
 describe('HomeAssistant extension', () => {
     let version;
     let z2m_version;
@@ -481,7 +483,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith(topic1, expect.anything(), expect.any(Object), expect.any(Function));
         // Device automation should not be cleared
         expect(MQTT.publish).not.toHaveBeenCalledWith(topic2, null, expect.any(Object), expect.any(Function));
-        expect(logger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`)
+        expect(logger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`,LOG_HA_NS)
     });
 
     it('Should discover devices with precision', async () => {
@@ -1067,7 +1069,7 @@ describe('HomeAssistant extension', () => {
         settings.set(['advanced', 'cache_state'], false);
         logger.warning.mockClear();
         await resetExtension();
-        expect(logger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true");
+        expect(logger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly set `cache_state: true", LOG_HA_NS);
     });
 
     it('Should set missing values to null', async () => {

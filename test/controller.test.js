@@ -18,6 +18,10 @@ const mocksClear = [
 const fs = require('fs');
 
 const LOG_MQTT_NS = 'z2m:mqtt';
+const LOG_MQTT_NS_CNX = LOG_MQTT_NS+':cnx';
+const LOG_MQTT_NS_SEND = LOG_MQTT_NS+':send';
+const LOG_MQTT_NS_RECEIVE = LOG_MQTT_NS+':receive';
+const LOG_ZIGBEE_NS = 'z2m:zigbee';
 
 jest.mock('sd-notify', () => {
     return {
@@ -163,7 +167,7 @@ describe('Controller', () => {
         logger.error.mockClear();
         controller.mqtt.client.reconnecting = true;
         jest.advanceTimersByTime(11 * 1000);
-        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS_CNX);
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -176,8 +180,8 @@ describe('Controller', () => {
         await controller.publishEntityState(device, {state: 'ON', brightness: 50, color_temp: 370, color: {r: 100, g: 50, b: 10}, dummy: {1: 'yes', 2: 'no'}});
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(2);
-        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS);
-        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}", LOG_MQTT_NS);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS_SEND);
+        expect(logger.error).toHaveBeenCalledWith("Cannot send message: topic: 'zigbee2mqtt/bulb', payload: '{\"brightness\":50,\"color\":{\"b\":10,\"g\":50,\"r\":100},\"color_temp\":370,\"dummy\":{\"1\":\"yes\",\"2\":\"no\"},\"linkquality\":99,\"state\":\"ON\"}", LOG_MQTT_NS_SEND);
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -217,7 +221,7 @@ describe('Controller', () => {
         });
         await controller.start();
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found', LOG_MQTT_NS);
+        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found', LOG_MQTT_NS_CNX);
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect, exiting...');
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
@@ -271,14 +275,14 @@ describe('Controller', () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS)
+        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS_RECEIVE)
     });
 
     it('Skip MQTT messages on topic we published to', async () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", LOG_MQTT_NS)
+        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", LOG_MQTT_NS_RECEIVE)
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
@@ -291,7 +295,7 @@ describe('Controller', () => {
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1`);
+        expect(logger.debug).toHaveBeenCalledWith(`Received message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1`, LOG_ZIGBEE_NS);
     });
 
     it('On zigbee event message with group ID', async () => {
@@ -300,7 +304,7 @@ describe('Controller', () => {
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, groupID: 0, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`);
+        expect(logger.debug).toHaveBeenCalledWith(`Received message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`, LOG_ZIGBEE_NS);
     });
 
     it('Should add entities which are missing from configuration but are in database to configuration', async () => {
@@ -418,7 +422,7 @@ describe('Controller', () => {
         const payload = {device};
         await zigbeeHerdsman.events.deviceAnnounce(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
+        expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`, LOG_ZIGBEE_NS);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/log', stringify({"type":"device_announced","message":"announce","meta":{"friendly_name":"bulb"}}), { retain: false, qos: 0}, expect.any(Function));
     });
 
@@ -732,7 +736,7 @@ describe('Controller', () => {
         const payload = {device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10, cluster: 'genBasic', data: {modelId: device.modelID}};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(`Received Zigbee message from 'Coordinator', type 'attributeReport', cluster 'genBasic', data '{"modelId":null}' from endpoint 1, ignoring since it is from coordinator`);
+        expect(logger.debug).toHaveBeenCalledWith(`Received message from 'Coordinator', type 'attributeReport', cluster 'genBasic', data '{"modelId":null}' from endpoint 1, ignoring since it is from coordinator`,LOG_ZIGBEE_NS);
     });
 
     it('Should remove state of removed device when stopped', async () => {

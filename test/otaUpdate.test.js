@@ -14,6 +14,7 @@ const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
 
 const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
+const LOG_OTA_NS = 'z2m:ota';
 
 describe('OTA update', () => {
     let controller;
@@ -80,14 +81,14 @@ describe('OTA update', () => {
 
         MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
         await flushPromises();
-        expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`);
+        expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`, LOG_OTA_NS);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, expect.any(Function));
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`, LOG_OTA_NS);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': undefined});
@@ -261,7 +262,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledWith(device, {"imageType": 12382});
-        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`, LOG_OTA_NS);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith("genOta", "queryNextImageResponse", {"status": 0x98}, undefined, 10);
 
@@ -274,7 +275,7 @@ describe('OTA update', () => {
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`);
+        expect(logger.info).not.toHaveBeenCalledWith(`Update available for 'bulb'`, LOG_OTA_NS);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({"update_available":true,"update":{"state":"available","installed_version":10,"latest_version":12}}),
@@ -382,14 +383,14 @@ describe('OTA update', () => {
 
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
-        expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`);
+        expect(logger.info).toHaveBeenCalledWith(`Updating 'bulb' to latest firmware`, LOG_OTA_NS);
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(0);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledWith(device, expect.any(Function));
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
-        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`, LOG_OTA_NS);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`, LOG_OTA_NS);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
@@ -412,7 +413,7 @@ describe('OTA update', () => {
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith(`Update of 'bulb' failed (Update failed)`);
+        expect(logger.error).toHaveBeenCalledWith(`Update of 'bulb' failed (Update failed)`, LOG_OTA_NS);
     });
 
     it('Legacy api: Should be able to check if OTA update is available', async () => {
@@ -426,7 +427,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
-        expect(logger.info).toHaveBeenCalledWith(`No update available for 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`No update available for 'bulb'`, LOG_OTA_NS);
 
         logger.info.mockClear();
         mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 13, otaFileVersion: 15});
@@ -434,7 +435,7 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(2);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
-        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`Update available for 'bulb'`, LOG_OTA_NS);
     });
 
     it('Legacy api: Should handle if OTA update check fails', async () => {
@@ -448,13 +449,13 @@ describe('OTA update', () => {
         await flushPromises();
         expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
-        expect(logger.error).toHaveBeenCalledWith(`Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`);
+        expect(logger.error).toHaveBeenCalledWith(`Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`, LOG_OTA_NS);
     });
 
     it('Legacy api: Should not check for OTA when device does not support it', async () => {
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/check', 'dimmer_wall_switch');
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith(`Device 'dimmer_wall_switch' does not support OTA updates`);
+        expect(logger.error).toHaveBeenCalledWith(`Device 'dimmer_wall_switch' does not support OTA updates`, LOG_OTA_NS);
     });
 
     it('Legacy api: Shouldnt crash when read modelID after OTA update fails', async () => {
@@ -472,7 +473,7 @@ describe('OTA update', () => {
         logger.info.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/ota_update/update', 'bulb');
         await flushPromises();
-        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
+        expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`, LOG_OTA_NS);
     });
 
     it('Set zigbee_ota_override_index_location', async () => {
