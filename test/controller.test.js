@@ -18,9 +18,9 @@ const mocksClear = [
 const fs = require('fs');
 
 const LOG_MQTT_NS = 'z2m:mqtt';
-const LOG_MQTT_NS_CNX = LOG_MQTT_NS+':cnx';
-const LOG_MQTT_NS_SEND = LOG_MQTT_NS+':send';
-const LOG_MQTT_NS_RECEIVE = LOG_MQTT_NS+':receive';
+const LOG_MQTT_NS_CONNECT = `${LOG_MQTT_NS}:connect`;
+const LOG_MQTT_NS_SEND = `${LOG_MQTT_NS}:send`;
+const LOG_MQTT_NS_RECEIVE = `${LOG_MQTT_NS}:receive`;
 const LOG_ZIGBEE_NS = 'z2m:zigbee';
 
 jest.mock('sd-notify', () => {
@@ -167,7 +167,7 @@ describe('Controller', () => {
         logger.error.mockClear();
         controller.mqtt.client.reconnecting = true;
         jest.advanceTimersByTime(11 * 1000);
-        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS_CNX);
+        expect(logger.error).toHaveBeenCalledWith("Not connected to MQTT server!", LOG_MQTT_NS_CONNECT);
         controller.mqtt.client.reconnecting = false;
     });
 
@@ -221,7 +221,7 @@ describe('Controller', () => {
         });
         await controller.start();
         await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found', LOG_MQTT_NS_CNX);
+        expect(logger.error).toHaveBeenCalledWith('MQTT error: addr not found', LOG_MQTT_NS_CONNECT);
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect, exiting...');
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
