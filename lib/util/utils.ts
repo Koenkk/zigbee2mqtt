@@ -164,6 +164,7 @@ export function* loadExternalConverter(moduleName: string): Generator<ExternalDe
 
 function removeNullPropertiesFromObject(obj: KeyValue): void {
     for (const key of Object.keys(obj)) {
+        if (key == 'homeassistant') continue;
         const value = obj[key];
         if (value == null) {
             delete obj[key];
