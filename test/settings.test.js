@@ -761,7 +761,7 @@ describe('Settings', () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it('Validate should if settings does not conform to scheme', () => {
+    it('Should validate if settings do not conform to scheme', () => {
         write(configurationFile, {
             ...minimalConfig,
             advanced: null,
@@ -922,6 +922,39 @@ describe('Settings', () => {
         const after = fs.statSync(configurationFile).mtimeMs;
         expect(before).toBe(after);
     });
+
+    it('Should keep null values in homeassistant device discovery settings', () => {
+        write(configurationFile, {
+          devices: {
+           '0x12345678': {
+              friendly_name: 'custom discovery',
+              homeassistant: { 
+                entityXYZ: { 
+                  entity_category: null,
+                }
+              }
+            }
+          }
+	});
+        settings.changeEntityOptions('0x12345678',{disabled: true});
+
+        const actual = read(configurationFile);
+        const expected = {
+          devices: {
+            '0x12345678': {
+              friendly_name: 'custom discovery',
+              disabled: true,
+              homeassistant: { 
+                entityXYZ: { 
+                  entity_category: null,
+                }
+              }
+            },
+          }
+        };
+        expect(actual).toStrictEqual(expected);
+    });
+
 
     it('Frontend config', () => {
         write(configurationFile, {...minimalConfig,
