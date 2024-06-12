@@ -923,7 +923,7 @@ describe('Settings', () => {
         expect(before).toBe(after);
     });
 
-    it('Should keep null values in homeassistant device discovery settings', () => {
+    it('Should keep homeassistant null property on device setting change', () => {
         write(configurationFile, {
           devices: {
            '0x12345678': {
@@ -955,6 +955,23 @@ describe('Settings', () => {
         expect(actual).toStrictEqual(expected);
     });
 
+    it('Should keep homeassistant null properties on apply', async () => {
+        write(configurationFile, {
+          device_options: {
+            homeassistant: {temperature: null},
+          },
+          devices: {
+           '0x1234567812345678': {
+              friendly_name: 'custom discovery',
+              homeassistant: {humidity: null},
+            }
+          }
+	});
+        settings.reRead();
+        settings.apply({permit_join: false});
+        expect(settings.get().device_options.homeassistant).toStrictEqual({temperature: null});
+        expect(settings.get().devices['0x1234567812345678'].homeassistant).toStrictEqual({humidity: null});
+    });
 
     it('Frontend config', () => {
         write(configurationFile, {...minimalConfig,

@@ -162,14 +162,14 @@ export function* loadExternalConverter(moduleName: string): Generator<ExternalDe
     }
 }
 
-function removeNullPropertiesFromObject(obj: KeyValue): void {
+function removeNullPropertiesFromObject(obj: KeyValue, ignorePaths: string[] = [] ): void {
     for (const key of Object.keys(obj)) {
-        if (key == 'homeassistant') continue;
+        if (ignorePaths.includes(key)) continue;
         const value = obj[key];
         if (value == null) {
             delete obj[key];
         } else if (typeof value === 'object') {
-            removeNullPropertiesFromObject(value);
+            removeNullPropertiesFromObject(value, ignorePaths);
         }
     }
 }
