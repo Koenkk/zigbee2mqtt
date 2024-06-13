@@ -139,8 +139,8 @@ export default class Availability extends Extension {
                 if (entity.isDevice()) {
                     this.resetTimer(entity);
 
-                    // If an active device is initially unavailable, ping it.
-                    if (this.isActiveDevice(entity) && !this.isAvailable(entity)) {
+                    // If an active device is initially unavailable, ping it unless it is disabled.
+                    if (this.isActiveDevice(entity) && !this.isAvailable(entity) && !entity.options.disabled) {
                         await this.addToPingQueue(entity);
                     }
                 }
