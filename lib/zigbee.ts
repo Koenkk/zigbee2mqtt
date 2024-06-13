@@ -3,7 +3,6 @@ import logger from './util/logger';
 import * as settings from './util/settings';
 import data from './util/data';
 import utils from './util/utils';
-import objectAssignDeep from 'object-assign-deep';
 import stringify from 'json-stable-stringify-without-jsonify';
 import Device from './model/device';
 import Group from './model/group';
@@ -53,7 +52,7 @@ export default class Zigbee {
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
-        const herdsmanSettingsLog = objectAssignDeep({}, herdsmanSettings, {network: {networkKey: 'HIDDEN'}});
+        const herdsmanSettingsLog = JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"');
         logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
 
         let startResult;
