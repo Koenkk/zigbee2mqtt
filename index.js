@@ -52,7 +52,7 @@ async function currentHash() {
     const git = require('git-last-commit');
 
     return new Promise((resolve) => {
-        git.getLastCommit((err, commit) => (err) ? resolve('unknown') : resolve(commit.shortHash));
+        git.getLastCommit((err, commit) => err ? resolve('unknown') : resolve(commit.shortHash));
     });
 }
 
