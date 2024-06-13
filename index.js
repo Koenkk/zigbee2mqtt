@@ -145,6 +145,7 @@ async function start() {
 
     // consider next controller.stop() call as unsolicited, only after successful first start
     unsolicitedStop = true;
+    watchdogCount = 0;// reset
 }
 
 async function stop(restart) {
