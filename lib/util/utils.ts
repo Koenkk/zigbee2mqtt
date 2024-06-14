@@ -162,14 +162,20 @@ export function* loadExternalConverter(moduleName: string): Generator<ExternalDe
     }
 }
 
-function removeNullPropertiesFromObject(obj: KeyValue, ignorePaths: string[] = [] ): void {
+/**
+ * Delete all keys from passed object that have null/undefined values.
+ *
+ * @param {KeyValue} obj Object to process (in-place)
+ * @param {string[]} [ignoreKeys] Recursively ignore these keys in the object (keep null/undefined values).
+ */
+function removeNullPropertiesFromObject(obj: KeyValue, ignoreKeys: string[] = [] ): void {
     for (const key of Object.keys(obj)) {
-        if (ignorePaths.includes(key)) continue;
+        if (ignoreKeys.includes(key)) continue;
         const value = obj[key];
         if (value == null) {
             delete obj[key];
         } else if (typeof value === 'object') {
-            removeNullPropertiesFromObject(value, ignorePaths);
+            removeNullPropertiesFromObject(value, ignoreKeys);
         }
     }
 }

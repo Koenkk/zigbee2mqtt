@@ -36,4 +36,76 @@ describe('Utils', () => {
         expect(utils.formatDate(date, 'ISO_8601_local').endsWith('+01:00')).toBeTruthy();
         Date.prototype.getTimezoneOffset = getTimezoneOffset;
     })
+    it('Removes null properties from object', () => {
+        const obj1 = {
+            ab: 0,
+            cd: false,
+            ef: null,
+            gh: '',
+            homeassistant: {
+                xyz: 'mock',
+                abcd: null,
+            },
+            nested: {
+                homeassistant: {
+                    abcd: true,
+                    xyz: null,
+                },
+                abc: {},
+                def: null,
+            },
+        };
+
+        utils.removeNullPropertiesFromObject(obj1);
+        expect(obj1).toStrictEqual({
+            ab: 0,
+            cd: false,
+            gh: '',
+            homeassistant: {
+                xyz: 'mock',
+            },
+            nested: {
+                homeassistant: {
+                    abcd: true,
+                },
+                abc: {},
+            },
+        });
+
+        const obj2 = {
+            ab: 0,
+            cd: false,
+            ef: null,
+            gh: '',
+            homeassistant: {
+                xyz: 'mock',
+                abcd: null,
+            },
+            nested: {
+                homeassistant: {
+                    abcd: true,
+                    xyz: null,
+                },
+                abc: {},
+                def: null,
+            },
+        };
+        utils.removeNullPropertiesFromObject(obj2, ['homeassistant']);
+        expect(obj2).toStrictEqual({
+            ab: 0,
+            cd: false,
+            gh: '',
+            homeassistant: {
+                xyz: 'mock',
+                abcd: null,
+            },
+            nested: {
+                homeassistant: {
+                    abcd: true,
+                    xyz: null,
+                },
+                abc: {},
+            },
+        });
+    });
 });
