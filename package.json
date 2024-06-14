@@ -67,7 +67,6 @@
     "@babel/plugin-proposal-decorators": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
-    "@types/debounce": "^1.2.4",
     "@types/finalhandler": "^1.2.3",
     "@types/humanize-duration": "^3.27.4",
     "@types/jest": "^29.5.12",
