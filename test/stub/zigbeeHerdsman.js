@@ -795,7 +795,22 @@ const devices = {
         null,
         custom_clusters,
     ),
+    'RBSH-TRV0-ZB-EU': new Device(
+        'EndDevice',
+        '0x18fc2600000d7ae2',
+        35902,
+        0x1209,
+        [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2')],
+        true,
+        'Battery',
+        'RBSH-TRV0-ZB-EU',
+        false,
+        'BOSCH',
+        '20231122',
+        '3.05.09',
+    ),
 };
+
 
 const mock = {
     setTransmitPower: jest.fn(),
