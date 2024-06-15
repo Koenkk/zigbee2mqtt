@@ -348,7 +348,7 @@ describe('Availability', () => {
         const availability = controller.extensions.find((extension) => extension instanceof Availability);
         const publishAvailabilitySpy = jest.spyOn(availability, 'publishAvailability');
 
-        devices.bulb_color.ping = jest.fn().mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+        devices.bulb_color.ping.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 1000)));
         availability.addToPingQueue(devices.bulb_color);
         availability.addToPingQueue(devices.bulb_color_2);
 
@@ -358,6 +358,7 @@ describe('Availability', () => {
         expect(availability.pingQueue).toEqual([]);
         // Validate the stop-interrupt implicitly by checking that it prevents further function invocations
         expect(publishAvailabilitySpy).not.toHaveBeenCalled();
+        devices.bulb_color.ping = jest.fn();// ensure reset
     });
 
     it('Should prevent instance restart', async () => {
