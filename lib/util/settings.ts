@@ -32,6 +32,7 @@ export type LogLevel = typeof LOG_LEVELS[number];
 
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
+const NULLABLE_SETTINGS = ['homeassistant'];
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
 const ajvRestartRequired = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
@@ -484,7 +485,7 @@ export function apply(settings: Record<string, unknown>): boolean {
     getInternalSettings(); // Ensure _settings is initialized.
     /* eslint-disable-line */ // @ts-ignore
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
-    utils.removeNullPropertiesFromObject(newSettings);
+    utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);
     const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
     if (errors?.length) {
@@ -695,11 +696,11 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
     let validator: ValidateFunction;
     if (getDevice(IDorName)) {
         objectAssignDeep(settings.devices[getDevice(IDorName).ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.devices[getDevice(IDorName).ID]);
+        utils.removeNullPropertiesFromObject(settings.devices[getDevice(IDorName).ID], NULLABLE_SETTINGS);
         validator = ajvRestartRequiredDeviceOptions;
     } else if (getGroup(IDorName)) {
         objectAssignDeep(settings.groups[getGroup(IDorName).ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID]);
+        utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID], NULLABLE_SETTINGS );
         validator = ajvRestartRequiredGroupOptions;
     } else {
         throw new Error(`Device or group '${IDorName}' does not exist`);
