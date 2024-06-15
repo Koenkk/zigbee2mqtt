@@ -41,7 +41,7 @@ export default class Availability extends Extension {
 
     private isAvailable(entity: Device | Group): boolean {
         return entity.isDevice() ? (Date.now() - entity.zh.lastSeen) < this.getTimeout(entity) :
-            entity.membersDevices().length === 0 || entity.membersDevices().map((d) => this.availabilityCache[d.ieeeAddr]).includes(true);
+            entity.membersDevices().length === 0 || entity.membersDevices().some((d) => this.availabilityCache[d.ieeeAddr]);
     }
 
     private resetTimer(device: Device): void {
