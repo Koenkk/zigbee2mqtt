@@ -24,6 +24,7 @@ export default class MQTT {
 
     async connect(): Promise<void> {
         const mqttSettings = settings.get().mqtt;
+
         logger.info(`Connecting to MQTT server at ${mqttSettings.server}`);
 
         const options: mqtt.IClientOptions = {
@@ -78,14 +79,14 @@ export default class MQTT {
             this.client = mqtt.connect(mqttSettings.server, options);
             // @ts-ignore https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
-            this.eventBus.onPublishAvailability(this, () => this.publishStateOnline());
+            this.eventBus.onPublishAvailability(this, this.publishStateOnline.bind(this));
 
             const onConnect = this.onConnect;
+
             this.client.on('connect', async () => {
                 await onConnect();
                 resolve();
             });
-
             this.client.on('error', (err) => {
                 logger.error(`MQTT error: ${err.message}`);
                 reject(err);
@@ -107,11 +108,12 @@ export default class MQTT {
         await this.publishStateOnline();
 
         if (!this.initialConnect) {
-            this.republishRetainedTimer = setTimeout(() => {
+            this.republishRetainedTimer = setTimeout(async () => {
                 // Republish retained messages in case MQTT broker does not persist them.
                 // https://github.com/Koenkk/zigbee2mqtt/issues/9629
-                Object.values(this.retainedMessages).forEach((e) =>
-                    this.publish(e.topic, e.payload, e.options, e.base, e.skipLog, e.skipReceive));
+                for (const msg of Object.values(this.retainedMessages)) {
+                    await this.publish(msg.topic, msg.payload, msg.options, msg.base, msg.skipLog, msg.skipReceive);
+                }
             }, 2000);
         }
 
@@ -125,8 +127,7 @@ export default class MQTT {
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
-        await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()),
-            {retain: true, qos: 0});
+        await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
         this.client?.end();
@@ -149,6 +150,7 @@ export default class MQTT {
 
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
             clearTimeout(this.republishRetainedTimer);
+
             this.republishRetainedTimer = null;
         }
     }
@@ -157,9 +159,8 @@ export default class MQTT {
         return this.client && !this.client.reconnecting;
     }
 
-    async publish(topic: string, payload: string, options: MQTTOptions={},
-        base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true,
-    ): Promise<void> {
+    async publish(topic: string, payload: string, options: MQTTOptions={}, base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true)
+        : Promise<void> {
         const defaultOptions: {qos: QoS, retain: boolean} = {qos: 0, retain: false};
         topic = `${base}/${topic}`;
 
@@ -169,8 +170,7 @@ export default class MQTT {
 
         if (options.retain) {
             if (payload) {
-                this.retainedMessages[topic] =
-                    {payload, options, skipReceive, skipLog, topic: topic.substring(base.length + 1), base};
+                this.retainedMessages[topic] = {payload, options, skipReceive, skipLog, topic: topic.substring(base.length + 1), base};
             } else {
                 delete this.retainedMessages[topic];
             }
@@ -184,6 +184,7 @@ export default class MQTT {
                 logger.error(`Not connected to MQTT server!`);
                 logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
             }
+
             return;
         }
 
@@ -192,11 +193,12 @@ export default class MQTT {
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
+
         if (settings.get().mqtt.force_disable_retain) {
             actualOptions.retain = false;
         }
 
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             this.client.publish(topic, payload, actualOptions, () => resolve());
         });
     }

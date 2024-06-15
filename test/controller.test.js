@@ -665,8 +665,7 @@ describe('Controller', () => {
         await controller.start();
         MQTT.publish.mockClear();
         MQTT.events['connect']();
-        await flushPromises();
-        jest.runOnlyPendingTimers();
+        await jest.advanceTimersByTimeAsync(2500);// before any startup configure triggers
         expect(MQTT.publish).toHaveBeenCalledTimes(14);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
     });
@@ -677,7 +676,7 @@ describe('Controller', () => {
         MQTT.events['connect']();
         await flushPromises();
         await MQTT.events.message('zigbee2mqtt/bridge/info', 'dummy');
-        jest.runOnlyPendingTimers();
+        await jest.advanceTimersByTimeAsync(2500);// before any startup configure triggers
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/state', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
     });
