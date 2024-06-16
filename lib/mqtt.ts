@@ -79,12 +79,10 @@ export default class MQTT {
             this.client = mqtt.connect(mqttSettings.server, options);
             // @ts-ignore https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
-            this.eventBus.onPublishAvailability(this, this.publishStateOnline.bind(this));
-
-            const onConnect = this.onConnect;
+            this.eventBus.onPublishAvailability(this, this.publishStateOnline);
 
             this.client.on('connect', async () => {
-                await onConnect();
+                await this.onConnect();
                 resolve();
             });
             this.client.on('error', (err) => {
@@ -95,7 +93,7 @@ export default class MQTT {
         });
     }
 
-    @bind private async onConnect(): Promise<void> {
+    private async onConnect(): Promise<void> {
         // Set timer at interval to check if connected to MQTT server.
         clearTimeout(this.connectionTimer);
         this.connectionTimer = setInterval(() => {
@@ -121,7 +119,7 @@ export default class MQTT {
         this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
-    async publishStateOnline(): Promise<void> {
+    @bind async publishStateOnline(): Promise<void> {
         await this.publish('bridge/state', utils.availabilityPayload('online', settings.get()), {retain: true, qos: 0});
     }
 
