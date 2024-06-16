@@ -269,27 +269,36 @@ function sanitizeImageParameter(parameter: string): string {
 }
 
 function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settings): boolean {
-    if (entity.isGroup()) {
-        return !entity.membersDevices().map((d) => isAvailabilityEnabledForEntity(d, settings)).includes(false);
+    if (entity.isDevice() && entity.options.disabled) {
+        return false;
     }
 
-    if (entity.options.hasOwnProperty('availability')) {
+    if (entity.isGroup()) {
+        return !entity.membersDevices().some((d) => !isAvailabilityEnabledForEntity(d, settings));
+    }
+
+    if (entity.options.availability != null) {
         return !!entity.options.availability;
     }
 
     // availability_timeout = deprecated
-    const enabledGlobal = settings.advanced.availability_timeout || settings.availability;
-    if (!enabledGlobal) return false;
-
-    if (entity.isDevice() && entity.options.disabled) return false;
+    if (!(settings.advanced.availability_timeout || settings.availability)) {
+        return false;
+    }
 
     const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
+
     if (passlist.length > 0) {
         return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
     }
 
     const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-    return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
+
+    if (blocklist.length > 0) {
+        return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
+    }
+
+    return true;
 }
 
 function isEndpoint(obj: unknown): obj is zh.Endpoint {
