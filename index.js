@@ -9,11 +9,20 @@ require('source-map-support').install();
 
 let controller;
 let stopping = false;
-let watchdog = process.argv.length >= 3 && process.argv[2] === 'watchdog';
+let watchdog = process.env.Z2M_WATCHDOG != undefined;
 let watchdogCount = 0;
 let unsolicitedStop = false;
 // csv in minutes, default: 1min, 5min, 15min, 30min, 60min
-let watchdogDelays = watchdog && process.argv.length === 4 ? process.argv[3].split(',').map((v) => parseFloat(v) * 60000) : [60000, 300000, 900000, 1800000, 3600000];
+let watchdogDelays = [60000, 300000, 900000, 1800000, 3600000];
+
+if (watchdog && process.env.Z2M_WATCHDOG !== 'default') {
+    if (/^(?:(?:[0-9]*[.])?[0-9]+)+(?:,?(?:[0-9]*[.])?[0-9]+)*$/.test(process.env.Z2M_WATCHDOG)) {
+        watchdogDelays = process.env.Z2M_WATCHDOG.split(',').map((v) => parseFloat(v) * 60000);
+    } else {
+        console.log(`Invalid watchdog delays (must use number-only CSV format representing minutes, example: 'Z2M_WATCHDOG=1,5,15,30,60'.`);
+        process.exit(1);
+    }
+}
 
 const hashFile = path.join(__dirname, 'dist', '.hash');
 
@@ -106,6 +115,7 @@ async function checkDist() {
 }
 
 async function start() {
+    console.log(`Starting Zigbee2MQTT ${watchdog ? `with watchdog (${watchdogDelays})` : `without watchdog`}.`);
     await checkDist();
 
     const version = engines.node;
