@@ -83,12 +83,7 @@ describe('Bind', () => {
             {retain: false, qos: 0}, expect.any(Function)
         );
 
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/devices',
-            expect.any(String),
-          { retain: true, qos: 0 },
-          expect.any(Function)
-        );
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), { retain: true, qos: 0 }, expect.any(Function));
 
         // Teardown
         target.binds = originalTargetBinds;
