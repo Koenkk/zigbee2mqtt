@@ -271,7 +271,6 @@ export default class OTAUpdate extends Extension {
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
                     const fileVersion = await device.definition.ota.updateToLatest(device.zh, onProgress);
                     logger.info(`Finished update of '${device.name}'`);
-                    this.eventBus.emitReconfigure({device});
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload(device,
                         {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion});
@@ -281,6 +280,7 @@ export default class OTAUpdate extends Extension {
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
+                    this.eventBus.emitReconfigure({device});
                     this.eventBus.emitDevicesChanged();
 
                     /* istanbul ignore else */
