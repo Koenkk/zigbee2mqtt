@@ -90,7 +90,7 @@ describe('Bind', () => {
         device.getEndpoint(1).outputClusters = originalDeviceOutputClusters;
     });
 
-    it('Should bind only specifief clusters', async () => {
+    it('Should bind only specified clusters', async () => {
         const device = zigbeeHerdsman.devices.remote;
         const target = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
         const endpoint = device.getEndpoint(1);

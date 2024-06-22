@@ -381,12 +381,15 @@ export default class Bind extends Extension {
                 return false;
             }
 
-            if (e.configuredReportings.some((c) => c.cluster.name === bind.cluster.name) &&
-                e.binds.some((b) => b.cluster.name === bind.cluster.name && b.target === coordinatorEp)) {
-                return false;
+            const hasConfiguredReporting = e.configuredReportings.some((c) => c.cluster.name === bind.cluster.name);
+
+            if (!hasConfiguredReporting) {
+                return true;
             }
 
-            return true;
+            const hasBind = e.binds.some((b) => b.cluster.name === bind.cluster.name && b.target === coordinatorEp);
+
+            return !hasBind;
         });
     }
 
