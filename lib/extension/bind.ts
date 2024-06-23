@@ -163,10 +163,12 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
                 const supportedAttrs = await getColorCapabilities(endpoint);
                 const readAttrs: string[] = [];
 
+                /* istanbul ignore else */
                 if (supportedAttrs.colorXY) {
                     readAttrs.push('currentX', 'currentY');
                 }
 
+                /* istanbul ignore else */
                 if (supportedAttrs.colorTemperature) {
                     readAttrs.push('colorTemperature');
                 }
@@ -396,29 +398,32 @@ export default class Bind extends Extension {
     async setupReporting(binds: zh.Bind[]): Promise<void> {
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
 
-        for (const bind of binds.filter((b) => b.cluster.name in REPORT_CLUSTERS)) {
-            for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
-                const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
+        for (const bind of binds) {
+            /* istanbul ignore else */
+            if (bind.cluster.name in REPORT_CLUSTERS) {
+                for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
+                    const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
 
-                try {
-                    await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
+                    try {
+                        await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
 
-                    const items = [];
+                        const items = [];
 
-                    for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]) {
-                        /* istanbul ignore else */
-                        if (!c.condition || await c.condition(endpoint)) {
-                            const i = {...c};
-                            delete i.condition;
+                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]) {
+                            /* istanbul ignore else */
+                            if (!c.condition || await c.condition(endpoint)) {
+                                const i = {...c};
+                                delete i.condition;
 
-                            items.push(i);
+                                items.push(i);
+                            }
                         }
-                    }
 
-                    await endpoint.configureReporting(bind.cluster.name, items);
-                    logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
-                } catch (error) {
-                    logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
+                        await endpoint.configureReporting(bind.cluster.name, items);
+                        logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
+                    } catch (error) {
+                        logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
+                    }
                 }
             }
         }
@@ -452,7 +457,8 @@ export default class Bind extends Extension {
             }
 
             for (const b of endpoint.binds) {
-                if (b.target === coordinator && !requiredClusters.includes(b.cluster.name) && b.cluster.name in REPORT_CLUSTERS) {
+                /* istanbul ignore else */
+                if (b.target === coordinator && !requiredClusters.includes(b.cluster.name) && (b.cluster.name in REPORT_CLUSTERS)) {
                     boundClusters.push(b.cluster.name);
                 }
             }
