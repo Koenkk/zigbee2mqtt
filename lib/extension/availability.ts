@@ -6,7 +6,7 @@ import debounce from 'debounce';
 import bind from 'bind-decorator';
 import * as zhc from 'zigbee-herdsman-converters';
 
-const retrieveOnReconnect = [
+const RETRIEVE_ON_RECONNECT: readonly {keys: string[], condition?: (state: KeyValue) => boolean}[] = [
     {keys: ['state']},
     {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
     {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
@@ -217,7 +217,7 @@ export default class Availability extends Extension {
                 logger.debug(`Retrieving state of '${device.name}' after reconnect`);
 
                 // Color and color temperature converters do both, only needs to be called once.
-                for (const item of retrieveOnReconnect) {
+                for (const item of RETRIEVE_ON_RECONNECT) {
                     if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) {
                         continue;
                     }

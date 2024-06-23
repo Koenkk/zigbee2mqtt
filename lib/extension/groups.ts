@@ -9,12 +9,11 @@ import Device from '../model/device';
 import Group from '../model/group';
 import * as zhc from 'zigbee-herdsman-converters';
 
-const topicRegex =
-    new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
-const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
-const legacyTopicRegexRemoveAll = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
+const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
+const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
+const LEGACY_TOPIC_REGEX_REMOVE_ALL = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
 
-const stateProperties: {[s: string]: (value: string, exposes: zhc.Expose[]) => boolean} = {
+const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     'state': () => true,
     'brightness': (value, exposes) => exposes.some((e) => e.type === 'light' && e.features.some((f) => f.name === 'brightness')),
     'color_temp': (value, exposes) => exposes.some((e) => e.type === 'light' && e.features.some((f) => f.name === 'color_temp')),
@@ -128,7 +127,7 @@ export default class Groups extends Extension {
                 endpointName = endpointNameMatch;
             }
 
-            if (prop in stateProperties) {
+            if (prop in STATE_PROPERTIES) {
                 payload[prop] = value;
             }
         }
@@ -165,7 +164,7 @@ export default class Groups extends Extension {
                     const memberPayload: KeyValue = {};
 
                     for (const key of payloadKeys) {
-                        if (stateProperties[key](payload[key], exposes)) {
+                        if (STATE_PROPERTIES[key](payload[key], exposes)) {
                             memberPayload[key] = payload[key];
                         }
                     }
@@ -218,27 +217,27 @@ export default class Groups extends Extension {
     }
 
     private async parseMQTTMessage(data: eventdata.MQTTMessage): Promise<ParsedMQTTMessage> {
-        let type: 'remove' | 'add' | 'remove_all' = null;
-        let resolvedEntityGroup: Group = null;
-        let resolvedEntityDevice: Device = null;
-        let resolvedEntityEndpoint: zh.Endpoint = null;
-        let error: string = null;
-        let groupKey: string = null;
-        let deviceKey: string = null;
-        let triggeredViaLegacyApi = false;
-        let skipDisableReporting = false;
+        let type: ParsedMQTTMessage['type'] = null;
+        let resolvedEntityGroup: ParsedMQTTMessage['resolvedEntityGroup'] = null;
+        let resolvedEntityDevice: ParsedMQTTMessage['resolvedEntityDevice'] = null;
+        let resolvedEntityEndpoint: ParsedMQTTMessage['resolvedEntityEndpoint'] = null;
+        let error: ParsedMQTTMessage['error'] = null;
+        let groupKey: ParsedMQTTMessage['groupKey'] = null;
+        let deviceKey: ParsedMQTTMessage['deviceKey'] = null;
+        let triggeredViaLegacyApi: ParsedMQTTMessage['triggeredViaLegacyApi'] = false;
+        let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
 
         /* istanbul ignore else */
-        const topicRegexMatch = data.topic.match(topicRegex);
-        const legacyTopicRegexRemoveAllMatch = data.topic.match(legacyTopicRegexRemoveAll);
-        const legacyTopicRegexMatch = data.topic.match(legacyTopicRegex);
+        const topicRegexMatch = data.topic.match(TOPIC_REGEX);
+        const legacyTopicRegexRemoveAllMatch = data.topic.match(LEGACY_TOPIC_REGEX_REMOVE_ALL);
+        const legacyTopicRegexMatch = data.topic.match(LEGACY_TOPIC_REGEX);
 
         if (this.legacyApi && (legacyTopicRegexMatch || legacyTopicRegexRemoveAllMatch)) {
             triggeredViaLegacyApi = true;
 
             if (legacyTopicRegexMatch) {
                 resolvedEntityGroup = this.zigbee.resolveEntity(legacyTopicRegexMatch[1]) as Group;
-                type = legacyTopicRegexMatch[2] as 'remove' | 'remove_all' | 'add';
+                type = legacyTopicRegexMatch[2] as ParsedMQTTMessage['type'];
 
                 if (!resolvedEntityGroup || !(resolvedEntityGroup instanceof Group)) {
                     logger.error(`Group '${legacyTopicRegexMatch[1]}' does not exist`);
