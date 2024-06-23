@@ -280,6 +280,10 @@ export default class OTAUpdate extends Extension {
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
                     responseData.from = from_ ? utils.toSnakeCase(from_) : null;
                     responseData.to = to ? utils.toSnakeCase(to) : null;
+                    /**
+                     * Re-configure after reading software build ID and date code, some devices use a
+                     * custom attribute for this (e.g. Develco SMSZB-120)
+                     */
                     this.eventBus.emitReconfigure({device});
                     this.eventBus.emitDevicesChanged();
 
