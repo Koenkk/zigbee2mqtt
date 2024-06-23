@@ -87,7 +87,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': undefined});
@@ -108,7 +108,7 @@ describe('OTA update', () => {
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            stringify({"data":{"from":{"date_code":"20190101","software_build_id":1},"id":"bulb","to":{"date_code":"20190104","software_build_id":4}},"status":"ok"}),
+            stringify({"data":{"from":{"date_code":"20190101","software_build_id":1},"id":"bulb","to":{"date_code":"20190102","software_build_id":2}},"status":"ok"}),
             {retain: false, qos: 0}, expect.any(Function)
         );
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -389,7 +389,7 @@ describe('OTA update', () => {
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(logger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(logger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190104","softwareBuildID":4}'`);
+        expect(logger.info).toHaveBeenCalledWith(`Device 'bulb' was updated from '{"dateCode":"20190101","softwareBuildID":1}' to '{"dateCode":"20190102","softwareBuildID":2}'`);
         expect(logger.error).toHaveBeenCalledTimes(0);
         expect(device.save).toHaveBeenCalledTimes(2);
         expect(endpoint.read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {'sendPolicy': 'immediate'});
