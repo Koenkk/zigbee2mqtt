@@ -1,4 +1,3 @@
-/* eslint max-len: 0 */
 const path = require('path');
 const fs = require('fs');
 const process = require('process');

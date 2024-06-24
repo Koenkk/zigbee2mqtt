@@ -1,8 +1,9 @@
 import * as zhc from 'zigbee-herdsman-converters';
+
+import logger from '../util/logger';
 import * as settings from '../util/settings';
 import {loadExternalConverter} from '../util/utils';
 import Extension from './extension';
-import logger from '../util/logger';
 
 export default class ExternalConverters extends Extension {
     constructor(

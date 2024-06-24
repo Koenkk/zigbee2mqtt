@@ -1,11 +1,12 @@
+import bind from 'bind-decorator';
+import fs from 'fs';
+import stringify from 'json-stable-stringify-without-jsonify';
+import path from 'path';
+
 import * as settings from '../util/settings';
 import utils from '../util/utils';
-import fs from 'fs';
 import data from './../util/data';
-import path from 'path';
 import logger from './../util/logger';
-import stringify from 'json-stable-stringify-without-jsonify';
-import bind from 'bind-decorator';
 import Extension from './extension';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);

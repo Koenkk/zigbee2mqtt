@@ -1,4 +1,5 @@
 import events from 'events';
+
 import logger from './util/logger';
 
 // eslint-disable-next-line

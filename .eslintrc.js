@@ -17,6 +17,7 @@ module.exports = {
     },
     'plugins': [
         'jest',
+        'perfectionist',
     ],
     'overrides': [{
         files: ['*.ts'],
@@ -35,6 +36,43 @@ module.exports = {
             '@typescript-eslint/no-floating-promises': 'error',
             '@typescript-eslint/no-unused-vars': 'error',
             'no-return-await': 'error',
+            "perfectionist/sort-imports": [
+                "error",
+                {
+                  "groups": [
+                    "type",
+                    [
+                      "builtin",
+                      "external"
+                    ],
+                    "internal-type",
+                    "internal",
+                    [
+                      "parent-type",
+                      "sibling-type",
+                      "index-type"
+                    ],
+                    [
+                      "parent",
+                      "sibling",
+                      "index"
+                    ],
+                    "object",
+                    "unknown"
+                  ],
+                  "custom-groups": {
+                    "value": {},
+                    "type": {}
+                  },
+                  "newlines-between": "always",
+                  "internal-pattern": [
+                    "~/**"
+                  ],
+                  "type": "natural",
+                  "order": "asc",
+                  "ignore-case": false
+                }
+              ],
         },
     }],
 };

@@ -1,21 +1,22 @@
 /* eslint-disable camelcase */
-import logger from '../util/logger';
-import utils from '../util/utils';
-import * as settings from '../util/settings';
-import Transport from 'winston-transport';
 import bind from 'bind-decorator';
+import fs from 'fs';
 import stringify from 'json-stable-stringify-without-jsonify';
+import JSZip from 'jszip';
 import objectAssignDeep from 'object-assign-deep';
-import Extension from './extension';
+import winston from 'winston';
+import Transport from 'winston-transport';
+import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
+import {CustomClusters, ClusterDefinition, ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import * as zhc from 'zigbee-herdsman-converters';
+
 import Device from '../model/device';
 import Group from '../model/group';
 import data from '../util/data';
-import JSZip from 'jszip';
-import fs from 'fs';
-import * as zhc from 'zigbee-herdsman-converters';
-import {CustomClusters, ClusterDefinition, ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
-import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
-import winston from 'winston';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 

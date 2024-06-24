@@ -1,11 +1,12 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import debounce from 'debounce';
-import Extension from './extension';
-import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
-import utils from '../util/utils';
+import debounce from 'debounce';
+import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
+
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 

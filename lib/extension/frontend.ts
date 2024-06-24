@@ -1,18 +1,19 @@
-import http from 'http';
-import https from 'https';
+import bind from 'bind-decorator';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
-import logger from '../util/logger';
-import frontend from 'zigbee2mqtt-frontend';
-import WebSocket from 'ws';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import stringify from 'json-stable-stringify-without-jsonify';
 import net from 'net';
 import url from 'url';
-import fs from 'fs';
+import WebSocket from 'ws';
+import frontend from 'zigbee2mqtt-frontend';
+
+import logger from '../util/logger';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
-import bind from 'bind-decorator';
 
 /**
  * This extension servers the frontend

@@ -1,15 +1,16 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import stringify from 'json-stable-stringify-without-jsonify';
-import utils from '../util/utils';
-import Extension from './extension';
 import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
+import path from 'path';
+import * as URI from 'uri-js';
+import {Zcl} from 'zigbee-herdsman';
+import * as zhc from 'zigbee-herdsman-converters';
+
 import Device from '../model/device';
 import dataDir from '../util/data';
-import * as URI from 'uri-js';
-import path from 'path';
-import * as zhc from 'zigbee-herdsman-converters';
-import {Zcl} from 'zigbee-herdsman';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 function isValidUrl(url: string): boolean {
     let parsed;

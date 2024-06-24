@@ -1,13 +1,14 @@
-import * as settings from '../util/settings';
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
 import * as philips from 'zigbee-herdsman-converters/lib/philips';
+
+import Device from '../model/device';
+import Group from '../model/group';
 import logger from '../util/logger';
+import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
-import stringify from 'json-stable-stringify-without-jsonify';
-import Group from '../model/group';
-import Device from '../model/device';
-import bind from 'bind-decorator';
 
 let topicGetSetRegex: RegExp;
 // Used by `publish.test.js` to reload regex when changing `mqtt.base_topic`.

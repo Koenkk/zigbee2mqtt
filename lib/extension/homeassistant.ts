@@ -1,11 +1,12 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import utils, {isNumericExposeFeature, isBinaryExposeFeature, isEnumExposeFeature} from '../util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
 import assert from 'assert';
-import Extension from './extension';
 import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
+
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils, {isNumericExposeFeature, isBinaryExposeFeature, isEnumExposeFeature} from '../util/utils';
+import Extension from './extension';
 
 interface MockProperty {
     property: string;

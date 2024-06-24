@@ -1,10 +1,12 @@
+import type {QoS} from 'mqtt-packet';
+
+import bind from 'bind-decorator';
+import fs from 'fs';
 import * as mqtt from 'mqtt';
+
 import logger from './util/logger';
 import * as settings from './util/settings';
 import utils from './util/utils';
-import fs from 'fs';
-import bind from 'bind-decorator';
-import type {QoS} from 'mqtt-packet';
 
 const NS = 'z2m:mqtt';
 

@@ -1,9 +1,10 @@
 /* istanbul ignore file */
-import * as settings from '../../util/settings';
-import logger from '../../util/logger';
-import Extension from '../extension';
 import bind from 'bind-decorator';
+
 import Device from '../../model/device';
+import logger from '../../util/logger';
+import * as settings from '../../util/settings';
+import Extension from '../extension';
 
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/device/(.+)/get_group_membership$`);
 

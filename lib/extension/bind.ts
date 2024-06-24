@@ -1,14 +1,15 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import utils from '../util/utils';
-import Extension from './extension';
-import stringify from 'json-stable-stringify-without-jsonify';
-import debounce from 'debounce';
-import {Zcl} from 'zigbee-herdsman';
 import bind from 'bind-decorator';
+import debounce from 'debounce';
+import stringify from 'json-stable-stringify-without-jsonify';
+import {Zcl} from 'zigbee-herdsman';
+import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import Device from '../model/device';
 import Group from '../model/group';
-import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 const LEGACY_API = settings.get().advanced.legacy_api;
 const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);

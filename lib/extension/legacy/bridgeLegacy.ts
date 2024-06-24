@@ -1,10 +1,11 @@
-import * as settings from '../../util/settings';
-import logger from '../../util/logger';
-import utils from '../../util/utils';
 import assert from 'assert';
-import Extension from '../extension';
-import stringify from 'json-stable-stringify-without-jsonify';
 import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
+
+import logger from '../../util/logger';
+import * as settings from '../../util/settings';
+import utils from '../../util/utils';
+import Extension from '../extension';
 
 const configRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
 

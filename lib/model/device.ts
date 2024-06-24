@@ -1,7 +1,8 @@
 /* eslint-disable brace-style */
-import * as settings from '../util/settings';
-import * as zhc from 'zigbee-herdsman-converters';
 import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import * as zhc from 'zigbee-herdsman-converters';
+
+import * as settings from '../util/settings';
 
 export default class Device {
     public zh: zh.Device;

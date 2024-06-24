@@ -1,11 +1,12 @@
-import winston from 'winston';
-import moment from 'moment';
-import * as settings from './settings';
-import path from 'path';
+import assert from 'assert';
 import fs from 'fs';
 import fx from 'mkdir-recursive';
+import moment from 'moment';
+import path from 'path';
 import {rimrafSync} from 'rimraf';
-import assert from 'assert';
+import winston from 'winston';
+
+import * as settings from './settings';
 
 const NAMESPACE_SEPARATOR = ':';
 
@@ -77,7 +78,6 @@ class Logger {
             }
 
             // Add file logger when enabled
-            // eslint-disable-next-line max-len
             // NOTE: the initiation of the logger even when not added as transport tries to create the logging directory
             const transportFileOptions: winston.transports.FileTransportOptions = {
                 filename: path.join(this.directory, logFilename),

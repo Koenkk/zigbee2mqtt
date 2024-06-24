@@ -1,10 +1,11 @@
-import data from './data';
-import utils from './utils';
+import Ajv, {ValidateFunction} from 'ajv';
 import objectAssignDeep from 'object-assign-deep';
 import path from 'path';
-import yaml from './yaml';
-import Ajv, {ValidateFunction} from 'ajv';
+
+import data from './data';
 import schemaJson from './settings.schema.json';
+import utils from './utils';
+import yaml from './yaml';
 export let schema = schemaJson;
 // @ts-ignore
 schema = {};

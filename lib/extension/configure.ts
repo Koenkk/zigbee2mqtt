@@ -1,11 +1,12 @@
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import logger from '../util/logger';
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
-import Extension from './extension';
-import bind from 'bind-decorator';
+
 import Device from '../model/device';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 /**
  * This extension calls the zigbee-herdsman-converters definition configure() method

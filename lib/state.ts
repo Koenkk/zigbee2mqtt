@@ -1,9 +1,10 @@
-import logger from './util/logger';
-import data from './util/data';
-import * as settings from './util/settings';
-import utils from './util/utils';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
+
+import data from './util/data';
+import logger from './util/logger';
+import * as settings from './util/settings';
+import utils from './util/utils';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
 

@@ -1,14 +1,15 @@
-import {Controller} from 'zigbee-herdsman';
-import logger from './util/logger';
-import * as settings from './util/settings';
-import data from './util/data';
-import utils from './util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
-import Device from './model/device';
-import Group from './model/group';
-import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
+import stringify from 'json-stable-stringify-without-jsonify';
+import {Controller} from 'zigbee-herdsman';
+import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
+
+import Device from './model/device';
+import Group from './model/group';
+import data from './util/data';
+import logger from './util/logger';
+import * as settings from './util/settings';
+import utils from './util/utils';
 
 const entityIDRegex = new RegExp(`^(.+?)(?:/([^/]+))?$`);
 
@@ -167,7 +168,6 @@ export default class Zigbee {
                 logger.warning(
                     `Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
                         `'${data.device.zh.manufacturerName}' is NOT supported, ` +
-                        // eslint-disable-next-line max-len
                         `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`,
                 );
             }

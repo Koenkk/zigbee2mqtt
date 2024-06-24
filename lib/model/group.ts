@@ -1,6 +1,7 @@
 /* eslint-disable brace-style */
-import * as settings from '../util/settings';
 import * as zhc from 'zigbee-herdsman-converters';
+
+import * as settings from '../util/settings';
 
 export default class Group {
     public zh: zh.Group;

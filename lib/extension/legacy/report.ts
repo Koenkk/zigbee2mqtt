@@ -1,4 +1,5 @@
 import * as zhc from 'zigbee-herdsman-converters';
+
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
 import Extension from '../extension';

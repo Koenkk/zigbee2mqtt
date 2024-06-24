@@ -1,9 +1,10 @@
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
+
+import logger from '../util/logger';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
-import logger from '../util/logger';
-import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
-import bind from 'bind-decorator';
 
 interface Link {
     source: {ieeeAddr: string; networkAddress: number};

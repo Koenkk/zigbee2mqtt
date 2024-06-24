@@ -1,4 +1,5 @@
 import * as zhc from 'zigbee-herdsman-converters';
+
 import Extension from './extension';
 
 /**

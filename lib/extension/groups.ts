@@ -1,13 +1,14 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import utils from '../util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
-import equals from 'fast-deep-equal/es6';
 import bind from 'bind-decorator';
-import Extension from './extension';
+import equals from 'fast-deep-equal/es6';
+import stringify from 'json-stable-stringify-without-jsonify';
+import * as zhc from 'zigbee-herdsman-converters';
+
 import Device from '../model/device';
 import Group from '../model/group';
-import * as zhc from 'zigbee-herdsman-converters';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
 const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);

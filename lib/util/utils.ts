@@ -1,10 +1,12 @@
-import equals from 'fast-deep-equal/es6';
-import humanizeDuration from 'humanize-duration';
-import data from './data';
-import vm from 'vm';
-import fs from 'fs';
-import path from 'path';
 import type * as zhc from 'zigbee-herdsman-converters';
+
+import equals from 'fast-deep-equal/es6';
+import fs from 'fs';
+import humanizeDuration from 'humanize-duration';
+import path from 'path';
+import vm from 'vm';
+
+import data from './data';
 
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:

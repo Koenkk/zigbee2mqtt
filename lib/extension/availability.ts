@@ -1,10 +1,11 @@
-import Extension from './extension';
-import logger from '../util/logger';
-import utils from '../util/utils';
-import * as settings from '../util/settings';
-import debounce from 'debounce';
 import bind from 'bind-decorator';
+import debounce from 'debounce';
 import * as zhc from 'zigbee-herdsman-converters';
+
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
     {keys: ['state']},

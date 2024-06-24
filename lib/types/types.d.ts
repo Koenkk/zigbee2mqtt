@@ -1,7 +1,12 @@
 /* eslint-disable camelcase */
-import {LogLevel} from 'lib/util/settings';
-import type {Device as ZHDevice, Group as ZHGroup, Endpoint as ZHEndpoint} from 'zigbee-herdsman/dist/controller/model';
-
+import type TypeEventBus from 'lib/eventBus';
+import type TypeExtension from 'lib/extension/extension';
+import type TypeDevice from 'lib/model/device';
+import type TypeGroup from 'lib/model/group';
+import type TypeMQTT from 'lib/mqtt';
+import type TypeState from 'lib/state';
+import type TypeZigbee from 'lib/zigbee';
+import type {QoS} from 'mqtt-packet';
 import type {
     NetworkParameters as ZHNetworkParameters,
     CoordinatorVersion as ZHCoordinatorVersion,
@@ -9,22 +14,12 @@ import type {
     RoutingTable as ZHRoutingTable,
     RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
-
+import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
+import type {Device as ZHDevice, Group as ZHGroup, Endpoint as ZHEndpoint} from 'zigbee-herdsman/dist/controller/model';
 import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
-
 import type * as zhc from 'zigbee-herdsman-converters';
 
-import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-
-import type TypeEventBus from 'lib/eventBus';
-import type TypeMQTT from 'lib/mqtt';
-import type TypeState from 'lib/state';
-import type TypeZigbee from 'lib/zigbee';
-import type TypeDevice from 'lib/model/device';
-import type TypeGroup from 'lib/model/group';
-import type TypeExtension from 'lib/extension/extension';
-
-import type {QoS} from 'mqtt-packet';
+import {LogLevel} from 'lib/util/settings';
 
 declare global {
     // Define some class types as global

@@ -1,35 +1,35 @@
-import MQTT from './mqtt';
-import Zigbee from './zigbee';
+import assert from 'assert';
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
+import {setLogger as zhSetLogger} from 'zigbee-herdsman';
+import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
+
 import EventBus from './eventBus';
+import ExtensionAvailability from './extension/availability';
+import ExtensionBind from './extension/bind';
+import ExtensionBridge from './extension/bridge';
+import ExtensionConfigure from './extension/configure';
+import ExtensionExternalConverters from './extension/externalConverters';
+import ExtensionExternalExtension from './extension/externalExtension';
+// Extensions
+import ExtensionFrontend from './extension/frontend';
+import ExtensionGroups from './extension/groups';
+import ExtensionHomeAssistant from './extension/homeassistant';
+import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
+import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMembership';
+import ExtensionReport from './extension/legacy/report';
+import ExtensionSoftReset from './extension/legacy/softReset';
+import ExtensionNetworkMap from './extension/networkMap';
+import ExtensionOnEvent from './extension/onEvent';
+import ExtensionOTAUpdate from './extension/otaUpdate';
+import ExtensionPublish from './extension/publish';
+import ExtensionReceive from './extension/receive';
+import MQTT from './mqtt';
 import State from './state';
 import logger from './util/logger';
 import * as settings from './util/settings';
 import utils from './util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
-import assert from 'assert';
-import bind from 'bind-decorator';
-import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
-import {setLogger as zhSetLogger} from 'zigbee-herdsman';
-
-// Extensions
-import ExtensionFrontend from './extension/frontend';
-import ExtensionPublish from './extension/publish';
-import ExtensionReceive from './extension/receive';
-import ExtensionNetworkMap from './extension/networkMap';
-import ExtensionSoftReset from './extension/legacy/softReset';
-import ExtensionHomeAssistant from './extension/homeassistant';
-import ExtensionConfigure from './extension/configure';
-import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMembership';
-import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
-import ExtensionBridge from './extension/bridge';
-import ExtensionGroups from './extension/groups';
-import ExtensionAvailability from './extension/availability';
-import ExtensionBind from './extension/bind';
-import ExtensionReport from './extension/legacy/report';
-import ExtensionOnEvent from './extension/onEvent';
-import ExtensionOTAUpdate from './extension/otaUpdate';
-import ExtensionExternalConverters from './extension/externalConverters';
-import ExtensionExternalExtension from './extension/externalExtension';
+import Zigbee from './zigbee';
 
 const AllExtensions = [
     ExtensionPublish,
