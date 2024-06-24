@@ -1,16 +1,23 @@
 /* eslint-disable brace-style */
-import * as settings from '../util/settings';
-import * as zhc from 'zigbee-herdsman-converters';
 import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import * as zhc from 'zigbee-herdsman-converters';
+
+import * as settings from '../util/settings';
 
 export default class Device {
     public zh: zh.Device;
     public definition: zhc.Definition;
     private _definitionModelID: string;
 
-    get ieeeAddr(): string {return this.zh.ieeeAddr;}
-    get ID(): string {return this.zh.ieeeAddr;}
-    get options(): DeviceOptions {return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};}
+    get ieeeAddr(): string {
+        return this.zh.ieeeAddr;
+    }
+    get ID(): string {
+        return this.zh.ieeeAddr;
+    }
+    get options(): DeviceOptions {
+        return {...settings.get().device_options, ...settings.getDevice(this.ieeeAddr)};
+    }
     get name(): string {
         return this.zh.type === 'Coordinator' ? 'Coordinator' : this.options?.friendly_name || this.ieeeAddr;
     }
@@ -86,9 +93,15 @@ export default class Device {
         return Object.keys(this.definition?.endpoint?.(this.zh) ?? {}).filter((name) => name !== 'default');
     }
 
-    isIkeaTradfri(): boolean {return this.zh.manufacturerID === 4476;}
+    isIkeaTradfri(): boolean {
+        return this.zh.manufacturerID === 4476;
+    }
 
-    isDevice(): this is Device {return true;}
+    isDevice(): this is Device {
+        return true;
+    }
     /* istanbul ignore next */
-    isGroup(): this is Group {return false;}
+    isGroup(): this is Group {
+        return false;
+    }
 }

@@ -12,31 +12,48 @@ const fs = require('fs');
 
 zigbeeHerdsmanConverters.addDefinition = jest.fn();
 
-const mocksClear = [zigbeeHerdsmanConverters.addDefinition, zigbeeHerdsman.permitJoin,
-    mockExit, MQTT.end, zigbeeHerdsman.stop, logger.debug,
-    MQTT.publish, MQTT.connect, zigbeeHerdsman.devices.bulb_color.removeFromNetwork,
-    zigbeeHerdsman.devices.bulb.removeFromNetwork, logger.error,
+const mocksClear = [
+    zigbeeHerdsmanConverters.addDefinition,
+    zigbeeHerdsman.permitJoin,
+    mockExit,
+    MQTT.end,
+    zigbeeHerdsman.stop,
+    logger.debug,
+    MQTT.publish,
+    MQTT.connect,
+    zigbeeHerdsman.devices.bulb_color.removeFromNetwork,
+    zigbeeHerdsman.devices.bulb.removeFromNetwork,
+    logger.error,
 ];
 
 jest.mock(
-    'mock-external-converter-module', () => {
+    'mock-external-converter-module',
+    () => {
         return {
-            mock: true
+            mock: true,
         };
-    }, {
-        virtual: true
-    });
+    },
+    {
+        virtual: true,
+    },
+);
 
 jest.mock(
-    'mock-multiple-external-converter-module', () => {
-        return [{
-            mock: 1
-        }, {
-            mock: 2
-        }];
-    }, {
-        virtual: true
-    });
+    'mock-multiple-external-converter-module',
+    () => {
+        return [
+            {
+                mock: 1,
+            },
+            {
+                mock: 2,
+            },
+        ];
+    },
+    {
+        virtual: true,
+    },
+);
 
 describe('Loads external converters', () => {
     let controller;
@@ -44,7 +61,7 @@ describe('Loads external converters', () => {
     let resetExtension = async () => {
         await controller.enableDisableExtension(false, 'ExternalConverters');
         await controller.enableDisableExtension(true, 'ExternalConverters');
-    }
+    };
 
     beforeAll(async () => {
         jest.useFakeTimers();
@@ -83,12 +100,15 @@ describe('Loads external converters', () => {
             description: 'external',
             fromZigbee: [],
             toZigbee: [],
-            exposes: []
+            exposes: [],
         });
     });
 
     it('Loads multiple external converters', async () => {
-        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'), path.join(data.mockDir, 'mock-external-converter-multiple.js'));
+        fs.copyFileSync(
+            path.join(__dirname, 'assets', 'mock-external-converter-multiple.js'),
+            path.join(data.mockDir, 'mock-external-converter-multiple.js'),
+        );
         settings.set(['external_converters'], ['mock-external-converter-multiple.js']);
         await resetExtension();
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenCalledTimes(2);
@@ -100,7 +120,7 @@ describe('Loads external converters', () => {
             description: 'external_1',
             fromZigbee: [],
             toZigbee: [],
-            exposes: []
+            exposes: [],
         });
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenNthCalledWith(2, {
             mock: 2,
@@ -110,7 +130,7 @@ describe('Loads external converters', () => {
             description: 'external_2',
             fromZigbee: [],
             toZigbee: [],
-            exposes: []
+            exposes: [],
         });
     });
 
@@ -119,7 +139,7 @@ describe('Loads external converters', () => {
         await resetExtension();
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenCalledWith({
-            mock: true
+            mock: true,
         });
     });
 
@@ -128,17 +148,19 @@ describe('Loads external converters', () => {
         await resetExtension();
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenCalledTimes(2);
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenNthCalledWith(1, {
-            mock: 1
+            mock: 1,
         });
         expect(zigbeeHerdsmanConverters.addDefinition).toHaveBeenNthCalledWith(2, {
-            mock: 2
+            mock: 2,
         });
     });
 
     it('Loads external converters with error', async () => {
         fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
         settings.set(['external_converters'], ['mock-external-converter.js']);
-        zigbeeHerdsmanConverters.addDefinition.mockImplementationOnce(() => {throw new Error('Invalid definition!')});
+        zigbeeHerdsmanConverters.addDefinition.mockImplementationOnce(() => {
+            throw new Error('Invalid definition!');
+        });
         await resetExtension();
         expect(logger.error).toHaveBeenCalledWith(`Failed to load external converter file 'mock-external-converter.js' (Invalid definition!)`);
     });

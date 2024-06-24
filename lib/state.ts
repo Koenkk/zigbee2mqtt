@@ -1,16 +1,33 @@
-import logger from './util/logger';
-import data from './util/data';
-import * as settings from './util/settings';
-import utils from './util/utils';
 import fs from 'fs';
 import objectAssignDeep from 'object-assign-deep';
+
+import data from './util/data';
+import logger from './util/logger';
+import * as settings from './util/settings';
+import utils from './util/utils';
 
 const saveInterval = 1000 * 60 * 5; // 5 minutes
 
 const dontCacheProperties = [
-    'action', 'action_.*', 'button', 'button_left', 'button_right', 'click', 'forgotten', 'keyerror',
-    'step_size', 'transition_time', 'group_list', 'group_capacity', 'no_occupancy_since',
-    'step_mode', 'transition_time', 'duration', 'elapsed', 'from_side', 'to_side',
+    'action',
+    'action_.*',
+    'button',
+    'button_left',
+    'button_right',
+    'click',
+    'forgotten',
+    'keyerror',
+    'step_size',
+    'transition_time',
+    'group_list',
+    'group_capacity',
+    'no_occupancy_since',
+    'step_mode',
+    'transition_time',
+    'duration',
+    'elapsed',
+    'from_side',
+    'to_side',
 ];
 
 class State {
@@ -18,7 +35,10 @@ class State {
     private file = data.joinPath('state.json');
     private timer: NodeJS.Timeout = null;
 
-    constructor(private readonly eventBus: EventBus, private readonly zigbee: Zigbee) {
+    constructor(
+        private readonly eventBus: EventBus,
+        private readonly zigbee: Zigbee,
+    ) {
         this.eventBus = eventBus;
         this.zigbee = zigbee;
     }
@@ -75,7 +95,7 @@ class State {
         return this.state[entity.ID] || {};
     }
 
-    set(entity: Group | Device, update: KeyValue, reason: string=null): KeyValue {
+    set(entity: Group | Device, update: KeyValue, reason: string = null): KeyValue {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
         const newCache = {...toState};

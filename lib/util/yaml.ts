@@ -1,11 +1,11 @@
-import yaml from 'js-yaml';
-import fs from 'fs';
 import equals from 'fast-deep-equal/es6';
+import fs from 'fs';
+import yaml from 'js-yaml';
 
 function read(file: string): KeyValue {
     try {
         const result = yaml.load(fs.readFileSync(file, 'utf8'));
-        return result as KeyValue ?? {};
+        return (result as KeyValue) ?? {};
     } catch (error) {
         if (error.name === 'YAMLException') {
             error.file = file;

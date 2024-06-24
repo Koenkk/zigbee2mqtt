@@ -1,28 +1,38 @@
-import * as settings from '../util/settings';
-import logger from '../util/logger';
-import utils from '../util/utils';
-import Extension from './extension';
-import stringify from 'json-stable-stringify-without-jsonify';
-import debounce from 'debounce';
-import {Zcl} from 'zigbee-herdsman';
 import bind from 'bind-decorator';
+import debounce from 'debounce';
+import stringify from 'json-stable-stringify-without-jsonify';
+import {Zcl} from 'zigbee-herdsman';
+import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import Device from '../model/device';
 import Group from '../model/group';
-import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 const LEGACY_API = settings.get().advanced.legacy_api;
 const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
 const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
-    'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl', 'closuresWindowCovering', 'hvacThermostat', 'msIlluminanceMeasurement',
-    'msTemperatureMeasurement', 'msRelativeHumidity', 'msSoilMoisture', 'msCO2',
+    'genScenes',
+    'genOnOff',
+    'genLevelCtrl',
+    'lightingColorCtrl',
+    'closuresWindowCovering',
+    'hvacThermostat',
+    'msIlluminanceMeasurement',
+    'msTemperatureMeasurement',
+    'msRelativeHumidity',
+    'msSoilMoisture',
+    'msCO2',
 ];
 
 // See zigbee-herdsman-converters
 const DEFAULT_BIND_GROUP = {type: 'group_number', ID: 901, name: 'default_bind_group'};
 const DEFAULT_REPORT_CONFIG = {minimumReportInterval: 5, maximumReportInterval: 3600, reportableChange: 1};
 
-const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
+const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean; colorXY: boolean}> => {
     if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') == null) {
         await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
     }
@@ -30,47 +40,53 @@ const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemper
     const value = endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') as number;
 
     return {
-        colorTemperature: (value & 1 << 4) > 0,
-        colorXY: (value & 1 << 3) > 0,
+        colorTemperature: (value & (1 << 4)) > 0,
+        colorXY: (value & (1 << 3)) > 0,
     };
 };
 
-const REPORT_CLUSTERS: Readonly<Partial<Record<ClusterName, Readonly<{
-    attribute: string;
-    minimumReportInterval: number;
-    maximumReportInterval: number;
-    reportableChange: number;
-    condition?: (endpoint: zh.Endpoint) => Promise<boolean>;
-}>[]>>> = {
-    'genOnOff': [
-        {attribute: 'onOff', ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0},
-    ],
-    'genLevelCtrl': [
-        {attribute: 'currentLevel', ...DEFAULT_REPORT_CONFIG},
-    ],
-    'lightingColorCtrl': [
+const REPORT_CLUSTERS: Readonly<
+    Partial<
+        Record<
+            ClusterName,
+            Readonly<{
+                attribute: string;
+                minimumReportInterval: number;
+                maximumReportInterval: number;
+                reportableChange: number;
+                condition?: (endpoint: zh.Endpoint) => Promise<boolean>;
+            }>[]
+        >
+    >
+> = {
+    genOnOff: [{attribute: 'onOff', ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0}],
+    genLevelCtrl: [{attribute: 'currentLevel', ...DEFAULT_REPORT_CONFIG}],
+    lightingColorCtrl: [
         {
-            attribute: 'colorTemperature', ...DEFAULT_REPORT_CONFIG,
+            attribute: 'colorTemperature',
+            ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
         },
         {
-            attribute: 'currentX', ...DEFAULT_REPORT_CONFIG,
+            attribute: 'currentX',
+            ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
         {
-            attribute: 'currentY', ...DEFAULT_REPORT_CONFIG,
+            attribute: 'currentY',
+            ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
     ],
-    'closuresWindowCovering': [
+    closuresWindowCovering: [
         {attribute: 'currentPositionLiftPercentage', ...DEFAULT_REPORT_CONFIG},
         {attribute: 'currentPositionTiltPercentage', ...DEFAULT_REPORT_CONFIG},
     ],
 };
 
 type PollOnMessage = {
-    cluster: Readonly<Partial<Record<ClusterName, {type: string, data: KeyValue}[]>>>;
-    read: Readonly<{cluster: string, attributes: string[], attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}>;
+    cluster: Readonly<Partial<Record<ClusterName, {type: string; data: KeyValue}[]>>>;
+    read: Readonly<{cluster: string; attributes: string[]; attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}>;
     manufacturerIDs: readonly number[];
     manufacturerNames: readonly string[];
 }[];
@@ -92,9 +108,7 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
                 {type: 'commandMove', data: {}},
                 {type: 'commandMoveToLevelWithOnOff', data: {}},
             ],
-            genScenes: [
-                {type: 'commandRecall', data: {}},
-            ],
+            genScenes: [{type: 'commandRecall', data: {}}],
         },
         // Read the following attributes
         read: {cluster: 'genLevelCtrl', attributes: ['currentLevel']},
@@ -107,10 +121,7 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
-        manufacturerNames: [
-            'GLEDOPTO',
-            'Trust International B.V.\u0000',
-        ],
+        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
     },
     {
         cluster: {
@@ -126,9 +137,7 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
                 {type: 'commandOffWithEffect', data: {}},
                 {type: 'commandToggle', data: {}},
             ],
-            genScenes: [
-                {type: 'commandRecall', data: {}},
-            ],
+            genScenes: [{type: 'commandRecall', data: {}}],
             manuSpecificPhilips: [
                 {type: 'commandHueNotification', data: {button: 1}},
                 {type: 'commandHueNotification', data: {button: 4}},
@@ -143,16 +152,11 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
-        manufacturerNames: [
-            'GLEDOPTO',
-            'Trust International B.V.\u0000',
-        ],
+        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
     },
     {
         cluster: {
-            genScenes: [
-                {type: 'commandRecall', data: {}},
-            ],
+            genScenes: [{type: 'commandRecall', data: {}}],
         },
         read: {
             cluster: 'lightingColorCtrl',
@@ -184,15 +188,16 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
-        manufacturerNames: [
-            'GLEDOPTO',
-            'Trust International B.V.\u0000',
-        ],
+        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
     },
 ];
 
 interface ParsedMQTTMessage {
-    type: 'bind' | 'unbind', sourceKey: string, targetKey: string, clusters: string[], skipDisableReporting: boolean
+    type: 'bind' | 'unbind';
+    sourceKey: string;
+    targetKey: string;
+    clusters: string[];
+    skipDisableReporting: boolean;
 }
 
 export default class Bind extends Extension {
@@ -258,8 +263,8 @@ export default class Bind extends Extension {
             const attemptedClusters = [];
 
             const bindSource: zh.Endpoint = parsedSource.endpoint;
-            const bindTarget: number | zh.Group | zh.Endpoint = (target instanceof Device) ? parsedTarget.endpoint :
-                ((target instanceof Group) ? target.zh : Number(target.ID));
+            const bindTarget: number | zh.Group | zh.Endpoint =
+                target instanceof Device ? parsedTarget.endpoint : target instanceof Group ? target.zh : Number(target.ID);
             // Find which clusters are supported by both the source and target.
             // Groups are assumed to support all clusters.
             const clusterCandidates = clusters ?? ALL_CLUSTER_CANDIDATES;
@@ -270,8 +275,9 @@ export default class Bind extends Extension {
                 const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' || (target as Device).zh.type === 'Coordinator';
 
                 if (!anyClusterValid && utils.isEndpoint(bindTarget)) {
-                    matchingClusters = ((bindTarget.supportsInputCluster(cluster) && bindSource.supportsOutputCluster(cluster)) ||
-                        (bindSource.supportsInputCluster(cluster) && bindTarget.supportsOutputCluster(cluster)));
+                    matchingClusters =
+                        (bindTarget.supportsInputCluster(cluster) && bindSource.supportsOutputCluster(cluster)) ||
+                        (bindSource.supportsInputCluster(cluster) && bindTarget.supportsOutputCluster(cluster));
                 }
 
                 const sourceValid = bindSource.supportsInputCluster(cluster) || bindSource.supportsOutputCluster(cluster);
@@ -332,7 +338,7 @@ export default class Bind extends Extension {
             if (successfulClusters.length !== 0) {
                 if (type === 'bind') {
                     await this.setupReporting(bindSource.binds.filter((b) => successfulClusters.includes(b.cluster.name) && b.target === bindTarget));
-                } else if ((typeof bindTarget !== 'number') && !skipDisableReporting) {
+                } else if (typeof bindTarget !== 'number' && !skipDisableReporting) {
                     await this.disableUnnecessaryReportings(bindTarget);
                 }
             }
@@ -368,7 +374,8 @@ export default class Bind extends Extension {
             }
 
             await this.setupReporting(bindsToGroup);
-        } else { // action === remove/remove_all
+        } else {
+            // action === remove/remove_all
             if (!data.skipDisableReporting) {
                 await this.disableUnnecessaryReportings(data.endpoint);
             }
@@ -411,7 +418,7 @@ export default class Bind extends Extension {
 
                         for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]) {
                             /* istanbul ignore else */
-                            if (!c.condition || await c.condition(endpoint)) {
+                            if (!c.condition || (await c.condition(endpoint))) {
                                 const i = {...c};
                                 delete i.condition;
 
@@ -458,7 +465,7 @@ export default class Bind extends Extension {
 
             for (const b of endpoint.binds) {
                 /* istanbul ignore else */
-                if (b.target === coordinator && !requiredClusters.includes(b.cluster.name) && (b.cluster.name in REPORT_CLUSTERS)) {
+                if (b.target === coordinator && !requiredClusters.includes(b.cluster.name) && b.cluster.name in REPORT_CLUSTERS) {
                     boundClusters.push(b.cluster.name);
                 }
             }
@@ -471,11 +478,11 @@ export default class Bind extends Extension {
 
                     for (const item of REPORT_CLUSTERS[cluster as ClusterName]) {
                         /* istanbul ignore else */
-                        if (!item.condition || await item.condition(endpoint)) {
+                        if (!item.condition || (await item.condition(endpoint))) {
                             const i = {...item};
                             delete i.condition;
 
-                            items.push({...i, maximumReportInterval: 0xFFFF});
+                            items.push({...i, maximumReportInterval: 0xffff});
                         }
                     }
 
@@ -499,8 +506,8 @@ export default class Bind extends Extension {
          * When dimming the bulb via the dimmer switch the state is therefore not reported.
          * When we receive a message from a Hue dimmer we read the brightness from the bulb (if bound).
          */
-        const polls = POLL_ON_MESSAGE.filter(
-            (p) => p.cluster[data.cluster as ClusterName]?.some((c) => c.type === data.type && utils.equalsPartial(data.data, c.data)),
+        const polls = POLL_ON_MESSAGE.filter((p) =>
+            p.cluster[data.cluster as ClusterName]?.some((c) => c.type === data.type && utils.equalsPartial(data.data, c.data)),
         );
 
         if (polls.length) {
@@ -526,9 +533,11 @@ export default class Bind extends Extension {
 
             for (const endpoint of toPoll) {
                 for (const poll of polls) {
-                    if ((!poll.manufacturerIDs.includes(endpoint.getDevice().manufacturerID) &&
-                        !poll.manufacturerNames.includes(endpoint.getDevice().manufacturerName)) ||
-                        !endpoint.supportsInputCluster(poll.read.cluster)) {
+                    if (
+                        (!poll.manufacturerIDs.includes(endpoint.getDevice().manufacturerID) &&
+                            !poll.manufacturerNames.includes(endpoint.getDevice().manufacturerName)) ||
+                        !endpoint.supportsInputCluster(poll.read.cluster)
+                    ) {
                         continue;
                     }
 

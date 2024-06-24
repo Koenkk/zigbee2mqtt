@@ -1,10 +1,12 @@
+import type {QoS} from 'mqtt-packet';
+
+import bind from 'bind-decorator';
+import fs from 'fs';
 import * as mqtt from 'mqtt';
+
 import logger from './util/logger';
 import * as settings from './util/settings';
 import utils from './util/utils';
-import fs from 'fs';
-import bind from 'bind-decorator';
-import type {QoS} from 'mqtt-packet';
 
 const NS = 'z2m:mqtt';
 
@@ -15,8 +17,9 @@ export default class MQTT {
     private eventBus: EventBus;
     private initialConnect = true;
     private republishRetainedTimer: NodeJS.Timeout;
-    private retainedMessages: {[s: string]: {payload: string, options: MQTTOptions,
-        skipLog: boolean, skipReceive: boolean, topic: string, base: string}} = {};
+    private retainedMessages: {
+        [s: string]: {payload: string; options: MQTTOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
+    } = {};
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -155,9 +158,15 @@ export default class MQTT {
         return this.client && !this.client.reconnecting;
     }
 
-    async publish(topic: string, payload: string, options: MQTTOptions={}, base=settings.get().mqtt.base_topic, skipLog=false, skipReceive=true)
-        : Promise<void> {
-        const defaultOptions: {qos: QoS, retain: boolean} = {qos: 0, retain: false};
+    async publish(
+        topic: string,
+        payload: string,
+        options: MQTTOptions = {},
+        base = settings.get().mqtt.base_topic,
+        skipLog = false,
+        skipReceive = true,
+    ): Promise<void> {
+        const defaultOptions: {qos: QoS; retain: boolean} = {qos: 0, retain: false};
         topic = `${base}/${topic}`;
 
         if (skipReceive) {

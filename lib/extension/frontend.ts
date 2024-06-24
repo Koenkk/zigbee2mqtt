@@ -1,18 +1,19 @@
-import http from 'http';
-import https from 'https';
+import bind from 'bind-decorator';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
-import logger from '../util/logger';
-import frontend from 'zigbee2mqtt-frontend';
-import WebSocket from 'ws';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
+import stringify from 'json-stable-stringify-without-jsonify';
 import net from 'net';
 import url from 'url';
-import fs from 'fs';
+import WebSocket from 'ws';
+import frontend from 'zigbee2mqtt-frontend';
+
+import logger from '../util/logger';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
-import stringify from 'json-stable-stringify-without-jsonify';
 import Extension from './extension';
-import bind from 'bind-decorator';
 
 /**
  * This extension servers the frontend
@@ -30,17 +31,24 @@ export default class Frontend extends Extension {
     private fileServer: RequestHandler;
     private wss: WebSocket.Server = null;
 
-    constructor(zigbee: Zigbee, mqtt: MQTT, state: State, publishEntityState: PublishEntityState,
-        eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>) {
+    constructor(
+        zigbee: Zigbee,
+        mqtt: MQTT,
+        state: State,
+        publishEntityState: PublishEntityState,
+        eventBus: EventBus,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        restartCallback: () => Promise<void>,
+        addExtension: (extension: Extension) => Promise<void>,
+    ) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
     }
 
-    private isHttpsConfigured():boolean {
+    private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
             if (!fs.existsSync(this.sslCert) || !fs.existsSync(this.sslKey)) {
-                logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`); /* eslint-disable-line max-len */
+                logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`);
                 return false;
             }
             return true;
@@ -48,12 +56,12 @@ export default class Frontend extends Extension {
         return false;
     }
 
-
     override async start(): Promise<void> {
         if (this.isHttpsConfigured()) {
             const serverOptions = {
                 key: fs.readFileSync(this.sslKey),
-                cert: fs.readFileSync(this.sslCert)};
+                cert: fs.readFileSync(this.sslCert),
+            };
             this.server = https.createServer(serverOptions, this.onRequest);
         } else {
             this.server = http.createServer(this.onRequest);

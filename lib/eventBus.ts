@@ -1,11 +1,12 @@
 import events from 'events';
+
 import logger from './util/logger';
 
 // eslint-disable-next-line
 type ListenerKey = object;
 
 export default class EventBus {
-    private callbacksByExtension: { [s: string]: { event: string, callback: (...args: unknown[]) => void }[] } = {};
+    private callbacksByExtension: {[s: string]: {event: string; callback: (...args: unknown[]) => void}[]} = {};
     private emitter = new events.EventEmitter();
 
     constructor() {
@@ -57,8 +58,7 @@ export default class EventBus {
     public emitDeviceNetworkAddressChanged(data: eventdata.DeviceNetworkAddressChanged): void {
         this.emitter.emit('deviceNetworkAddressChanged', data);
     }
-    public onDeviceNetworkAddressChanged(
-        key: ListenerKey, callback: (data: eventdata.DeviceNetworkAddressChanged) => void): void {
+    public onDeviceNetworkAddressChanged(key: ListenerKey, callback: (data: eventdata.DeviceNetworkAddressChanged) => void): void {
         this.on('deviceNetworkAddressChanged', callback, key);
     }
 
@@ -167,7 +167,7 @@ export default class EventBus {
         this.on('stateChange', callback, key);
     }
 
-    private on(event: string, callback: (...args: unknown[]) => (Promise<void> | void), key: ListenerKey): void {
+    private on(event: string, callback: (...args: unknown[]) => Promise<void> | void, key: ListenerKey): void {
         if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
         const wrappedCallback = async (...args: unknown[]): Promise<void> => {
             try {
@@ -182,7 +182,6 @@ export default class EventBus {
     }
 
     public removeListeners(key: ListenerKey): void {
-        this.callbacksByExtension[key.constructor.name]?.forEach(
-            (e) => this.emitter.removeListener(e.event, e.callback));
+        this.callbacksByExtension[key.constructor.name]?.forEach((e) => this.emitter.removeListener(e.event, e.callback));
     }
 }

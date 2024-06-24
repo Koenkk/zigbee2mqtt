@@ -12,121 +12,121 @@ function writeDefaultConfiguration() {
         homeassistant: false,
         permit_join: true,
         mqtt: {
-            base_topic: "zigbee2mqtt",
-            server: "mqtt://localhost",
+            base_topic: 'zigbee2mqtt',
+            server: 'mqtt://localhost',
         },
         serial: {
-            "port": "/dev/dummy",
+            port: '/dev/dummy',
         },
         devices: {
-            "0x000b57fffec6a5b2": {
+            '0x000b57fffec6a5b2': {
                 retain: true,
-                friendly_name: "bulb",
-                description: "this is my bulb",
+                friendly_name: 'bulb',
+                description: 'this is my bulb',
             },
-            "0x0017880104e45517": {
+            '0x0017880104e45517': {
                 retain: true,
-                friendly_name: "remote"
+                friendly_name: 'remote',
             },
-            "0x0017880104e45520": {
+            '0x0017880104e45520': {
                 retain: false,
-                friendly_name: "button"
+                friendly_name: 'button',
             },
-            "0x0017880104e45521": {
+            '0x0017880104e45521': {
                 retain: false,
-                friendly_name: "button_double_key"
+                friendly_name: 'button_double_key',
             },
-            "0x0017880104e45522": {
+            '0x0017880104e45522': {
                 qos: 1,
                 retain: false,
-                friendly_name: "weather_sensor"
+                friendly_name: 'weather_sensor',
             },
-            "0x0017880104e45523": {
+            '0x0017880104e45523': {
                 retain: false,
-                friendly_name: "occupancy_sensor"
+                friendly_name: 'occupancy_sensor',
             },
-            "0x0017880104e45524": {
+            '0x0017880104e45524': {
                 retain: false,
-                friendly_name: "power_plug"
+                friendly_name: 'power_plug',
             },
-            "0x0017880104e45530": {
+            '0x0017880104e45530': {
                 retain: false,
-                friendly_name: "button_double_key_interviewing"
+                friendly_name: 'button_double_key_interviewing',
             },
-            "0x0017880104e45540": {
-                friendly_name: "ikea_onoff"
+            '0x0017880104e45540': {
+                friendly_name: 'ikea_onoff',
             },
             '0x000b57fffec6a5b7': {
                 retain: false,
-                friendly_name: "bulb_2"
+                friendly_name: 'bulb_2',
             },
-            "0x000b57fffec6a5b3": {
+            '0x000b57fffec6a5b3': {
                 retain: false,
-                friendly_name: "bulb_color"
+                friendly_name: 'bulb_color',
             },
             '0x000b57fffec6a5b4': {
                 retain: false,
-                friendly_name: "bulb_color_2"
+                friendly_name: 'bulb_color_2',
             },
-            "0x0017880104e45541": {
+            '0x0017880104e45541': {
                 retain: false,
-                friendly_name: "wall_switch"
+                friendly_name: 'wall_switch',
             },
-            "0x0017880104e45542": {
+            '0x0017880104e45542': {
                 retain: false,
-                friendly_name: "wall_switch_double"
+                friendly_name: 'wall_switch_double',
             },
-            "0x0017880104e45543": {
+            '0x0017880104e45543': {
                 retain: false,
-                friendly_name: "led_controller_1"
+                friendly_name: 'led_controller_1',
             },
-            "0x0017880104e45544": {
+            '0x0017880104e45544': {
                 retain: false,
-                friendly_name: "led_controller_2"
+                friendly_name: 'led_controller_2',
             },
             '0x0017880104e45545': {
                 retain: false,
-                friendly_name: "dimmer_wall_switch"
+                friendly_name: 'dimmer_wall_switch',
             },
             '0x0017880104e45547': {
                 retain: false,
-                friendly_name: "curtain"
+                friendly_name: 'curtain',
             },
             '0x0017880104e45548': {
                 retain: false,
-                friendly_name: 'fan'
+                friendly_name: 'fan',
             },
             '0x0017880104e45549': {
                 retain: false,
-                friendly_name: 'siren'
+                friendly_name: 'siren',
             },
             '0x0017880104e45529': {
                 retain: false,
-                friendly_name: 'unsupported2'
+                friendly_name: 'unsupported2',
             },
             '0x0017880104e45550': {
                 retain: false,
-                friendly_name: 'thermostat'
+                friendly_name: 'thermostat',
             },
             '0x0017880104e45551': {
                 retain: false,
-                friendly_name: 'smart vent'
+                friendly_name: 'smart vent',
             },
             '0x0017880104e45552': {
                 retain: false,
-                friendly_name: 'j1'
+                friendly_name: 'j1',
             },
             '0x0017880104e45553': {
                 retain: false,
-                friendly_name: 'bulb_enddevice'
+                friendly_name: 'bulb_enddevice',
             },
             '0x0017880104e45559': {
                 retain: false,
-                friendly_name: 'cc2530_router'
+                friendly_name: 'cc2530_router',
             },
             '0x0017880104e45560': {
                 retain: false,
-                friendly_name: 'livolo'
+                friendly_name: 'livolo',
             },
             '0x90fd9ffffe4b64ae': {
                 retain: false,
@@ -151,7 +151,7 @@ function writeDefaultConfiguration() {
                 friendly_name: 'GL-S-007ZS',
             },
             '0x0017880104e43559': {
-                friendly_name: 'U202DST600ZB'
+                friendly_name: 'U202DST600ZB',
             },
             '0xf4ce368a38be56a1': {
                 retain: false,
@@ -196,44 +196,44 @@ function writeDefaultConfiguration() {
             },
             '0x0017880104e45562': {
                 friendly_name: 'heating_actuator',
-            }
+            },
         },
         groups: {
-            '1': {
+            1: {
                 friendly_name: 'group_1',
                 retain: false,
             },
-            '2': {
+            2: {
                 friendly_name: 'group_2',
                 retain: false,
             },
-            '15071': {
+            15071: {
                 friendly_name: 'group_tradfri_remote',
                 retain: false,
-                devices: ['bulb_color_2', 'bulb_2']
+                devices: ['bulb_color_2', 'bulb_2'],
             },
-            '11': {
+            11: {
                 friendly_name: 'group_with_tradfri',
                 retain: false,
-                devices: ['bulb_2']
+                devices: ['bulb_2'],
             },
-            '12': {
+            12: {
                 friendly_name: 'thermostat_group',
                 retain: false,
                 devices: ['TS0601_thermostat'],
             },
-            '14': {
+            14: {
                 friendly_name: 'switch_group',
                 retain: false,
                 devices: ['power_plug', 'bulb_2'],
             },
-            '21': {
+            21: {
                 friendly_name: 'gledopto_group',
                 devices: ['GLEDOPTO_2ID/cct'],
             },
-            '9': {
+            9: {
                 friendly_name: 'ha_discovery_group',
-                devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right']
+                devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'],
             },
         },
         external_converters: [],
@@ -257,19 +257,19 @@ function stateExists() {
 }
 
 const defaultState = {
-    "0x000b57fffec6a5b2": {
-        "state": "ON",
-        "brightness": 50,
-        "color_temp": 370,
-        "linkquality": 99,
+    '0x000b57fffec6a5b2': {
+        state: 'ON',
+        brightness: 50,
+        color_temp: 370,
+        linkquality: 99,
     },
-    "0x0017880104e45517": {
-        "brightness": 255
+    '0x0017880104e45517': {
+        brightness: 255,
     },
-    "1": {
-        'state': 'ON',
-    }
-}
+    1: {
+        state: 'ON',
+    },
+};
 
 function getDefaultState() {
     return defaultState;

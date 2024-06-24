@@ -1,14 +1,21 @@
 /* eslint-disable brace-style */
-import * as settings from '../util/settings';
 import * as zhc from 'zigbee-herdsman-converters';
+
+import * as settings from '../util/settings';
 
 export default class Group {
     public zh: zh.Group;
     private resolveDevice: (ieeeAddr: string) => Device;
 
-    get ID(): number {return this.zh.groupID;}
-    get options(): GroupOptions {return {...settings.getGroup(this.ID)};}
-    get name(): string {return this.options?.friendly_name || this.ID.toString();}
+    get ID(): number {
+        return this.zh.groupID;
+    }
+    get options(): GroupOptions {
+        return {...settings.getGroup(this.ID)};
+    }
+    get name(): string {
+        return this.options?.friendly_name || this.ID.toString();
+    }
 
     constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device) {
         this.zh = group;
@@ -24,9 +31,15 @@ export default class Group {
     }
 
     membersDefinitions(): zhc.Definition[] {
-        return this.membersDevices().map((d) => d.definition).filter((d) => d);
+        return this.membersDevices()
+            .map((d) => d.definition)
+            .filter((d) => d);
     }
 
-    isDevice(): this is Device {return false;}
-    isGroup(): this is Group {return true;}
+    isDevice(): this is Device {
+        return false;
+    }
+    isGroup(): this is Group {
+        return true;
+    }
 }

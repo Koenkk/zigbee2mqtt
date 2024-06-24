@@ -1,11 +1,12 @@
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import logger from '../util/logger';
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
-import Extension from './extension';
-import bind from 'bind-decorator';
+
 import Device from '../model/device';
+import logger from '../util/logger';
+import * as settings from '../util/settings';
+import utils from '../util/utils';
+import Extension from './extension';
 
 /**
  * This extension calls the zigbee-herdsman-converters definition configure() method
@@ -89,8 +90,12 @@ export default class Configure extends Extension {
         this.eventBus.onReconfigure(this, this.onReconfigure);
     }
 
-    private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
-        force=false, throwError=false): Promise<void> {
+    private async configure(
+        device: Device,
+        event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
+        force = false,
+        throwError = false,
+    ): Promise<void> {
         if (!force) {
             if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
                 return;

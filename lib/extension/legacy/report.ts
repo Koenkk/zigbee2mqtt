@@ -1,10 +1,13 @@
 import * as zhc from 'zigbee-herdsman-converters';
+
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
 import Extension from '../extension';
 
 const defaultConfiguration = {
-    minimumReportInterval: 3, maximumReportInterval: 300, reportableChange: 1,
+    minimumReportInterval: 3,
+    maximumReportInterval: 300,
+    reportableChange: 1,
 };
 
 const ZNLDP12LM = zhc.definitions.find((d) => d.model === 'ZNLDP12LM');
@@ -19,43 +22,47 @@ const devicesNotSupportingReporting = [
 
 const reportKey = 1;
 
-const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean, colorXY: boolean}> => {
+const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean; colorXY: boolean}> => {
     if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') === undefined) {
         await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
     }
 
     const value = endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') as number;
     return {
-        colorTemperature: (value & 1<<4) > 0,
-        colorXY: (value & 1<<3) > 0,
+        colorTemperature: (value & (1 << 4)) > 0,
+        colorXY: (value & (1 << 3)) > 0,
     };
 };
 
-const clusters: {[s: string]:
-    {attribute: string, minimumReportInterval: number, maximumReportInterval: number, reportableChange: number
-        condition?: (endpoint: zh.Endpoint) => Promise<boolean>}[]} =
-{
-    'genOnOff': [
-        {attribute: 'onOff', ...defaultConfiguration, minimumReportInterval: 0, reportableChange: 0},
-    ],
-    'genLevelCtrl': [
-        {attribute: 'currentLevel', ...defaultConfiguration},
-    ],
-    'lightingColorCtrl': [
+const clusters: {
+    [s: string]: {
+        attribute: string;
+        minimumReportInterval: number;
+        maximumReportInterval: number;
+        reportableChange: number;
+        condition?: (endpoint: zh.Endpoint) => Promise<boolean>;
+    }[];
+} = {
+    genOnOff: [{attribute: 'onOff', ...defaultConfiguration, minimumReportInterval: 0, reportableChange: 0}],
+    genLevelCtrl: [{attribute: 'currentLevel', ...defaultConfiguration}],
+    lightingColorCtrl: [
         {
-            attribute: 'colorTemperature', ...defaultConfiguration,
+            attribute: 'colorTemperature',
+            ...defaultConfiguration,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
         },
         {
-            attribute: 'currentX', ...defaultConfiguration,
+            attribute: 'currentX',
+            ...defaultConfiguration,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
         {
-            attribute: 'currentY', ...defaultConfiguration,
+            attribute: 'currentY',
+            ...defaultConfiguration,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
     ],
-    'closuresWindowCovering': [
+    closuresWindowCovering: [
         {attribute: 'currentPositionLiftPercentage', ...defaultConfiguration},
         {attribute: 'currentPositionTiltPercentage', ...defaultConfiguration},
     ],
@@ -86,28 +93,25 @@ export default class Report extends Extension {
         try {
             for (const ep of device.zh.endpoints) {
                 for (const [cluster, configuration] of Object.entries(clusters)) {
-                    if (ep.supportsInputCluster(cluster) &&
-                        !this.shouldIgnoreClusterForDevice(cluster, device.definition)) {
+                    if (ep.supportsInputCluster(cluster) && !this.shouldIgnoreClusterForDevice(cluster, device.definition)) {
                         logger.debug(`${term1} reporting for '${device.ieeeAddr}' - ${ep.ID} - ${cluster}`);
 
                         const items = [];
                         for (const entry of configuration) {
                             if (!entry.hasOwnProperty('condition') || (await entry.condition(ep))) {
                                 const toAdd = {...entry};
-                                if (!this.enabled) toAdd.maximumReportInterval = 0xFFFF;
+                                if (!this.enabled) toAdd.maximumReportInterval = 0xffff;
                                 items.push(toAdd);
                                 delete items[items.length - 1].condition;
                             }
                         }
 
-                        this.enabled ?
-                            await ep.bind(cluster, this.zigbee.firstCoordinatorEndpoint()) :
-                            await ep.unbind(cluster, this.zigbee.firstCoordinatorEndpoint());
+                        this.enabled
+                            ? await ep.bind(cluster, this.zigbee.firstCoordinatorEndpoint())
+                            : await ep.unbind(cluster, this.zigbee.firstCoordinatorEndpoint());
 
                         await ep.configureReporting(cluster, items);
-                        logger.info(
-                            `Successfully ${term2} reporting for '${device.ieeeAddr}' - ${ep.ID} - ${cluster}`,
-                        );
+                        logger.info(`Successfully ${term2} reporting for '${device.ieeeAddr}' - ${ep.ID} - ${cluster}`);
                     }
                 }
             }
@@ -121,9 +125,7 @@ export default class Report extends Extension {
 
             this.eventBus.emitDevicesChanged();
         } catch (error) {
-            logger.error(
-                `Failed to ${term1.toLowerCase()} reporting for '${device.ieeeAddr}' - ${error.stack}`,
-            );
+            logger.error(`Failed to ${term1.toLowerCase()} reporting for '${device.ieeeAddr}' - ${error.stack}`);
 
             this.failed.add(device.ieeeAddr);
         }
@@ -143,26 +145,26 @@ export default class Report extends Extension {
         // else reconfigure is done in zigbee-herdsman-converters ikea.js/bulbOnEvent
         // configuredReportings are saved since Zigbee2MQTT 1.17.0
         // https://github.com/Koenkk/zigbee2mqtt/issues/966
-        if (this.enabled && messageType === 'deviceAnnounce' && device.isIkeaTradfri() &&
-            device.zh.endpoints.filter((e) => e.configuredReportings.length === 0).length ===
-                device.zh.endpoints.length) {
+        if (
+            this.enabled &&
+            messageType === 'deviceAnnounce' &&
+            device.isIkeaTradfri() &&
+            device.zh.endpoints.filter((e) => e.configuredReportings.length === 0).length === device.zh.endpoints.length
+        ) {
             return true;
         }
 
         // These do not support reproting.
         // https://github.com/Koenkk/zigbee-herdsman/issues/110
         const philipsIgnoreSw = ['5.127.1.26581', '5.130.1.30000'];
-        if (device.zh.manufacturerName === 'Philips' &&
-            philipsIgnoreSw.includes(device.zh.softwareBuildID)) return false;
+        if (device.zh.manufacturerName === 'Philips' && philipsIgnoreSw.includes(device.zh.softwareBuildID)) return false;
 
         if (device.zh.interviewing === true) return false;
         if (device.zh.type !== 'Router' || device.zh.powerSource === 'Battery') return false;
         // Gledopto devices don't support reporting.
-        if (devicesNotSupportingReporting.includes(device.definition) ||
-            device.definition.vendor === 'Gledopto') return false;
+        if (devicesNotSupportingReporting.includes(device.definition) || device.definition.vendor === 'Gledopto') return false;
 
-        if (this.enabled && device.zh.meta.hasOwnProperty('reporting') &&
-            device.zh.meta.reporting === reportKey) {
+        if (this.enabled && device.zh.meta.hasOwnProperty('reporting') && device.zh.meta.reporting === reportKey) {
             return false;
         }
 

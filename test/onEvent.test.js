@@ -44,8 +44,8 @@ describe('On event', () => {
     it('Should call with start event', async () => {
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
         const call = mockOnEvent.mock.calls[0];
-        expect(call[0]).toBe('start')
-        expect(call[1]).toStrictEqual({})
+        expect(call[0]).toBe('start');
+        expect(call[1]).toStrictEqual({});
         expect(call[2]).toBe(device);
         expect(call[3]).toStrictEqual(settings.getDevice(device.ieeeAddr));
         expect(call[4]).toStrictEqual({});
@@ -57,8 +57,8 @@ describe('On event', () => {
         await flushPromises();
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
         const call = mockOnEvent.mock.calls[0];
-        expect(call[0]).toBe('stop')
-        expect(call[1]).toStrictEqual({})
+        expect(call[0]).toBe('stop');
+        expect(call[1]).toStrictEqual({});
         expect(call[2]).toBe(device);
     });
 
