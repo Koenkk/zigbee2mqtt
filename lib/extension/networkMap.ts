@@ -128,7 +128,7 @@ export default class NetworkMap extends Extension {
             }
 
             // Add the device with its labels to the graph as a node.
-            text += `  "${node.ieeeAddr}" [` + style + `, label="{${labels.join('|')}}"];\n`;
+            text += `  "${node.ieeeAddr}" [${style}, label="{${labels.join('|')}}"];\n`;
 
             /**
              * Add an edge between the device and its child to the graph

@@ -47,9 +47,7 @@ export default class Frontend extends Extension {
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
             if (!fs.existsSync(this.sslCert) || !fs.existsSync(this.sslKey)) {
-                logger.error(
-                    `defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`,
-                ); /* eslint-disable-line max-len */
+                logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`);
                 return false;
             }
             return true;

@@ -140,9 +140,7 @@ export class Controller {
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
             logger.error('Failed to start zigbee');
-            logger.error(
-                'Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions',
-            ); /* eslint-disable-line max-len */
+            logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions');
             logger.error('Exiting...');
             logger.error(error.stack);
             return this.exit(1);

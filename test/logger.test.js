@@ -30,8 +30,7 @@ describe('Logger', () => {
         consoleWriteSpy.mockClear();
     });
 
-    afterEach(async () => {
-    });
+    afterEach(async () => {});
 
     it('Create log directory', () => {
         const dirs = fs.readdirSync(dir.name);
@@ -50,7 +49,7 @@ describe('Logger', () => {
         expect(fs.readdirSync(dir.name).length).toBe(21);
         logger.cleanup();
         expect(fs.readdirSync(dir.name).length).toBe(10);
-    })
+    });
 
     it('Should not cleanup when there is no timestamp set', () => {
         for (let i = 30; i < 40; i++) {
@@ -61,7 +60,7 @@ describe('Logger', () => {
         expect(fs.readdirSync(dir.name).length).toBe(21);
         logger.cleanup();
         expect(fs.readdirSync(dir.name).length).toBe(21);
-    })
+    });
 
     it('Set and get log level', () => {
         logger.setLevel('debug');
@@ -82,8 +81,7 @@ describe('Logger', () => {
 
     it('Add/remove transport', () => {
         class DummyTransport extends Transport {
-            log(info, callback) {
-            }
+            log(info, callback) {}
         }
 
         expect(logger.winston.transports.length).toBe(2);
@@ -143,7 +141,7 @@ describe('Logger', () => {
     it('Should allow to symlink logs to current directory', () => {
         settings.set(['advanced', 'log_symlink_current'], true);
         logger.init();
-        expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy()
+        expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy();
 
         jest.resetModules();
     });
@@ -192,51 +190,51 @@ describe('Logger', () => {
     it('Logs Error object', () => {
         const logSpy = jest.spyOn(logger.winston, 'log');
 
-        logger.error(new Error('msg'));// test for stack=true
+        logger.error(new Error('msg')); // test for stack=true
         expect(logSpy).toHaveBeenLastCalledWith('error', `z2m: ${new Error('msg')}`);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-    })
+    });
 
     it.each([
         [
             '^zhc:legacy:fz:(tuya|moes)',
             new RegExp(/^zhc:legacy:fz:(tuya|moes)/),
             [
-                { ns: 'zhc:legacy:fz:tuya_device12', match: true },
-                { ns: 'zhc:legacy:fz:moes_dimmer', match: true },
-                { ns: 'zhc:legacy:fz:not_moes', match: false },
-                { ns: 'zhc:legacy:fz', match: false },
-                { ns: 'zhc:legacy:fz:', match: false },
-                { ns: '1zhc:legacy:fz:tuya_device12', match: false },
-            ]
+                {ns: 'zhc:legacy:fz:tuya_device12', match: true},
+                {ns: 'zhc:legacy:fz:moes_dimmer', match: true},
+                {ns: 'zhc:legacy:fz:not_moes', match: false},
+                {ns: 'zhc:legacy:fz', match: false},
+                {ns: 'zhc:legacy:fz:', match: false},
+                {ns: '1zhc:legacy:fz:tuya_device12', match: false},
+            ],
         ],
         [
             '^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller',
             new RegExp(/^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller/),
             [
-                { ns: 'zh:ember:uart:ash', match: true },
-                { ns: 'zh:ember:uart', match: false },
-                { ns: 'zh:controller', match: true },
-                { ns: 'zh:controller:', match: true },
-                { ns: 'azh:controller:', match: false },
-            ]
+                {ns: 'zh:ember:uart:ash', match: true},
+                {ns: 'zh:ember:uart', match: false},
+                {ns: 'zh:controller', match: true},
+                {ns: 'zh:controller:', match: true},
+                {ns: 'azh:controller:', match: false},
+            ],
         ],
         [
             '',
             undefined,
             [
-                { ns: 'zhc:legacy:fz:tuya_device12', match: false },
-                { ns: 'zhc:legacy:fz:moes_dimmer', match: false },
-                { ns: 'zhc:legacy:fz:not_moes', match: false },
-                { ns: 'zhc:legacy:fz', match: false },
-                { ns: 'zhc:legacy:fz:', match: false },
-                { ns: '1zhc:legacy:fz:tuya_device12', match: false },
-                { ns: 'zh:ember:uart:ash', match: false },
-                { ns: 'zh:ember:uart', match: false },
-                { ns: 'zh:controller', match: false },
-                { ns: 'zh:controller:', match: false },
-                { ns: 'azh:controller:', match: false },
-            ]
+                {ns: 'zhc:legacy:fz:tuya_device12', match: false},
+                {ns: 'zhc:legacy:fz:moes_dimmer', match: false},
+                {ns: 'zhc:legacy:fz:not_moes', match: false},
+                {ns: 'zhc:legacy:fz', match: false},
+                {ns: 'zhc:legacy:fz:', match: false},
+                {ns: '1zhc:legacy:fz:tuya_device12', match: false},
+                {ns: 'zh:ember:uart:ash', match: false},
+                {ns: 'zh:ember:uart', match: false},
+                {ns: 'zh:controller', match: false},
+                {ns: 'zh:controller:', match: false},
+                {ns: 'azh:controller:', match: false},
+            ],
         ],
     ])('Sets namespace ignore for debug level %s', (ignore, expected, tests) => {
         logger.setLevel('debug');
@@ -264,7 +262,7 @@ describe('Logger', () => {
         });
         logger.init();
         logger.setLevel('debug');
-        expect(logger.getNamespacedLevels()).toStrictEqual({"z2m:mqtt": 'warning'});
+        expect(logger.getNamespacedLevels()).toStrictEqual({'z2m:mqtt': 'warning'});
         expect(logger.getLevel()).toStrictEqual('debug');
 
         const logSpy = jest.spyOn(logger.winston, 'log');
@@ -283,9 +281,9 @@ describe('Logger', () => {
 
     it('Logs with namespaced levels or default - lower', () => {
         expect(logger.getNamespacedLevels()).toStrictEqual({});
-        logger.setNamespacedLevels({'z2m:mqtt': 'info'})
+        logger.setNamespacedLevels({'z2m:mqtt': 'info'});
         logger.setLevel('warning');
-        expect(logger.getNamespacedLevels()).toStrictEqual({"z2m:mqtt": 'info'});
+        expect(logger.getNamespacedLevels()).toStrictEqual({'z2m:mqtt': 'info'});
         expect(logger.getLevel()).toStrictEqual('warning');
 
         const logSpy = jest.spyOn(logger.winston, 'log');
@@ -332,7 +330,7 @@ describe('Logger', () => {
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
 
         logger.setLevel('info');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels = Object.assign({}, nsLevels));
+        expect(logger.cachedNamespacedLevels).toStrictEqual((cachedNSLevels = Object.assign({}, nsLevels)));
         logger.info(`unconfigured namespace info should now pass after default level change and cache reset`, 'z2m:mqtt');
         expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(4);
@@ -340,8 +338,8 @@ describe('Logger', () => {
         expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(5);
 
-        logger.setNamespacedLevels({'zh:zstack': 'warning'})
-        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels = {'zh:zstack': 'warning'});
+        logger.setNamespacedLevels({'zh:zstack': 'warning'});
+        expect(logger.cachedNamespacedLevels).toStrictEqual((cachedNSLevels = {'zh:zstack': 'warning'}));
         logger.error(`error logged`, 'zh:zstack:unpi:writer');
         expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(6);

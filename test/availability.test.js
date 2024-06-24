@@ -13,7 +13,8 @@ import stringify from 'json-stable-stringify-without-jsonify';
 const mocks = [MQTT.publish, logger.warning, logger.info];
 const devices = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(
-    ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr])
+    ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr],
+);
 
 describe('Availability', () => {
     let controller;
@@ -21,12 +22,12 @@ describe('Availability', () => {
     let resetExtension = async () => {
         await controller.enableDisableExtension(false, 'Availability');
         await controller.enableDisableExtension(true, 'Availability');
-    }
+    };
 
     const setTimeAndAdvanceTimers = async (value) => {
         jest.setSystemTime(Date.now() + value);
         await jest.advanceTimersByTimeAsync(value);
-    }
+    };
 
     beforeAll(async () => {
         jest.spyOn(utils, 'sleep').mockImplementation(async (seconds) => {});
@@ -44,24 +45,28 @@ describe('Availability', () => {
         settings.reRead();
         settings.set(['availability'], true);
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], false);
-        Object.values(devices).forEach(d => d.lastSeen = utils.minutes(1));
+        Object.values(devices).forEach((d) => (d.lastSeen = utils.minutes(1)));
         mocks.forEach((m) => m.mockClear());
         await resetExtension();
         Object.values(devices).forEach((d) => d.ping.mockClear());
     });
 
-    afterEach(async () => {
-    })
+    afterEach(async () => {});
 
     afterAll(async () => {
         await controller.stop();
         jest.useRealTimers();
-    })
+    });
 
     it('Should publish availability on startup for device where it is enabled for', async () => {
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
-        expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bulb_color_2/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).not.toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color_2/availability',
+            'online',
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should ping on startup for enabled and unavailable devices', async () => {
@@ -71,8 +76,8 @@ describe('Availability', () => {
         await resetExtension();
 
         await setTimeAndAdvanceTimers(utils.minutes(1));
-        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);// enabled/unavailable
-        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(0);// enabled/available
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1); // enabled/unavailable
+        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(0); // enabled/available
     });
 
     it('Should not ping on startup for available or disabled devices', async () => {
@@ -83,8 +88,8 @@ describe('Availability', () => {
         await resetExtension();
 
         await setTimeAndAdvanceTimers(utils.minutes(1));
-        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);// enabled/available
-        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(0);// disabled/unavailable
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0); // enabled/available
+        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(0); // disabled/unavailable
     });
 
     it('Should publish offline for active device when not seen for 10 minutes', async () => {
@@ -134,7 +139,9 @@ describe('Availability', () => {
 
         await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
 
-        devices.bulb_color.ping.mockImplementationOnce(() => {throw new Error('failed')});
+        devices.bulb_color.ping.mockImplementationOnce(() => {
+            throw new Error('failed');
+        });
 
         await setTimeAndAdvanceTimers(utils.minutes(15));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
@@ -218,7 +225,7 @@ describe('Availability', () => {
         await setTimeAndAdvanceTimers(utils.minutes(9));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
-        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', stringify({id: "bulb_color"}));
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', stringify({id: 'bulb_color'}));
         await flushPromises();
 
         await setTimeAndAdvanceTimers(utils.minutes(3));
@@ -249,7 +256,7 @@ describe('Availability', () => {
         //@ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         //@ts-expect-error private
-        controller.state.set(device, {state: 'OFF'})
+        controller.state.set(device, {state: 'OFF'});
 
         const endpoint = devices.bulb_color.getEndpoint(1);
         endpoint.read.mockClear();
@@ -269,7 +276,9 @@ describe('Availability', () => {
         endpoint.read.mockClear();
         await zigbeeHerdsman.events.deviceAnnounce({device: devices.bulb_color});
         await flushPromises();
-        endpoint.read.mockImplementationOnce(() => {throw new Error('')});
+        endpoint.read.mockImplementationOnce(() => {
+            throw new Error('');
+        });
         await setTimeAndAdvanceTimers(utils.seconds(3));
         expect(endpoint.read).toHaveBeenCalledTimes(1);
     });
@@ -293,7 +302,12 @@ describe('Availability', () => {
         MQTT.publish.mockClear();
         await setTimeAndAdvanceTimers(utils.hours(26));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {
@@ -332,15 +346,30 @@ describe('Availability', () => {
         await resetExtension();
         devices.bulb_color_2.ping.mockClear();
 
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/group_tradfri_remote/availability',
+            'online',
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
         MQTT.publish.mockClear();
         await setTimeAndAdvanceTimers(utils.minutes(12));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability', 'offline', {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/group_tradfri_remote/availability',
+            'offline',
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
         MQTT.publish.mockClear();
         devices.bulb_color_2.lastSeen = Date.now();
         await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color_2});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_tradfri_remote/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/group_tradfri_remote/availability',
+            'online',
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should clear the ping queue on stop', async () => {
@@ -358,7 +387,7 @@ describe('Availability', () => {
         expect(availability.pingQueue).toEqual([]);
         // Validate the stop-interrupt implicitly by checking that it prevents further function invocations
         expect(publishAvailabilitySpy).not.toHaveBeenCalled();
-        devices.bulb_color.ping = jest.fn();// ensure reset
+        devices.bulb_color.ping = jest.fn(); // ensure reset
     });
 
     it('Should prevent instance restart', async () => {

@@ -32,12 +32,22 @@ describe('Report', () => {
         expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
         expect(endpoint.bind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [{"attribute": "onOff", "maximumReportInterval": 300, "minimumReportInterval": 0, "reportableChange": 0}]);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [
+            {attribute: 'onOff', maximumReportInterval: 300, minimumReportInterval: 0, reportableChange: 0},
+        ]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [
+            {attribute: 'currentLevel', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+        ]);
         if (colorXY) {
-            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentX", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentY", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [
+                {attribute: 'colorTemperature', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+                {attribute: 'currentX', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+                {attribute: 'currentY', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+            ]);
         } else {
-            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [
+                {attribute: 'colorTemperature', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+            ]);
         }
     }
 
@@ -51,12 +61,22 @@ describe('Report', () => {
         expect(endpoint.unbind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
         expect(endpoint.unbind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [{"attribute": "onOff", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 0, "reportableChange": 0}]);
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [{"attribute": "currentLevel", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genOnOff', [
+            {attribute: 'onOff', maximumReportInterval: 0xffff, minimumReportInterval: 0, reportableChange: 0},
+        ]);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('genLevelCtrl', [
+            {attribute: 'currentLevel', maximumReportInterval: 0xffff, minimumReportInterval: 3, reportableChange: 1},
+        ]);
         if (colorXY) {
-            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentX", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}, {"attribute": "currentY", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [
+                {attribute: 'colorTemperature', maximumReportInterval: 0xffff, minimumReportInterval: 3, reportableChange: 1},
+                {attribute: 'currentX', maximumReportInterval: 0xffff, minimumReportInterval: 3, reportableChange: 1},
+                {attribute: 'currentY', maximumReportInterval: 0xffff, minimumReportInterval: 3, reportableChange: 1},
+            ]);
         } else {
-            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 0xFFFF, "minimumReportInterval": 3, "reportableChange": 1}]);
+            expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [
+                {attribute: 'colorTemperature', maximumReportInterval: 0xffff, minimumReportInterval: 3, reportableChange: 1},
+            ]);
         }
     }
 
@@ -68,7 +88,7 @@ describe('Report', () => {
             endpoint.bind.mockClear();
             endpoint.unbind.mockClear();
         }
-    }
+    };
 
     beforeAll(async () => {
         jest.useFakeTimers();
@@ -130,7 +150,7 @@ describe('Report', () => {
         device.save.mockClear();
         mockClear(device);
         delete device.meta.reporting;
-        const data = {onOff: 1}
+        const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
@@ -155,7 +175,9 @@ describe('Report', () => {
     it('Should not mark as configured when reporting setup fails', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
-        endpoint.bind.mockImplementationOnce(async () => {throw new Error('failed')});
+        endpoint.bind.mockImplementationOnce(async () => {
+            throw new Error('failed');
+        });
         delete device.meta.reporting;
         mockClear(device);
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -183,7 +205,7 @@ describe('Report', () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
         mockClear(device);
-        const data = {onOff: 1}
+        const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
@@ -233,7 +255,9 @@ describe('Report', () => {
     it('Should not configure reporting again when it already failed once', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         const endpoint = device.getEndpoint(1);
-        endpoint.bind.mockImplementationOnce(async () => {throw new Error('failed')});
+        endpoint.bind.mockImplementationOnce(async () => {
+            throw new Error('failed');
+        });
         delete device.meta.reporting;
         mockClear(device);
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -281,8 +305,10 @@ describe('Report', () => {
         expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', coordinatorEndpoint);
         expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', coordinatorEndpoint);
         expect(endpoint.bind).toHaveBeenCalledWith('lightingColorCtrl', coordinatorEndpoint);
-        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorCapabilities'])
-        expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [{"attribute": "colorTemperature", "maximumReportInterval": 300, "minimumReportInterval": 3, "reportableChange": 1}]);
+        expect(endpoint.read).toHaveBeenCalledWith('lightingColorCtrl', ['colorCapabilities']);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith('lightingColorCtrl', [
+            {attribute: 'colorTemperature', maximumReportInterval: 300, minimumReportInterval: 3, reportableChange: 1},
+        ]);
         expect(endpoint.configureReporting).toHaveBeenCalledTimes(3);
         endpoint.configuredReportings = configuredReportings;
     });
