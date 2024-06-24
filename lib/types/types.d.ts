@@ -54,8 +54,8 @@ declare global {
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     interface KeyValue {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [s: string]: any;
     }
 
