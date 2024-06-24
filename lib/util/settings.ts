@@ -251,6 +251,7 @@ function write(): void {
                 actual[type].filter((f: string, i: number) => i !== 0)
                     .map((f: string) => yaml.readIfExists(data.joinPath(f), {}))
                     .map((c: KeyValue) => Object.keys(c))
+                    // @ts-ignore
                     .forEach((k: string) => delete content[k]);
             }
 
