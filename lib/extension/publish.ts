@@ -1,4 +1,3 @@
-
 import * as settings from '../util/settings';
 import * as zhc from 'zigbee-herdsman-converters';
 import * as philips from 'zigbee-herdsman-converters/lib/philips';
@@ -37,7 +36,12 @@ const defaultGroupConverters = [
     zhc.toZigbee.light_hue_saturation_step,
 ];
 
-interface ParsedTopic {ID: string, endpoint: string, attribute: string, type: 'get' | 'set'}
+interface ParsedTopic {
+    ID: string;
+    endpoint: string;
+    attribute: string;
+    type: 'get' | 'set';
+}
 
 export default class Publish extends Extension {
     async start(): Promise<void> {
@@ -92,8 +96,14 @@ export default class Publish extends Extension {
         }
     }
 
-    legacyRetrieveState(re: Device | Group, converter: zhc.Tz.Converter, result: zhc.Tz.ConvertSetResult,
-        target: zh.Endpoint | zh.Group, key: string, meta: zhc.Tz.Meta): void {
+    legacyRetrieveState(
+        re: Device | Group,
+        converter: zhc.Tz.Converter,
+        result: zhc.Tz.ConvertSetResult,
+        target: zh.Endpoint | zh.Group,
+        key: string,
+        meta: zhc.Tz.Meta,
+    ): void {
         // It's possible for devices to get out of sync when writing an attribute that's not reportable.
         // So here we re-read the value after a specified timeout, this timeout could for example be the
         // transition time of a color change or for forcing a state read for devices that don't
@@ -102,9 +112,7 @@ export default class Publish extends Extension {
         // ever issue a read here, as we assume the device will properly report changes.
         // Only do this when the retrieve_state option is enabled for this device.
         // retrieve_state == deprecated
-        if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') &&
-            re.options.retrieve_state
-        ) {
+        if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') && re.options.retrieve_state) {
             setTimeout(() => converter.convertGet(target, key, meta), result.readAfterWriteTime);
         }
     }
@@ -148,9 +156,12 @@ export default class Publish extends Extension {
         const device = re instanceof Device ? re.zh : null;
         const entitySettings = re.options;
         const entityState = this.state.get(re);
-        const membersState = re instanceof Group ?
-            Object.fromEntries(re.zh.members.map((e) => [e.getDevice().ieeeAddr,
-                this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))])) : null;
+        const membersState =
+            re instanceof Group
+                ? Object.fromEntries(
+                      re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))]),
+                  )
+                : null;
         let converters: zhc.Tz.Converter[];
         {
             if (Array.isArray(definition)) {
@@ -217,8 +228,7 @@ export default class Publish extends Extension {
 
             if (!usedConverters.hasOwnProperty(endpointOrGroupID)) usedConverters[endpointOrGroupID] = [];
             /* istanbul ignore next */
-            const converter = converters.find((c) =>
-                c.key.includes(key) && (!c.endpoint || c.endpoint == endpointName));
+            const converter = converters.find((c) => c.key.includes(key) && (!c.endpoint || c.endpoint == endpointName));
 
             if (parsedTopic.type === 'set' && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
@@ -232,16 +242,21 @@ export default class Publish extends Extension {
             }
 
             // If the endpoint_name name is a number, try to map it to a friendlyName
-            if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isEndpoint(localTarget) &&
-                re.endpointName(localTarget)) {
+            if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isEndpoint(localTarget) && re.endpointName(localTarget)) {
                 endpointName = re.endpointName(localTarget);
             }
 
             // Converter didn't return a result, skip
             const entitySettingsKeyValue: KeyValue = entitySettings;
             const meta = {
-                endpoint_name: endpointName, options: entitySettingsKeyValue,
-                message: {...message}, logger, device, state: entityState, membersState, mapped: definition,
+                endpoint_name: endpointName,
+                options: entitySettingsKeyValue,
+                message: {...message},
+                logger,
+                device,
+                state: entityState,
+                membersState,
+                mapped: definition,
             };
 
             // Strip endpoint name from meta.message properties.
@@ -291,8 +306,7 @@ export default class Publish extends Extension {
                     continue;
                 }
             } catch (error) {
-                const message =
-                    `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
+                const message = `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
                 logger.debug(error.stack);
                 await this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
@@ -307,8 +321,7 @@ export default class Publish extends Extension {
             }
         }
 
-        const scenesChanged = Object.values(usedConverters)
-            .some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
+        const scenesChanged = Object.values(usedConverters).some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
         if (scenesChanged) {
             this.eventBus.emitScenesChanged({entity: re});
         }

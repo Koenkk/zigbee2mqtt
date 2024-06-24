@@ -31,9 +31,7 @@ export default class DeviceGroupMembership extends Extension {
             return;
         }
 
-        const response = await endpoint.command(
-            `genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {},
-        );
+        const response = await endpoint.command(`genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {});
 
         if (!response) {
             logger.warning(`Couldn't get group membership of ${device.ieeeAddr}`);

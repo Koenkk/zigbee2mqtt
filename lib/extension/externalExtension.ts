@@ -15,7 +15,7 @@ export default class ExternalExtension extends Extension {
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.requestLookup = {'save': this.saveExtension, 'remove': this.removeExtension};
+        this.requestLookup = {save: this.saveExtension, remove: this.removeExtension};
         await this.loadUserDefinedExtensions();
         await this.publishExtensions();
     }
@@ -24,13 +24,16 @@ export default class ExternalExtension extends Extension {
         return data.joinPath('extension');
     }
 
-    private getListOfUserDefinedExtensions(): {name: string, code: string}[] {
+    private getListOfUserDefinedExtensions(): {name: string; code: string}[] {
         const basePath = this.getExtensionsBasePath();
         if (fs.existsSync(basePath)) {
-            return fs.readdirSync(basePath).filter((f) => f.endsWith('.js')).map((fileName) => {
-                const extensionFilePath = path.join(basePath, fileName);
-                return {'name': fileName, 'code': fs.readFileSync(extensionFilePath, 'utf-8')};
-            });
+            return fs
+                .readdirSync(basePath)
+                .filter((f) => f.endsWith('.js'))
+                .map((fileName) => {
+                    const extensionFilePath = path.join(basePath, fileName);
+                    return {name: fileName, code: fs.readFileSync(extensionFilePath, 'utf-8')};
+                });
         } else {
             return [];
         }
@@ -88,8 +91,7 @@ export default class ExternalExtension extends Extension {
     @bind private async loadExtension(ConstructorClass: typeof Extension): Promise<void> {
         await this.enableDisableExtension(false, ConstructorClass.name);
         // @ts-ignore
-        await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState,
-            this.eventBus, settings, logger));
+        await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
 
     private async loadUserDefinedExtensions(): Promise<void> {
@@ -100,9 +102,15 @@ export default class ExternalExtension extends Extension {
 
     private async publishExtensions(): Promise<void> {
         const extensions = this.getListOfUserDefinedExtensions();
-        await this.mqtt.publish('bridge/extensions', stringify(extensions), {
-            retain: true,
-            qos: 0,
-        }, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish(
+            'bridge/extensions',
+            stringify(extensions),
+            {
+                retain: true,
+                qos: 0,
+            },
+            settings.get().mqtt.base_topic,
+            true,
+        );
     }
 }

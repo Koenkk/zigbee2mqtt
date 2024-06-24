@@ -28,18 +28,19 @@ objectAssignDeep(schema, schemaJson);
 
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
-export type LogLevel = typeof LOG_LEVELS[number];
+export type LogLevel = (typeof LOG_LEVELS)[number];
 
 // DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
 const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
 const NULLABLE_SETTINGS = ['homeassistant'];
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
-const ajvRestartRequired = new Ajv({allErrors: true})
-    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
+const ajvRestartRequired = new Ajv({allErrors: true}).addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
 const ajvRestartRequiredDeviceOptions = new Ajv({allErrors: true})
-    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson.definitions.device);
+    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s})
+    .compile(schemaJson.definitions.device);
 const ajvRestartRequiredGroupOptions = new Ajv({allErrors: true})
-    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson.definitions.group);
+    .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s})
+    .compile(schemaJson.definitions.group);
 const defaults: RecursivePartial<Settings> = {
     permit_join: false,
     external_converters: [],
@@ -92,7 +93,7 @@ const defaults: RecursivePartial<Settings> = {
         log_debug_to_mqtt_frontend: false,
         log_debug_namespace_ignore: '',
         pan_id: 0x1a62,
-        ext_pan_id: [0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD, 0xDD],
+        ext_pan_id: [0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd],
         channel: 11,
         adapter_concurrent: null,
         adapter_delay: null,
@@ -129,12 +130,15 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.homeassistant) {
-        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status',
-            legacy_entity_attributes: true, legacy_triggers: true};
+        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status', legacy_entity_attributes: true, legacy_triggers: true};
         const sLegacy = {};
         if (_settingsWithDefaults.advanced) {
-            for (const key of ['homeassistant_legacy_triggers', 'homeassistant_discovery_topic',
-                'homeassistant_legacy_entity_attributes', 'homeassistant_status_topic']) {
+            for (const key of [
+                'homeassistant_legacy_triggers',
+                'homeassistant_discovery_topic',
+                'homeassistant_legacy_entity_attributes',
+                'homeassistant_status_topic',
+            ]) {
                 // @ts-ignore
                 if (_settingsWithDefaults.advanced[key] !== undefined) {
                     // @ts-ignore
@@ -202,7 +206,7 @@ function loadSettingsWithDefaults(): void {
     _settingsWithDefaults.whitelist && _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
 }
 
-function parseValueRef(text: string): {filename: string, key: string} | null {
+function parseValueRef(text: string): {filename: string; key: string} | null {
     const match = /!(.*) (.*)/g.exec(text);
     if (match) {
         let filename = match[1];
@@ -248,7 +252,8 @@ function write(): void {
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
-                actual[type].filter((f: string, i: number) => i !== 0)
+                actual[type]
+                    .filter((f: string, i: number) => i !== 0)
                     .map((f: string) => yaml.readIfExists(data.joinPath(f), {}))
                     .map((c: KeyValue) => Object.keys(c))
                     .forEach((k: string) => delete content[k]);
@@ -273,10 +278,7 @@ export function validate(): string[] {
         getInternalSettings();
     } catch (error) {
         if (error.name === 'YAMLException') {
-            return [
-                `Your YAML file: '${error.file}' is invalid ` +
-                `(use https://jsonformatter.org/yaml-validator to find and fix the issue)`,
-            ];
+            return [`Your YAML file: '${error.file}' is invalid ` + `(use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
         }
 
         return [error.message];
@@ -287,18 +289,30 @@ export function validate(): string[] {
     }
 
     const errors = [];
-    if (_settings.advanced && _settings.advanced.network_key && typeof _settings.advanced.network_key === 'string' &&
-        _settings.advanced.network_key !== 'GENERATE') {
+    if (
+        _settings.advanced &&
+        _settings.advanced.network_key &&
+        typeof _settings.advanced.network_key === 'string' &&
+        _settings.advanced.network_key !== 'GENERATE'
+    ) {
         errors.push(`advanced.network_key: should be array or 'GENERATE' (is '${_settings.advanced.network_key}')`);
     }
 
-    if (_settings.advanced && _settings.advanced.pan_id && typeof _settings.advanced.pan_id === 'string' &&
-        _settings.advanced.pan_id !== 'GENERATE') {
+    if (
+        _settings.advanced &&
+        _settings.advanced.pan_id &&
+        typeof _settings.advanced.pan_id === 'string' &&
+        _settings.advanced.pan_id !== 'GENERATE'
+    ) {
         errors.push(`advanced.pan_id: should be number or 'GENERATE' (is '${_settings.advanced.pan_id}')`);
     }
 
-    if (_settings.advanced && _settings.advanced.ext_pan_id && typeof _settings.advanced.ext_pan_id === 'string' &&
-        _settings.advanced.ext_pan_id !== 'GENERATE') {
+    if (
+        _settings.advanced &&
+        _settings.advanced.ext_pan_id &&
+        typeof _settings.advanced.ext_pan_id === 'string' &&
+        _settings.advanced.ext_pan_id !== 'GENERATE'
+    ) {
         errors.push(`advanced.ext_pan_id: should be array or 'GENERATE' (is '${_settings.advanced.ext_pan_id}')`);
     }
 
@@ -403,7 +417,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                 if (key !== 'properties' && obj[key]) {
                     const type = (obj[key].type || 'object').toString();
                     const envPart = path.reduce((acc, val) => `${acc}${val}_`, '');
-                    const envVariableName = (`ZIGBEE2MQTT_CONFIG_${envPart}${key}`).toUpperCase();
+                    const envVariableName = `ZIGBEE2MQTT_CONFIG_${envPart}${key}`.toUpperCase();
                     if (process.env[envVariableName]) {
                         const setting = path.reduce((acc, val) => {
                             /* eslint-disable-line */ // @ts-ignore
@@ -497,8 +511,7 @@ export function apply(settings: Record<string, unknown>): boolean {
     write();
 
     ajvRestartRequired(settings);
-    const restartRequired = ajvRestartRequired.errors &&
-        !!ajvRestartRequired.errors.find((e) => e.keyword === 'requiresRestart');
+    const restartRequired = ajvRestartRequired.errors && !!ajvRestartRequired.errors.find((e) => e.keyword === 'requiresRestart');
     return restartRequired;
 }
 
@@ -606,8 +619,7 @@ export function removeDevice(IDorName: string): void {
 
     // Remove device from groups
     if (settings.groups) {
-        const regex =
-            new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
+        const regex = new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
             group.devices = group.devices.filter((device) => !device.match(regex));
         }
@@ -700,7 +712,7 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
         validator = ajvRestartRequiredDeviceOptions;
     } else if (getGroup(IDorName)) {
         objectAssignDeep(settings.groups[getGroup(IDorName).ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID], NULLABLE_SETTINGS );
+        utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID], NULLABLE_SETTINGS);
         validator = ajvRestartRequiredGroupOptions;
     } else {
         throw new Error(`Device or group '${IDorName}' does not exist`);

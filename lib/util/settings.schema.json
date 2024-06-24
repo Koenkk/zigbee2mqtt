@@ -1,969 +1,959 @@
 {
-  "type": "object",
-  "properties": {
-    "homeassistant": {
-      "title": "Home Assistant integration",
-      "requiresRestart": true,
-      "description": "Home Assistant integration (MQTT discovery)",
-      "default": false,
-      "oneOf": [
-        {
-          "type": "boolean",
-          "title": "Home Assistant (simple)"
-        },
-        {
-          "type": "object",
-          "title": "Home Assistant (advanced)",
-          "properties": {
-            "legacy_triggers": {
-              "type": "boolean",
-              "title": "Home Assistant legacy triggers",
-              "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
-              "default": true
-            },
-            "discovery_topic": {
-              "type": "string",
-              "title": "Homeassistant discovery topic",
-              "description": "Home Assistant discovery topic",
-              "requiresRestart": true,
-              "examples": ["homeassistant"]
-            },
-            "legacy_entity_attributes": {
-              "type": "boolean",
-              "title": "Home Assistant legacy entity attributes",
-              "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-              "default": true
-            },
-            "status_topic": {
-              "type": "string",
-              "title": "Home Assistant status topic",
-              "description": "Home Assistant status topic",
-              "requiresRestart": true,
-              "examples": ["homeassistant/status"]
-            }
-          }
-        }
-      ]
-    },
-    "permit_join": {
-      "type": "boolean",
-      "default": false,
-      "title": "Permit join",
-      "description": "Allow new devices to join (re-applied at restart)"
-    },
-    "availability": {
-      "oneOf": [
-        {
-          "type": "boolean",
-          "title": "Availability (simple)"
-        },
-        {
-          "type": "object",
-          "title": "Availability (advanced)",
-          "properties": {
-            "active": {
-              "type": "object",
-              "title": "Active",
-              "requiresRestart": true,
-              "description": "Options for active devices (routers/mains powered)",
-              "properties": {
-                "timeout": {
-                  "type": "number",
-                  "title": "Timeout",
-                  "requiresRestart": true,
-                  "default": 10,
-                  "description": "Time after which an active device will be marked as offline in minutes"
-                }
-              }
-            },
-            "passive": {
-              "type": "object",
-              "title": "Passive",
-              "requiresRestart": true,
-              "description": "Options for passive devices (mostly battery powered)",
-              "properties": {
-                "timeout": {
-                  "type": "number",
-                  "title": "Timeout",
-                  "requiresRestart": true,
-                  "default": 1500,
-                  "description": "Time after which an passive device will be marked as offline in minutes"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "title": "Availability",
-      "requiresRestart": true,
-      "description": "Checks whether devices are online/offline"
-    },
-    "external_converters": {
-      "type": "array",
-      "title": "External converters",
-      "description": "You can define external converters to e.g. add support for a DiY device",
-      "requiresRestart": true,
-      "items": {
-        "type": "string"
-      },
-      "examples": ["DIYRuZ_FreePad.js"]
-    },
-    "mqtt": {
-      "type": "object",
-      "title": "MQTT",
-      "properties": {
-        "base_topic": {
-          "type": "string",
-          "title": "Base topic",
-          "default": "zigbee2mqtt",
-          "requiresRestart": true,
-          "description": "MQTT base topic for Zigbee2MQTT MQTT messages",
-          "examples": ["zigbee2mqtt"]
-        },
-        "server": {
-          "type": "string",
-          "title": "MQTT server",
-          "requiresRestart": true,
-          "description": "MQTT server URL (use mqtts:// for SSL/TLS connection)",
-          "examples": ["mqtt://localhost:1883"]
-        },
-        "keepalive": {
-          "type": "number",
-          "title": "Keepalive",
-          "requiresRestart": true,
-          "description": "MQTT keepalive in second",
-          "default": 60
-        },
-        "ca": {
-          "type": "string",
-          "title": "Certificate authority",
-          "requiresRestart": true,
-          "description": "Absolute path to SSL/TLS certificate of CA used to sign server and client certificates",
-          "examples": ["/etc/ssl/mqtt-ca.crt"]
-        },
-        "key": {
-          "type": "string",
-          "title": "SSL/TLS key",
-          "requiresRestart": true,
-          "description": "Absolute path to SSL/TLS key for client-authentication",
-          "examples": ["/etc/ssl/mqtt-client.key"]
-        },
-        "cert": {
-          "type": "string",
-          "title": "SSL/TLS certificate",
-          "description": "Absolute path to SSL/TLS certificate for client-authentication",
-          "requiresRestart": true,
-          "examples": ["/etc/ssl/mqtt-client.crt"]
-        },
-        "user": {
-          "type": "string",
-          "title": "User",
-          "requiresRestart": true,
-          "description": "MQTT server authentication user",
-          "examples": ["johnnysilverhand"]
-        },
-        "password": {
-          "type": "string",
-          "title": "Password",
-          "requiresRestart": true,
-          "description": "MQTT server authentication password",
-          "examples": ["ILOVEPELMENI"]
-        },
-        "client_id": {
-          "type": "string",
-          "title": "Client ID",
-          "requiresRestart": true,
-          "description": "MQTT client ID",
-          "examples": ["MY_CLIENT_ID"]
-        },
-        "reject_unauthorized": {
-          "type": "boolean",
-          "title": "Reject unauthorized",
-          "requiresRestart": true,
-          "description": "Disable self-signed SSL certificate",
-          "default": true
-        },
-        "include_device_information": {
-          "type": "boolean",
-          "title": "Include device information",
-          "description": "Include device information to mqtt messages",
-          "default": false
-        },
-        "version": {
-          "type": ["number", "null"],
-          "title": "Version",
-          "requiresRestart": true,
-          "description": "MQTT protocol version",
-          "default": 4,
-          "examples": [5]
-        },
-        "force_disable_retain": {
-          "type": "boolean",
-          "title": "Force disable retain",
-          "requiresRestart": true,
-          "description": "Disable retain for all send messages. ONLY enable if you MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
-          "default": false
-        }
-      },
-      "required": ["server"]
-    },
-    "serial": {
-      "type": "object",
-      "title": "Serial",
-      "properties": {
-        "port": {
-          "type": ["string", "null"],
-          "title": "Port",
-          "requiresRestart": true,
-          "description": "Location of the adapter. To autodetect the port, set null",
-          "examples": ["/dev/ttyACM0"]
-        },
-        "disable_led": {
-          "type": "boolean",
-          "title": "Disable led",
-          "requiresRestart": true,
-          "description": "Disable LED of the adapter if supported",
-          "default": false
-        },
-        "adapter": {
-          "type": ["string"],
-          "enum": ["deconz", "zstack", "zigate", "ezsp", "auto", "ember"],
-          "title": "Adapter",
-          "default": "auto",
-          "requiresRestart": true,
-          "description": "Adapter type, not needed unless you are experiencing problems"
-        },
-        "baudrate": {
-          "type": "number",
-          "title": "Baudrate",
-          "requiresRestart": true,
-          "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-          "examples": [38400, 57600, 115200]
-        },
-        "rtscts": {
-          "type": "boolean",
-          "title": "RTS / CTS",
-          "requiresRestart": true,
-          "description": "RTS / CTS Hardware Flow Control for serial port"
-        }
-      }
-    },
-    "blocklist": {
-      "title": "Blocklist",
-      "requiresRestart": true,
-      "description": "Block devices from the network (by ieeeAddr)",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "passlist": {
-      "title": "Passlist",
-      "requiresRestart": true,
-      "description": "Allow only certain devices to join the network (by ieeeAddr). Note that all devices not on the passlist will be removed from the network!",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "map_options": {
-      "type": "object",
-      "title": "Networkmap",
-      "properties": {
-        "graphviz": {
-          "type": "object",
-          "properties": {
-            "colors": {
-              "type": "object",
-              "properties": {
-                "fill": {
-                  "type": "object",
-                  "properties": {
-                    "enddevice": {
-                      "type": "string"
-                    },
-                    "coordinator": {
-                      "type": "string"
-                    },
-                    "router": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "font": {
-                  "type": "object",
-                  "properties": {
-                    "enddevice": {
-                      "type": "string"
-                    },
-                    "coordinator": {
-                      "type": "string"
-                    },
-                    "router": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "line": {
-                  "type": "object",
-                  "properties": {
-                    "active": {
-                      "type": "string"
-                    },
-                    "inactive": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "ota": {
-      "type": "object",
-      "title": "OTA updates",
-      "properties": {
-        "update_check_interval": {
-          "type": "number",
-          "title": "Update check interval",
-          "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
-          "default": 1440
-        },
-        "disable_automatic_update_check": {
-          "type": "boolean",
-          "title": "Disable automatic update check",
-          "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
-          "default": false
-        },
-        "ikea_ota_use_test_url": {
-          "type": "boolean",
-          "title": "IKEA TRADFRI OTA use test url",
-          "requiresRestart": true,
-          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-          "default": false
-        },
-        "zigbee_ota_override_index_location": {
-          "type": ["string", "null"],
-          "title": "OTA index override file name",
-          "requiresRestart": true,
-          "description": "Location of override OTA index file",
-          "examples": ["index.json"]
-        }
-      }
-    },
-    "frontend": {
-      "oneOf": [
-        {
-          "type": "boolean",
-          "title": "Frontend (simple)"
-        },
-        {
-          "type": "object",
-          "title": "Frontend (advanced)",
-          "properties": {
-            "port": {
-              "type": "number",
-              "title": "Port",
-              "description": "Frontend binding port. Ignored when using a unix domain socket",
-              "default": 8080,
-              "requiresRestart": true
-            },
-            "host": {
-              "type": ["string", "null"],
-              "title": "Bind host",
-              "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
-              "examples": ["127.0.0.1", "::1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
-              "requiresRestart": true
-            },
-            "auth_token": {
-              "type": ["string", "null"],
-              "title": "Auth token",
-              "description": "Enables authentication, disabled by default",
-              "requiresRestart": true
-            },
-            "url": {
-              "type": ["string", "null"],
-              "title": "URL",
-              "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
-              "requiresRestart": true
-            },
-            "ssl_cert" :  {
-              "type": ["string", "null"],
-              "title": "Certificate file path",
-              "description": "SSL Certificate file path for exposing HTTPS. The sibling property 'ssl_key' must be set for HTTPS to be activated.",
-              "requiresRestart": true
-            },
-            "ssl_key" :  {
-              "type": ["string", "null"],
-              "title": "key file path",
-              "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
-              "requiresRestart": true
-            }
-          }
-        }
-      ],
-      "title": "Frontend",
-      "requiresRestart": true
-    },
-    "devices": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^0x[\\d\\w]{16}$"
-      },
-      "patternProperties": {
-        "^.*$": {
-          "$ref": "#/definitions/device"
-        }
-      }
-    },
-    "groups": {
-      "type": "object",
-      "propertyNames": {
-        "pattern": "^[\\w].*$"
-      },
-      "patternProperties": {
-        "^.*$": {
-          "$ref": "#/definitions/group"
-        }
-      }
-    },
-    "device_options": {
-      "type": "object",
-      "title": "Options that are applied to all devices"
-    },
-    "advanced": {
-      "type": "object",
-      "title": "Advanced",
-      "properties": {
-        "legacy_api": {
-          "type": "boolean",
-          "title": "Legacy API",
-          "requiresRestart": true,
-          "description": "Disables the legacy api (false = disable)",
-          "default": true
-        },
-        "legacy_availability_payload": {
-          "type": "boolean",
-          "title": "Legacy availability payload",
-          "requiresRestart": true,
-          "description": "Payload to be used for device availability and bridge/state topics. true = text, false = JSON",
-          "default": true
-        },
-        "log_rotation": {
-          "type": "boolean",
-          "title": "Log rotation",
-          "requiresRestart": true,
-          "description": "Log rotation",
-          "default": true
-        },
-        "log_symlink_current": {
-          "type": "boolean",
-          "title": "Log symlink current",
-          "requiresRestart": true,
-          "description": "Create symlink to current logs in the log directory",
-          "default": false
-        },
-        "log_output": {
-          "type": "array",
-          "requiresRestart": true,
-          "items": {
-            "type": "string",
-            "enum": ["console", "file", "syslog"]
-          },
-          "title": "Log output",
-          "description": "Output location of the log, leave empty to suppress logging"
-        },
-        "log_directory": {
-          "type": "string",
-          "title": "Log directory",
-          "requiresRestart": true,
-          "description": "Location of log directory",
-          "examples": ["data/log/%TIMESTAMP%"]
-        },
-        "log_file": {
-          "type": "string",
-          "title": "Log file",
-          "requiresRestart": true,
-          "description": "Log file name, can also contain timestamp",
-          "examples": ["zigbee2mqtt_%TIMESTAMP%.log"],
-          "default": "log.txt"
-        },
-        "log_level": {
-          "type": "string",
-          "enum": ["error", "warning", "info", "debug", "warn"],
-          "title": "Log level",
-          "description": "Logging level",
-          "default": "info"
-        },
-        "log_namespaced_levels": {
-          "type": "object",
-          "propertyNames": {
-            "pattern": "^(z2m|zhc|zh)(:[a-z0-9]{1,})*$"
-          },
-          "additionalProperties": {
-            "type": "string",
-            "enum": ["error", "warning", "info", "debug"]
-          },
-          "title": "Log Namespaced Levels",
-          "description": "Set individual log levels for certain namespaces",
-          "default": {},
-          "examples": [
-            {"z2m:mqtt": "warning"},
-            {"zh:ember:uart:ash": "info"}
-          ]
-        },
-        "log_debug_to_mqtt_frontend": {
-          "type": "boolean",
-          "title": "Log debug to MQTT and frontend",
-          "description": "Log debug level to MQTT and frontend (may decrease overall performance)",
-          "requiresRestart": true,
-          "default": false
-        },
-        "log_debug_namespace_ignore": {
-          "type": "string",
-          "title": "Log debug namespace ignore",
-          "description": "Do not log these namespaces (regex-based) for debug level",
-          "default": "",
-          "examples": [
-            "^zhc:legacy:fz:(tuya|moes)",
-            "^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller"
-          ]
-        },
-        "log_syslog": {
-          "requiresRestart": true,
-          "oneOf": [
-            {
-              "title": "syslog (disabled)",
-              "type": "null"
-            },
-            {
-              "title": "syslog (enabled)",
-              "type": "object",
-              "properties": {
-                "host": {
-                  "type": "string",
-                  "title": "Host",
-                  "description": "The host running syslogd, defaults to localhost.",
-                  "default": "localhost"
-                },
-                "port": {
-                  "type": "number",
-                  "title": "Port",
-                  "description": "The port on the host that syslog is running on, defaults to syslogd's default port.",
-                  "default": 514
-                },
-                "protocol": {
-                  "type": "string",
-                  "title": "Protocol",
-                  "description": "The network protocol to log over (e.g. tcp4, udp4, tls4, unix, unix-connect, etc).",
-                  "default": "udp4",
-                  "examples": [
-                    "udp4",
-                    "tls4",
-                    "unix",
-                    "unix-connect"
-                  ]
-                },
-                "path": {
-                  "type": "string",
-                  "title": "Path",
-                  "description": "The path to the syslog dgram socket (i.e. /dev/log or /var/run/syslog for OS X).",
-                  "default": "/dev/log",
-                  "examples": [
-                    "/var/run/syslog"
-                  ]
-                },
-                "pid": {
-                  "type": "string",
-                  "title": "PID",
-                  "description": "PID of the process that log messages are coming from (Default process.pid).",
-                  "default": "process.pid"
-                },
-                "localhost": {
-                  "type": "string",
-                  "title": "Localhost",
-                  "description": "Host to indicate that log messages are coming from (Default: localhost).",
-                  "default": "localhost"
-                },
-                "type": {
-                  "type": "string",
-                  "title": "Type",
-                  "description": "The type of the syslog protocol to use (Default: BSD, also valid: 5424).",
-                  "default": "5424"
-                },
-                "app_name": {
-                  "type": "string",
-                  "title": "Localhost",
-                  "description": "The name of the application (Default: Zigbee2MQTT).",
-                  "default": "Zigbee2MQTT"
-                },
-                "eol": {
-                  "type": "string",
-                  "title": "eol",
-                  "description": "The end of line character to be added to the end of the message (Default: Message without modifications).",
-                  "default": "/n"
-                }
-              }
-            }
-          ]
-        },
-        "pan_id": {
-          "oneOf": [{
-              "type": "string",
-              "title": "Pan ID (string)"
-            },
-            {
-              "type": "number",
-              "title": "Pan ID (number)"
-            }
-          ],
-          "title": "Pan ID",
-          "requiresRestart": true,
-          "description": "ZigBee pan ID, changing requires repairing all devices!"
-        },
-        "ext_pan_id": {
-          "oneOf": [{
-            "type": "string",
-            "title": "Extended pan ID (string)"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "title": "Extended pan ID (array)"
-            }
-          ],
-          "title": "Ext Pan ID",
-          "requiresRestart": true,
-          "description": "Zigbee extended pan ID, changing requires repairing all devices!"
-        },
-        "channel": {
-          "type": "number",
-          "minimum": 11,
-          "maximum": 26,
-          "default": 11,
-          "title": "ZigBee channel",
-          "requiresRestart": true,
-          "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
-          "examples": [15, 20, 25]
-        },
-        "adapter_concurrent": {
-          "title": "Adapter concurrency",
-          "requiresRestart": true,
-          "type": ["number", "null"],
-          "description": "Adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)"
-        },
-        "adapter_delay": {
-          "type": ["number", "null"],
-          "requiresRestart": true,
-          "title": "Adapter delay",
-          "description": "Adapter delay"
-        },
-        "cache_state": {
-          "type": "boolean",
-          "title": "Cache state",
-          "description": "MQTT message payload will contain all attributes, not only changed ones. Has to be true when integrating via Home Assistant",
-          "default": true
-        },
-        "cache_state_persistent": {
-          "type": "boolean",
-          "title": "Persist cache state",
-          "description": "Persist cached state, only used when cache_state: true",
-          "default": true
-        },
-        "cache_state_send_on_startup": {
-          "type": "boolean",
-          "title": "Send cached state on startup",
-          "description": "Send cached state on startup, only used when cache_state: true",
-          "default": true
-        },
-        "last_seen": {
-          "type": "string",
-          "enum": ["disable", "ISO_8601", "ISO_8601_local", "epoch"],
-          "title": "Last seen",
-          "description": "Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message",
-          "default": "disable"
-        },
-        "elapsed": {
-          "type": "boolean",
-          "title": "Elapsed",
-          "description": "Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg",
-          "default": false
-        },
-        "network_key": {
-          "oneOf": [{
-              "type": "string",
-              "title": "Network key(string)"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "number"
-              },
-              "title": "Network key(array)"
-            }
-          ],
-          "title": "Network key",
-          "requiresRestart": true,
-          "description": "Network encryption key, changing requires repairing all devices!"
-        },
-        "timestamp_format": {
-          "type": "string",
-          "title": "Timestamp format",
-          "requiresRestart": true,
-          "description": "Log timestamp format",
-          "examples": ["YYYY-MM-DD HH:mm:ss"]
-        },
-        "transmit_power": {
-          "type": ["number", "null"],
-          "title": "Transmit power",
-          "requiresRestart": true,
-          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
-        },
-        "output": {
-          "type": "string",
-          "enum": ["attribute_and_json", "attribute", "json"],
-          "title": "MQTT output type",
-          "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-        },
-        "homeassistant_discovery_topic": {
-          "type": "string",
-          "title": "Homeassistant discovery topic",
-          "description": "Home Assistant discovery topic",
-          "requiresRestart": true,
-          "examples": ["homeassistant"]
-        },
-        "homeassistant_legacy_entity_attributes": {
-          "type": "boolean",
-          "title": "Home Assistant legacy entity attributes",
-          "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-          "default": true
-        },
-        "homeassistant_status_topic": {
-          "type": "string",
-          "title": "Home Assistant status topic",
-          "description": "Home Assistant status topic",
-          "requiresRestart": true,
-          "examples": ["homeassistant/status"]
-        },
-        "homeassistant_legacy_triggers": {
-          "type": "boolean",
-          "title": "Home Assistant legacy triggers",
-          "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
-          "default": true
-        },
-        "soft_reset_timeout": {
-          "type": "number",
-          "minimum": 0,
-          "requiresRestart": true,
-          "title": "Soft reset timeout (deprecated)",
-          "description": "Soft reset ZNP after timeout",
-          "readOnly": true
-        },
-        "report": {
-          "type": "boolean",
-          "title": "Reporting",
-          "requiresRestart": true,
-          "readOnly": true,
-          "description": "Enables report feature (deprecated)"
-        },
-        "baudrate": {
-          "type": "number",
-          "title": "Baudrate (deprecated)",
-          "requiresRestart": true,
-          "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-          "examples": [38400, 57600, 115200]
-        },
-        "rtscts": {
-          "type": "boolean",
-          "title": "RTS / CTS (deprecated)",
-          "requiresRestart": true,
-          "description": "RTS / CTS Hardware Flow Control for serial port"
-        },
-        "ikea_ota_use_test_url": {
-          "type": "boolean",
-          "title": "IKEA TRADFRI OTA use test url (deprecated)",
-          "requiresRestart": true,
-          "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-          "default": false
-        }
-      }
-    },
-    "experimental": {
-      "type": "object",
-      "title": "Experimental (deprecated)",
-      "properties": {
-        "transmit_power": {
-          "type": ["number", "null"],
-          "title": "Transmit power",
-          "requiresRestart": true,
-          "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
-        },
-        "output": {
-          "type": "string",
-          "enum": ["attribute_and_json", "attribute", "json"],
-          "title": "MQTT output type",
-          "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-        }
-      }
-    },
-    "whitelist": {
-      "readOnly": true,
-      "type": "array",
-      "requiresRestart": true,
-      "title": "Whitelist (deprecated, use passlist)",
-      "items": {
-        "type": "string"
-      }
-    },
-    "ban": {
-      "readOnly": true,
-      "type": "array",
-      "requiresRestart": true,
-      "title": "Ban (deprecated, use blocklist)",
-      "items": {
-        "type": "string"
-      }
-    }
-  },
-  "required": ["mqtt"],
-  "definitions": {
-    "device": {
-      "type": "object",
-      "properties": {
-        "friendly_name": {
-          "type": "string",
-          "title": "Friendly name",
-          "description": "Used in the MQTT topic of a device. By default this is the device ID",
-          "readOnly": true
-        },
-        "retain": {
-          "type": "boolean",
-          "title": "Retain",
-          "description": "Retain MQTT messages of this device"
-        },
-        "disabled": {
-          "type": "boolean",
-          "title": "Disabled",
-          "description": "Disables the device (excludes device from network scans, availability and group state updates)",
-          "requiresRestart": true
-        },
-        "retention": {
-          "type": "number",
-          "title": "Retention",
-          "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
-        },
-        "qos": {
-          "type": "number",
-          "title": "QoS",
-          "description": "QoS level for MQTT messages of this device"
-        },
-        "debounce": {
-          "type": "number",
-          "title": "Debounce",
-          "description": "Debounces messages of this device"
-        },
-        "debounce_ignore": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": ["action"],
-          "title": "Ignore debounce",
-          "description": "Protects unique payload values of specified payload properties from overriding within debounce time"
-        },
-        "optimistic": {
-          "type": "boolean",
-          "title": "Optimistic",
-          "description": "Publish optimistic state after set",
-          "default": true
-        },
-        "filtered_attributes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": ["^temperature$", "^battery$", "^action$"],
-          "title": "Filtered publish attributes",
-          "description": "Filter attributes with regex from published payload."
-        },
-        "filtered_cache": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": ["^input_actions$"],
-          "title": "Filtered attributes from cache",
-          "description": "Filter attributes with regex from being added to the cache, this prevents the attribute from being in the published payload when the value didn't change."
-        },
-        "filtered_optimistic": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "examples": ["^color_(mode|temp)$", "color"],
-          "title": "Filtered optimistic attributes",
-          "description": "Filter attributes with regex from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
-        },
-        "icon": {
-          "type": "string",
-          "title": "Icon",
-          "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) (you cannot use a path to a local file) or base64 encoded data URL (e.g. image/svg+xml;base64,PHN2ZyB3aW....R0aD)"
-        },
+    "type": "object",
+    "properties": {
         "homeassistant": {
-          "type": ["object", "null"],
-          "title": "Home Assistant",
-          "properties": {
-              "name": {
-                  "type": "string",
-                  "title": "Home Assistant name",
-                  "description": "Name of the device in Home Assistant"
-              }
-          }
-        }
-      },
-      "required": ["friendly_name"]
-    },
-    "group": {
-      "type": "object",
-      "properties": {
-        "friendly_name": {
-          "type": "string"
+            "title": "Home Assistant integration",
+            "requiresRestart": true,
+            "description": "Home Assistant integration (MQTT discovery)",
+            "default": false,
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "title": "Home Assistant (simple)"
+                },
+                {
+                    "type": "object",
+                    "title": "Home Assistant (advanced)",
+                    "properties": {
+                        "legacy_triggers": {
+                            "type": "boolean",
+                            "title": "Home Assistant legacy triggers",
+                            "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
+                            "default": true
+                        },
+                        "discovery_topic": {
+                            "type": "string",
+                            "title": "Homeassistant discovery topic",
+                            "description": "Home Assistant discovery topic",
+                            "requiresRestart": true,
+                            "examples": ["homeassistant"]
+                        },
+                        "legacy_entity_attributes": {
+                            "type": "boolean",
+                            "title": "Home Assistant legacy entity attributes",
+                            "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
+                            "default": true
+                        },
+                        "status_topic": {
+                            "type": "string",
+                            "title": "Home Assistant status topic",
+                            "description": "Home Assistant status topic",
+                            "requiresRestart": true,
+                            "examples": ["homeassistant/status"]
+                        }
+                    }
+                }
+            ]
         },
-        "retain": {
-          "type": "boolean"
+        "permit_join": {
+            "type": "boolean",
+            "default": false,
+            "title": "Permit join",
+            "description": "Allow new devices to join (re-applied at restart)"
+        },
+        "availability": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "title": "Availability (simple)"
+                },
+                {
+                    "type": "object",
+                    "title": "Availability (advanced)",
+                    "properties": {
+                        "active": {
+                            "type": "object",
+                            "title": "Active",
+                            "requiresRestart": true,
+                            "description": "Options for active devices (routers/mains powered)",
+                            "properties": {
+                                "timeout": {
+                                    "type": "number",
+                                    "title": "Timeout",
+                                    "requiresRestart": true,
+                                    "default": 10,
+                                    "description": "Time after which an active device will be marked as offline in minutes"
+                                }
+                            }
+                        },
+                        "passive": {
+                            "type": "object",
+                            "title": "Passive",
+                            "requiresRestart": true,
+                            "description": "Options for passive devices (mostly battery powered)",
+                            "properties": {
+                                "timeout": {
+                                    "type": "number",
+                                    "title": "Timeout",
+                                    "requiresRestart": true,
+                                    "default": 1500,
+                                    "description": "Time after which an passive device will be marked as offline in minutes"
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "title": "Availability",
+            "requiresRestart": true,
+            "description": "Checks whether devices are online/offline"
+        },
+        "external_converters": {
+            "type": "array",
+            "title": "External converters",
+            "description": "You can define external converters to e.g. add support for a DiY device",
+            "requiresRestart": true,
+            "items": {
+                "type": "string"
+            },
+            "examples": ["DIYRuZ_FreePad.js"]
+        },
+        "mqtt": {
+            "type": "object",
+            "title": "MQTT",
+            "properties": {
+                "base_topic": {
+                    "type": "string",
+                    "title": "Base topic",
+                    "default": "zigbee2mqtt",
+                    "requiresRestart": true,
+                    "description": "MQTT base topic for Zigbee2MQTT MQTT messages",
+                    "examples": ["zigbee2mqtt"]
+                },
+                "server": {
+                    "type": "string",
+                    "title": "MQTT server",
+                    "requiresRestart": true,
+                    "description": "MQTT server URL (use mqtts:// for SSL/TLS connection)",
+                    "examples": ["mqtt://localhost:1883"]
+                },
+                "keepalive": {
+                    "type": "number",
+                    "title": "Keepalive",
+                    "requiresRestart": true,
+                    "description": "MQTT keepalive in second",
+                    "default": 60
+                },
+                "ca": {
+                    "type": "string",
+                    "title": "Certificate authority",
+                    "requiresRestart": true,
+                    "description": "Absolute path to SSL/TLS certificate of CA used to sign server and client certificates",
+                    "examples": ["/etc/ssl/mqtt-ca.crt"]
+                },
+                "key": {
+                    "type": "string",
+                    "title": "SSL/TLS key",
+                    "requiresRestart": true,
+                    "description": "Absolute path to SSL/TLS key for client-authentication",
+                    "examples": ["/etc/ssl/mqtt-client.key"]
+                },
+                "cert": {
+                    "type": "string",
+                    "title": "SSL/TLS certificate",
+                    "description": "Absolute path to SSL/TLS certificate for client-authentication",
+                    "requiresRestart": true,
+                    "examples": ["/etc/ssl/mqtt-client.crt"]
+                },
+                "user": {
+                    "type": "string",
+                    "title": "User",
+                    "requiresRestart": true,
+                    "description": "MQTT server authentication user",
+                    "examples": ["johnnysilverhand"]
+                },
+                "password": {
+                    "type": "string",
+                    "title": "Password",
+                    "requiresRestart": true,
+                    "description": "MQTT server authentication password",
+                    "examples": ["ILOVEPELMENI"]
+                },
+                "client_id": {
+                    "type": "string",
+                    "title": "Client ID",
+                    "requiresRestart": true,
+                    "description": "MQTT client ID",
+                    "examples": ["MY_CLIENT_ID"]
+                },
+                "reject_unauthorized": {
+                    "type": "boolean",
+                    "title": "Reject unauthorized",
+                    "requiresRestart": true,
+                    "description": "Disable self-signed SSL certificate",
+                    "default": true
+                },
+                "include_device_information": {
+                    "type": "boolean",
+                    "title": "Include device information",
+                    "description": "Include device information to mqtt messages",
+                    "default": false
+                },
+                "version": {
+                    "type": ["number", "null"],
+                    "title": "Version",
+                    "requiresRestart": true,
+                    "description": "MQTT protocol version",
+                    "default": 4,
+                    "examples": [5]
+                },
+                "force_disable_retain": {
+                    "type": "boolean",
+                    "title": "Force disable retain",
+                    "requiresRestart": true,
+                    "description": "Disable retain for all send messages. ONLY enable if you MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
+                    "default": false
+                }
+            },
+            "required": ["server"]
+        },
+        "serial": {
+            "type": "object",
+            "title": "Serial",
+            "properties": {
+                "port": {
+                    "type": ["string", "null"],
+                    "title": "Port",
+                    "requiresRestart": true,
+                    "description": "Location of the adapter. To autodetect the port, set null",
+                    "examples": ["/dev/ttyACM0"]
+                },
+                "disable_led": {
+                    "type": "boolean",
+                    "title": "Disable led",
+                    "requiresRestart": true,
+                    "description": "Disable LED of the adapter if supported",
+                    "default": false
+                },
+                "adapter": {
+                    "type": ["string"],
+                    "enum": ["deconz", "zstack", "zigate", "ezsp", "auto", "ember"],
+                    "title": "Adapter",
+                    "default": "auto",
+                    "requiresRestart": true,
+                    "description": "Adapter type, not needed unless you are experiencing problems"
+                },
+                "baudrate": {
+                    "type": "number",
+                    "title": "Baudrate",
+                    "requiresRestart": true,
+                    "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
+                    "examples": [38400, 57600, 115200]
+                },
+                "rtscts": {
+                    "type": "boolean",
+                    "title": "RTS / CTS",
+                    "requiresRestart": true,
+                    "description": "RTS / CTS Hardware Flow Control for serial port"
+                }
+            }
+        },
+        "blocklist": {
+            "title": "Blocklist",
+            "requiresRestart": true,
+            "description": "Block devices from the network (by ieeeAddr)",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "passlist": {
+            "title": "Passlist",
+            "requiresRestart": true,
+            "description": "Allow only certain devices to join the network (by ieeeAddr). Note that all devices not on the passlist will be removed from the network!",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "map_options": {
+            "type": "object",
+            "title": "Networkmap",
+            "properties": {
+                "graphviz": {
+                    "type": "object",
+                    "properties": {
+                        "colors": {
+                            "type": "object",
+                            "properties": {
+                                "fill": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enddevice": {
+                                            "type": "string"
+                                        },
+                                        "coordinator": {
+                                            "type": "string"
+                                        },
+                                        "router": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "font": {
+                                    "type": "object",
+                                    "properties": {
+                                        "enddevice": {
+                                            "type": "string"
+                                        },
+                                        "coordinator": {
+                                            "type": "string"
+                                        },
+                                        "router": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "line": {
+                                    "type": "object",
+                                    "properties": {
+                                        "active": {
+                                            "type": "string"
+                                        },
+                                        "inactive": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ota": {
+            "type": "object",
+            "title": "OTA updates",
+            "properties": {
+                "update_check_interval": {
+                    "type": "number",
+                    "title": "Update check interval",
+                    "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
+                    "default": 1440
+                },
+                "disable_automatic_update_check": {
+                    "type": "boolean",
+                    "title": "Disable automatic update check",
+                    "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
+                    "default": false
+                },
+                "ikea_ota_use_test_url": {
+                    "type": "boolean",
+                    "title": "IKEA TRADFRI OTA use test url",
+                    "requiresRestart": true,
+                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
+                    "default": false
+                },
+                "zigbee_ota_override_index_location": {
+                    "type": ["string", "null"],
+                    "title": "OTA index override file name",
+                    "requiresRestart": true,
+                    "description": "Location of override OTA index file",
+                    "examples": ["index.json"]
+                }
+            }
+        },
+        "frontend": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "title": "Frontend (simple)"
+                },
+                {
+                    "type": "object",
+                    "title": "Frontend (advanced)",
+                    "properties": {
+                        "port": {
+                            "type": "number",
+                            "title": "Port",
+                            "description": "Frontend binding port. Ignored when using a unix domain socket",
+                            "default": 8080,
+                            "requiresRestart": true
+                        },
+                        "host": {
+                            "type": ["string", "null"],
+                            "title": "Bind host",
+                            "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
+                            "examples": ["127.0.0.1", "::1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
+                            "requiresRestart": true
+                        },
+                        "auth_token": {
+                            "type": ["string", "null"],
+                            "title": "Auth token",
+                            "description": "Enables authentication, disabled by default",
+                            "requiresRestart": true
+                        },
+                        "url": {
+                            "type": ["string", "null"],
+                            "title": "URL",
+                            "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
+                            "requiresRestart": true
+                        },
+                        "ssl_cert": {
+                            "type": ["string", "null"],
+                            "title": "Certificate file path",
+                            "description": "SSL Certificate file path for exposing HTTPS. The sibling property 'ssl_key' must be set for HTTPS to be activated.",
+                            "requiresRestart": true
+                        },
+                        "ssl_key": {
+                            "type": ["string", "null"],
+                            "title": "key file path",
+                            "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
+                            "requiresRestart": true
+                        }
+                    }
+                }
+            ],
+            "title": "Frontend",
+            "requiresRestart": true
         },
         "devices": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+            "type": "object",
+            "propertyNames": {
+                "pattern": "^0x[\\d\\w]{16}$"
+            },
+            "patternProperties": {
+                "^.*$": {
+                    "$ref": "#/definitions/device"
+                }
+            }
         },
-        "optimistic": {
-          "type": "boolean"
+        "groups": {
+            "type": "object",
+            "propertyNames": {
+                "pattern": "^[\\w].*$"
+            },
+            "patternProperties": {
+                "^.*$": {
+                    "$ref": "#/definitions/group"
+                }
+            }
         },
-        "qos": {
-          "type": "number"
+        "device_options": {
+            "type": "object",
+            "title": "Options that are applied to all devices"
         },
-        "off_state": {
-          "type": ["string"],
-          "enum": ["all_members_off", "last_member_state"],
-          "title": "Group off state",
-          "default": "auto",
-          "requiresRestart": true,
-          "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group members are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
+        "advanced": {
+            "type": "object",
+            "title": "Advanced",
+            "properties": {
+                "legacy_api": {
+                    "type": "boolean",
+                    "title": "Legacy API",
+                    "requiresRestart": true,
+                    "description": "Disables the legacy api (false = disable)",
+                    "default": true
+                },
+                "legacy_availability_payload": {
+                    "type": "boolean",
+                    "title": "Legacy availability payload",
+                    "requiresRestart": true,
+                    "description": "Payload to be used for device availability and bridge/state topics. true = text, false = JSON",
+                    "default": true
+                },
+                "log_rotation": {
+                    "type": "boolean",
+                    "title": "Log rotation",
+                    "requiresRestart": true,
+                    "description": "Log rotation",
+                    "default": true
+                },
+                "log_symlink_current": {
+                    "type": "boolean",
+                    "title": "Log symlink current",
+                    "requiresRestart": true,
+                    "description": "Create symlink to current logs in the log directory",
+                    "default": false
+                },
+                "log_output": {
+                    "type": "array",
+                    "requiresRestart": true,
+                    "items": {
+                        "type": "string",
+                        "enum": ["console", "file", "syslog"]
+                    },
+                    "title": "Log output",
+                    "description": "Output location of the log, leave empty to suppress logging"
+                },
+                "log_directory": {
+                    "type": "string",
+                    "title": "Log directory",
+                    "requiresRestart": true,
+                    "description": "Location of log directory",
+                    "examples": ["data/log/%TIMESTAMP%"]
+                },
+                "log_file": {
+                    "type": "string",
+                    "title": "Log file",
+                    "requiresRestart": true,
+                    "description": "Log file name, can also contain timestamp",
+                    "examples": ["zigbee2mqtt_%TIMESTAMP%.log"],
+                    "default": "log.txt"
+                },
+                "log_level": {
+                    "type": "string",
+                    "enum": ["error", "warning", "info", "debug", "warn"],
+                    "title": "Log level",
+                    "description": "Logging level",
+                    "default": "info"
+                },
+                "log_namespaced_levels": {
+                    "type": "object",
+                    "propertyNames": {
+                        "pattern": "^(z2m|zhc|zh)(:[a-z0-9]{1,})*$"
+                    },
+                    "additionalProperties": {
+                        "type": "string",
+                        "enum": ["error", "warning", "info", "debug"]
+                    },
+                    "title": "Log Namespaced Levels",
+                    "description": "Set individual log levels for certain namespaces",
+                    "default": {},
+                    "examples": [{"z2m:mqtt": "warning"}, {"zh:ember:uart:ash": "info"}]
+                },
+                "log_debug_to_mqtt_frontend": {
+                    "type": "boolean",
+                    "title": "Log debug to MQTT and frontend",
+                    "description": "Log debug level to MQTT and frontend (may decrease overall performance)",
+                    "requiresRestart": true,
+                    "default": false
+                },
+                "log_debug_namespace_ignore": {
+                    "type": "string",
+                    "title": "Log debug namespace ignore",
+                    "description": "Do not log these namespaces (regex-based) for debug level",
+                    "default": "",
+                    "examples": ["^zhc:legacy:fz:(tuya|moes)", "^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller"]
+                },
+                "log_syslog": {
+                    "requiresRestart": true,
+                    "oneOf": [
+                        {
+                            "title": "syslog (disabled)",
+                            "type": "null"
+                        },
+                        {
+                            "title": "syslog (enabled)",
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "type": "string",
+                                    "title": "Host",
+                                    "description": "The host running syslogd, defaults to localhost.",
+                                    "default": "localhost"
+                                },
+                                "port": {
+                                    "type": "number",
+                                    "title": "Port",
+                                    "description": "The port on the host that syslog is running on, defaults to syslogd's default port.",
+                                    "default": 514
+                                },
+                                "protocol": {
+                                    "type": "string",
+                                    "title": "Protocol",
+                                    "description": "The network protocol to log over (e.g. tcp4, udp4, tls4, unix, unix-connect, etc).",
+                                    "default": "udp4",
+                                    "examples": ["udp4", "tls4", "unix", "unix-connect"]
+                                },
+                                "path": {
+                                    "type": "string",
+                                    "title": "Path",
+                                    "description": "The path to the syslog dgram socket (i.e. /dev/log or /var/run/syslog for OS X).",
+                                    "default": "/dev/log",
+                                    "examples": ["/var/run/syslog"]
+                                },
+                                "pid": {
+                                    "type": "string",
+                                    "title": "PID",
+                                    "description": "PID of the process that log messages are coming from (Default process.pid).",
+                                    "default": "process.pid"
+                                },
+                                "localhost": {
+                                    "type": "string",
+                                    "title": "Localhost",
+                                    "description": "Host to indicate that log messages are coming from (Default: localhost).",
+                                    "default": "localhost"
+                                },
+                                "type": {
+                                    "type": "string",
+                                    "title": "Type",
+                                    "description": "The type of the syslog protocol to use (Default: BSD, also valid: 5424).",
+                                    "default": "5424"
+                                },
+                                "app_name": {
+                                    "type": "string",
+                                    "title": "Localhost",
+                                    "description": "The name of the application (Default: Zigbee2MQTT).",
+                                    "default": "Zigbee2MQTT"
+                                },
+                                "eol": {
+                                    "type": "string",
+                                    "title": "eol",
+                                    "description": "The end of line character to be added to the end of the message (Default: Message without modifications).",
+                                    "default": "/n"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "pan_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "title": "Pan ID (string)"
+                        },
+                        {
+                            "type": "number",
+                            "title": "Pan ID (number)"
+                        }
+                    ],
+                    "title": "Pan ID",
+                    "requiresRestart": true,
+                    "description": "ZigBee pan ID, changing requires repairing all devices!"
+                },
+                "ext_pan_id": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "title": "Extended pan ID (string)"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            },
+                            "title": "Extended pan ID (array)"
+                        }
+                    ],
+                    "title": "Ext Pan ID",
+                    "requiresRestart": true,
+                    "description": "Zigbee extended pan ID, changing requires repairing all devices!"
+                },
+                "channel": {
+                    "type": "number",
+                    "minimum": 11,
+                    "maximum": 26,
+                    "default": 11,
+                    "title": "ZigBee channel",
+                    "requiresRestart": true,
+                    "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
+                    "examples": [15, 20, 25]
+                },
+                "adapter_concurrent": {
+                    "title": "Adapter concurrency",
+                    "requiresRestart": true,
+                    "type": ["number", "null"],
+                    "description": "Adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)"
+                },
+                "adapter_delay": {
+                    "type": ["number", "null"],
+                    "requiresRestart": true,
+                    "title": "Adapter delay",
+                    "description": "Adapter delay"
+                },
+                "cache_state": {
+                    "type": "boolean",
+                    "title": "Cache state",
+                    "description": "MQTT message payload will contain all attributes, not only changed ones. Has to be true when integrating via Home Assistant",
+                    "default": true
+                },
+                "cache_state_persistent": {
+                    "type": "boolean",
+                    "title": "Persist cache state",
+                    "description": "Persist cached state, only used when cache_state: true",
+                    "default": true
+                },
+                "cache_state_send_on_startup": {
+                    "type": "boolean",
+                    "title": "Send cached state on startup",
+                    "description": "Send cached state on startup, only used when cache_state: true",
+                    "default": true
+                },
+                "last_seen": {
+                    "type": "string",
+                    "enum": ["disable", "ISO_8601", "ISO_8601_local", "epoch"],
+                    "title": "Last seen",
+                    "description": "Add a last_seen attribute to MQTT messages, contains date/time of last Zigbee message",
+                    "default": "disable"
+                },
+                "elapsed": {
+                    "type": "boolean",
+                    "title": "Elapsed",
+                    "description": "Add an elapsed attribute to MQTT messages, contains milliseconds since the previous msg",
+                    "default": false
+                },
+                "network_key": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "title": "Network key(string)"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            },
+                            "title": "Network key(array)"
+                        }
+                    ],
+                    "title": "Network key",
+                    "requiresRestart": true,
+                    "description": "Network encryption key, changing requires repairing all devices!"
+                },
+                "timestamp_format": {
+                    "type": "string",
+                    "title": "Timestamp format",
+                    "requiresRestart": true,
+                    "description": "Log timestamp format",
+                    "examples": ["YYYY-MM-DD HH:mm:ss"]
+                },
+                "transmit_power": {
+                    "type": ["number", "null"],
+                    "title": "Transmit power",
+                    "requiresRestart": true,
+                    "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
+                },
+                "output": {
+                    "type": "string",
+                    "enum": ["attribute_and_json", "attribute", "json"],
+                    "title": "MQTT output type",
+                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
+                },
+                "homeassistant_discovery_topic": {
+                    "type": "string",
+                    "title": "Homeassistant discovery topic",
+                    "description": "Home Assistant discovery topic",
+                    "requiresRestart": true,
+                    "examples": ["homeassistant"]
+                },
+                "homeassistant_legacy_entity_attributes": {
+                    "type": "boolean",
+                    "title": "Home Assistant legacy entity attributes",
+                    "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
+                    "default": true
+                },
+                "homeassistant_status_topic": {
+                    "type": "string",
+                    "title": "Home Assistant status topic",
+                    "description": "Home Assistant status topic",
+                    "requiresRestart": true,
+                    "examples": ["homeassistant/status"]
+                },
+                "homeassistant_legacy_triggers": {
+                    "type": "boolean",
+                    "title": "Home Assistant legacy triggers",
+                    "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
+                    "default": true
+                },
+                "soft_reset_timeout": {
+                    "type": "number",
+                    "minimum": 0,
+                    "requiresRestart": true,
+                    "title": "Soft reset timeout (deprecated)",
+                    "description": "Soft reset ZNP after timeout",
+                    "readOnly": true
+                },
+                "report": {
+                    "type": "boolean",
+                    "title": "Reporting",
+                    "requiresRestart": true,
+                    "readOnly": true,
+                    "description": "Enables report feature (deprecated)"
+                },
+                "baudrate": {
+                    "type": "number",
+                    "title": "Baudrate (deprecated)",
+                    "requiresRestart": true,
+                    "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
+                    "examples": [38400, 57600, 115200]
+                },
+                "rtscts": {
+                    "type": "boolean",
+                    "title": "RTS / CTS (deprecated)",
+                    "requiresRestart": true,
+                    "description": "RTS / CTS Hardware Flow Control for serial port"
+                },
+                "ikea_ota_use_test_url": {
+                    "type": "boolean",
+                    "title": "IKEA TRADFRI OTA use test url (deprecated)",
+                    "requiresRestart": true,
+                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
+                    "default": false
+                }
+            }
         },
-        "filtered_attributes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        "experimental": {
+            "type": "object",
+            "title": "Experimental (deprecated)",
+            "properties": {
+                "transmit_power": {
+                    "type": ["number", "null"],
+                    "title": "Transmit power",
+                    "requiresRestart": true,
+                    "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
+                },
+                "output": {
+                    "type": "string",
+                    "enum": ["attribute_and_json", "attribute", "json"],
+                    "title": "MQTT output type",
+                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
+                }
+            }
+        },
+        "whitelist": {
+            "readOnly": true,
+            "type": "array",
+            "requiresRestart": true,
+            "title": "Whitelist (deprecated, use passlist)",
+            "items": {
+                "type": "string"
+            }
+        },
+        "ban": {
+            "readOnly": true,
+            "type": "array",
+            "requiresRestart": true,
+            "title": "Ban (deprecated, use blocklist)",
+            "items": {
+                "type": "string"
+            }
         }
-      },
-      "required": ["friendly_name"]
+    },
+    "required": ["mqtt"],
+    "definitions": {
+        "device": {
+            "type": "object",
+            "properties": {
+                "friendly_name": {
+                    "type": "string",
+                    "title": "Friendly name",
+                    "description": "Used in the MQTT topic of a device. By default this is the device ID",
+                    "readOnly": true
+                },
+                "retain": {
+                    "type": "boolean",
+                    "title": "Retain",
+                    "description": "Retain MQTT messages of this device"
+                },
+                "disabled": {
+                    "type": "boolean",
+                    "title": "Disabled",
+                    "description": "Disables the device (excludes device from network scans, availability and group state updates)",
+                    "requiresRestart": true
+                },
+                "retention": {
+                    "type": "number",
+                    "title": "Retention",
+                    "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
+                },
+                "qos": {
+                    "type": "number",
+                    "title": "QoS",
+                    "description": "QoS level for MQTT messages of this device"
+                },
+                "debounce": {
+                    "type": "number",
+                    "title": "Debounce",
+                    "description": "Debounces messages of this device"
+                },
+                "debounce_ignore": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": ["action"],
+                    "title": "Ignore debounce",
+                    "description": "Protects unique payload values of specified payload properties from overriding within debounce time"
+                },
+                "optimistic": {
+                    "type": "boolean",
+                    "title": "Optimistic",
+                    "description": "Publish optimistic state after set",
+                    "default": true
+                },
+                "filtered_attributes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": ["^temperature$", "^battery$", "^action$"],
+                    "title": "Filtered publish attributes",
+                    "description": "Filter attributes with regex from published payload."
+                },
+                "filtered_cache": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": ["^input_actions$"],
+                    "title": "Filtered attributes from cache",
+                    "description": "Filter attributes with regex from being added to the cache, this prevents the attribute from being in the published payload when the value didn't change."
+                },
+                "filtered_optimistic": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "examples": ["^color_(mode|temp)$", "color"],
+                    "title": "Filtered optimistic attributes",
+                    "description": "Filter attributes with regex from optimistic publish payload when calling /set. (This has no effect if optimistic is set to false)."
+                },
+                "icon": {
+                    "type": "string",
+                    "title": "Icon",
+                    "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) (you cannot use a path to a local file) or base64 encoded data URL (e.g. image/svg+xml;base64,PHN2ZyB3aW....R0aD)"
+                },
+                "homeassistant": {
+                    "type": ["object", "null"],
+                    "title": "Home Assistant",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Home Assistant name",
+                            "description": "Name of the device in Home Assistant"
+                        }
+                    }
+                }
+            },
+            "required": ["friendly_name"]
+        },
+        "group": {
+            "type": "object",
+            "properties": {
+                "friendly_name": {
+                    "type": "string"
+                },
+                "retain": {
+                    "type": "boolean"
+                },
+                "devices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "optimistic": {
+                    "type": "boolean"
+                },
+                "qos": {
+                    "type": "number"
+                },
+                "off_state": {
+                    "type": ["string"],
+                    "enum": ["all_members_off", "last_member_state"],
+                    "title": "Group off state",
+                    "default": "auto",
+                    "requiresRestart": true,
+                    "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group members are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
+                },
+                "filtered_attributes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": ["friendly_name"]
+        }
     }
-  }
 }

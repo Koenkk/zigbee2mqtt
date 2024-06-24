@@ -11,21 +11,17 @@ export default class OnEvent extends Extension {
         }
 
         this.eventBus.onDeviceMessage(this, (data) => this.callOnEvent(data.device, 'message', this.convertData(data)));
-        this.eventBus.onDeviceJoined(this,
-            (data) => this.callOnEvent(data.device, 'deviceJoined', this.convertData(data)));
-        this.eventBus.onDeviceInterview(this,
-            (data) => this.callOnEvent(data.device, 'deviceInterview', this.convertData(data)));
-        this.eventBus.onDeviceAnnounce(this,
-            (data) => this.callOnEvent(data.device, 'deviceAnnounce', this.convertData(data)));
-        this.eventBus.onDeviceNetworkAddressChanged(this,
-            (data) => this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)));
-        this.eventBus.onEntityOptionsChanged(this,
-            async (data) => {
-                if (data.entity.isDevice()) {
-                    await this.callOnEvent(data.entity, 'deviceOptionsChanged', data)
-                        .then(() => this.eventBus.emitDevicesChanged());
-                }
-            });
+        this.eventBus.onDeviceJoined(this, (data) => this.callOnEvent(data.device, 'deviceJoined', this.convertData(data)));
+        this.eventBus.onDeviceInterview(this, (data) => this.callOnEvent(data.device, 'deviceInterview', this.convertData(data)));
+        this.eventBus.onDeviceAnnounce(this, (data) => this.callOnEvent(data.device, 'deviceAnnounce', this.convertData(data)));
+        this.eventBus.onDeviceNetworkAddressChanged(this, (data) =>
+            this.callOnEvent(data.device, 'deviceNetworkAddressChanged', this.convertData(data)),
+        );
+        this.eventBus.onEntityOptionsChanged(this, async (data) => {
+            if (data.entity.isDevice()) {
+                await this.callOnEvent(data.entity, 'deviceOptionsChanged', data).then(() => this.eventBus.emitDevicesChanged());
+            }
+        });
     }
 
     private convertData(data: KeyValue): KeyValue {

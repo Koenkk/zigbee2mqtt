@@ -32,15 +32,36 @@ import ExtensionExternalConverters from './extension/externalConverters';
 import ExtensionExternalExtension from './extension/externalExtension';
 
 const AllExtensions = [
-    ExtensionPublish, ExtensionReceive, ExtensionNetworkMap, ExtensionSoftReset, ExtensionHomeAssistant,
-    ExtensionConfigure, ExtensionDeviceGroupMembership, ExtensionBridgeLegacy, ExtensionBridge, ExtensionGroups,
-    ExtensionBind, ExtensionReport, ExtensionOnEvent, ExtensionOTAUpdate,
-    ExtensionExternalConverters, ExtensionFrontend, ExtensionExternalExtension, ExtensionAvailability,
+    ExtensionPublish,
+    ExtensionReceive,
+    ExtensionNetworkMap,
+    ExtensionSoftReset,
+    ExtensionHomeAssistant,
+    ExtensionConfigure,
+    ExtensionDeviceGroupMembership,
+    ExtensionBridgeLegacy,
+    ExtensionBridge,
+    ExtensionGroups,
+    ExtensionBind,
+    ExtensionReport,
+    ExtensionOnEvent,
+    ExtensionOTAUpdate,
+    ExtensionExternalConverters,
+    ExtensionFrontend,
+    ExtensionExternalExtension,
+    ExtensionAvailability,
 ];
 
-type ExtensionArgs = [Zigbee, MQTT, State, PublishEntityState, EventBus,
-    enableDisableExtension: (enable: boolean, name: string) => Promise<void>, restartCallback: () => Promise<void>,
-    addExtension: (extension: Extension) => Promise<void>];
+type ExtensionArgs = [
+    Zigbee,
+    MQTT,
+    State,
+    PublishEntityState,
+    EventBus,
+    enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+    restartCallback: () => Promise<void>,
+    addExtension: (extension: Extension) => Promise<void>,
+];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sdNotify: any = null;
@@ -72,8 +93,16 @@ export class Controller {
         this.exitCallback = exitCallback;
 
         // Initialize extensions.
-        this.extensionArgs = [this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus,
-            this.enableDisableExtension, this.restartCallback, this.addExtension];
+        this.extensionArgs = [
+            this.zigbee,
+            this.mqtt,
+            this.state,
+            this.publishEntityState,
+            this.eventBus,
+            this.enableDisableExtension,
+            this.restartCallback,
+            this.addExtension,
+        ];
 
         this.extensions = [
             new ExtensionOnEvent(...this.extensionArgs),
@@ -111,7 +140,9 @@ export class Controller {
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
             logger.error('Failed to start zigbee');
-            logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions'); /* eslint-disable-line max-len */
+            logger.error(
+                'Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions',
+            ); /* eslint-disable-line max-len */
             logger.error('Exiting...');
             logger.error(error.stack);
             return this.exit(1);
@@ -130,9 +161,9 @@ export class Controller {
         const devices = this.zigbee.devices(false);
         logger.info(`Currently ${devices.length} devices are joined:`);
         for (const device of devices) {
-            const model = device.isSupported ?
-                `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}` :
-                'Not supported';
+            const model = device.isSupported
+                ? `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}`
+                : 'Not supported';
             logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
         }
 
@@ -170,8 +201,7 @@ export class Controller {
             }
         }
 
-        this.eventBus.onLastSeenChanged(this,
-            (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
+        this.eventBus.onLastSeenChanged(this, (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
 
         logger.info(`Zigbee2MQTT started!`);
 
@@ -237,8 +267,7 @@ export class Controller {
         await this.stop();
     }
 
-    @bind async publishEntityState(entity: Group | Device, payload: KeyValue,
-        stateChangeReason?: StateChangeReason): Promise<void> {
+    @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {
         let message = {...payload};
 
         // Update state cache with new state.
@@ -261,12 +290,18 @@ export class Controller {
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
             message.device = {
-                friendlyName: entity.name, model: entity.definition?.model,
-                ieeeAddr: entity.ieeeAddr, networkAddress: entity.zh.networkAddress, type: entity.zh.type,
+                friendlyName: entity.name,
+                model: entity.definition?.model,
+                ieeeAddr: entity.ieeeAddr,
+                networkAddress: entity.zh.networkAddress,
+                type: entity.zh.type,
                 manufacturerID: entity.zh.manufacturerID,
-                powerSource: entity.zh.powerSource, applicationVersion: entity.zh.applicationVersion,
-                stackVersion: entity.zh.stackVersion, zclVersion: entity.zh.zclVersion,
-                hardwareVersion: entity.zh.hardwareVersion, dateCode: entity.zh.dateCode,
+                powerSource: entity.zh.powerSource,
+                applicationVersion: entity.zh.applicationVersion,
+                stackVersion: entity.zh.stackVersion,
+                zclVersion: entity.zh.zclVersion,
+                hardwareVersion: entity.zh.hardwareVersion,
+                dateCode: entity.zh.dateCode,
                 softwareBuildID: entity.zh.softwareBuildID,
                 // Manufacturer name can contain \u0000, remove this.
                 // https://github.com/home-assistant/core/issues/85691

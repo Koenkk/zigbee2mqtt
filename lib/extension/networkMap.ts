@@ -6,17 +6,31 @@ import Extension from './extension';
 import bind from 'bind-decorator';
 
 interface Link {
-    source: {ieeeAddr: string, networkAddress: number}, target: {ieeeAddr: string, networkAddress: number},
-    linkquality: number, depth: number, routes: zh.RoutingTableEntry[],
-    sourceIeeeAddr: string, targetIeeeAddr: string, sourceNwkAddr: number, lqi: number, relationship: number,
+    source: {ieeeAddr: string; networkAddress: number};
+    target: {ieeeAddr: string; networkAddress: number};
+    linkquality: number;
+    depth: number;
+    routes: zh.RoutingTableEntry[];
+    sourceIeeeAddr: string;
+    targetIeeeAddr: string;
+    sourceNwkAddr: number;
+    lqi: number;
+    relationship: number;
 }
 
 interface Topology {
     nodes: {
-        ieeeAddr: string, friendlyName: string, type: string, networkAddress: number, manufacturerName: string,
-        modelID: string, failed: string[], lastSeen: number,
-        definition: {model: string, vendor: string, supports: string, description: string}}[],
-    links: Link[],
+        ieeeAddr: string;
+        friendlyName: string;
+        type: string;
+        networkAddress: number;
+        manufacturerName: string;
+        modelID: string;
+        failed: string[];
+        lastSeen: number;
+        definition: {model: string; vendor: string; supports: string; description: string};
+    }[];
+    links: Link[];
 }
 
 /**
@@ -32,17 +46,16 @@ export default class NetworkMap extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.supportedFormats = {
-            'raw': this.raw,
-            'graphviz': this.graphviz,
-            'plantuml': this.plantuml,
+            raw: this.raw,
+            graphviz: this.graphviz,
+            plantuml: this.plantuml,
         };
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
-            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) &&
-                this.supportedFormats.hasOwnProperty(data.message)) {
+            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats.hasOwnProperty(data.message)) {
                 const includeRoutes = data.topic === this.legacyTopicRoutes;
                 const topology = await this.networkScan(includeRoutes);
                 let converted = this.supportedFormats[data.message](topology);
@@ -62,15 +75,9 @@ export default class NetworkMap extends Extension {
                 const routes = typeof message === 'object' && message.routes;
                 const topology = await this.networkScan(routes);
                 const value = this.supportedFormats[type](topology);
-                await this.mqtt.publish(
-                    'bridge/response/networkmap',
-                    stringify(utils.getResponse(message, {routes, type, value}, null)),
-                );
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value}, null)));
             } catch (error) {
-                await this.mqtt.publish(
-                    'bridge/response/networkmap',
-                    stringify(utils.getResponse(message, {}, error.message)),
-                );
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, error.message)));
             }
         }
     }
@@ -94,7 +101,7 @@ export default class NetworkMap extends Extension {
             // Add the device short network address, ieeaddr and scan note (if any)
             labels.push(
                 `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})` +
-                ((node.failed && node.failed.length) ? `failed: ${node.failed.join(',')}` : ''),
+                    (node.failed && node.failed.length ? `failed: ${node.failed.join(',')}` : ''),
             );
 
             // Add the device model
@@ -113,35 +120,31 @@ export default class NetworkMap extends Extension {
 
             // Shape the record according to device type
             if (node.type == 'Coordinator') {
-                style = `style="bold, filled", fillcolor="${colors.fill.coordinator}", ` +
-                    `fontcolor="${colors.font.coordinator}"`;
+                style = `style="bold, filled", fillcolor="${colors.fill.coordinator}", ` + `fontcolor="${colors.font.coordinator}"`;
             } else if (node.type == 'Router') {
-                style = `style="rounded, filled", fillcolor="${colors.fill.router}", ` +
-                    `fontcolor="${colors.font.router}"`;
+                style = `style="rounded, filled", fillcolor="${colors.fill.router}", ` + `fontcolor="${colors.font.router}"`;
             } else {
-                style = `style="rounded, dashed, filled", fillcolor="${colors.fill.enddevice}", ` +
-                    `fontcolor="${colors.font.enddevice}"`;
+                style = `style="rounded, dashed, filled", fillcolor="${colors.fill.enddevice}", ` + `fontcolor="${colors.font.enddevice}"`;
             }
 
             // Add the device with its labels to the graph as a node.
-            text += `  "${node.ieeeAddr}" [`+style+`, label="{${labels.join('|')}}"];\n`;
+            text += `  "${node.ieeeAddr}" [` + style + `, label="{${labels.join('|')}}"];\n`;
 
             /**
              * Add an edge between the device and its child to the graph
              * NOTE: There are situations where a device is NOT in the topology, this can be e.g.
              * due to not responded to the lqi scan. In that case we do not add an edge for this device.
              */
-            topology.links.filter((e) => (e.source.ieeeAddr === node.ieeeAddr)).forEach((e) => {
-                const lineStyle = (node.type=='EndDevice') ? 'penwidth=1, ' :
-                    (!e.routes.length) ? 'penwidth=0.5, ' : 'penwidth=2, ';
-                const lineWeight = (!e.routes.length) ? `weight=0, color="${colors.line.inactive}", ` :
-                    `weight=1, color="${colors.line.active}", `;
-                const textRoutes = e.routes.map((r) => utils.toNetworkAddressHex(r.destinationAddress));
-                const lineLabels = (!e.routes.length) ? `label="${e.linkquality}"` :
-                    `label="${e.linkquality} (routes: ${textRoutes.join(',')})"`;
-                text += `  "${node.ieeeAddr}" -> "${e.target.ieeeAddr}"`;
-                text += ` [${lineStyle}${lineWeight}${lineLabels}]\n`;
-            });
+            topology.links
+                .filter((e) => e.source.ieeeAddr === node.ieeeAddr)
+                .forEach((e) => {
+                    const lineStyle = node.type == 'EndDevice' ? 'penwidth=1, ' : !e.routes.length ? 'penwidth=0.5, ' : 'penwidth=2, ';
+                    const lineWeight = !e.routes.length ? `weight=0, color="${colors.line.inactive}", ` : `weight=1, color="${colors.line.active}", `;
+                    const textRoutes = e.routes.map((r) => utils.toNetworkAddressHex(r.destinationAddress));
+                    const lineLabels = !e.routes.length ? `label="${e.linkquality}"` : `label="${e.linkquality} (routes: ${textRoutes.join(',')})"`;
+                    text += `  "${node.ieeeAddr}" -> "${e.target.ieeeAddr}"`;
+                    text += ` [${lineStyle}${lineWeight}${lineLabels}]\n`;
+                });
         });
 
         text += '}';
@@ -156,36 +159,38 @@ export default class NetworkMap extends Extension {
         text.push(``);
         text.push('@startuml');
 
-        topology.nodes.sort((a, b) => a.friendlyName.localeCompare(b.friendlyName)).forEach((node) => {
-            // Add friendly name
-            text.push(`card ${node.ieeeAddr} [`);
-            text.push(`${node.friendlyName}`);
-            text.push(`---`);
-
-            // Add the device short network address, ieeaddr and scan note (if any)
-            text.push(
-                `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})` +
-                ((node.failed && node.failed.length) ? ` failed: ${node.failed.join(',')}` : ''),
-            );
-
-            // Add the device model
-            if (node.type !== 'Coordinator') {
+        topology.nodes
+            .sort((a, b) => a.friendlyName.localeCompare(b.friendlyName))
+            .forEach((node) => {
+                // Add friendly name
+                text.push(`card ${node.ieeeAddr} [`);
+                text.push(`${node.friendlyName}`);
                 text.push(`---`);
-                const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
-                text.push(`${definition?.vendor} ${definition?.description} (${definition?.model})`);
-            }
 
-            // Add the device last_seen timestamp
-            let lastSeen = 'unknown';
-            const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
-            if (date) {
-                lastSeen = utils.formatDate(date, 'relative') as string;
-            }
-            text.push(`---`);
-            text.push(lastSeen);
-            text.push(`]`);
-            text.push(``);
-        });
+                // Add the device short network address, ieeaddr and scan note (if any)
+                text.push(
+                    `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})` +
+                        (node.failed && node.failed.length ? ` failed: ${node.failed.join(',')}` : ''),
+                );
+
+                // Add the device model
+                if (node.type !== 'Coordinator') {
+                    text.push(`---`);
+                    const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
+                    text.push(`${definition?.vendor} ${definition?.description} (${definition?.model})`);
+                }
+
+                // Add the device last_seen timestamp
+                let lastSeen = 'unknown';
+                const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
+                if (date) {
+                    lastSeen = utils.formatDate(date, 'relative') as string;
+                }
+                text.push(`---`);
+                text.push(lastSeen);
+                text.push(`]`);
+                text.push(``);
+            });
 
         /**
          * Add edges between the devices
@@ -254,19 +259,30 @@ export default class NetworkMap extends Extension {
         const topology: Topology = {nodes: [], links: []};
         // Add nodes
         for (const device of devices) {
-            const definition = device.definition ? {
-                model: device.definition.model,
-                vendor: device.definition.vendor,
-                description: device.definition.description,
-                supports: Array.from(new Set((device.exposes()).map((e) => {
-                    return e.name ?? `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
-                }))).join(', '),
-            } : null;
+            const definition = device.definition
+                ? {
+                      model: device.definition.model,
+                      vendor: device.definition.vendor,
+                      description: device.definition.description,
+                      supports: Array.from(
+                          new Set(
+                              device.exposes().map((e) => {
+                                  return e.name ?? `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
+                              }),
+                          ),
+                      ).join(', '),
+                  }
+                : null;
 
             topology.nodes.push({
-                ieeeAddr: device.ieeeAddr, friendlyName: device.name, type: device.zh.type,
-                networkAddress: device.zh.networkAddress, manufacturerName: device.zh.manufacturerName,
-                modelID: device.zh.modelID, failed: failed.get(device), lastSeen: device.zh.lastSeen,
+                ieeeAddr: device.ieeeAddr,
+                friendlyName: device.name,
+                type: device.zh.type,
+                networkAddress: device.zh.networkAddress,
+                manufacturerName: device.zh.manufacturerName,
+                modelID: device.zh.modelID,
+                failed: failed.get(device),
+                lastSeen: device.zh.lastSeen,
                 definition,
             });
         }
@@ -289,17 +305,20 @@ export default class NetworkMap extends Extension {
                 const link: Link = {
                     source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
                     target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
-                    linkquality: neighbor.linkquality, depth: neighbor.depth, routes: [],
+                    linkquality: neighbor.linkquality,
+                    depth: neighbor.depth,
+                    routes: [],
                     // DEPRECATED:
-                    sourceIeeeAddr: neighbor.ieeeAddr, targetIeeeAddr: device.ieeeAddr,
-                    sourceNwkAddr: neighbor.networkAddress, lqi: neighbor.linkquality,
+                    sourceIeeeAddr: neighbor.ieeeAddr,
+                    targetIeeeAddr: device.ieeeAddr,
+                    sourceNwkAddr: neighbor.networkAddress,
+                    lqi: neighbor.linkquality,
                     relationship: neighbor.relationship,
                 };
 
                 const routingTable = routingTables.get(device);
                 if (routingTable) {
-                    link.routes = routingTable.table
-                        .filter((t) => t.status === 'ACTIVE' && t.nextHop === neighbor.networkAddress);
+                    link.routes = routingTable.table.filter((t) => t.status === 'ACTIVE' && t.nextHop === neighbor.networkAddress);
                 }
 
                 topology.links.push(link);

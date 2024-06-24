@@ -6,7 +6,7 @@ import debounce from 'debounce';
 import bind from 'bind-decorator';
 import * as zhc from 'zigbee-herdsman-converters';
 
-const RETRIEVE_ON_RECONNECT: readonly {keys: string[], condition?: (state: KeyValue) => boolean}[] = [
+const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
     {keys: ['state']},
     {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
     {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
@@ -40,8 +40,9 @@ export default class Availability extends Extension {
     }
 
     private isAvailable(entity: Device | Group): boolean {
-        return entity.isDevice() ? (Date.now() - entity.zh.lastSeen) < this.getTimeout(entity) :
-            entity.membersDevices().length === 0 || entity.membersDevices().some((d) => this.availabilityCache[d.ieeeAddr]);
+        return entity.isDevice()
+            ? Date.now() - entity.zh.lastSeen < this.getTimeout(entity)
+            : entity.membersDevices().length === 0 || entity.membersDevices().some((d) => this.availabilityCache[d.ieeeAddr]);
     }
 
     private resetTimer(device: Device): void {
@@ -80,7 +81,7 @@ export default class Availability extends Extension {
         for (let i = 1; i <= attempts; i++) {
             try {
                 // Enable recovery if device is marked as available and first ping fails.
-                await device.zh.ping(!available || (i !== 2));
+                await device.zh.ping(!available || i !== 2);
 
                 pingedSuccessfully = true;
 
@@ -152,7 +153,7 @@ export default class Availability extends Extension {
         }
     }
 
-    private async publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish=false, skipGroups=false): Promise<void> {
+    private async publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish = false, skipGroups = false): Promise<void> {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
@@ -226,8 +227,12 @@ export default class Availability extends Extension {
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
-                        message: this.state.get(device), mapped: device.definition, endpoint_name: null,
-                        options, state, device: device.zh,
+                        message: this.state.get(device),
+                        mapped: device.definition,
+                        endpoint_name: null,
+                        options,
+                        state,
+                        device: device.zh,
                     };
 
                     try {

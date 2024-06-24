@@ -7,11 +7,11 @@ import bind from 'bind-decorator';
 import utils from '../util/utils';
 import * as zhc from 'zigbee-herdsman-converters';
 
-type DebounceFunction = (() => void) & { clear(): void; } & { flush(): void; };
+type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 
 export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
-    private debouncers: {[s: string]: {payload: KeyValue, publish: DebounceFunction }} = {};
+    private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -24,8 +24,12 @@ export default class Receive extends Extension {
          * In case that e.g. the state is currently held back by a debounce and a new state is published
          * remove it from the to be send debounced message.
          */
-        if (data.entity.isDevice() && this.debouncers[data.entity.ieeeAddr] &&
-            data.stateChangeReason !== 'publishDebounce' && data.stateChangeReason !== 'lastSeenChanged') {
+        if (
+            data.entity.isDevice() &&
+            this.debouncers[data.entity.ieeeAddr] &&
+            data.stateChangeReason !== 'publishDebounce' &&
+            data.stateChangeReason !== 'lastSeenChanged'
+        ) {
             for (const key of Object.keys(data.payload)) {
                 delete this.debouncers[data.entity.ieeeAddr].payload[key];
             }
@@ -91,8 +95,7 @@ export default class Receive extends Extension {
         if (!data.device) return;
 
         if (!this.shouldProcess(data)) {
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
-                settings.get(), true, this.publishEntityState);
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
             return;
         }
 
@@ -104,10 +107,11 @@ export default class Receive extends Extension {
         // Check if there is an available converter, genOta messages are not interesting.
         const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
         if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
-            logger.debug(`No converter available for '${data.device.definition.model}' with ` +
-                `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`);
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
-                settings.get(), true, this.publishEntityState);
+            logger.debug(
+                `No converter available for '${data.device.definition.model}' with ` +
+                    `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`,
+            );
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
             return;
         }
 
@@ -131,8 +135,7 @@ export default class Receive extends Extension {
 
             // Check if we have to debounce
             if (data.device.options.debounce) {
-                this.publishDebounce(data.device, payload, data.device.options.debounce,
-                    data.device.options.debounce_ignore);
+                this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
             } else {
                 await this.publishEntityState(data.device, payload);
             }
@@ -143,15 +146,13 @@ export default class Receive extends Extension {
             this.eventBus.emitExposesChanged({device: data.device});
         };
 
-        const meta = {device: data.device.zh, logger, state: this.state.get(data.device),
-            deviceExposesChanged: deviceExposesChanged};
+        const meta = {device: data.device.zh, logger, state: this.state.get(data.device), deviceExposesChanged: deviceExposesChanged};
         let payload: KeyValue = {};
         for (const converter of converters) {
             try {
                 const convertData = {...data, device: data.device.zh};
                 const options: KeyValue = data.device.options;
-                const converted = await converter.convert(
-                    data.device.definition, convertData, publish, options, meta);
+                const converted = await converter.convert(data.device.definition, convertData, publish, options, meta);
                 if (converted) {
                     payload = {...payload, ...converted};
                 }
@@ -164,8 +165,7 @@ export default class Receive extends Extension {
         if (Object.keys(payload).length) {
             await publish(payload);
         } else {
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'},
-                settings.get(), true, this.publishEntityState);
+            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
         }
     }
 }

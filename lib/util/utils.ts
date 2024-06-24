@@ -18,21 +18,30 @@ function toLocalISOString(date: Date): string {
         return (norm < 10 ? '0' : '') + norm;
     };
 
-    return date.getFullYear() +
-        '-' + pad(date.getMonth() + 1) +
-        '-' + pad(date.getDate()) +
-        'T' + pad(date.getHours()) +
-        ':' + pad(date.getMinutes()) +
-        ':' + pad(date.getSeconds()) +
-        plusOrMinus + pad(tzOffset / 60) +
-        ':' + pad(tzOffset % 60);
+    return (
+        date.getFullYear() +
+        '-' +
+        pad(date.getMonth() + 1) +
+        '-' +
+        pad(date.getDate()) +
+        'T' +
+        pad(date.getHours()) +
+        ':' +
+        pad(date.getMinutes()) +
+        ':' +
+        pad(date.getSeconds()) +
+        plusOrMinus +
+        pad(tzOffset / 60) +
+        ':' +
+        pad(tzOffset % 60)
+    );
 }
 
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2MQTTVersion(includeCommitHash=true): Promise<{commitHash: string, version: string}> {
+async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash: string; version: string}> {
     const git = await import('git-last-commit');
     const packageJSON = await import('../..' + '/package.json');
 
@@ -75,7 +84,8 @@ function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' 
     if (type === 'ISO_8601') return new Date(time).toISOString();
     else if (type === 'ISO_8601_local') return toLocalISOString(new Date(time));
     else if (type === 'epoch') return time;
-    else { // relative
+    else {
+        // relative
         return humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true}) + ' ago';
     }
 }
@@ -168,7 +178,7 @@ export function* loadExternalConverter(moduleName: string): Generator<ExternalDe
  * @param {KeyValue} obj Object to process (in-place)
  * @param {string[]} [ignoreKeys] Recursively ignore these keys in the object (keep null/undefined values).
  */
-function removeNullPropertiesFromObject(obj: KeyValue, ignoreKeys: string[] = [] ): void {
+function removeNullPropertiesFromObject(obj: KeyValue, ignoreKeys: string[] = []): void {
     for (const key of Object.keys(obj)) {
         if (ignoreKeys.includes(key)) continue;
         const value = obj[key];
@@ -198,28 +208,27 @@ function toSnakeCase(value: string | KeyValue): any {
         }
         return value;
     } else {
-        return value.replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase()).replace(/^_/, '').replace('_i_d', '_id');
+        return value
+            .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
+            .replace(/^_/, '')
+            .replace('_i_d', '_id');
     }
 }
 
 function charRange(start: string, stop: string): number[] {
     const result = [];
-    for (let idx=start.charCodeAt(0), end=stop.charCodeAt(0); idx <=end; ++idx) {
+    for (let idx = start.charCodeAt(0), end = stop.charCodeAt(0); idx <= end; ++idx) {
         result.push(idx);
     }
     return result;
 }
 
-const controlCharacters = [
-    ...charRange('\u0000', '\u001F'),
-    ...charRange('\u007f', '\u009F'),
-    ...charRange('\ufdd0', '\ufdef'),
-];
+const controlCharacters = [...charRange('\u0000', '\u001F'), ...charRange('\u007f', '\u009F'), ...charRange('\ufdd0', '\ufdef')];
 
 function containsControlCharacter(str: string): boolean {
     for (let i = 0; i < str.length; i++) {
         const ch = str.charCodeAt(i);
-        if (controlCharacters.includes(ch) || [0xFFFE, 0xFFFF].includes(ch & 0xFFFF)) {
+        if (controlCharacters.includes(ch) || [0xfffe, 0xffff].includes(ch & 0xffff)) {
             return true;
         }
     }
@@ -239,7 +248,7 @@ function getAllFiles(path_: string): string[] {
     return result;
 }
 
-function validateFriendlyName(name: string, throwFirstError=false): string[] {
+function validateFriendlyName(name: string, throwFirstError = false): string[] {
     const errors = [];
 
     if (name.length === 0) errors.push(`friendly_name must be at least 1 char long`);
@@ -264,7 +273,7 @@ function sleep(seconds: number): Promise<void> {
 function sanitizeImageParameter(parameter: string): string {
     const replaceByDash = [/\?/g, /&/g, /[^a-z\d\- _./:]/gi];
     let sanitized = parameter;
-    replaceByDash.forEach((r) => sanitized = sanitized.replace(r, '-'));
+    replaceByDash.forEach((r) => (sanitized = sanitized.replace(r, '-')));
     return sanitized;
 }
 
@@ -325,8 +334,12 @@ const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 const minutes = (minutes: number): number => 1000 * 60 * minutes;
 const seconds = (seconds: number): number => 1000 * seconds;
 
-async function publishLastSeen(data: eventdata.LastSeenChanged, settings: Settings, allowMessageEmitted: boolean,
-    publishEntityState: PublishEntityState): Promise<void> {
+async function publishLastSeen(
+    data: eventdata.LastSeenChanged,
+    settings: Settings,
+    allowMessageEmitted: boolean,
+    publishEntityState: PublishEntityState,
+): Promise<void> {
     /**
      * Prevent 2 MQTT publishes when 1 message event is received;
      * - In case reason == messageEmitted, receive.ts will only call this when it did not publish a
@@ -382,10 +395,34 @@ function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
 }
 
 export default {
-    capitalize, getZigbee2MQTTVersion, getDependencyVersion, formatDate, objectHasProperties,
-    equalsPartial, getObjectProperty, getResponse, parseJSON, loadModuleFromText, loadModuleFromFile,
-    removeNullPropertiesFromObject, toNetworkAddressHex, toSnakeCase,
-    isEndpoint, isZHGroup, hours, minutes, seconds, validateFriendlyName, sleep,
-    sanitizeImageParameter, isAvailabilityEnabledForEntity, publishLastSeen, availabilityPayload,
-    getAllFiles, filterProperties, flatten, arrayUnique, getScenes,
+    capitalize,
+    getZigbee2MQTTVersion,
+    getDependencyVersion,
+    formatDate,
+    objectHasProperties,
+    equalsPartial,
+    getObjectProperty,
+    getResponse,
+    parseJSON,
+    loadModuleFromText,
+    loadModuleFromFile,
+    removeNullPropertiesFromObject,
+    toNetworkAddressHex,
+    toSnakeCase,
+    isEndpoint,
+    isZHGroup,
+    hours,
+    minutes,
+    seconds,
+    validateFriendlyName,
+    sleep,
+    sanitizeImageParameter,
+    isAvailabilityEnabledForEntity,
+    publishLastSeen,
+    availabilityPayload,
+    getAllFiles,
+    filterProperties,
+    flatten,
+    arrayUnique,
+    getScenes,
 };

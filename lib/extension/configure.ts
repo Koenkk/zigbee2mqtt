@@ -89,8 +89,12 @@ export default class Configure extends Extension {
         this.eventBus.onReconfigure(this, this.onReconfigure);
     }
 
-    private async configure(device: Device, event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
-        force=false, throwError=false): Promise<void> {
+    private async configure(
+        device: Device,
+        event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
+        force = false,
+        throwError = false,
+    ): Promise<void> {
         if (!force) {
             if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
                 return;
