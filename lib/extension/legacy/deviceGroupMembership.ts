@@ -40,7 +40,7 @@ export default class DeviceGroupMembership extends Extension {
             return;
         }
 
-        let {grouplist, capacity} = response;
+        let {grouplist} = response;
 
         grouplist = grouplist.map((gid: string) => {
             const g = settings.getGroup(gid);
@@ -49,13 +49,13 @@ export default class DeviceGroupMembership extends Extension {
 
         const msgGroupList = `${device.ieeeAddr} is in groups [${grouplist}]`;
         let msgCapacity;
-        if (capacity === 254) {
+        if (response.capacity === 254) {
             msgCapacity = 'it can be a part of at least 1 more group';
         } else {
-            msgCapacity = `its remaining group capacity is ${capacity === 255 ? 'unknown' : capacity}`;
+            msgCapacity = `its remaining group capacity is ${response.capacity === 255 ? 'unknown' : response.capacity}`;
         }
         logger.info(`${msgGroupList} and ${msgCapacity}`);
 
-        await this.publishEntityState(device, {group_list: grouplist, group_capacity: capacity});
+        await this.publishEntityState(device, {group_list: grouplist, group_capacity: response.capacity});
     }
 }

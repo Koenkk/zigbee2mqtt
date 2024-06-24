@@ -119,7 +119,8 @@ export default class Groups extends Extension {
         let endpointName: string = null;
         const endpointNames: string[] = data.entity instanceof Device ? data.entity.getEndpointNames() : [];
 
-        for (let [prop, value] of Object.entries(data.update)) {
+        for (let prop of Object.keys(data.update)) {
+            const value = data.update[prop];
             const endpointNameMatch = endpointNames.find((n) => prop.endsWith(`_${n}`));
 
             if (endpointNameMatch) {
@@ -321,10 +322,11 @@ export default class Groups extends Extension {
             return;
         }
 
-        let {
-            resolvedEntityGroup, resolvedEntityDevice, type, error, triggeredViaLegacyApi,
+        const {
+            resolvedEntityGroup, resolvedEntityDevice, type, triggeredViaLegacyApi,
             groupKey, deviceKey, skipDisableReporting, resolvedEntityEndpoint,
         } = parsed;
+        let error = parsed.error;
         let changedGroups: Group[] = [];
 
         if (!error) {

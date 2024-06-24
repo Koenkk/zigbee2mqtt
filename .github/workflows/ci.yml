@@ -26,10 +26,12 @@ jobs:
       run: npm ci
     - name: Build
       run: npm run build
+    - name: Lint
+      run: |
+        npm run pretty:check
+        npm run eslint
     - name: Test
       run: npm run test-with-coverage
-    - name: Lint
-      run: npm run eslint
     - name: Docker login
       if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
       run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin

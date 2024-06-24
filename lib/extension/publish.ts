@@ -199,7 +199,9 @@ export default class Publish extends Extension {
         const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
 
-        for (let [key, value] of entries) {
+        for (const entry of entries) {
+            let key = entry[0];
+            const value = entry[1];
             let endpointName = parsedTopic.endpoint;
             let localTarget = target;
             let endpointOrGroupID = utils.isEndpoint(target) ? target.ID : target.groupID;

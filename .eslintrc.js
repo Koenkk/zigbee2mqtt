@@ -5,17 +5,14 @@ module.exports = {
         'es6': true,
         'node': true,
     },
-    'extends': ['eslint:recommended', 'google', 'plugin:jest/recommended', 'plugin:jest/style'],
+    'extends': ['eslint:recommended', 'plugin:jest/recommended', 'plugin:jest/style', 'prettier'],
     'parserOptions': {
         'ecmaVersion': 2018,
         'sourceType': 'module',
     },
     'rules': {
         'require-jsdoc': 'off',
-        'indent': ['error', 4],
-        'max-len': ['error', {'code': 150}],
         'no-prototype-builtins': 'off',
-        'linebreak-style': ['error', (process.platform === 'win32' ? 'windows' : 'unix')], // https://stackoverflow.com/q/39114446/2771889
         '@typescript-eslint/no-floating-promises': 'error',
     },
     'plugins': [
@@ -35,14 +32,9 @@ module.exports = {
             '@typescript-eslint/explicit-function-return-type': 'error',
             '@typescript-eslint/no-empty-function': 'off',
             '@typescript-eslint/no-explicit-any': 'error',
-            '@typescript-eslint/no-unused-vars': 'error',
-            '@typescript-eslint/semi': ['error'],
-            'array-bracket-spacing': ['error', 'never'],
-            'indent': ['error', 4],
-            'max-len': ['error', {'code': 150}],
-            'no-return-await': 'error',
-            'object-curly-spacing': ['error', 'never'],
             '@typescript-eslint/no-floating-promises': 'error',
+            '@typescript-eslint/no-unused-vars': 'error',
+            'no-return-await': 'error',
         },
     }],
 };
