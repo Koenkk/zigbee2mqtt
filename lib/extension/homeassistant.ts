@@ -1499,7 +1499,16 @@ export default class HomeAssistant extends Extension {
         const lastDiscoveredTopics = Object.keys(discovered.messages);
         const newDiscoveredTopics: Set<string> = new Set();
 
-        for (const config of this.getConfigs(entity)) {
+        const configs = this.getConfigs(entity);
+
+        if (entity.isDevice()) {
+            if (entity.definition.meta?.overrideHaConfig) {
+                // console.log(`=== entity.definition.meta.overrideHaConfig for ${entity.definition.vendor} ${entity.definition.model}`);
+                entity.definition.meta?.overrideHaConfig(configs);
+            }
+        }
+        
+        for (const config of configs) {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
