@@ -65,7 +65,6 @@ for (const changelog of changelogs) {
             const messages = [];
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
-            message = message.charAt(0).toUpperCase() + message.slice(1);
 
             if (changelog.isFrontend) {
                 changes[localContext].push(`- [${commit.slice(0, 7)}](https://github.com/${changelog.project}/commit/${commit}) ${message} (@${user})`);
