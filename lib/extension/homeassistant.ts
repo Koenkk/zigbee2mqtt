@@ -186,6 +186,10 @@ export default class HomeAssistant extends Extension {
         if (settings.get().advanced.output === 'attribute') {
             throw new Error('Home Assistant integration is not possible with attribute output!');
         }
+
+        if (settings.get().homeassistant.discovery_topic === settings.get().mqtt.base_topic) {
+            throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
+        }
     }
 
     override async start(): Promise<void> {
