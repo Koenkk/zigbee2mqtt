@@ -37,6 +37,7 @@ if (fs.existsSync(commitUserFile)) {
 }
 
 const whiteLabels = zhc.definitions.filter((d) => d.whiteLabel).flatMap((d) => d.whiteLabel);
+const capitalizeFirstChar = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 for (const changelog of changelogs) {
     for (const line of changelog.contents) {
@@ -68,7 +69,7 @@ for (const changelog of changelogs) {
 
             if (changelog.isFrontend) {
                 changes[localContext].push(`- [${commit.slice(0, 7)}](https://github.com/${changelog.project}/commit/${commit}) ${message} (@${user})`);
-                messages.push(message);
+                messages.push(capitalizeFirstChar(message));
             } else {
                 const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/) || message.match(/@(.+)/);
                 if (otherUser) {
@@ -88,7 +89,7 @@ for (const changelog of changelogs) {
                         }
                     }
                 } else {
-                    messages.push(message);
+                    messages.push(capitalizeFirstChar(message));
                 }
 
                 let issue = changeMatch[4].trim();
