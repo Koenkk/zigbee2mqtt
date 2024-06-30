@@ -159,7 +159,7 @@ export default class HomeAssistant extends Extension {
         this.mqtt.subscribe(defaultStatusTopic);
 
         /**
-         * Prevent unecessary re-discovery of entities by waiting 5 seconds for retained discovery messages to come in.
+         * Prevent unnecessary re-discovery of entities by waiting 5 seconds for retained discovery messages to come in.
          * Any received discovery messages will not be published again.
          * Unsubscribe from the discoveryTopic to prevent receiving our own messages.
          */
