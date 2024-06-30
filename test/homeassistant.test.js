@@ -953,24 +953,6 @@ describe('HomeAssistant extension', () => {
             { qos: 1, retain: true },
             expect.any(Function),
         );
-
-        const discoveryEntry = {
-           type: 'climate',
-        };
-
-        const testPayload = { modes: ['mustnotchange'] };
-
-        const entity = {
-            definition: {
-                vendor: 'Bosch',
-                model: 'BTH-RA',
-                exposes: [],
-            },
-        };
-
-        extension.overridePayloadForNonConformingDevices(discoveryEntry, testPayload, entity);
-
-        expect(testPayload.modes).toEqual(['mustnotchange']);
     });
 
     it('Should discover devices with cover_position', async () => {
