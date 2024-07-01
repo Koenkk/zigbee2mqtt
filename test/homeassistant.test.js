@@ -903,7 +903,7 @@ describe('HomeAssistant extension', () => {
         );
     });
 
-    it('onlythis Should discover Bosch BTH-RA with a compatibility mapping', async () => {
+    it('Should discover Bosch BTH-RA with a compatibility mapping', async () => {
         const payload = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
