@@ -1503,9 +1503,7 @@ export default class HomeAssistant extends Extension {
         const lastDiscoveredTopics = Object.keys(discovered.messages);
         const newDiscoveredTopics: Set<string> = new Set();
 
-        const configs = this.getConfigs(entity);
-
-        for (const config of configs) {
+        for (const config of this.getConfigs(entity)) {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
@@ -1702,6 +1700,10 @@ export default class HomeAssistant extends Extension {
                 }
             }
 
+            if (entity.isDevice()) {
+                entity.definition.meta?.overrideHaConfig?.(payload);
+            }
+
             const topic = this.getDiscoveryTopic(config, entity);
             const payloadStr = stringify(payload);
             newDiscoveredTopics.add(topic);
@@ -1718,14 +1720,6 @@ export default class HomeAssistant extends Extension {
             }
             config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
         }
-
-        if (entity.isDevice()) {
-            if (entity.definition.meta?.overrideHaConfig) {
-                // console.log(`=== entity.definition.meta.overrideHaConfig for ${entity.definition.vendor} ${entity.definition.model}`);
-                entity.definition.meta?.overrideHaConfig(configs);
-            }
-        }
-        
 
         for (const topic of lastDiscoveredTopics) {
             const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)[1] === 'device_automation';

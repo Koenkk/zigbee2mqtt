@@ -48,7 +48,7 @@ const custom_clusters = {
     },
 };
 
-const custom_clusters_2 = {
+const customClusterBTHRA = {
     custom_1: {
         ID: 513,
         attributes: {
@@ -397,32 +397,15 @@ const devices = {
         '0x18fc2600000d7ae2',
         35902,
         4617, // 0x1209,
-        [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2', [], {
-          overrideHaConfig: (configs) => {
-            const entry = configs.findIndex((e) => e.type === 'climate');
-            if (entry) {
-              const commandTopic = configs[entry].discovery_payload.mode_command_topic;
-              configs[entry].discovery_payload.mode_command_topic = commandTopic.substring(0, commandTopic.lastIndexOf('/system_mode'));
-              configs[entry].discovery_payload.mode_command_template =
-                `{% set values = ` +
-                `{ 'auto':'schedule','heat':'manual','off':'pause'} %}` +
-                `{"operating_mode": "{{ values[value] if value in values.keys() else 'pause' }}"}`;
-              configs[entry].discovery_payload.mode_state_template =
-                `{% set values = ` +
-                `{'schedule':'auto','manual':'heat','pause':'off'} %}` +
-                `{% set value = value_json.operating_mode %}{{ values[value] if value in values.keys() else 'off' }}`;
-              configs[entry].discovery_payload.modes = ['off', 'heat', 'auto'];
-            }
-          }
-        })],
+        [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2')],
         true,
         'Battery',
-        'BTH-RA',
+        'RBSH-TRV0-ZB-EU',
         false,
         'BOSCH',
         '20231122',
         '3.05.09',
-        custom_clusters_2,
+        customClusterBTHRA,
     ),
     bulb_color: bulb_color,
     bulb_2: bulb_2,
@@ -854,42 +837,7 @@ const devices = {
         null,
         custom_clusters,
     ),
-    RBSH_TRV0_ZB_EU: new Device(
-        'EndDevice',
-        '0x18fc2600000d7ae2',
-        35902,
-        0x1209, // 4617
-        // [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2', [],{},[],null,null, {
-        // [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2', [], {
-        //   overrideHaConfig: (configs) => {
-        //     const entry = configs.findIndex((e) => e.type === 'climate');
-        //     if (entry) {
-        //       const commandTopic = configs[entry].discovery_payload.mode_command_topic;
-        //       configs[entry].discovery_payload.mode_command_topic = commandTopic.substring(0, commandTopic.lastIndexOf('/system_mode'));
-        //       configs[entry].discovery_payload.mode_command_template =
-        //         `{% set values = ` +
-        //         `{ 'auto':'schedule','heat':'manual','off':'pause'} %}` +
-        //         `{"operating_mode": "{{ values[value] if value in values.keys() else 'pause' }}"}`;
-        //       configs[entry].discovery_payload.mode_state_template =
-        //         `{% set values = ` +
-        //         `{'schedule':'auto','manual':'heat','pause':'off'} %}` +
-        //         `{% set value = value_json.operating_mode %}{{ values[value] if value in values.keys() else 'off' }}`;
-        //       configs[entry].discovery_payload.modes = ['off', 'heat', 'auto'];
-        //     }
-        //   }
-        // })],
-        [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2')],
-        true,
-        'Battery',
-        'BTH-RA',
-        false,
-        'BOSCH',
-        '20231122',
-        '3.05.09',
-        custom_clusters_2,
-    ),
 };
-
 
 const mock = {
     setTransmitPower: jest.fn(),
