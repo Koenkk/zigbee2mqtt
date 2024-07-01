@@ -36,6 +36,9 @@ if (fs.existsSync(commitUserFile)) {
     commitUserLookup = JSON.parse(fs.readFileSync(commitUserFile, 'utf8'));
 }
 
+const whiteLabels = zhc.definitions.filter((d) => d.whiteLabel).flatMap((d) => d.whiteLabel);
+const capitalizeFirstChar = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 for (const changelog of changelogs) {
     for (const line of changelog.contents) {
         const releaseMatch = line.match(releaseRe);
@@ -62,11 +65,10 @@ for (const changelog of changelogs) {
             const messages = [];
             let message = changeMatch[3].trim();
             if (message.endsWith('.')) message = message.substring(0, message.length - 1);
-            message = message.charAt(0).toUpperCase() + message.slice(1);
 
             if (changelog.isFrontend) {
                 changes[localContext].push(`- [${commit.slice(0, 7)}](https://github.com/${changelog.project}/commit/${commit}) ${message} (@${user})`);
-                messages.push(message);
+                messages.push(capitalizeFirstChar(message));
             } else {
                 const otherUser = message.match(/\[@(.+)\]\(https:\/\/github.com\/.+\)/) || message.match(/@(.+)/);
                 if (otherUser) {
@@ -77,14 +79,16 @@ for (const changelog of changelogs) {
                 if (localContext === 'add') {
                     for (const model of message.split(',')) {
                         const definition = zhc.definitions.find((d) => d.model === model.trim());
-                        if (definition) {
-                            messages.push(`\`${definition.model}\` ${definition.vendor} ${definition.description}`);
+                        const whiteLabel = whiteLabels.find((d) => d.model === model.trim());
+                        const match = definition || whiteLabel;
+                        if (match) {
+                            messages.push(`\`${match.model}\` ${match.vendor} ${match.description}`);
                         } else {
                             changes['error'].push(`${line} (model '${model}' does not exist)`);
                         }
                     }
                 } else {
-                    messages.push(message);
+                    messages.push(capitalizeFirstChar(message));
                 }
 
                 let issue = changeMatch[4].trim();

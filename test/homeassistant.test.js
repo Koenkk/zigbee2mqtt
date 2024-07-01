@@ -1070,8 +1070,15 @@ describe('HomeAssistant extension', () => {
         settings.set(['experimental', 'output'], 'attribute');
         settings.set(['homeassistant'], true);
         expect(() => {
-            const controller = new Controller(false);
-        }).toThrowError('Home Assistant integration is not possible with attribute output!');
+            new Controller(false);
+        }).toThrow('Home Assistant integration is not possible with attribute output!');
+    });
+
+    it('Should throw error when homeassistant.discovery_topic equals the mqtt.base_topic', async () => {
+        settings.set(['mqtt', 'base_topic'], 'homeassistant');
+        expect(() => {
+            new Controller(false);
+        }).toThrow("'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got 'homeassistant')");
     });
 
     it('Should warn when starting with cache_state false', async () => {
