@@ -1,5 +1,62 @@
 # Changelog
 
+## [1.39.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.38.0...1.39.0) (2024-06-30)
+
+
+### Features
+
+* Allow hierarchical filtering of logger namespaces ([#22859](https://github.com/Koenkk/zigbee2mqtt/issues/22859)) ([881037c](https://github.com/Koenkk/zigbee2mqtt/commit/881037c3711e1a1c8458960e242ca47f80dc2a60))
+
+
+### Bug Fixes
+
+* Add logging for interview https://github.com/nurikk/zigbee2mqtt-frontend/pull/2027 ([6924db7](https://github.com/Koenkk/zigbee2mqtt/commit/6924db79e8263804b468cc5ff84316a336256bdf))
+* Availability code optimization/formatting ([#23065](https://github.com/Koenkk/zigbee2mqtt/issues/23065)) ([f574653](https://github.com/Koenkk/zigbee2mqtt/commit/f57465324a2517ceb5581db389dda92d40fc0000))
+* Bind code optimisation/formatting ([#23110](https://github.com/Koenkk/zigbee2mqtt/issues/23110)) ([3d772b5](https://github.com/Koenkk/zigbee2mqtt/commit/3d772b5db33ba653f763420f067b90d1cfc16cd8))
+* Differentiate the MQTT publish/ received from regular MQTT logs ([#23026](https://github.com/Koenkk/zigbee2mqtt/issues/23026)) ([eff341b](https://github.com/Koenkk/zigbee2mqtt/commit/eff341bd141bd99121a8208c5f9cb735686a3faf))
+* Don't allow `homeassistant.discovery_topic` to be equal to `mqtt.base_topic` https://github.com/Koenkk/zigbee2mqtt/issues/23109 ([#23209](https://github.com/Koenkk/zigbee2mqtt/issues/23209)) ([dc7a06c](https://github.com/Koenkk/zigbee2mqtt/commit/dc7a06cf569ad1c1982a02620269dd3b8e44030d))
+* Don't call `onEvent` on disabled devices ([#23058](https://github.com/Koenkk/zigbee2mqtt/issues/23058)) ([ef2c939](https://github.com/Koenkk/zigbee2mqtt/commit/ef2c939482e629e7cfacf455c199ef26bfe58ac3))
+* Enforce no floating promises ([#22880](https://github.com/Koenkk/zigbee2mqtt/issues/22880)) ([2b8eaa1](https://github.com/Koenkk/zigbee2mqtt/commit/2b8eaa196a59301572575111260e9c30e8b04b20))
+* Exclude homeassistant entries from `null` cleanup ([#22995](https://github.com/Koenkk/zigbee2mqtt/issues/22995)) ([d41cf43](https://github.com/Koenkk/zigbee2mqtt/commit/d41cf43a7c6ec8364ca1139584abda4bda558800))
+* Fix floating promises originating from index.js ([#22943](https://github.com/Koenkk/zigbee2mqtt/issues/22943)) ([282dfd5](https://github.com/Koenkk/zigbee2mqtt/commit/282dfd5b01b7eca4f36842d44d2ac7ebd2238789))
+* Fix OTA overriding custom software version attribute ([#23129](https://github.com/Koenkk/zigbee2mqtt/issues/23129)) ([ad84374](https://github.com/Koenkk/zigbee2mqtt/commit/ad84374046f64dae4aa6be104749bf8e8c8c3e59))
+* Groups code optimization/formatting ([#23015](https://github.com/Koenkk/zigbee2mqtt/issues/23015)) ([6064194](https://github.com/Koenkk/zigbee2mqtt/commit/6064194e52a684c7e2407b31a941818c3086160a))
+* **ignore:** `TuYa` -&gt; `Tuya` https://github.com/Koenkk/zigbee2mqtt/discussions/22876 ([457ed86](https://github.com/Koenkk/zigbee2mqtt/commit/457ed86ef88086a528ca2c6f2aaef70cce93718a))
+* **ignore:** Improve network key hiding https://github.com/Koenkk/zigbee-herdsman/pull/1086 ([0754fa8](https://github.com/Koenkk/zigbee2mqtt/commit/0754fa85527fad6ab2c8f676f88280506440238e))
+* **ignore:** update dependencies ([#22883](https://github.com/Koenkk/zigbee2mqtt/issues/22883)) ([8f195f6](https://github.com/Koenkk/zigbee2mqtt/commit/8f195f67e6f9cae830399b7392a845b658a21579))
+* **ignore:** update dependencies ([#22986](https://github.com/Koenkk/zigbee2mqtt/issues/22986)) ([dbcae00](https://github.com/Koenkk/zigbee2mqtt/commit/dbcae00316f46ec7ac8f272a718131deeda9e8f4))
+* **ignore:** update dependencies ([#23073](https://github.com/Koenkk/zigbee2mqtt/issues/23073)) ([d45e254](https://github.com/Koenkk/zigbee2mqtt/commit/d45e254f50e07de646c08e87d203e0c1be1a3058))
+* **ignore:** update dependencies ([#23137](https://github.com/Koenkk/zigbee2mqtt/issues/23137)) ([8780ab2](https://github.com/Koenkk/zigbee2mqtt/commit/8780ab279218b6957f629546e44c7882d8fd6f04))
+* **ignore:** update dependencies ([#23207](https://github.com/Koenkk/zigbee2mqtt/issues/23207)) ([940422a](https://github.com/Koenkk/zigbee2mqtt/commit/940422a9d82a0c4b15b54cb64ef278584d38265b))
+* **ignore:** update zigbee-herdsman to 0.49.3 ([#22952](https://github.com/Koenkk/zigbee2mqtt/issues/22952)) ([7695906](https://github.com/Koenkk/zigbee2mqtt/commit/76959067e2d429d535e0862593eea783cfadb28d))
+* **ignore:** update zigbee-herdsman to 0.50.0 ([#23064](https://github.com/Koenkk/zigbee2mqtt/issues/23064)) ([85356a2](https://github.com/Koenkk/zigbee2mqtt/commit/85356a2932a5fb4de52b3a3562e41f2c5c8fc9a4))
+* **ignore:** update zigbee-herdsman to 0.50.1 ([#23208](https://github.com/Koenkk/zigbee2mqtt/issues/23208)) ([6ba42c6](https://github.com/Koenkk/zigbee2mqtt/commit/6ba42c6a123b49f2c483d4999fa9ec222cdda0dc))
+* **ignore:** update zigbee-herdsman-converters to 19.49.0 ([#22902](https://github.com/Koenkk/zigbee2mqtt/issues/22902)) ([6c123c2](https://github.com/Koenkk/zigbee2mqtt/commit/6c123c28b3369e3c33e688fc63a3192870299292))
+* **ignore:** update zigbee-herdsman-converters to 19.50.0 ([#22918](https://github.com/Koenkk/zigbee2mqtt/issues/22918)) ([6fbf14c](https://github.com/Koenkk/zigbee2mqtt/commit/6fbf14cced4dda9c450b05ebbe7eb741e0894f2f))
+* **ignore:** update zigbee-herdsman-converters to 19.50.1 ([#22936](https://github.com/Koenkk/zigbee2mqtt/issues/22936)) ([9d95d61](https://github.com/Koenkk/zigbee2mqtt/commit/9d95d61e32e85dbdd6a8f8bf419a19bc52ba588d))
+* **ignore:** update zigbee-herdsman-converters to 19.51.0 ([#22953](https://github.com/Koenkk/zigbee2mqtt/issues/22953)) ([fd3d9a3](https://github.com/Koenkk/zigbee2mqtt/commit/fd3d9a318d317606483ecade82737ecb6ba4661b))
+* **ignore:** update zigbee-herdsman-converters to 19.52.0 ([#22982](https://github.com/Koenkk/zigbee2mqtt/issues/22982)) ([a4a0c6f](https://github.com/Koenkk/zigbee2mqtt/commit/a4a0c6f3b95e7942be9a035d7e77b61a09b7fca6))
+* **ignore:** update zigbee-herdsman-converters to 19.53.0 ([#23007](https://github.com/Koenkk/zigbee2mqtt/issues/23007)) ([aa53303](https://github.com/Koenkk/zigbee2mqtt/commit/aa53303c0fbaf8a8068eb2b4be767907e3248c76))
+* **ignore:** update zigbee-herdsman-converters to 19.54.0 ([#23027](https://github.com/Koenkk/zigbee2mqtt/issues/23027)) ([47bba42](https://github.com/Koenkk/zigbee2mqtt/commit/47bba42357ba4bfc493e6906b22b597f209cb38a))
+* **ignore:** update zigbee-herdsman-converters to 19.55.0 ([#23039](https://github.com/Koenkk/zigbee2mqtt/issues/23039)) ([a371347](https://github.com/Koenkk/zigbee2mqtt/commit/a371347ceb2f3d0da7a1a845396b6632c886b7dd))
+* **ignore:** update zigbee-herdsman-converters to 19.56.0 ([#23068](https://github.com/Koenkk/zigbee2mqtt/issues/23068)) ([83ac564](https://github.com/Koenkk/zigbee2mqtt/commit/83ac5649d382100247757c2dea2e6ece12c8cea4))
+* **ignore:** update zigbee-herdsman-converters to 19.57.0 ([#23077](https://github.com/Koenkk/zigbee2mqtt/issues/23077)) ([a85d3e4](https://github.com/Koenkk/zigbee2mqtt/commit/a85d3e43319542acfd1de8026a453bd15d5bf992))
+* **ignore:** update zigbee-herdsman-converters to 19.57.1 ([#23099](https://github.com/Koenkk/zigbee2mqtt/issues/23099)) ([70e84dd](https://github.com/Koenkk/zigbee2mqtt/commit/70e84ddc90efe1401d3b1a6d4972fe9dc1b00754))
+* **ignore:** update zigbee-herdsman-converters to 19.58.0 ([#23114](https://github.com/Koenkk/zigbee2mqtt/issues/23114)) ([889e41c](https://github.com/Koenkk/zigbee2mqtt/commit/889e41ca4e35acbc27473c38f4573e6724d7b9e5))
+* **ignore:** update zigbee-herdsman-converters to 19.59.0 ([#23130](https://github.com/Koenkk/zigbee2mqtt/issues/23130)) ([8877c9e](https://github.com/Koenkk/zigbee2mqtt/commit/8877c9e864012869793c7b1013b9d5482575b830))
+* **ignore:** update zigbee-herdsman-converters to 19.59.1 ([#23141](https://github.com/Koenkk/zigbee2mqtt/issues/23141)) ([ee42d68](https://github.com/Koenkk/zigbee2mqtt/commit/ee42d68472806e154a3b0e0b34d17be3cbfcf397))
+* **ignore:** update zigbee-herdsman-converters to 19.59.2 ([#23152](https://github.com/Koenkk/zigbee2mqtt/issues/23152)) ([dec9f10](https://github.com/Koenkk/zigbee2mqtt/commit/dec9f10133b33d63687be3e213b853a6213cf148))
+* **ignore:** update zigbee-herdsman-converters to 19.60.1 ([#23163](https://github.com/Koenkk/zigbee2mqtt/issues/23163)) ([c48db3f](https://github.com/Koenkk/zigbee2mqtt/commit/c48db3f5b9546dc780386baa817409e0fcd6539c))
+* **ignore:** update zigbee-herdsman-converters to 19.61.0 ([#23203](https://github.com/Koenkk/zigbee2mqtt/issues/23203)) ([fa24d2d](https://github.com/Koenkk/zigbee2mqtt/commit/fa24d2d2ba066677f3002e57722f539a4f777594))
+* **ignore:** update zigbee-herdsman-converters to 19.62.0 ([#23214](https://github.com/Koenkk/zigbee2mqtt/issues/23214)) ([8196460](https://github.com/Koenkk/zigbee2mqtt/commit/8196460de022054da56849715c47e6d918e91b2b))
+* **ignore:** update zigbee2mqtt-frontend to 0.7.2 ([#22938](https://github.com/Koenkk/zigbee2mqtt/issues/22938)) ([cdfbb17](https://github.com/Koenkk/zigbee2mqtt/commit/cdfbb17b4a5a619f881c32c57f38077ede4c34f6))
+* MQTT code optimization/formatting ([#23072](https://github.com/Koenkk/zigbee2mqtt/issues/23072)) ([9c2264e](https://github.com/Koenkk/zigbee2mqtt/commit/9c2264e86e8284a4c225b72d9272ed187918c7b4))
+* Optional watchdog for "adapter disconnected"-type events (non-node-crash) ([#23043](https://github.com/Koenkk/zigbee2mqtt/issues/23043)) ([2b36f74](https://github.com/Koenkk/zigbee2mqtt/commit/2b36f7492bbc8cbf3648495c8b6fc08edfcc62a2))
+* Remove outdated `@types/debounce` ([#23063](https://github.com/Koenkk/zigbee2mqtt/issues/23063)) ([fcdae97](https://github.com/Koenkk/zigbee2mqtt/commit/fcdae971e599ef02ed9645910f4fa8d342d3a5b7))
+* Set voc_index to `mdi:molecule` to match other VOC icons in Home Assistant ([#22920](https://github.com/Koenkk/zigbee2mqtt/issues/22920)) ([dbf0a33](https://github.com/Koenkk/zigbee2mqtt/commit/dbf0a3358d7ecf3531cb9d5cf7bd9402381498ba))
+* Support ppb and ppm for VOC reporting in Home Assistant ([#22895](https://github.com/Koenkk/zigbee2mqtt/issues/22895)) ([40ad896](https://github.com/Koenkk/zigbee2mqtt/commit/40ad896114d978c01a8cc6a1a99eaac86049029d))
+* Use `occupancy` `device_class` instead of `motion` for occupancy sensors ([#22896](https://github.com/Koenkk/zigbee2mqtt/issues/22896)) ([519e123](https://github.com/Koenkk/zigbee2mqtt/commit/519e123b69542e376f1d777cd0eca07275cb5559))
+
 ## [1.38.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.37.1...1.38.0) (2024-06-01)
 
 
