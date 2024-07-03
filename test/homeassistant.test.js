@@ -908,11 +908,7 @@ describe('HomeAssistant extension', () => {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
             action_topic: 'zigbee2mqtt/bosch_radiator',
-            availability: [
-                {
-                    topic: 'zigbee2mqtt/bridge/state',
-                },
-            ],
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
             current_temperature_template: '{{ value_json.local_temperature }}',
             current_temperature_topic: 'zigbee2mqtt/bosch_radiator',
             device: {
@@ -926,8 +922,7 @@ describe('HomeAssistant extension', () => {
             json_attributes_topic: 'zigbee2mqtt/bosch_radiator',
             max_temp: '30',
             min_temp: '5',
-            mode_command_template:
-                "{% set values = { 'auto':'schedule','heat':'manual','off':'pause'} %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}",
+            mode_command_template: `{% set values = { 'auto':'schedule','heat':'manual','off':'pause'} %}{\\"operating_mode\\": \\"{{ values[value] if value in values.keys() else 'pause' }}\\"}`,
             mode_command_topic: 'zigbee2mqtt/bosch_radiator/set',
             mode_state_template:
                 "{% set values = {'schedule':'auto','manual':'heat','pause':'off'} %}{% set value = value_json.operating_mode %}{{ values[value] if value in values.keys() else 'off' }}",
