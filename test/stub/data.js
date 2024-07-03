@@ -19,6 +19,9 @@ function writeDefaultConfiguration() {
             port: '/dev/dummy',
         },
         devices: {
+            '0x18fc2600000d7ae2': {
+                friendly_name: 'bosch_radiator',
+            },
             '0x000b57fffec6a5b2': {
                 retain: true,
                 friendly_name: 'bulb',

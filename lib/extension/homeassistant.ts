@@ -1700,6 +1700,10 @@ export default class HomeAssistant extends Extension {
                 }
             }
 
+            if (entity.isDevice()) {
+                entity.definition.meta?.overrideHaDiscoveryPayload?.(payload);
+            }
+
             const topic = this.getDiscoveryTopic(config, entity);
             const payloadStr = stringify(payload);
             newDiscoveredTopics.add(topic);

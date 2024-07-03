@@ -48,6 +48,33 @@ const custom_clusters = {
     },
 };
 
+const customClusterBTHRA = {
+    custom_1: {
+        ID: 513,
+        attributes: {
+            attribute_0: {ID: 16391, type: 48, manufacturerCode: 4617},
+            attribute_1: {ID: 16416, type: 48, manufacturerCode: 4617},
+            attribute_2: {ID: 16418, type: 48, manufacturerCode: 4617},
+            attribute_3: {ID: 16448, type: 41, manufacturerCode: 4617},
+            attribute_4: {ID: 16450, type: 48, manufacturerCode: 4617},
+            attribute_5: {ID: 16451, type: 48, manufacturerCode: 4617},
+        },
+        commands: {},
+        commandsResponse: {},
+    },
+    custom_2: {
+        ID: 516,
+        attributes: {
+            attribute_0: {ID: 16395, type: 32, manufacturerCode: 4617},
+            attribute_1: {ID: 16441, type: 48, manufacturerCode: 4617},
+            attribute_2: {ID: 16442, type: 48, manufacturerCode: 4617},
+            attribute_3: {ID: 16443, type: 48, manufacturerCode: 4617},
+        },
+        commands: {},
+        commandsResponse: {},
+    },
+};
+
 class Endpoint {
     constructor(
         ID,
@@ -364,6 +391,21 @@ const devices = {
         true,
         'Mains (single phase)',
         'TRADFRI bulb E27 WS opal 980lm',
+    ),
+    'RBSH-TRV0-ZB-EU': new Device(
+        'EndDevice',
+        '0x18fc2600000d7ae2',
+        35902,
+        4617, // 0x1209,
+        [new Endpoint(1, [0, 1, 3, 4, 32, 513, 516, 2821], [10, 25], '0x18fc2600000d7ae2')],
+        true,
+        'Battery',
+        'RBSH-TRV0-ZB-EU',
+        false,
+        'BOSCH',
+        '20231122',
+        '3.05.09',
+        customClusterBTHRA,
     ),
     bulb_color: bulb_color,
     bulb_2: bulb_2,
