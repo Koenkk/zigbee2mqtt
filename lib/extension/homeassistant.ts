@@ -1176,7 +1176,6 @@ export default class HomeAssistant extends Extension {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
         }
 
-
         discoveryEntries.forEach((d) => {
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
