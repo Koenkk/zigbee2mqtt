@@ -106,6 +106,7 @@ class Logger {
 
             const options: KeyValue = {
                 app_name: 'Zigbee2MQTT',
+                format: winston.format.printf((info) => info.message),
                 ...settings.get().advanced.log_syslog,
             };
 
