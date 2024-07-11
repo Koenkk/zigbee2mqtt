@@ -536,14 +536,14 @@ export default class Bridge extends Extension {
         try {
             await device.zh.interview(true);
             logger.info(`Successfully interviewed '${device.name}'`);
-            // A re-interview can for example result in a different modelId, therefore reconsider the definition.
-            await device.resolveDefinition(true);
         } catch (error) {
             throw new Error(`interview of '${device.name}' (${device.ieeeAddr}) failed: ${error}`, {cause: error});
         }
 
-        // publish devices so that the front-end has up-to-date info.
-        await this.publishDevices();
+        // A re-interview can for example result in a different modelId, therefore reconsider the definition.
+        await device.resolveDefinition(true);
+        this.eventBus.emitDevicesChanged();
+        this.eventBus.emitExposesChanged({device});
 
         return utils.getResponse(message, {id: message.id}, null);
     }
