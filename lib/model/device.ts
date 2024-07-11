@@ -42,8 +42,8 @@ export default class Device {
         }
     }
 
-    async resolveDefinition(): Promise<void> {
-        if (!this.zh.interviewing && (!this.definition || this._definitionModelID !== this.zh.modelID)) {
+    async resolveDefinition(ignoreCache = false): Promise<void> {
+        if (!this.zh.interviewing && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
         }
