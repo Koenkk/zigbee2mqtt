@@ -140,25 +140,25 @@ export default class Availability extends Extension {
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
+        // Publish initial availability
         await this.publishAvailabilityForAllEntities();
 
         // Start availability for the devices
-        for (const entity of this.availabilityEnabledEntities()) {
-            if (entity.isDevice()) {
-                this.resetTimer(entity);
+        for (const device of this.zigbee.devices(false)) {
+            this.resetTimer(device);
 
-                // If an active device is unavailable on start, add it to the pingqueue immediately.
-                if (this.isActiveDevice(entity) && !this.isAvailable(entity)) {
-                    this.addToPingQueue(entity);
-                }
+            // If an active device is unavailable on start, add it to the pingqueue immediately.
+            if (this.isActiveDevice(device) && !this.isAvailable(device)) {
+                this.addToPingQueue(device);
             }
         }
     }
 
     @bind private async publishAvailabilityForAllEntities(): Promise<void> {
-        for (const entity of this.availabilityEnabledEntities()) {
-            // Publish initial availability
-            await this.publishAvailability(entity, true, false, true);
+        for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
+            if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
+                await this.publishAvailability(entity, true, false, true);
+            }
         }
     }
 
