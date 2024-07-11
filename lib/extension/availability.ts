@@ -69,12 +69,6 @@ export default class Availability extends Extension {
         index != -1 && this.pingQueue.splice(index, 1);
     }
 
-    private availabilityEnabledEntities(): (Device | Group)[] {
-        return [...this.zigbee.devices(false), ...this.zigbee.groups()].filter((entity) =>
-            utils.isAvailabilityEnabledForEntity(entity, settings.get()),
-        );
-    }
-
     private async pingQueueExecuteNext(): Promise<void> {
         if (this.pingQueue.length === 0 || this.pingQueueExecuting) {
             return;
@@ -145,11 +139,13 @@ export default class Availability extends Extension {
 
         // Start availability for the devices
         for (const device of this.zigbee.devices(false)) {
-            this.resetTimer(device);
+            if (utils.isAvailabilityEnabledForEntity(device, settings.get())) {
+                this.resetTimer(device);
 
-            // If an active device is unavailable on start, add it to the pingqueue immediately.
-            if (this.isActiveDevice(device) && !this.isAvailable(device)) {
-                this.addToPingQueue(device);
+                // If an active device is unavailable on start, add it to the pingqueue immediately.
+                if (this.isActiveDevice(device) && !this.isAvailable(device)) {
+                    this.addToPingQueue(device);
+                }
             }
         }
     }
