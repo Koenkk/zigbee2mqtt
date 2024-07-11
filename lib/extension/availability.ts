@@ -48,8 +48,9 @@ export default class Availability extends Extension {
 
     private resetTimer(device: Device): void {
         clearTimeout(this.timers[device.ieeeAddr]);
+        this.removeFromPingQueue(device);
 
-        // If the timer triggers, the device is not available anymore otherwise resetTimer already have been called
+        // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
         if (this.isActiveDevice(device)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
             this.timers[device.ieeeAddr] = setTimeout(() => this.addToPingQueue(device), this.getTimeout(device) + utils.seconds(1));
@@ -58,9 +59,9 @@ export default class Availability extends Extension {
         }
     }
 
-    private async addToPingQueue(device: Device): Promise<void> {
+    private addToPingQueue(device: Device): void {
         this.pingQueue.push(device);
-        await this.pingQueueExecuteNext();
+        this.pingQueueExecuteNext().catch(utils.noop);
     }
 
     private removeFromPingQueue(device: Device): void {
@@ -133,23 +134,26 @@ export default class Availability extends Extension {
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
+        // Publish initial availability
         await this.publishAvailabilityForAllEntities();
+
+        // Start availability for the devices
+        for (const device of this.zigbee.devices(false)) {
+            if (utils.isAvailabilityEnabledForEntity(device, settings.get())) {
+                this.resetTimer(device);
+
+                // If an active device is unavailable on start, add it to the pingqueue immediately.
+                if (this.isActiveDevice(device) && !this.isAvailable(device)) {
+                    this.addToPingQueue(device);
+                }
+            }
+        }
     }
 
     @bind private async publishAvailabilityForAllEntities(): Promise<void> {
         for (const entity of [...this.zigbee.devices(false), ...this.zigbee.groups()]) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
-                // Publish initial availability
                 await this.publishAvailability(entity, true, false, true);
-
-                if (entity.isDevice()) {
-                    this.resetTimer(entity);
-
-                    // If an active device is initially unavailable, ping it.
-                    if (this.isActiveDevice(entity) && !this.isAvailable(entity)) {
-                        await this.addToPingQueue(entity);
-                    }
-                }
             }
         }
     }

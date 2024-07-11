@@ -396,6 +396,9 @@ function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     return Object.values(scenes);
 }
 
+/* istanbul ignore next */
+const noop = (): void => {};
+
 export default {
     capitalize,
     getZigbee2MQTTVersion,
@@ -427,4 +430,5 @@ export default {
     flatten,
     arrayUnique,
     getScenes,
+    noop,
 };
