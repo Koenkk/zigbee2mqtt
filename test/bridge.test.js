@@ -2990,11 +2990,15 @@ describe('Bridge', () => {
     });
 
     it('Should allow interviewing a device by ieeeAddr', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
+        device.resolveDefinition = jest.fn();
         MQTT.publish.mockClear();
         zigbeeHerdsman.devices.bulb.interview.mockClear();
+        expect(device.resolveDefinition).toHaveBeenCalledTimes(0);
         MQTT.events.message('zigbee2mqtt/bridge/request/device/interview', stringify({id: '0x000b57fffec6a5b2'}));
         await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb.interview).toHaveBeenCalled();
+        expect(zigbeeHerdsman.devices.bulb.interview).toHaveBeenCalledWith(true);
+        expect(device.resolveDefinition).toHaveBeenCalledWith(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/interview',
             stringify({data: {id: '0x000b57fffec6a5b2'}, status: 'ok'}),
