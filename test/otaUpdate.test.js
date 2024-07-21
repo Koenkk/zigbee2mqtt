@@ -12,6 +12,12 @@ const zigbeeHerdsmanConverters = require('zigbee-herdsman-converters');
 const stringify = require('json-stable-stringify-without-jsonify');
 const zigbeeOTA = require('zigbee-herdsman-converters/lib/ota/zigbeeOTA');
 
+zigbeeHerdsman.returnDevices.push(zigbeeHerdsman.devices.coordinator.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(zigbeeHerdsman.devices.bulb.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(zigbeeHerdsman.devices.bulb_color.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(zigbeeHerdsman.devices.HGZB04D.ieeeAddr);
+zigbeeHerdsman.returnDevices.push(zigbeeHerdsman.devices.SV01.ieeeAddr);
+
 const spyUseIndexOverride = jest.spyOn(zigbeeOTA, 'useIndexOverride');
 
 describe('OTA update', () => {
@@ -180,6 +186,42 @@ describe('OTA update', () => {
             {retain: false, qos: 0},
             expect.any(Function),
         );
+    });
+    
+    it('onlythis Should be able to check if OTA update is available for all devices', async () => {
+        const bulb = await zigbeeHerdsmanConverters.findByDevice(zigbeeHerdsman.devices.bulb);
+        const bulb_color = await zigbeeHerdsmanConverters.findByDevice(zigbeeHerdsman.devices.bulb_color);
+        mockClear(bulb);
+        mockClear(bulb_color);
+
+        bulb.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
+        bulb_color.ota.isUpdateAvailable.mockReturnValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
+
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check_all', '');
+        await flushPromises();
+        expect(bulb.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(bulb.ota.updateToLatest).toHaveBeenCalledTimes(0);
+        expect(bulb_color.ota.isUpdateAvailable).toHaveBeenCalledTimes(1);
+        expect(bulb_color.ota.updateToLatest).toHaveBeenCalledTimes(0);
+        // expect(MQTT.publish).toHaveBeenCalledWith(
+        //     'zigbee2mqtt/bridge/response/device/ota_update/check',
+        //     stringify({data: {id: 'bulb', updateAvailable: false}, status: 'ok'}),
+        //     {retain: false, qos: 0},
+        //     expect.any(Function),
+        // );
+
+        // MQTT.publish.mockClear();
+        // mapped.ota.isUpdateAvailable.mockReturnValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
+        // MQTT.events.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
+        // await flushPromises();
+        // expect(mapped.ota.isUpdateAvailable).toHaveBeenCalledTimes(2);
+        // expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
+        // expect(MQTT.publish).toHaveBeenCalledWith(
+        //     'zigbee2mqtt/bridge/response/device/ota_update/check',
+        //     stringify({data: {id: 'bulb', updateAvailable: true}, status: 'ok'}),
+        //     {retain: false, qos: 0},
+        //     expect.any(Function),
+        // );
     });
 
     it('Should handle if OTA update check fails', async () => {
