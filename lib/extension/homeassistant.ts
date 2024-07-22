@@ -684,8 +684,7 @@ export default class HomeAssistant extends Extension {
                 assert(presets.length !== 0);
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                 discoveryEntry.discovery_payload.preset_mode_command_topic = 'fan_mode';
-                discoveryEntry.discovery_payload.preset_mode_value_template =
-                    `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}]` + ` else 'None' | default('None') }}`;
+                discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}] else 'None' | default('None') }}`;
                 discoveryEntry.discovery_payload.preset_modes = presets;
             }
 
@@ -1149,7 +1148,7 @@ export default class HomeAssistant extends Extension {
                         name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                         // Truncate text if it's too long
                         // https://github.com/Koenkk/zigbee2mqtt/issues/23199
-                        value_template: `{{ value_json.${firstExpose.property}|default('',True) ` + `| truncate(254, True, '', 0) }}`,
+                        value_template: `{{ value_json.${firstExpose.property}|default('',True) | truncate(254, True, '', 0) }}`,
                         enabled_by_default: !settableText,
                         ...lookup[firstExpose.name],
                     },
