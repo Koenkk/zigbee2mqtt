@@ -330,10 +330,15 @@ export default class Zigbee {
     }
 
     devices(includeCoordinator = true): Device[] {
-        return this.herdsman
-            .getDevices()
-            .map((d) => this.resolveDevice(d.ieeeAddr))
-            .filter((d) => includeCoordinator || d.zh.type !== 'Coordinator');
+        const devices: Device[] = [];
+
+        for (const device of this.herdsman.getDevices()) {
+            if (includeCoordinator || device.type !== 'Coordinator') {
+                devices.push(this.resolveDevice(device.ieeeAddr));
+            }
+        }
+
+        return devices;
     }
 
     @bind private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
