@@ -31,20 +31,6 @@ export default class Frontend extends Extension {
     private fileServer: RequestHandler;
     private wss: WebSocket.Server = null;
 
-    constructor(
-        zigbee: Zigbee,
-        mqtt: MQTT,
-        state: State,
-        publishEntityState: PublishEntityState,
-        eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-        restartCallback: () => Promise<void>,
-        addExtension: (extension: Extension) => Promise<void>,
-    ) {
-        super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
-        this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
-    }
-
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
             if (!fs.existsSync(this.sslCert) || !fs.existsSync(this.sslKey)) {
@@ -81,6 +67,8 @@ export default class Frontend extends Extension {
         this.fileServer = gzipStatic(frontend.getPath(), options);
         this.wss = new WebSocket.Server({noServer: true});
         this.wss.on('connection', this.onWebSocketConnection);
+
+        this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
 
         if (!this.host) {
             this.server.listen(this.port);
@@ -169,12 +157,10 @@ export default class Frontend extends Extension {
                 this.retainedMessages.set(topic, payload);
             }
 
-            if (this.wss) {
-                for (const client of this.wss.clients) {
-                    /* istanbul ignore else */
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(stringify({topic, payload}));
-                    }
+            for (const client of this.wss.clients) {
+                /* istanbul ignore else */
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(stringify({topic, payload}));
                 }
             }
         }
