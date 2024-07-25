@@ -17,7 +17,7 @@ export default class MQTT {
     private eventBus: EventBus;
     private initialConnect = true;
     private republishRetainedTimer: NodeJS.Timeout;
-    private retainedMessages: {
+    public retainedMessages: {
         [s: string]: {payload: string; options: MQTTOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
     } = {};
 

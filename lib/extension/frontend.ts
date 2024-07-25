@@ -25,7 +25,6 @@ export default class Frontend extends Extension {
     private sslCert = settings.get().frontend.ssl_cert;
     private sslKey = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
-    private retainedMessages = new Map();
     private server: http.Server;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private fileServer: RequestHandler;
@@ -127,8 +126,17 @@ export default class Frontend extends Extension {
             }
         });
 
-        for (const [key, value] of this.retainedMessages) {
-            ws.send(stringify({topic: key, payload: value}));
+        for (const [topic, payload] of Object.entries(this.mqtt.retainedMessages)) {
+            /* istanbul ignore else */
+            if (topic.startsWith(`${this.mqttBaseTopic}/`)) {
+                ws.send(
+                    stringify({
+                        // Send topic without base_topic
+                        topic: topic.substring(this.mqttBaseTopic.length + 1),
+                        payload: utils.parseJSON(payload.payload, payload.payload),
+                    }),
+                );
+            }
         }
 
         for (const device of this.zigbee.devices(false)) {
@@ -153,9 +161,6 @@ export default class Frontend extends Extension {
             // Send topic without base_topic
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
             const payload = utils.parseJSON(data.payload, data.payload);
-            if (data.options.retain) {
-                this.retainedMessages.set(topic, payload);
-            }
 
             for (const client of this.wss.clients) {
                 /* istanbul ignore else */
