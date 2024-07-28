@@ -60,17 +60,17 @@ module.exports = {
                     "object",
                     "unknown"
                   ],
-                  "custom-groups": {
+                  "customGroups": {
                     "value": {},
                     "type": {}
                   },
-                  "newlines-between": "always",
-                  "internal-pattern": [
+                  "newlinesBetween": "always",
+                  "internalPattern": [
                     "~/**"
                   ],
                   "type": "natural",
                   "order": "asc",
-                  "ignore-case": false
+                  "ignoreCase": false
                 }
               ],
         },
