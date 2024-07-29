@@ -1,20 +1,20 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "IMPORTANT: Check development branch changelog first!!"
-    url: https://gist.github.com/Koenkk/bfd4c3d1725a2cccacc11d6ba51008ba
-    about: "Before submitting an issue, check that the issue hasn't already been solved in the development branch. Click 'Open' to see the release notes of the development branch. In case it is, you can read here how to switch to the development branch: https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html"
-  - name: Questions/discussion
-    url: https://github.com/Koenkk/zigbee2mqtt/discussions/new
-    about: Ask questions, discuss about devices or show things you made
-  - name: Frontend issues
-    url: https://github.com/nurikk/z2m-frontend/issues
-    about: Issues related to the frontend.
-  - name: Home Assistant addon issues
-    url: https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/issues
-    about: Issues related to the Home Assistant addon.
-  - name: FAQ
-    url: https://www.zigbee2mqtt.io/guide/faq
-    about: Frequently asked questions.
-  - name: Support Chat
-    url: https://discord.gg/NyseBeK
-    about: Chat for feedback, questions and troubleshooting.
+    - name: 'IMPORTANT: Check development branch changelog first!!'
+      url: https://gist.github.com/Koenkk/bfd4c3d1725a2cccacc11d6ba51008ba
+      about: "Before submitting an issue, check that the issue hasn't already been solved in the development branch. Click 'Open' to see the release notes of the development branch. In case it is, you can read here how to switch to the development branch: https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html"
+    - name: Questions/discussion
+      url: https://github.com/Koenkk/zigbee2mqtt/discussions/new
+      about: Ask questions, discuss about devices or show things you made
+    - name: Frontend issues
+      url: https://github.com/nurikk/z2m-frontend/issues
+      about: Issues related to the frontend.
+    - name: Home Assistant addon issues
+      url: https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/issues
+      about: Issues related to the Home Assistant addon.
+    - name: FAQ
+      url: https://www.zigbee2mqtt.io/guide/faq
+      about: Frequently asked questions.
+    - name: Support Chat
+      url: https://discord.gg/NyseBeK
+      about: Chat for feedback, questions and troubleshooting.

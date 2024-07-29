@@ -1,69 +1,69 @@
 on:
-  push:
-    branches:
-      - dev
+    push:
+        branches:
+            - dev
 
 permissions:
-  contents: write
-  pull-requests: write
+    contents: write
+    pull-requests: write
 
 name: release-please
 
 jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      version: "${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}"
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+    release-please:
+        runs-on: ubuntu-latest
+        outputs:
+            release_created: ${{ steps.release.outputs.release_created }}
+            version: '${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}'
+        steps:
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
 
-      - uses: googleapis/release-please-action@v4
-        id: release
-        with:
-          target-branch: dev
-          token: ${{secrets.GH_TOKEN}}
+            - uses: googleapis/release-please-action@v4
+              id: release
+              with:
+                  target-branch: dev
+                  token: ${{secrets.GH_TOKEN}}
 
-      # Checkout repos
-      - uses: actions/checkout@v4
-        with:
-          repository: koenkk/zigbee2mqtt
-          path: ./z2m
-      - uses: actions/checkout@v4
-        with:
-          repository: koenkk/zigbee2mqtt
-          path: ./z2m-master
-          ref: master
+            # Checkout repos
+            - uses: actions/checkout@v4
+              with:
+                  repository: koenkk/zigbee2mqtt
+                  path: ./z2m
+            - uses: actions/checkout@v4
+              with:
+                  repository: koenkk/zigbee2mqtt
+                  path: ./z2m-master
+                  ref: master
 
-      - name: Restore cache commit-user-lookup.json
-        uses: actions/cache/restore@v4
-        with:
-          path: z2m/scripts/commit-user-lookup.json
-          key: commit-user-lookup-dummy
-          restore-keys: |
-            commit-user-lookup-
-      - name: Generate changelog
-        run: |
-          MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
-          MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
-          MASTER_ZH_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman"')
-          MASTER_FRONTEND_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee2mqtt-frontend"')
-          wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--zigbee2mqtt/CHANGELOG.md > z2m/CHANGELOG.md
-          cd z2m
-          npm ci
-          node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION $MASTER_FRONTEND_VERSION >> ../changelog.md
-        env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
-      - name: Update changelog gist
-        run: |
-          gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.md
-        env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
-      - name: Save cache commit-user-lookup.json
-        uses: actions/cache/save@v4
-        if: always()
-        with:
-          path: z2m/scripts/commit-user-lookup.json
-          key: commit-user-lookup-${{ hashFiles('z2m/scripts/commit-user-lookup.json') }}
+            - name: Restore cache commit-user-lookup.json
+              uses: actions/cache/restore@v4
+              with:
+                  path: z2m/scripts/commit-user-lookup.json
+                  key: commit-user-lookup-dummy
+                  restore-keys: |
+                      commit-user-lookup-
+            - name: Generate changelog
+              run: |
+                  MASTER_Z2M_VERSION=$(cat z2m-master/package.json | jq -r '.version')
+                  MASTER_ZHC_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman-converters"')
+                  MASTER_ZH_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee-herdsman"')
+                  MASTER_FRONTEND_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee2mqtt-frontend"')
+                  wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--zigbee2mqtt/CHANGELOG.md > z2m/CHANGELOG.md
+                  cd z2m
+                  npm ci
+                  node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION $MASTER_FRONTEND_VERSION >> ../changelog.md
+              env:
+                  GH_TOKEN: ${{secrets.GH_TOKEN}}
+            - name: Update changelog gist
+              run: |
+                  gh gist edit bfd4c3d1725a2cccacc11d6ba51008ba -a changelog.md
+              env:
+                  GH_TOKEN: ${{secrets.GH_TOKEN}}
+            - name: Save cache commit-user-lookup.json
+              uses: actions/cache/save@v4
+              if: always()
+              with:
+                  path: z2m/scripts/commit-user-lookup.json
+                  key: commit-user-lookup-${{ hashFiles('z2m/scripts/commit-user-lookup.json') }}

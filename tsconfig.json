@@ -18,11 +18,6 @@
         "resolveJsonModule": true,
         "experimentalDecorators": true
     },
-    "include": [
-        "lib/**/*",
-        "lib/util/settings.schema.json"
-    ],
-    "exclude": [
-        "node_modules"
-    ],
+    "include": ["lib/**/*", "lib/util/settings.schema.json"],
+    "exclude": ["node_modules"]
 }

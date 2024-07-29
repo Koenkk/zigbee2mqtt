@@ -1,36 +1,36 @@
 on:
-  repository_dispatch:
-    types: update_dep
+    repository_dispatch:
+        types: update_dep
 
 name: update-dep
 
 permissions: {}
 jobs:
-  update_dep:
-    permissions:
-      contents: write
-      pull-requests: write
+    update_dep:
+        permissions:
+            contents: write
+            pull-requests: write
 
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: dev
-        token: ${{ secrets.GH_TOKEN }}
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: npm
-    - run: npm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
-    - uses: peter-evans/create-pull-request@v6
-      id: cpr
-      with:
-        commit-message: "fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}"
-        branch: "deps/${{ github.event.client_payload.package }}"
-        title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
-        token: ${{ secrets.GH_TOKEN }}
-    - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
-    - run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
-      if: steps.cpr.outputs.pull-request-operation == 'created'
-      env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: dev
+                  token: ${{ secrets.GH_TOKEN }}
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+            - run: npm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
+            - uses: peter-evans/create-pull-request@v6
+              id: cpr
+              with:
+                  commit-message: 'fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}'
+                  branch: 'deps/${{ github.event.client_payload.package }}'
+                  title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
+                  token: ${{ secrets.GH_TOKEN }}
+            - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
+            - run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
+              if: steps.cpr.outputs.pull-request-operation == 'created'
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
