@@ -6,7 +6,7 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 # Dependencies and build
 FROM base as dependencies_and_build
 
-COPY package*.json tsconfig.json index.js ./
+COPY package*.json pnpm-lock.yaml tsconfig.json index.js ./
 COPY lib ./lib
 
 ENV NODE_ENV production
