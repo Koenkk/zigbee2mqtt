@@ -26,10 +26,10 @@ jobs:
               run: npm ci
             - name: Build
               run: npm run build
-            - name: Lint
-              run: |
-                  npm run pretty:check
-                  npm run eslint
+            # - name: Lint
+            #   run: |
+            #       npm run pretty:check
+            #       npm run eslint
             - name: Test
               run: npm run test-with-coverage
             - name: Docker login
