@@ -50,14 +50,13 @@ jobs:
               with:
                   version: latest
             - name: 'dev: Docker build'
-              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
                   docker buildx build \
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
                     --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
                     -f docker/Dockerfile \
                     --provenance=false \
-                    --push \
                     -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
                     .
             - name: 'release: Docker build'
