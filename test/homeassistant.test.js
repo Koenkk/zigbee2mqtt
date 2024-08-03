@@ -1403,10 +1403,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should clear discovery when group is removed', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message(
-            'zigbee2mqtt/bridge/request/group/remove',
-            stringify({id: 'ha_discovery_group'}),
-        );
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/remove', stringify({id: 'ha_discovery_group'}));
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith(

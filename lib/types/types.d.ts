@@ -74,7 +74,7 @@ declare global {
     namespace eventdata {
         type EntityRenamed = {entity: Device | Group; homeAssisantRename: boolean; from: string; to: string};
         type DeviceRemoved = {ieeeAddr: string; name: string};
-        type GroupRemoved = {groupID: number, name: string};
+        type GroupRemoved = {groupID: number; name: string};
         type MQTTMessage = {topic: string; message: string};
         type MQTTMessagePublished = {topic: string; payload: string; options: {retain: boolean; qos: number}};
         type StateChange = {

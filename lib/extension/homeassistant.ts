@@ -1216,13 +1216,13 @@ export default class HomeAssistant extends Extension {
 
     @bind async onGroupRemoved(data: eventdata.GroupRemoved): Promise<void> {
         logger.debug(`Clearing Home Assistant discovery for group '${data.name}'`);
-        const discovered = this.getDiscovered(data.groupID.toString())
+        const discovered = this.getDiscovered(data.groupID.toString());
 
         for (const topic of Object.keys(discovered.messages)) {
             await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         }
 
-        delete this.discovered[data.groupID.toString()]
+        delete this.discovered[data.groupID.toString()];
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
