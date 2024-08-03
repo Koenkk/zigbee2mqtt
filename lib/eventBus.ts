@@ -48,6 +48,13 @@ export default class EventBus {
         this.on('deviceRemoved', callback, key);
     }
 
+    public emitGroupRemoved(data: eventdata.GroupRemoved) {
+        this.emitter.emit('groupRemoved', data);
+    }
+    public onGroupRemoved(key: ListenerKey, callback: (data: eventdata.GroupRemoved) => void): void {
+        this.on('groupRemoved', callback, key);
+    }
+
     public emitLastSeenChanged(data: eventdata.LastSeenChanged): void {
         this.emitter.emit('lastSeenChanged', data);
     }
