@@ -280,7 +280,7 @@ export function validate(): string[] {
         getInternalSettings();
     } catch (error) {
         if (error.name === 'YAMLException') {
-            return [`Your YAML file: '${error.file}' is invalid ` + `(use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
+            return [`Your YAML file: '${error.file}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
         }
 
         return [error.message];

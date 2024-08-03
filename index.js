@@ -34,7 +34,7 @@ async function triggerWatchdog(code) {
         // garbage collector
         controller = undefined;
 
-        console.log(`WATCHDOG: Waiting ${delay/60000}min before next start try.`);
+        console.log(`WATCHDOG: Waiting ${delay / 60000}min before next start try.`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         await start();
     } else {
@@ -61,7 +61,7 @@ async function currentHash() {
     const git = require('git-last-commit');
 
     return new Promise((resolve) => {
-        git.getLastCommit((err, commit) => err ? resolve('unknown') : resolve(commit.shortHash));
+        git.getLastCommit((err, commit) => (err ? resolve('unknown') : resolve(commit.shortHash)));
     });
 }
 
@@ -155,7 +155,7 @@ async function start() {
 
     // consider next controller.stop() call as unsolicited, only after successful first start
     unsolicitedStop = true;
-    watchdogCount = 0;// reset
+    watchdogCount = 0; // reset
 }
 
 async function stop(restart) {

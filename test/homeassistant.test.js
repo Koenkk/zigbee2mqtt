@@ -854,9 +854,7 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover thermostat devices', async () => {
-        let payload;
-
-        payload = {
+        const payload = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
             action_topic: 'zigbee2mqtt/TS0601_thermostat',
@@ -901,6 +899,50 @@ describe('HomeAssistant extension', () => {
             'homeassistant/climate/0x0017882104a44559/climate/config',
             stringify(payload),
             {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
+    it('Should discover Bosch BTH-RA with a compatibility mapping', async () => {
+        const payload = {
+            action_template:
+                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
+            action_topic: 'zigbee2mqtt/bosch_radiator',
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            current_temperature_template: '{{ value_json.local_temperature }}',
+            current_temperature_topic: 'zigbee2mqtt/bosch_radiator',
+            device: {
+                identifiers: ['zigbee2mqtt_0x18fc2600000d7ae2'],
+                manufacturer: 'Bosch',
+                model: 'Radiator thermostat II (BTH-RA)',
+                name: 'bosch_radiator',
+                sw_version: '3.05.09',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            json_attributes_topic: 'zigbee2mqtt/bosch_radiator',
+            max_temp: '30',
+            min_temp: '5',
+            mode_command_template: `{% set values = { 'auto':'schedule','heat':'manual','off':'pause'} %}{"operating_mode": "{{ values[value] if value in values.keys() else 'pause' }}"}`,
+            mode_command_topic: 'zigbee2mqtt/bosch_radiator/set',
+            mode_state_template:
+                "{% set values = {'schedule':'auto','manual':'heat','pause':'off'} %}{% set value = value_json.operating_mode %}{{ values[value] if value in values.keys() else 'off' }}",
+            mode_state_topic: 'zigbee2mqtt/bosch_radiator',
+            modes: ['off', 'heat', 'auto'],
+            name: null,
+            object_id: 'bosch_radiator',
+            origin: origin,
+            temp_step: 0.5,
+            temperature_command_topic: 'zigbee2mqtt/bosch_radiator/set/occupied_heating_setpoint',
+            temperature_state_template: '{{ value_json.occupied_heating_setpoint }}',
+            temperature_state_topic: 'zigbee2mqtt/bosch_radiator',
+            temperature_unit: 'C',
+            unique_id: '0x18fc2600000d7ae2_climate_zigbee2mqtt',
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/climate/0x18fc2600000d7ae2/climate/config',
+            stringify(payload),
+            {qos: 1, retain: true},
             expect.any(Function),
         );
     });

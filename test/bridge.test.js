@@ -89,12 +89,9 @@ describe('Bridge', () => {
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
             stringify({
-                restart_required: false,
                 commit: version.commitHash,
                 config: {
                     advanced: {
-                        legacy_availability_payload: true,
-                        output: 'json',
                         adapter_concurrent: null,
                         adapter_delay: null,
                         availability_blacklist: [],
@@ -109,6 +106,9 @@ describe('Bridge', () => {
                         ext_pan_id: [221, 221, 221, 221, 221, 221, 221, 221],
                         last_seen: 'disable',
                         legacy_api: false,
+                        legacy_availability_payload: true,
+                        log_debug_namespace_ignore: '',
+                        log_debug_to_mqtt_frontend: false,
                         log_directory: directory,
                         log_file: 'log.log',
                         log_level: 'info',
@@ -117,8 +117,7 @@ describe('Bridge', () => {
                         log_rotation: true,
                         log_symlink_current: false,
                         log_syslog: {},
-                        log_debug_namespace_ignore: '',
-                        log_debug_to_mqtt_frontend: false,
+                        output: 'json',
                         pan_id: 6754,
                         report: false,
                         soft_reset_timeout: 0,
@@ -127,7 +126,7 @@ describe('Bridge', () => {
                     blocklist: [],
                     device_options: {},
                     devices: {
-                        '0x000b57fffec6a5b2': {friendly_name: 'bulb', description: 'this is my bulb', retain: true},
+                        '0x000b57fffec6a5b2': {description: 'this is my bulb', friendly_name: 'bulb', retain: true},
                         '0x000b57fffec6a5b3': {friendly_name: 'bulb_color', retain: false},
                         '0x000b57fffec6a5b4': {friendly_name: 'bulb_color_2', retain: false},
                         '0x000b57fffec6a5b7': {friendly_name: 'bulb_2', retain: false},
@@ -158,7 +157,20 @@ describe('Bridge', () => {
                         '0x0017880104e45553': {friendly_name: 'bulb_enddevice', retain: false},
                         '0x0017880104e45559': {friendly_name: 'cc2530_router', retain: false},
                         '0x0017880104e45560': {friendly_name: 'livolo', retain: false},
+                        '0x0017880104e45561': {friendly_name: 'temperature_sensor'},
+                        '0x0017880104e45562': {friendly_name: 'heating_actuator'},
                         '0x0017880104e45724': {friendly_name: 'GLEDOPTO_2ID'},
+                        '0x0017882104a44559': {friendly_name: 'TS0601_thermostat'},
+                        '0x0017882104a44560': {friendly_name: 'TS0601_switch'},
+                        '0x0017882104a44562': {friendly_name: 'TS0601_cover_switch'},
+                        '0x0017882194e45543': {friendly_name: 'QS-Zigbee-D02-TRIAC-2C-LN'},
+                        '0x18fc2600000d7ae2': {friendly_name: 'bosch_radiator'},
+                        '0x90fd9ffffe4b64aa': {friendly_name: 'SP600_OLD'},
+                        '0x90fd9ffffe4b64ab': {friendly_name: 'SP600_NEW'},
+                        '0x90fd9ffffe4b64ac': {friendly_name: 'MKS-CM-W5'},
+                        '0x90fd9ffffe4b64ae': {friendly_name: 'tradfri_remote', retain: false},
+                        '0x90fd9ffffe4b64af': {friendly_name: 'roller_shutter'},
+                        '0x90fd9ffffe4b64ax': {friendly_name: 'ZNLDP12LM'},
                         '0xf4ce368a38be56a1': {
                             cover_1_enabled: 'true',
                             cover_1_tilt_enabled: 'true',
@@ -176,29 +188,17 @@ describe('Bridge', () => {
                             front_surface_enabled: 'true',
                             retain: false,
                         },
-                        '0x0017882104a44559': {friendly_name: 'TS0601_thermostat'},
-                        '0x0017882104a44560': {friendly_name: 'TS0601_switch'},
-                        '0x0017882104a44562': {friendly_name: 'TS0601_cover_switch'},
-                        '0x0017882194e45543': {friendly_name: 'QS-Zigbee-D02-TRIAC-2C-LN'},
-                        '0x90fd9ffffe4b64aa': {friendly_name: 'SP600_OLD'},
-                        '0x90fd9ffffe4b64ab': {friendly_name: 'SP600_NEW'},
-                        '0x90fd9ffffe4b64ac': {friendly_name: 'MKS-CM-W5'},
-                        '0x90fd9ffffe4b64ae': {friendly_name: 'tradfri_remote', retain: false},
-                        '0x90fd9ffffe4b64af': {friendly_name: 'roller_shutter'},
-                        '0x90fd9ffffe4b64ax': {friendly_name: 'ZNLDP12LM'},
-                        '0x0017880104e45561': {friendly_name: 'temperature_sensor'},
-                        '0x0017880104e45562': {friendly_name: 'heating_actuator'},
                     },
                     external_converters: [],
                     groups: {
                         1: {friendly_name: 'group_1', retain: false},
-                        9: {devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'], friendly_name: 'ha_discovery_group'},
                         11: {devices: ['bulb_2'], friendly_name: 'group_with_tradfri', retain: false},
-                        14: {devices: ['power_plug', 'bulb_2'], friendly_name: 'switch_group', retain: false},
                         12: {devices: ['TS0601_thermostat'], friendly_name: 'thermostat_group', retain: false},
+                        14: {devices: ['power_plug', 'bulb_2'], friendly_name: 'switch_group', retain: false},
                         15071: {devices: ['bulb_color_2', 'bulb_2'], friendly_name: 'group_tradfri_remote', retain: false},
                         2: {friendly_name: 'group_2', retain: false},
                         21: {devices: ['GLEDOPTO_2ID/cct'], friendly_name: 'gledopto_group'},
+                        9: {devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'], friendly_name: 'ha_discovery_group'},
                     },
                     homeassistant: false,
                     map_options: {
@@ -210,20 +210,21 @@ describe('Bridge', () => {
                             },
                         },
                     },
-                    mqtt: {base_topic: 'zigbee2mqtt', include_device_information: false, server: 'mqtt://localhost', force_disable_retain: false},
+                    mqtt: {base_topic: 'zigbee2mqtt', force_disable_retain: false, include_device_information: false, server: 'mqtt://localhost'},
                     ota: {disable_automatic_update_check: false, update_check_interval: 1440},
                     passlist: [],
                     permit_join: true,
                     serial: {disable_led: false, port: '/dev/dummy'},
                 },
+                config_schema: settings.schema,
                 coordinator: {ieee_address: '0x00124b00120144ae', meta: {revision: 20190425, version: 1}, type: 'z-Stack'},
                 log_level: 'info',
                 network: {channel: 15, extended_pan_id: [0, 11, 22], pan_id: 5674},
                 permit_join: false,
+                restart_required: false,
                 version: version.version,
-                zigbee_herdsman_converters: zhcVersion,
                 zigbee_herdsman: zhVersion,
-                config_schema: settings.schema,
+                zigbee_herdsman_converters: zhcVersion,
             }),
             {retain: true, qos: 0},
             expect.any(Function),
@@ -2989,11 +2990,15 @@ describe('Bridge', () => {
     });
 
     it('Should allow interviewing a device by ieeeAddr', async () => {
+        const device = controller.zigbee.resolveEntity(zigbeeHerdsman.devices.bulb);
+        device.resolveDefinition = jest.fn();
         MQTT.publish.mockClear();
         zigbeeHerdsman.devices.bulb.interview.mockClear();
+        expect(device.resolveDefinition).toHaveBeenCalledTimes(0);
         MQTT.events.message('zigbee2mqtt/bridge/request/device/interview', stringify({id: '0x000b57fffec6a5b2'}));
         await flushPromises();
-        expect(zigbeeHerdsman.devices.bulb.interview).toHaveBeenCalled();
+        expect(zigbeeHerdsman.devices.bulb.interview).toHaveBeenCalledWith(true);
+        expect(device.resolveDefinition).toHaveBeenCalledWith(true);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/interview',
             stringify({data: {id: '0x000b57fffec6a5b2'}, status: 'ok'}),

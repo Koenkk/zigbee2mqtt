@@ -685,8 +685,7 @@ export default class HomeAssistant extends Extension {
                 assert(presets.length !== 0);
                 discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                 discoveryEntry.discovery_payload.preset_mode_command_topic = 'fan_mode';
-                discoveryEntry.discovery_payload.preset_mode_value_template =
-                    `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}]` + ` else 'None' | default('None') }}`;
+                discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}] else 'None' | default('None') }}`;
                 discoveryEntry.discovery_payload.preset_modes = presets;
             }
 
@@ -1139,7 +1138,6 @@ export default class HomeAssistant extends Extension {
                 color_options: {icon: 'mdi:palette'},
                 level_config: {entity_category: 'diagnostic'},
                 programming_mode: {icon: 'mdi:calendar-clock'},
-                program: {value_template: `{{ value_json.${firstExpose.property}|default('',True) ` + `| truncate(254, True, '', 0) }}`},
                 schedule_settings: {icon: 'mdi:calendar-clock'},
             };
             if (firstExpose.access & ACCESS_STATE) {
@@ -1149,7 +1147,9 @@ export default class HomeAssistant extends Extension {
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        // Truncate text if it's too long
+                        // https://github.com/Koenkk/zigbee2mqtt/issues/23199
+                        value_template: `{{ value_json.${firstExpose.property}|default('',True) | truncate(254, True, '', 0) }}`,
                         enabled_by_default: !settableText,
                         ...lookup[firstExpose.name],
                     },
@@ -1174,14 +1174,6 @@ export default class HomeAssistant extends Extension {
             }
         } else {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
-        }
-
-        // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
-        // This takes precedence over definitions in this file.
-        if (firstExpose.category === 'config') {
-            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'config'));
-        } else if (firstExpose.category === 'diagnostic') {
-            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'diagnostic'));
         }
 
         discoveryEntries.forEach((d) => {
@@ -1710,6 +1702,10 @@ export default class HomeAssistant extends Extension {
                 if (entity.options.homeassistant[config.object_id] != undefined) {
                     add(entity.options.homeassistant[config.object_id], false);
                 }
+            }
+
+            if (entity.isDevice()) {
+                entity.definition.meta?.overrideHaDiscoveryPayload?.(payload);
             }
 
             const topic = this.getDiscoveryTopic(config, entity);

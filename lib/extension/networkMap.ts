@@ -121,11 +121,11 @@ export default class NetworkMap extends Extension {
 
             // Shape the record according to device type
             if (node.type == 'Coordinator') {
-                style = `style="bold, filled", fillcolor="${colors.fill.coordinator}", ` + `fontcolor="${colors.font.coordinator}"`;
+                style = `style="bold, filled", fillcolor="${colors.fill.coordinator}", fontcolor="${colors.font.coordinator}"`;
             } else if (node.type == 'Router') {
-                style = `style="rounded, filled", fillcolor="${colors.fill.router}", ` + `fontcolor="${colors.font.router}"`;
+                style = `style="rounded, filled", fillcolor="${colors.fill.router}", fontcolor="${colors.font.router}"`;
             } else {
-                style = `style="rounded, dashed, filled", fillcolor="${colors.fill.enddevice}", ` + `fontcolor="${colors.font.enddevice}"`;
+                style = `style="rounded, dashed, filled", fillcolor="${colors.fill.enddevice}", fontcolor="${colors.font.enddevice}"`;
             }
 
             // Add the device with its labels to the graph as a node.

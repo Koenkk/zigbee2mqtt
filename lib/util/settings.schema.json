@@ -609,7 +609,7 @@
                     ],
                     "title": "Pan ID",
                     "requiresRestart": true,
-                    "description": "ZigBee pan ID, changing requires repairing all devices!"
+                    "description": "ZigBee pan ID, changing requires re-pairing all devices!"
                 },
                 "ext_pan_id": {
                     "oneOf": [
@@ -627,7 +627,7 @@
                     ],
                     "title": "Ext Pan ID",
                     "requiresRestart": true,
-                    "description": "Zigbee extended pan ID, changing requires repairing all devices!"
+                    "description": "Zigbee extended pan ID, changing requires re-pairing all devices!"
                 },
                 "channel": {
                     "type": "number",
@@ -636,7 +636,7 @@
                     "default": 11,
                     "title": "ZigBee channel",
                     "requiresRestart": true,
-                    "description": "Zigbee channel, changing requires repairing all devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid Problems)",
+                    "description": "Zigbee channel, changing might require re-pairing some devices! (Note: use a ZLL channel: 11, 15, 20, or 25 to avoid problems)",
                     "examples": [15, 20, 25]
                 },
                 "adapter_concurrent": {
@@ -698,7 +698,7 @@
                     ],
                     "title": "Network key",
                     "requiresRestart": true,
-                    "description": "Network encryption key, changing requires repairing all devices!"
+                    "description": "Network encryption key, changing requires re-pairing all devices!"
                 },
                 "timestamp_format": {
                     "type": "string",

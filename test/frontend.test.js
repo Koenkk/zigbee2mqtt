@@ -243,6 +243,10 @@ describe('Frontend', () => {
         mockWS.implementation.clients.push(mockWSClient.implementation);
         await mockWS.events.connection(mockWSClient.implementation);
 
+        const allTopics = mockWSClient.implementation.send.mock.calls.map((m) => JSON.parse(m).topic);
+        expect(allTopics).toContain('bridge/devices');
+        expect(allTopics).toContain('bridge/info');
+        expect(allTopics).toContain('bridge/config');
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: 'online'}));
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'remote', payload: {brightness: 255}}));
 
