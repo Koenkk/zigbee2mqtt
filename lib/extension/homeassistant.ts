@@ -810,7 +810,7 @@ export default class HomeAssistant extends Extension {
                 ballast_minimum_level: {entity_category: 'config'},
                 ballast_physical_maximum_level: {entity_category: 'diagnostic'},
                 ballast_physical_minimum_level: {entity_category: 'diagnostic'},
-                battery: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
+                battery: {device_class: 'battery', state_class: 'measurement'},
                 battery2: {device_class: 'battery', entity_category: 'diagnostic', state_class: 'measurement'},
                 battery_voltage: {device_class: 'voltage', entity_category: 'diagnostic', state_class: 'measurement', enabled_by_default: true},
                 boost_heating_countdown: {device_class: 'duration'},
@@ -1173,6 +1173,14 @@ export default class HomeAssistant extends Extension {
             }
         } else {
             throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
+        }
+
+        // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
+        // This takes precedence over definitions in this file.
+        if (firstExpose.category === 'config') {
+            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'config'));
+        } else if (firstExpose.category === 'diagnostic') {
+            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'diagnostic'));
         }
 
         discoveryEntries.forEach((d) => {
