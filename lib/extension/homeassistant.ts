@@ -244,8 +244,8 @@ export default class HomeAssistant extends Extension {
         this.eventBus.emitPublishAvailability();
     }
 
-    private getDiscovered(entity: Device | Group | Bridge | string): Discovered {
-        const ID = typeof entity === 'string' ? entity : entity.ID;
+    private getDiscovered(entity: Device | Group | Bridge | string | number): Discovered {
+        const ID = typeof entity === 'string' || typeof entity === 'number' ? entity : entity.ID;
         if (!(ID in this.discovered)) {
             this.discovered[ID] = {messages: {}, triggers: new Set(), mockProperties: new Set(), discovered: false};
         }
@@ -1196,13 +1196,13 @@ export default class HomeAssistant extends Extension {
 
     @bind async onEntityRemoved(data: eventdata.EntityRemoved): Promise<void> {
         logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
-        const discovered = this.getDiscovered(data.id.toString());
+        const discovered = this.getDiscovered(data.id);
 
         for (const topic of Object.keys(discovered.messages)) {
             await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         }
 
-        delete this.discovered[data.id.toString()];
+        delete this.discovered[data.id];
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
