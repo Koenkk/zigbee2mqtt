@@ -201,8 +201,7 @@ export default class HomeAssistant extends Extension {
         this.discoveryOrigin = {name: 'Zigbee2MQTT', sw: this.zigbee2MQTTVersion, url: 'https://www.zigbee2mqtt.io'};
         this.bridge = this.getBridgeEntity(await this.zigbee.getCoordinatorVersion());
         this.bridgeIdentifier = this.getDevicePayload(this.bridge).identifiers[0];
-        this.eventBus.onDeviceRemoved(this, this.onDeviceRemoved);
-        this.eventBus.onGroupRemoved(this, this.onGroupRemoved);
+        this.eventBus.onEntityRemoved(this, this.onEntityRemoved);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onEntityRenamed(this, this.onEntityRenamed);
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -1195,26 +1194,15 @@ export default class HomeAssistant extends Extension {
         return discoveryEntries;
     }
 
-    @bind async onDeviceRemoved(data: eventdata.DeviceRemoved): Promise<void> {
+    @bind async onEntityRemoved(data: eventdata.EntityRemoved): Promise<void> {
         logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
-        const discovered = this.getDiscovered(data.ieeeAddr);
+        const discovered = this.getDiscovered(data.id.toString());
 
         for (const topic of Object.keys(discovered.messages)) {
             await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
         }
 
-        delete this.discovered[data.ieeeAddr];
-    }
-
-    @bind async onGroupRemoved(data: eventdata.GroupRemoved): Promise<void> {
-        logger.debug(`Clearing Home Assistant discovery for group '${data.name}'`);
-        const discovered = this.getDiscovered(data.groupID.toString());
-
-        for (const topic of Object.keys(discovered.messages)) {
-            await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
-        }
-
-        delete this.discovered[data.groupID.toString()];
+        delete this.discovered[data.id.toString()];
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {

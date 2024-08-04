@@ -295,7 +295,7 @@ export default class BridgeLegacy extends Extension {
 
         const cleanup = async (): Promise<void> => {
             // Fire event
-            this.eventBus.emitDeviceRemoved({ieeeAddr, name});
+            this.eventBus.emitEntityRemoved({id: ieeeAddr, name});
 
             // Remove from configuration.yaml
             settings.removeDevice(entity.ieeeAddr);
