@@ -1443,6 +1443,19 @@ describe('HomeAssistant extension', () => {
         );
     });
 
+    it('Should clear discovery when group is removed', async () => {
+        MQTT.publish.mockClear();
+        MQTT.events.message('zigbee2mqtt/bridge/request/group/remove', stringify({id: 'ha_discovery_group'}));
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/light/1221051039810110150109113116116_9/light/config',
+            null,
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
     it('Should refresh discovery when device is renamed', async () => {
         await MQTT.events.message(
             'homeassistant/device_automation/0x0017880104e45522/action_double/config',

@@ -618,7 +618,6 @@ export default class Bridge extends Extension {
 
         try {
             logger.info(`Removing ${entityType} '${entity.name}'${blockForceLog}`);
-            const ieeeAddr = entity.isDevice() && entity.ieeeAddr;
             const name = entity.name;
 
             if (entity instanceof Device) {
@@ -641,7 +640,9 @@ export default class Bridge extends Extension {
 
             // Fire event
             if (entity instanceof Device) {
-                this.eventBus.emitDeviceRemoved({ieeeAddr, name});
+                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'device'});
+            } else {
+                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'group'});
             }
 
             // Remove from configuration.yaml
