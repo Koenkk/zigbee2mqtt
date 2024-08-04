@@ -640,9 +640,9 @@ export default class Bridge extends Extension {
 
             // Fire event
             if (entity instanceof Device) {
-                this.eventBus.emitEntityRemoved({id: entityID, name: name, type: 'device'});
+                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'device'});
             } else {
-                this.eventBus.emitEntityRemoved({id: entityID, name: name, type: 'group'});
+                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'group'});
             }
 
             // Remove from configuration.yaml
