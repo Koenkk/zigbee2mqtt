@@ -41,10 +41,10 @@ export default class EventBus {
         this.on('deviceRenamed', callback, key);
     }
 
-    public emitDeviceRemoved(data: eventdata.DeviceRemoved): void {
+    public emitEntityRemoved(data: eventdata.EntityRemoved): void {
         this.emitter.emit('deviceRemoved', data);
     }
-    public onDeviceRemoved(key: ListenerKey, callback: (data: eventdata.DeviceRemoved) => void): void {
+    public onEntityRemoved(key: ListenerKey, callback: (data: eventdata.EntityRemoved) => void): void {
         this.on('deviceRemoved', callback, key);
     }
 
