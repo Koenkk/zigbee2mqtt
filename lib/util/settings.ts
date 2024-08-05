@@ -7,7 +7,7 @@ import schemaJson from './settings.schema.json';
 import utils from './utils';
 import yaml from './yaml';
 export let schema = schemaJson;
-// @ts-ignore
+// @ts-expect-error
 schema = {};
 objectAssignDeep(schema, schemaJson);
 
@@ -140,16 +140,16 @@ function loadSettingsWithDefaults(): void {
                 'homeassistant_legacy_entity_attributes',
                 'homeassistant_status_topic',
             ]) {
-                // @ts-ignore
+                // @ts-expect-error
                 if (_settingsWithDefaults.advanced[key] !== undefined) {
-                    // @ts-ignore
+                    // @ts-expect-error
                     sLegacy[key.replace('homeassistant_', '')] = _settingsWithDefaults.advanced[key];
                 }
             }
         }
 
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.homeassistant = {};
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
@@ -157,7 +157,7 @@ function loadSettingsWithDefaults(): void {
     if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
         const defaults = {};
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.availability = {};
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
@@ -165,35 +165,34 @@ function loadSettingsWithDefaults(): void {
     if (_settingsWithDefaults.frontend) {
         const defaults = {port: 8080, auth_token: false};
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
-        // @ts-ignore
         _settingsWithDefaults.frontend = {};
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 
     if (_settings.advanced?.hasOwnProperty('baudrate') && _settings.serial?.baudrate == null) {
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;
     }
 
     if (_settings.advanced?.hasOwnProperty('rtscts') && _settings.serial?.rtscts == null) {
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
     }
 
     if (_settings.advanced?.hasOwnProperty('ikea_ota_use_test_url') && _settings.ota?.ikea_ota_use_test_url == null) {
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     if (_settings.experimental?.hasOwnProperty('transmit_power') && _settings.advanced?.transmit_power == null) {
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.advanced.transmit_power = _settings.experimental.transmit_power;
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     if (_settings.experimental?.hasOwnProperty('output') && _settings.advanced?.output == null) {
-        // @ts-ignore
+        // @ts-expect-error
         _settingsWithDefaults.advanced.output = _settings.experimental.output;
     }
 
@@ -201,10 +200,17 @@ function loadSettingsWithDefaults(): void {
         _settingsWithDefaults.advanced.log_level = 'warning';
     }
 
-    // @ts-ignore
-    _settingsWithDefaults.ban && _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
-    // @ts-ignore
-    _settingsWithDefaults.whitelist && _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
+    // @ts-expect-error
+    if (_settingsWithDefaults.ban) {
+        // @ts-expect-error
+        _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
+    }
+
+    // @ts-expect-error
+    if (_settingsWithDefaults.whitelist) {
+        // @ts-expect-error
+        _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
+    }
 }
 
 function parseValueRef(text: string): {filename: string; key: string} | null {
@@ -257,7 +263,7 @@ function write(): void {
                     .filter((f: string, i: number) => i !== 0)
                     .map((f: string) => yaml.readIfExists(data.joinPath(f), {}))
                     .map((c: KeyValue) => Object.keys(c))
-                    // @ts-ignore
+                    // @ts-expect-error
                     .forEach((k: string) => delete content[k]);
             }
 
@@ -395,12 +401,12 @@ function read(): Settings {
     // Read devices/groups configuration from separate file if specified.
     const readDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof s[type] === 'string' || (Array.isArray(s[type]) && Array(s[type]).length > 0)) {
-            /* eslint-disable-line */ // @ts-ignore
+            /* eslint-disable-line */
             const files: string[] = Array.isArray(s[type]) ? s[type] : [s[type]];
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file), {});
-                /* eslint-disable-line */ // @ts-ignore
+                /* eslint-disable-line */ // @ts-expect-error
                 s[type] = objectAssignDeep.noMutate(s[type], content);
             }
         }
@@ -422,20 +428,20 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                     const envVariableName = `ZIGBEE2MQTT_CONFIG_${envPart}${key}`.toUpperCase();
                     if (process.env[envVariableName]) {
                         const setting = path.reduce((acc, val) => {
-                            /* eslint-disable-line */ // @ts-ignore
+                            /* eslint-disable-line */ // @ts-expect-error
                             acc[val] = acc[val] || {};
-                            /* eslint-disable-line */ // @ts-ignore
+                            /* eslint-disable-line */ // @ts-expect-error
                             return acc[val];
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             try {
                                 setting[key] = JSON.parse(process.env[envVariableName]);
-                            } catch (error) {
+                            } catch {
                                 setting[key] = process.env[envVariableName];
                             }
                         } else if (type.indexOf('number') >= 0) {
-                            /* eslint-disable-line */ // @ts-ignore
+                            /* eslint-disable-line */ // @ts-expect-error
                             setting[key] = process.env[envVariableName] * 1;
                         } else if (type.indexOf('boolean') >= 0) {
                             setting[key] = process.env[envVariableName].toLowerCase() === 'true';
@@ -499,7 +505,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 
 export function apply(settings: Record<string, unknown>): boolean {
     getInternalSettings(); // Ensure _settings is initialized.
-    /* eslint-disable-line */ // @ts-ignore
+    /* eslint-disable-line */ // @ts-expect-error
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);

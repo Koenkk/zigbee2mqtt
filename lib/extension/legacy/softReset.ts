@@ -45,7 +45,7 @@ export default class SoftReset extends Extension {
             await this.zigbee.reset('soft');
             logger.warning('Soft reset ZNP due to timeout');
         } catch (error) {
-            logger.warning('Soft reset failed, trying stop/start');
+            logger.warning(`Soft reset failed, trying stop/start (${error.message})`);
 
             await this.zigbee.stop();
             logger.warning('Zigbee stopped');
@@ -53,7 +53,7 @@ export default class SoftReset extends Extension {
             try {
                 await this.zigbee.start();
             } catch (error) {
-                logger.error('Failed to restart!');
+                logger.error(`Failed to restart! (${error.message})`);
             }
         }
 

@@ -66,7 +66,9 @@ export default class Availability extends Extension {
 
     private removeFromPingQueue(device: Device): void {
         const index = this.pingQueue.findIndex((d) => d.ieeeAddr === device.ieeeAddr);
-        index != -1 && this.pingQueue.splice(index, 1);
+        if (index != -1) {
+            this.pingQueue.splice(index, 1);
+        }
     }
 
     private async pingQueueExecuteNext(): Promise<void> {

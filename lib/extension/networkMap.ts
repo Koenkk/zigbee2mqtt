@@ -250,7 +250,7 @@ export default class NetworkMap extends Extension {
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
                     failed.get(device).push('routingTable');
-                    logger.error(`Failed to execute routing table for '${device.name}'`);
+                    logger.error(`Failed to execute routing table for '${device.name}' (${error.message})`);
                 }
             }
         }

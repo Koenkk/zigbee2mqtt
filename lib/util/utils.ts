@@ -60,7 +60,7 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
             if (err) {
                 try {
                     commitHash = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', '.hash'), 'utf-8');
-                } catch (error) {
+                } catch {
                     /* istanbul ignore next */
                     commitHash = 'unknown';
                 }
@@ -128,7 +128,7 @@ function getResponse(request: KeyValue | string, data: KeyValue, error: string):
 function parseJSON(value: string, fallback: string): KeyValue | string {
     try {
         return JSON.parse(value);
-    } catch (e) {
+    } catch {
         return fallback;
     }
 }
@@ -162,6 +162,7 @@ export function* loadExternalConverter(moduleName: string): Generator<ExternalDe
     if (moduleName.endsWith('.js')) {
         converter = loadModuleFromFile(data.joinPath(moduleName));
     } else {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         converter = require(moduleName);
     }
 

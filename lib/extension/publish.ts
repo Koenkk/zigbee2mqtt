@@ -74,13 +74,13 @@ export default class Publish extends Extension {
         if (parsedTopic.attribute) {
             try {
                 return {[parsedTopic.attribute]: JSON.parse(data.message)};
-            } catch (e) {
+            } catch {
                 return {[parsedTopic.attribute]: data.message};
             }
         } else {
             try {
                 return JSON.parse(data.message);
-            } catch (e) {
+            } catch {
                 if (stateValues.includes(data.message.toLowerCase())) {
                     return {state: data.message};
                 } else {

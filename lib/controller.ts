@@ -66,6 +66,7 @@ type ExtensionArgs = [
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let sdNotify: any = null;
 try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     sdNotify = process.env.NOTIFY_SOCKET ? require('sd-notify') : null;
 } catch {
     // sd-notify is optional
@@ -175,14 +176,14 @@ export class Controller {
 
             await this.zigbee.permitJoin(settings.get().permit_join);
         } catch (error) {
-            logger.error(`Failed to set permit join to ${settings.get().permit_join}`);
+            logger.error(`Failed to set permit join to ${settings.get().permit_join} (${error.message})`);
         }
 
         // MQTT
         try {
             await this.mqtt.connect();
         } catch (error) {
-            logger.error(`MQTT failed to connect, exiting...`);
+            logger.error(`MQTT failed to connect, exiting... (${error.message})`);
             await this.zigbee.stop();
             return this.exit(1);
         }
@@ -247,7 +248,7 @@ export class Controller {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
         } catch (error) {
-            logger.error('Failed to stop Zigbee2MQTT');
+            logger.error(`Failed to stop Zigbee2MQTT (${error.message})`);
             code = 1;
         }
 
