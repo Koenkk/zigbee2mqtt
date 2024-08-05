@@ -61,7 +61,7 @@ export default class BridgeLegacy extends Extension {
         let json = null;
         try {
             json = JSON.parse(message);
-        } catch (e) {
+        } catch {
             logger.error('Failed to parse message as JSON');
             return;
         }
@@ -86,7 +86,7 @@ export default class BridgeLegacy extends Extension {
         try {
             await this.zigbee.reset('soft');
             logger.info('Soft reset ZNP');
-        } catch (error) {
+        } catch {
             logger.error('Soft reset failed');
         }
     }
@@ -179,7 +179,7 @@ export default class BridgeLegacy extends Extension {
         let json = null;
         try {
             json = JSON.parse(message);
-        } catch (e) {
+        } catch {
             logger.error(invalid);
             return;
         }
@@ -213,7 +213,7 @@ export default class BridgeLegacy extends Extension {
             }
 
             await this.mqtt.publish('bridge/log', stringify({type: `${isGroup ? 'group' : 'device'}_renamed`, message: {from, to}}));
-        } catch (error) {
+        } catch {
             logger.error(`Failed to rename - ${from} to ${to}`);
         }
     }
@@ -231,7 +231,7 @@ export default class BridgeLegacy extends Extension {
             if (json.hasOwnProperty('friendly_name')) {
                 name = json.friendly_name;
             }
-        } catch (e) {
+        } catch {
             // just friendly_name
             name = message;
         }

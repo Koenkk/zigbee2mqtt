@@ -429,7 +429,7 @@ export default class Bind extends Extension {
                         await endpoint.configureReporting(bind.cluster.name, items);
                         logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                     } catch (error) {
-                        logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
+                        logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}' (${error.message})`);
                     }
                 }
             }
@@ -489,7 +489,7 @@ export default class Bind extends Extension {
                     await endpoint.configureReporting(cluster, items);
                     logger.info(`Successfully disabled reporting for '${entity}' cluster '${cluster}'`);
                 } catch (error) {
-                    logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}'`);
+                    logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}' (${error.message})`);
                 }
             }
 
@@ -555,7 +555,9 @@ export default class Bind extends Extension {
                             try {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
-                                logger.error(`Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(endpoint.getDevice()).name}`);
+                                logger.error(
+                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(endpoint.getDevice()).name} (${error.message})`,
+                                );
                             }
                         }, 1000);
                     }

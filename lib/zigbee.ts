@@ -253,7 +253,9 @@ export default class Zigbee {
     @bind private resolveDevice(ieeeAddr: string): Device {
         if (!this.deviceLookup[ieeeAddr]) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
-            device && (this.deviceLookup[ieeeAddr] = new Device(device));
+            if (device) {
+                this.deviceLookup[ieeeAddr] = new Device(device);
+            }
         }
 
         const device = this.deviceLookup[ieeeAddr];

@@ -686,7 +686,9 @@ export default class Bridge extends Extension {
         const config = objectAssignDeep({}, settings.get());
         delete config.advanced.network_key;
         delete config.mqtt.password;
-        config.frontend && delete config.frontend.auth_token;
+        if (config.frontend) {
+            delete config.frontend.auth_token;
+        }
         const payload = {
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,

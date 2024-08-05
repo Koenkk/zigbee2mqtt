@@ -106,9 +106,11 @@ export default class Report extends Extension {
                             }
                         }
 
-                        this.enabled
-                            ? await ep.bind(cluster, this.zigbee.firstCoordinatorEndpoint())
-                            : await ep.unbind(cluster, this.zigbee.firstCoordinatorEndpoint());
+                        if (this.enabled) {
+                            await ep.bind(cluster, this.zigbee.firstCoordinatorEndpoint());
+                        } else {
+                            await ep.unbind(cluster, this.zigbee.firstCoordinatorEndpoint());
+                        }
 
                         await ep.configureReporting(cluster, items);
                         logger.info(`Successfully ${term2} reporting for '${device.ieeeAddr}' - ${ep.ID} - ${cluster}`);

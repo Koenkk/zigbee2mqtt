@@ -65,8 +65,8 @@ class State {
             try {
                 this.state = JSON.parse(fs.readFileSync(this.file, 'utf8'));
                 logger.debug(`Loaded state from file ${this.file}`);
-            } catch (e) {
-                logger.debug(`Failed to load state from file ${this.file} (corrupt file?)`);
+            } catch (error) {
+                logger.debug(`Failed to load state from file ${this.file} (corrupt file?) (${error.message})`);
             }
         } else {
             logger.debug(`Can't load state from file ${this.file} (doesn't exist)`);

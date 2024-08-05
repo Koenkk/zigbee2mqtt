@@ -596,8 +596,8 @@ export default class HomeAssistant extends Extension {
 
             // If curtains do not have `running`, `motor_state` or `moving` properties.
             if (!discoveryEntry.discovery_payload.value_template) {
-                (discoveryEntry.discovery_payload.value_template = `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`),
-                    (discoveryEntry.discovery_payload.state_open = 'OPEN');
+                discoveryEntry.discovery_payload.value_template = `{{ value_json.${featurePropertyWithoutEndpoint(state)} }}`;
+                discoveryEntry.discovery_payload.state_open = 'OPEN';
                 discoveryEntry.discovery_payload.state_closed = 'CLOSE';
                 discoveryEntry.discovery_payload.state_stopped = 'STOP';
             }
@@ -1014,7 +1014,7 @@ export default class HomeAssistant extends Extension {
                 };
 
                 if (lookup[firstExpose.name]?.device_class === 'temperature') {
-                    discoveryEntry.discovery_payload.device_class == lookup[firstExpose.name]?.device_class;
+                    discoveryEntry.discovery_payload.device_class = lookup[firstExpose.name]?.device_class;
                 } else {
                     delete discoveryEntry.discovery_payload.device_class;
                 }
@@ -1745,7 +1745,7 @@ export default class HomeAssistant extends Extension {
                 if (!isDeviceAutomation && (!message.availability || !message.availability[0].topic.startsWith(baseTopic))) {
                     return;
                 }
-            } catch (e) {
+            } catch {
                 return;
             }
 

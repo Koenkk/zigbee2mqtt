@@ -16,7 +16,7 @@ function isValidUrl(url: string): boolean {
     let parsed;
     try {
         parsed = URI.parse(url);
-    } catch (_) {
+    } catch {
         // istanbul ignore next
         return false;
     }
@@ -138,7 +138,7 @@ export default class OTAUpdate extends Extension {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
             const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendPolicy});
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -319,7 +319,9 @@ export default class OTAUpdate extends Extension {
 
         if (error) {
             logger.error(error);
-            errorStack && logger.debug(errorStack);
+            if (errorStack) {
+                logger.debug(errorStack);
+            }
         }
     }
 }
