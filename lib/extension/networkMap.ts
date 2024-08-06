@@ -215,7 +215,9 @@ export default class NetworkMap extends Extension {
         const failed: Map<Device, string[]> = new Map();
         const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
             try {
-                return request();
+                const result = await request();
+
+                return result;
             } catch {
                 // Network is possibly congested, sleep 5 seconds to let the network settle.
                 await utils.sleep(5);
