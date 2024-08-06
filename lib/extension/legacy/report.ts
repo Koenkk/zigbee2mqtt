@@ -178,7 +178,7 @@ export default class Report extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.devices(false)) {
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
             if (this.shouldSetupReporting(device, null)) {
                 await this.setupReporting(device);
             }

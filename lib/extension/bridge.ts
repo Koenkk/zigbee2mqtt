@@ -725,8 +725,12 @@ export default class Bridge extends Extension {
             scenes: Scene[];
         }
 
-        const devices = this.zigbee.devices().map((device) => {
+        // XXX: definition<>DefinitionPayload don't match to use `Device[]` type here
+        const devices: KeyValue[] = [];
+
+        for (const device of this.zigbee.devicesIterator()) {
             const endpoints: {[s: number]: Data} = {};
+
             for (const endpoint of device.zh.endpoints) {
                 const data: Data = {
                     scenes: utils.getScenes(endpoint),
@@ -758,7 +762,7 @@ export default class Bridge extends Extension {
                 endpoints[endpoint.ID] = data;
             }
 
-            return {
+            devices.push({
                 ieee_address: device.ieeeAddr,
                 type: device.zh.type,
                 network_address: device.zh.networkAddress,
@@ -775,24 +779,32 @@ export default class Bridge extends Extension {
                 interview_completed: device.zh.interviewCompleted,
                 manufacturer: device.zh.manufacturerName,
                 endpoints,
-            };
-        });
+            });
+        }
 
         await this.mqtt.publish('bridge/devices', stringify(devices), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
     async publishGroups(): Promise<void> {
-        const groups = this.zigbee.groups().map((g) => {
-            return {
-                id: g.ID,
-                friendly_name: g.ID === 901 ? 'default_bind_group' : g.name,
-                description: g.options.description,
-                scenes: utils.getScenes(g.zh),
-                members: g.zh.members.map((e) => {
-                    return {ieee_address: e.getDevice().ieeeAddr, endpoint: e.ID};
-                }),
-            };
-        });
+        // XXX: id<>ID can't use `Group[]` type
+        const groups: KeyValue[] = [];
+
+        for (const group of this.zigbee.groupsIterator()) {
+            const members = [];
+
+            for (const member of group.zh.members) {
+                members.push({ieee_address: member.getDevice().ieeeAddr, endpoint: member.ID});
+            }
+
+            groups.push({
+                id: group.ID,
+                friendly_name: group.ID === 901 ? 'default_bind_group' : group.name,
+                description: group.options.description,
+                scenes: utils.getScenes(group.zh),
+                members,
+            });
+        }
+
         await this.mqtt.publish('bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
@@ -807,20 +819,23 @@ export default class Bridge extends Extension {
             custom_clusters: {},
         };
 
-        for (const device of this.zigbee.devices()) {
-            if (Object.keys(device.customClusters).length !== 0) {
-                data.custom_clusters[device.ieeeAddr] = device.customClusters;
-            }
+        for (const device of this.zigbee.devicesIterator((d) => Object.keys(d.customClusters).length !== 0)) {
+            data.custom_clusters[device.ieeeAddr] = device.customClusters;
         }
 
         await this.mqtt.publish('bridge/definitions', stringify(data), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    getDefinitionPayload(device: Device): DefinitionPayload {
-        if (!device.definition) return null;
+    getDefinitionPayload(device: Device): DefinitionPayload | null {
+        if (!device.definition) {
+            return null;
+        }
+
+        // TODO: better typing to avoid @ts-expect-error
         // @ts-expect-error icon is valid for external definitions
         const definitionIcon = device.definition.icon;
         let icon = device.options.icon ?? definitionIcon;
+
         if (icon) {
             icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));

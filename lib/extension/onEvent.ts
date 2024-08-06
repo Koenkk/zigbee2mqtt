@@ -7,7 +7,7 @@ import Extension from './extension';
  */
 export default class OnEvent extends Extension {
     override async start(): Promise<void> {
-        for (const device of this.zigbee.devices(false)) {
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
             await this.callOnEvent(device, 'start', {});
         }
 
@@ -31,7 +31,8 @@ export default class OnEvent extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        for (const device of this.zigbee.devices(false)) {
+
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
             await this.callOnEvent(device, 'stop', {});
         }
     }

@@ -363,7 +363,7 @@ export default class Bind extends Extension {
         if (data.action === 'add') {
             const bindsToGroup: zh.Bind[] = [];
 
-            for (const device of this.zigbee.devices(false)) {
+            for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
                 for (const endpoint of device.zh.endpoints) {
                     for (const bind of endpoint.binds) {
                         if (bind.target === data.group.zh) {
@@ -443,7 +443,7 @@ export default class Bind extends Extension {
         const endpoints = utils.isEndpoint(target) ? [target] : target.members;
         const allBinds: zh.Bind[] = [];
 
-        for (const device of this.zigbee.devices(false)) {
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
             for (const endpoint of device.zh.endpoints) {
                 for (const bind of endpoint.binds) {
                     allBinds.push(bind);
