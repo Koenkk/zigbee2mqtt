@@ -215,11 +215,11 @@ export default class NetworkMap extends Extension {
         const failed: Map<Device, string[]> = new Map();
         const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
             try {
-                return await request();
-            } catch (error) {
+                return request();
+            } catch {
                 // Network is possibly congested, sleep 5 seconds to let the network settle.
                 await utils.sleep(5);
-                return await request();
+                return request();
             }
         };
 

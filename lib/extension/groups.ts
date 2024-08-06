@@ -362,7 +362,7 @@ export default class Groups extends Extension {
             resolvedEntityEndpoint,
         } = parsed;
         let error = parsed.error;
-        let changedGroups: Group[] = [];
+        const changedGroups: Group[] = [];
 
         if (!error) {
             try {
