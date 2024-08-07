@@ -163,7 +163,7 @@ export default class Receive extends Extension {
             }
         }
 
-        if (Object.keys(payload).length) {
+        if (!utils.objectIsEmpty(payload)) {
             await publish(payload);
         } else {
             await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);

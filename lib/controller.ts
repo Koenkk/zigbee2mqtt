@@ -159,7 +159,7 @@ export class Controller {
         // Log zigbee clients on startup
         let deviceCount = 0;
 
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             const model = device.isSupported
                 ? `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}`
                 : 'Not supported';

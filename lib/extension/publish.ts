@@ -317,7 +317,7 @@ export default class Publish extends Extension {
         }
 
         for (const [ID, payload] of Object.entries(toPublish)) {
-            if (Object.keys(payload).length != 0) {
+            if (!utils.objectIsEmpty(payload)) {
                 await this.publishEntityState(toPublishEntity[ID], payload);
             }
         }

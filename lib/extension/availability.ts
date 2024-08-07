@@ -140,7 +140,7 @@ export default class Availability extends Extension {
         await this.publishAvailabilityForAllEntities();
 
         // Start availability for the devices
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             if (utils.isAvailabilityEnabledForEntity(device, settings.get())) {
                 this.resetTimer(device);
 
@@ -153,7 +153,7 @@ export default class Availability extends Extension {
     }
 
     @bind private async publishAvailabilityForAllEntities(): Promise<void> {
-        for (const entity of this.zigbee.devicesAndGroupsIterator((d) => d.type !== 'Coordinator')) {
+        for (const entity of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
             if (utils.isAvailabilityEnabledForEntity(entity, settings.get())) {
                 await this.publishAvailability(entity, true, false, true);
             }

@@ -4,6 +4,11 @@ const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').
 const versionHerdsmanConverters = require('../node_modules/zigbee-herdsman-converters/package.json').version;
 
 describe('Utils', () => {
+    it('Object is empty', () => {
+        expect(utils.objectIsEmpty({})).toBeTruthy();
+        expect(utils.objectIsEmpty({a: 1})).toBeFalsy();
+    });
+
     it('Object has properties', () => {
         expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b'])).toBeTruthy();
         expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b', 'd'])).toBeFalsy();

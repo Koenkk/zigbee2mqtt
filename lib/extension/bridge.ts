@@ -819,7 +819,7 @@ export default class Bridge extends Extension {
             custom_clusters: {},
         };
 
-        for (const device of this.zigbee.devicesIterator((d) => Object.keys(d.customClusters).length !== 0)) {
+        for (const device of this.zigbee.devicesIterator((d) => !utils.objectIsEmpty(d.customClusters))) {
             data.custom_clusters[device.ieeeAddr] = device.customClusters;
         }
 

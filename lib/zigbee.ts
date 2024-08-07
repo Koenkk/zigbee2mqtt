@@ -66,7 +66,7 @@ export default class Zigbee {
             throw error;
         }
 
-        for (const device of this.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             await device.resolveDefinition();
         }
 
@@ -124,7 +124,7 @@ export default class Zigbee {
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
         logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
 
-        for (const device of this.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             // If a passlist is used, all other device will be removed from the network.
             const passlist = settings.get().passlist;
             const blocklist = settings.get().blocklist;

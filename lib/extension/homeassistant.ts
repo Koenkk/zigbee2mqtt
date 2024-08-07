@@ -227,7 +227,7 @@ export default class HomeAssistant extends Extension {
         // This is needed for clearing outdated entries in `this.onMQTTMessage()`
         await this.discover(this.bridge, false);
 
-        for (const e of this.zigbee.devicesAndGroupsIterator((d) => d.type !== 'Coordinator')) {
+        for (const e of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
             await this.discover(e, false);
         }
 
@@ -239,7 +239,7 @@ export default class HomeAssistant extends Extension {
 
             await this.discover(this.bridge);
 
-            for (const e of this.zigbee.devicesAndGroupsIterator((d) => d.type !== 'Coordinator')) {
+            for (const e of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
                 await this.discover(e);
             }
         }, utils.seconds(discoverWait));
@@ -1784,7 +1784,7 @@ export default class HomeAssistant extends Extension {
         } else if ((data.topic === this.statusTopic || data.topic === defaultStatusTopic) && data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
-                for (const entity of this.zigbee.devicesAndGroupsIterator((d) => d.type !== 'Coordinator')) {
+                for (const entity of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
                     if (this.state.exists(entity)) {
                         await this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                     }

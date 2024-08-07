@@ -1,5 +1,6 @@
 import * as zhc from 'zigbee-herdsman-converters';
 
+import utils from '../util/utils';
 import Extension from './extension';
 
 /**
@@ -7,7 +8,7 @@ import Extension from './extension';
  */
 export default class OnEvent extends Extension {
     override async start(): Promise<void> {
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             await this.callOnEvent(device, 'start', {});
         }
 
@@ -32,7 +33,7 @@ export default class OnEvent extends Extension {
     override async stop(): Promise<void> {
         await super.stop();
 
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             await this.callOnEvent(device, 'stop', {});
         }
     }

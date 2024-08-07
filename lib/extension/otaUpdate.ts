@@ -66,7 +66,7 @@ export default class OTAUpdate extends Extension {
         zhc.ota.setDataDir(dataDir.getPath());
 
         // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state, remove them.
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             this.removeProgressAndRemainingFromState(device);
 
             // Reset update state, e.g. when Z2M restarted during update.

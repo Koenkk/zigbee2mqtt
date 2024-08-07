@@ -2,6 +2,7 @@ import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../../util/logger';
 import * as settings from '../../util/settings';
+import utils from '../../util/utils';
 import Extension from '../extension';
 
 const defaultConfiguration = {
@@ -178,7 +179,7 @@ export default class Report extends Extension {
     }
 
     override async start(): Promise<void> {
-        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'Coordinator')) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             if (this.shouldSetupReporting(device, null)) {
                 await this.setupReporting(device);
             }
