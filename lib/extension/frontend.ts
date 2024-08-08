@@ -139,7 +139,7 @@ export default class Frontend extends Extension {
             }
         }
 
-        for (const device of this.zigbee.devices(false)) {
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             const payload = this.state.get(device);
             const lastSeen = settings.get().advanced.last_seen;
             /* istanbul ignore if */

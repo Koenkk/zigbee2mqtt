@@ -51,7 +51,6 @@ export default class Groups extends Extension {
 
     private async syncGroupsWithSettings(): Promise<void> {
         const settingsGroups = settings.getGroups();
-        const zigbeeGroups = this.zigbee.groups();
 
         const addRemoveFromGroup = async (
             action: 'add' | 'remove',
@@ -76,7 +75,7 @@ export default class Groups extends Extension {
 
         for (const settingGroup of settingsGroups) {
             const groupID = settingGroup.ID;
-            const zigbeeGroup = zigbeeGroups.find((g) => g.ID === groupID) || this.zigbee.createGroup(groupID);
+            const zigbeeGroup = this.zigbee.groupsIterator((g) => g.groupID === groupID).next().value || this.zigbee.createGroup(groupID);
             const settingsEndpoints: zh.Endpoint[] = [];
 
             for (const d of settingGroup.devices) {
@@ -113,13 +112,11 @@ export default class Groups extends Extension {
             }
         }
 
-        for (const zigbeeGroup of zigbeeGroups) {
-            if (!settingsGroups.some((g) => g.ID === zigbeeGroup.ID)) {
-                for (const endpoint of zigbeeGroup.zh.members) {
-                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
+        for (const zigbeeGroup of this.zigbee.groupsIterator((zg) => !settingsGroups.some((sg) => sg.ID === zg.groupID))) {
+            for (const endpoint of zigbeeGroup.zh.members) {
+                const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr).friendly_name;
 
-                    await addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
-                }
+                await addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
             }
         }
     }
@@ -153,7 +150,13 @@ export default class Groups extends Extension {
 
         if (payloadKeys.length) {
             const entity = data.entity;
-            const groups = this.zigbee.groups().filter((g) => g.options && (g.options.optimistic == undefined || g.options.optimistic));
+            const groups = [];
+
+            for (const group of this.zigbee.groupsIterator()) {
+                if (group.options && (group.options.optimistic == undefined || group.options.optimistic)) {
+                    groups.push(group);
+                }
+            }
 
             if (entity instanceof Device) {
                 for (const group of groups) {
@@ -359,7 +362,7 @@ export default class Groups extends Extension {
             resolvedEntityEndpoint,
         } = parsed;
         let error = parsed.error;
-        let changedGroups: Group[] = [];
+        const changedGroups: Group[] = [];
 
         if (!error) {
             try {
@@ -406,7 +409,11 @@ export default class Groups extends Extension {
                 } else {
                     // remove_all
                     logger.info(`Removing '${resolvedEntityDevice.name}' from all groups`);
-                    changedGroups = this.zigbee.groups().filter((g) => g.zh.members.includes(resolvedEntityEndpoint));
+
+                    for (const group of this.zigbee.groupsIterator((g) => g.members.includes(resolvedEntityEndpoint))) {
+                        changedGroups.push(group);
+                    }
+
                     await resolvedEntityEndpoint.removeFromAllGroups();
 
                     for (const settingsGroup of settings.getGroups()) {

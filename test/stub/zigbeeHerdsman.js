@@ -857,8 +857,14 @@ const mock = {
         events[type] = handler;
     },
     stop: jest.fn(),
-    getDevices: jest.fn().mockImplementation(() => {
-        return Object.values(devices).filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr));
+    getDevicesIterator: jest.fn().mockImplementation(function* (predicate) {
+        for (const key in devices) {
+            const device = devices[key];
+
+            if ((returnDevices.length === 0 || returnDevices.includes(device.ieeeAddr)) && (!predicate || predicate(device))) {
+                yield device;
+            }
+        }
     }),
     getDevicesByType: jest.fn().mockImplementation((type) => {
         return Object.values(devices)
@@ -875,8 +881,14 @@ const mock = {
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
             .find((d) => d.networkAddress === networkAddress);
     }),
-    getGroups: jest.fn().mockImplementation((query) => {
-        return Object.values(groups);
+    getGroupsIterator: jest.fn().mockImplementation(function* (predicate) {
+        for (const key in groups) {
+            const group = groups[key];
+
+            if (!predicate || predicate(group)) {
+                yield group;
+            }
+        }
     }),
     getGroupByID: jest.fn().mockImplementation((groupID) => {
         return Object.values(groups).find((d) => d.groupID === groupID);

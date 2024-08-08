@@ -127,7 +127,9 @@ export default class BridgeLegacy extends Extension {
 
     @bind async devices(topic: string): Promise<void> {
         const coordinator = await this.zigbee.getCoordinatorVersion();
-        const devices = this.zigbee.devices().map((device) => {
+        const devices: KeyValue[] = [];
+
+        for (const device of this.zigbee.devicesIterator()) {
             const payload: KeyValue = {
                 ieeeAddr: device.ieeeAddr,
                 type: device.zh.type,
@@ -155,8 +157,8 @@ export default class BridgeLegacy extends Extension {
                 payload.lastSeen = Date.now();
             }
 
-            return payload;
-        });
+            devices.push(payload);
+        }
 
         if (topic.split('/').pop() == 'get') {
             await this.mqtt.publish(`bridge/config/devices`, stringify(devices), {}, settings.get().mqtt.base_topic, false, false);

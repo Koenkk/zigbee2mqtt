@@ -92,6 +92,12 @@ function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' 
     }
 }
 
+function objectIsEmpty(object: object): boolean {
+    // much faster than checking `Object.keys(object).length`
+    for (const k in object) return false;
+    return true;
+}
+
 function objectHasProperties(object: {[s: string]: unknown}, properties: string[]): boolean {
     for (const property of properties) {
         if (!object.hasOwnProperty(property)) {
@@ -397,6 +403,10 @@ function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     return Object.values(scenes);
 }
 
+function deviceNotCoordinator(device: zh.Device): boolean {
+    return device.type !== 'Coordinator';
+}
+
 /* istanbul ignore next */
 const noop = (): void => {};
 
@@ -405,6 +415,7 @@ export default {
     getZigbee2MQTTVersion,
     getDependencyVersion,
     formatDate,
+    objectIsEmpty,
     objectHasProperties,
     equalsPartial,
     getObjectProperty,
@@ -431,5 +442,6 @@ export default {
     flatten,
     arrayUnique,
     getScenes,
+    deviceNotCoordinator,
     noop,
 };

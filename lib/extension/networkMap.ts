@@ -210,31 +210,31 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Topology> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const devices = this.zigbee.devices().filter((d) => d.zh.type !== 'GreenPower' && !d.options.disabled);
         const lqis: Map<Device, zh.LQI> = new Map();
         const routingTables: Map<Device, zh.RoutingTable> = new Map();
         const failed: Map<Device, string[]> = new Map();
+        const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
+            try {
+                const result = await request();
 
-        for (const device of devices.filter((d) => d.zh.type != 'EndDevice')) {
+                return result;
+            } catch {
+                // Network is possibly congested, sleep 5 seconds to let the network settle.
+                await utils.sleep(5);
+                return request();
+            }
+        };
+
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'GreenPower' && d.type !== 'EndDevice')) {
+            if (device.options.disabled) {
+                continue;
+            }
+
             failed.set(device, []);
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
-            const doRequest = async <T>(request: () => Promise<T>, firstAttempt = true): Promise<T> => {
-                try {
-                    return await request();
-                } catch (error) {
-                    if (!firstAttempt) {
-                        throw error;
-                    } else {
-                        // Network is possibly congested, sleep 5 seconds to let the network settle.
-                        await utils.sleep(5);
-                        return doRequest(request, false);
-                    }
-                }
-            };
-
             try {
-                const result = await doRequest<zh.LQI>(async () => device.zh.lqi());
+                const result = await requestWithRetry<zh.LQI>(async () => device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
@@ -245,12 +245,13 @@ export default class NetworkMap extends Extension {
 
             if (includeRoutes) {
                 try {
-                    const result = await doRequest(async () => device.zh.routingTable());
+                    const result = await requestWithRetry<zh.RoutingTable>(async () => device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
                     failed.get(device).push('routingTable');
-                    logger.error(`Failed to execute routing table for '${device.name}' (${error.message})`);
+                    logger.error(`Failed to execute routing table for '${device.name}'`);
+                    logger.debug(error.stack);
                 }
             }
         }
@@ -258,8 +259,14 @@ export default class NetworkMap extends Extension {
         logger.info(`Network scan finished`);
 
         const topology: Topology = {nodes: [], links: []};
-        // Add nodes
-        for (const device of devices) {
+
+        // XXX: display GP/disabled devices in the map, better feedback than just hiding them?
+        for (const device of this.zigbee.devicesIterator((d) => d.type !== 'GreenPower')) {
+            if (device.options.disabled) {
+                continue;
+            }
+
+            // Add nodes
             const definition = device.definition
                 ? {
                       model: device.definition.model,
@@ -289,7 +296,7 @@ export default class NetworkMap extends Extension {
         }
 
         // Add links
-        lqis.forEach((lqi, device) => {
+        for (const [device, lqi] of lqis) {
             for (const neighbor of lqi.neighbors) {
                 if (neighbor.relationship > 3) {
                     // Relationship is not active, skip it
@@ -298,9 +305,13 @@ export default class NetworkMap extends Extension {
 
                 // Some Xiaomi devices return 0x00 as the neighbor ieeeAddr (obviously not correct).
                 // Determine the correct ieeeAddr based on the networkAddress.
-                const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.networkAddress);
-                if (neighbor.ieeeAddr === '0x0000000000000000' && neighborDevice) {
-                    neighbor.ieeeAddr = neighborDevice.ieeeAddr;
+                if (neighbor.ieeeAddr === '0x0000000000000000') {
+                    const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.networkAddress);
+
+                    /* istanbul ignore else */
+                    if (neighborDevice) {
+                        neighbor.ieeeAddr = neighborDevice.ieeeAddr;
+                    }
                 }
 
                 const link: Link = {
@@ -318,13 +329,18 @@ export default class NetworkMap extends Extension {
                 };
 
                 const routingTable = routingTables.get(device);
+
                 if (routingTable) {
-                    link.routes = routingTable.table.filter((t) => t.status === 'ACTIVE' && t.nextHop === neighbor.networkAddress);
+                    for (const entry of routingTable.table) {
+                        if (entry.status === 'ACTIVE' && entry.nextHop === neighbor.networkAddress) {
+                            link.routes.push(entry);
+                        }
+                    }
                 }
 
                 topology.links.push(link);
             }
-        });
+        }
 
         return topology;
     }

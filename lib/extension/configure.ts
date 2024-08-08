@@ -68,9 +68,8 @@ export default class Configure extends Extension {
         setImmediate(async () => {
             // Only configure routers on startup, end devices are likely sleeping and
             // will reconfigure once they send a message
-            for (const device of this.zigbee.devices(false).filter((d) => d.zh.type === 'Router')) {
-                // Sleep 10 seconds between configuring on startup to not DDoS the coordinator
-                // when many devices have to be configured.
+            for (const device of this.zigbee.devicesIterator((d) => d.type === 'Router')) {
+                // Sleep 10 seconds between configuring on startup to not DDoS the coordinator when many devices have to be configured.
                 await utils.sleep(10);
                 await this.configure(device, 'started');
             }

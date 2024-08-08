@@ -157,14 +157,18 @@ export class Controller {
         }
 
         // Log zigbee clients on startup
-        const devices = this.zigbee.devices(false);
-        logger.info(`Currently ${devices.length} devices are joined:`);
-        for (const device of devices) {
+        let deviceCount = 0;
+
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             const model = device.isSupported
                 ? `${device.definition.model} - ${device.definition.vendor} ${device.definition.description}`
                 : 'Not supported';
             logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
+
+            deviceCount++;
         }
+
+        logger.info(`Currently ${deviceCount} devices are joined.`);
 
         // Enable zigbee join
         try {
@@ -193,7 +197,7 @@ export class Controller {
 
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
-            for (const entity of [...devices, ...this.zigbee.groups()]) {
+            for (const entity of this.zigbee.devicesAndGroupsIterator()) {
                 if (this.state.exists(entity)) {
                     await this.publishEntityState(entity, this.state.get(entity), 'publishCached');
                 }
