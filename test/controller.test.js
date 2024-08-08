@@ -66,6 +66,7 @@ describe('Controller', () => {
     });
 
     it('Start controller', async () => {
+        settings.set(['experimental', 'transmit_power'], 14);
         await controller.start();
         expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({
             network: {
@@ -78,7 +79,7 @@ describe('Controller', () => {
             databaseBackupPath: path.join(data.mockDir, 'database.db.backup'),
             backupPath: path.join(data.mockDir, 'coordinator_backup.json'),
             acceptJoiningDeviceHandler: expect.any(Function),
-            adapter: {concurrent: null, delay: null, disableLED: false},
+            adapter: {concurrent: null, delay: null, disableLED: false, transmitPower: 14},
             serialPort: {baudRate: undefined, rtscts: undefined, path: '/dev/dummy'},
         });
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
@@ -287,13 +288,6 @@ describe('Controller', () => {
         await controller.start();
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
-    });
-
-    it('Start controller with transmit power', async () => {
-        settings.set(['experimental', 'transmit_power'], 14);
-        await controller.start();
-        expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledWith(14);
     });
 
     it('Start controller and stop with restart', async () => {

@@ -50,6 +50,7 @@ export default class Zigbee {
                 concurrent: settings.get().advanced.adapter_concurrent,
                 delay: settings.get().advanced.adapter_delay,
                 disableLED: settings.get().serial.disable_led,
+                transmitPower: settings.get().advanced.transmit_power,
             },
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
@@ -145,13 +146,6 @@ export default class Zigbee {
                 logger.warning(`Device on blocklist currently connected (${device.ieeeAddr}), removing...`);
                 await remove(device);
             }
-        }
-
-        // Check if we have to set a transmit power
-        if (settings.get().advanced.transmit_power != null) {
-            const transmitPower = settings.get().advanced.transmit_power;
-            await this.herdsman.setTransmitPower(transmitPower);
-            logger.info(`Set transmit power to '${transmitPower}'`);
         }
 
         return startResult;
