@@ -523,6 +523,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.payload_lock = state.value_on;
                 discoveryEntry.discovery_payload.payload_unlock = state.value_off;
                 discoveryEntry.discovery_payload.state_topic = true;
+                discoveryEntry.discovery_payload.entity_category = 'config';
                 discoveryEntry.object_id = 'keypad_lock';
             } else if (state.property === 'child_lock') {
                 // deprecated: child_lock is messy, but changing is breaking
@@ -532,6 +533,7 @@ export default class HomeAssistant extends Extension {
                 discoveryEntry.discovery_payload.state_locked = 'LOCK';
                 discoveryEntry.discovery_payload.state_unlocked = 'UNLOCK';
                 discoveryEntry.discovery_payload.state_topic = true;
+                discoveryEntry.discovery_payload.entity_category = 'config';
                 discoveryEntry.object_id = 'child_lock';
             } else {
                 discoveryEntry.discovery_payload.state_locked = state.value_on;
@@ -716,7 +718,6 @@ export default class HomeAssistant extends Extension {
                 expose_pin: {entity_category: 'config', icon: 'mdi:pin'},
                 flip_indicator_light: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 gas: {device_class: 'gas'},
-                indicator_mode: {entity_category: 'config', icon: 'mdi:led-on'},
                 invert_cover: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
                 led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
                 led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
@@ -1041,6 +1042,7 @@ export default class HomeAssistant extends Extension {
                 device_mode: {entity_category: 'config', icon: 'mdi:tune'},
                 effect: {enabled_by_default: false, icon: 'mdi:palette'},
                 force: {entity_category: 'config', icon: 'mdi:valve'},
+                indicator_mode: {entity_category: 'config', icon: 'mdi:led-on'},
                 keep_time: {entity_category: 'config', icon: 'mdi:av-timer'},
                 identify: {device_class: 'identify'},
                 keypad_lockout: {entity_category: 'config', icon: 'mdi:lock'},
