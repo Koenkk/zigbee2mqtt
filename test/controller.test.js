@@ -66,7 +66,7 @@ describe('Controller', () => {
     });
 
     it('Start controller', async () => {
-        settings.set(['experimental', 'transmit_power'], 14);
+        settings.set(['advanced', 'transmit_power'], 14);
         await controller.start();
         expect(zigbeeHerdsman.constructor).toHaveBeenCalledWith({
             network: {
