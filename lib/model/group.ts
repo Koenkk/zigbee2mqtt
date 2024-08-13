@@ -1,4 +1,3 @@
-/* eslint-disable brace-style */
 import * as zhc from 'zigbee-herdsman-converters';
 
 import * as settings from '../util/settings';
@@ -27,13 +26,29 @@ export default class Group {
     }
 
     membersDevices(): Device[] {
-        return this.zh.members.map((e) => this.resolveDevice(e.getDevice().ieeeAddr)).filter((d) => d);
+        const members: Device[] = [];
+
+        for (const member of this.zh.members) {
+            const device = this.resolveDevice(member.getDevice().ieeeAddr);
+
+            if (device) {
+                members.push(device);
+            }
+        }
+
+        return members;
     }
 
     membersDefinitions(): zhc.Definition[] {
-        return this.membersDevices()
-            .map((d) => d.definition)
-            .filter((d) => d);
+        const definitions: zhc.Definition[] = [];
+
+        for (const member of this.membersDevices()) {
+            if (member.definition) {
+                definitions.push(member.definition);
+            }
+        }
+
+        return definitions;
     }
 
     isDevice(): this is Device {

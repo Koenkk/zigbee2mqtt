@@ -12,6 +12,7 @@ import Extension from './extension';
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
 export default class ExternalExtension extends Extension {
+    // @ts-expect-error initialized in `start`
     private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>};
 
     override async start(): Promise<void> {
@@ -52,7 +53,7 @@ export default class ExternalExtension extends Extension {
             fs.unlinkSync(extensionFilePath);
             await this.publishExtensions();
             logger.info(`Extension ${name} removed`);
-            return utils.getResponse(message, {}, null);
+            return utils.getResponse(message, {});
         } else {
             return utils.getResponse(message, {}, `Extension ${name} doesn't exists`);
         }
@@ -71,7 +72,7 @@ export default class ExternalExtension extends Extension {
         fs.writeFileSync(extensionFilePath, code);
         await this.publishExtensions();
         logger.info(`Extension ${name} loaded`);
-        return utils.getResponse(message, {}, null);
+        return utils.getResponse(message, {});
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -82,8 +83,8 @@ export default class ExternalExtension extends Extension {
                 const response = await this.requestLookup[match[1].toLowerCase()](message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             } catch (error) {
-                logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
-                const response = utils.getResponse(message, {}, error.message);
+                logger.error(`Request '${data.topic}' failed with error: '${(error as Error).message}'`);
+                const response = utils.getResponse(message, {}, `${(error as Error).message}`);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             }
         }

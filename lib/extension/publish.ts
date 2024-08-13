@@ -49,7 +49,7 @@ export default class Publish extends Extension {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
-    parseTopic(topic: string): ParsedTopic | null {
+    parseTopic(topic: string): ParsedTopic | undefined {
         // The function supports the following topic formats (below are for 'set'. 'get' will look the same):
         // - <base_topic>/device_name/set (endpoint and attribute is defined in the payload)
         // - <base_topic>/device_name/set/attribute (default endpoint used)
@@ -60,7 +60,10 @@ export default class Publish extends Extension {
         // Before the get/set is the device name and optional endpoint name.
         // After it there will be an optional attribute name.
         const match = topic.match(topicGetSetRegex);
-        if (!match) return null;
+
+        if (!match) {
+            return undefined;
+        }
 
         const deviceNameAndEndpoint = match[1];
         const attribute = match[3];
@@ -70,7 +73,7 @@ export default class Publish extends Extension {
         return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as 'get' | 'set', attribute: attribute};
     }
 
-    parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | null {
+    parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | undefined {
         if (parsedTopic.attribute) {
             try {
                 return {[parsedTopic.attribute]: JSON.parse(data.message)};
@@ -84,7 +87,7 @@ export default class Publish extends Extension {
                 if (stateValues.includes(data.message.toLowerCase())) {
                     return {state: data.message};
                 } else {
-                    return null;
+                    return undefined;
                 }
             }
         }
@@ -114,7 +117,7 @@ export default class Publish extends Extension {
         // Only do this when the retrieve_state option is enabled for this device.
         // retrieve_state == deprecated
         if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') && re.options.retrieve_state) {
-            setTimeout(() => converter.convertGet(target, key, meta), result.readAfterWriteTime);
+            setTimeout(() => converter.convertGet?.(target, key, meta), result.readAfterWriteTime);
         }
     }
 
@@ -138,10 +141,14 @@ export default class Publish extends Extension {
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const parsedTopic = this.parseTopic(data.topic);
-        if (!parsedTopic) return;
+
+        if (!parsedTopic) {
+            return;
+        }
 
         const re = this.zigbee.resolveEntity(parsedTopic.ID);
-        if (re == null) {
+
+        if (!re) {
             await this.legacyLog({type: `entity_not_found`, message: {friendly_name: parsedTopic.ID}});
             logger.error(`Entity '${parsedTopic.ID}' is unknown`);
             return;
@@ -150,11 +157,21 @@ export default class Publish extends Extension {
         // Get entity details
         const definition = re instanceof Device ? re.definition : re.membersDefinitions();
         const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
-        if (target == null) {
+
+        if (!target) {
             logger.error(`Device '${re.name}' has no endpoint '${parsedTopic.endpoint}'`);
             return;
         }
-        const device = re instanceof Device ? re.zh : null;
+
+        // Convert the MQTT message to a Zigbee message.
+        const message = this.parseMessage(parsedTopic, data);
+
+        if (!message) {
+            logger.error(`Invalid message '${message}', skipping...`);
+            return;
+        }
+
+        const device = re instanceof Device ? re.zh : undefined;
         const entitySettings = re.options;
         const entityState = this.state.get(re);
         const membersState =
@@ -162,24 +179,21 @@ export default class Publish extends Extension {
                 ? Object.fromEntries(
                       re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))]),
                   )
-                : null;
+                : undefined;
         let converters: zhc.Tz.Converter[];
-        {
-            if (Array.isArray(definition)) {
-                const c = new Set(definition.map((d) => d.toZigbee).flat());
-                if (c.size == 0) converters = defaultGroupConverters;
-                else converters = Array.from(c);
+
+        if (Array.isArray(definition)) {
+            const c = new Set(definition.map((d) => d.toZigbee).flat());
+
+            if (c.size == 0) {
+                converters = defaultGroupConverters;
             } else {
-                converters = definition.toZigbee;
+                converters = Array.from(c);
             }
+        } else {
+            converters = definition?.toZigbee ?? [];
         }
 
-        // Convert the MQTT message to a Zigbee message.
-        const message = this.parseMessage(parsedTopic, data);
-        if (message == null) {
-            logger.error(`Invalid message '${message}', skipping...`);
-            return;
-        }
         this.updateMessageHomeAssistant(message, entityState);
 
         /**
@@ -201,10 +215,12 @@ export default class Publish extends Extension {
         const toPublishEntity: {[s: number | string]: Device | Group} = {};
         const addToToPublish = (entity: Device | Group, payload: KeyValue): void => {
             const ID = entity.ID;
+
             if (!(ID in toPublish)) {
                 toPublish[ID] = {};
                 toPublishEntity[ID] = entity;
             }
+
             toPublish[ID] = {...toPublish[ID], ...payload};
         };
 
@@ -216,10 +232,11 @@ export default class Publish extends Extension {
             const value = entry[1];
             let endpointName = parsedTopic.endpoint;
             let localTarget = target;
-            let endpointOrGroupID = utils.isEndpoint(target) ? target.ID : target.groupID;
+            let endpointOrGroupID = utils.isZHEndpoint(target) ? target.ID : target.groupID;
 
             // When the key has a endpointName included (e.g. state_right), this will override the target.
             const propertyEndpointMatch = key.match(propertyEndpointRegex);
+
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
@@ -244,13 +261,13 @@ export default class Publish extends Extension {
             }
 
             // If the endpoint_name name is a number, try to map it to a friendlyName
-            if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isEndpoint(localTarget) && re.endpointName(localTarget)) {
+            if (!isNaN(Number(endpointName)) && re.isDevice() && utils.isZHEndpoint(localTarget) && re.endpointName(localTarget)) {
                 endpointName = re.endpointName(localTarget);
             }
 
             // Converter didn't return a result, skip
             const entitySettingsKeyValue: KeyValue = entitySettings;
-            const meta = {
+            const meta: zhc.Tz.Meta = {
                 endpoint_name: endpointName,
                 options: entitySettingsKeyValue,
                 message: {...message},
@@ -277,6 +294,7 @@ export default class Publish extends Extension {
                     logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     const result = await converter.convertSet(localTarget, key, value, meta);
                     const optimistic = !entitySettings.hasOwnProperty('optimistic') || entitySettings.optimistic;
+
                     if (result && result.state && optimistic) {
                         const msg = result.state;
 
@@ -310,7 +328,7 @@ export default class Publish extends Extension {
             } catch (error) {
                 const message = `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
-                logger.debug(error.stack);
+                logger.debug((error as Error).stack!);
                 await this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
             }
 
@@ -324,6 +342,7 @@ export default class Publish extends Extension {
         }
 
         const scenesChanged = Object.values(usedConverters).some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
+
         if (scenesChanged) {
             this.eventBus.emitScenesChanged({entity: re});
         }

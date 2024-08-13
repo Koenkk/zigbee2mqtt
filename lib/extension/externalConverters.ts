@@ -26,7 +26,7 @@ export default class ExternalConverters extends Extension {
                     zhc.addDefinition(toAdd);
                 }
             } catch (error) {
-                logger.error(`Failed to load external converter file '${file}' (${error.message})`);
+                logger.error(`Failed to load external converter file '${file}' (${(error as Error).message})`);
                 logger.error(
                     `Probably there is a syntax error in the file or the external converter is not ` +
                         `compatible with the current Zigbee2MQTT version`,

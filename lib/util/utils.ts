@@ -43,19 +43,19 @@ function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash: string; version: string}> {
+async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
     const git = await import('git-last-commit');
     const packageJSON = await import('../..' + '/package.json');
 
     if (!includeCommitHash) {
-        return {version: packageJSON.version, commitHash: null};
+        return {version: packageJSON.version, commitHash: undefined};
     }
 
     return new Promise((resolve) => {
         const version = packageJSON.version;
 
         git.getLastCommit((err: Error, commit: {shortHash: string}) => {
-            let commitHash = null;
+            let commitHash = undefined;
 
             if (err) {
                 try {
@@ -122,12 +122,17 @@ function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown)
     return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
 }
 
-function getResponse(request: KeyValue | string, data: KeyValue, error: string): MQTTResponse {
+function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
     const response: MQTTResponse = {data, status: error ? 'error' : 'ok'};
-    if (error) response.error = error;
+
+    if (error) {
+        response.error = error;
+    }
+
     if (typeof request === 'object' && request.hasOwnProperty('transaction')) {
         response.transaction = request.transaction;
     }
+
     return response;
 }
 
@@ -319,12 +324,12 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     return true;
 }
 
-function isEndpoint(obj: unknown): obj is zh.Endpoint {
-    return obj.constructor.name.toLowerCase() === 'endpoint';
+function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
+    return obj?.constructor.name.toLowerCase() === 'endpoint';
 }
 
 function flatten<Type>(arr: Type[][]): Type[] {
-    return [].concat(...arr);
+    return ([] as Type[]).concat(...arr);
 }
 
 function arrayUnique<Type>(arr: Type[]): Type[] {
@@ -332,7 +337,7 @@ function arrayUnique<Type>(arr: Type[]): Type[] {
 }
 
 function isZHGroup(obj: unknown): obj is zh.Group {
-    return obj.constructor.name.toLowerCase() === 'group';
+    return obj?.constructor.name.toLowerCase() === 'group';
 }
 
 function availabilityPayload(state: 'online' | 'offline', settings: Settings): string {
@@ -362,7 +367,7 @@ async function publishLastSeen(
     }
 }
 
-function filterProperties(filter: string[], data: KeyValue): void {
+function filterProperties(filter: string[] | undefined, data: KeyValue): void {
     if (filter) {
         for (const property of Object.keys(data)) {
             if (filter.find((p) => property.match(`^${p}$`))) {
@@ -386,8 +391,8 @@ export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Bina
 
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     const scenes: {[id: number]: Scene} = {};
-    const endpoints = isEndpoint(entity) ? [entity] : entity.members;
-    const groupID = isEndpoint(entity) ? 0 : entity.groupID;
+    const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;
+    const groupID = isZHEndpoint(entity) ? 0 : entity.groupID;
 
     for (const endpoint of endpoints) {
         for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
@@ -426,7 +431,7 @@ export default {
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
     toSnakeCase,
-    isEndpoint,
+    isZHEndpoint,
     isZHGroup,
     hours,
     minutes,

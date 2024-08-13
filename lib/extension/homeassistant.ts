@@ -167,9 +167,13 @@ export default class HomeAssistant extends Extension {
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic = settings.get().homeassistant.status_topic;
     private entityAttributes = settings.get().homeassistant.legacy_entity_attributes;
+    // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
+    // @ts-expect-error initialized in `start`
     private discoveryOrigin: {name: string; sw: string; url: string};
+    // @ts-expect-error initialized in `start`
     private bridge: Bridge;
+    // @ts-expect-error initialized in `start`
     private bridgeIdentifier: string;
 
     constructor(
@@ -1211,7 +1215,7 @@ export default class HomeAssistant extends Extension {
         const discovered = this.getDiscovered(data.id);
 
         for (const topic of Object.keys(discovered.messages)) {
-            await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+            await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);
         }
 
         delete this.discovered[data.id];
@@ -1291,7 +1295,7 @@ export default class HomeAssistant extends Extension {
         if (data.homeAssisantRename) {
             const discovered = this.getDiscovered(data.entity);
             for (const topic of Object.keys(discovered.messages)) {
-                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
             discovered.messages = {};
 
@@ -1330,11 +1334,12 @@ export default class HomeAssistant extends Extension {
                 }
             }
 
-            // Deprecated in favour of exposes
+            // @ts-expect-error deprecated in favour of exposes
+            const haConfig = entity.definition?.homeassistant;
+
             /* istanbul ignore if */
-            if (entity.definition.hasOwnProperty('homeassistant')) {
-                // @ts-ignore
-                configs.push(entity.definition.homeassistant);
+            if (haConfig != undefined) {
+                configs.push(haConfig);
             }
         } else if (isGroup) {
             // group
@@ -1361,7 +1366,7 @@ export default class HomeAssistant extends Extension {
                     }
                 });
 
-            configs = [].concat(...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
+            configs = ([] as DiscoveryEntry[]).concat(...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
         } else {
             // Discover bridge config.
             configs.push(...entity.configs);
@@ -1726,9 +1731,9 @@ export default class HomeAssistant extends Extension {
         }
 
         for (const topic of lastDiscoveredTopics) {
-            const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)[1] === 'device_automation';
+            const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)?.[1] === 'device_automation';
             if (!newDiscoveredTopics.has(topic) && !isDeviceAutomation) {
-                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);
             }
         }
     }
@@ -1738,7 +1743,8 @@ export default class HomeAssistant extends Extension {
         const isDeviceAutomation = discoveryMatch && discoveryMatch[1] === 'device_automation';
         if (discoveryMatch) {
             // Clear outdated discovery configs and remember already discovered device_automations
-            let message: KeyValue = null;
+            let message: KeyValue;
+
             try {
                 message = JSON.parse(data.message);
                 const baseTopic = settings.get().mqtt.base_topic + '/';
@@ -1777,7 +1783,7 @@ export default class HomeAssistant extends Extension {
 
             if (clear) {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
-                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);
             } else {
                 this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
             }
@@ -1810,7 +1816,7 @@ export default class HomeAssistant extends Extension {
 
         for (const topic of Object.keys(discovered.messages)) {
             if (topic.startsWith('scene')) {
-                await this.mqtt.publish(topic, null, {retain: true, qos: 1}, this.discoveryTopic, false, false);
+                await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);
                 delete discovered.messages[topic];
             }
         }

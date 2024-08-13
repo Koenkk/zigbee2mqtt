@@ -10,7 +10,8 @@ import Extension from '../extension';
 const configRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/config/((?:\\w+/get)|(?:\\w+/factory_reset)|(?:\\w+))`);
 
 export default class BridgeLegacy extends Extension {
-    private lastJoinedDeviceName: string = null;
+    private lastJoinedDeviceName?: string;
+    // @ts-expect-error initialized in `start`
     private supportedOptions: {[s: string]: (topic: string, message: string) => Promise<void> | void};
 
     override async start(): Promise<void> {
@@ -39,7 +40,7 @@ export default class BridgeLegacy extends Extension {
         this.eventBus.onDeviceJoined(this, (data) => this.onZigbeeEvent_('deviceJoined', data, data.device));
         this.eventBus.onDeviceInterview(this, (data) => this.onZigbeeEvent_('deviceInterview', data, data.device));
         this.eventBus.onDeviceAnnounce(this, (data) => this.onZigbeeEvent_('deviceAnnounce', data, data.device));
-        this.eventBus.onDeviceLeave(this, (data) => this.onZigbeeEvent_('deviceLeave', data, null));
+        this.eventBus.onDeviceLeave(this, (data) => this.onZigbeeEvent_('deviceLeave', data, undefined));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
 
         await this.publish();
@@ -206,7 +207,7 @@ export default class BridgeLegacy extends Extension {
 
     async _renameInternal(from: string, to: string): Promise<void> {
         try {
-            const isGroup = settings.getGroup(from) !== null;
+            const isGroup = settings.getGroup(from) != undefined;
             settings.changeFriendlyName(from, to);
             logger.info(`Successfully renamed - ${from} to ${to} `);
             const entity = this.zigbee.resolveEntity(to);
@@ -333,11 +334,13 @@ export default class BridgeLegacy extends Extension {
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const {topic, message} = data;
-        if (!topic.match(configRegex)) {
+        const match = topic.match(configRegex);
+
+        if (!match) {
             return;
         }
 
-        const option = topic.match(configRegex)[1];
+        const option = match[1];
 
         if (!this.supportedOptions.hasOwnProperty(option)) {
             return;
@@ -364,36 +367,35 @@ export default class BridgeLegacy extends Extension {
         await this.mqtt.publish(topic, stringify(payload), {retain: true, qos: 0});
     }
 
-    async onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device): Promise<void> {
-        if (type === 'deviceJoined' && resolvedEntity) {
-            this.lastJoinedDeviceName = resolvedEntity.name;
-        }
-
-        if (type === 'deviceJoined') {
-            await this.mqtt.publish('bridge/log', stringify({type: `device_connected`, message: {friendly_name: resolvedEntity.name}}));
-        } else if (type === 'deviceInterview') {
-            if (data.status === 'successful') {
-                if (resolvedEntity.isSupported) {
-                    const {vendor, description, model} = resolvedEntity.definition;
-                    const log = {friendly_name: resolvedEntity.name, model, vendor, description, supported: true};
-                    await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_successful', meta: log}));
-                } else {
-                    const meta = {friendly_name: resolvedEntity.name, supported: false};
-                    await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_successful', meta}));
-                }
-            } else if (data.status === 'failed') {
-                const meta = {friendly_name: resolvedEntity.name};
-                await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_failed', meta}));
-            } else {
-                /* istanbul ignore else */
-                if (data.status === 'started') {
+    async onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device | undefined): Promise<void> {
+        if (resolvedEntity) {
+            if (type === 'deviceJoined') {
+                this.lastJoinedDeviceName = resolvedEntity.name;
+                await this.mqtt.publish('bridge/log', stringify({type: `device_connected`, message: {friendly_name: resolvedEntity.name}}));
+            } else if (type === 'deviceInterview') {
+                if (data.status === 'successful') {
+                    if (resolvedEntity.isSupported) {
+                        const {vendor, description, model} = resolvedEntity.definition!; // checked by `isSupported`
+                        const log = {friendly_name: resolvedEntity.name, model, vendor, description, supported: true};
+                        await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_successful', meta: log}));
+                    } else {
+                        const meta = {friendly_name: resolvedEntity.name, supported: false};
+                        await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_successful', meta}));
+                    }
+                } else if (data.status === 'failed') {
                     const meta = {friendly_name: resolvedEntity.name};
-                    await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_started', meta}));
+                    await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_failed', meta}));
+                } else {
+                    /* istanbul ignore else */
+                    if (data.status === 'started') {
+                        const meta = {friendly_name: resolvedEntity.name};
+                        await this.mqtt.publish('bridge/log', stringify({type: `pairing`, message: 'interview_started', meta}));
+                    }
                 }
+            } else if (type === 'deviceAnnounce') {
+                const meta = {friendly_name: resolvedEntity.name};
+                await this.mqtt.publish('bridge/log', stringify({type: `device_announced`, message: 'announce', meta}));
             }
-        } else if (type === 'deviceAnnounce') {
-            const meta = {friendly_name: resolvedEntity.name};
-            await this.mqtt.publish('bridge/log', stringify({type: `device_announced`, message: 'announce', meta}));
         } else {
             /* istanbul ignore else */
             if (type === 'deviceLeave') {

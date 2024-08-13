@@ -79,7 +79,7 @@ describe('Controller', () => {
             databaseBackupPath: path.join(data.mockDir, 'database.db.backup'),
             backupPath: path.join(data.mockDir, 'coordinator_backup.json'),
             acceptJoiningDeviceHandler: expect.any(Function),
-            adapter: {concurrent: null, delay: null, disableLED: false, transmitPower: 14},
+            adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14},
             serialPort: {baudRate: undefined, rtscts: undefined, path: '/dev/dummy'},
         });
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
@@ -382,7 +382,7 @@ describe('Controller', () => {
     it('Should add entities which are missing from configuration but are in database to configuration', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.notInSettings;
-        expect(settings.getDevice(device.ieeeAddr)).not.toBeNull();
+        expect(settings.getDevice(device.ieeeAddr)).not.toBeUndefined();
     });
 
     it('On zigbee deviceJoined', async () => {

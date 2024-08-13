@@ -25,10 +25,12 @@ export default class Frontend extends Extension {
     private sslCert = settings.get().frontend.ssl_cert;
     private sslKey = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
+    // @ts-expect-error initialized in `start`
     private server: http.Server;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // @ts-expect-error initialized in `start`
     private fileServer: RequestHandler;
-    private wss: WebSocket.Server = null;
+    // @ts-expect-error initialized in `start`
+    private wss: WebSocket.Server;
 
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
@@ -44,8 +46,8 @@ export default class Frontend extends Extension {
     override async start(): Promise<void> {
         if (this.isHttpsConfigured()) {
             const serverOptions = {
-                key: fs.readFileSync(this.sslKey),
-                cert: fs.readFileSync(this.sslCert),
+                key: fs.readFileSync(this.sslKey!),// valid from `isHttpsConfigured`
+                cert: fs.readFileSync(this.sslCert!),// valid from `isHttpsConfigured`
             };
             this.server = https.createServer(serverOptions, this.onRequest);
         } else {
@@ -83,11 +85,11 @@ export default class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss?.clients.forEach((client) => {
+        this.wss.clients.forEach((client) => {
             client.send(stringify({topic: 'bridge/state', payload: 'offline'}));
             client.terminate();
         });
-        this.wss?.close();
+        this.wss.close();
         /* istanbul ignore else */
         if (this.server) {
             return new Promise((cb: () => void) => this.server.close(cb));
@@ -100,7 +102,7 @@ export default class Frontend extends Extension {
     }
 
     private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {
-        const {query} = url.parse(request.url, true);
+        const {query} = url.parse(request.url!, true);
         cb(!this.authToken || this.authToken === query.token);
     }
 

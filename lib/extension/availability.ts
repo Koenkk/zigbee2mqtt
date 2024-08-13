@@ -41,9 +41,13 @@ export default class Availability extends Extension {
     }
 
     private isAvailable(entity: Device | Group): boolean {
-        return entity.isDevice()
-            ? Date.now() - entity.zh.lastSeen < this.getTimeout(entity)
-            : entity.membersDevices().length === 0 || entity.membersDevices().some((d) => this.availabilityCache[d.ieeeAddr]);
+        if (entity.isDevice()) {
+            return Date.now() - entity.zh.lastSeen < this.getTimeout(entity);
+        } else {
+            const membersDevices = entity.membersDevices();
+
+            return membersDevices.length === 0 || membersDevices.some((d) => this.availabilityCache[d.ieeeAddr]);
+        }
     }
 
     private resetTimer(device: Device): void {
@@ -92,7 +96,7 @@ export default class Availability extends Extension {
                 logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`);
                 break;
             } catch (error) {
-                logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${error.message})`);
+                logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${(error as Error).message})`);
 
                 // Try again in 3 seconds.
                 if (i !== attempts) {
@@ -125,7 +129,7 @@ export default class Availability extends Extension {
 
         this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                await this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
+                await this.mqtt.publish(`${data.from}/availability`, '', {retain: true, qos: 1});
                 await this.publishAvailability(data.entity, false, true);
             }
         });
@@ -163,6 +167,7 @@ export default class Availability extends Extension {
     private async publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish = false, skipGroups = false): Promise<void> {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
+
             if (this.isActiveDevice(entity)) {
                 logger.debug(`Active device '${entity.name}' was last seen '${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);
             } else {
@@ -230,13 +235,13 @@ export default class Availability extends Extension {
                         continue;
                     }
 
-                    const converter = device.definition.toZigbee.find((c) => c.key.find((k) => item.keys.includes(k)));
+                    const converter = device.definition!.toZigbee?.find((c) => c.key.find((k) => item.keys.includes(k)));
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
                         message: this.state.get(device),
-                        mapped: device.definition,
-                        endpoint_name: null,
+                        mapped: device.definition!,
+                        endpoint_name: undefined,
                         options,
                         state,
                         device: device.zh,
@@ -245,7 +250,7 @@ export default class Availability extends Extension {
                     try {
                         await converter?.convertGet?.(device.endpoint(), item.keys[0], meta);
                     } catch (error) {
-                        logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);
+                        logger.error(`Failed to read state of '${device.name}' after reconnect (${(error as Error).message})`);
                     }
 
                     await utils.sleep(500);

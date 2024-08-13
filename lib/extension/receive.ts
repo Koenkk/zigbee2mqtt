@@ -100,10 +100,10 @@ export default class Receive extends Extension {
             return;
         }
 
-        const converters = data.device.definition.fromZigbee.filter((c) => {
+        const converters = data.device.definition.fromZigbee?.filter((c) => {
             const type = Array.isArray(c.type) ? c.type.includes(data.type) : c.type === data.type;
             return c.cluster === data.cluster && type;
-        });
+        }) ?? [];
 
         // Check if there is an available converter, genOta messages are not interesting.
         const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
@@ -158,8 +158,8 @@ export default class Receive extends Extension {
                     payload = {...payload, ...converted};
                 }
             } catch (error) /* istanbul ignore next */ {
-                logger.error(`Exception while calling fromZigbee converter: ${error.message}}`);
-                logger.debug(error.stack);
+                logger.error(`Exception while calling fromZigbee converter: ${(error as Error).message}}`);
+                logger.debug((error as Error).stack!);
             }
         }
 

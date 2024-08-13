@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -87,7 +88,7 @@ const REPORT_CLUSTERS: Readonly<
 type PollOnMessage = {
     cluster: Readonly<Partial<Record<ClusterName, {type: string; data: KeyValue}[]>>>;
     read: Readonly<{cluster: string; attributes: string[]; attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}>;
-    manufacturerIDs: readonly number[];
+    manufacturerIDs: readonly Zcl.ManufacturerCode[];
     manufacturerNames: readonly string[];
 }[];
 
@@ -196,8 +197,15 @@ interface ParsedMQTTMessage {
     type: 'bind' | 'unbind';
     sourceKey: string;
     targetKey: string;
-    clusters: string[];
+    clusters?: string[];
     skipDisableReporting: boolean;
+}
+
+interface DataMessage {
+    from: ParsedMQTTMessage['sourceKey'];
+    to: ParsedMQTTMessage['targetKey'];
+    clusters: ParsedMQTTMessage['clusters'];
+    skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
 }
 
 export default class Bind extends Extension {
@@ -209,11 +217,11 @@ export default class Bind extends Extension {
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
     }
 
-    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage {
-        let type: ParsedMQTTMessage['type'] = null;
-        let sourceKey: ParsedMQTTMessage['sourceKey'] = null;
-        let targetKey: ParsedMQTTMessage['targetKey'] = null;
-        let clusters: ParsedMQTTMessage['clusters'] = null;
+    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage | undefined {
+        let type: ParsedMQTTMessage['type'] | undefined;
+        let sourceKey: ParsedMQTTMessage['sourceKey'] | undefined;
+        let targetKey: ParsedMQTTMessage['targetKey'] | undefined;
+        let clusters: ParsedMQTTMessage['clusters'] | undefined;
         let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
 
         if (LEGACY_API && data.topic.match(LEGACY_TOPIC_REGEX)) {
@@ -223,26 +231,29 @@ export default class Bind extends Extension {
             targetKey = data.message;
         } else if (data.topic.match(TOPIC_REGEX)) {
             type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
-            const message = JSON.parse(data.message);
+            const message: DataMessage = JSON.parse(data.message);
             sourceKey = message.from;
             targetKey = message.to;
             clusters = message.clusters;
-            skipDisableReporting = 'skip_disable_reporting' in message ? message.skip_disable_reporting : false;
+            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
+        } else {
+            return undefined;
         }
 
         return {type, sourceKey, targetKey, clusters, skipDisableReporting};
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const {type, sourceKey, targetKey, clusters, skipDisableReporting} = this.parseMQTTMessage(data);
+        const parsed = this.parseMQTTMessage(data);
 
-        if (!type) {
-            return null;
+        if (!parsed || !parsed.type) {
+            return;
         }
 
+        const {type, sourceKey, targetKey, clusters, skipDisableReporting} = parsed;
         const message = utils.parseJSON(data.message, data.message);
 
-        let error = null;
+        let error: string | undefined;
         const parsedSource = this.zigbee.resolveEntityAndEndpoint(sourceKey);
         const parsedTarget = this.zigbee.resolveEntityAndEndpoint(targetKey);
         const source = parsedSource.entity;
@@ -262,9 +273,11 @@ export default class Bind extends Extension {
             const failedClusters = [];
             const attemptedClusters = [];
 
-            const bindSource: zh.Endpoint = parsedSource.endpoint;
-            const bindTarget: number | zh.Group | zh.Endpoint =
-                target instanceof Device ? parsedTarget.endpoint : target instanceof Group ? target.zh : Number(target.ID);
+            const bindSource = parsedSource.endpoint;
+            const bindTarget = target instanceof Device ? parsedTarget.endpoint : target instanceof Group ? target.zh : Number(target.ID);
+
+            assert(bindSource != undefined && bindTarget != undefined);
+
             // Find which clusters are supported by both the source and target.
             // Groups are assumed to support all clusters.
             const clusterCandidates = clusters ?? ALL_CLUSTER_CANDIDATES;
@@ -274,7 +287,7 @@ export default class Bind extends Extension {
 
                 const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' || (target as Device).zh.type === 'Coordinator';
 
-                if (!anyClusterValid && utils.isEndpoint(bindTarget)) {
+                if (!anyClusterValid && utils.isZHEndpoint(bindTarget)) {
                     matchingClusters =
                         (bindTarget.supportsInputCluster(cluster) && bindSource.supportsOutputCluster(cluster)) ||
                         (bindSource.supportsInputCluster(cluster) && bindTarget.supportsOutputCluster(cluster));
@@ -383,7 +396,7 @@ export default class Bind extends Extension {
     }
 
     getSetupReportingEndpoints(bind: zh.Bind, coordinatorEp: zh.Endpoint): zh.Endpoint[] {
-        const endpoints = utils.isEndpoint(bind.target) ? [bind.target] : bind.target.members;
+        const endpoints = utils.isZHEndpoint(bind.target) ? [bind.target] : bind.target.members;
 
         return endpoints.filter((e) => {
             if (!e.supportsInputCluster(bind.cluster.name)) {
@@ -416,7 +429,7 @@ export default class Bind extends Extension {
 
                         const items = [];
 
-                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]) {
+                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName] ?? []) {
                             /* istanbul ignore else */
                             if (!c.condition || (await c.condition(endpoint))) {
                                 const i = {...c};
@@ -429,7 +442,7 @@ export default class Bind extends Extension {
                         await endpoint.configureReporting(bind.cluster.name, items);
                         logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                     } catch (error) {
-                        logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}' (${error.message})`);
+                        logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}' (${(error as Error).message})`);
                     }
                 }
             }
@@ -440,7 +453,7 @@ export default class Bind extends Extension {
 
     async disableUnnecessaryReportings(target: zh.Group | zh.Endpoint): Promise<void> {
         const coordinator = this.zigbee.firstCoordinatorEndpoint();
-        const endpoints = utils.isEndpoint(target) ? [target] : target.members;
+        const endpoints = utils.isZHEndpoint(target) ? [target] : target.members;
         const allBinds: zh.Bind[] = [];
 
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -458,7 +471,7 @@ export default class Bind extends Extension {
             const boundClusters: string[] = [];
 
             for (const bind of allBinds) {
-                if (utils.isEndpoint(bind.target) ? bind.target === endpoint : bind.target.members.includes(endpoint)) {
+                if (utils.isZHEndpoint(bind.target) ? bind.target === endpoint : bind.target.members.includes(endpoint)) {
                     requiredClusters.push(bind.cluster.name);
                 }
             }
@@ -476,7 +489,7 @@ export default class Bind extends Extension {
 
                     const items = [];
 
-                    for (const item of REPORT_CLUSTERS[cluster as ClusterName]) {
+                    for (const item of REPORT_CLUSTERS[cluster as ClusterName] ?? []) {
                         /* istanbul ignore else */
                         if (!item.condition || (await item.condition(endpoint))) {
                             const i = {...item};
@@ -489,7 +502,7 @@ export default class Bind extends Extension {
                     await endpoint.configureReporting(cluster, items);
                     logger.info(`Successfully disabled reporting for '${entity}' cluster '${cluster}'`);
                 } catch (error) {
-                    logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}' (${error.message})`);
+                    logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}' (${(error as Error).message})`);
                 }
             }
 
@@ -516,7 +529,7 @@ export default class Bind extends Extension {
             // Add bound devices
             for (const endpoint of data.device.zh.endpoints) {
                 for (const bind of endpoint.binds) {
-                    if (utils.isEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
+                    if (utils.isZHEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
                         toPoll.add(bind.target);
                     }
                 }
@@ -532,10 +545,17 @@ export default class Bind extends Extension {
             }
 
             for (const endpoint of toPoll) {
+                const device = endpoint.getDevice();
+
+                if (!device) {
+                    continue;
+                }
+
                 for (const poll of polls) {
+                    // XXX: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                     if (
-                        (!poll.manufacturerIDs.includes(endpoint.getDevice().manufacturerID) &&
-                            !poll.manufacturerNames.includes(endpoint.getDevice().manufacturerName)) ||
+                        (!poll.manufacturerIDs.includes(device.manufacturerID!) &&
+                            !poll.manufacturerNames.includes(device.manufacturerName!)) ||
                         !endpoint.supportsInputCluster(poll.read.cluster)
                     ) {
                         continue;
@@ -548,7 +568,7 @@ export default class Bind extends Extension {
                         readAttrs = [...poll.read.attributes, ...attrsForEndpoint];
                     }
 
-                    const key = `${endpoint.getDevice().ieeeAddr}_${endpoint.ID}_${POLL_ON_MESSAGE.indexOf(poll)}`;
+                    const key = `${device.ieeeAddr}_${endpoint.ID}_${POLL_ON_MESSAGE.indexOf(poll)}`;
 
                     if (!this.pollDebouncers[key]) {
                         this.pollDebouncers[key] = debounce(async () => {
@@ -556,7 +576,7 @@ export default class Bind extends Extension {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
                                 logger.error(
-                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(endpoint.getDevice()).name} (${error.message})`,
+                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(device).name} (${(error as Error).message})`,
                                 );
                             }
                         }, 1000);

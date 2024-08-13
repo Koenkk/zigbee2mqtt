@@ -289,7 +289,7 @@ describe('Availability', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb_color', to: 'bulb_new_name'}));
         await flushPromises();
 
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', null, {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', '', {retain: true, qos: 1}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
         await setTimeAndAdvanceTimers(utils.hours(12));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', 'offline', {retain: true, qos: 1}, expect.any(Function));

@@ -80,7 +80,7 @@ declare global {
             entity: Device | Group;
             from: KeyValue;
             to: KeyValue;
-            reason: string | null;
+            reason?: string;
             update: KeyValue;
         };
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
@@ -97,7 +97,7 @@ declare global {
         type Reconfigure = {device: Device};
         type DeviceLeave = {ieeeAddr: string; name: string};
         type GroupMembersChanged = {group: Group; action: 'remove' | 'add' | 'remove_all'; endpoint: zh.Endpoint; skipDisableReporting: boolean};
-        type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason: StateChangeReason; payload: KeyValue};
+        type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason?: StateChangeReason; payload: KeyValue};
         type DeviceMessage = {
             type: ZHEvents.MessagePayloadType;
             device: Device;
@@ -203,8 +203,8 @@ declare global {
             pan_id: number | 'GENERATE';
             ext_pan_id: number[] | 'GENERATE';
             channel: number;
-            adapter_concurrent: number | null;
-            adapter_delay: number | null;
+            adapter_concurrent?: number;
+            adapter_delay?: number;
             cache_state: boolean;
             cache_state_persistent: boolean;
             cache_state_send_on_startup: boolean;

@@ -29,14 +29,14 @@ const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Exp
 
 interface ParsedMQTTMessage {
     type: 'remove' | 'add' | 'remove_all';
-    resolvedEntityGroup: Group;
+    resolvedEntityGroup?: Group;
     resolvedEntityDevice: Device;
-    error: string;
-    groupKey: string;
-    deviceKey: string;
+    error?: string;
+    groupKey?: string;
+    deviceKey?: string;
     triggeredViaLegacyApi: boolean;
     skipDisableReporting: boolean;
-    resolvedEntityEndpoint: zh.Endpoint;
+    resolvedEntityEndpoint?: zh.Endpoint;
 }
 
 export default class Groups extends Extension {
@@ -69,7 +69,7 @@ export default class Groups extends Extension {
                 }
             } catch (error) {
                 logger.error(`Failed to ${action} '${deviceName}' from '${groupName}'`);
-                logger.debug(error.stack);
+                logger.debug((error as Error).stack!);
             }
         };
 
@@ -78,7 +78,7 @@ export default class Groups extends Extension {
             const zigbeeGroup = this.zigbee.groupsIterator((g) => g.groupID === groupID).next().value || this.zigbee.createGroup(groupID);
             const settingsEndpoints: zh.Endpoint[] = [];
 
-            for (const d of settingGroup.devices) {
+            for (const d of settingGroup.devices ?? []) {
                 const parsed = this.zigbee.resolveEntityAndEndpoint(d);
                 const device = parsed.entity as Device;
 
@@ -129,7 +129,7 @@ export default class Groups extends Extension {
         }
 
         const payload: KeyValue = {};
-        let endpointName: string = null;
+        let endpointName: string | undefined;
         const endpointNames: string[] = data.entity instanceof Device ? data.entity.getEndpointNames() : [];
 
         for (let prop of Object.keys(data.update)) {
@@ -159,15 +159,19 @@ export default class Groups extends Extension {
             }
 
             if (entity instanceof Device) {
-                for (const group of groups) {
-                    if (
-                        group.zh.hasMember(entity.endpoint(endpointName)) &&
-                        !equals(this.lastOptimisticState[group.ID], payload) &&
-                        this.shouldPublishPayloadForGroup(group, payload)
-                    ) {
-                        this.lastOptimisticState[group.ID] = payload;
+                const endpoint = entity.endpoint(endpointName);
 
-                        await this.publishEntityState(group, payload, reason);
+                if (endpoint) {
+                    for (const group of groups) {
+                        if (
+                            group.zh.hasMember(endpoint) &&
+                            !equals(this.lastOptimisticState[group.ID], payload) &&
+                            this.shouldPublishPayloadForGroup(group, payload)
+                        ) {
+                            this.lastOptimisticState[group.ID] = payload;
+
+                            await this.publishEntityState(group, payload, reason);
+                        }
                     }
                 }
             } else {
@@ -239,14 +243,14 @@ export default class Groups extends Extension {
         return true;
     }
 
-    private async parseMQTTMessage(data: eventdata.MQTTMessage): Promise<ParsedMQTTMessage> {
-        let type: ParsedMQTTMessage['type'] = null;
-        let resolvedEntityGroup: ParsedMQTTMessage['resolvedEntityGroup'] = null;
-        let resolvedEntityDevice: ParsedMQTTMessage['resolvedEntityDevice'] = null;
-        let resolvedEntityEndpoint: ParsedMQTTMessage['resolvedEntityEndpoint'] = null;
-        let error: ParsedMQTTMessage['error'] = null;
-        let groupKey: ParsedMQTTMessage['groupKey'] = null;
-        let deviceKey: ParsedMQTTMessage['deviceKey'] = null;
+    private async parseMQTTMessage(data: eventdata.MQTTMessage): Promise<ParsedMQTTMessage | undefined> {
+        let type: ParsedMQTTMessage['type'] | undefined;
+        let resolvedEntityGroup: ParsedMQTTMessage['resolvedEntityGroup'] | undefined;
+        let resolvedEntityDevice: ParsedMQTTMessage['resolvedEntityDevice'] | undefined;
+        let resolvedEntityEndpoint: ParsedMQTTMessage['resolvedEntityEndpoint'] | undefined;
+        let error: ParsedMQTTMessage['error'] | undefined;
+        let groupKey: ParsedMQTTMessage['groupKey'] | undefined;
+        let deviceKey: ParsedMQTTMessage['deviceKey'] | undefined;
         let triggeredViaLegacyApi: ParsedMQTTMessage['triggeredViaLegacyApi'] = false;
         let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
 
@@ -272,7 +276,7 @@ export default class Groups extends Extension {
                         await this.mqtt.publish('bridge/log', stringify({type: `device_group_${type}_failed`, message}));
                     }
 
-                    return null;
+                    return undefined;
                 }
             } else {
                 type = 'remove_all';
@@ -291,14 +295,14 @@ export default class Groups extends Extension {
                     await this.mqtt.publish('bridge/log', stringify({type: `device_group_${type}_failed`, message}));
                 }
 
-                return null;
+                return undefined;
             }
 
             resolvedEntityEndpoint = parsedEntity.endpoint;
 
             if (parsedEntity.endpointID && !resolvedEntityEndpoint) {
                 logger.error(`Device '${parsedEntity.ID}' does not have endpoint '${parsedEntity.endpointID}'`);
-                return null;
+                return undefined;
             }
         } else if (topicRegexMatch) {
             type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
@@ -329,6 +333,8 @@ export default class Groups extends Extension {
                     error = `Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`;
                 }
             }
+        } else {
+            return undefined;
         }
 
         return {
@@ -428,8 +434,8 @@ export default class Groups extends Extension {
                     }
                 }
             } catch (e) {
-                error = `Failed to ${type} from group (${e.message})`;
-                logger.debug(e.stack);
+                error = `Failed to ${type} from group (${(e as Error).message})`;
+                logger.debug((e as Error).stack!);
             }
         }
 

@@ -29,7 +29,7 @@ interface Topology {
         modelID: string;
         failed: string[];
         lastSeen: number;
-        definition: {model: string; vendor: string; supports: string; description: string};
+        definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
     links: Link[];
 }
@@ -42,6 +42,7 @@ export default class NetworkMap extends Extension {
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
+    // @ts-expect-error initialized in `start`
     private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
 
     override async start(): Promise<void> {
@@ -76,9 +77,9 @@ export default class NetworkMap extends Extension {
                 const routes = typeof message === 'object' && message.routes;
                 const topology = await this.networkScan(routes);
                 const value = this.supportedFormats[type](topology);
-                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value}, null)));
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value})));
             } catch (error) {
-                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, error.message)));
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, (error as Error).message)));
             }
         }
     }
@@ -238,9 +239,9 @@ export default class NetworkMap extends Extension {
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
-                failed.get(device).push('lqi');
+                failed.get(device)!.push('lqi'); // set above
                 logger.error(`Failed to execute LQI for '${device.name}'`);
-                logger.debug(error.stack);
+                logger.debug((error as Error).stack!);
             }
 
             if (includeRoutes) {
@@ -249,9 +250,9 @@ export default class NetworkMap extends Extension {
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
-                    failed.get(device).push('routingTable');
+                    failed.get(device)!.push('routingTable'); // set above
                     logger.error(`Failed to execute routing table for '${device.name}'`);
-                    logger.debug(error.stack);
+                    logger.debug((error as Error).stack!);
                 }
             }
         }
@@ -280,7 +281,7 @@ export default class NetworkMap extends Extension {
                           ),
                       ).join(', '),
                   }
-                : null;
+                : undefined;
 
             topology.nodes.push({
                 ieeeAddr: device.ieeeAddr,

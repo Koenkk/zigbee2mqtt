@@ -6,8 +6,8 @@ import * as settings from '../util/settings';
 
 export default class Device {
     public zh: zh.Device;
-    public definition: zhc.Definition;
-    private _definitionModelID: string;
+    public definition?: zhc.Definition;
+    private _definitionModelID?: string;
 
     get ieeeAddr(): string {
         return this.zh.ieeeAddr;
@@ -22,7 +22,7 @@ export default class Device {
         return this.zh.type === 'Coordinator' ? 'Coordinator' : this.options?.friendly_name || this.ieeeAddr;
     }
     get isSupported(): boolean {
-        return this.zh.type === 'Coordinator' || (this.definition && !this.definition.generated);
+        return this.zh.type === 'Coordinator' || Boolean(this.definition && !this.definition.generated);
     }
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
@@ -32,13 +32,13 @@ export default class Device {
         this.zh = device;
     }
 
-    exposes(): zhc.Expose[] {
+    exposes(): zhc.Expose[] | undefined {
         /* istanbul ignore if */
-        if (typeof this.definition.exposes == 'function') {
+        if (typeof this.definition?.exposes == 'function') {
             const options: KeyValue = this.options;
-            return this.definition.exposes(this.zh, options);
+            return this.definition?.exposes(this.zh, options);
         } else {
-            return this.definition.exposes;
+            return this.definition?.exposes;
         }
     }
 
@@ -55,28 +55,40 @@ export default class Device {
         }
     }
 
-    endpoint(key?: string | number): zh.Endpoint {
-        let endpoint: zh.Endpoint;
-        if (key == null || key == '') key = 'default';
+    endpoint(key?: string | number): zh.Endpoint | undefined {
+        let endpoint: zh.Endpoint | undefined;
+
+        if (key == null || key == '') {
+            key = 'default';
+        }
 
         if (!isNaN(Number(key))) {
             endpoint = this.zh.getEndpoint(Number(key));
         } else if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.zh)[key];
-            if (ID) endpoint = this.zh.getEndpoint(ID);
-            else if (key === 'default') endpoint = this.zh.endpoints[0];
-            else return null;
+
+            if (ID) {
+                endpoint = this.zh.getEndpoint(ID);
+            } else if (key === 'default') {
+                endpoint = this.zh.endpoints[0];
+            } else {
+                return undefined;
+            }
         } else {
             /* istanbul ignore next */
-            if (key !== 'default') return null;
+            if (key !== 'default') {
+                return undefined;
+            }
+
             endpoint = this.zh.endpoints[0];
         }
 
         return endpoint;
     }
 
-    endpointName(endpoint: zh.Endpoint): string {
-        let epName = null;
+    endpointName(endpoint: zh.Endpoint): string | undefined {
+        let epName = undefined;
+
         if (this.definition?.endpoint) {
             const mapping = this.definition?.endpoint(this.zh);
             for (const [name, id] of Object.entries(mapping)) {
@@ -85,12 +97,21 @@ export default class Device {
                 }
             }
         }
+
         /* istanbul ignore next */
-        return epName === 'default' ? null : epName;
+        return epName === 'default' ? undefined : epName;
     }
 
     getEndpointNames(): string[] {
-        return Object.keys(this.definition?.endpoint?.(this.zh) ?? {}).filter((name) => name !== 'default');
+        const names: string[] = [];
+
+        for (const name in this.definition?.endpoint?.(this.zh) ?? {}) {
+            if (name !== 'default') {
+                names.push(name);
+            }
+        }
+
+        return names;
     }
 
     isIkeaTradfri(): boolean {

@@ -187,7 +187,7 @@ describe('Networkmap', () => {
             ],
             nodes: [
                 {
-                    definition: null,
+                    // definition: null,
                     failed: [],
                     friendlyName: 'Coordinator',
                     ieeeAddr: '0x00124b00120144ae',
@@ -533,7 +533,7 @@ describe('Networkmap', () => {
                     ],
                     nodes: [
                         {
-                            definition: null,
+                            // definition: null,
                             failed: [],
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',
@@ -717,7 +717,7 @@ describe('Networkmap', () => {
                     ],
                     nodes: [
                         {
-                            definition: null,
+                            // definition: null,
                             failed: [],
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',
@@ -873,7 +873,7 @@ describe('Networkmap', () => {
                     ],
                     nodes: [
                         {
-                            definition: null,
+                            // definition: null,
                             failed: [],
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',

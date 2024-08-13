@@ -74,7 +74,7 @@ export default class Report extends Extension {
     private failed: Set<string> = new Set();
     private enabled = settings.get().advanced.report;
 
-    shouldIgnoreClusterForDevice(cluster: string, definition: zhc.Definition): boolean {
+    shouldIgnoreClusterForDevice(cluster: string, definition?: zhc.Definition): boolean {
         if (definition === ZNLDP12LM && cluster === 'closuresWindowCovering') {
             // Device announces it but doesn't support it
             // https://github.com/Koenkk/zigbee2mqtt/issues/2611
@@ -99,7 +99,7 @@ export default class Report extends Extension {
 
                         const items = [];
                         for (const entry of configuration) {
-                            if (!entry.hasOwnProperty('condition') || (await entry.condition(ep))) {
+                            if (entry.condition == undefined || (await entry.condition(ep))) {
                                 const toAdd = {...entry};
                                 if (!this.enabled) toAdd.maximumReportInterval = 0xffff;
                                 items.push(toAdd);
@@ -128,7 +128,7 @@ export default class Report extends Extension {
 
             this.eventBus.emitDevicesChanged();
         } catch (error) {
-            logger.error(`Failed to ${term1.toLowerCase()} reporting for '${device.ieeeAddr}' - ${error.stack}`);
+            logger.error(`Failed to ${term1.toLowerCase()} reporting for '${device.ieeeAddr}' - ${(error as Error).stack}`);
 
             this.failed.add(device.ieeeAddr);
         }
@@ -137,7 +137,7 @@ export default class Report extends Extension {
         this.queue.delete(device.ieeeAddr);
     }
 
-    shouldSetupReporting(device: Device, messageType: string): boolean {
+    shouldSetupReporting(device: Device, messageType?: string): boolean {
         if (!device || !device.zh || !device.definition) return false;
 
         // Handle messages of type endDeviceAnnce and devIncoming.
@@ -159,8 +159,9 @@ export default class Report extends Extension {
 
         // These do not support reproting.
         // https://github.com/Koenkk/zigbee-herdsman/issues/110
-        const philipsIgnoreSw = ['5.127.1.26581', '5.130.1.30000'];
-        if (device.zh.manufacturerName === 'Philips' && philipsIgnoreSw.includes(device.zh.softwareBuildID)) return false;
+        if (device.zh.manufacturerName === 'Philips' && (device.zh.softwareBuildID === '5.127.1.26581' || device.zh.softwareBuildID === '5.130.1.30000')) {
+            return false;
+        }
 
         if (device.zh.interviewing === true) return false;
         if (device.zh.type !== 'Router' || device.zh.powerSource === 'Battery') return false;
@@ -180,7 +181,7 @@ export default class Report extends Extension {
 
     override async start(): Promise<void> {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
-            if (this.shouldSetupReporting(device, null)) {
+            if (this.shouldSetupReporting(device, undefined)) {
                 await this.setupReporting(device);
             }
         }

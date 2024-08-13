@@ -15,23 +15,27 @@ export default class DeviceGroupMembership extends Extension {
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(topicRegex);
+
         if (!match) {
-            return null;
+            return;
         }
 
         const parsed = this.zigbee.resolveEntityAndEndpoint(match[1]);
         const device = parsed?.entity as Device;
+
         if (!device || !(device instanceof Device)) {
             logger.error(`Device '${match[1]}' does not exist`);
             return;
         }
 
         const endpoint = parsed.endpoint;
+
         if (parsed.endpointID && !endpoint) {
             logger.error(`Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`);
             return;
         }
 
+        // TODO: `resolveEntityAndEndpoint` dictates that both `endpointID` and `endpoint` can be undefined, throw or `endpoint?.command`?
         const response = await endpoint.command(`genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {});
 
         if (!response) {
