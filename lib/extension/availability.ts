@@ -7,16 +7,18 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
-    {keys: ['state']},
-    {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
-    {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
+const RETRIEVE_ON_RECONNECT: readonly { keys: string[]; condition?: (state: KeyValue) => boolean }[] = [
+    { keys: ['state'] },
+    { keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON' },
+    { keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON' },
 ];
 
+const NS = 'z2m:availability';
+
 export default class Availability extends Extension {
-    private timers: {[s: string]: NodeJS.Timeout} = {};
-    private availabilityCache: {[s: string]: boolean} = {};
-    private retrieveStateDebouncers: {[s: string]: () => void} = {};
+    private timers: { [s: string]: NodeJS.Timeout } = {};
+    private availabilityCache: { [s: string]: boolean } = {};
+    private retrieveStateDebouncers: { [s: string]: () => void } = {};
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -87,10 +89,10 @@ export default class Availability extends Extension {
 
                 pingedSuccessfully = true;
 
-                logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`);
+                logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`, NS);
                 break;
             } catch (error) {
-                logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${error.message})`);
+                logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${error.message})`, NS);
 
                 // Try again in 3 seconds.
                 if (i !== attempts) {
@@ -123,7 +125,7 @@ export default class Availability extends Extension {
 
         this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                await this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
+                await this.mqtt.publish(`${data.from}/availability`, null, { retain: true, qos: 1 });
                 await this.publishAvailability(data.entity, false, true);
             }
         });
@@ -162,9 +164,9 @@ export default class Availability extends Extension {
         if (logLastSeen && entity.isDevice()) {
             const ago = Date.now() - entity.zh.lastSeen;
             if (this.isActiveDevice(entity)) {
-                logger.debug(`Active device '${entity.name}' was last seen '${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);
+                logger.debug(`Active device '${entity.name}' was last seen '${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`, NS);
             } else {
-                logger.debug(`Passive device '${entity.name}' was last seen '${(ago / utils.hours(1)).toFixed(2)}' hours ago.`);
+                logger.debug(`Passive device '${entity.name}' was last seen '${(ago / utils.hours(1)).toFixed(2)}' hours ago.`, NS);
             }
         }
 
@@ -175,14 +177,14 @@ export default class Availability extends Extension {
         }
 
         if (entity.isDevice() && entity.ieeeAddr in this.availabilityCache && available && this.availabilityCache[entity.ieeeAddr] === false) {
-            logger.debug(`Device '${entity.name}' reconnected`);
+            logger.debug(`Device '${entity.name}' reconnected`, NS);
             this.retrieveState(entity);
         }
 
         const topic = `${entity.name}/availability`;
         const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[entity.ID] = available;
-        await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
+        await this.mqtt.publish(topic, payload, { retain: true, qos: 1 });
 
         if (!skipGroups && entity.isDevice()) {
             for (const group of this.zigbee.groups()) {
@@ -220,7 +222,7 @@ export default class Availability extends Extension {
          */
         if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers[device.ieeeAddr]) {
             this.retrieveStateDebouncers[device.ieeeAddr] = debounce(async () => {
-                logger.debug(`Retrieving state of '${device.name}' after reconnect`);
+                logger.debug(`Retrieving state of '${device.name}' after reconnect`, NS);
 
                 // Color and color temperature converters do both, only needs to be called once.
                 for (const item of RETRIEVE_ON_RECONNECT) {
@@ -243,7 +245,7 @@ export default class Availability extends Extension {
                     try {
                         await converter?.convertGet?.(device.endpoint(), item.keys[0], meta);
                     } catch (error) {
-                        logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`);
+                        logger.error(`Failed to read state of '${device.name}' after reconnect (${error.message})`, NS);
                     }
 
                     await utils.sleep(500);
