@@ -7,18 +7,18 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-const RETRIEVE_ON_RECONNECT: readonly { keys: string[]; condition?: (state: KeyValue) => boolean }[] = [
-    { keys: ['state'] },
-    { keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON' },
-    { keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON' },
+const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
+    {keys: ['state']},
+    {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
+    {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
 ];
 
 const NS = 'z2m:availability';
 
 export default class Availability extends Extension {
-    private timers: { [s: string]: NodeJS.Timeout } = {};
-    private availabilityCache: { [s: string]: boolean } = {};
-    private retrieveStateDebouncers: { [s: string]: () => void } = {};
+    private timers: {[s: string]: NodeJS.Timeout} = {};
+    private availabilityCache: {[s: string]: boolean} = {};
+    private retrieveStateDebouncers: {[s: string]: () => void} = {};
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -125,7 +125,7 @@ export default class Availability extends Extension {
 
         this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                await this.mqtt.publish(`${data.from}/availability`, null, { retain: true, qos: 1 });
+                await this.mqtt.publish(`${data.from}/availability`, null, {retain: true, qos: 1});
                 await this.publishAvailability(data.entity, false, true);
             }
         });
@@ -184,7 +184,7 @@ export default class Availability extends Extension {
         const topic = `${entity.name}/availability`;
         const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
         this.availabilityCache[entity.ID] = available;
-        await this.mqtt.publish(topic, payload, { retain: true, qos: 1 });
+        await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
             for (const group of this.zigbee.groups()) {
