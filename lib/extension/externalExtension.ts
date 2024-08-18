@@ -12,12 +12,13 @@ import Extension from './extension';
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
 export default class ExternalExtension extends Extension {
-    // @ts-expect-error initialized in `start`
-    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>};
+    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>} = {
+        save: this.saveExtension,
+        remove: this.removeExtension,
+    };
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.requestLookup = {save: this.saveExtension, remove: this.removeExtension};
         await this.loadUserDefinedExtensions();
         await this.publishExtensions();
     }

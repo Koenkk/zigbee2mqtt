@@ -95,8 +95,12 @@ export default class Configure extends Extension {
         force = false,
         throwError = false,
     ): Promise<void> {
+        if (!device.definition?.configure) {
+            return;
+        }
+
         if (!force) {
-            if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
+            if (device.options.disabled || !device.zh.interviewCompleted) {
                 return;
             }
 
@@ -122,7 +126,7 @@ export default class Configure extends Extension {
 
         logger.info(`Configuring '${device.name}'`);
         try {
-            await device.definition?.configure?.(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
+            await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
             logger.info(`Successfully configured '${device.name}'`);
             device.zh.meta.configured = zhc.getConfigureKey(device.definition);
             device.zh.save();
