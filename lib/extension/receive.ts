@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -37,7 +38,7 @@ export default class Receive extends Extension {
         }
     }
 
-    publishDebounce(device: Device, payload: KeyValue, time: number, debounceIgnore: string[]): void {
+    publishDebounce(device: Device, payload: KeyValue, time: number, debounceIgnore: string[] | undefined): void {
         if (!this.debouncers[device.ieeeAddr]) {
             this.debouncers[device.ieeeAddr] = {
                 payload: {},
@@ -69,7 +70,7 @@ export default class Receive extends Extension {
     // then all newPayload values with key present in debounce_ignore
     // should equal or be undefined in oldPayload
     // otherwise payload is conflicted
-    isPayloadConflicted(newPayload: KeyValue, oldPayload: KeyValue, debounceIgnore: string[] | null): boolean {
+    isPayloadConflicted(newPayload: KeyValue, oldPayload: KeyValue, debounceIgnore: string[] | undefined): boolean {
         let result = false;
         Object.keys(oldPayload)
             .filter((key) => (debounceIgnore || []).includes(key))
@@ -82,28 +83,20 @@ export default class Receive extends Extension {
         return result;
     }
 
-    shouldProcess(data: eventdata.DeviceMessage): boolean {
-        if (!data.device.definition || data.device.zh.interviewing) {
-            logger.debug(`Skipping message, still interviewing`);
-            return false;
-        }
-
-        return true;
-    }
-
     @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
         /* istanbul ignore next */
         if (!data.device) return;
 
-        if (!this.shouldProcess(data)) {
+        if (!data.device.definition || data.device.zh.interviewing) {
+            logger.debug(`Skipping message, still interviewing`);
             await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
             return;
         }
 
-        const converters = data.device.definition.fromZigbee?.filter((c) => {
+        const converters = data.device.definition.fromZigbee.filter((c) => {
             const type = Array.isArray(c.type) ? c.type.includes(data.type) : c.type === data.type;
             return c.cluster === data.cluster && type;
-        }) ?? [];
+        });
 
         // Check if there is an available converter, genOta messages are not interesting.
         const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
@@ -122,6 +115,7 @@ export default class Receive extends Extension {
         // - If NO payload is returned do nothing. This is for non-standard behaviour
         //   for e.g. click switches where we need to count number of clicks and detect long presses.
         const publish = async (payload: KeyValue): Promise<void> => {
+            assert(data.device.definition);
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
 

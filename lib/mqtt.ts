@@ -127,7 +127,7 @@ export default class MQTT {
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
-        // clearTimeout(this.republishRetainedTimer); // TODO: ?
+        clearTimeout(this.republishRetainedTimer);
         await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');

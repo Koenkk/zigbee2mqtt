@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import * as zhc from 'zigbee-herdsman-converters';
@@ -45,7 +46,6 @@ export default class Availability extends Extension {
             return Date.now() - entity.zh.lastSeen < this.getTimeout(entity);
         } else {
             const membersDevices = entity.membersDevices();
-
             return membersDevices.length === 0 || membersDevices.some((d) => this.availabilityCache[d.ieeeAddr]);
         }
     }
@@ -235,7 +235,7 @@ export default class Availability extends Extension {
                         continue;
                     }
 
-                    const converter = device.definition!.toZigbee?.find((c) => c.key.find((k) => item.keys.includes(k)));
+                    const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
@@ -248,7 +248,9 @@ export default class Availability extends Extension {
                     };
 
                     try {
-                        await converter?.convertGet?.(device.endpoint(), item.keys[0], meta);
+                        const endpoint = device.endpoint();
+                        assert(endpoint);
+                        await converter?.convertGet?.(endpoint, item.keys[0], meta);
                     } catch (error) {
                         logger.error(`Failed to read state of '${device.name}' after reconnect (${(error as Error).message})`);
                     }
