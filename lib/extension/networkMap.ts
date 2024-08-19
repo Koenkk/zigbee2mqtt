@@ -25,10 +25,10 @@ interface Topology {
         friendlyName: string;
         type: string;
         networkAddress: number;
-        manufacturerName: string;
-        modelID: string;
+        manufacturerName: string | undefined;
+        modelID: string | undefined;
         failed: string[];
-        lastSeen: number;
+        lastSeen: number | undefined;
         definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
     links: Link[];
@@ -42,16 +42,14 @@ export default class NetworkMap extends Extension {
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
-    // @ts-expect-error initialized in `start`
-    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
+    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string} = {
+        raw: this.raw,
+        graphviz: this.graphviz,
+        plantuml: this.plantuml,
+    };
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.supportedFormats = {
-            raw: this.raw,
-            graphviz: this.graphviz,
-            plantuml: this.plantuml,
-        };
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -276,7 +274,7 @@ export default class NetworkMap extends Extension {
                       supports: Array.from(
                           new Set(
                               device.exposes().map((e) => {
-                                  return e.name ?? `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
+                                  return e.name ?? `${e.type} (${e.features?.map((f) => f.name).join(', ')})`;
                               }),
                           ),
                       ).join(', '),
@@ -290,7 +288,7 @@ export default class NetworkMap extends Extension {
                 networkAddress: device.zh.networkAddress,
                 manufacturerName: device.zh.manufacturerName,
                 modelID: device.zh.modelID,
-                failed: failed.get(device),
+                failed: failed.get(device)!,
                 lastSeen: device.zh.lastSeen,
                 definition,
             });

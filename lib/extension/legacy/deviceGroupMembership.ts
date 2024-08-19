@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+import assert from 'assert';
 import bind from 'bind-decorator';
 
 import Device from '../../model/device';
@@ -35,7 +36,7 @@ export default class DeviceGroupMembership extends Extension {
             return;
         }
 
-        // TODO: `resolveEntityAndEndpoint` dictates that both `endpointID` and `endpoint` can be undefined, throw or `endpoint?.command`?
+        assert(endpoint !== undefined);
         const response = await endpoint.command(`genGroups`, 'getMembership', {groupcount: 0, grouplist: []}, {});
 
         if (!response) {

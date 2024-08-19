@@ -1,4 +1,5 @@
 /* eslint-disable brace-style */
+import assert from 'assert';
 import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -32,13 +33,14 @@ export default class Device {
         this.zh = device;
     }
 
-    exposes(): zhc.Expose[] | undefined {
+    exposes(): zhc.Expose[] {
+        assert(this.definition, 'Cannot retreive exposes before definition is resolved');
         /* istanbul ignore if */
-        if (typeof this.definition?.exposes == 'function') {
+        if (typeof this.definition.exposes == 'function') {
             const options: KeyValue = this.options;
-            return this.definition?.exposes(this.zh, options);
+            return this.definition.exposes(this.zh, options);
         } else {
-            return this.definition?.exposes;
+            return this.definition.exposes;
         }
     }
 
