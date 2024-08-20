@@ -10,7 +10,8 @@ export default class Group {
         return this.zh.groupID;
     }
     get options(): GroupOptions {
-        return {...settings.getGroup(this.ID)};
+        // XXX: Group always exists in settings
+        return {...settings.getGroup(this.ID)!};
     }
     get name(): string {
         return this.options?.friendly_name || this.ID.toString();

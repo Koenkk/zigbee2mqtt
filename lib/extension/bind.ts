@@ -546,16 +546,10 @@ export default class Bind extends Extension {
 
             for (const endpoint of toPoll) {
                 const device = endpoint.getDevice();
-
-                if (!device) {
-                    continue;
-                }
-
                 for (const poll of polls) {
                     // XXX: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                     if (
-                        (!poll.manufacturerIDs.includes(device.manufacturerID!) &&
-                            !poll.manufacturerNames.includes(device.manufacturerName!)) ||
+                        (!poll.manufacturerIDs.includes(device.manufacturerID!) && !poll.manufacturerNames.includes(device.manufacturerName!)) ||
                         !endpoint.supportsInputCluster(poll.read.cluster)
                     ) {
                         continue;

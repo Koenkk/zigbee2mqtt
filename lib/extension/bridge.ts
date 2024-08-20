@@ -27,7 +27,7 @@ type DefinitionPayload = {
     exposes: zhc.Expose[];
     supports_ota: boolean;
     icon: string;
-    options: zhc.Expose[];
+    options: zhc.Option[];
 };
 
 export default class Bridge extends Extension {
@@ -525,19 +525,16 @@ export default class Bridge extends Extension {
         }
 
         const device = this.zigbee.resolveEntityAndEndpoint(message.id);
-
         if (!device.entity) {
             throw new Error(`Device '${message.id}' does not exist`);
         }
 
         const endpoint = device.endpoint;
-
-        if (device.endpointID && !endpoint) {
+        if (!endpoint) {
             throw new Error(`Device '${device.ID}' does not have endpoint '${device.endpointID}'`);
         }
 
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
-        // TODO: `resolveEntityAndEndpoint` dictates that both `endpointID` and `endpoint` can be undefined, throw or `endpoint?.xyz`?
         await endpoint.bind(message.cluster, coordinatorEndpoint);
 
         await endpoint.configureReporting(
@@ -557,17 +554,14 @@ export default class Bridge extends Extension {
 
         logger.info(`Configured reporting for '${message.id}', '${message.cluster}.${message.attribute}'`);
 
-        return utils.getResponse(
-            message,
-            {
-                id: message.id,
-                cluster: message.cluster,
-                maximum_report_interval: message.maximum_report_interval,
-                minimum_report_interval: message.minimum_report_interval,
-                reportable_change: message.reportable_change,
-                attribute: message.attribute,
-            },
-        );
+        return utils.getResponse(message, {
+            id: message.id,
+            cluster: message.cluster,
+            maximum_report_interval: message.maximum_report_interval,
+            minimum_report_interval: message.minimum_report_interval,
+            reportable_change: message.reportable_change,
+            attribute: message.attribute,
+        });
     }
 
     @bind async deviceInterview(message: string | KeyValue): Promise<MQTTResponse> {
@@ -889,7 +883,7 @@ export default class Bridge extends Extension {
         let icon = device.options.icon ?? definitionIcon;
 
         if (icon) {
-            icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID));
+            icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID ?? ''));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }
 
@@ -899,7 +893,7 @@ export default class Bridge extends Extension {
             description: device.definition.description,
             exposes: device.exposes(),
             supports_ota: !!device.definition.ota,
-            options: device.definition.options,
+            options: device.definition.options ?? [],
             icon,
         };
 
