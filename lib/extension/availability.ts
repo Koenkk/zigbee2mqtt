@@ -230,7 +230,7 @@ export default class Availability extends Extension {
                         continue;
                     }
 
-                    const converter = device.definition.toZigbee.find((c) => c.key.find((k) => item.keys.includes(k)));
+                    const converter = device.definition.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
                     const options: KeyValue = device.options;
                     const state = this.state.get(device);
                     const meta: zhc.Tz.Meta = {
