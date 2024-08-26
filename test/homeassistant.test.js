@@ -2036,12 +2036,7 @@ describe('HomeAssistant extension', () => {
         await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x123/temperature/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', '', {qos: 1, retain: true}, expect.any(Function));
 
         // Existing device -> don't clear
         MQTT.publish.mockClear();

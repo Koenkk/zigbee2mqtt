@@ -1366,7 +1366,9 @@ export default class HomeAssistant extends Extension {
                     }
                 });
 
-            configs = ([] as DiscoveryEntry[]).concat(...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)));
+            configs = ([] as DiscoveryEntry[]).concat(
+                ...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)),
+            );
         } else {
             // Discover bridge config.
             configs.push(...entity.configs);

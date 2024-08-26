@@ -5,7 +5,6 @@ import logger from './util/logger';
 // eslint-disable-next-line
 type ListenerKey = object;
 
-
 interface EventBusMap {
     adapterDisconnected: [];
     permitJoinChanged: [data: eventdata.PermitJoinChanged];
@@ -30,10 +29,14 @@ interface EventBusMap {
     reconfigure: [data: eventdata.Reconfigure];
     stateChange: [data: eventdata.StateChange];
 }
-type EventBusListener<K> = K extends keyof EventBusMap ? (EventBusMap[K] extends unknown[] ? (...args: EventBusMap[K]) => Promise<void> | void : never) : never;
+type EventBusListener<K> = K extends keyof EventBusMap
+    ? EventBusMap[K] extends unknown[]
+        ? (...args: EventBusMap[K]) => Promise<void> | void
+        : never
+    : never;
 
 export default class EventBus {
-    private callbacksByExtension: {[s: string]: {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>;}[]} = {};
+    private callbacksByExtension: {[s: string]: {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]} = {};
     private emitter = new events.EventEmitter<EventBusMap>();
 
     constructor() {

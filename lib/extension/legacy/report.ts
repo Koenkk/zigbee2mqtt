@@ -159,7 +159,10 @@ export default class Report extends Extension {
 
         // These do not support reproting.
         // https://github.com/Koenkk/zigbee-herdsman/issues/110
-        if (device.zh.manufacturerName === 'Philips' && (device.zh.softwareBuildID === '5.127.1.26581' || device.zh.softwareBuildID === '5.130.1.30000')) {
+        if (
+            device.zh.manufacturerName === 'Philips' &&
+            (device.zh.softwareBuildID === '5.127.1.26581' || device.zh.softwareBuildID === '5.130.1.30000')
+        ) {
             return false;
         }
 

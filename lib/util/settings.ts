@@ -443,7 +443,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                                 setting[key] = envVariable;
                             }
                         } else if (type.indexOf('number') >= 0) {
-                            setting[key] = envVariable as unknown as number * 1;
+                            setting[key] = (envVariable as unknown as number) * 1;
                         } else if (type.indexOf('boolean') >= 0) {
                             setting[key] = envVariable.toLowerCase() === 'true';
                         } else {
