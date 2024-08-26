@@ -25,12 +25,9 @@ export default class Frontend extends Extension {
     private sslCert = settings.get().frontend.ssl_cert;
     private sslKey = settings.get().frontend.ssl_key;
     private authToken = settings.get().frontend.auth_token;
-    // @ts-expect-error initialized in `start`
-    private server: http.Server;
-    // @ts-expect-error initialized in `start`
-    private fileServer: RequestHandler;
-    // @ts-expect-error initialized in `start`
-    private wss: WebSocket.Server;
+    private server: http.Server | undefined;
+    private fileServer: RequestHandler | undefined;
+    private wss: WebSocket.Server | undefined;
 
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
@@ -46,8 +43,8 @@ export default class Frontend extends Extension {
     override async start(): Promise<void> {
         if (this.isHttpsConfigured()) {
             const serverOptions = {
-                key: fs.readFileSync(this.sslKey!),// valid from `isHttpsConfigured`
-                cert: fs.readFileSync(this.sslCert!),// valid from `isHttpsConfigured`
+                key: fs.readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
+                cert: fs.readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
             };
             this.server = https.createServer(serverOptions, this.onRequest);
         } else {
@@ -85,14 +82,14 @@ export default class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss.clients.forEach((client) => {
+        this.wss?.clients.forEach((client) => {
             client.send(stringify({topic: 'bridge/state', payload: 'offline'}));
             client.terminate();
         });
-        this.wss.close();
+        this.wss?.close();
         /* istanbul ignore else */
         if (this.server) {
-            return new Promise((cb: () => void) => this.server.close(cb));
+            return new Promise((cb: () => void) => this.server!.close(cb));
         }
     }
 
@@ -107,10 +104,10 @@ export default class Frontend extends Extension {
     }
 
     @bind private onUpgrade(request: http.IncomingMessage, socket: net.Socket, head: Buffer): void {
-        this.wss.handleUpgrade(request, socket, head, (ws) => {
+        this.wss!.handleUpgrade(request, socket, head, (ws) => {
             this.authenticate(request, (isAuthenticated) => {
                 if (isAuthenticated) {
-                    this.wss.emit('connection', ws, request);
+                    this.wss!.emit('connection', ws, request);
                 } else {
                     ws.close(4401, 'Unauthorized');
                 }
@@ -164,7 +161,7 @@ export default class Frontend extends Extension {
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
             const payload = utils.parseJSON(data.payload, data.payload);
 
-            for (const client of this.wss.clients) {
+            for (const client of this.wss!.clients) {
                 /* istanbul ignore else */
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(stringify({topic, payload}));

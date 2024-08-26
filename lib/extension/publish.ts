@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
@@ -117,7 +118,9 @@ export default class Publish extends Extension {
         // Only do this when the retrieve_state option is enabled for this device.
         // retrieve_state == deprecated
         if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') && re.options.retrieve_state) {
-            setTimeout(() => converter.convertGet?.(target, key, meta), result.readAfterWriteTime);
+            const convertGet = converter.convertGet;
+            assert(convertGet !== undefined, 'Converter has `readAfterWriteTime` but no `convertGet`');
+            setTimeout(() => convertGet(target, key, meta), result.readAfterWriteTime);
         }
     }
 
@@ -184,12 +187,7 @@ export default class Publish extends Extension {
 
         if (Array.isArray(definition)) {
             const c = new Set(definition.map((d) => d.toZigbee).flat());
-
-            if (c.size == 0) {
-                converters = defaultGroupConverters;
-            } else {
-                converters = Array.from(c);
-            }
+            converters = c.size === 0 ? defaultGroupConverters : Array.from(c);
         } else {
             converters = definition?.toZigbee ?? [];
         }

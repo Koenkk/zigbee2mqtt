@@ -78,7 +78,7 @@ export default class Groups extends Extension {
             const zigbeeGroup = this.zigbee.groupsIterator((g) => g.groupID === groupID).next().value || this.zigbee.createGroup(groupID);
             const settingsEndpoints: zh.Endpoint[] = [];
 
-            for (const d of settingGroup.devices ?? []) {
+            for (const d of settingGroup.devices) {
                 const parsed = this.zigbee.resolveEntityAndEndpoint(d);
                 const device = parsed.entity as Device;
 

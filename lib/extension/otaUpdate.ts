@@ -134,7 +134,10 @@ export default class OTAUpdate extends Extension {
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
     }
 
-    private async readSoftwareBuildIDAndDateCode(device: Device, sendPolicy?: 'immediate'): Promise<{softwareBuildID: string; dateCode: string} | undefined> {
+    private async readSoftwareBuildIDAndDateCode(
+        device: Device,
+        sendPolicy?: 'immediate',
+    ): Promise<{softwareBuildID: string; dateCode: string} | undefined> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
             assert(endpoint);

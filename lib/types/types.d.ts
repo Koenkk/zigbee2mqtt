@@ -246,7 +246,7 @@ declare global {
     }
 
     interface GroupOptions {
-        devices?: string[];
+        devices: string[];
         ID: number;
         optimistic?: boolean;
         off_state?: 'all_members_off' | 'last_member_state';
