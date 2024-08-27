@@ -13,7 +13,7 @@ let watchdog = process.env.Z2M_WATCHDOG != undefined;
 let watchdogCount = 0;
 let unsolicitedStop = false;
 // csv in minutes, default: 1min, 5min, 15min, 30min, 60min
-let watchdogDelays = [60000, 300000, 900000, 1800000, 3600000];
+let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
 if (watchdog && process.env.Z2M_WATCHDOG !== 'default') {
     if (/^(?:(?:[0-9]*[.])?[0-9]+)+(?:,?(?:[0-9]*[.])?[0-9]+)*$/.test(process.env.Z2M_WATCHDOG)) {
