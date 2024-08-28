@@ -21,6 +21,8 @@ import type * as zhc from 'zigbee-herdsman-converters';
 
 import {LogLevel} from 'lib/util/settings';
 
+type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 declare global {
     // Define some class types as global
     type EventBus = TypeEventBus;
@@ -184,8 +186,8 @@ declare global {
             ssl_cert?: string;
             ssl_key?: string;
         };
-        devices?: {[s: string]: DeviceOptions};
-        groups?: {[s: string]: Omit<GroupOptions, 'ID'>};
+        devices: {[s: string]: DeviceOptions};
+        groups: {[s: string]: OptionalProps<Omit<GroupOptions, 'ID'>, 'devices'>};
         device_options: KeyValue;
         advanced: {
             legacy_api: boolean;

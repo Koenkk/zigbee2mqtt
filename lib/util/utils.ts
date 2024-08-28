@@ -1,5 +1,6 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
+import assert from 'assert';
 import equals from 'fast-deep-equal/es6';
 import fs from 'fs';
 import humanizeDuration from 'humanize-duration';
@@ -391,6 +392,10 @@ export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Bina
 
 export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
     return expose.type === 'light';
+}
+
+export function assertLightExpose(expose: zhc.Expose): asserts expose is zhc.Light {
+    assert(expose.type === 'light');
 }
 
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {

@@ -394,8 +394,8 @@ export default class Bridge extends Extension {
             throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
         }
 
-        await this.enableDisableExtension(value, 'HomeAssistant');
         settings.set(['homeassistant'], value);
+        await this.enableDisableExtension(value, 'HomeAssistant');
         await this.publishInfo();
         return utils.getResponse(message, {value});
     }

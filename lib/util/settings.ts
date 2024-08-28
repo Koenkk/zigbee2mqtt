@@ -6,38 +6,25 @@ import data from './data';
 import schemaJson from './settings.schema.json';
 import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
-export let schema = schemaJson;
+export let schema: KeyValue = schemaJson;
 
-// @ts-expect-error
 schema = {};
 objectAssignDeep(schema, schemaJson);
 
 // Remove legacy settings from schema
 {
-    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_discovery_topic;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_status_topic;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.soft_reset_timeout;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.report;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.baudrate;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.rtscts;
-    // @ts-expect-error
     delete schema.properties.advanced.properties.ikea_ota_use_test_url;
-    // @ts-expect-error
     delete schema.properties.experimental;
-    // @ts-expect-error
-    delete schemaJson.properties.whitelist;
-    // @ts-expect-error
-    delete schemaJson.properties.ban;
+    delete (schemaJson as KeyValue).properties.whitelist;
+    delete (schemaJson as KeyValue).properties.ban;
 }
 
 /** NOTE: by order of priority, lower index is lower level (more important) */
@@ -133,6 +120,9 @@ let _settings: Partial<Settings> | undefined;
 let _settingsWithDefaults: Settings | undefined;
 
 function loadSettingsWithDefaults(): void {
+    if (!_settings) {
+        _settings = read();
+    }
     _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
 
     if (!_settingsWithDefaults.devices) {
@@ -164,6 +154,7 @@ function loadSettingsWithDefaults(): void {
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
         // @ts-expect-error
         _settingsWithDefaults.homeassistant = {};
+        // @ts-expect-error
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
 
@@ -172,13 +163,16 @@ function loadSettingsWithDefaults(): void {
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
         // @ts-expect-error
         _settingsWithDefaults.availability = {};
+        // @ts-expect-error
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
 
     if (_settingsWithDefaults.frontend) {
         const defaults = {port: 8080, auth_token: false};
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
+        // @ts-expect-error
         _settingsWithDefaults.frontend = {};
+        // @ts-expect-error
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 
@@ -290,7 +284,6 @@ function write(): void {
 
     yaml.writeIfChanged(file, toWrite);
 
-    _settings = read();
     loadSettingsWithDefaults();
 }
 
@@ -444,23 +437,30 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 
                     if (envVariable) {
                         const setting = path.reduce((acc, val) => {
+                            // @ts-expect-error
                             acc[val] = acc[val] || {};
+                            // @ts-expect-error
                             return acc[val];
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             try {
+                                // @ts-expect-error
                                 setting[key] = JSON.parse(envVariable);
                             } catch {
+                                // @ts-expect-error
                                 setting[key] = envVariable;
                             }
                         } else if (type.indexOf('number') >= 0) {
+                            // @ts-expect-error
                             setting[key] = (envVariable as unknown as number) * 1;
                         } else if (type.indexOf('boolean') >= 0) {
+                            // @ts-expect-error
                             setting[key] = envVariable.toLowerCase() === 'true';
                         } else {
                             /* istanbul ignore else */
                             if (type.indexOf('string') >= 0) {
+                                // @ts-expect-error
                                 setting[key] = envVariable;
                             }
                         }
@@ -496,7 +496,7 @@ export function get(): Settings {
         loadSettingsWithDefaults();
     }
 
-    return _settingsWithDefaults;
+    return _settingsWithDefaults!;
 }
 
 export function set(path: string[], value: string | number | boolean | KeyValue): void {
@@ -646,14 +646,14 @@ export function blockDevice(ID: string): void {
 export function removeDevice(IDorName: string): void {
     const device = getDeviceThrowIfNotExists(IDorName);
     const settings = getInternalSettings();
-    delete settings.devices[device.ID];
+    delete settings.devices?.[device.ID];
 
     // Remove device from groups
     if (settings.groups) {
         const regex = new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
 
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
-            group.devices = group.devices.filter((device) => !device.match(regex));
+            group.devices = group.devices?.filter((device) => !device.match(regex));
         }
     }
 
