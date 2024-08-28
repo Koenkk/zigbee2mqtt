@@ -13,7 +13,17 @@ import stringify from 'json-stable-stringify-without-jsonify';
 const mocks = [MQTT.publish, logger.warning, logger.info];
 const devices = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(
-    ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr],
+    ...[
+        devices.bulb_color.ieeeAddr,
+        devices.bulb_color_2.ieeeAddr,
+        devices.coordinator.ieeeAddr,
+        devices.remote.ieeeAddr,
+        devices.TS0601_thermostat.ieeeAddr,
+        devices.bulb_2.ieeeAddr,
+        devices.ZNCZ02LM.ieeeAddr,
+        devices.GLEDOPTO_2ID.ieeeAddr,
+        devices.QBKG03LM.ieeeAddr,
+    ],
 );
 
 describe('Availability', () => {

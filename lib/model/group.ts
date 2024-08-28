@@ -4,7 +4,7 @@ import * as settings from '../util/settings';
 
 export default class Group {
     public zh: zh.Group;
-    private resolveDevice: (ieeeAddr: string) => Device;
+    private resolveDevice: (ieeeAddr: string) => Device | undefined;
 
     get ID(): number {
         return this.zh.groupID;
@@ -17,7 +17,7 @@ export default class Group {
         return this.options?.friendly_name || this.ID.toString();
     }
 
-    constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device) {
+    constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device | undefined) {
         this.zh = group;
         this.resolveDevice = resolveDevice;
     }
@@ -27,17 +27,7 @@ export default class Group {
     }
 
     membersDevices(): Device[] {
-        const members: Device[] = [];
-
-        for (const member of this.zh.members) {
-            const device = this.resolveDevice(member.getDevice().ieeeAddr);
-
-            if (device) {
-                members.push(device);
-            }
-        }
-
-        return members;
+        return this.zh.members.map((d) => this.resolveDevice(d.getDevice().ieeeAddr)!);
     }
 
     membersDefinitions(): zhc.Definition[] {
