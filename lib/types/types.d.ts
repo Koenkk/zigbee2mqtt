@@ -226,7 +226,6 @@ declare global {
     }
 
     interface DeviceOptions {
-        ID: string;
         disabled?: boolean;
         retention?: number;
         availability?: boolean | {timeout: number};
@@ -243,6 +242,10 @@ declare global {
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;
+    }
+
+    interface DeviceOptionsWithId extends DeviceOptions {
+        ID: string;
     }
 
     interface GroupOptions {

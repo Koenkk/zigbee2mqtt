@@ -40,7 +40,7 @@ const defaultGroupConverters = [
 
 interface ParsedTopic {
     ID: string;
-    endpoint: string;
+    endpoint: string | undefined;
     attribute: string;
     type: 'get' | 'set';
 }
@@ -238,7 +238,9 @@ export default class Publish extends Extension {
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
-                localTarget = re.endpoint(endpointName);
+                // endpointName is always matched to an existing endpoint of the device
+                // since `propertyEndpointRegex` only contains valid endpoints for this device.
+                localTarget = re.endpoint(endpointName)!;
                 endpointOrGroupID = localTarget.ID;
             }
 
@@ -247,7 +249,7 @@ export default class Publish extends Extension {
             // Match any key if the toZigbee converter defines no key.
             const converter = converters.find((c) => (!c.key || c.key.includes(key)) && (!c.endpoint || c.endpoint == endpointName));
 
-            if (parsedTopic.type === 'set' && usedConverters[endpointOrGroupID].includes(converter)) {
+            if (parsedTopic.type === 'set' && converter && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
                 // (e.g. light_onoff_brightness converters can convert state and brightness)
                 continue;
@@ -269,11 +271,11 @@ export default class Publish extends Extension {
                 endpoint_name: endpointName,
                 options: entitySettingsKeyValue,
                 message: {...message},
-                logger,
                 device,
                 state: entityState,
                 membersState,
-                mapped: definition,
+                // In case a converter is found, the device always has a definition
+                mapped: definition!,
             };
 
             // Strip endpoint name from meta.message properties.
@@ -311,7 +313,7 @@ export default class Publish extends Extension {
 
                     if (result && result.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
-                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr), state);
+                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
                         }
                     }
 
@@ -339,7 +341,7 @@ export default class Publish extends Extension {
             }
         }
 
-        const scenesChanged = Object.values(usedConverters).some((cl) => cl.some((c) => c.key.some((k) => sceneConverterKeys.includes(k))));
+        const scenesChanged = Object.values(usedConverters).some((cl) => cl.some((c) => c.key?.some((k) => sceneConverterKeys.includes(k))));
 
         if (scenesChanged) {
             this.eventBus.emitScenesChanged({entity: re});

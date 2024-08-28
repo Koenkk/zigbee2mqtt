@@ -17,7 +17,7 @@ export default class Device {
         return this.zh.ieeeAddr;
     }
     get options(): DeviceOptions {
-        const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {ID: this.ieeeAddr, friendly_name: this.ieeeAddr};
+        const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {friendly_name: this.ieeeAddr};
         return {...settings.get().device_options, ...deviceOptions};
     }
     get name(): string {

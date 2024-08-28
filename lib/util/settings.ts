@@ -14,17 +14,29 @@ objectAssignDeep(schema, schemaJson);
 
 // Remove legacy settings from schema
 {
+    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_discovery_topic;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.homeassistant_status_topic;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.soft_reset_timeout;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.report;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.baudrate;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.rtscts;
+    // @ts-expect-error
     delete schema.properties.advanced.properties.ikea_ota_use_test_url;
+    // @ts-expect-error
     delete schema.properties.experimental;
+    // @ts-expect-error
     delete schemaJson.properties.whitelist;
+    // @ts-expect-error
     delete schemaJson.properties.ban;
 }
 
@@ -117,8 +129,8 @@ const defaults: RecursivePartial<Settings> = {
     },
 };
 
-let _settings: Partial<Settings>;
-let _settingsWithDefaults: Settings;
+let _settings: Partial<Settings> | undefined;
+let _settingsWithDefaults: Settings | undefined;
 
 function loadSettingsWithDefaults(): void {
     _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
@@ -564,7 +576,7 @@ function getGroupThrowIfNotExists(IDorName: string): GroupOptions {
     return group;
 }
 
-export function getDevice(IDorName: string): DeviceOptions | undefined {
+export function getDevice(IDorName: string): DeviceOptionsWithId | undefined {
     const settings = get();
     const byID = settings.devices[IDorName];
 
@@ -581,7 +593,7 @@ export function getDevice(IDorName: string): DeviceOptions | undefined {
     return undefined;
 }
 
-function getDeviceThrowIfNotExists(IDorName: string): DeviceOptions {
+function getDeviceThrowIfNotExists(IDorName: string): DeviceOptionsWithId {
     const device = getDevice(IDorName);
     if (!device) {
         throw new Error(`Device '${IDorName}' does not exist`);
@@ -590,7 +602,7 @@ function getDeviceThrowIfNotExists(IDorName: string): DeviceOptions {
     return device;
 }
 
-export function addDevice(ID: string): DeviceOptions {
+export function addDevice(ID: string): DeviceOptionsWithId {
     if (getDevice(ID)) {
         throw new Error(`Device '${ID}' already exists`);
     }
