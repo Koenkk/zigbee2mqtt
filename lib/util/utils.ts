@@ -389,6 +389,10 @@ export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Bina
     return feature?.type === 'binary';
 }
 
+export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
+    return expose.type === 'light';
+}
+
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     const scenes: {[id: number]: Scene} = {};
     const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;

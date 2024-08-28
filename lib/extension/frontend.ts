@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
@@ -19,15 +20,37 @@ import Extension from './extension';
  * This extension servers the frontend
  */
 export default class Frontend extends Extension {
-    private mqttBaseTopic = settings.get().mqtt.base_topic;
-    private host = settings.get().frontend.host;
-    private port = settings.get().frontend.port;
-    private sslCert = settings.get().frontend.ssl_cert;
-    private sslKey = settings.get().frontend.ssl_key;
-    private authToken = settings.get().frontend.auth_token;
+    private mqttBaseTopic: string;
+    private host: string | undefined;
+    private port: number;
+    private sslCert: string | undefined;
+    private sslKey: string | undefined;
+    private authToken: string | undefined;
     private server: http.Server | undefined;
     private fileServer: RequestHandler | undefined;
     private wss: WebSocket.Server | undefined;
+
+    constructor(
+        zigbee: Zigbee,
+        mqtt: MQTT,
+        state: State,
+        publishEntityState: PublishEntityState,
+        eventBus: EventBus,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        restartCallback: () => Promise<void>,
+        addExtension: (extension: Extension) => Promise<void>,
+    ) {
+        super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
+
+        const frontendSettings = settings.get().frontend;
+        assert(frontendSettings, 'Frontend extension created without having frontend settings');
+        this.host = frontendSettings.host;
+        this.port = frontendSettings.port;
+        this.sslCert = frontendSettings.ssl_cert;
+        this.sslKey = frontendSettings.ssl_key;
+        this.authToken = frontendSettings.auth_token;
+        this.mqttBaseTopic = settings.get().mqtt.base_topic;
+    }
 
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {

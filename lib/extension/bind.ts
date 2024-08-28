@@ -422,7 +422,7 @@ export default class Bind extends Extension {
             /* istanbul ignore else */
             if (bind.cluster.name in REPORT_CLUSTERS) {
                 for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
-                    const entity = `${this.zigbee.resolveEntity(endpoint.getDevice()).name}/${endpoint.ID}`;
+                    const entity = `${this.zigbee.resolveEntity(endpoint.getDevice())!.name}/${endpoint.ID}`;
 
                     try {
                         await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
@@ -570,7 +570,7 @@ export default class Bind extends Extension {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
                                 logger.error(
-                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(device).name} (${(error as Error).message})`,
+                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(device)!.name} (${(error as Error).message})`,
                                 );
                             }
                         }, 1000);

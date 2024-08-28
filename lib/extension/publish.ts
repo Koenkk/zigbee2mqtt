@@ -180,7 +180,7 @@ export default class Publish extends Extension {
         const membersState =
             re instanceof Group
                 ? Object.fromEntries(
-                      re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr))]),
+                      re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr)!)]),
                   )
                 : undefined;
         let converters: zhc.Tz.Converter[];

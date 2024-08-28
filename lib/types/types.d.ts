@@ -179,7 +179,7 @@ declare global {
         frontend?: {
             auth_token?: string;
             host?: string;
-            port?: number;
+            port: number;
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
@@ -216,17 +216,17 @@ declare global {
             transmit_power?: number;
             // Everything below is deprecated
             availability_timeout?: number;
-            availability_blocklist?: string[];
-            availability_passlist?: string[];
-            availability_blacklist?: string[];
-            availability_whitelist?: string[];
+            availability_blocklist: string[];
+            availability_passlist: string[];
+            availability_blacklist: string[];
+            availability_whitelist: string[];
             soft_reset_timeout: number;
             report: boolean;
         };
     }
 
     interface DeviceOptions {
-        ID?: string;
+        ID: string;
         disabled?: boolean;
         retention?: number;
         availability?: boolean | {timeout: number};

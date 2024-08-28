@@ -74,18 +74,18 @@ export default class Zigbee {
 
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
-            this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr), reason: data.reason});
+            this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr)!, reason: data.reason});
         });
         this.herdsman.on('permitJoinChanged', (data: ZHEvents.PermitJoinChangedPayload) => {
             this.eventBus.emitPermitJoinChanged(data);
         });
         this.herdsman.on('deviceNetworkAddressChanged', (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
-            const device = this.resolveDevice(data.device.ieeeAddr);
+            const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' changed network address`);
             this.eventBus.emitDeviceNetworkAddressChanged({device});
         });
         this.herdsman.on('deviceAnnounce', (data: ZHEvents.DeviceAnnouncePayload) => {
-            const device = this.resolveDevice(data.device.ieeeAddr);
+            const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' announced itself`);
             this.eventBus.emitDeviceAnnounce({device});
         });
@@ -110,7 +110,7 @@ export default class Zigbee {
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
         });
         this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
-            const device = this.resolveDevice(data.device.ieeeAddr);
+            const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
             logger.debug(
                 `Received Zigbee message from '${device.name}', type '${data.type}', ` +
@@ -158,7 +158,7 @@ export default class Zigbee {
             logger.info(`Successfully interviewed '${name}', device has successfully been paired`);
 
             if (data.device.isSupported) {
-                const {vendor, description, model} = data.device.definition;
+                const {vendor, description, model} = data.device.definition!;
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {
                 logger.warning(
@@ -207,7 +207,7 @@ export default class Zigbee {
 
     async coordinatorCheck(): Promise<{missingRouters: Device[]}> {
         const check = await this.herdsman.coordinatorCheck();
-        return {missingRouters: check.missingRouters.map((d) => this.resolveDevice(d.ieeeAddr))};
+        return {missingRouters: check.missingRouters.map((d) => this.resolveDevice(d.ieeeAddr)!)};
     }
 
     async getNetworkParameters(): Promise<zh.NetworkParameters> {
@@ -246,7 +246,7 @@ export default class Zigbee {
         }
     }
 
-    @bind private resolveDevice(ieeeAddr: string): Device {
+    @bind private resolveDevice(ieeeAddr: string): Device | undefined {
         if (!this.deviceLookup[ieeeAddr]) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
             if (device) {
@@ -270,7 +270,7 @@ export default class Zigbee {
         return this.groupLookup[groupID];
     }
 
-    resolveEntity(key: string | number | zh.Device): Device | Group {
+    resolveEntity(key: string | number | zh.Device): Device | Group | undefined {
         if (typeof key === 'object') {
             return this.resolveDevice(key.ieeeAddr);
         } else if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
@@ -292,7 +292,7 @@ export default class Zigbee {
         }
     }
 
-    resolveEntityAndEndpoint(ID: string): {ID: string; entity: Device | Group; endpointID?: string; endpoint?: zh.Endpoint} {
+    resolveEntityAndEndpoint(ID: string): {ID: string; entity: Device | Group | undefined; endpointID?: string; endpoint?: zh.Endpoint} {
         // This function matches the following entity formats:
         // device_name          (just device name)
         // device_name/ep_name  (device name and endpoint numeric ID or name)
@@ -334,7 +334,7 @@ export default class Zigbee {
         groupPredicate?: (value: zh.Group) => boolean,
     ): Generator<Device | Group> {
         for (const device of this.herdsman.getDevicesIterator(devicePredicate)) {
-            yield this.resolveDevice(device.ieeeAddr);
+            yield this.resolveDevice(device.ieeeAddr)!;
         }
 
         for (const group of this.herdsman.getGroupsIterator(groupPredicate)) {
@@ -350,7 +350,7 @@ export default class Zigbee {
 
     *devicesIterator(predicate?: (value: zh.Device) => boolean): Generator<Device> {
         for (const device of this.herdsman.getDevicesIterator(predicate)) {
-            yield this.resolveDevice(device.ieeeAddr);
+            yield this.resolveDevice(device.ieeeAddr)!;
         }
     }
 
