@@ -5,7 +5,7 @@ import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import * as settings from '../util/settings';
-import utils, {isNumericExposeFeature, isBinaryExposeFeature, isEnumExposeFeature} from '../util/utils';
+import utils, {isNumericExposeFeature, isBinaryExposeFeature, isEnumExposeFeature, isLightExpose} from '../util/utils';
 import Extension from './extension';
 
 interface MockProperty {
@@ -277,16 +277,18 @@ export default class HomeAssistant extends Extension {
         const getProperty = (feature: zhc.Feature): string => (entityType === 'group' ? featurePropertyWithoutEndpoint(feature) : feature.property);
 
         /* istanbul ignore else */
-        if (firstExpose.type === 'light') {
-            const hasColorXY = exposes.find((expose) => expose.features.find((e) => e.name === 'color_xy'));
-            const hasColorHS = exposes.find((expose) => expose.features.find((e) => e.name === 'color_hs'));
-            const hasBrightness = exposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
-            const hasColorTemp = exposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
+        if (isLightExpose(firstExpose)) {
+            const lightExposes = exposes as zhc.Light[];
+            const hasColorXY = lightExposes.find((expose) => expose.features.find((e) => e.name === 'color_xy'));
+            const hasColorHS = lightExposes.find((expose) => expose.features.find((e) => e.name === 'color_hs'));
+            const hasBrightness = lightExposes.find((expose) => expose.features.find((e) => e.name === 'brightness'));
+            const hasColorTemp = lightExposes.find((expose) => expose.features.find((e) => e.name === 'color_temp'));
             const state = firstExpose.features.find((f) => f.name === 'state');
+            assert(state, `Light expose must have a 'state'`);
             // Prefer HS over XY when at least one of the lights in the group prefers HS over XY.
             // A light prefers HS over XY when HS is earlier in the feature array than HS.
             const preferHS =
-                exposes
+                lightExposes
                     .map((e) => [e.features.findIndex((ee) => ee.name === 'color_xy'), e.features.findIndex((ee) => ee.name === 'color_hs')])
                     .filter((d) => d[0] !== -1 && d[1] !== -1 && d[1] < d[0]).length !== 0;
 
