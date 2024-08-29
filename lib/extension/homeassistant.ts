@@ -21,7 +21,14 @@ interface DiscoveryEntry {
     discovery_payload: KeyValue;
 }
 
-const sensorClick: DiscoveryEntry = {
+interface Discovered {
+    mockProperties: Set<MockProperty>;
+    messages: {[s: string]: {payload: string; published: boolean}};
+    triggers: Set<string>;
+    discovered: boolean;
+}
+
+const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
     object_id: 'click',
     mockProperties: [{property: 'click', value: null}],
@@ -32,22 +39,15 @@ const sensorClick: DiscoveryEntry = {
     },
 };
 
-interface Discovered {
-    mockProperties: Set<MockProperty>;
-    messages: {[s: string]: {payload: string; published: boolean}};
-    triggers: Set<string>;
-    discovered: boolean;
-}
-
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
-const GROUP_SUPPORTED_TYPES = ['light', 'switch', 'lock', 'cover'];
+const GROUP_SUPPORTED_TYPES: Readonly<string[]> = ['light', 'switch', 'lock', 'cover'];
 const DEFAULT_STATUS_TOPIC = 'homeassistant/status';
-const COVER_OPENING_LOOKUP = ['opening', 'open', 'forward', 'up', 'rising'];
-const COVER_CLOSING_LOOKUP = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
-const COVER_STOPPED_LOOKUP = ['stopped', 'stop', 'pause', 'paused'];
-const SWITCH_DIFFERENT = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
-const LEGACY_MAPPING = [
+const COVER_OPENING_LOOKUP: Readonly<string[]> = ['opening', 'open', 'forward', 'up', 'rising'];
+const COVER_CLOSING_LOOKUP: Readonly<string[]> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
+const COVER_STOPPED_LOOKUP: Readonly<string[]> = ['stopped', 'stop', 'pause', 'paused'];
+const SWITCH_DIFFERENT: Readonly<string[]> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
+const LEGACY_MAPPING: Readonly<{models: string[]; discovery: DiscoveryEntry}[]> = [
     {
         models: [
             'WXKG01LM',
@@ -79,7 +79,7 @@ const LEGACY_MAPPING = [
             'QBKG12LM',
             'E1743',
         ],
-        discovery: sensorClick,
+        discovery: SENSOR_CLICK,
     },
     {
         models: ['ICTC-G-1'],
@@ -153,7 +153,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     window: {device_class: 'window'},
     window_detection: {icon: 'mdi:window-open-variant'},
     window_open: {device_class: 'window'},
-};
+} as const;
 const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     ac_frequency: {device_class: 'frequency', enabled_by_default: false, entity_category: 'diagnostic', state_class: 'measurement'},
     action_duration: {icon: 'mdi:timer', device_class: 'duration'},
@@ -306,7 +306,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     x_axis: {icon: 'mdi:axis-x-arrow'},
     y_axis: {icon: 'mdi:axis-y-arrow'},
     z_axis: {icon: 'mdi:axis-z-arrow'},
-};
+} as const;
 const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     action: {icon: 'mdi:gesture-double-tap'},
     alarm_humidity: {entity_category: 'config', icon: 'mdi:water-percent-alert'},
@@ -348,14 +348,14 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     update: {device_class: 'update'},
     volume: {entity_category: 'config', icon: 'mdi: volume-high'},
     week: {entity_category: 'config', icon: 'mdi:calendar-clock'},
-};
+} as const;
 const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     action: {icon: 'mdi:gesture-double-tap'},
     color_options: {icon: 'mdi:palette'},
     level_config: {entity_category: 'diagnostic'},
     programming_mode: {icon: 'mdi:calendar-clock'},
     schedule_settings: {icon: 'mdi:calendar-clock'},
-};
+} as const;
 
 const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     if (feature.endpoint) {
@@ -1512,7 +1512,7 @@ export default class HomeAssistant extends Extension {
         });
 
         if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
-            configs = configs.filter((c) => c !== sensorClick);
+            configs = configs.filter((c) => c !== SENSOR_CLICK);
         }
 
         if (!this.legacyTrigger) {

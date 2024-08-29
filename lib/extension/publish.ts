@@ -18,11 +18,11 @@ export const loadTopicGetSetRegex = (): void => {
 };
 loadTopicGetSetRegex();
 
-const stateValues = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
-const sceneConverterKeys = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
+const STATE_VALUES: Readonly<string[]> = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
+const SCENE_CONVERTER_KEYS: Readonly<string[]> = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
 // Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
-const defaultGroupConverters = [
+const DEFAULT_GROUP_CONVERTERS: Readonly<zhc.Tz.Converter[]> = [
     zhc.toZigbee.light_onoff_brightness,
     zhc.toZigbee.light_color_colortemp,
     philips.tz.effect, // Support Hue effects for groups
@@ -85,7 +85,7 @@ export default class Publish extends Extension {
             try {
                 return JSON.parse(data.message);
             } catch {
-                if (stateValues.includes(data.message.toLowerCase())) {
+                if (STATE_VALUES.includes(data.message.toLowerCase())) {
                     return {state: data.message};
                 } else {
                     return undefined;
@@ -183,11 +183,11 @@ export default class Publish extends Extension {
                       re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr)!)]),
                   )
                 : undefined;
-        let converters: zhc.Tz.Converter[];
+        let converters: Readonly<zhc.Tz.Converter[]>;
 
         if (Array.isArray(definition)) {
             const c = new Set(definition.map((d) => d.toZigbee).flat());
-            converters = c.size === 0 ? defaultGroupConverters : Array.from(c);
+            converters = c.size === 0 ? DEFAULT_GROUP_CONVERTERS : Array.from(c);
         } else {
             converters = definition?.toZigbee ?? [];
         }
@@ -341,10 +341,14 @@ export default class Publish extends Extension {
             }
         }
 
-        const scenesChanged = Object.values(usedConverters).some((cl) => cl.some((c) => c.key?.some((k) => sceneConverterKeys.includes(k))));
-
-        if (scenesChanged) {
-            this.eventBus.emitScenesChanged({entity: re});
+        outerLoop: for (const converters of Object.values(usedConverters)) {
+            for (const converter of converters) {
+                const scenesChanged = converter.key?.some((k) => SCENE_CONVERTER_KEYS.includes(k));
+                if (scenesChanged) {
+                    this.eventBus.emitScenesChanged({entity: re});
+                    break outerLoop;
+                }
+            }
         }
     }
 }
