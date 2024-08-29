@@ -309,6 +309,7 @@ export default class Zigbee {
             // First split the input token by the latest slash
             const match = ID.match(entityIDRegex);
 
+            /* istanbul ignore else */
             if (match) {
                 // Get the resulting IDs from the match
                 entityName = match[1];

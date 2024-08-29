@@ -16,12 +16,12 @@ export default class Device {
     get ID(): string {
         return this.zh.ieeeAddr;
     }
-    get options(): DeviceOptions {
-        const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {friendly_name: this.ieeeAddr};
+    get options(): DeviceOptionsWithId {
+        const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {friendly_name: this.ieeeAddr, ID: this.ieeeAddr};
         return {...settings.get().device_options, ...deviceOptions};
     }
     get name(): string {
-        return this.zh.type === 'Coordinator' ? 'Coordinator' : this.options?.friendly_name || this.ieeeAddr;
+        return this.zh.type === 'Coordinator' ? 'Coordinator' : this.options?.friendly_name;
     }
     get isSupported(): boolean {
         return this.zh.type === 'Coordinator' || Boolean(this.definition && !this.definition.generated);

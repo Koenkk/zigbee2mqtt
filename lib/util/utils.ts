@@ -378,24 +378,32 @@ function filterProperties(filter: string[] | undefined, data: KeyValue): void {
     }
 }
 
-export function isNumericExposeFeature(feature: zhc.Feature): feature is zhc.Numeric {
-    return feature?.type === 'numeric';
+export function isNumericExpose(expose: zhc.Expose): expose is zhc.Numeric {
+    return expose?.type === 'numeric';
 }
 
-export function isEnumExposeFeature(feature: zhc.Feature): feature is zhc.Enum {
-    return feature?.type === 'enum';
+export function assertEnumExpose(expose: zhc.Expose): asserts expose is zhc.Enum {
+    assert(expose?.type === 'enum');
 }
 
-export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Binary {
-    return feature?.type === 'binary';
+export function assertNumericExpose(expose: zhc.Expose): asserts expose is zhc.Numeric {
+    assert(expose?.type === 'numeric');
+}
+
+export function assertBinaryExpose(expose: zhc.Expose): asserts expose is zhc.Binary {
+    assert(expose?.type === 'binary');
+}
+
+export function isEnumExpose(expose: zhc.Expose): expose is zhc.Enum {
+    return expose?.type === 'enum';
+}
+
+export function isBinaryExpose(expose: zhc.Expose): expose is zhc.Binary {
+    return expose?.type === 'binary';
 }
 
 export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
     return expose.type === 'light';
-}
-
-export function assertLightExpose(expose: zhc.Expose): asserts expose is zhc.Light {
-    assert(expose.type === 'light');
 }
 
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {

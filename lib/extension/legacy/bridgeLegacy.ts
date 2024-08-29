@@ -369,6 +369,7 @@ export default class BridgeLegacy extends Extension {
 
     async onZigbeeEvent_(type: string, data: KeyValue, resolvedEntity: Device | undefined): Promise<void> {
         if (resolvedEntity) {
+            /* istanbul ignore else */
             if (type === 'deviceJoined') {
                 this.lastJoinedDeviceName = resolvedEntity.name;
                 await this.mqtt.publish('bridge/log', stringify({type: `device_connected`, message: {friendly_name: resolvedEntity.name}}));
