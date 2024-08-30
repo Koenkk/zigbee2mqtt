@@ -25,6 +25,7 @@ export default class ExternalConverters extends Extension {
                     delete toAdd['homeassistant'];
                     zhc.addDefinition(toAdd);
                 }
+                logger.info(`Loaded external converter '${file}'`);
             } catch (error) {
                 logger.error(`Failed to load external converter file '${file}' (${error.message})`);
                 logger.error(
