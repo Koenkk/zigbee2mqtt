@@ -224,6 +224,7 @@ export default class Publish extends Extension {
 
         const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
+        let scenesChanged = false;
 
         for (const entry of entries) {
             let key = entry[0];
@@ -333,6 +334,10 @@ export default class Publish extends Extension {
             }
 
             usedConverters[endpointOrGroupID].push(converter);
+
+            if (!scenesChanged && converter.key) {
+                scenesChanged = converter.key.some((k) => SCENE_CONVERTER_KEYS.includes(k));
+            }
         }
 
         for (const [ID, payload] of Object.entries(toPublish)) {
@@ -341,14 +346,8 @@ export default class Publish extends Extension {
             }
         }
 
-        outerLoop: for (const converters of Object.values(usedConverters)) {
-            for (const converter of converters) {
-                const scenesChanged = converter.key?.some((k) => SCENE_CONVERTER_KEYS.includes(k));
-                if (scenesChanged) {
-                    this.eventBus.emitScenesChanged({entity: re});
-                    break outerLoop;
-                }
-            }
+        if (scenesChanged) {
+            this.eventBus.emitScenesChanged({entity: re});
         }
     }
 }
