@@ -299,7 +299,8 @@ export function validate(): string[] {
     }
 
     if (!ajvSetting(_settings)) {
-        return ajvSetting.errors ? ajvSetting.errors.map((v) => `${v.instancePath.substring(1)} ${v.message}`) : ['Unknown validation error'];
+        // When `ajvSetting()` return false it always has `errors`.
+        return ajvSetting.errors!.map((v) => `${v.instancePath.substring(1)} ${v.message}`);
     }
 
     const errors = [];

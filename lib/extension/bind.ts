@@ -429,7 +429,7 @@ export default class Bind extends Extension {
 
                         const items = [];
 
-                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName] ?? []) {
+                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]!) {
                             /* istanbul ignore else */
                             if (!c.condition || (await c.condition(endpoint))) {
                                 const i = {...c};
@@ -489,7 +489,7 @@ export default class Bind extends Extension {
 
                     const items = [];
 
-                    for (const item of REPORT_CLUSTERS[cluster as ClusterName] ?? []) {
+                    for (const item of REPORT_CLUSTERS[cluster as ClusterName]!) {
                         /* istanbul ignore else */
                         if (!item.condition || (await item.condition(endpoint))) {
                             const i = {...item};

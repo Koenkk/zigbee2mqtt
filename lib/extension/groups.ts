@@ -162,6 +162,7 @@ export default class Groups extends Extension {
             if (entity instanceof Device) {
                 const endpoint = entity.endpoint(endpointName);
 
+                /* istanbul ignore else */
                 if (endpoint) {
                     for (const group of groups) {
                         if (

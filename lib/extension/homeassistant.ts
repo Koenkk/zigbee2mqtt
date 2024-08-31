@@ -1220,6 +1220,7 @@ export default class HomeAssistant extends Extension {
                 }
                 break;
             }
+            /* istanbul ignore next */
             default:
                 throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
         }
@@ -1825,6 +1826,7 @@ export default class HomeAssistant extends Extension {
             // Device was flagged to be excluded from homeassistant discovery
             clear = clear || Boolean(entity && entity.options.homeassistant !== undefined && !entity.options.homeassistant);
 
+            /* istanbul ignore else */
             if (clear) {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
                 await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);

@@ -158,7 +158,16 @@ export default class Publish extends Extension {
         }
 
         // Get entity details
-        const definition = re instanceof Device ? re.definition : re.membersDefinitions();
+        let definition: zhc.Definition | zhc.Definition[];
+        if (re instanceof Device) {
+            if (!re.definition) {
+                logger.error(`Cannot publish to unsupported device '${re.name}'`);
+                return;
+            }
+            definition = re.definition;
+        } else {
+            definition = re.membersDefinitions();
+        }
         const target = re instanceof Group ? re.zh : re.endpoint(parsedTopic.endpoint);
 
         if (!target) {
@@ -189,7 +198,7 @@ export default class Publish extends Extension {
             const c = new Set(definition.map((d) => d.toZigbee).flat());
             converters = c.size === 0 ? DEFAULT_GROUP_CONVERTERS : Array.from(c);
         } else {
-            converters = definition?.toZigbee ?? [];
+            converters = definition?.toZigbee;
         }
 
         this.updateMessageHomeAssistant(message, entityState);
@@ -275,8 +284,7 @@ export default class Publish extends Extension {
                 device,
                 state: entityState,
                 membersState,
-                // In case a converter is found, the device always has a definition
-                mapped: definition!,
+                mapped: definition,
             };
 
             // Strip endpoint name from meta.message properties.
