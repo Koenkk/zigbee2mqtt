@@ -41,13 +41,13 @@ const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
 
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
-const GROUP_SUPPORTED_TYPES: Readonly<string[]> = ['light', 'switch', 'lock', 'cover'];
+const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ['light', 'switch', 'lock', 'cover'];
 const DEFAULT_STATUS_TOPIC = 'homeassistant/status';
-const COVER_OPENING_LOOKUP: Readonly<string[]> = ['opening', 'open', 'forward', 'up', 'rising'];
-const COVER_CLOSING_LOOKUP: Readonly<string[]> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
-const COVER_STOPPED_LOOKUP: Readonly<string[]> = ['stopped', 'stop', 'pause', 'paused'];
-const SWITCH_DIFFERENT: Readonly<string[]> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
-const LEGACY_MAPPING: Readonly<{models: string[]; discovery: DiscoveryEntry}[]> = [
+const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ['opening', 'open', 'forward', 'up', 'rising'];
+const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
+const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ['stopped', 'stop', 'pause', 'paused'];
+const SWITCH_DIFFERENT: ReadonlyArray<string> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
+const LEGACY_MAPPING: ReadonlyArray<{models: string[]; discovery: DiscoveryEntry}> = [
     {
         models: [
             'WXKG01LM',

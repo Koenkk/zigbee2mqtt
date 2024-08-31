@@ -18,11 +18,11 @@ export const loadTopicGetSetRegex = (): void => {
 };
 loadTopicGetSetRegex();
 
-const STATE_VALUES: Readonly<string[]> = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
-const SCENE_CONVERTER_KEYS: Readonly<string[]> = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
+const STATE_VALUES: ReadonlyArray<string> = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
+const SCENE_CONVERTER_KEYS: ReadonlyArray<string> = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
 
 // Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
-const DEFAULT_GROUP_CONVERTERS: Readonly<zhc.Tz.Converter[]> = [
+const DEFAULT_GROUP_CONVERTERS: ReadonlyArray<zhc.Tz.Converter> = [
     zhc.toZigbee.light_onoff_brightness,
     zhc.toZigbee.light_color_colortemp,
     philips.tz.effect, // Support Hue effects for groups
@@ -183,7 +183,7 @@ export default class Publish extends Extension {
                       re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr)!)]),
                   )
                 : undefined;
-        let converters: Readonly<zhc.Tz.Converter[]>;
+        let converters: ReadonlyArray<zhc.Tz.Converter>;
 
         if (Array.isArray(definition)) {
             const c = new Set(definition.map((d) => d.toZigbee).flat());
