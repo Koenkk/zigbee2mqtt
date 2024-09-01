@@ -372,15 +372,15 @@ function filterProperties(filter: string[], data: KeyValue): void {
     }
 }
 
-export function isNumericExposeFeature(feature: zhc.Feature): feature is zhc.Numeric {
+export function isNumericExposeFeature(feature: zhc.Expose): feature is zhc.Numeric {
     return feature?.type === 'numeric';
 }
 
-export function isEnumExposeFeature(feature: zhc.Feature): feature is zhc.Enum {
+export function isEnumExposeFeature(feature: zhc.Expose): feature is zhc.Enum {
     return feature?.type === 'enum';
 }
 
-export function isBinaryExposeFeature(feature: zhc.Feature): feature is zhc.Binary {
+export function isBinaryExposeFeature(feature: zhc.Expose): feature is zhc.Binary {
     return feature?.type === 'binary';
 }
 
