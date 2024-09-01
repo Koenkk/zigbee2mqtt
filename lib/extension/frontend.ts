@@ -166,7 +166,7 @@ export default class Frontend extends Extension {
             const lastSeen = settings.get().advanced.last_seen;
             /* istanbul ignore if */
             if (lastSeen !== 'disable') {
-                payload.last_seen = utils.formatDate(device.zh.lastSeen, lastSeen);
+                payload.last_seen = utils.formatDate(device.zh.lastSeen ?? 0, lastSeen);
             }
 
             if (device.zh.linkquality !== undefined) {
