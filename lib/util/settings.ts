@@ -145,63 +145,66 @@ function loadSettingsWithDefaults(): void {
                 'homeassistant_legacy_entity_attributes',
                 'homeassistant_status_topic',
             ]) {
-                // @ts-expect-error
+                // @ts-expect-error ignore typing
                 if (_settingsWithDefaults.advanced[key] !== undefined) {
-                    // @ts-expect-error
+                    // @ts-expect-error ignore typing
                     sLegacy[key.replace('homeassistant_', '')] = _settingsWithDefaults.advanced[key];
                 }
             }
         }
 
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.homeassistant = {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
 
     if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
         const defaults = {};
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.availability = {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
 
     if (_settingsWithDefaults.frontend) {
         const defaults = {port: 8080, auth_token: false};
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.frontend = {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 
-    if (_settings.advanced?.hasOwnProperty('baudrate') && _settings.serial?.baudrate == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.baudrate !== undefined && _settings.serial?.baudrate == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;
     }
 
-    if (_settings.advanced?.hasOwnProperty('rtscts') && _settings.serial?.rtscts == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.rtscts !== undefined && _settings.serial?.rtscts == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
     }
 
-    if (_settings.advanced?.hasOwnProperty('ikea_ota_use_test_url') && _settings.ota?.ikea_ota_use_test_url == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.ikea_ota_use_test_url !== undefined && _settings.ota?.ikea_ota_use_test_url == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
     }
 
-    // @ts-expect-error
-    if (_settings.experimental?.hasOwnProperty('transmit_power') && _settings.advanced?.transmit_power == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.experimental?.transmit_power !== undefined && _settings.advanced?.transmit_power == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.advanced.transmit_power = _settings.experimental.transmit_power;
     }
 
-    // @ts-expect-error
-    if (_settings.experimental?.hasOwnProperty('output') && _settings.advanced?.output == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.experimental?.output !== undefined && _settings.advanced?.output == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.advanced.output = _settings.experimental.output;
     }
 
@@ -209,15 +212,15 @@ function loadSettingsWithDefaults(): void {
         _settingsWithDefaults.advanced.log_level = 'warning';
     }
 
-    // @ts-expect-error
+    // @ts-expect-error ignore typing
     if (_settingsWithDefaults.ban) {
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
     }
 
-    // @ts-expect-error
+    // @ts-expect-error ignore typing
     if (_settingsWithDefaults.whitelist) {
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
     }
 }
@@ -440,30 +443,30 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 
                     if (envVariable) {
                         const setting = path.reduce((acc, val) => {
-                            // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             acc[val] = acc[val] || {};
-                            // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             return acc[val];
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             try {
-                                // @ts-expect-error
+                                // @ts-expect-error ignore typing
                                 setting[key] = JSON.parse(envVariable);
                             } catch {
-                                // @ts-expect-error
+                                // @ts-expect-error ignore typing
                                 setting[key] = envVariable;
                             }
                         } else if (type.indexOf('number') >= 0) {
-                            // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             setting[key] = (envVariable as unknown as number) * 1;
                         } else if (type.indexOf('boolean') >= 0) {
-                            // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             setting[key] = envVariable.toLowerCase() === 'true';
                         } else {
                             /* istanbul ignore else */
                             if (type.indexOf('string') >= 0) {
-                                // @ts-expect-error
+                                // @ts-expect-error ignore typing
                                 setting[key] = envVariable;
                             }
                         }
@@ -524,7 +527,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 
 export function apply(settings: Record<string, unknown>): boolean {
     getInternalSettings(); // Ensure _settings is initialized.
-    // @ts-expect-error
+    // @ts-expect-error ignore typing
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);
@@ -679,14 +682,14 @@ export function addGroup(name: string, ID?: string): GroupOptions {
         // look for free ID
         ID = '1';
 
-        while (settings.groups.hasOwnProperty(ID)) {
+        while (settings.groups[ID]) {
             ID = (Number.parseInt(ID) + 1).toString();
         }
     } else {
         // ensure provided ID is not in use
         ID = ID.toString();
 
-        if (settings.groups.hasOwnProperty(ID)) {
+        if (settings.groups[ID]) {
             throw new Error(`Group ID '${ID}' is already in use`);
         }
     }

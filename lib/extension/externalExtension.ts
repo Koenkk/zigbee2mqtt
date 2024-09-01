@@ -94,7 +94,7 @@ export default class ExternalExtension extends Extension {
 
     @bind private async loadExtension(ConstructorClass: typeof Extension): Promise<void> {
         await this.enableDisableExtension(false, ConstructorClass.name);
-        // @ts-ignore
+        // @ts-expect-error `ConstructorClass` is the interface, not the actual passed class
         await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
 

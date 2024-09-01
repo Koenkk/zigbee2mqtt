@@ -20,7 +20,7 @@ export default class Configure extends Extension {
 
     @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
-        if (data.device.zh.meta?.hasOwnProperty('configured')) {
+        if (data.device.zh.meta?.configured !== undefined) {
             delete data.device.zh.meta.configured;
             data.device.zh.save();
         }
@@ -44,7 +44,7 @@ export default class Configure extends Extension {
             await this.configure(device, 'mqtt_message', true);
         } else if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
-            const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message;
+            const ID = typeof message === 'object' && message.id !== undefined ? message.id : message;
             let error: string | undefined;
 
             const device = this.zigbee.resolveEntity(ID);
@@ -77,7 +77,7 @@ export default class Configure extends Extension {
         });
 
         this.eventBus.onDeviceJoined(this, async (data) => {
-            if (data.device.zh.meta.hasOwnProperty('configured')) {
+            if (data.device.zh.meta.configured !== undefined) {
                 delete data.device.zh.meta.configured;
                 data.device.zh.save();
             }
@@ -105,7 +105,7 @@ export default class Configure extends Extension {
                 return;
             }
 
-            if (device.zh.meta?.hasOwnProperty('configured')) {
+            if (device.zh.meta?.configured !== undefined) {
                 return;
             }
 
@@ -121,7 +121,7 @@ export default class Configure extends Extension {
 
         this.configuring.add(device.ieeeAddr);
 
-        if (!this.attempts.hasOwnProperty(device.ieeeAddr)) {
+        if (this.attempts[device.ieeeAddr] === undefined) {
             this.attempts[device.ieeeAddr] = 0;
         }
 

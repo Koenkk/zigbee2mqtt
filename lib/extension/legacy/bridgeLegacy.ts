@@ -68,7 +68,7 @@ export default class BridgeLegacy extends Extension {
             return;
         }
 
-        if (!json.hasOwnProperty('friendly_name') || !json.hasOwnProperty('options')) {
+        if (json.friendly_name === undefined || json.options === undefined) {
             logger.error('Invalid JSON message, should contain "friendly_name" and "options"');
             return;
         }
@@ -228,11 +228,11 @@ export default class BridgeLegacy extends Extension {
         try {
             // json payload with id and friendly_name
             const json = JSON.parse(message);
-            if (json.hasOwnProperty('id')) {
+            if (json.id !== undefined) {
                 id = json.id;
                 name = `group_${id}`;
             }
-            if (json.hasOwnProperty('friendly_name')) {
+            if (json.friendly_name !== undefined) {
                 name = json.friendly_name;
             }
         } catch {
@@ -343,7 +343,7 @@ export default class BridgeLegacy extends Extension {
 
         const option = match[1];
 
-        if (!this.supportedOptions.hasOwnProperty(option)) {
+        if (this.supportedOptions[option] === undefined) {
             return;
         }
 

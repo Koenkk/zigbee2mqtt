@@ -118,7 +118,7 @@ class Logger {
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options.hasOwnProperty('type')) {
+            if (options['type'] !== undefined) {
                 options.type = options.type.toString();
             }
 

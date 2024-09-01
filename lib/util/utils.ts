@@ -102,7 +102,7 @@ function objectIsEmpty(object: object): boolean {
 
 function objectHasProperties(object: {[s: string]: unknown}, properties: string[]): boolean {
     for (const property of properties) {
-        if (!object.hasOwnProperty(property)) {
+        if (object[property] === undefined) {
             return false;
         }
     }
@@ -121,7 +121,7 @@ function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
 }
 
 function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown): unknown {
-    return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
+    return object && object[key] !== undefined ? object[key] : defaultValue;
 }
 
 function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
@@ -131,7 +131,7 @@ function getResponse(request: KeyValue | string, data: KeyValue, error?: string)
         response.error = error;
     }
 
-    if (typeof request === 'object' && request.hasOwnProperty('transaction')) {
+    if (typeof request === 'object' && request['transaction'] !== undefined) {
         response.transaction = request.transaction;
     }
 

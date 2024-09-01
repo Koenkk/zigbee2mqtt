@@ -119,7 +119,7 @@ export default class Frontend extends Extension {
     }
 
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
-        // @ts-ignore
+        // @ts-expect-error typing is wrong
         this.fileServer(request, response, finalhandler(request, response));
     }
 

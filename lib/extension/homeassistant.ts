@@ -1527,7 +1527,7 @@ export default class HomeAssistant extends Extension {
             });
         });
 
-        if (isDevice && entity.options.hasOwnProperty('legacy') && !entity.options.legacy) {
+        if (isDevice && entity.options.legacy !== undefined && !entity.options.legacy) {
             configs = configs.filter((c) => c !== SENSOR_CLICK);
         }
 
@@ -1540,7 +1540,7 @@ export default class HomeAssistant extends Extension {
 
         if (entity.options.homeassistant) {
             const s = entity.options.homeassistant;
-            configs = configs.filter((config) => !s.hasOwnProperty(config.object_id) || s[config.object_id] != null);
+            configs = configs.filter((config) => s[config.object_id] === undefined || s[config.object_id] != null);
             configs.forEach((config) => {
                 const configOverride = s[config.object_id];
                 if (configOverride) {
@@ -1562,7 +1562,7 @@ export default class HomeAssistant extends Extension {
             return;
         } else if (
             isDevice &&
-            (!entity.definition || entity.zh.interviewing || (entity.options.hasOwnProperty('homeassistant') && !entity.options.homeassistant))
+            (!entity.definition || entity.zh.interviewing || (entity.options.homeassistant !== undefined && !entity.options.homeassistant))
         ) {
             return;
         }
@@ -1581,11 +1581,11 @@ export default class HomeAssistant extends Extension {
                 delete payload.state_topic_postfix;
             }
 
-            if (!payload.hasOwnProperty('state_topic') || payload.state_topic) {
+            if (payload.state_topic === undefined || payload.state_topic) {
                 payload.state_topic = stateTopic;
             } else {
                 /* istanbul ignore else */
-                if (payload.hasOwnProperty('state_topic')) {
+                if (payload.state_topic !== undefined) {
                     delete payload.state_topic;
                 }
             }
@@ -1625,7 +1625,7 @@ export default class HomeAssistant extends Extension {
             payload.origin = this.discoveryOrigin;
 
             // Availability payload (can be disabled by setting `payload.availability = false`).
-            if (!payload.hasOwnProperty('availability') || payload.availability) {
+            if (payload.availability === undefined || payload.availability) {
                 payload.availability = [{topic: `${settings.get().mqtt.base_topic}/bridge/state`}];
 
                 if (isDevice || isGroup) {
@@ -1940,17 +1940,17 @@ export default class HomeAssistant extends Extension {
 
     override adjustMessageBeforePublish(entity: Device | Group | Bridge, message: KeyValue): void {
         this.getDiscovered(entity).mockProperties.forEach((mockProperty) => {
-            if (!message.hasOwnProperty(mockProperty.property)) {
+            if (message[mockProperty.property] === undefined) {
                 message[mockProperty.property] = mockProperty.value;
             }
         });
 
         // Copy hue -> h, saturation -> s to make homeassistant happy
-        if (message.hasOwnProperty('color')) {
-            if (message.color.hasOwnProperty('hue')) {
+        if (message.color !== undefined) {
+            if (message.color.hue !== undefined) {
                 message.color.h = message.color.hue;
             }
-            if (message.color.hasOwnProperty('saturation')) {
+            if (message.color.saturation !== undefined) {
                 message.color.s = message.color.saturation;
             }
         }
@@ -1976,8 +1976,8 @@ export default class HomeAssistant extends Extension {
     private async publishDeviceTriggerDiscover(device: Device, key: string, value: string, force = false): Promise<void> {
         const haConfig = device.options.homeassistant;
         if (
-            device.options.hasOwnProperty('homeassistant') &&
-            (haConfig == null || (haConfig.hasOwnProperty('device_automation') && typeof haConfig === 'object' && haConfig.device_automation == null))
+            device.options.homeassistant !== undefined &&
+            (haConfig == null || (haConfig.device_automation !== undefined && typeof haConfig === 'object' && haConfig.device_automation == null))
         ) {
             return;
         }

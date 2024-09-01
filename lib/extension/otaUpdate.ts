@@ -95,9 +95,10 @@ export default class OTAUpdate extends Extension {
             // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
             // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
             const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-            const check = this.lastChecked.hasOwnProperty(data.device.ieeeAddr)
-                ? Date.now() - this.lastChecked[data.device.ieeeAddr] > updateCheckInterval
-                : true;
+            const check =
+                this.lastChecked[data.device.ieeeAddr] !== undefined
+                    ? Date.now() - this.lastChecked[data.device.ieeeAddr] > updateCheckInterval
+                    : true;
             if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
@@ -187,7 +188,7 @@ export default class OTAUpdate extends Extension {
         }
 
         const message = utils.parseJSON(data.message, data.message);
-        const ID = (typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message) as string;
+        const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
         const responseData: {id: string; updateAvailable?: boolean; from?: string; to?: string} = {id: ID};
