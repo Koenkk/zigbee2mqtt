@@ -1,7 +1,8 @@
 import type {QoS} from 'mqtt-packet';
 
-import bind from 'bind-decorator';
 import fs from 'fs';
+
+import bind from 'bind-decorator';
 import * as mqtt from 'mqtt';
 
 import logger from './util/logger';

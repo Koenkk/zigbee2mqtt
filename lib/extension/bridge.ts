@@ -1,14 +1,15 @@
-/* eslint-disable camelcase */
-import bind from 'bind-decorator';
 import fs from 'fs';
+
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import JSZip from 'jszip';
 import objectAssignDeep from 'object-assign-deep';
 import winston from 'winston';
 import Transport from 'winston-transport';
-import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
-import {CustomClusters, ClusterDefinition, ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import * as zhc from 'zigbee-herdsman-converters';
+import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
+import {ClusterDefinition, ClusterName, CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import Device from '../model/device';
 import Group from '../model/group';

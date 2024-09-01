@@ -1,5 +1,6 @@
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import Device from '../model/device';

@@ -1,11 +1,12 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
 import assert from 'assert';
-import equals from 'fast-deep-equal/es6';
 import fs from 'fs';
-import humanizeDuration from 'humanize-duration';
 import path from 'path';
 import vm from 'vm';
+
+import equals from 'fast-deep-equal/es6';
+import humanizeDuration from 'humanize-duration';
 
 import data from './data';
 

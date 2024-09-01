@@ -1,11 +1,13 @@
+import path from 'path';
+
 import Ajv, {ValidateFunction} from 'ajv';
 import objectAssignDeep from 'object-assign-deep';
-import path from 'path';
 
 import data from './data';
 import schemaJson from './settings.schema.json';
 import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
+
 export let schema: KeyValue = schemaJson;
 
 schema = {};
@@ -410,7 +412,6 @@ function read(): Settings {
     // Read devices/groups configuration from separate file if specified.
     const readDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof s[type] === 'string' || (Array.isArray(s[type]) && Array(s[type]).length > 0)) {
-            /* eslint-disable-line */
             const files: string[] = Array.isArray(s[type]) ? s[type] : [s[type]];
             s[type] = {};
             for (const file of files) {

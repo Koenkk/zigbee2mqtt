@@ -1,11 +1,13 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import * as settings from '../util/settings';
-import utils, {isNumericExpose, isBinaryExpose, isEnumExpose, assertBinaryExpose, assertNumericExpose, assertEnumExpose} from '../util/utils';
+import utils, {assertBinaryExpose, assertEnumExpose, assertNumericExpose, isBinaryExpose, isEnumExpose, isNumericExpose} from '../util/utils';
 import Extension from './extension';
 
 interface MockProperty {
@@ -13,7 +15,6 @@ interface MockProperty {
     value: KeyValue | string | null;
 }
 
-// eslint-disable-next-line camelcase
 interface DiscoveryEntry {
     mockProperties: MockProperty[];
     type: string;
@@ -379,7 +380,6 @@ class Bridge {
         homeassistant?: KeyValue;
     };
 
-    /* eslint-disable brace-style */
     get ID(): string {
         return this.coordinatorIeeeAddress;
     }
@@ -417,7 +417,6 @@ class Bridge {
     isGroup(): this is Group {
         return false;
     }
-    /* eslint-enable brace-style */
 }
 
 /**

@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+
 import logger from '../../util/logger';
 // DEPRECATED
 import * as settings from '../../util/settings';

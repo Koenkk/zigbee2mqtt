@@ -1,6 +1,8 @@
-import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
+
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import {Controller} from 'zigbee-herdsman';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 

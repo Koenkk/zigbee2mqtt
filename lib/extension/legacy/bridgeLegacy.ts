@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
@@ -321,7 +322,7 @@ export default class BridgeLegacy extends Extension {
             await cleanup();
         } catch (error) {
             logger.error(`Failed to ${lookup[action][2]} ${entity.name} (${error})`);
-            // eslint-disable-next-line
+
             logger.error(`See https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html#zigbee2mqtt-bridge-request for more info`);
 
             await this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));

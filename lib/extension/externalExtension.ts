@@ -1,7 +1,8 @@
-import bind from 'bind-decorator';
 import fs from 'fs';
-import stringify from 'json-stable-stringify-without-jsonify';
 import path from 'path';
+
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
 
 import * as settings from '../util/settings';
 import utils from '../util/utils';

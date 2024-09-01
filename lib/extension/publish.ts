@@ -1,6 +1,8 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 import * as philips from 'zigbee-herdsman-converters/lib/philips';
 

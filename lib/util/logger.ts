@@ -1,8 +1,9 @@
 import assert from 'assert';
 import fs from 'fs';
+import path from 'path';
+
 import fx from 'mkdir-recursive';
 import moment from 'moment';
-import path from 'path';
 import {rimrafSync} from 'rimraf';
 import winston from 'winston';
 

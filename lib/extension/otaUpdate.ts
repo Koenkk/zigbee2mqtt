@@ -1,8 +1,10 @@
 import assert from 'assert';
+import path from 'path';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
-import path from 'path';
 import * as URI from 'uri-js';
+
 import {Zcl} from 'zigbee-herdsman';
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -27,7 +29,7 @@ function isValidUrl(url: string): boolean {
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
     update_available?: boolean;
-    // eslint-disable-next-line camelcase
+
     update: {
         progress?: number;
         remaining?: number;

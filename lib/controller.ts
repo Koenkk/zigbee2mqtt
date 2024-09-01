@@ -1,6 +1,8 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import {setLogger as zhSetLogger} from 'zigbee-herdsman';
 import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
 

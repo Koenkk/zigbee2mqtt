@@ -1,14 +1,16 @@
 import assert from 'assert';
-import bind from 'bind-decorator';
-import gzipStatic, {RequestHandler} from 'connect-gzip-static';
-import finalhandler from 'finalhandler';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import stringify from 'json-stable-stringify-without-jsonify';
 import net from 'net';
 import url from 'url';
+
+import bind from 'bind-decorator';
+import gzipStatic, {RequestHandler} from 'connect-gzip-static';
+import finalhandler from 'finalhandler';
+import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';
+
 import frontend from 'zigbee2mqtt-frontend';
 
 import logger from '../util/logger';

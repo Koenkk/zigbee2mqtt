@@ -1,7 +1,9 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import equals from 'fast-deep-equal/es6';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import Device from '../model/device';
