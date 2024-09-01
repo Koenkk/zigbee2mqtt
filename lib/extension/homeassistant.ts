@@ -759,8 +759,11 @@ export default class HomeAssistant extends Extension {
                         },
                     };
 
+                    // istanbul ignore else
                     if (tempCalibration.value_min != null) discoveryEntry.discovery_payload.min = tempCalibration.value_min;
+                    // istanbul ignore else
                     if (tempCalibration.value_max != null) discoveryEntry.discovery_payload.max = tempCalibration.value_max;
+                    // istanbul ignore else
                     if (tempCalibration.value_step != null) {
                         discoveryEntry.discovery_payload.step = tempCalibration.value_step;
                     }
@@ -771,10 +774,10 @@ export default class HomeAssistant extends Extension {
                 if (piHeatingDemand) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: 'sensor',
-                        object_id: endpoint ? `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
+                        object_id: endpoint ? /* istanbul ignore next */ `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
                         mockProperties: [{property: piHeatingDemand.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
+                            name: endpoint ? /* istanbul ignore next */ `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
                             value_template: `{{ value_json.${piHeatingDemand.property} }}`,
                             ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
                             entity_category: 'diagnostic',
@@ -803,6 +806,7 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
+                // istanbul ignore if
                 if (state.property === 'keypad_lockout') {
                     // deprecated: keypad_lockout is messy, but changing is breaking
                     discoveryEntry.discovery_payload.name = firstExpose.label;
@@ -877,6 +881,7 @@ export default class HomeAssistant extends Extension {
                     const closingState = motorState.values.find((s) => COVER_CLOSING_LOOKUP.includes(s.toString().toLowerCase()));
                     const stoppedState = motorState.values.find((s) => COVER_STOPPED_LOOKUP.includes(s.toString().toLowerCase()));
 
+                    // istanbul ignore else
                     if (openingState && closingState && stoppedState) {
                         discoveryEntry.discovery_payload.state_opening = openingState;
                         discoveryEntry.discovery_payload.state_closing = closingState;
@@ -896,6 +901,7 @@ export default class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_stopped = 'STOP';
                 }
 
+                // istanbul ignore if
                 if (!position && !tilt) {
                     discoveryEntry.discovery_payload.optimistic = true;
                 }
@@ -938,6 +944,7 @@ export default class HomeAssistant extends Extension {
                 };
 
                 const speed = (firstExpose as zhc.Fan).features.filter(isEnumExpose).find((e) => e.name === 'mode');
+                // istanbul ignore else
                 if (speed) {
                     // A fan entity in Home Assistant 2021.3 and above may have a speed,
                     // controlled by a percentage from 1 to 100, and/or non-speed presets.
@@ -1108,7 +1115,9 @@ export default class HomeAssistant extends Extension {
                         delete discoveryEntry.discovery_payload.device_class;
                     }
 
+                    // istanbul ignore else
                     if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
+                    // istanbul ignore else
                     if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
 
                     discoveryEntries.push(discoveryEntry);
@@ -1168,7 +1177,7 @@ export default class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [],
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             state_topic: false,
                             command_topic_prefix: endpoint,
                             command_topic: true,

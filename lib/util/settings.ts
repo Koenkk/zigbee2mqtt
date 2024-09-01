@@ -284,6 +284,7 @@ function write(): void {
 
     yaml.writeIfChanged(file, toWrite);
 
+    _settings = read();
     loadSettingsWithDefaults();
 }
 
