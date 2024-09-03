@@ -22,7 +22,7 @@ jobs:
                   node-version: 20
                   cache: npm
             - run: npm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
-            - uses: peter-evans/create-pull-request@v6
+            - uses: peter-evans/create-pull-request@v7
               id: cpr
               with:
                   commit-message: 'fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}'
