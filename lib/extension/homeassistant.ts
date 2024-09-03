@@ -1287,8 +1287,15 @@ export default class HomeAssistant extends Extension {
          */
         const entity = this.zigbee.resolveEntity(data.entity.name)!;
         if (entity.isDevice()) {
-            for (const topic of Object.keys(this.getDiscovered(entity).messages)) {
-                const objectID = topic.match(this.discoveryRegexWoTopic)![3];
+            for (const topic in this.getDiscovered(entity).messages) {
+                const topicMatch = topic.match(this.discoveryRegexWoTopic);
+
+                // istanbul ignore if
+                if (!topicMatch) {
+                    continue;
+                }
+
+                const objectID = topicMatch[3];
                 const lightMatch = /^light_(.*)/.exec(objectID);
                 const coverMatch = /^cover_(.*)/.exec(objectID);
 
