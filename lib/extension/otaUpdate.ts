@@ -104,6 +104,7 @@ export default class OTAUpdate extends Extension {
             } catch (e) {
                 supportsOTA = false;
                 logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`);
+                logger.debug(e.stack);
             }
 
             const payload = this.getEntityPublishPayload(data.device, availableResult ?? 'idle');

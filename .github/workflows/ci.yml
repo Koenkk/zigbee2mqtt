@@ -98,7 +98,7 @@ jobs:
                     -H "Content-Type: application/json" \
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches \
                     --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
-            - name: 'release: Trigger zigbee2mqtt-chart release'
+            - name: 'release: Trigger zigbee2mqtt-chart image update'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
                   TAG=${GITHUB_REF#refs/*/}
@@ -108,8 +108,8 @@ jobs:
                     -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
                     -H "Accept: application/vnd.github.everest-preview+json" \
                     -H "Content-Type: application/json" \
-                    https://api.github.com/repos/Koenkk/zigbee2mqtt-chart/dispatches \
-                    --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG\"}}"
+                    https://api.github.com/repos/Koenkk/zigbee2mqtt-chart/actions/workflows/OnZigbee2MQTTRelease/dispatches \
+                    -d '{"ref":"main","inputs":{"zigbee2mqtt_version":"$TAG" }}'
             - name: 'release: merge dev -> master and promote dev'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
