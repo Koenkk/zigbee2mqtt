@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.40.1](https://github.com/Koenkk/zigbee2mqtt/compare/1.40.0...1.40.1) (2024-09-07)
+
+
+### Bug Fixes
+
+* Fix `Cannot read properties of undefined (reading 'some')` https://github.com/Koenkk/zigbee2mqtt/issues/23821 ([557b17a](https://github.com/Koenkk/zigbee2mqtt/commit/557b17ad5b6dc375e361fb3ec5a84134be761a00))
+* **ignore:** update dependencies ([#23790](https://github.com/Koenkk/zigbee2mqtt/issues/23790)) ([b7fa722](https://github.com/Koenkk/zigbee2mqtt/commit/b7fa7221093656cee3c908aa1c0e45e350aa43c9))
+* **ignore:** update zigbee-herdsman to 0.57.2 ([#23872](https://github.com/Koenkk/zigbee2mqtt/issues/23872)) ([5524e88](https://github.com/Koenkk/zigbee2mqtt/commit/5524e881e6458afac2c5ae712bc6d0a1090e7115))
+* **ignore:** update zigbee-herdsman to 0.57.3 ([#23877](https://github.com/Koenkk/zigbee2mqtt/issues/23877)) ([0d46354](https://github.com/Koenkk/zigbee2mqtt/commit/0d46354c485ba5c644af8d933b1689468b3a058c))
+* **ignore:** update zigbee-herdsman-converters to 20.11.0 ([#23837](https://github.com/Koenkk/zigbee2mqtt/issues/23837)) ([a33c29f](https://github.com/Koenkk/zigbee2mqtt/commit/a33c29f10af5fc423ff9668af59826a37d9784bf))
+* **ignore:** update zigbee-herdsman-converters to 20.12.1 ([#23884](https://github.com/Koenkk/zigbee2mqtt/issues/23884)) ([9283c4b](https://github.com/Koenkk/zigbee2mqtt/commit/9283c4b4973e9e7309081a9444427c87f9309f91))
+* **ignore:** update zigbee-herdsman-converters to 20.9.0 ([#23822](https://github.com/Koenkk/zigbee2mqtt/issues/23822)) ([6dade8b](https://github.com/Koenkk/zigbee2mqtt/commit/6dade8b11faa13096191f9774a7a1dd320af6bde))
+* Log stack trace when update check fails https://github.com/Koenkk/zigbee2mqtt/discussions/23798 ([13a108d](https://github.com/Koenkk/zigbee2mqtt/commit/13a108ddbc8f33d1cb23b92e2c67854fbd2dc338))
+
 ## [1.40.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.39.1...1.40.0) (2024-09-01)
 
 
