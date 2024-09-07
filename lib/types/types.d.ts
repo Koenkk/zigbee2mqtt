@@ -21,6 +21,8 @@ import type * as zhc from 'zigbee-herdsman-converters';
 
 import {LogLevel} from 'lib/util/settings';
 
+type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
 declare global {
     // Define some class types as global
     type EventBus = TypeEventBus;
@@ -80,7 +82,7 @@ declare global {
             entity: Device | Group;
             from: KeyValue;
             to: KeyValue;
-            reason: string | null;
+            reason?: string;
             update: KeyValue;
         };
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
@@ -97,7 +99,7 @@ declare global {
         type Reconfigure = {device: Device};
         type DeviceLeave = {ieeeAddr: string; name: string};
         type GroupMembersChanged = {group: Group; action: 'remove' | 'add' | 'remove_all'; endpoint: zh.Endpoint; skipDisableReporting: boolean};
-        type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason: StateChangeReason; payload: KeyValue};
+        type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason?: StateChangeReason; payload: KeyValue};
         type DeviceMessage = {
             type: ZHEvents.MessagePayloadType;
             device: Device;
@@ -120,7 +122,7 @@ declare global {
             legacy_entity_attributes: boolean;
             legacy_triggers: boolean;
         };
-        permit_join?: boolean;
+        permit_join: boolean;
         availability?: {
             active: {timeout: number};
             passive: {timeout: number};
@@ -179,13 +181,13 @@ declare global {
         frontend?: {
             auth_token?: string;
             host?: string;
-            port?: number;
+            port: number;
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
         };
-        devices?: {[s: string]: DeviceOptions};
-        groups?: {[s: string]: GroupOptions};
+        devices: {[s: string]: DeviceOptions};
+        groups: {[s: string]: OptionalProps<Omit<GroupOptions, 'ID'>, 'devices'>};
         device_options: KeyValue;
         advanced: {
             legacy_api: boolean;
@@ -203,8 +205,8 @@ declare global {
             pan_id: number | 'GENERATE';
             ext_pan_id: number[] | 'GENERATE';
             channel: number;
-            adapter_concurrent: number | null;
-            adapter_delay: number | null;
+            adapter_concurrent?: number;
+            adapter_delay?: number;
             cache_state: boolean;
             cache_state_persistent: boolean;
             cache_state_send_on_startup: boolean;
@@ -216,17 +218,16 @@ declare global {
             transmit_power?: number;
             // Everything below is deprecated
             availability_timeout?: number;
-            availability_blocklist?: string[];
-            availability_passlist?: string[];
-            availability_blacklist?: string[];
-            availability_whitelist?: string[];
+            availability_blocklist: string[];
+            availability_passlist: string[];
+            availability_blacklist: string[];
+            availability_whitelist: string[];
             soft_reset_timeout: number;
             report: boolean;
         };
     }
 
     interface DeviceOptions {
-        ID?: string;
         disabled?: boolean;
         retention?: number;
         availability?: boolean | {timeout: number};
@@ -245,9 +246,13 @@ declare global {
         qos?: 0 | 1 | 2;
     }
 
+    interface DeviceOptionsWithId extends DeviceOptions {
+        ID: string;
+    }
+
     interface GroupOptions {
-        devices?: string[];
-        ID?: number;
+        devices: string[];
+        ID: number;
         optimistic?: boolean;
         off_state?: 'all_members_off' | 'last_member_state';
         filtered_attributes?: string[];

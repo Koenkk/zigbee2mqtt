@@ -12,11 +12,12 @@ const NS = 'z2m:mqtt';
 
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
-    private connectionTimer: NodeJS.Timeout;
+    private connectionTimer?: NodeJS.Timeout;
+    // @ts-expect-error initialized in `connect`
     private client: mqtt.MqttClient;
     private eventBus: EventBus;
     private initialConnect = true;
-    private republishRetainedTimer: NodeJS.Timeout;
+    private republishRetainedTimer?: NodeJS.Timeout;
     public retainedMessages: {
         [s: string]: {payload: string; options: MQTTOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
     } = {};
@@ -126,6 +127,7 @@ export default class MQTT {
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
+        clearTimeout(this.republishRetainedTimer);
         await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
@@ -150,7 +152,7 @@ export default class MQTT {
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
             clearTimeout(this.republishRetainedTimer);
 
-            this.republishRetainedTimer = null;
+            this.republishRetainedTimer = undefined;
         }
     }
 

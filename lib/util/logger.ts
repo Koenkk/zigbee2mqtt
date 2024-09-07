@@ -11,13 +11,20 @@ import * as settings from './settings';
 const NAMESPACE_SEPARATOR = ':';
 
 class Logger {
+    // @ts-expect-error initalized in `init`
     private level: settings.LogLevel;
+    // @ts-expect-error initalized in `init`
     private output: string[];
+    // @ts-expect-error initalized in `init`
     private directory: string;
+    // @ts-expect-error initalized in `init`
     private logger: winston.Logger;
+    // @ts-expect-error initalized in `init`
     private fileTransport: winston.transports.FileTransportInstance;
     private debugNamespaceIgnoreRegex?: RegExp;
+    // @ts-expect-error initalized in `init`
     private namespacedLevels: Record<string, settings.LogLevel>;
+    // @ts-expect-error initalized in `init`
     private cachedNamespacedLevels: Record<string, settings.LogLevel>;
 
     public init(): void {

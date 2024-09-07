@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
@@ -19,16 +20,37 @@ import Extension from './extension';
  * This extension servers the frontend
  */
 export default class Frontend extends Extension {
-    private mqttBaseTopic = settings.get().mqtt.base_topic;
-    private host = settings.get().frontend.host;
-    private port = settings.get().frontend.port;
-    private sslCert = settings.get().frontend.ssl_cert;
-    private sslKey = settings.get().frontend.ssl_key;
-    private authToken = settings.get().frontend.auth_token;
-    private server: http.Server;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private fileServer: RequestHandler;
-    private wss: WebSocket.Server = null;
+    private mqttBaseTopic: string;
+    private host: string | undefined;
+    private port: number;
+    private sslCert: string | undefined;
+    private sslKey: string | undefined;
+    private authToken: string | undefined;
+    private server: http.Server | undefined;
+    private fileServer: RequestHandler | undefined;
+    private wss: WebSocket.Server | undefined;
+
+    constructor(
+        zigbee: Zigbee,
+        mqtt: MQTT,
+        state: State,
+        publishEntityState: PublishEntityState,
+        eventBus: EventBus,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        restartCallback: () => Promise<void>,
+        addExtension: (extension: Extension) => Promise<void>,
+    ) {
+        super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
+
+        const frontendSettings = settings.get().frontend;
+        assert(frontendSettings, 'Frontend extension created without having frontend settings');
+        this.host = frontendSettings.host;
+        this.port = frontendSettings.port;
+        this.sslCert = frontendSettings.ssl_cert;
+        this.sslKey = frontendSettings.ssl_key;
+        this.authToken = frontendSettings.auth_token;
+        this.mqttBaseTopic = settings.get().mqtt.base_topic;
+    }
 
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
@@ -44,8 +66,8 @@ export default class Frontend extends Extension {
     override async start(): Promise<void> {
         if (this.isHttpsConfigured()) {
             const serverOptions = {
-                key: fs.readFileSync(this.sslKey),
-                cert: fs.readFileSync(this.sslCert),
+                key: fs.readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
+                cert: fs.readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
             };
             this.server = https.createServer(serverOptions, this.onRequest);
         } else {
@@ -90,7 +112,7 @@ export default class Frontend extends Extension {
         this.wss?.close();
         /* istanbul ignore else */
         if (this.server) {
-            return new Promise((cb: () => void) => this.server.close(cb));
+            return new Promise((cb: () => void) => this.server!.close(cb));
         }
     }
 
@@ -100,15 +122,15 @@ export default class Frontend extends Extension {
     }
 
     private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {
-        const {query} = url.parse(request.url, true);
+        const {query} = url.parse(request.url!, true);
         cb(!this.authToken || this.authToken === query.token);
     }
 
     @bind private onUpgrade(request: http.IncomingMessage, socket: net.Socket, head: Buffer): void {
-        this.wss.handleUpgrade(request, socket, head, (ws) => {
+        this.wss!.handleUpgrade(request, socket, head, (ws) => {
             this.authenticate(request, (isAuthenticated) => {
                 if (isAuthenticated) {
-                    this.wss.emit('connection', ws, request);
+                    this.wss!.emit('connection', ws, request);
                 } else {
                     ws.close(4401, 'Unauthorized');
                 }
@@ -144,7 +166,7 @@ export default class Frontend extends Extension {
             const lastSeen = settings.get().advanced.last_seen;
             /* istanbul ignore if */
             if (lastSeen !== 'disable') {
-                payload.last_seen = utils.formatDate(device.zh.lastSeen, lastSeen);
+                payload.last_seen = utils.formatDate(device.zh.lastSeen ?? 0, lastSeen);
             }
 
             if (device.zh.linkquality !== undefined) {
@@ -162,7 +184,7 @@ export default class Frontend extends Extension {
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
             const payload = utils.parseJSON(data.payload, data.payload);
 
-            for (const client of this.wss.clients) {
+            for (const client of this.wss!.clients) {
                 /* istanbul ignore else */
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(stringify({topic, payload}));

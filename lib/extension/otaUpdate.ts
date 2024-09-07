@@ -1,3 +1,4 @@
+import assert from 'assert';
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import path from 'path';
@@ -86,8 +87,8 @@ export default class OTAUpdate extends Extension {
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
         const automaticOTACheckDisabled = settings.get().ota.disable_automatic_update_check;
-        let supportsOTA = !!data.device.definition.ota;
-        if (supportsOTA && !automaticOTACheckDisabled) {
+
+        if (data.device.definition.ota && !automaticOTACheckDisabled) {
             // When a device does a next image request, it will usually do it a few times after each other
             // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
             // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
@@ -98,13 +99,12 @@ export default class OTAUpdate extends Extension {
             if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
-            let availableResult: zhc.OtaUpdateAvailableResult = null;
+            let availableResult: zhc.OtaUpdateAvailableResult | undefined;
+
             try {
                 availableResult = await data.device.definition.ota.isUpdateAvailable(data.device.zh, data.data as zhc.ota.ImageInfo);
-            } catch (e) {
-                supportsOTA = false;
-                logger.debug(`Failed to check if update available for '${data.device.name}' (${e.message})`);
-                logger.debug(e.stack);
+            } catch (error) {
+                logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
             }
 
             const payload = this.getEntityPublishPayload(data.device, availableResult ?? 'idle');
@@ -134,21 +134,25 @@ export default class OTAUpdate extends Extension {
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
     }
 
-    private async readSoftwareBuildIDAndDateCode(device: Device, sendPolicy?: 'immediate'): Promise<{softwareBuildID: string; dateCode: string}> {
+    private async readSoftwareBuildIDAndDateCode(
+        device: Device,
+        sendPolicy?: 'immediate',
+    ): Promise<{softwareBuildID: string; dateCode: string} | undefined> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster('genBasic'));
+            assert(endpoint);
             const result = await endpoint.read('genBasic', ['dateCode', 'swBuildId'], {sendPolicy});
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
         } catch {
-            return null;
+            return undefined;
         }
     }
 
     private getEntityPublishPayload(
         device: Device,
         state: zhc.OtaUpdateAvailableResult | UpdateState,
-        progress: number = null,
-        remaining: number = null,
+        progress?: number,
+        remaining?: number,
     ): UpdatePayload {
         const deviceUpdateState = this.state.get(device).update;
         const payload: UpdatePayload = {
@@ -158,8 +162,14 @@ export default class OTAUpdate extends Extension {
                 latest_version: typeof state === 'string' ? deviceUpdateState?.latest_version : state.otaFileVersion,
             },
         };
-        if (progress !== null) payload.update.progress = progress;
-        if (remaining !== null) payload.update.remaining = Math.round(remaining);
+
+        if (progress != undefined) {
+            payload.update.progress = progress;
+        }
+
+        if (remaining != undefined) {
+            payload.update.remaining = Math.round(remaining);
+        }
 
         /* istanbul ignore else */
         if (this.legacyApi) {
@@ -171,7 +181,7 @@ export default class OTAUpdate extends Extension {
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if ((!this.legacyApi || !data.topic.match(legacyTopicRegex)) && !data.topic.match(topicRegex)) {
-            return null;
+            return;
         }
 
         const message = utils.parseJSON(data.message, data.message);
@@ -179,8 +189,8 @@ export default class OTAUpdate extends Extension {
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
         const responseData: {id: string; updateAvailable?: boolean; from?: string; to?: string} = {id: ID};
-        let error = null;
-        let errorStack = null;
+        let error: string | undefined;
+        let errorStack: string | undefined;
 
         if (!(device instanceof Device)) {
             error = `Device '${ID}' does not exist`;
@@ -208,7 +218,7 @@ export default class OTAUpdate extends Extension {
                 }
 
                 try {
-                    const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, null);
+                    const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, undefined);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -226,8 +236,8 @@ export default class OTAUpdate extends Extension {
                     this.lastChecked[device.ieeeAddr] = Date.now();
                     responseData.updateAvailable = availableResult.available;
                 } catch (e) {
-                    error = `Failed to check if update available for '${device.name}' (${e.message})`;
-                    errorStack = e.stack;
+                    error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
+                    errorStack = (e as Error).stack;
 
                     /* istanbul ignore else */
                     if (settings.get().advanced.legacy_api) {
@@ -294,8 +304,8 @@ export default class OTAUpdate extends Extension {
                     }
                 } catch (e) {
                     logger.debug(`Update of '${device.name}' failed (${e})`);
-                    error = `Update of '${device.name}' failed (${e.message})`;
-                    errorStack = e.stack;
+                    error = `Update of '${device.name}' failed (${(e as Error).message})`;
+                    errorStack = (e as Error).stack;
 
                     this.removeProgressAndRemainingFromState(device);
                     const payload = this.getEntityPublishPayload(device, 'available');
@@ -313,6 +323,7 @@ export default class OTAUpdate extends Extension {
         }
 
         const triggeredViaLegacyApi = data.topic.match(legacyTopicRegex);
+
         if (!triggeredViaLegacyApi) {
             const response = utils.getResponse(message, responseData, error);
             await this.mqtt.publish(`bridge/response/device/ota_update/${type}`, stringify(response));
@@ -320,6 +331,7 @@ export default class OTAUpdate extends Extension {
 
         if (error) {
             logger.error(error);
+
             if (errorStack) {
                 logger.debug(errorStack);
             }
