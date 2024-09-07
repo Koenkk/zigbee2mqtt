@@ -184,7 +184,7 @@ class Logger {
 
     private log(level: settings.LogLevel, messageOrLambda: string | (() => string), namespace: string): void {
         if (this.isEnabled(level, namespace)) {
-            const message:string = (typeof messageOrLambda === "string") ? messageOrLambda : messageOrLambda() ;
+            const message:string = (typeof messageOrLambda === "function") ? messageOrLambda() : messageOrLambda ;
             this.logger.log(level, `${namespace}: ${message}`);
         }
     }
