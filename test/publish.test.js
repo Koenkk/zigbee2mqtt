@@ -594,6 +594,15 @@ describe('Publish', () => {
         expect(endpoint2.read).toHaveBeenCalledTimes(0);
     });
 
+    it('Should log error when device has no definition', async () => {
+        const device = zigbeeHerdsman.devices.interviewing;
+        logger.error.mockClear();
+        await MQTT.events.message(`zigbee2mqtt/${device.ieeeAddr}/set`, stringify({state: 'OFF'}));
+        await flushPromises();
+        console.log(logger.error.mock.calls);
+        expect(logger.error).toHaveBeenCalledWith(`Cannot publish to unsupported device 'button_double_key_interviewing'`);
+    });
+
     it('Should log error when device has no such endpoint (via property)', async () => {
         const device = zigbeeHerdsman.devices.QBKG03LM;
         const endpoint2 = device.getEndpoint(2);
