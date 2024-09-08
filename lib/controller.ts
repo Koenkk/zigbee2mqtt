@@ -151,6 +151,7 @@ export class Controller {
             this.sdNotify = process.env.NOTIFY_SOCKET ? await import('sd-notify') : undefined;
             logger.debug('sd-notify loaded');
         } catch {
+            // istanbul ignore next
             logger.debug('sd-notify is not installed');
         }
 
