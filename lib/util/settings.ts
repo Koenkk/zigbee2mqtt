@@ -382,14 +382,14 @@ function read(): Settings {
     applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
-    // eslint-disable-next-line
-    const interpretValue = (value: any): any => {
-        const ref = parseValueRef(value);
-        if (ref) {
-            return yaml.read(data.joinPath(ref.filename))[ref.key];
-        } else {
-            return value;
+    const interpretValue = <T>(value: T): T => {
+        if (typeof value === 'string') {
+            const ref = parseValueRef(value);
+            if (ref) {
+                return yaml.read(data.joinPath(ref.filename))[ref.key];
+            }
         }
+        return value;
     };
 
     if (s.mqtt?.user) {

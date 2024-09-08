@@ -80,8 +80,7 @@ export default class Frontend extends Extension {
 
         /* istanbul ignore next */
         const options = {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            setHeaders: (res: any, path: string): void => {
+            setHeaders: (res: {setHeader(key: string, value: string): void}, path: string): void => {
                 if (path.endsWith('index.html')) {
                     res.setHeader('Cache-Control', 'no-store');
                 }
@@ -119,8 +118,7 @@ export default class Frontend extends Extension {
     }
 
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
-        // @ts-expect-error typing is wrong
-        this.fileServer(request, response, finalhandler(request, response));
+        this.fileServer?.(request, response, finalhandler(request, response));
     }
 
     private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {

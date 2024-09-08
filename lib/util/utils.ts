@@ -211,24 +211,24 @@ function toNetworkAddressHex(value: number): string {
     return `0x${'0'.repeat(4 - hex.length)}${hex}`;
 }
 
-// eslint-disable-next-line
-function toSnakeCase(value: string | KeyValue): any {
-    if (typeof value === 'object') {
-        value = {...value};
-        for (const key of Object.keys(value)) {
-            const keySnakeCase = toSnakeCase(key);
-            if (key !== keySnakeCase) {
-                value[keySnakeCase] = value[key];
-                delete value[key];
-            }
+function toSnakeCaseObject(value: KeyValue): KeyValue {
+    value = {...value};
+    for (const key of Object.keys(value)) {
+        const keySnakeCase = toSnakeCaseString(key);
+        assert(typeof keySnakeCase === 'string');
+        if (key !== keySnakeCase) {
+            value[keySnakeCase] = value[key];
+            delete value[key];
         }
-        return value;
-    } else {
-        return value
-            .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
-            .replace(/^_/, '')
-            .replace('_i_d', '_id');
     }
+    return value;
+}
+
+function toSnakeCaseString(value: string): string {
+    return value
+        .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
+        .replace(/^_/, '')
+        .replace('_i_d', '_id');
 }
 
 function charRange(start: string, stop: string): number[] {
@@ -448,7 +448,8 @@ export default {
     loadModuleFromFile,
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
-    toSnakeCase,
+    toSnakeCaseString,
+    toSnakeCaseObject,
     isZHEndpoint,
     isZHGroup,
     hours,

@@ -10,7 +10,7 @@ export default tseslint.config(
     {
         languageOptions: {
             parserOptions: {
-                project: './tsconfig.json',
+                project: true,
             },
         },
         rules: {
@@ -26,7 +26,7 @@ export default tseslint.config(
         },
     },
     {
-        ignores: ['test/', 'dist/', '**/*.js', '**/*.mjs'],
+        ignores: ['dist/', '**/*.js', '**/*.mjs'],
     },
     eslintConfigPrettier,
 );

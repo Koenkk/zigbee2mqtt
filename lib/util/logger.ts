@@ -109,7 +109,7 @@ class Logger {
         /* istanbul ignore next */
         if (this.output.includes('syslog')) {
             logging += `, syslog`;
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require('winston-syslog').Syslog;
 
             const options: KeyValue = {

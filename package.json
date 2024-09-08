@@ -79,6 +79,7 @@
         "@types/node": "^22.5.1",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.15",
+        "@types/sd-notify": "^2.8.2",
         "@types/ws": "8.5.12",
         "babel-jest": "^29.7.0",
         "eslint": "^9.9.1",

@@ -33,8 +33,7 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type ExternalDefinition = zhc.Definition & {homeassistant: any};
+    type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
     interface MQTTResponse {
         data: KeyValue;
         status: 'error' | 'ok';
@@ -113,7 +112,6 @@ declare global {
     }
 
     // Settings
-    // eslint-disable camelcase
     interface Settings {
         homeassistant?: {
             discovery_topic: string;

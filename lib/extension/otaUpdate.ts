@@ -191,7 +191,7 @@ export default class OTAUpdate extends Extension {
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
-        const responseData: {id: string; updateAvailable?: boolean; from?: string; to?: string} = {id: ID};
+        const responseData: {id: string; updateAvailable?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -291,8 +291,8 @@ export default class OTAUpdate extends Extension {
                     const to = await this.readSoftwareBuildIDAndDateCode(device);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
-                    responseData.from = from_ ? utils.toSnakeCase(from_) : null;
-                    responseData.to = to ? utils.toSnakeCase(to) : null;
+                    responseData.from = from_ ? utils.toSnakeCaseObject(from_) : null;
+                    responseData.to = to ? utils.toSnakeCaseObject(to) : null;
                     /**
                      * Re-configure after reading software build ID and date code, some devices use a
                      * custom attribute for this (e.g. Develco SMSZB-120)

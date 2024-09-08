@@ -746,7 +746,7 @@ export default class Bridge extends Extension {
                 ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
                 ...this.coordinatorVersion,
             },
-            network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
+            network: utils.toSnakeCaseObject(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
