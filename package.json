@@ -22,7 +22,7 @@
     "scripts": {
         "build": "tsc && node index.js writehash",
         "build-watch": "tsc --watch",
-        "eslint": "eslint lib/ --max-warnings=0",
+        "eslint": "eslint --max-warnings=0",
         "pretty:write": "prettier --write .",
         "pretty:check": "prettier --check .",
         "start": "node index.js",
@@ -69,6 +69,9 @@
         "@babel/plugin-proposal-decorators": "^7.24.7",
         "@babel/preset-env": "^7.25.4",
         "@babel/preset-typescript": "^7.24.7",
+        "@eslint/js": "^9.9.1",
+        "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
+        "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/jest": "^29.5.12",
@@ -76,18 +79,16 @@
         "@types/node": "^22.5.4",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.15",
+        "@types/sd-notify": "^2.8.2",
         "@types/ws": "8.5.12",
-        "@typescript-eslint/eslint-plugin": "^8.4.0",
-        "@typescript-eslint/parser": "^8.4.0",
         "babel-jest": "^29.7.0",
-        "eslint": "^8.57.0",
+        "eslint": "^9.9.1",
         "eslint-config-prettier": "^9.1.0",
-        "eslint-plugin-jest": "^28.8.3",
-        "eslint-plugin-perfectionist": "^3.5.0",
         "jest": "^29.7.0",
         "prettier": "^3.3.3",
         "tmp": "^0.2.3",
-        "typescript": "^5.5.4"
+        "typescript": "^5.5.4",
+        "typescript-eslint": "^8.3.0"
     },
     "overrides": {
         "zigbee-herdsman-converters": {

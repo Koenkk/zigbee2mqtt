@@ -1,14 +1,15 @@
-/* eslint-disable camelcase */
-import bind from 'bind-decorator';
 import fs from 'fs';
+
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 import JSZip from 'jszip';
 import objectAssignDeep from 'object-assign-deep';
 import winston from 'winston';
 import Transport from 'winston-transport';
-import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
-import {CustomClusters, ClusterDefinition, ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import * as zhc from 'zigbee-herdsman-converters';
+import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
+import {ClusterDefinition, ClusterName, CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import Device from '../model/device';
 import Group from '../model/group';
@@ -275,12 +276,12 @@ export default class Bridge extends Extension {
     }
 
     @bind async groupAdd(message: string | KeyValue): Promise<MQTTResponse> {
-        if (typeof message === 'object' && !message.hasOwnProperty('friendly_name')) {
+        if (typeof message === 'object' && message.friendly_name === undefined) {
             throw new Error(`Invalid payload`);
         }
 
         const friendlyName = typeof message === 'object' ? message.friendly_name : message;
-        const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : null;
+        const ID = typeof message === 'object' && message.id !== undefined ? message.id : null;
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         await this.publishGroups();
@@ -316,7 +317,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async installCodeAdd(message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message === 'object' && !message.hasOwnProperty('value')) {
+        if (typeof message === 'object' && message.value === undefined) {
             throw new Error('Invalid payload');
         }
 
@@ -327,7 +328,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async permitJoin(message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message === 'object' && !message.hasOwnProperty('value')) {
+        if (typeof message === 'object' && message.value === undefined) {
             throw new Error('Invalid payload');
         }
 
@@ -426,7 +427,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async touchlinkIdentify(message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message !== 'object' || !message.hasOwnProperty('ieee_address') || !message.hasOwnProperty('channel')) {
+        if (typeof message !== 'object' || message.ieee_address === undefined || message.channel === undefined) {
             throw new Error('Invalid payload');
         }
 
@@ -438,7 +439,7 @@ export default class Bridge extends Extension {
     @bind async touchlinkFactoryReset(message: KeyValue | string): Promise<MQTTResponse> {
         let result = false;
         const payload: {ieee_address?: string; channel?: number} = {};
-        if (typeof message === 'object' && message.hasOwnProperty('ieee_address') && message.hasOwnProperty('channel')) {
+        if (typeof message === 'object' && message.ieee_address !== undefined && message.channel !== undefined) {
             logger.info(`Start Touchlink factory reset of '${message.ieee_address}' on channel ${message.channel}`);
             result = await this.zigbee.touchlinkFactoryReset(message.ieee_address, message.channel);
             payload.ieee_address = message.ieee_address;
@@ -473,7 +474,7 @@ export default class Bridge extends Extension {
 
     getValue(message: KeyValue | string): string | boolean | number {
         if (typeof message === 'object') {
-            if (!message.hasOwnProperty('value')) {
+            if (message.value === undefined) {
                 throw new Error('No value given');
             }
 
@@ -484,7 +485,7 @@ export default class Bridge extends Extension {
     }
 
     async changeEntityOptions(entityType: 'device' | 'group', message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message !== 'object' || !message.hasOwnProperty('id') || !message.hasOwnProperty('options')) {
+        if (typeof message !== 'object' || message.id === undefined || message.options === undefined) {
             throw new Error(`Invalid payload`);
         }
 
@@ -514,12 +515,12 @@ export default class Bridge extends Extension {
     @bind async deviceConfigureReporting(message: string | KeyValue): Promise<MQTTResponse> {
         if (
             typeof message !== 'object' ||
-            !message.hasOwnProperty('id') ||
-            !message.hasOwnProperty('cluster') ||
-            !message.hasOwnProperty('maximum_report_interval') ||
-            !message.hasOwnProperty('minimum_report_interval') ||
-            !message.hasOwnProperty('reportable_change') ||
-            !message.hasOwnProperty('attribute')
+            message.id === undefined ||
+            message.cluster === undefined ||
+            message.maximum_report_interval === undefined ||
+            message.minimum_report_interval === undefined ||
+            message.reportable_change === undefined ||
+            message.attribute === undefined
         ) {
             throw new Error(`Invalid payload`);
         }
@@ -565,7 +566,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async deviceInterview(message: string | KeyValue): Promise<MQTTResponse> {
-        if (typeof message !== 'object' || !message.hasOwnProperty('id')) {
+        if (typeof message !== 'object' || message.id === undefined) {
             throw new Error(`Invalid payload`);
         }
 
@@ -588,7 +589,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async deviceGenerateExternalDefinition(message: string | KeyValue): Promise<MQTTResponse> {
-        if (typeof message !== 'object' || !message.hasOwnProperty('id')) {
+        if (typeof message !== 'object' || message.id === undefined) {
             throw new Error(`Invalid payload`);
         }
 
@@ -606,7 +607,7 @@ export default class Bridge extends Extension {
     async renameEntity(entityType: 'group' | 'device', message: string | KeyValue): Promise<MQTTResponse> {
         const deviceAndHasLast = entityType === 'device' && typeof message === 'object' && message.last === true;
 
-        if (typeof message !== 'object' || (!message.hasOwnProperty('from') && !deviceAndHasLast) || !message.hasOwnProperty('to')) {
+        if (typeof message !== 'object' || (message.from === undefined && !deviceAndHasLast) || message.to === undefined) {
             throw new Error(`Invalid payload`);
         }
 
@@ -616,7 +617,7 @@ export default class Bridge extends Extension {
 
         const from = deviceAndHasLast ? this.lastJoinedDeviceIeeeAddr : message.from;
         const to = message.to;
-        const homeAssisantRename = message.hasOwnProperty('homeassistant_rename') ? message.homeassistant_rename : false;
+        const homeAssisantRename = message.homeassistant_rename !== undefined ? message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
         const oldFriendlyName = entity.options.friendly_name;
 
@@ -745,7 +746,7 @@ export default class Bridge extends Extension {
                 ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
                 ...this.coordinatorVersion,
             },
-            network: utils.toSnakeCase(await this.zigbee.getNetworkParameters()),
+            network: utils.toSnakeCaseObject(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
             permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),

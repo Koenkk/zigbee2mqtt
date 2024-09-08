@@ -1,4 +1,5 @@
 import fs from 'fs';
+
 import objectAssignDeep from 'object-assign-deep';
 
 import data from './util/data';
@@ -88,7 +89,7 @@ class State {
     }
 
     exists(entity: Device | Group): boolean {
-        return this.state.hasOwnProperty(entity.ID);
+        return this.state[entity.ID] !== undefined;
     }
 
     get(entity: Group | Device): KeyValue {
