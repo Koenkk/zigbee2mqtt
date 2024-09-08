@@ -80,7 +80,7 @@ export default class Frontend extends Extension {
 
         /* istanbul ignore next */
         const options = {
-            setHeaders: (res: {setHeader(key: string, value: string): void}, path: string): void => {
+            setHeaders: (res: http.ServerResponse, path: string): void => {
                 if (path.endsWith('index.html')) {
                     res.setHeader('Cache-Control', 'no-store');
                 }
