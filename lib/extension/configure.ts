@@ -44,7 +44,7 @@ export default class Configure extends Extension {
         } else if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
             const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message;
-            let error = null;
+            let error: string | undefined;
 
             const device = this.zigbee.resolveEntity(ID);
             if (!device || !(device instanceof Device)) {
@@ -55,7 +55,7 @@ export default class Configure extends Extension {
                 try {
                     await this.configure(device, 'mqtt_message', true, true);
                 } catch (e) {
-                    error = `Failed to configure (${e.message})`;
+                    error = `Failed to configure (${(e as Error).message})`;
                 }
             }
 
@@ -95,8 +95,12 @@ export default class Configure extends Extension {
         force = false,
         throwError = false,
     ): Promise<void> {
+        if (!device.definition?.configure) {
+            return;
+        }
+
         if (!force) {
-            if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
+            if (device.options.disabled || !device.zh.interviewCompleted) {
                 return;
             }
 
@@ -130,7 +134,7 @@ export default class Configure extends Extension {
         } catch (error) {
             this.attempts[device.ieeeAddr]++;
             const attempt = this.attempts[device.ieeeAddr];
-            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${error.stack})`;
+            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${(error as Error).stack})`;
             logger.error(msg);
 
             if (throwError) {
