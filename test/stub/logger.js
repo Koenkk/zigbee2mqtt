@@ -5,8 +5,9 @@ let namespacedLevels = {};
 let transports = [];
 
 let transportsEnabled = false;
-const callTransports = (level, message, namespace) => {
+const callTransports = (level, messageOrLambda, namespace) => {
     if (transportsEnabled) {
+        const message = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
         for (const transport of transports) {
             transport.log({level, message, namespace}, () => {});
         }
@@ -15,10 +16,10 @@ const callTransports = (level, message, namespace) => {
 
 const mock = {
     init: jest.fn(),
-    info: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('info', msg, namespace)),
-    warning: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('warning', msg, namespace)),
-    error: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('error', msg, namespace)),
-    debug: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('debug', msg, namespace)),
+    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('info', messageOrLambda, namespace)),
+    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('warning', messageOrLambda, namespace)),
+    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('error', messageOrLambda, namespace)),
+    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('debug', messageOrLambda, namespace)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
