@@ -337,8 +337,11 @@ describe('Controller', () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
-        expect(spyTransport).toHaveBeenCalledWith({"level": "debug", "message": "Received MQTT message on 'dummytopic' with data 'dummymessage'", "namespace": LOG_MQTT_NS}, expect.any(Function));
-        logger.removeTransport(transport)
+        expect(spyTransport).toHaveBeenCalledWith(
+            {level: 'debug', message: "Received MQTT message on 'dummytopic' with data 'dummymessage'", namespace: LOG_MQTT_NS},
+            expect.any(Function),
+        );
+        logger.removeTransport(transport);
         logger.setTransportsEnabled(false);
     });
 
@@ -354,12 +357,15 @@ describe('Controller', () => {
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(spyTransport).toHaveBeenCalledWith({"level": "debug", "message": "Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", "namespace": LOG_MQTT_NS}, expect.any(Function));
+        expect(spyTransport).toHaveBeenCalledWith(
+            {level: 'debug', message: "Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", namespace: LOG_MQTT_NS},
+            expect.any(Function),
+        );
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
         expect(logger.debug).toHaveBeenCalledTimes(0);
-        logger.removeTransport(transport)
+        logger.removeTransport(transport);
         logger.setTransportsEnabled(false);
     });
 
