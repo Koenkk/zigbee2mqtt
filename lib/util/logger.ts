@@ -190,19 +190,12 @@ class Logger {
     }
 
     private log(level: settings.LogLevel, messageOrLambda: string | (() => string), namespace: string): void {
-        if (this.isEnabled(level, namespace)) {
-            const message: string = typeof messageOrLambda === 'function' ? messageOrLambda() : messageOrLambda;
-            this.logger.log(level, `${namespace}: ${message}`);
-        }
-    }
-
-    public isEnabled(level: settings.LogLevel, namespace: string): boolean {
         const nsLevel = this.cacheNamespacedLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
-            return true;
+            const message: string = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
+            this.logger.log(level, `${namespace}: ${message}`);
         }
-        return false;
     }
 
     public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
