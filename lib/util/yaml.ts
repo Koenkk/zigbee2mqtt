@@ -1,5 +1,6 @@
-import equals from 'fast-deep-equal/es6';
 import fs from 'fs';
+
+import equals from 'fast-deep-equal/es6';
 import yaml, {YAMLException} from 'js-yaml';
 
 export class YAMLFileException extends YAMLException {

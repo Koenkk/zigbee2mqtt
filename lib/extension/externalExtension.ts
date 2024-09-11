@@ -1,7 +1,8 @@
-import bind from 'bind-decorator';
 import fs from 'fs';
-import stringify from 'json-stable-stringify-without-jsonify';
 import path from 'path';
+
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
 
 import * as settings from '../util/settings';
 import utils from '../util/utils';
@@ -93,7 +94,7 @@ export default class ExternalExtension extends Extension {
 
     @bind private async loadExtension(ConstructorClass: typeof Extension): Promise<void> {
         await this.enableDisableExtension(false, ConstructorClass.name);
-        // @ts-ignore
+        // @ts-expect-error `ConstructorClass` is the interface, not the actual passed class
         await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
 

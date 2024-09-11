@@ -1,6 +1,8 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import debounce from 'debounce';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';

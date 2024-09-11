@@ -1,8 +1,10 @@
 import assert from 'assert';
+import path from 'path';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
-import path from 'path';
 import * as URI from 'uri-js';
+
 import {Zcl} from 'zigbee-herdsman';
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -27,7 +29,7 @@ function isValidUrl(url: string): boolean {
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
     update_available?: boolean;
-    // eslint-disable-next-line camelcase
+
     update: {
         progress?: number;
         remaining?: number;
@@ -93,9 +95,10 @@ export default class OTAUpdate extends Extension {
             // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
             // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
             const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-            const check = this.lastChecked.hasOwnProperty(data.device.ieeeAddr)
-                ? Date.now() - this.lastChecked[data.device.ieeeAddr] > updateCheckInterval
-                : true;
+            const check =
+                this.lastChecked[data.device.ieeeAddr] !== undefined
+                    ? Date.now() - this.lastChecked[data.device.ieeeAddr] > updateCheckInterval
+                    : true;
             if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
@@ -185,10 +188,10 @@ export default class OTAUpdate extends Extension {
         }
 
         const message = utils.parseJSON(data.message, data.message);
-        const ID = (typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message) as string;
+        const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
-        const responseData: {id: string; updateAvailable?: boolean; from?: string; to?: string} = {id: ID};
+        const responseData: {id: string; updateAvailable?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -288,8 +291,8 @@ export default class OTAUpdate extends Extension {
                     const to = await this.readSoftwareBuildIDAndDateCode(device);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
-                    responseData.from = from_ ? utils.toSnakeCase(from_) : null;
-                    responseData.to = to ? utils.toSnakeCase(to) : null;
+                    responseData.from = from_ ? utils.toSnakeCaseObject(from_) : null;
+                    responseData.to = to ? utils.toSnakeCaseObject(to) : null;
                     /**
                      * Re-configure after reading software build ID and date code, some devices use a
                      * custom attribute for this (e.g. Develco SMSZB-120)

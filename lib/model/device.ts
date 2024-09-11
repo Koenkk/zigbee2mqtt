@@ -1,7 +1,7 @@
-/* eslint-disable brace-style */
 import assert from 'assert';
-import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import * as zhc from 'zigbee-herdsman-converters';
+import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import * as settings from '../util/settings';
 
