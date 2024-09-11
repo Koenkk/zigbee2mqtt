@@ -1,7 +1,6 @@
 process.env.NOTIFY_SOCKET = 'mocked';
 const data = require('./stub/data');
 const logger = require('./stub/logger');
-const Transport = require('winston-transport');
 const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
 const MQTT = require('./stub/mqtt');
 const path = require('path');
