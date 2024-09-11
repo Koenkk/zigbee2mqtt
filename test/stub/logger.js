@@ -7,7 +7,7 @@ let transports = [];
 let transportsEnabled = false;
 
 const mock = {
-    callTransports:jest.fn().mockImplementation((level, message, namespace) => {
+    callTransports: jest.fn().mockImplementation((level, message, namespace) => {
         if (transportsEnabled) {
             for (const transport of transports) {
                 transport.log({level, message, namespace}, () => {});
@@ -16,7 +16,7 @@ const mock = {
     }),
     log: (level, messageOrLambda, namespace = 'z2m') => {
         const message = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
-        mock.callTransports(level, message, namespace)
+        mock.callTransports(level, message, namespace);
     },
     init: jest.fn(),
     info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('info', messageOrLambda, namespace)),
