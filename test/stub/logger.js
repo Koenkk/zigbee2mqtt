@@ -5,21 +5,24 @@ let namespacedLevels = {};
 let transports = [];
 
 let transportsEnabled = false;
-const callTransports = (level, messageOrLambda, namespace) => {
-    if (transportsEnabled) {
-        const message = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
-        for (const transport of transports) {
-            transport.log({level, message, namespace}, () => {});
-        }
-    }
-};
 
 const mock = {
+    callTransports:jest.fn().mockImplementation((level, message, namespace) => {
+        if (transportsEnabled) {
+            for (const transport of transports) {
+                transport.log({level, message, namespace}, () => {});
+            }
+        }
+    }),
+    log: (level, messageOrLambda, namespace = 'z2m') => {
+        const message = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
+        mock.callTransports(level, message, namespace)
+    },
     init: jest.fn(),
-    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('info', messageOrLambda, namespace)),
-    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('warning', messageOrLambda, namespace)),
-    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('error', messageOrLambda, namespace)),
-    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => callTransports('debug', messageOrLambda, namespace)),
+    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('info', messageOrLambda, namespace)),
+    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('warning', messageOrLambda, namespace)),
+    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('error', messageOrLambda, namespace)),
+    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('debug', messageOrLambda, namespace)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),

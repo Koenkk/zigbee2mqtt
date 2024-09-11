@@ -326,47 +326,28 @@ describe('Controller', () => {
     });
 
     it('Handle mqtt message', async () => {
-        class DummyTransport extends Transport {
-            log(info, callback) {}
-        }
-        const transport = new DummyTransport();
-        logger.setTransportsEnabled(true);
-        let spyTransport = jest.spyOn(transport, 'log').mockImplementation();
-        logger.addTransport(transport);
+        const eventbus = controller.eventBus;
+        let spyEventbusEmitMQTTMessage = jest.spyOn(eventbus, 'emitMQTTMessage').mockImplementation();
 
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
-        expect(spyTransport).toHaveBeenCalledWith(
-            {level: 'debug', message: "Received MQTT message on 'dummytopic' with data 'dummymessage'", namespace: LOG_MQTT_NS},
-            expect.any(Function),
-        );
-        logger.removeTransport(transport);
-        logger.setTransportsEnabled(false);
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: 'dummytopic', message: "dummymessage"});
+        expect(logger.callTransports).toHaveBeenCalledWith("debug", "Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
     });
 
     it('Skip MQTT messages on topic we published to', async () => {
-        class DummyTransport extends Transport {
-            log(info, callback) {}
-        }
-        const transport = new DummyTransport();
-        logger.setTransportsEnabled(true);
-        let spyTransport = jest.spyOn(transport, 'log').mockImplementation();
-        logger.addTransport(transport);
+        const eventbus = controller.eventBus;
+        let spyEventbusEmitMQTTMessage = jest.spyOn(eventbus, 'emitMQTTMessage').mockImplementation();
 
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(spyTransport).toHaveBeenCalledWith(
-            {level: 'debug', message: "Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", namespace: LOG_MQTT_NS},
-            expect.any(Function),
-        );
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: 'zigbee2mqtt/skip-this-topic', message: "skipped"});
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
         expect(logger.debug).toHaveBeenCalledTimes(0);
-        logger.removeTransport(transport);
-        logger.setTransportsEnabled(false);
     });
 
     it('On zigbee event message', async () => {
