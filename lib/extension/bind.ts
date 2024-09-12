@@ -1,7 +1,9 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import {Zcl} from 'zigbee-herdsman';
 import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 

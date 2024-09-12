@@ -1,14 +1,13 @@
-import data from './stub/data';
-import logger from './stub/logger';
-import MQTT from './stub/mqtt';
-import zigbeeHerdsman from './stub/zigbeeHerdsman';
-
-import utils from '../lib/util/utils';
-import * as settings from '../lib/util/settings';
-import Controller from '../lib/controller';
-import Availability from '../lib/extension/availability';
-import flushPromises from './lib/flushPromises';
-import stringify from 'json-stable-stringify-without-jsonify';
+const data = require('./stub/data');
+const logger = require('./stub/logger');
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const MQTT = require('./stub/mqtt');
+const settings = require('../lib/util/settings');
+const Controller = require('../lib/controller');
+const flushPromises = require('./lib/flushPromises');
+const Availability = require('../lib/extension/availability').default;
+const stringify = require('json-stable-stringify-without-jsonify');
+const utils = require('../lib/util/utils').default;
 
 const mocks = [MQTT.publish, logger.warning, logger.info];
 const devices = zigbeeHerdsman.devices;

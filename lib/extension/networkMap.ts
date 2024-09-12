@@ -55,7 +55,7 @@ export default class NetworkMap extends Extension {
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
-            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats.hasOwnProperty(data.message)) {
+            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats[data.message] !== undefined) {
                 const includeRoutes = data.topic === this.legacyTopicRoutes;
                 const topology = await this.networkScan(includeRoutes);
                 let converted = this.supportedFormats[data.message](topology);
@@ -68,7 +68,7 @@ export default class NetworkMap extends Extension {
             const message = utils.parseJSON(data.message, data.message);
             try {
                 const type = typeof message === 'object' ? message.type : message;
-                if (!this.supportedFormats.hasOwnProperty(type)) {
+                if (this.supportedFormats[type] === undefined) {
                     throw new Error(`Type '${type}' not supported, allowed are: ${Object.keys(this.supportedFormats)}`);
                 }
 

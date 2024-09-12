@@ -1,8 +1,9 @@
 import assert from 'assert';
 import fs from 'fs';
+import path from 'path';
+
 import fx from 'mkdir-recursive';
 import moment from 'moment';
-import path from 'path';
 import {rimrafSync} from 'rimraf';
 import winston from 'winston';
 
@@ -108,7 +109,7 @@ class Logger {
         /* istanbul ignore next */
         if (this.output.includes('syslog')) {
             logging += `, syslog`;
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require('winston-syslog').Syslog;
 
             const options: KeyValue = {
@@ -117,7 +118,7 @@ class Logger {
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options.hasOwnProperty('type')) {
+            if (options['type'] !== undefined) {
                 options.type = options.type.toString();
             }
 

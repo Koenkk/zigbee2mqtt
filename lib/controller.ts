@@ -1,6 +1,10 @@
+import type * as SdNotify from 'sd-notify';
+
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import {setLogger as zhSetLogger} from 'zigbee-herdsman';
 import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
 
@@ -30,6 +34,8 @@ import logger from './util/logger';
 import * as settings from './util/settings';
 import utils from './util/utils';
 import Zigbee from './zigbee';
+
+type SdNotifyType = typeof SdNotify;
 
 const AllExtensions = [
     ExtensionPublish,
@@ -63,15 +69,6 @@ type ExtensionArgs = [
     addExtension: (extension: Extension) => Promise<void>,
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let sdNotify: any = null;
-try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    sdNotify = process.env.NOTIFY_SOCKET ? require('sd-notify') : null;
-} catch {
-    // sd-notify is optional
-}
-
 export class Controller {
     private eventBus: EventBus;
     private zigbee: Zigbee;
@@ -81,6 +78,7 @@ export class Controller {
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
+    private sdNotify: SdNotifyType | undefined;
 
     constructor(restartCallback: () => Promise<void>, exitCallback: (code: number, restart: boolean) => Promise<void>) {
         logger.init();
@@ -148,6 +146,14 @@ export class Controller {
 
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
+
+        try {
+            this.sdNotify = process.env.NOTIFY_SOCKET ? await import('sd-notify') : undefined;
+            logger.debug('sd-notify loaded');
+        } catch {
+            // istanbul ignore next
+            logger.debug('sd-notify is not installed');
+        }
 
         // Start zigbee
         let startResult;
@@ -224,11 +230,11 @@ export class Controller {
 
         logger.info(`Zigbee2MQTT started!`);
 
-        const watchdogInterval = sdNotify?.watchdogInterval() || 0;
+        const watchdogInterval = this.sdNotify?.watchdogInterval() || 0;
         if (watchdogInterval > 0) {
-            sdNotify.startWatchdogMode(Math.floor(watchdogInterval / 2));
+            this.sdNotify?.startWatchdogMode(Math.floor(watchdogInterval / 2));
         }
-        sdNotify?.ready();
+        this.sdNotify?.ready();
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -253,7 +259,7 @@ export class Controller {
     }
 
     async stop(restart = false): Promise<void> {
-        sdNotify?.stopping();
+        this.sdNotify?.stopping(process.pid);
 
         // Call extensions
         await this.callExtensions('stop', this.extensions);
@@ -272,7 +278,7 @@ export class Controller {
             code = 1;
         }
 
-        sdNotify?.stopWatchdogMode();
+        this.sdNotify?.stopWatchdogMode();
         return this.exit(code, restart);
     }
 

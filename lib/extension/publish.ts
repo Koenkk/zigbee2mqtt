@@ -1,6 +1,8 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 import * as philips from 'zigbee-herdsman-converters/lib/philips';
 
@@ -117,7 +119,7 @@ export default class Publish extends Extension {
         // ever issue a read here, as we assume the device will properly report changes.
         // Only do this when the retrieve_state option is enabled for this device.
         // retrieve_state == deprecated
-        if (re instanceof Device && result && result.hasOwnProperty('readAfterWriteTime') && re.options.retrieve_state) {
+        if (re instanceof Device && result && result.readAfterWriteTime !== undefined && re.options.retrieve_state) {
             const convertGet = converter.convertGet;
             assert(convertGet !== undefined, 'Converter has `readAfterWriteTime` but no `convertGet`');
             setTimeout(() => convertGet(target, key, meta), result.readAfterWriteTime);
@@ -131,9 +133,9 @@ export default class Publish extends Extension {
          * (state) is probably unnecessary.
          */
         if (settings.get().homeassistant) {
-            const hasColorTemp = message.hasOwnProperty('color_temp');
-            const hasColor = message.hasOwnProperty('color');
-            const hasBrightness = message.hasOwnProperty('brightness');
+            const hasColorTemp = message.color_temp !== undefined;
+            const hasColor = message.color !== undefined;
+            const hasBrightness = message.brightness !== undefined;
             const isOn = entityState.state === 'ON' ? true : false;
             if (isOn && (hasColorTemp || hasColor) && !hasBrightness) {
                 delete message.state;
@@ -254,7 +256,7 @@ export default class Publish extends Extension {
                 endpointOrGroupID = localTarget.ID;
             }
 
-            if (!usedConverters.hasOwnProperty(endpointOrGroupID)) usedConverters[endpointOrGroupID] = [];
+            if (usedConverters[endpointOrGroupID] === undefined) usedConverters[endpointOrGroupID] = [];
             /* istanbul ignore next */
             // Match any key if the toZigbee converter defines no key.
             const converter = converters.find((c) => (!c.key || c.key.includes(key)) && (!c.endpoint || c.endpoint == endpointName));
@@ -302,7 +304,7 @@ export default class Publish extends Extension {
                 if (parsedTopic.type === 'set' && converter.convertSet) {
                     logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     const result = await converter.convertSet(localTarget, key, value, meta);
-                    const optimistic = !entitySettings.hasOwnProperty('optimistic') || entitySettings.optimistic;
+                    const optimistic = entitySettings.optimistic === undefined || entitySettings.optimistic;
 
                     if (result && result.state && optimistic) {
                         const msg = result.state;
