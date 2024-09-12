@@ -485,8 +485,8 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         this.eventBus.onScenesChanged(this, this.onScenesChanged);
-        this.eventBus.onEntityOptionsChanged(this, async (data) => this.discover(data.entity));
-        this.eventBus.onExposesChanged(this, async (data) => this.discover(data.device));
+        this.eventBus.onEntityOptionsChanged(this, async (data) => await this.discover(data.entity));
+        this.eventBus.onExposesChanged(this, async (data) => await this.discover(data.device));
 
         this.mqtt.subscribe(this.statusTopic);
         this.mqtt.subscribe(DEFAULT_STATUS_TOPIC);

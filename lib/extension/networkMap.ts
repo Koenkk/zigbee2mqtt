@@ -220,7 +220,7 @@ export default class NetworkMap extends Extension {
             } catch {
                 // Network is possibly congested, sleep 5 seconds to let the network settle.
                 await utils.sleep(5);
-                return request();
+                return await request();
             }
         };
 
@@ -233,7 +233,7 @@ export default class NetworkMap extends Extension {
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
             try {
-                const result = await requestWithRetry<zh.LQI>(async () => device.zh.lqi());
+                const result = await requestWithRetry<zh.LQI>(async () => await device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
@@ -244,7 +244,7 @@ export default class NetworkMap extends Extension {
 
             if (includeRoutes) {
                 try {
-                    const result = await requestWithRetry<zh.RoutingTable>(async () => device.zh.routingTable());
+                    const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {

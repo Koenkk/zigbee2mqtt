@@ -80,7 +80,7 @@ export default class MQTT {
             options.rejectUnauthorized = false;
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
             // https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
@@ -206,7 +206,7 @@ export default class MQTT {
             actualOptions.retain = false;
         }
 
-        return new Promise<void>((resolve) => {
+        return await new Promise<void>((resolve) => {
             this.client.publish(topic, payload, actualOptions, () => resolve());
         });
     }

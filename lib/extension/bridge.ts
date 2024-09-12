@@ -141,7 +141,7 @@ export default class Bridge extends Extension {
 
         // Zigbee events
         const publishEvent = async (type: string, data: KeyValue): Promise<void> =>
-            this.mqtt.publish('bridge/event', stringify({type, data}), {retain: false, qos: 0});
+            await this.mqtt.publish('bridge/event', stringify({type, data}), {retain: false, qos: 0});
         this.eventBus.onDeviceJoined(this, async (data) => {
             this.lastJoinedDeviceIeeeAddr = data.device.ieeeAddr;
             await this.publishDevices();
@@ -213,11 +213,11 @@ export default class Bridge extends Extension {
      */
 
     @bind async deviceOptions(message: KeyValue | string): Promise<MQTTResponse> {
-        return this.changeEntityOptions('device', message);
+        return await this.changeEntityOptions('device', message);
     }
 
     @bind async groupOptions(message: KeyValue | string): Promise<MQTTResponse> {
-        return this.changeEntityOptions('group', message);
+        return await this.changeEntityOptions('group', message);
     }
 
     @bind async bridgeOptions(message: KeyValue | string): Promise<MQTTResponse> {
@@ -256,11 +256,11 @@ export default class Bridge extends Extension {
     }
 
     @bind async deviceRemove(message: string | KeyValue): Promise<MQTTResponse> {
-        return this.removeEntity('device', message);
+        return await this.removeEntity('device', message);
     }
 
     @bind async groupRemove(message: string | KeyValue): Promise<MQTTResponse> {
-        return this.removeEntity('group', message);
+        return await this.removeEntity('group', message);
     }
 
     @bind async healthCheck(message: string | KeyValue): Promise<MQTTResponse> {
@@ -289,11 +289,11 @@ export default class Bridge extends Extension {
     }
 
     @bind async deviceRename(message: string | KeyValue): Promise<MQTTResponse> {
-        return this.renameEntity('device', message);
+        return await this.renameEntity('device', message);
     }
 
     @bind async groupRename(message: string | KeyValue): Promise<MQTTResponse> {
-        return this.renameEntity('group', message);
+        return await this.renameEntity('group', message);
     }
 
     @bind async restart(message: string | KeyValue): Promise<MQTTResponse> {
