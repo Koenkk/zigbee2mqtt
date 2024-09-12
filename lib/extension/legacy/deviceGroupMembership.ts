@@ -1,5 +1,7 @@
 /* istanbul ignore file */
+
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 
 import Device from '../../model/device';

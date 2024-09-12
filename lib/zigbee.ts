@@ -1,6 +1,8 @@
-import bind from 'bind-decorator';
 import {randomInt} from 'crypto';
+
+import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import {Controller} from 'zigbee-herdsman';
 import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 
@@ -114,7 +116,7 @@ export default class Zigbee {
             logger.debug(() =>
                 `Received Zigbee message from '${device.name}', type '${data.type}', ` +
                     `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
-                    (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
+                    (data['groupID'] !== undefined ? ` with groupID ${data.groupID}` : ``) +
                     (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``),
             );
             if (device.zh.type === 'Coordinator') return;

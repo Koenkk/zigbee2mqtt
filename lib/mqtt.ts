@@ -1,7 +1,8 @@
 import type {QoS} from 'mqtt-packet';
 
-import bind from 'bind-decorator';
 import fs from 'fs';
+
+import bind from 'bind-decorator';
 import * as mqtt from 'mqtt';
 
 import logger from './util/logger';
@@ -74,14 +75,14 @@ export default class MQTT {
             options.clientId = mqttSettings.client_id;
         }
 
-        if (mqttSettings.hasOwnProperty('reject_unauthorized') && !mqttSettings.reject_unauthorized) {
+        if (mqttSettings.reject_unauthorized !== undefined && !mqttSettings.reject_unauthorized) {
             logger.debug(`MQTT reject_unauthorized set false, ignoring certificate warnings.`);
             options.rejectUnauthorized = false;
         }
 
         return new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
-            // @ts-ignore https://github.com/Koenkk/zigbee2mqtt/issues/9822
+            // https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
             this.eventBus.onPublishAvailability(this, this.publishStateOnline);
 

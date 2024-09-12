@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import type TypeEventBus from 'lib/eventBus';
 import type TypeExtension from 'lib/extension/extension';
 import type TypeDevice from 'lib/model/device';
@@ -7,17 +6,17 @@ import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
 import type {QoS} from 'mqtt-packet';
+import type * as zhc from 'zigbee-herdsman-converters';
 import type {
-    NetworkParameters as ZHNetworkParameters,
     CoordinatorVersion as ZHCoordinatorVersion,
     LQI as ZHLQI,
+    NetworkParameters as ZHNetworkParameters,
     RoutingTable as ZHRoutingTable,
     RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-import type {Device as ZHDevice, Group as ZHGroup, Endpoint as ZHEndpoint} from 'zigbee-herdsman/dist/controller/model';
+import type {Device as ZHDevice, Endpoint as ZHEndpoint, Group as ZHGroup} from 'zigbee-herdsman/dist/controller/model';
 import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
-import type * as zhc from 'zigbee-herdsman-converters';
 
 import {LogLevel} from 'lib/util/settings';
 
@@ -34,8 +33,7 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type ExternalDefinition = zhc.Definition & {homeassistant: any};
+    type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
     interface MQTTResponse {
         data: KeyValue;
         status: 'error' | 'ok';
@@ -114,7 +112,6 @@ declare global {
     }
 
     // Settings
-    // eslint-disable camelcase
     interface Settings {
         homeassistant?: {
             discovery_topic: string;

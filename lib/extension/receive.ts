@@ -1,7 +1,9 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';

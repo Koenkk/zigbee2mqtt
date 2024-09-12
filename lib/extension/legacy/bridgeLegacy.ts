@@ -1,4 +1,5 @@
 import assert from 'assert';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
@@ -67,7 +68,7 @@ export default class BridgeLegacy extends Extension {
             return;
         }
 
-        if (!json.hasOwnProperty('friendly_name') || !json.hasOwnProperty('options')) {
+        if (json.friendly_name === undefined || json.options === undefined) {
             logger.error('Invalid JSON message, should contain "friendly_name" and "options"');
             return;
         }
@@ -227,11 +228,11 @@ export default class BridgeLegacy extends Extension {
         try {
             // json payload with id and friendly_name
             const json = JSON.parse(message);
-            if (json.hasOwnProperty('id')) {
+            if (json.id !== undefined) {
                 id = json.id;
                 name = `group_${id}`;
             }
-            if (json.hasOwnProperty('friendly_name')) {
+            if (json.friendly_name !== undefined) {
                 name = json.friendly_name;
             }
         } catch {
@@ -321,7 +322,7 @@ export default class BridgeLegacy extends Extension {
             await cleanup();
         } catch (error) {
             logger.error(`Failed to ${lookup[action][2]} ${entity.name} (${error})`);
-            // eslint-disable-next-line
+
             logger.error(`See https://www.zigbee2mqtt.io/guide/usage/mqtt_topics_and_messages.html#zigbee2mqtt-bridge-request for more info`);
 
             await this.mqtt.publish('bridge/log', stringify({type: `device_${lookup[action][0]}_failed`, message}));
@@ -342,7 +343,7 @@ export default class BridgeLegacy extends Extension {
 
         const option = match[1];
 
-        if (!this.supportedOptions.hasOwnProperty(option)) {
+        if (this.supportedOptions[option] === undefined) {
             return;
         }
 

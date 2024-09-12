@@ -172,11 +172,11 @@ export default class Report extends Extension {
         // Gledopto devices don't support reporting.
         if (devicesNotSupportingReporting.includes(device.definition) || device.definition.vendor === 'Gledopto') return false;
 
-        if (this.enabled && device.zh.meta.hasOwnProperty('reporting') && device.zh.meta.reporting === reportKey) {
+        if (this.enabled && device.zh.meta.reporting !== undefined && device.zh.meta.reporting === reportKey) {
             return false;
         }
 
-        if (!this.enabled && !device.zh.meta.hasOwnProperty('reporting')) {
+        if (!this.enabled && device.zh.meta.reporting === undefined) {
             return false;
         }
 
