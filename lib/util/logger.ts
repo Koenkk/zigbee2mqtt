@@ -190,32 +190,33 @@ class Logger {
         return this.cachedNamespacedLevels[namespace];
     }
 
-    private log(level: settings.LogLevel, message: string, namespace: string): void {
+    private log(level: settings.LogLevel, messageOrLambda: string | (() => string), namespace: string): void {
         const nsLevel = this.cacheNamespacedLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
+            const message: string = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
             this.logger.log(level, `${namespace}: ${message}`);
         }
     }
 
-    public error(message: string, namespace: string = 'z2m'): void {
-        this.log('error', message, namespace);
+    public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('error', messageOrLambda, namespace);
     }
 
-    public warning(message: string, namespace: string = 'z2m'): void {
-        this.log('warning', message, namespace);
+    public warning(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('warning', messageOrLambda, namespace);
     }
 
-    public info(message: string, namespace: string = 'z2m'): void {
-        this.log('info', message, namespace);
+    public info(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('info', messageOrLambda, namespace);
     }
 
-    public debug(message: string, namespace: string = 'z2m'): void {
+    public debug(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
         if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
 
-        this.log('debug', message, namespace);
+        this.log('debug', messageOrLambda, namespace);
     }
 
     // Cleanup any old log directory.

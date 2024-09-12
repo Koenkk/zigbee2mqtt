@@ -146,7 +146,7 @@ export default class MQTT {
     @bind public onMessage(topic: string, message: Buffer): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
-            logger.debug(`Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
+            logger.debug(() => `Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
             this.eventBus.emitMQTTMessage({topic, message: message.toString()});
         }
 
@@ -197,7 +197,7 @@ export default class MQTT {
         }
 
         if (!skipLog) {
-            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`, NS);
+            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};

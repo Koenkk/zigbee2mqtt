@@ -58,8 +58,10 @@ export default class Zigbee {
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
-        const herdsmanSettingsLog = JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"');
-        logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
+        logger.debug(
+            () =>
+                `Using zigbee-herdsman with settings: '${stringify(JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"'))}'`,
+        );
 
         let startResult;
         try {
@@ -115,7 +117,8 @@ export default class Zigbee {
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
             logger.debug(
-                `Received Zigbee message from '${device.name}', type '${data.type}', ` +
+                () =>
+                    `Received Zigbee message from '${device.name}', type '${data.type}', ` +
                     `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
                     (data['groupID'] !== undefined ? ` with groupID ${data.groupID}` : ``) +
                     (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``),
