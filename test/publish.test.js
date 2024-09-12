@@ -600,7 +600,7 @@ describe('Publish', () => {
         await MQTT.events.message(`zigbee2mqtt/${device.ieeeAddr}/set`, stringify({state: 'OFF'}));
         await flushPromises();
         console.log(logger.error.mock.calls);
-        expect(logger.error).toHaveBeenCalledWith(`Cannot publish to unsupported device 'button_double_key_interviewing'`);
+        expect(logger.log).toHaveBeenCalledWith('error', `Cannot publish to unsupported device 'button_double_key_interviewing'`, 'z2m');
     });
 
     it('Should log error when device has no such endpoint (via property)', async () => {

@@ -9,7 +9,7 @@ const mock = {
     log: jest.fn().mockImplementation((level, message, namespace = 'z2m') => {
         if (transportsEnabled) {
             for (const transport of transports) {
-                mock.callTransports(level, message, namespace);
+                transport.log({level, message, namespace}, () => {});
             }
         }
     }),
