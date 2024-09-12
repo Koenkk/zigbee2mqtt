@@ -332,7 +332,7 @@ describe('Controller', () => {
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
         expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: 'dummytopic', message: 'dummymessage'});
-        expect(logger.callTransports).toHaveBeenCalledWith('debug', "Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
+        expect(logger.log).toHaveBeenCalledWith('debug', "Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
     });
 
     it('Skip MQTT messages on topic we published to', async () => {

@@ -56,8 +56,7 @@ export default class Zigbee {
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
-        const herdsmanSettingsLog = JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"');
-        logger.debug(`Using zigbee-herdsman with settings: '${stringify(herdsmanSettingsLog)}'`);
+        logger.debug(() => `Using zigbee-herdsman with settings: '${stringify(JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"'))}'`);
 
         let startResult;
         try {
@@ -112,7 +111,7 @@ export default class Zigbee {
         this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
-            logger.debug(
+            logger.debug(() =>
                 `Received Zigbee message from '${device.name}', type '${data.type}', ` +
                     `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
                     (data.hasOwnProperty('groupID') ? ` with groupID ${data.groupID}` : ``) +
@@ -123,8 +122,8 @@ export default class Zigbee {
         });
 
         logger.info(`zigbee-herdsman started (${startResult})`);
-        logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
-        logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
+        logger.info(() => `Coordinator firmware version: '${stringify(this.getCoordinatorVersion())}'`);
+        logger.debug(() => `Zigbee network parameters: ${stringify(this.herdsman.getNetworkParameters())}`);
 
         for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             // If a passlist is used, all other device will be removed from the network.

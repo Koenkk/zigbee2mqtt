@@ -1,28 +1,23 @@
 let level = 'info';
 let debugNamespaceIgnore = '';
 let namespacedLevels = {};
-
 let transports = [];
-
 let transportsEnabled = false;
 
+const getMessage = (messageOrLambda) => (messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda);
 const mock = {
-    callTransports: jest.fn().mockImplementation((level, message, namespace) => {
+    log: jest.fn().mockImplementation((level, message, namespace = 'z2m') => {
         if (transportsEnabled) {
             for (const transport of transports) {
-                transport.log({level, message, namespace}, () => {});
+                mock.callTransports(level, message, namespace);
             }
         }
     }),
-    log: (level, messageOrLambda, namespace = 'z2m') => {
-        const message = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
-        mock.callTransports(level, message, namespace);
-    },
     init: jest.fn(),
-    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('info', messageOrLambda, namespace)),
-    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('warning', messageOrLambda, namespace)),
-    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('error', messageOrLambda, namespace)),
-    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('debug', messageOrLambda, namespace)),
+    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('info', getMessage(messageOrLambda), namespace)),
+    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('warning', getMessage(messageOrLambda), namespace)),
+    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('error', getMessage(messageOrLambda), namespace)),
+    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('debug', getMessage(messageOrLambda), namespace)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),
