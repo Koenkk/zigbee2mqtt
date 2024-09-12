@@ -199,7 +199,7 @@ export default class Zigbee {
     }
 
     async getCoordinatorVersion(): Promise<zh.CoordinatorVersion> {
-        return this.herdsman.getCoordinatorVersion();
+        return await this.herdsman.getCoordinatorVersion();
     }
 
     isStopping(): boolean {
@@ -207,7 +207,7 @@ export default class Zigbee {
     }
 
     async backup(): Promise<void> {
-        return this.herdsman.backup();
+        return await this.herdsman.backup();
     }
 
     async coordinatorCheck(): Promise<{missingRouters: Device[]}> {
@@ -216,7 +216,7 @@ export default class Zigbee {
     }
 
     async getNetworkParameters(): Promise<zh.NetworkParameters> {
-        return this.herdsman.getNetworkParameters();
+        return await this.herdsman.getNetworkParameters();
     }
 
     async reset(type: 'soft' | 'hard'): Promise<void> {
@@ -386,11 +386,11 @@ export default class Zigbee {
     }
 
     async touchlinkFactoryResetFirst(): Promise<boolean> {
-        return this.herdsman.touchlinkFactoryResetFirst();
+        return await this.herdsman.touchlinkFactoryResetFirst();
     }
 
     async touchlinkFactoryReset(ieeeAddr: string, channel: number): Promise<boolean> {
-        return this.herdsman.touchlinkFactoryReset(ieeeAddr, channel);
+        return await this.herdsman.touchlinkFactoryReset(ieeeAddr, channel);
     }
 
     async addInstallCode(installCode: string): Promise<void> {
@@ -402,7 +402,7 @@ export default class Zigbee {
     }
 
     async touchlinkScan(): Promise<{ieeeAddr: string; channel: number}[]> {
-        return this.herdsman.touchlinkScan();
+        return await this.herdsman.touchlinkScan();
     }
 
     createGroup(ID: number): Group {

@@ -53,7 +53,7 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
         return {version: packageJSON.version, commitHash: undefined};
     }
 
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         const version = packageJSON.version;
 
         git.getLastCommit((err: Error, commit: {shortHash: string}) => {

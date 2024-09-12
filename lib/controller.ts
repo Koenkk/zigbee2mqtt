@@ -165,7 +165,7 @@ export class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions');
             logger.error('Exiting...');
             logger.error((error as Error).stack!);
-            return this.exit(1);
+            return await this.exit(1);
         }
 
         // Disable some legacy options on new network creation
@@ -211,7 +211,7 @@ export class Controller {
         } catch (error) {
             logger.error(`MQTT failed to connect, exiting... (${(error as Error).message})`);
             await this.zigbee.stop();
-            return this.exit(1);
+            return await this.exit(1);
         }
 
         // Call extensions
@@ -279,12 +279,12 @@ export class Controller {
         }
 
         this.sdNotify?.stopWatchdogMode();
-        return this.exit(code, restart);
+        return await this.exit(code, restart);
     }
 
     async exit(code: number, restart = false): Promise<void> {
         await logger.end();
-        return this.exitCallback(code, restart);
+        return await this.exitCallback(code, restart);
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {

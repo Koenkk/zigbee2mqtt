@@ -113,7 +113,7 @@ export default class Frontend extends Extension {
         this.wss?.close();
         /* istanbul ignore else */
         if (this.server) {
-            return new Promise((cb: () => void) => this.server!.close(cb));
+            return await new Promise((cb: () => void) => this.server!.close(cb));
         }
     }
 
