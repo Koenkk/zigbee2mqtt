@@ -128,8 +128,8 @@ export default class Zigbee {
         });
 
         logger.info(`zigbee-herdsman started (${startResult})`);
-        logger.info(() => `Coordinator firmware version: '${stringify(this.getCoordinatorVersion())}'`);
-        logger.debug(() => `Zigbee network parameters: ${stringify(this.herdsman.getNetworkParameters())}`);
+        logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
+        logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
 
         for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             // If a passlist is used, all other device will be removed from the network.
