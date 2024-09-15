@@ -79,7 +79,7 @@ describe('Controller', () => {
             databaseBackupPath: path.join(data.mockDir, 'database.db.backup'),
             backupPath: path.join(data.mockDir, 'coordinator_backup.json'),
             acceptJoiningDeviceHandler: expect.any(Function),
-            adapter: {concurrent: null, delay: null, disableLED: false, transmitPower: 14},
+            adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14},
             serialPort: {baudRate: undefined, rtscts: undefined, path: '/dev/dummy'},
         });
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
@@ -325,17 +325,24 @@ describe('Controller', () => {
     });
 
     it('Handle mqtt message', async () => {
+        const eventbus = controller.eventBus;
+        let spyEventbusEmitMQTTMessage = jest.spyOn(eventbus, 'emitMQTTMessage').mockImplementation();
+
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('dummytopic', 'dummymessage');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: 'dummytopic', message: 'dummymessage'});
+        expect(logger.log).toHaveBeenCalledWith('debug', "Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
     });
 
     it('Skip MQTT messages on topic we published to', async () => {
+        const eventbus = controller.eventBus;
+        let spyEventbusEmitMQTTMessage = jest.spyOn(eventbus, 'emitMQTTMessage').mockImplementation();
+
         await controller.start();
         logger.debug.mockClear();
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
-        expect(logger.debug).toHaveBeenCalledWith("Received MQTT message on 'zigbee2mqtt/skip-this-topic' with data 'skipped'", LOG_MQTT_NS);
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: 'zigbee2mqtt/skip-this-topic', message: 'skipped'});
         logger.debug.mockClear();
         await controller.mqtt.publish('skip-this-topic', '', {});
         await MQTT.events.message('zigbee2mqtt/skip-this-topic', 'skipped');
@@ -355,8 +362,10 @@ describe('Controller', () => {
         };
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(
+        expect(logger.log).toHaveBeenCalledWith(
+            'debug',
             `Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1`,
+            'z2m',
         );
     });
 
@@ -374,15 +383,17 @@ describe('Controller', () => {
         };
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(
+        expect(logger.log).toHaveBeenCalledWith(
+            'debug',
             `Received Zigbee message from 'bulb', type 'attributeReport', cluster 'genBasic', data '{"modelId":"TRADFRI bulb E27 WS opal 980lm"}' from endpoint 1 with groupID 0`,
+            'z2m',
         );
     });
 
     it('Should add entities which are missing from configuration but are in database to configuration', async () => {
         await controller.start();
         const device = zigbeeHerdsman.devices.notInSettings;
-        expect(settings.getDevice(device.ieeeAddr)).not.toBeNull();
+        expect(settings.getDevice(device.ieeeAddr)).not.toBeUndefined();
     });
 
     it('On zigbee deviceJoined', async () => {
@@ -964,8 +975,10 @@ describe('Controller', () => {
         };
         await zigbeeHerdsman.events.message(payload);
         await flushPromises();
-        expect(logger.debug).toHaveBeenCalledWith(
+        expect(logger.log).toHaveBeenCalledWith(
+            'debug',
             `Received Zigbee message from 'Coordinator', type 'attributeReport', cluster 'genBasic', data '{"modelId":null}' from endpoint 1, ignoring since it is from coordinator`,
+            'z2m',
         );
     });
 

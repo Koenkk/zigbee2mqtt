@@ -1,7 +1,8 @@
 import type {QoS} from 'mqtt-packet';
 
-import bind from 'bind-decorator';
 import fs from 'fs';
+
+import bind from 'bind-decorator';
 import * as mqtt from 'mqtt';
 
 import logger from './util/logger';
@@ -12,11 +13,12 @@ const NS = 'z2m:mqtt';
 
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
-    private connectionTimer: NodeJS.Timeout;
+    private connectionTimer?: NodeJS.Timeout;
+    // @ts-expect-error initialized in `connect`
     private client: mqtt.MqttClient;
     private eventBus: EventBus;
     private initialConnect = true;
-    private republishRetainedTimer: NodeJS.Timeout;
+    private republishRetainedTimer?: NodeJS.Timeout;
     public retainedMessages: {
         [s: string]: {payload: string; options: MQTTOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
     } = {};
@@ -73,14 +75,14 @@ export default class MQTT {
             options.clientId = mqttSettings.client_id;
         }
 
-        if (mqttSettings.hasOwnProperty('reject_unauthorized') && !mqttSettings.reject_unauthorized) {
+        if (mqttSettings.reject_unauthorized !== undefined && !mqttSettings.reject_unauthorized) {
             logger.debug(`MQTT reject_unauthorized set false, ignoring certificate warnings.`);
             options.rejectUnauthorized = false;
         }
 
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             this.client = mqtt.connect(mqttSettings.server, options);
-            // @ts-ignore https://github.com/Koenkk/zigbee2mqtt/issues/9822
+            // https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
             this.eventBus.onPublishAvailability(this, this.publishStateOnline);
 
@@ -126,6 +128,7 @@ export default class MQTT {
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
+        clearTimeout(this.republishRetainedTimer);
         await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
@@ -143,14 +146,14 @@ export default class MQTT {
     @bind public onMessage(topic: string, message: Buffer): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
-            logger.debug(`Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
+            logger.debug(() => `Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
             this.eventBus.emitMQTTMessage({topic, message: message.toString()});
         }
 
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
             clearTimeout(this.republishRetainedTimer);
 
-            this.republishRetainedTimer = null;
+            this.republishRetainedTimer = undefined;
         }
     }
 
@@ -194,7 +197,7 @@ export default class MQTT {
         }
 
         if (!skipLog) {
-            logger.info(`MQTT publish: topic '${topic}', payload '${payload}'`, NS);
+            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
         const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
@@ -203,7 +206,7 @@ export default class MQTT {
             actualOptions.retain = false;
         }
 
-        return new Promise<void>((resolve) => {
+        return await new Promise<void>((resolve) => {
             this.client.publish(topic, payload, actualOptions, () => resolve());
         });
     }

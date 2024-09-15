@@ -1,10 +1,12 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
-import equals from 'fast-deep-equal/es6';
+import assert from 'assert';
 import fs from 'fs';
-import humanizeDuration from 'humanize-duration';
 import path from 'path';
 import vm from 'vm';
+
+import equals from 'fast-deep-equal/es6';
+import humanizeDuration from 'humanize-duration';
 
 import data from './data';
 
@@ -43,19 +45,19 @@ function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash: string; version: string}> {
+async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
     const git = await import('git-last-commit');
     const packageJSON = await import('../..' + '/package.json');
 
     if (!includeCommitHash) {
-        return {version: packageJSON.version, commitHash: null};
+        return {version: packageJSON.version, commitHash: undefined};
     }
 
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
         const version = packageJSON.version;
 
         git.getLastCommit((err: Error, commit: {shortHash: string}) => {
-            let commitHash = null;
+            let commitHash = undefined;
 
             if (err) {
                 try {
@@ -100,7 +102,7 @@ function objectIsEmpty(object: object): boolean {
 
 function objectHasProperties(object: {[s: string]: unknown}, properties: string[]): boolean {
     for (const property of properties) {
-        if (!object.hasOwnProperty(property)) {
+        if (object[property] === undefined) {
             return false;
         }
     }
@@ -119,15 +121,20 @@ function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
 }
 
 function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown): unknown {
-    return object && object.hasOwnProperty(key) ? object[key] : defaultValue;
+    return object && object[key] !== undefined ? object[key] : defaultValue;
 }
 
-function getResponse(request: KeyValue | string, data: KeyValue, error: string): MQTTResponse {
+function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
     const response: MQTTResponse = {data, status: error ? 'error' : 'ok'};
-    if (error) response.error = error;
-    if (typeof request === 'object' && request.hasOwnProperty('transaction')) {
+
+    if (error) {
+        response.error = error;
+    }
+
+    if (typeof request === 'object' && request['transaction'] !== undefined) {
         response.transaction = request.transaction;
     }
+
     return response;
 }
 
@@ -204,24 +211,24 @@ function toNetworkAddressHex(value: number): string {
     return `0x${'0'.repeat(4 - hex.length)}${hex}`;
 }
 
-// eslint-disable-next-line
-function toSnakeCase(value: string | KeyValue): any {
-    if (typeof value === 'object') {
-        value = {...value};
-        for (const key of Object.keys(value)) {
-            const keySnakeCase = toSnakeCase(key);
-            if (key !== keySnakeCase) {
-                value[keySnakeCase] = value[key];
-                delete value[key];
-            }
+function toSnakeCaseObject(value: KeyValue): KeyValue {
+    value = {...value};
+    for (const key of Object.keys(value)) {
+        const keySnakeCase = toSnakeCaseString(key);
+        assert(typeof keySnakeCase === 'string');
+        if (key !== keySnakeCase) {
+            value[keySnakeCase] = value[key];
+            delete value[key];
         }
-        return value;
-    } else {
-        return value
-            .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
-            .replace(/^_/, '')
-            .replace('_i_d', '_id');
     }
+    return value;
+}
+
+function toSnakeCaseString(value: string): string {
+    return value
+        .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
+        .replace(/^_/, '')
+        .replace('_i_d', '_id');
 }
 
 function charRange(start: string, stop: string): number[] {
@@ -319,12 +326,12 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     return true;
 }
 
-function isEndpoint(obj: unknown): obj is zh.Endpoint {
-    return obj.constructor.name.toLowerCase() === 'endpoint';
+function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
+    return obj?.constructor.name.toLowerCase() === 'endpoint';
 }
 
 function flatten<Type>(arr: Type[][]): Type[] {
-    return [].concat(...arr);
+    return ([] as Type[]).concat(...arr);
 }
 
 function arrayUnique<Type>(arr: Type[]): Type[] {
@@ -332,7 +339,7 @@ function arrayUnique<Type>(arr: Type[]): Type[] {
 }
 
 function isZHGroup(obj: unknown): obj is zh.Group {
-    return obj.constructor.name.toLowerCase() === 'group';
+    return obj?.constructor.name.toLowerCase() === 'group';
 }
 
 function availabilityPayload(state: 'online' | 'offline', settings: Settings): string {
@@ -362,7 +369,7 @@ async function publishLastSeen(
     }
 }
 
-function filterProperties(filter: string[], data: KeyValue): void {
+function filterProperties(filter: string[] | undefined, data: KeyValue): void {
     if (filter) {
         for (const property of Object.keys(data)) {
             if (filter.find((p) => property.match(`^${p}$`))) {
@@ -372,22 +379,38 @@ function filterProperties(filter: string[], data: KeyValue): void {
     }
 }
 
-export function isNumericExposeFeature(feature: zhc.Expose): feature is zhc.Numeric {
-    return feature?.type === 'numeric';
+export function isNumericExpose(expose: zhc.Expose): expose is zhc.Numeric {
+    return expose?.type === 'numeric';
 }
 
-export function isEnumExposeFeature(feature: zhc.Expose): feature is zhc.Enum {
-    return feature?.type === 'enum';
+export function assertEnumExpose(expose: zhc.Expose): asserts expose is zhc.Enum {
+    assert(expose?.type === 'enum');
 }
 
-export function isBinaryExposeFeature(feature: zhc.Expose): feature is zhc.Binary {
-    return feature?.type === 'binary';
+export function assertNumericExpose(expose: zhc.Expose): asserts expose is zhc.Numeric {
+    assert(expose?.type === 'numeric');
+}
+
+export function assertBinaryExpose(expose: zhc.Expose): asserts expose is zhc.Binary {
+    assert(expose?.type === 'binary');
+}
+
+export function isEnumExpose(expose: zhc.Expose): expose is zhc.Enum {
+    return expose?.type === 'enum';
+}
+
+export function isBinaryExpose(expose: zhc.Expose): expose is zhc.Binary {
+    return expose?.type === 'binary';
+}
+
+export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
+    return expose.type === 'light';
 }
 
 function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
     const scenes: {[id: number]: Scene} = {};
-    const endpoints = isEndpoint(entity) ? [entity] : entity.members;
-    const groupID = isEndpoint(entity) ? 0 : entity.groupID;
+    const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;
+    const groupID = isZHEndpoint(entity) ? 0 : entity.groupID;
 
     for (const endpoint of endpoints) {
         for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
@@ -425,8 +448,9 @@ export default {
     loadModuleFromFile,
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
-    toSnakeCase,
-    isEndpoint,
+    toSnakeCaseString,
+    toSnakeCaseObject,
+    isZHEndpoint,
     isZHGroup,
     hours,
     minutes,

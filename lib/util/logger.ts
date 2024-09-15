@@ -1,8 +1,9 @@
 import assert from 'assert';
 import fs from 'fs';
+import path from 'path';
+
 import fx from 'mkdir-recursive';
 import moment from 'moment';
-import path from 'path';
 import {rimrafSync} from 'rimraf';
 import winston from 'winston';
 
@@ -11,13 +12,20 @@ import * as settings from './settings';
 const NAMESPACE_SEPARATOR = ':';
 
 class Logger {
+    // @ts-expect-error initalized in `init`
     private level: settings.LogLevel;
+    // @ts-expect-error initalized in `init`
     private output: string[];
+    // @ts-expect-error initalized in `init`
     private directory: string;
+    // @ts-expect-error initalized in `init`
     private logger: winston.Logger;
+    // @ts-expect-error initalized in `init`
     private fileTransport: winston.transports.FileTransportInstance;
     private debugNamespaceIgnoreRegex?: RegExp;
+    // @ts-expect-error initalized in `init`
     private namespacedLevels: Record<string, settings.LogLevel>;
+    // @ts-expect-error initalized in `init`
     private cachedNamespacedLevels: Record<string, settings.LogLevel>;
 
     public init(): void {
@@ -101,7 +109,7 @@ class Logger {
         /* istanbul ignore next */
         if (this.output.includes('syslog')) {
             logging += `, syslog`;
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require('winston-syslog').Syslog;
 
             const options: KeyValue = {
@@ -110,7 +118,7 @@ class Logger {
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options.hasOwnProperty('type')) {
+            if (options['type'] !== undefined) {
                 options.type = options.type.toString();
             }
 
@@ -182,32 +190,33 @@ class Logger {
         return this.cachedNamespacedLevels[namespace];
     }
 
-    private log(level: settings.LogLevel, message: string, namespace: string): void {
+    private log(level: settings.LogLevel, messageOrLambda: string | (() => string), namespace: string): void {
         const nsLevel = this.cacheNamespacedLevel(namespace);
 
         if (settings.LOG_LEVELS.indexOf(level) <= settings.LOG_LEVELS.indexOf(nsLevel)) {
+            const message: string = messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda;
             this.logger.log(level, `${namespace}: ${message}`);
         }
     }
 
-    public error(message: string, namespace: string = 'z2m'): void {
-        this.log('error', message, namespace);
+    public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('error', messageOrLambda, namespace);
     }
 
-    public warning(message: string, namespace: string = 'z2m'): void {
-        this.log('warning', message, namespace);
+    public warning(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('warning', messageOrLambda, namespace);
     }
 
-    public info(message: string, namespace: string = 'z2m'): void {
-        this.log('info', message, namespace);
+    public info(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+        this.log('info', messageOrLambda, namespace);
     }
 
-    public debug(message: string, namespace: string = 'z2m'): void {
+    public debug(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
         if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
 
-        this.log('debug', message, namespace);
+        this.log('debug', messageOrLambda, namespace);
     }
 
     // Cleanup any old log directory.

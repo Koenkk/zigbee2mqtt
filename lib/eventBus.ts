@@ -2,12 +2,41 @@ import events from 'events';
 
 import logger from './util/logger';
 
-// eslint-disable-next-line
 type ListenerKey = object;
 
+interface EventBusMap {
+    adapterDisconnected: [];
+    permitJoinChanged: [data: eventdata.PermitJoinChanged];
+    publishAvailability: [];
+    deviceRenamed: [data: eventdata.EntityRenamed];
+    deviceRemoved: [data: eventdata.EntityRemoved];
+    lastSeenChanged: [data: eventdata.LastSeenChanged];
+    deviceNetworkAddressChanged: [data: eventdata.DeviceNetworkAddressChanged];
+    deviceAnnounce: [data: eventdata.DeviceAnnounce];
+    deviceInterview: [data: eventdata.DeviceInterview];
+    deviceJoined: [data: eventdata.DeviceJoined];
+    entityOptionsChanged: [data: eventdata.EntityOptionsChanged];
+    exposesChanged: [data: eventdata.ExposesChanged];
+    deviceLeave: [data: eventdata.DeviceLeave];
+    deviceMessage: [data: eventdata.DeviceMessage];
+    mqttMessage: [data: eventdata.MQTTMessage];
+    mqttMessagePublished: [data: eventdata.MQTTMessagePublished];
+    publishEntityState: [data: eventdata.PublishEntityState];
+    groupMembersChanged: [data: eventdata.GroupMembersChanged];
+    devicesChanged: [];
+    scenesChanged: [data: eventdata.ScenesChanged];
+    reconfigure: [data: eventdata.Reconfigure];
+    stateChange: [data: eventdata.StateChange];
+}
+type EventBusListener<K> = K extends keyof EventBusMap
+    ? EventBusMap[K] extends unknown[]
+        ? (...args: EventBusMap[K]) => Promise<void> | void
+        : never
+    : never;
+
 export default class EventBus {
-    private callbacksByExtension: {[s: string]: {event: string; callback: (...args: unknown[]) => void}[]} = {};
-    private emitter = new events.EventEmitter();
+    private callbacksByExtension: {[s: string]: {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]} = {};
+    private emitter = new events.EventEmitter<EventBusMap>();
 
     constructor() {
         this.emitter.setMaxListeners(100);
@@ -167,18 +196,22 @@ export default class EventBus {
         this.on('stateChange', callback, key);
     }
 
-    private on(event: string, callback: (...args: unknown[]) => Promise<void> | void, key: ListenerKey): void {
-        if (!this.callbacksByExtension[key.constructor.name]) this.callbacksByExtension[key.constructor.name] = [];
-        const wrappedCallback = async (...args: unknown[]): Promise<void> => {
+    private on<K extends keyof EventBusMap>(event: K, callback: EventBusListener<K>, key: ListenerKey): void {
+        if (!this.callbacksByExtension[key.constructor.name]) {
+            this.callbacksByExtension[key.constructor.name] = [];
+        }
+
+        const wrappedCallback = async (...args: never[]): Promise<void> => {
             try {
                 await callback(...args);
             } catch (error) {
-                logger.error(`EventBus error '${key.constructor.name}/${event}': ${error.message}`);
-                logger.debug(error.stack);
+                logger.error(`EventBus error '${key.constructor.name}/${event}': ${(error as Error).message}`);
+                logger.debug((error as Error).stack!);
             }
         };
+
         this.callbacksByExtension[key.constructor.name].push({event, callback: wrappedCallback});
-        this.emitter.on(event, wrappedCallback);
+        this.emitter.on(event, wrappedCallback as EventBusListener<K>);
     }
 
     public removeListeners(key: ListenerKey): void {

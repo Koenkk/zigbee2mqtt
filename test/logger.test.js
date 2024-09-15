@@ -164,6 +164,9 @@ describe('Logger', () => {
         logger[level]('msg', 'abcd');
         expect(logSpy).toHaveBeenLastCalledWith(level, 'abcd: msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+        logger[level](() => 'func msg', 'abcd');
+        expect(logSpy).toHaveBeenLastCalledWith(level, 'abcd: func msg');
+        expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
 
         for (const higherLevel of otherLevels.higher) {
             logger[higherLevel]('higher msg');

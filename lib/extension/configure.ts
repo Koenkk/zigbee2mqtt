@@ -1,5 +1,6 @@
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import Device from '../model/device';
@@ -19,7 +20,7 @@ export default class Configure extends Extension {
 
     @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
-        if (data.device.zh.meta?.hasOwnProperty('configured')) {
+        if (data.device.zh.meta?.configured !== undefined) {
             delete data.device.zh.meta.configured;
             data.device.zh.save();
         }
@@ -43,8 +44,8 @@ export default class Configure extends Extension {
             await this.configure(device, 'mqtt_message', true);
         } else if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
-            const ID = typeof message === 'object' && message.hasOwnProperty('id') ? message.id : message;
-            let error = null;
+            const ID = typeof message === 'object' && message.id !== undefined ? message.id : message;
+            let error: string | undefined;
 
             const device = this.zigbee.resolveEntity(ID);
             if (!device || !(device instanceof Device)) {
@@ -55,7 +56,7 @@ export default class Configure extends Extension {
                 try {
                     await this.configure(device, 'mqtt_message', true, true);
                 } catch (e) {
-                    error = `Failed to configure (${e.message})`;
+                    error = `Failed to configure (${(e as Error).message})`;
                 }
             }
 
@@ -76,7 +77,7 @@ export default class Configure extends Extension {
         });
 
         this.eventBus.onDeviceJoined(this, async (data) => {
-            if (data.device.zh.meta.hasOwnProperty('configured')) {
+            if (data.device.zh.meta.configured !== undefined) {
                 delete data.device.zh.meta.configured;
                 data.device.zh.save();
             }
@@ -95,12 +96,16 @@ export default class Configure extends Extension {
         force = false,
         throwError = false,
     ): Promise<void> {
+        if (!device.definition?.configure) {
+            return;
+        }
+
         if (!force) {
-            if (device.options.disabled || !device.definition?.configure || !device.zh.interviewCompleted) {
+            if (device.options.disabled || !device.zh.interviewCompleted) {
                 return;
             }
 
-            if (device.zh.meta?.hasOwnProperty('configured')) {
+            if (device.zh.meta?.configured !== undefined) {
                 return;
             }
 
@@ -116,7 +121,7 @@ export default class Configure extends Extension {
 
         this.configuring.add(device.ieeeAddr);
 
-        if (!this.attempts.hasOwnProperty(device.ieeeAddr)) {
+        if (this.attempts[device.ieeeAddr] === undefined) {
             this.attempts[device.ieeeAddr] = 0;
         }
 
@@ -130,7 +135,7 @@ export default class Configure extends Extension {
         } catch (error) {
             this.attempts[device.ieeeAddr]++;
             const attempt = this.attempts[device.ieeeAddr];
-            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${error.stack})`;
+            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${(error as Error).stack})`;
             logger.error(msg);
 
             if (throwError) {

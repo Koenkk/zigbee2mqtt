@@ -253,7 +253,7 @@ describe('Bridge legacy', () => {
         expect(settings.getDevice('bulb_color')).toStrictEqual({ID: '0x000b57fffec6a5b3', friendly_name: 'bulb_color', retain: false});
         MQTT.events.message('zigbee2mqtt/bridge/config/rename', stringify({old: 'bulb_color', new: 'bulb_color2'}));
         await flushPromises();
-        expect(settings.getDevice('bulb_color')).toStrictEqual(null);
+        expect(settings.getDevice('bulb_color')).toBeUndefined();
         expect(settings.getDevice('bulb_color2')).toStrictEqual(bulb_color2);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
@@ -374,7 +374,7 @@ describe('Bridge legacy', () => {
         const group = zigbeeHerdsman.groups.group_1;
         MQTT.events.message('zigbee2mqtt/bridge/config/remove_group', 'group_1');
         await flushPromises();
-        expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
+        expect(settings.getGroup('to_be_removed')).toBeUndefined();
         expect(group.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
@@ -388,7 +388,7 @@ describe('Bridge legacy', () => {
         const group = zigbeeHerdsman.groups.group_1;
         MQTT.events.message('zigbee2mqtt/bridge/config/force_remove_group', 'group_1');
         await flushPromises();
-        expect(settings.getGroup('to_be_removed')).toStrictEqual(null);
+        expect(settings.getGroup('to_be_removed')).toBeUndefined();
         expect(group.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
@@ -424,7 +424,7 @@ describe('Bridge legacy', () => {
         await flushPromises();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(controller.state[device.ieeeAddr]).toBeUndefined();
-        expect(settings.getDevice('bulb_color')).toBeNull();
+        expect(settings.getDevice('bulb_color')).toBeUndefined();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
             stringify({type: 'device_removed', message: 'bulb_color'}),
@@ -446,7 +446,7 @@ describe('Bridge legacy', () => {
         await flushPromises();
         expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(controller.state[device.ieeeAddr]).toBeUndefined();
-        expect(settings.getDevice('bulb_color')).toBeNull();
+        expect(settings.getDevice('bulb_color')).toBeUndefined();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
             stringify({type: 'device_force_removed', message: 'bulb_color'}),
@@ -467,7 +467,7 @@ describe('Bridge legacy', () => {
         await flushPromises();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(controller.state[device.ieeeAddr]).toBeUndefined();
-        expect(settings.getDevice('bulb_color')).toBeNull();
+        expect(settings.getDevice('bulb_color')).toBeUndefined();
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/log',
             stringify({type: 'device_banned', message: 'bulb_color'}),

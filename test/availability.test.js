@@ -1,19 +1,28 @@
-import data from './stub/data';
-import logger from './stub/logger';
-import MQTT from './stub/mqtt';
-import zigbeeHerdsman from './stub/zigbeeHerdsman';
-
-import utils from '../lib/util/utils';
-import * as settings from '../lib/util/settings';
-import Controller from '../lib/controller';
-import Availability from '../lib/extension/availability';
-import flushPromises from './lib/flushPromises';
-import stringify from 'json-stable-stringify-without-jsonify';
+const data = require('./stub/data');
+const logger = require('./stub/logger');
+const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
+const MQTT = require('./stub/mqtt');
+const settings = require('../lib/util/settings');
+const Controller = require('../lib/controller');
+const flushPromises = require('./lib/flushPromises');
+const Availability = require('../lib/extension/availability').default;
+const stringify = require('json-stable-stringify-without-jsonify');
+const utils = require('../lib/util/utils').default;
 
 const mocks = [MQTT.publish, logger.warning, logger.info];
 const devices = zigbeeHerdsman.devices;
 zigbeeHerdsman.returnDevices.push(
-    ...[devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, devices.coordinator.ieeeAddr, devices.remote.ieeeAddr],
+    ...[
+        devices.bulb_color.ieeeAddr,
+        devices.bulb_color_2.ieeeAddr,
+        devices.coordinator.ieeeAddr,
+        devices.remote.ieeeAddr,
+        devices.TS0601_thermostat.ieeeAddr,
+        devices.bulb_2.ieeeAddr,
+        devices.ZNCZ02LM.ieeeAddr,
+        devices.GLEDOPTO_2ID.ieeeAddr,
+        devices.QBKG03LM.ieeeAddr,
+    ],
 );
 
 describe('Availability', () => {
@@ -289,7 +298,7 @@ describe('Availability', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb_color', to: 'bulb_new_name'}));
         await flushPromises();
 
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', null, {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', '', {retain: true, qos: 1}, expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', 'online', {retain: true, qos: 1}, expect.any(Function));
         await setTimeAndAdvanceTimers(utils.hours(12));
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', 'offline', {retain: true, qos: 1}, expect.any(Function));

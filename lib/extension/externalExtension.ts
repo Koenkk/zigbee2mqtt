@@ -1,7 +1,8 @@
-import bind from 'bind-decorator';
 import fs from 'fs';
-import stringify from 'json-stable-stringify-without-jsonify';
 import path from 'path';
+
+import bind from 'bind-decorator';
+import stringify from 'json-stable-stringify-without-jsonify';
 
 import * as settings from '../util/settings';
 import utils from '../util/utils';
@@ -12,11 +13,13 @@ import Extension from './extension';
 const requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/extension/(save|remove)`);
 
 export default class ExternalExtension extends Extension {
-    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>};
+    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>} = {
+        save: this.saveExtension,
+        remove: this.removeExtension,
+    };
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.requestLookup = {save: this.saveExtension, remove: this.removeExtension};
         await this.loadUserDefinedExtensions();
         await this.publishExtensions();
     }
@@ -52,7 +55,7 @@ export default class ExternalExtension extends Extension {
             fs.unlinkSync(extensionFilePath);
             await this.publishExtensions();
             logger.info(`Extension ${name} removed`);
-            return utils.getResponse(message, {}, null);
+            return utils.getResponse(message, {});
         } else {
             return utils.getResponse(message, {}, `Extension ${name} doesn't exists`);
         }
@@ -71,7 +74,7 @@ export default class ExternalExtension extends Extension {
         fs.writeFileSync(extensionFilePath, code);
         await this.publishExtensions();
         logger.info(`Extension ${name} loaded`);
-        return utils.getResponse(message, {}, null);
+        return utils.getResponse(message, {});
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -82,8 +85,8 @@ export default class ExternalExtension extends Extension {
                 const response = await this.requestLookup[match[1].toLowerCase()](message);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             } catch (error) {
-                logger.error(`Request '${data.topic}' failed with error: '${error.message}'`);
-                const response = utils.getResponse(message, {}, error.message);
+                logger.error(`Request '${data.topic}' failed with error: '${(error as Error).message}'`);
+                const response = utils.getResponse(message, {}, `${(error as Error).message}`);
                 await this.mqtt.publish(`bridge/response/extension/${match[1]}`, stringify(response));
             }
         }
@@ -91,7 +94,7 @@ export default class ExternalExtension extends Extension {
 
     @bind private async loadExtension(ConstructorClass: typeof Extension): Promise<void> {
         await this.enableDisableExtension(false, ConstructorClass.name);
-        // @ts-ignore
+        // @ts-expect-error `ConstructorClass` is the interface, not the actual passed class
         await this.addExtension(new ConstructorClass(this.zigbee, this.mqtt, this.state, this.publishEntityState, this.eventBus, settings, logger));
     }
 
