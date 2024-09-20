@@ -1203,7 +1203,7 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
-                            value_template: `{{ value_json.${firstExposeTyped.property}|default('',True) | truncate(254, True, '', 0) }}`,
+                            value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
                             enabled_by_default: !settableText,
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
                         },
