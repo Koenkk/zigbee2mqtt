@@ -69,7 +69,8 @@
         "@babel/plugin-proposal-decorators": "^7.24.7",
         "@babel/preset-env": "^7.25.4",
         "@babel/preset-typescript": "^7.24.7",
-        "@eslint/js": "^9.10.0",
+        "@eslint/core": "^0.6.0",
+        "@eslint/js": "^9.11.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
@@ -88,7 +89,7 @@
         "prettier": "^3.3.3",
         "tmp": "^0.2.3",
         "typescript": "^5.6.2",
-        "typescript-eslint": "^8.5.0"
+        "typescript-eslint": "^8.6.0"
     },
     "overrides": {
         "zigbee-herdsman-converters": {
