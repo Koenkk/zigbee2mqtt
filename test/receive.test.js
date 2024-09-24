@@ -629,7 +629,7 @@ describe('Receive', () => {
     it('Should report correct energy and power values for different versions of SP600', async () => {
         // https://github.com/Koenkk/zigbee-herdsman-converters/issues/915, OLD and NEW use different date code
         // divisor of OLD is not correct and therefore underreports by factor 10.
-        const data = {instantaneousDemand: 496, currentSummDelivered: [0, 6648]};
+        const data = {instantaneousDemand: 496, currentSummDelivered: 6648};
 
         const SP600_NEW = zigbeeHerdsman.devices.SP600_NEW;
         await zigbeeHerdsman.events.message({
