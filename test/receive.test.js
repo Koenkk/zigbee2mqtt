@@ -356,9 +356,8 @@ describe('Receive', () => {
     });
 
     it('Should ignore multiple messages from spamming devices', async () => {
-        const device = zigbeeHerdsman.devices.SPAMMER;
+        const device = zigbeeHerdsman.devices.SPAMMER1;
         const start = Date.now();
-        // Using low elapsed to dont fail the test by elapsed time
         const min_elapsed_for_testing = 500;
         settings.set(['device_options', 'min_elapsed'], min_elapsed_for_testing);
         settings.set(['device_options', 'retain'], true);
@@ -397,7 +396,7 @@ describe('Receive', () => {
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/0x0017880104e455ff');
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/' + device.ieeeAddr);
         expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.01});
         expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: true});
 
@@ -407,7 +406,63 @@ describe('Receive', () => {
         await zigbeeHerdsman.events.message(payload3);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
-        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/0x0017880104e455ff');
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/' + device.ieeeAddr);
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({elapsed: timeshift, temperature: 0.03});
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({qos: 0, retain: true});
+    });
+
+    it('Should ignore multiple messages from spamming devices defined by description', async () => {
+        const device = zigbeeHerdsman.devices.SPAMMER2;
+        const start = Date.now();
+        const min_elapsed_for_testing = 50000;
+        settings.set(['device_options', 'retain'], true);
+        settings.set(['devices', device.ieeeAddr, 'description'], 'this is a SPAMMER device');
+        const data1 = {measuredValue: 1};
+        const payload1 = {
+            data: data1,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await zigbeeHerdsman.events.message(payload1);
+        const data2 = {measuredValue: 2};
+        const payload2 = {
+            data: data2,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await zigbeeHerdsman.events.message(payload2);
+        const data3 = {measuredValue: 3};
+        const payload3 = {
+            data: data3,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await zigbeeHerdsman.events.message(payload3);
+        await flushPromises();
+
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/' + device.ieeeAddr);
+        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.01});
+        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: true});
+
+        // Now we try after elapsed time to see if it publishes
+        const timeshift = min_elapsed_for_testing + 500;
+        jest.advanceTimersByTime(timeshift);
+        await zigbeeHerdsman.events.message(payload3);
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(2);
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/' + device.ieeeAddr);
         expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({elapsed: timeshift, temperature: 0.03});
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({qos: 0, retain: true});
     });

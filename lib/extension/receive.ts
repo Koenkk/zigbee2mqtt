@@ -125,7 +125,10 @@ export default class Receive extends Extension {
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
 
-            if (settings.get().advanced.elapsed || data.device.options.min_elapsed) {
+            const checkElapsedTime =
+                data.device.options.min_elapsed || (data.device.options.description && data.device.options.description.includes('SPAMMER'));
+
+            if (settings.get().advanced.elapsed || checkElapsedTime) {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
                     payload.elapsed = now - this.elapsed[data.device.ieeeAddr];
@@ -144,7 +147,7 @@ export default class Receive extends Extension {
                     //   - my homeassistant became more responsive
                     //   - the CPU load are sensible lower
                     // using "SPAMMER" in description is an easy way to test without changing options on yaml
-                    if (data.device.options.min_elapsed || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
+                    if (checkElapsedTime) {
                         let min_elapsed = 30000;
                         if (data.device.options.min_elapsed) {
                             min_elapsed = data.device.options.min_elapsed;

@@ -503,8 +503,9 @@ const devices = {
         'lumi.sensor_86sw2.es1',
     ),
     WSDCGQ11LM: new Device('EndDevice', '0x0017880104e45522', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
-    // This is not a real spammer device, just copy of previous to test the spam filter
-    SPAMMER: new Device('EndDevice', '0x0017880104e455ff', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
+    // These are not a real spammer devices, just copy of previous to test the spam filter
+    SPAMMER1: new Device('EndDevice', '0x0017880104e455fe', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
+    SPAMMER2: new Device('EndDevice', '0x0017880104e455ff', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
     RTCGQ11LM: new Device('EndDevice', '0x0017880104e45523', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.sensor_motion.aq2'),
     ZNCZ02LM: ZNCZ02LM,
     E1743: new Device('Router', '0x0017880104e45540', 6540, 4476, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'TRADFRI on/off switch'),
