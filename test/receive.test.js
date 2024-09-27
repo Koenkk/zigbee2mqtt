@@ -358,7 +358,7 @@ describe('Receive', () => {
     it('Should ignore multiple messages from spamming devices', async () => {
         const device = zigbeeHerdsman.devices.SPAMMER;
         const start = Date.now();
-        // Using low elapsed to dont fail the test by elapsed time 
+        // Using low elapsed to dont fail the test by elapsed time
         const min_elapsed_for_testing = 500;
         settings.set(['device_options', 'min_elapsed'], min_elapsed_for_testing);
         settings.set(['device_options', 'retain'], true);
@@ -393,7 +393,7 @@ describe('Receive', () => {
         };
         await zigbeeHerdsman.events.message(payload3);
         await flushPromises();
-        
+
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -408,7 +408,7 @@ describe('Receive', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(2);
         expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/0x0017880104e455ff');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({ elapsed: timeshift, temperature: 0.03});
+        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({elapsed: timeshift, temperature: 0.03});
         expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({qos: 0, retain: true});
     });
 
@@ -727,6 +727,4 @@ describe('Receive', () => {
         await zigbeeHerdsman.events.message(payload);
         expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
     });
-
-
 });

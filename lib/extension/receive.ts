@@ -129,7 +129,7 @@ export default class Receive extends Extension {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
                     payload.elapsed = now - this.elapsed[data.device.ieeeAddr];
-                    
+
                     // very simple and dirty anti-spamming https://github.com/Koenkk/zigbee2mqtt/issues/17984
                     //    as a proof of concept maybe Koenkk can find a better solution as the debounce does not help for my SPAMMER devices
                     //       ambient sensor and water level that sometimes send mupliple messages on same second
@@ -139,26 +139,25 @@ export default class Receive extends Extension {
                     //    it solves the SPAMMING on sensor devices that does not change values too fast and messages can be ignored
                     // I dont know all the side effects of this code, but here is the ones that I found already
                     //   - on web ui, the last-seen is only updated after a non ignored message
-                    //   - web ui are more responsive than before 
-                    //   - my homeassistant does not have a lot of data from this devices that are not need                    
+                    //   - web ui are more responsive than before
+                    //   - my homeassistant does not have a lot of data from this devices that are not need
                     //   - my homeassistant became more responsive
                     //   - the CPU load are sensible lower
                     // using "SPAMMER" in description is an easy way to test without changing options on yaml
-                    if (data.device.options.min_elapsed || 
-                        (data.device.options.description && data.device.options.description.includes("SPAMMER"))
-                       ) {
+                    if (data.device.options.min_elapsed || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
                         let min_elapsed = 30000;
                         if (data.device.options.min_elapsed) {
                             min_elapsed = data.device.options.min_elapsed;
-                        } 
-                        
+                        }
+
                         if (payload.elapsed < min_elapsed) {
-                            logger.debug(`Ignoring message from SPAMMER - ${data.device.ieeeAddr} -  ${data.device.options.friendly_name} - elapsed=${payload.elapsed} - min_elapsed=${min_elapsed}`);
+                            logger.debug(
+                                `Ignoring message from SPAMMER - ${data.device.ieeeAddr} -  ${data.device.options.friendly_name} - elapsed=${payload.elapsed} - min_elapsed=${min_elapsed}`,
+                            );
                             return;
                         }
                     }
                     // end of changes
-
                 }
 
                 this.elapsed[data.device.ieeeAddr] = now;
