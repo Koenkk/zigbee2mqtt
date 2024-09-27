@@ -864,7 +864,7 @@ const mock = {
         for (const key in devices) {
             const device = devices[key];
 
-            if ((returnDevices.length === 0 || returnDevices.includes(device.ieeeAddr)) && (!predicate || predicate(device))) {
+            if ((returnDevices.length === 0 || returnDevices.includes(device.ieeeAddr)) && !device.isDeleted && (!predicate || predicate(device))) {
                 yield device;
             }
         }

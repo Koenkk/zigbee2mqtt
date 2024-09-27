@@ -1,4 +1,5 @@
 import fs from 'fs';
+
 import objectAssignDeep from 'object-assign-deep';
 
 import data from './util/data';
@@ -33,7 +34,7 @@ const dontCacheProperties = [
 class State {
     private state: {[s: string | number]: KeyValue} = {};
     private file = data.joinPath('state.json');
-    private timer: NodeJS.Timeout = null;
+    private timer?: NodeJS.Timeout;
 
     constructor(
         private readonly eventBus: EventBus,
@@ -66,7 +67,7 @@ class State {
                 this.state = JSON.parse(fs.readFileSync(this.file, 'utf8'));
                 logger.debug(`Loaded state from file ${this.file}`);
             } catch (error) {
-                logger.debug(`Failed to load state from file ${this.file} (corrupt file?) (${error.message})`);
+                logger.debug(`Failed to load state from file ${this.file} (corrupt file?) (${(error as Error).message})`);
             }
         } else {
             logger.debug(`Can't load state from file ${this.file} (doesn't exist)`);
@@ -79,8 +80,8 @@ class State {
             const json = JSON.stringify(this.state, null, 4);
             try {
                 fs.writeFileSync(this.file, json, 'utf8');
-            } catch (e) {
-                logger.error(`Failed to write state to '${this.file}' (${e.message})`);
+            } catch (error) {
+                logger.error(`Failed to write state to '${this.file}' (${error})`);
             }
         } else {
             logger.debug(`Not saving state`);
@@ -88,14 +89,14 @@ class State {
     }
 
     exists(entity: Device | Group): boolean {
-        return this.state.hasOwnProperty(entity.ID);
+        return this.state[entity.ID] !== undefined;
     }
 
     get(entity: Group | Device): KeyValue {
         return this.state[entity.ID] || {};
     }
 
-    set(entity: Group | Device, update: KeyValue, reason: string = null): KeyValue {
+    set(entity: Group | Device, update: KeyValue, reason?: string): KeyValue {
         const fromState = this.state[entity.ID] || {};
         const toState = objectAssignDeep({}, fromState, update);
         const newCache = {...toState};

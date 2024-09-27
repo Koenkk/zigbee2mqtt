@@ -1,24 +1,23 @@
 let level = 'info';
 let debugNamespaceIgnore = '';
 let namespacedLevels = {};
-
 let transports = [];
-
 let transportsEnabled = false;
-const callTransports = (level, message, namespace) => {
-    if (transportsEnabled) {
-        for (const transport of transports) {
-            transport.log({level, message, namespace}, () => {});
-        }
-    }
-};
 
+const getMessage = (messageOrLambda) => (messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda);
 const mock = {
+    log: jest.fn().mockImplementation((level, message, namespace = 'z2m') => {
+        if (transportsEnabled) {
+            for (const transport of transports) {
+                transport.log({level, message, namespace}, () => {});
+            }
+        }
+    }),
     init: jest.fn(),
-    info: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('info', msg, namespace)),
-    warning: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('warning', msg, namespace)),
-    error: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('error', msg, namespace)),
-    debug: jest.fn().mockImplementation((msg, namespace = 'z2m') => callTransports('debug', msg, namespace)),
+    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('info', getMessage(messageOrLambda), namespace)),
+    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('warning', getMessage(messageOrLambda), namespace)),
+    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('error', getMessage(messageOrLambda), namespace)),
+    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mock.log('debug', getMessage(messageOrLambda), namespace)),
     cleanup: jest.fn(),
     logOutput: jest.fn(),
     add: (transport) => transports.push(transport),

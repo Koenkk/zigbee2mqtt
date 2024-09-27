@@ -25,11 +25,11 @@ interface Topology {
         friendlyName: string;
         type: string;
         networkAddress: number;
-        manufacturerName: string;
-        modelID: string;
+        manufacturerName: string | undefined;
+        modelID: string | undefined;
         failed: string[];
-        lastSeen: number;
-        definition: {model: string; vendor: string; supports: string; description: string};
+        lastSeen: number | undefined;
+        definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
     links: Link[];
 }
@@ -42,21 +42,20 @@ export default class NetworkMap extends Extension {
     private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
     private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
-    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string};
+    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string} = {
+        raw: this.raw,
+        graphviz: this.graphviz,
+        plantuml: this.plantuml,
+    };
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        this.supportedFormats = {
-            raw: this.raw,
-            graphviz: this.graphviz,
-            plantuml: this.plantuml,
-        };
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         /* istanbul ignore else */
         if (this.legacyApi) {
-            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats.hasOwnProperty(data.message)) {
+            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats[data.message] !== undefined) {
                 const includeRoutes = data.topic === this.legacyTopicRoutes;
                 const topology = await this.networkScan(includeRoutes);
                 let converted = this.supportedFormats[data.message](topology);
@@ -69,16 +68,16 @@ export default class NetworkMap extends Extension {
             const message = utils.parseJSON(data.message, data.message);
             try {
                 const type = typeof message === 'object' ? message.type : message;
-                if (!this.supportedFormats.hasOwnProperty(type)) {
+                if (this.supportedFormats[type] === undefined) {
                     throw new Error(`Type '${type}' not supported, allowed are: ${Object.keys(this.supportedFormats)}`);
                 }
 
                 const routes = typeof message === 'object' && message.routes;
                 const topology = await this.networkScan(routes);
                 const value = this.supportedFormats[type](topology);
-                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value}, null)));
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value})));
             } catch (error) {
-                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, error.message)));
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, (error as Error).message)));
             }
         }
     }
@@ -221,7 +220,7 @@ export default class NetworkMap extends Extension {
             } catch {
                 // Network is possibly congested, sleep 5 seconds to let the network settle.
                 await utils.sleep(5);
-                return request();
+                return await request();
             }
         };
 
@@ -234,24 +233,24 @@ export default class NetworkMap extends Extension {
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
             try {
-                const result = await requestWithRetry<zh.LQI>(async () => device.zh.lqi());
+                const result = await requestWithRetry<zh.LQI>(async () => await device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
-                failed.get(device).push('lqi');
+                failed.get(device)!.push('lqi'); // set above
                 logger.error(`Failed to execute LQI for '${device.name}'`);
-                logger.debug(error.stack);
+                logger.debug((error as Error).stack!);
             }
 
             if (includeRoutes) {
                 try {
-                    const result = await requestWithRetry<zh.RoutingTable>(async () => device.zh.routingTable());
+                    const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
-                    failed.get(device).push('routingTable');
+                    failed.get(device)!.push('routingTable'); // set above
                     logger.error(`Failed to execute routing table for '${device.name}'`);
-                    logger.debug(error.stack);
+                    logger.debug((error as Error).stack!);
                 }
             }
         }
@@ -275,12 +274,12 @@ export default class NetworkMap extends Extension {
                       supports: Array.from(
                           new Set(
                               device.exposes().map((e) => {
-                                  return e.name ?? `${e.type} (${e.features.map((f) => f.name).join(', ')})`;
+                                  return e.name ?? `${e.type} (${e.features?.map((f) => f.name).join(', ')})`;
                               }),
                           ),
                       ).join(', '),
                   }
-                : null;
+                : undefined;
 
             topology.nodes.push({
                 ieeeAddr: device.ieeeAddr,
@@ -289,7 +288,7 @@ export default class NetworkMap extends Extension {
                 networkAddress: device.zh.networkAddress,
                 manufacturerName: device.zh.manufacturerName,
                 modelID: device.zh.modelID,
-                failed: failed.get(device),
+                failed: failed.get(device)!,
                 lastSeen: device.zh.lastSeen,
                 definition,
             });

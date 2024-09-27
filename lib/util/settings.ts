@@ -1,13 +1,15 @@
+import path from 'path';
+
 import Ajv, {ValidateFunction} from 'ajv';
 import objectAssignDeep from 'object-assign-deep';
-import path from 'path';
 
 import data from './data';
 import schemaJson from './settings.schema.json';
 import utils from './utils';
-import yaml from './yaml';
-export let schema = schemaJson;
-// @ts-expect-error
+import yaml, {YAMLFileException} from './yaml';
+
+export let schema: KeyValue = schemaJson;
+
 schema = {};
 objectAssignDeep(schema, schemaJson);
 
@@ -23,8 +25,8 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.rtscts;
     delete schema.properties.advanced.properties.ikea_ota_use_test_url;
     delete schema.properties.experimental;
-    delete schemaJson.properties.whitelist;
-    delete schemaJson.properties.ban;
+    delete (schemaJson as KeyValue).properties.whitelist;
+    delete (schemaJson as KeyValue).properties.ban;
 }
 
 /** NOTE: by order of priority, lower index is lower level (more important) */
@@ -96,8 +98,8 @@ const defaults: RecursivePartial<Settings> = {
         pan_id: 0x1a62,
         ext_pan_id: [0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd],
         channel: 11,
-        adapter_concurrent: null,
-        adapter_delay: null,
+        adapter_concurrent: undefined,
+        adapter_delay: undefined,
         cache_state: true,
         cache_state_persistent: true,
         cache_state_send_on_startup: true,
@@ -116,10 +118,13 @@ const defaults: RecursivePartial<Settings> = {
     },
 };
 
-let _settings: Partial<Settings>;
-let _settingsWithDefaults: Settings;
+let _settings: Partial<Settings> | undefined;
+let _settingsWithDefaults: Settings | undefined;
 
 function loadSettingsWithDefaults(): void {
+    if (!_settings) {
+        _settings = read();
+    }
     _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
 
     if (!_settingsWithDefaults.devices) {
@@ -140,59 +145,66 @@ function loadSettingsWithDefaults(): void {
                 'homeassistant_legacy_entity_attributes',
                 'homeassistant_status_topic',
             ]) {
-                // @ts-expect-error
+                // @ts-expect-error ignore typing
                 if (_settingsWithDefaults.advanced[key] !== undefined) {
-                    // @ts-expect-error
+                    // @ts-expect-error ignore typing
                     sLegacy[key.replace('homeassistant_', '')] = _settingsWithDefaults.advanced[key];
                 }
             }
         }
 
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.homeassistant = {};
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
 
     if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
         const defaults = {};
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.availability = {};
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
 
     if (_settingsWithDefaults.frontend) {
         const defaults = {port: 8080, auth_token: false};
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.frontend = {};
+        // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 
-    if (_settings.advanced?.hasOwnProperty('baudrate') && _settings.serial?.baudrate == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.baudrate !== undefined && _settings.serial?.baudrate == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;
     }
 
-    if (_settings.advanced?.hasOwnProperty('rtscts') && _settings.serial?.rtscts == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.rtscts !== undefined && _settings.serial?.rtscts == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
     }
 
-    if (_settings.advanced?.hasOwnProperty('ikea_ota_use_test_url') && _settings.ota?.ikea_ota_use_test_url == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.advanced?.ikea_ota_use_test_url !== undefined && _settings.ota?.ikea_ota_use_test_url == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
     }
 
-    // @ts-expect-error
-    if (_settings.experimental?.hasOwnProperty('transmit_power') && _settings.advanced?.transmit_power == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.experimental?.transmit_power !== undefined && _settings.advanced?.transmit_power == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.advanced.transmit_power = _settings.experimental.transmit_power;
     }
 
-    // @ts-expect-error
-    if (_settings.experimental?.hasOwnProperty('output') && _settings.advanced?.output == null) {
-        // @ts-expect-error
+    // @ts-expect-error ignore typing
+    if (_settings.experimental?.output !== undefined && _settings.advanced?.output == null) {
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.advanced.output = _settings.experimental.output;
     }
 
@@ -200,15 +212,15 @@ function loadSettingsWithDefaults(): void {
         _settingsWithDefaults.advanced.log_level = 'warning';
     }
 
-    // @ts-expect-error
+    // @ts-expect-error ignore typing
     if (_settingsWithDefaults.ban) {
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
     }
 
-    // @ts-expect-error
+    // @ts-expect-error ignore typing
     if (_settingsWithDefaults.whitelist) {
-        // @ts-expect-error
+        // @ts-expect-error ignore typing
         _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
     }
 }
@@ -259,12 +271,12 @@ function write(): void {
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
-                actual[type]
-                    .filter((f: string, i: number) => i !== 0)
-                    .map((f: string) => yaml.readIfExists(data.joinPath(f), {}))
-                    .map((c: KeyValue) => Object.keys(c))
-                    // @ts-expect-error
-                    .forEach((k: string) => delete content[k]);
+                // skip i==0
+                for (let i = 1; i < actual[type].length; i++) {
+                    for (const key in yaml.readIfExists(data.joinPath(actual[type][i]))) {
+                        delete content[key];
+                    }
+                }
             }
 
             yaml.writeIfChanged(data.joinPath(fileToWrite), content);
@@ -285,18 +297,20 @@ export function validate(): string[] {
     try {
         getInternalSettings();
     } catch (error) {
-        if (error.name === 'YAMLException') {
+        if (error instanceof YAMLFileException) {
             return [`Your YAML file: '${error.file}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
         }
 
-        return [error.message];
+        return [`${error}`];
     }
 
     if (!ajvSetting(_settings)) {
-        return ajvSetting.errors.map((v) => `${v.instancePath.substring(1)} ${v.message}`);
+        // When `ajvSetting()` return false it always has `errors`.
+        return ajvSetting.errors!.map((v) => `${v.instancePath.substring(1)} ${v.message}`);
     }
 
     const errors = [];
+
     if (
         _settings.advanced &&
         _settings.advanced.network_key &&
@@ -368,14 +382,14 @@ function read(): Settings {
     applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
-    // eslint-disable-next-line
-    const interpretValue = (value: any): any => {
-        const ref = parseValueRef(value);
-        if (ref) {
-            return yaml.read(data.joinPath(ref.filename))[ref.key];
-        } else {
-            return value;
+    const interpretValue = <T>(value: T): T => {
+        if (typeof value === 'string') {
+            const ref = parseValueRef(value);
+            if (ref) {
+                return yaml.read(data.joinPath(ref.filename))[ref.key];
+            }
         }
+        return value;
     };
 
     if (s.mqtt?.user) {
@@ -401,11 +415,10 @@ function read(): Settings {
     // Read devices/groups configuration from separate file if specified.
     const readDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof s[type] === 'string' || (Array.isArray(s[type]) && Array(s[type]).length > 0)) {
-            /* eslint-disable-line */
             const files: string[] = Array.isArray(s[type]) ? s[type] : [s[type]];
             s[type] = {};
             for (const file of files) {
-                const content = yaml.readIfExists(data.joinPath(file), {});
+                const content = yaml.readIfExists(data.joinPath(file));
                 /* eslint-disable-line */ // @ts-expect-error
                 s[type] = objectAssignDeep.noMutate(s[type], content);
             }
@@ -420,35 +433,41 @@ function read(): Settings {
 
 function applyEnvironmentVariables(settings: Partial<Settings>): void {
     const iterate = (obj: KeyValue, path: string[]): void => {
-        Object.keys(obj).forEach((key) => {
+        for (const key in obj) {
             if (key !== 'type') {
                 if (key !== 'properties' && obj[key]) {
                     const type = (obj[key].type || 'object').toString();
                     const envPart = path.reduce((acc, val) => `${acc}${val}_`, '');
                     const envVariableName = `ZIGBEE2MQTT_CONFIG_${envPart}${key}`.toUpperCase();
-                    if (process.env[envVariableName]) {
+                    const envVariable = process.env[envVariableName];
+
+                    if (envVariable) {
                         const setting = path.reduce((acc, val) => {
-                            /* eslint-disable-line */ // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             acc[val] = acc[val] || {};
-                            /* eslint-disable-line */ // @ts-expect-error
+                            // @ts-expect-error ignore typing
                             return acc[val];
                         }, settings);
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             try {
-                                setting[key] = JSON.parse(process.env[envVariableName]);
+                                // @ts-expect-error ignore typing
+                                setting[key] = JSON.parse(envVariable);
                             } catch {
-                                setting[key] = process.env[envVariableName];
+                                // @ts-expect-error ignore typing
+                                setting[key] = envVariable;
                             }
                         } else if (type.indexOf('number') >= 0) {
-                            /* eslint-disable-line */ // @ts-expect-error
-                            setting[key] = process.env[envVariableName] * 1;
+                            // @ts-expect-error ignore typing
+                            setting[key] = (envVariable as unknown as number) * 1;
                         } else if (type.indexOf('boolean') >= 0) {
-                            setting[key] = process.env[envVariableName].toLowerCase() === 'true';
+                            // @ts-expect-error ignore typing
+                            setting[key] = envVariable.toLowerCase() === 'true';
                         } else {
                             /* istanbul ignore else */
                             if (type.indexOf('string') >= 0) {
-                                setting[key] = process.env[envVariableName];
+                                // @ts-expect-error ignore typing
+                                setting[key] = envVariable;
                             }
                         }
                     }
@@ -456,14 +475,17 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 
                 if (typeof obj[key] === 'object' && obj[key]) {
                     const newPath = [...path];
+
                     if (key !== 'properties' && key !== 'oneOf' && !Number.isInteger(Number(key))) {
                         newPath.push(key);
                     }
+
                     iterate(obj[key], newPath);
                 }
             }
-        });
+        }
     };
+
     iterate(schemaJson.properties, []);
 }
 
@@ -480,7 +502,7 @@ export function get(): Settings {
         loadSettingsWithDefaults();
     }
 
-    return _settingsWithDefaults;
+    return _settingsWithDefaults!;
 }
 
 export function set(path: string[], value: string | number | boolean | KeyValue): void {
@@ -505,7 +527,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 
 export function apply(settings: Record<string, unknown>): boolean {
     getInternalSettings(); // Ensure _settings is initialized.
-    /* eslint-disable-line */ // @ts-expect-error
+    // @ts-expect-error ignore typing
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);
@@ -519,13 +541,16 @@ export function apply(settings: Record<string, unknown>): boolean {
     write();
 
     ajvRestartRequired(settings);
-    const restartRequired = ajvRestartRequired.errors && !!ajvRestartRequired.errors.find((e) => e.keyword === 'requiresRestart');
+
+    const restartRequired = Boolean(ajvRestartRequired.errors && !!ajvRestartRequired.errors.find((e) => e.keyword === 'requiresRestart'));
+
     return restartRequired;
 }
 
-export function getGroup(IDorName: string | number): GroupOptions {
+export function getGroup(IDorName: string | number): GroupOptions | undefined {
     const settings = get();
     const byID = settings.groups[IDorName];
+
     if (byID) {
         return {devices: [], ...byID, ID: Number(IDorName)};
     }
@@ -536,11 +561,12 @@ export function getGroup(IDorName: string | number): GroupOptions {
         }
     }
 
-    return null;
+    return undefined;
 }
 
 export function getGroups(): GroupOptions[] {
     const settings = get();
+
     return Object.entries(settings.groups).map(([ID, group]) => {
         return {devices: [], ...group, ID: Number(ID)};
     });
@@ -548,6 +574,7 @@ export function getGroups(): GroupOptions[] {
 
 function getGroupThrowIfNotExists(IDorName: string): GroupOptions {
     const group = getGroup(IDorName);
+
     if (!group) {
         throw new Error(`Group '${IDorName}' does not exist`);
     }
@@ -555,9 +582,10 @@ function getGroupThrowIfNotExists(IDorName: string): GroupOptions {
     return group;
 }
 
-export function getDevice(IDorName: string): DeviceOptions {
+export function getDevice(IDorName: string): DeviceOptionsWithId | undefined {
     const settings = get();
     const byID = settings.devices[IDorName];
+
     if (byID) {
         return {...byID, ID: IDorName};
     }
@@ -568,10 +596,10 @@ export function getDevice(IDorName: string): DeviceOptions {
         }
     }
 
-    return null;
+    return undefined;
 }
 
-function getDeviceThrowIfNotExists(IDorName: string): DeviceOptions {
+function getDeviceThrowIfNotExists(IDorName: string): DeviceOptionsWithId {
     const device = getDevice(IDorName);
     if (!device) {
         throw new Error(`Device '${IDorName}' does not exist`);
@@ -580,7 +608,7 @@ function getDeviceThrowIfNotExists(IDorName: string): DeviceOptions {
     return device;
 }
 
-export function addDevice(ID: string): DeviceOptions {
+export function addDevice(ID: string): DeviceOptionsWithId {
     if (getDevice(ID)) {
         throw new Error(`Device '${ID}' already exists`);
     }
@@ -593,7 +621,8 @@ export function addDevice(ID: string): DeviceOptions {
 
     settings.devices[ID] = {friendly_name: ID};
     write();
-    return getDevice(ID);
+
+    return getDevice(ID)!; // valid from creation above
 }
 
 export function addDeviceToPasslist(ID: string): void {
@@ -623,13 +652,14 @@ export function blockDevice(ID: string): void {
 export function removeDevice(IDorName: string): void {
     const device = getDeviceThrowIfNotExists(IDorName);
     const settings = getInternalSettings();
-    delete settings.devices[device.ID];
+    delete settings.devices?.[device.ID];
 
     // Remove device from groups
     if (settings.groups) {
         const regex = new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
+
         for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
-            group.devices = group.devices.filter((device) => !device.match(regex));
+            group.devices = group.devices?.filter((device) => !device.match(regex));
         }
     }
 
@@ -638,6 +668,7 @@ export function removeDevice(IDorName: string): void {
 
 export function addGroup(name: string, ID?: string): GroupOptions {
     utils.validateFriendlyName(name, true);
+
     if (getGroup(name) || getDevice(name)) {
         throw new Error(`friendly_name '${name}' is already in use`);
     }
@@ -647,16 +678,18 @@ export function addGroup(name: string, ID?: string): GroupOptions {
         settings.groups = {};
     }
 
-    if (ID == null) {
+    if (ID == undefined) {
         // look for free ID
         ID = '1';
-        while (settings.groups.hasOwnProperty(ID)) {
+
+        while (settings.groups[ID]) {
             ID = (Number.parseInt(ID) + 1).toString();
         }
     } else {
         // ensure provided ID is not in use
         ID = ID.toString();
-        if (settings.groups.hasOwnProperty(ID)) {
+
+        if (settings.groups[ID]) {
             throw new Error(`Group ID '${ID}' is already in use`);
         }
     }
@@ -664,22 +697,25 @@ export function addGroup(name: string, ID?: string): GroupOptions {
     settings.groups[ID] = {friendly_name: name};
     write();
 
-    return getGroup(ID);
+    return getGroup(ID)!; // valid from creation above
 }
 
-function groupGetDevice(group: {devices?: string[]}, keys: string[]): string {
+function groupGetDevice(group: {devices?: string[]}, keys: string[]): string | undefined {
     for (const device of group.devices ?? []) {
-        if (keys.includes(device)) return device;
+        if (keys.includes(device)) {
+            return device;
+        }
     }
 
-    return null;
+    return undefined;
 }
 
 export function addDeviceToGroup(IDorName: string, keys: string[]): void {
-    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+    const groupID = getGroupThrowIfNotExists(IDorName).ID!;
     const settings = getInternalSettings();
 
-    const group = settings.groups[groupID];
+    const group = settings.groups![groupID];
+
     if (!groupGetDevice(group, keys)) {
         if (!group.devices) group.devices = [];
         group.devices.push(keys[0]);
@@ -688,14 +724,16 @@ export function addDeviceToGroup(IDorName: string, keys: string[]): void {
 }
 
 export function removeDeviceFromGroup(IDorName: string, keys: string[]): void {
-    const groupID = getGroupThrowIfNotExists(IDorName).ID;
+    const groupID = getGroupThrowIfNotExists(IDorName).ID!;
     const settings = getInternalSettings();
-    const group = settings.groups[groupID];
+    const group = settings.groups![groupID];
+
     if (!group.devices) {
         return;
     }
 
     const key = groupGetDevice(group, keys);
+
     if (key) {
         group.devices = group.devices.filter((d) => d != key);
         write();
@@ -703,9 +741,10 @@ export function removeDeviceFromGroup(IDorName: string, keys: string[]): void {
 }
 
 export function removeGroup(IDorName: string | number): void {
-    const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID;
+    const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID!;
     const settings = getInternalSettings();
-    delete settings.groups[groupID];
+
+    delete settings.groups![groupID];
     write();
 }
 
@@ -714,21 +753,29 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
     delete newOptions.friendly_name;
     delete newOptions.devices;
     let validator: ValidateFunction;
-    if (getDevice(IDorName)) {
-        objectAssignDeep(settings.devices[getDevice(IDorName).ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.devices[getDevice(IDorName).ID], NULLABLE_SETTINGS);
+    const device = getDevice(IDorName);
+
+    if (device) {
+        objectAssignDeep(settings.devices![device.ID], newOptions);
+        utils.removeNullPropertiesFromObject(settings.devices![device.ID], NULLABLE_SETTINGS);
         validator = ajvRestartRequiredDeviceOptions;
-    } else if (getGroup(IDorName)) {
-        objectAssignDeep(settings.groups[getGroup(IDorName).ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.groups[getGroup(IDorName).ID], NULLABLE_SETTINGS);
-        validator = ajvRestartRequiredGroupOptions;
     } else {
-        throw new Error(`Device or group '${IDorName}' does not exist`);
+        const group = getGroup(IDorName);
+
+        if (group) {
+            objectAssignDeep(settings.groups![group.ID], newOptions);
+            utils.removeNullPropertiesFromObject(settings.groups![group.ID], NULLABLE_SETTINGS);
+            validator = ajvRestartRequiredGroupOptions;
+        } else {
+            throw new Error(`Device or group '${IDorName}' does not exist`);
+        }
     }
 
     write();
     validator(newOptions);
-    const restartRequired = validator.errors && !!validator.errors.find((e) => e.keyword === 'requiresRestart');
+
+    const restartRequired = Boolean(validator.errors && !!validator.errors.find((e) => e.keyword === 'requiresRestart'));
+
     return restartRequired;
 }
 
@@ -739,29 +786,35 @@ export function changeFriendlyName(IDorName: string, newName: string): void {
     }
 
     const settings = getInternalSettings();
-    if (getDevice(IDorName)) {
-        settings.devices[getDevice(IDorName).ID].friendly_name = newName;
-    } else if (getGroup(IDorName)) {
-        settings.groups[getGroup(IDorName).ID].friendly_name = newName;
+    const device = getDevice(IDorName);
+
+    if (device) {
+        settings.devices![device.ID].friendly_name = newName;
     } else {
-        throw new Error(`Device or group '${IDorName}' does not exist`);
+        const group = getGroup(IDorName);
+
+        if (group) {
+            settings.groups![group.ID].friendly_name = newName;
+        } else {
+            throw new Error(`Device or group '${IDorName}' does not exist`);
+        }
     }
 
     write();
 }
 
 export function reRead(): void {
-    _settings = null;
+    _settings = undefined;
     getInternalSettings();
-    _settingsWithDefaults = null;
+    _settingsWithDefaults = undefined;
     get();
 }
 
 export const testing = {
     write,
     clear: (): void => {
-        _settings = null;
-        _settingsWithDefaults = null;
+        _settings = undefined;
+        _settingsWithDefaults = undefined;
     },
     defaults,
 };

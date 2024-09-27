@@ -65,12 +65,12 @@ class ZStackNvMemEraser {
             if (len != 0) {
                 console.log(`NVMEM item #${id} - deleting, size: ${len}`);
                 if (needOsal) {
-                    await this.znp.request(Subsystem.SYS, 'osalNvDelete', {id: id, len: len}, null, null, [
+                    await this.znp.request(Subsystem.SYS, 'osalNvDelete', {id: id, len: len}, undefined, undefined, [
                         ZnpCommandStatus.SUCCESS,
                         ZnpCommandStatus.NV_ITEM_INITIALIZED,
                     ]);
                 } else {
-                    await this.znp.request(Subsystem.SYS, 'nvDelete', {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0}, null, null, [
+                    await this.znp.request(Subsystem.SYS, 'nvDelete', {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0}, undefined, undefined, [
                         ZnpCommandStatus.SUCCESS,
                         ZnpCommandStatus.NV_ITEM_INITIALIZED,
                     ]);
