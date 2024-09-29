@@ -58,7 +58,7 @@
         "uri-js": "^4.4.1",
         "winston": "^3.14.2",
         "winston-syslog": "^2.7.1",
-        "winston-transport": "^4.7.1",
+        "winston-transport": "^4.8.0",
         "ws": "^8.18.0",
         "zigbee-herdsman": "2.1.1",
         "zigbee-herdsman-converters": "20.19.0",
@@ -70,14 +70,14 @@
         "@babel/preset-env": "^7.25.4",
         "@babel/preset-typescript": "^7.24.7",
         "@eslint/core": "^0.6.0",
-        "@eslint/js": "^9.11.0",
+        "@eslint/js": "^9.11.1",
         "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/jest": "^29.5.13",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^22.5.5",
+        "@types/node": "^22.7.4",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.15",
         "@types/sd-notify": "^2.8.2",
@@ -89,7 +89,7 @@
         "prettier": "^3.3.3",
         "tmp": "^0.2.3",
         "typescript": "^5.6.2",
-        "typescript-eslint": "^8.6.0"
+        "typescript-eslint": "^8.7.0"
     },
     "overrides": {
         "zigbee-herdsman-converters": {
