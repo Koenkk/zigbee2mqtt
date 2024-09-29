@@ -46,7 +46,7 @@ declare global {
         properties?: {messageExpiryInterval: number};
     }
     type Scene = {id: number; name: string};
-    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
+    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
     interface KeyValue {

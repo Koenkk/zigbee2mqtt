@@ -17,7 +17,7 @@ type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
-    private throttlers: {[s: string]: {publish: Function}} = {};
+    private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -150,7 +150,7 @@ export default class Receive extends Extension {
             if (data.device.options.debounce) {
                 this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
             } else if (data.device.options.throttle || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
-                let throttleTime = data.device.options.throttle || 30;
+                const throttleTime = data.device.options.throttle || 30;
                 this.publishThrottle(data.device, payload, throttleTime);
             } else {
                 await this.publishEntityState(data.device, payload);
