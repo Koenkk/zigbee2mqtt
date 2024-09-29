@@ -70,7 +70,7 @@ export default class Receive extends Extension {
         this.debouncers[device.ieeeAddr].publish();
     }
 
-    publishThrottle(device: Device, payload: KeyValue, time: number): void {
+    async publishThrottle(device: Device, payload: KeyValue, time: number): Promise<void> {
         if (!this.throttlers[device.ieeeAddr]) {
             this.throttlers[device.ieeeAddr] = {
                 publish: throttle(this.publishEntityState, time * 1000),
@@ -151,7 +151,7 @@ export default class Receive extends Extension {
                 this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
             } else if (data.device.options.throttle || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
                 const throttleTime = data.device.options.throttle || 30;
-                this.publishThrottle(data.device, payload, throttleTime);
+                await this.publishThrottle(data.device, payload, throttleTime);
             } else {
                 await this.publishEntityState(data.device, payload);
             }
