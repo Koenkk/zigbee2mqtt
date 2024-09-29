@@ -3,6 +3,7 @@ import assert from 'assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
+import throttle from 'throttleit';
 
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -16,6 +17,7 @@ type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
+    private throttlers: {[s: string]: {publish: Function}} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -66,6 +68,20 @@ export default class Receive extends Extension {
         this.state.set(device, this.debouncers[device.ieeeAddr].payload);
 
         this.debouncers[device.ieeeAddr].publish();
+    }
+
+    publishThrottle(device: Device, payload: KeyValue, time: number): void {
+        if (!this.throttlers[device.ieeeAddr]) {
+            this.throttlers[device.ieeeAddr] = {
+                publish: throttle(this.publishEntityState, time * 1000),
+            };
+        }
+
+        // Update state cache right away. This makes sure that during throttling cached state is always up to date.
+        // By updating cache we make sure that state cache is always up-to-date.
+        this.state.set(device, payload);
+
+        this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
     }
 
     // if debounce_ignore are specified (Array of strings)
@@ -121,50 +137,21 @@ export default class Receive extends Extension {
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
 
-            const checkElapsedTime =
-                data.device.options.min_elapsed || (data.device.options.description && data.device.options.description.includes('SPAMMER'));
-
-            if (settings.get().advanced.elapsed || checkElapsedTime) {
+            if (settings.get().advanced.elapsed) {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
                     payload.elapsed = now - this.elapsed[data.device.ieeeAddr];
-
-                    // very simple and dirty anti-spamming https://github.com/Koenkk/zigbee2mqtt/issues/17984
-                    //    as a proof of concept maybe Koenkk can find a better solution as the debounce does not help for my SPAMMER devices
-                    //       ambient sensor and water level that sometimes send mupliple messages on same second
-                    //    this will not help on zigbee network, but at least help on mqtt and homeassistant recorder and history
-                    //    this will not work for devices that have actions and specific events that are important
-                    //    this will only DISCARD messages that came to fast from device
-                    //    it solves the SPAMMING on sensor devices that does not change values too fast and messages can be ignored
-                    // I dont know all the side effects of this code, but here is the ones that I found already
-                    //   - on web ui, the last-seen is only updated after a non ignored message
-                    //   - web ui are more responsive than before
-                    //   - my homeassistant does not have a lot of data from this devices that are not need
-                    //   - my homeassistant became more responsive
-                    //   - the CPU load are sensible lower
-                    // using "SPAMMER" in description is an easy way to test without changing options on yaml
-                    if (checkElapsedTime) {
-                        let min_elapsed = 30000;
-                        if (data.device.options.min_elapsed) {
-                            min_elapsed = data.device.options.min_elapsed;
-                        }
-
-                        if (payload.elapsed < min_elapsed) {
-                            logger.debug(
-                                `Ignoring message from SPAMMER - ${data.device.ieeeAddr} -  ${data.device.options.friendly_name} - elapsed=${payload.elapsed} - min_elapsed=${min_elapsed}`,
-                            );
-                            return;
-                        }
-                    }
-                    // end of changes
                 }
 
                 this.elapsed[data.device.ieeeAddr] = now;
             }
 
-            // Check if we have to debounce
+            // Check if we have to debounce or throttle
             if (data.device.options.debounce) {
                 this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
+            } else if (data.device.options.throttle || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
+                let throttleTime = data.device.options.throttle || 30;
+                this.publishThrottle(data.device, payload, throttleTime);
             } else {
                 await this.publishEntityState(data.device, payload);
             }

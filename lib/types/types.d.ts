@@ -232,7 +232,7 @@ declare global {
         retrieve_state?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
-        min_elapsed?: number;
+        throttle?: number;
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];
