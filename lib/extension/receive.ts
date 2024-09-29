@@ -81,7 +81,7 @@ export default class Receive extends Extension {
         // By updating cache we make sure that state cache is always up-to-date.
         this.state.set(device, payload);
 
-        this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
+        await this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
     }
 
     // if debounce_ignore are specified (Array of strings)
