@@ -233,7 +233,7 @@ describe('Bridge', () => {
 
     it('Should publish devices on startup', async () => {
         await resetExtension();
-        // console.log(MQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1])
+        // console.log(MQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
             stringify([
@@ -317,6 +317,41 @@ describe('Bridge', () => {
                                         unit: 'mired',
                                         value_max: 454,
                                         value_min: 250,
+                                    },
+                                    {
+                                        access: 7,
+                                        description: 'Configure genLevelCtrl',
+                                        features: [
+                                            {
+                                                access: 7,
+                                                description:
+                                                    'this setting can affect the "on_level", "current_level_startup" or "brightness" setting',
+                                                label: 'Execute if off',
+                                                name: 'execute_if_off',
+                                                property: 'execute_if_off',
+                                                type: 'binary',
+                                                value_off: false,
+                                                value_on: true,
+                                            },
+                                            {
+                                                access: 7,
+                                                description: 'Defines the desired startup level for a device when it is supplied with power',
+                                                label: 'Current level startup',
+                                                name: 'current_level_startup',
+                                                presets: [
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
+                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                ],
+                                                property: 'current_level_startup',
+                                                type: 'numeric',
+                                                value_max: 254,
+                                                value_min: 1,
+                                            },
+                                        ],
+                                        label: 'Level config',
+                                        name: 'level_config',
+                                        property: 'level_config',
+                                        type: 'composite',
                                     },
                                 ],
                                 type: 'light',
@@ -1878,6 +1913,41 @@ describe('Bridge', () => {
                                         value_max: 454,
                                         value_min: 250,
                                     },
+                                    {
+                                        access: 7,
+                                        description: 'Configure genLevelCtrl',
+                                        features: [
+                                            {
+                                                access: 7,
+                                                description:
+                                                    'this setting can affect the "on_level", "current_level_startup" or "brightness" setting',
+                                                label: 'Execute if off',
+                                                name: 'execute_if_off',
+                                                property: 'execute_if_off',
+                                                type: 'binary',
+                                                value_off: false,
+                                                value_on: true,
+                                            },
+                                            {
+                                                access: 7,
+                                                description: 'Defines the desired startup level for a device when it is supplied with power',
+                                                label: 'Current level startup',
+                                                name: 'current_level_startup',
+                                                presets: [
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
+                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                ],
+                                                property: 'current_level_startup',
+                                                type: 'numeric',
+                                                value_max: 254,
+                                                value_min: 1,
+                                            },
+                                        ],
+                                        label: 'Level config',
+                                        name: 'level_config',
+                                        property: 'level_config',
+                                        type: 'composite',
+                                    },
                                 ],
                                 type: 'light',
                             },
@@ -2186,7 +2256,7 @@ describe('Bridge', () => {
         await zigbeeHerdsman.events.deviceInterview({device: zigbeeHerdsman.devices.unsupported, status: 'successful'});
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(7);
-        // console.log(MQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'))
+        // console.log(MQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({
@@ -2253,6 +2323,40 @@ describe('Bridge', () => {
                                         unit: 'mired',
                                         value_max: 454,
                                         value_min: 250,
+                                    },
+                                    {
+                                        access: 7,
+                                        description: 'Configure genLevelCtrl',
+                                        features: [
+                                            {
+                                                access: 7,
+                                                description: `this setting can affect the "on_level", "current_level_startup" or "brightness" setting`,
+                                                label: 'Execute if off',
+                                                name: 'execute_if_off',
+                                                property: 'execute_if_off',
+                                                type: 'binary',
+                                                value_off: false,
+                                                value_on: true,
+                                            },
+                                            {
+                                                access: 7,
+                                                description: 'Defines the desired startup level for a device when it is supplied with power',
+                                                label: 'Current level startup',
+                                                name: 'current_level_startup',
+                                                presets: [
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
+                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                ],
+                                                property: 'current_level_startup',
+                                                type: 'numeric',
+                                                value_max: 254,
+                                                value_min: 1,
+                                            },
+                                        ],
+                                        label: 'Level config',
+                                        name: 'level_config',
+                                        property: 'level_config',
+                                        type: 'composite',
                                     },
                                 ],
                                 type: 'light',
