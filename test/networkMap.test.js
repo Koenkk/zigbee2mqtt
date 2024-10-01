@@ -201,7 +201,7 @@ describe('Networkmap', () => {
                         description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                         model: 'LED1545G12',
                         supports:
-                            'light (state, brightness, color_temp, color_temp_startup), effect, power_on_behavior, color_options, identify, linkquality',
+                            'light (state, brightness, color_temp, color_temp_startup, level_config), effect, power_on_behavior, color_options, identify, linkquality',
                         vendor: 'IKEA',
                     },
                     failed: [],
@@ -547,7 +547,7 @@ describe('Networkmap', () => {
                                 description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                                 model: 'LED1545G12',
                                 supports:
-                                    'light (state, brightness, color_temp, color_temp_startup), effect, power_on_behavior, color_options, identify, linkquality',
+                                    'light (state, brightness, color_temp, color_temp_startup, level_config), effect, power_on_behavior, color_options, identify, linkquality',
                                 vendor: 'IKEA',
                             },
                             failed: [],
