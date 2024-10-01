@@ -149,9 +149,8 @@ export default class Receive extends Extension {
             // Check if we have to debounce or throttle
             if (data.device.options.debounce) {
                 this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
-            } else if (data.device.options.throttle || (data.device.options.description && data.device.options.description.includes('SPAMMER'))) {
-                const throttleTime = data.device.options.throttle || 30;
-                await this.publishThrottle(data.device, payload, throttleTime);
+            } else if (data.device.options.throttle) {
+                await this.publishThrottle(data.device, payload, data.device.options.throttle);
             } else {
                 await this.publishEntityState(data.device, payload);
             }

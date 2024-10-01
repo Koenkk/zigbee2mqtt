@@ -355,8 +355,8 @@ describe('Receive', () => {
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
     });
 
-    it('Should ignore multiple messages from spamming devices', async () => {
-        const device = zigbeeHerdsman.devices.SPAMMER1;
+    it('Should throttle multiple messages from spamming devices', async () => {
+        const device = zigbeeHerdsman.devices.SPAMMER;
         const throttle_for_testing = 1;
         settings.set(['device_options', 'throttle'], throttle_for_testing);
         settings.set(['device_options', 'retain'], true);
@@ -424,79 +424,6 @@ describe('Receive', () => {
 
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
         expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('zigbee2mqtt/spammer1');
-        expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({temperature: 0.04});
-        expect(MQTT.publish.mock.calls[2][2]).toStrictEqual({qos: 0, retain: true});
-    });
-
-    it('Should ignore multiple messages from spamming devices defined by description', async () => {
-        const device = zigbeeHerdsman.devices.SPAMMER2;
-        const throttle_for_testing = 50;
-        settings.set(['device_options', 'retain'], true);
-        settings.set(['devices', device.ieeeAddr, 'description'], 'this is a SPAMMER device');
-        settings.set(['devices', device.ieeeAddr, 'friendly_name'], 'spammer2');
-        const data1 = {measuredValue: 1};
-        const payload1 = {
-            data: data1,
-            cluster: 'msTemperatureMeasurement',
-            device,
-            endpoint: device.getEndpoint(1),
-            type: 'attributeReport',
-            linkquality: 10,
-        };
-        await zigbeeHerdsman.events.message(payload1);
-        const data2 = {measuredValue: 2};
-        const payload2 = {
-            data: data2,
-            cluster: 'msTemperatureMeasurement',
-            device,
-            endpoint: device.getEndpoint(1),
-            type: 'attributeReport',
-            linkquality: 10,
-        };
-        await zigbeeHerdsman.events.message(payload2);
-        const data3 = {measuredValue: 3};
-        const payload3 = {
-            data: data3,
-            cluster: 'msTemperatureMeasurement',
-            device,
-            endpoint: device.getEndpoint(1),
-            type: 'attributeReport',
-            linkquality: 10,
-        };
-        await zigbeeHerdsman.events.message(payload3);
-        await flushPromises();
-
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        await flushPromises();
-        jest.advanceTimersByTime(throttle_for_testing * 1000);
-        expect(MQTT.publish).toHaveBeenCalledTimes(2);
-
-        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/spammer2');
-        expect(JSON.parse(MQTT.publish.mock.calls[0][1])).toStrictEqual({temperature: 0.01});
-        expect(MQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: true});
-
-        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/spammer2');
-        expect(JSON.parse(MQTT.publish.mock.calls[1][1])).toStrictEqual({temperature: 0.03});
-        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({qos: 0, retain: true});
-
-        // Now we try again after elapsed time to see if it publishes
-        const timeshift = throttle_for_testing * 2000;
-        jest.advanceTimersByTime(timeshift);
-
-        const data4 = {measuredValue: 4};
-        const payload4 = {
-            data: data4,
-            cluster: 'msTemperatureMeasurement',
-            device,
-            endpoint: device.getEndpoint(1),
-            type: 'attributeReport',
-            linkquality: 10,
-        };
-        await zigbeeHerdsman.events.message(payload4);
-        await flushPromises();
-
-        expect(MQTT.publish).toHaveBeenCalledTimes(3);
-        expect(MQTT.publish.mock.calls[2][0]).toStrictEqual('zigbee2mqtt/spammer2');
         expect(JSON.parse(MQTT.publish.mock.calls[2][1])).toStrictEqual({temperature: 0.04});
         expect(MQTT.publish.mock.calls[2][2]).toStrictEqual({qos: 0, retain: true});
     });
