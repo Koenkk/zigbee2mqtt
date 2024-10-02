@@ -51,7 +51,6 @@ export default class Zigbee {
             },
             adapter: {
                 concurrent: settings.get().advanced.adapter_concurrent,
-                delay: settings.get().advanced.adapter_delay,
                 disableLED: settings.get().serial.disable_led,
                 transmitPower: settings.get().advanced.transmit_power,
             },

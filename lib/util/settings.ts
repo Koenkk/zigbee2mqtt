@@ -99,7 +99,6 @@ const defaults: RecursivePartial<Settings> = {
         ext_pan_id: [0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd],
         channel: 11,
         adapter_concurrent: undefined,
-        adapter_delay: undefined,
         cache_state: true,
         cache_state_persistent: true,
         cache_state_send_on_startup: true,

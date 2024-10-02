@@ -93,7 +93,6 @@ describe('Bridge', () => {
                 config: {
                     advanced: {
                         adapter_concurrent: undefined,
-                        adapter_delay: undefined,
                         availability_blacklist: [],
                         availability_blocklist: [],
                         availability_passlist: [],

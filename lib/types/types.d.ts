@@ -203,7 +203,6 @@ declare global {
             ext_pan_id: number[] | 'GENERATE';
             channel: number;
             adapter_concurrent?: number;
-            adapter_delay?: number;
             cache_state: boolean;
             cache_state_persistent: boolean;
             cache_state_send_on_startup: boolean;
