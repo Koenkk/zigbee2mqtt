@@ -20,7 +20,6 @@ import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
 import ExtensionHomeAssistant from './extension/homeassistant';
 import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
-import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMembership';
 import ExtensionReport from './extension/legacy/report';
 import ExtensionSoftReset from './extension/legacy/softReset';
 import ExtensionNetworkMap from './extension/networkMap';
@@ -44,7 +43,6 @@ const AllExtensions = [
     ExtensionSoftReset,
     ExtensionHomeAssistant,
     ExtensionConfigure,
-    ExtensionDeviceGroupMembership,
     ExtensionBridgeLegacy,
     ExtensionBridge,
     ExtensionGroups,
@@ -108,7 +106,6 @@ export class Controller {
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
             new ExtensionReceive(...this.extensionArgs),
-            new ExtensionDeviceGroupMembership(...this.extensionArgs),
             new ExtensionConfigure(...this.extensionArgs),
             new ExtensionNetworkMap(...this.extensionArgs),
             new ExtensionGroups(...this.extensionArgs),
