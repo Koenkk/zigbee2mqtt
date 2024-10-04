@@ -102,9 +102,8 @@ describe('Networkmap', () => {
         unsupported_router.routingTable = jest.fn().mockRejectedValue(new Error('failed'));
     }
 
-    it('Should output raw networkmap', async () => {
+    it('Output raw networkmap', async () => {
         mock();
-        MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -294,6 +293,147 @@ describe('Networkmap', () => {
         };
         const actual = JSON.parse(call[1]);
         expect(actual).toStrictEqual(expected);
+    });
+
+    it('Output graphviz networkmap', async () => {
+        mock();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.lastSeen = null;
+        const endpoint = device.getEndpoint(1);
+        const data = {modelID: 'test'};
+        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'graphviz', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const expected = `digraph G {
+            node[shape=record];
+              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0x0000)|0 seconds ago}"];
+              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (0x9db1)|IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)|9 seconds ago}"];
+              "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 0x198c)"]
+              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go (7146060PH)|unknown}"];
+              "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
+              "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
+              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (0x198a)|Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)|9 seconds ago}"];
+              "0x0017880104e45521" -> "0x0017880104e45559" [penwidth=1, weight=0, color="#994444", label="130"]
+              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (0x1988)failed: lqi,routingTable|Boef Automatically generated definition (notSupportedModelID)|9 seconds ago}"];
+              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (0x198c)|Custom devices (DiY) CC2530 router (CC2530.ROUTER)|9 seconds ago}"];
+              "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
+              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external (external_converter_device)|9 seconds ago}"];
+              "0x0017880104e45511" -> "0x00124b00120144ae" [penwidth=1, weight=0, color="#994444", label="92"]
+            }`;
+
+        const expectedLines = expected.split('\n');
+        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+
+        for (let i = 0; i < expectedLines.length; i++) {
+            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
+        }
+    });
+
+    it('Output plantuml networkmap', async () => {
+        mock();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.lastSeen = null;
+        const endpoint = device.getEndpoint(1);
+        const data = {modelID: 'test'};
+        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'plantuml', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const expected = `' paste into: https://www.planttext.com/
+
+        @startuml
+        card 0x0017880104e45511 [
+        0x0017880104e45511
+        ---
+        0x0017880104e45511 (0x045a)
+        ---
+        external external (external_converter_device)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x0017880104e45525 [
+        0x0017880104e45525
+        ---
+        0x0017880104e45525 (0x1988) failed: lqi,routingTable
+        ---
+        Boef Automatically generated definition (notSupportedModelID)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x000b57fffec6a5b2 [
+        bulb
+        ---
+        0x000b57fffec6a5b2 (0x9db1)
+        ---
+        IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x000b57fffec6a5b3 [
+        bulb_color
+        ---
+        0x000b57fffec6a5b3 (0x9dcf)
+        ---
+        Philips Hue Go (7146060PH)
+        ---
+        unknown
+        ]
+
+        card 0x0017880104e45521 [
+        button_double_key
+        ---
+        0x0017880104e45521 (0x198a)
+        ---
+        Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x0017880104e45559 [
+        cc2530_router
+        ---
+        0x0017880104e45559 (0x198c)
+        ---
+        Custom devices (DiY) CC2530 router (CC2530.ROUTER)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x00124b00120144ae [
+        Coordinator
+        ---
+        0x00124b00120144ae (0x0000)
+        ---
+        0 seconds ago
+        ]
+
+        0x000b57fffec6a5b3 --> 0x00124b00120144ae: 120
+        0x000b57fffec6a5b2 --> 0x00124b00120144ae: 92
+        0x0017880104e45511 --> 0x00124b00120144ae: 92
+        0x000b57fffec6a5b3 --> 0x000b57fffec6a5b2: 110
+        0x0017880104e45559 --> 0x000b57fffec6a5b2: 100
+        0x0017880104e45521 --> 0x0017880104e45559: 130
+
+        @enduml`;
+
+        const expectedLines = expected.split('\n');
+        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+
+        for (let i = 0; i < expectedLines.length; i++) {
+            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
+        }
     });
 
     it('Should throw error when requesting invalid type', async () => {
