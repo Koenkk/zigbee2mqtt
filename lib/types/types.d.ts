@@ -229,7 +229,6 @@ declare global {
         retention?: number;
         availability?: boolean | {timeout: number};
         optimistic?: boolean;
-        retrieve_state?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
         throttle?: number;
@@ -256,7 +255,6 @@ declare global {
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];
-        retrieve_state?: boolean;
         homeassistant?: KeyValue;
         friendly_name: string;
         description?: string;

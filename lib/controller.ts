@@ -349,7 +349,7 @@ export class Controller {
         // Filter mqtt message attributes
         utils.filterProperties(entity.options.filtered_attributes, message);
 
-        if (Object.entries(message).length) {
+        if (!utils.objectIsEmpty(message)) {
             const output = settings.get().advanced.output;
             if (output === 'attribute_and_json' || output === 'json') {
                 await this.mqtt.publish(entity.name, stringify(message), options);

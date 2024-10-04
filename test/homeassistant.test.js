@@ -1943,10 +1943,13 @@ describe('HomeAssistant extension', () => {
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
         logger.error.mockClear();
         MQTT.publish.mockClear();
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(zigbeeHerdsman.devices.bulb_color.getEndpoint(1));
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(0);
+        group.members.pop();
     });
 
     it('Should counter an action payload with an empty payload', async () => {
