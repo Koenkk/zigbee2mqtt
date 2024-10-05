@@ -228,7 +228,12 @@ export default class Groups extends Extension {
     }
 
     private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
-        return group.options.off_state === 'last_member_state' || !payload || (payload.state !== 'OFF' && payload.state !== "CLOSE" ) || this.areAllMembersOffOrClosed(group);
+        return (
+            group.options.off_state === 'last_member_state' ||
+            !payload ||
+            (payload.state !== 'OFF' && payload.state !== 'CLOSE') ||
+            this.areAllMembersOffOrClosed(group)
+        );
     }
 
     private areAllMembersOffOrClosed(group: Group): boolean {
