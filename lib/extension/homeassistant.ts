@@ -1142,6 +1142,26 @@ export default class HomeAssistant extends Extension {
                 }
 
                 /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (firstExpose.access & ACCESS_STATE && !(firstExpose.access & ACCESS_SET) && firstExpose.property == 'action') {
+                    discoveryEntries.push({
+                        type: 'event',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            state_topic: true,
+                            state_topic_postfix: 'action',
+                            event_types: firstExpose.values.map((v) => v.toString()).filter((v) => !v.includes('*')),
+                            value_template: `{ "event_type": "{{value}}" }`,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
                  * If enum attribute has SET access then expose as SELECT entity too.
                  * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
@@ -1248,9 +1268,12 @@ export default class HomeAssistant extends Extension {
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
             }
-        });
 
-        discoveryEntries.forEach((d) => {
+            // Event entities cannot have an entity_category set.
+            if (d.type === 'event' && d.discovery_payload.entity_category) {
+                delete d.discovery_payload.entity_category;
+            }
+
             // Let Home Assistant generate entity name when device_class is present
             if (d.discovery_payload.device_class) {
                 delete d.discovery_payload.name;
@@ -1532,7 +1555,7 @@ export default class HomeAssistant extends Extension {
         }
 
         if (!this.legacyTrigger) {
-            configs = configs.filter((c) => c.object_id !== 'action' && c.object_id !== 'click');
+            configs = configs.filter((c) => (c.object_id !== 'action' && c.object_id !== 'click') || c.type == 'event');
         }
 
         // deep clone of the config objects
