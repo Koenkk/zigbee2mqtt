@@ -7,7 +7,7 @@ import path from 'path';
 import url from 'url';
 
 import bind from 'bind-decorator';
-import gzipStatic, { RequestHandler } from 'connect-gzip-static';
+import gzipStatic, {RequestHandler} from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
 import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';
@@ -93,7 +93,7 @@ export default class Frontend extends Extension {
             },
         };
         this.fileServer = gzipStatic(frontend.getPath(), options);
-        this.wss = new WebSocket.Server({noServer: true, path: path.join(this.frontendBaseUrl, 'api')});
+        this.wss = new WebSocket.Server({noServer: true, path: path.posix.join(this.frontendBaseUrl, 'api')});
         this.wss.on('connection', this.onWebSocketConnection);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
@@ -126,7 +126,7 @@ export default class Frontend extends Extension {
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
         const fin = finalhandler(request, response);
 
-        const newUrl = path.relative(this.frontendBaseUrl, request.url!);
+        const newUrl = path.posix.relative(this.frontendBaseUrl, request.url!);
         // The request url is not within the frontend base url, so the relative path starts with '..'
         if (newUrl.startsWith('.')) {
             return fin();
