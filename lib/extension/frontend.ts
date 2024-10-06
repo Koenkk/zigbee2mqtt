@@ -3,10 +3,11 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import net from 'net';
+import path from 'path';
 import url from 'url';
 
 import bind from 'bind-decorator';
-import gzipStatic, {RequestHandler} from 'connect-gzip-static';
+import gzipStatic, { RequestHandler } from 'connect-gzip-static';
 import finalhandler from 'finalhandler';
 import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';
@@ -31,6 +32,7 @@ export default class Frontend extends Extension {
     private server: http.Server | undefined;
     private fileServer: RequestHandler | undefined;
     private wss: WebSocket.Server | undefined;
+    private frontendBaseUrl: string;
 
     constructor(
         zigbee: Zigbee,
@@ -52,6 +54,10 @@ export default class Frontend extends Extension {
         this.sslKey = frontendSettings.ssl_key;
         this.authToken = frontendSettings.auth_token;
         this.mqttBaseTopic = settings.get().mqtt.base_topic;
+        this.frontendBaseUrl = settings.get().frontend?.base_url ?? '/';
+        if (!this.frontendBaseUrl.startsWith('/')) {
+            this.frontendBaseUrl = '/' + this.frontendBaseUrl;
+        }
     }
 
     private isHttpsConfigured(): boolean {
@@ -87,7 +93,7 @@ export default class Frontend extends Extension {
             },
         };
         this.fileServer = gzipStatic(frontend.getPath(), options);
-        this.wss = new WebSocket.Server({noServer: true});
+        this.wss = new WebSocket.Server({noServer: true, path: path.join(this.frontendBaseUrl, 'api')});
         this.wss.on('connection', this.onWebSocketConnection);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
@@ -118,7 +124,19 @@ export default class Frontend extends Extension {
     }
 
     @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
-        this.fileServer?.(request, response, finalhandler(request, response));
+        const fin = finalhandler(request, response);
+
+        const newUrl = path.relative(this.frontendBaseUrl, request.url!);
+        // The request url is not within the frontend base url, so the relative path starts with '..'
+        if (newUrl.startsWith('.')) {
+            return fin();
+        }
+
+        // Attach originalUrl so that static-server can perform a redirect to '/' when serving the
+        // root directory. This is necessary for the browser to resolve relative assets paths correctly.
+        request.originalUrl = request.url;
+        request.url = '/' + newUrl;
+        this.fileServer?.(request, response, fin);
     }
 
     private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {
