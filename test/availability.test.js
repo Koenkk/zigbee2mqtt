@@ -68,8 +68,18 @@ describe('Availability', () => {
     });
 
     it('Should publish availability on startup for device where it is enabled for', async () => {
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', stringify({state: 'online'}), {retain: true, qos: 1}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability', stringify({state: 'online'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            stringify({state: 'online'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote/availability',
+            stringify({state: 'online'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
         expect(MQTT.publish).not.toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color_2/availability',
             stringify({state: 'online'}),
@@ -109,7 +119,12 @@ describe('Availability', () => {
         await setTimeAndAdvanceTimers(utils.minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Shouldnt do anything for a device when availability: false is set for device', async () => {
@@ -123,7 +138,12 @@ describe('Availability', () => {
         MQTT.publish.mockClear();
         await setTimeAndAdvanceTimers(utils.hours(26));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should reset ping timer when device last seen changes for active device', async () => {
@@ -133,7 +153,12 @@ describe('Availability', () => {
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
 
         await setTimeAndAdvanceTimers(utils.minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
@@ -165,7 +190,12 @@ describe('Availability', () => {
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
 
         await zigbeeHerdsman.events.lastSeenChanged({device: devices.remote});
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/remote/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
 
         await setTimeAndAdvanceTimers(utils.hours(25));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
@@ -178,12 +208,22 @@ describe('Availability', () => {
         MQTT.publish.mockClear();
 
         await setTimeAndAdvanceTimers(utils.minutes(15));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
 
         devices.bulb_color.lastSeen = Date.now();
         await zigbeeHerdsman.events.lastSeenChanged({device: devices.bulb_color});
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', stringify({state: 'online'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_color/availability',
+            stringify({state: 'online'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should allow to change availability timeout via device options', async () => {
@@ -299,9 +339,19 @@ describe('Availability', () => {
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', '', {retain: true, qos: 1}, expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', stringify({state: 'online'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_new_name/availability',
+            stringify({state: 'online'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
         await setTimeAndAdvanceTimers(utils.hours(12));
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_new_name/availability', stringify({state: 'offline'}), {retain: true, qos: 1}, expect.any(Function));
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bulb_new_name/availability',
+            stringify({state: 'offline'}),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should publish availability payload in JSON format', async () => {

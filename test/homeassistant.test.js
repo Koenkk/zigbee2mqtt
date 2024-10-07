@@ -1396,7 +1396,10 @@ describe('HomeAssistant extension', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             availability_mode: 'all',
-            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}, {topic: 'zigbee2mqtt/weather_sensor/availability', value_template: '{{ value_json.state }}'}],
+            availability: [
+                {topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'},
+                {topic: 'zigbee2mqtt/weather_sensor/availability', value_template: '{{ value_json.state }}'},
+            ],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2015,7 +2018,10 @@ describe('HomeAssistant extension', () => {
 
         // Existing group with old topic structure (1.20.0) -> clear
         MQTT.publish.mockClear();
-        await MQTT.events.message('homeassistant/light/9/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}));
+        await MQTT.events.message(
+            'homeassistant/light/9/light/config',
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
+        );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/9/light/config', '', {qos: 1, retain: true}, expect.any(Function));
@@ -2037,7 +2043,10 @@ describe('HomeAssistant extension', () => {
 
         // Non-existing device -> clear
         MQTT.publish.mockClear();
-        await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}));
+        await MQTT.events.message(
+            'homeassistant/sensor/0x123/temperature/config',
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
+        );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', '', {qos: 1, retain: true}, expect.any(Function));
