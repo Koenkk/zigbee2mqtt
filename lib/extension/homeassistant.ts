@@ -1641,7 +1641,7 @@ export default class HomeAssistant extends Extension {
                 if (isDevice && entity.options.disabled) {
                     // Mark disabled device always as unavailable
                     payload.availability.forEach((a: KeyValue) => (a.value_template = '{{ "offline" }}'));
-                } else if (!settings.get().advanced.legacy_availability_payload) {
+                } else {
                     payload.availability.forEach((a: KeyValue) => (a.value_template = '{{ value_json.state }}'));
                 }
             } else {
@@ -2017,7 +2017,6 @@ export default class HomeAssistant extends Extension {
         const discovery: DiscoveryEntry[] = [];
         const bridge = new Bridge(coordinatorIeeeAddress, coordinatorVersion, discovery);
         const baseTopic = `${settings.get().mqtt.base_topic}/${bridge.name}`;
-        const legacyAvailability = settings.get().advanced.legacy_availability_payload;
 
         discovery.push(
             // Binary sensors.
@@ -2031,7 +2030,7 @@ export default class HomeAssistant extends Extension {
                     entity_category: 'diagnostic',
                     state_topic: true,
                     state_topic_postfix: 'state',
-                    value_template: !legacyAvailability ? '{{ value_json.state }}' : '{{ value }}',
+                    value_template: '{{ value_json.state }}',
                     payload_on: 'online',
                     payload_off: 'offline',
                     availability: false,

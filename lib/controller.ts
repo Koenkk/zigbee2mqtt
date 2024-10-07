@@ -137,9 +137,8 @@ export class Controller {
         }
 
         // Start zigbee
-        let startResult;
         try {
-            startResult = await this.zigbee.start();
+            await this.zigbee.start();
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
             logger.error('Failed to start zigbee');
@@ -147,15 +146,6 @@ export class Controller {
             logger.error('Exiting...');
             logger.error((error as Error).stack!);
             return await this.exit(1);
-        }
-
-        // Disable some legacy options on new network creation
-        if (startResult === 'reset') {
-            settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
-            settings.set(['advanced', 'legacy_api'], false);
-            settings.set(['advanced', 'legacy_availability_payload'], false);
-            settings.set(['device_options', 'legacy'], false);
-            await this.enableDisableExtension(false, 'BridgeLegacy');
         }
 
         // Log zigbee clients on startup

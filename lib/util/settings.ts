@@ -81,8 +81,6 @@ const defaults: RecursivePartial<Settings> = {
     },
     device_options: {},
     advanced: {
-        legacy_api: true,
-        legacy_availability_payload: true,
         log_rotation: true,
         log_symlink_current: false,
         log_output: ['console', 'file'],

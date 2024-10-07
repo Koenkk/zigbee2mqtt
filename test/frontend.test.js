@@ -246,7 +246,7 @@ describe('Frontend', () => {
         const allTopics = mockWSClient.implementation.send.mock.calls.map((m) => JSON.parse(m).topic);
         expect(allTopics).toContain('bridge/devices');
         expect(allTopics).toContain('bridge/info');
-        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: 'online'}));
+        expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: {state: 'online'}}));
         expect(mockWSClient.implementation.send).toHaveBeenCalledWith(stringify({topic: 'remote', payload: {brightness: 255}}));
 
         // Message

@@ -49,7 +49,6 @@ describe('Bridge', () => {
     beforeAll(async () => {
         jest.useFakeTimers();
         mockRestart = jest.fn();
-        settings.set(['advanced', 'legacy_api'], false);
         controller = new Controller(mockRestart, jest.fn());
         await controller.start();
         await flushPromises();
@@ -60,7 +59,6 @@ describe('Bridge', () => {
         MQTT.mock.reconnecting = false;
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(['advanced', 'legacy_api'], false);
         data.writeDefaultState();
         logger.info.mockClear();
         logger.warning.mockClear();
@@ -101,8 +99,6 @@ describe('Bridge', () => {
                         elapsed: false,
                         ext_pan_id: [221, 221, 221, 221, 221, 221, 221, 221],
                         last_seen: 'disable',
-                        legacy_api: false,
-                        legacy_availability_payload: true,
                         log_debug_namespace_ignore: '',
                         log_debug_to_mqtt_frontend: false,
                         log_directory: directory,

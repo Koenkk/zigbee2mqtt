@@ -94,7 +94,7 @@ describe('Controller', () => {
         expect(logger.info).toHaveBeenCalledWith('0x0017880104e45518 (0x0017880104e45518): Not supported (EndDevice)');
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         expect(MQTT.connect).toHaveBeenCalledWith('mqtt://localhost', {
-            will: {payload: Buffer.from('offline'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
         });
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -140,7 +140,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            will: {payload: Buffer.from('offline'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
             keepalive: 30,
             ca: Buffer.from([99, 97]),
             key: Buffer.from([107, 101, 121]),
@@ -895,7 +895,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            will: {payload: Buffer.from('offline'), retain: false, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: false, topic: 'zigbee2mqtt/bridge/state', qos: 1},
         };
         expect(MQTT.connect).toHaveBeenCalledWith('mqtt://localhost', expected);
     });
@@ -928,17 +928,6 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', {retain: false, qos: 0}, expect.any(Function));
-    });
-
-    it('Should disable legacy options on new network start', async () => {
-        settings.set(['homeassistant'], true);
-        settings.reRead();
-        expect(settings.get().homeassistant.legacy_entity_attributes).toBeTruthy();
-        expect(settings.get().advanced.legacy_api).toBeTruthy();
-        zigbeeHerdsman.start.mockReturnValueOnce('reset');
-        await controller.start();
-        expect(settings.get().homeassistant.legacy_entity_attributes).toBeFalsy();
-        expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
 
     it('Should publish last seen changes', async () => {
