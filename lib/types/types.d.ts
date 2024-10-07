@@ -213,14 +213,6 @@ declare global {
             timestamp_format: string;
             output: 'json' | 'attribute' | 'attribute_and_json';
             transmit_power?: number;
-            // Everything below is deprecated
-            availability_timeout?: number;
-            availability_blocklist: string[];
-            availability_passlist: string[];
-            availability_blacklist: string[];
-            availability_whitelist: string[];
-            soft_reset_timeout: number;
-            report: boolean;
         };
     }
 

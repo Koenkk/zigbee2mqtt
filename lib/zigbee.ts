@@ -219,10 +219,6 @@ export default class Zigbee {
         return await this.herdsman.getNetworkParameters();
     }
 
-    async reset(type: 'soft' | 'hard'): Promise<void> {
-        await this.herdsman.reset(type);
-    }
-
     async stop(): Promise<void> {
         logger.info('Stopping zigbee-herdsman...');
         await this.herdsman.stop();

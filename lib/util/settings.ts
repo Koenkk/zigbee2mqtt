@@ -19,8 +19,6 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
     delete schema.properties.advanced.properties.homeassistant_legacy_triggers;
     delete schema.properties.advanced.properties.homeassistant_status_topic;
-    delete schema.properties.advanced.properties.soft_reset_timeout;
-    delete schema.properties.advanced.properties.report;
     delete schema.properties.advanced.properties.baudrate;
     delete schema.properties.advanced.properties.rtscts;
     delete schema.properties.advanced.properties.ikea_ota_use_test_url;
@@ -108,13 +106,6 @@ const defaults: RecursivePartial<Settings> = {
         network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
         timestamp_format: 'YYYY-MM-DD HH:mm:ss',
         output: 'json',
-        // Everything below is deprecated
-        availability_blocklist: [],
-        availability_passlist: [],
-        availability_blacklist: [],
-        availability_whitelist: [],
-        soft_reset_timeout: 0,
-        report: false,
     },
 };
 
@@ -160,7 +151,7 @@ function loadSettingsWithDefaults(): void {
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
 
-    if (_settingsWithDefaults.availability || _settingsWithDefaults.advanced?.availability_timeout) {
+    if (_settingsWithDefaults.availability) {
         const defaults = {};
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
         // @ts-expect-error ignore typing
@@ -360,19 +351,6 @@ export function validate(): string[] {
             }
         }
     }
-
-    const checkAvailabilityList = (list: string[], type: string): void => {
-        list.forEach((e) => {
-            if (!getDevice(e)) {
-                errors.push(`Non-existing entity '${e}' specified in '${type}'`);
-            }
-        });
-    };
-
-    checkAvailabilityList(settingsWithDefaults.advanced.availability_blacklist, 'availability_blacklist');
-    checkAvailabilityList(settingsWithDefaults.advanced.availability_whitelist, 'availability_whitelist');
-    checkAvailabilityList(settingsWithDefaults.advanced.availability_blocklist, 'availability_blocklist');
-    checkAvailabilityList(settingsWithDefaults.advanced.availability_passlist, 'availability_passlist');
 
     return errors;
 }
@@ -623,20 +601,6 @@ export function addDevice(ID: string): DeviceOptionsWithId {
     write();
 
     return getDevice(ID)!; // valid from creation above
-}
-
-export function addDeviceToPasslist(ID: string): void {
-    const settings = getInternalSettings();
-    if (!settings.passlist) {
-        settings.passlist = [];
-    }
-
-    if (settings.passlist.includes(ID)) {
-        throw new Error(`Device '${ID}' already in passlist`);
-    }
-
-    settings.passlist.push(ID);
-    write();
 }
 
 export function blockDevice(ID: string): void {

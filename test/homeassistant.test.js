@@ -1408,7 +1408,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should clear discovery when device is removed', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'weather_sensor');
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', 'weather_sensor');
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith(

@@ -306,21 +306,8 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
         return !!entity.options.availability;
     }
 
-    // availability_timeout = deprecated
-    if (!(settings.advanced.availability_timeout || settings.availability)) {
+    if (!settings.availability) {
         return false;
-    }
-
-    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
-
-    if (passlist.length > 0) {
-        return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
-    }
-
-    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-
-    if (blocklist.length > 0) {
-        return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
     }
 
     return true;

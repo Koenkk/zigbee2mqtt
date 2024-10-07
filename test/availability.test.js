@@ -319,37 +319,6 @@ describe('Availability', () => {
         );
     });
 
-    it('Deprecated - should allow to block via advanced.availability_blocklist', async () => {
-        settings.set(['advanced', 'availability_blocklist'], [devices.bulb_color.ieeeAddr]);
-        await resetExtension();
-        devices.bulb_color.ping.mockClear();
-
-        await setTimeAndAdvanceTimers(utils.minutes(12));
-        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
-    });
-
-    it('Deprecated - should allow to pass certain devices via availability_passlist', async () => {
-        settings.set(['advanced', 'availability_passlist'], [devices.bulb_color_2.ieeeAddr]);
-        settings.changeEntityOptions(devices.bulb_color_2.ieeeAddr, {availability: null});
-        await resetExtension();
-        devices.bulb_color.ping.mockClear();
-        devices.bulb_color_2.ping.mockClear();
-
-        await setTimeAndAdvanceTimers(utils.minutes(12));
-        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
-        expect(devices.bulb_color_2.ping).toHaveBeenCalledTimes(1);
-    });
-
-    it('Deprecated - should allow to enable via availability_timeout', async () => {
-        settings.set(['availability'], false);
-        settings.set(['advanced', 'availability_timeout'], 60);
-        await resetExtension();
-        devices.bulb_color.ping.mockClear();
-
-        await setTimeAndAdvanceTimers(utils.minutes(12));
-        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
-    });
-
     it('Should publish availability for groups', async () => {
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], true);
         await resetExtension();

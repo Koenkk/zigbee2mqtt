@@ -19,9 +19,6 @@ import ExtensionExternalExtension from './extension/externalExtension';
 import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
 import ExtensionHomeAssistant from './extension/homeassistant';
-import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
-import ExtensionReport from './extension/legacy/report';
-import ExtensionSoftReset from './extension/legacy/softReset';
 import ExtensionNetworkMap from './extension/networkMap';
 import ExtensionOnEvent from './extension/onEvent';
 import ExtensionOTAUpdate from './extension/otaUpdate';
@@ -40,14 +37,11 @@ const AllExtensions = [
     ExtensionPublish,
     ExtensionReceive,
     ExtensionNetworkMap,
-    ExtensionSoftReset,
     ExtensionHomeAssistant,
     ExtensionConfigure,
-    ExtensionBridgeLegacy,
     ExtensionBridge,
     ExtensionGroups,
     ExtensionBind,
-    ExtensionReport,
     ExtensionOnEvent,
     ExtensionOTAUpdate,
     ExtensionExternalConverters,
@@ -111,7 +105,6 @@ export class Controller {
             new ExtensionGroups(...this.extensionArgs),
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
-            new ExtensionReport(...this.extensionArgs),
             new ExtensionExternalExtension(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
@@ -120,21 +113,12 @@ export class Controller {
             this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
         }
 
-        if (settings.get().advanced.legacy_api) {
-            this.extensions.push(new ExtensionBridgeLegacy(...this.extensionArgs));
-        }
-
         if (settings.get().external_converters.length) {
             this.extensions.push(new ExtensionExternalConverters(...this.extensionArgs));
         }
 
         if (settings.get().homeassistant) {
             this.extensions.push(new ExtensionHomeAssistant(...this.extensionArgs));
-        }
-
-        /* istanbul ignore next */
-        if (settings.get().advanced.soft_reset_timeout !== 0) {
-            this.extensions.push(new ExtensionSoftReset(...this.extensionArgs));
         }
     }
 
