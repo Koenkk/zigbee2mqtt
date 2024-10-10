@@ -1,10 +1,7 @@
-import assert from 'assert';
+import type * as zhc from 'zigbee-herdsman-converters';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
-
-import * as zhc from 'zigbee-herdsman-converters';
-import * as philips from 'zigbee-herdsman-converters/lib/philips';
 
 import Device from '../model/device';
 import Group from '../model/group';
@@ -22,23 +19,6 @@ loadTopicGetSetRegex();
 
 const STATE_VALUES: ReadonlyArray<string> = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
 const SCENE_CONVERTER_KEYS: ReadonlyArray<string> = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
-
-// Legacy: don't provide default converters anymore, this is required by older z2m installs not saving group members
-const DEFAULT_GROUP_CONVERTERS: ReadonlyArray<zhc.Tz.Converter> = [
-    zhc.toZigbee.light_onoff_brightness,
-    zhc.toZigbee.light_color_colortemp,
-    philips.tz.effect, // Support Hue effects for groups
-    zhc.toZigbee.ignore_transition,
-    zhc.toZigbee.cover_position_tilt,
-    zhc.toZigbee.thermostat_occupied_heating_setpoint,
-    zhc.toZigbee.tint_scene,
-    zhc.toZigbee.light_brightness_move,
-    zhc.toZigbee.light_brightness_step,
-    zhc.toZigbee.light_colortemp_step,
-    zhc.toZigbee.light_colortemp_move,
-    zhc.toZigbee.light_hue_saturation_move,
-    zhc.toZigbee.light_hue_saturation_step,
-];
 
 interface ParsedTopic {
     ID: string;
@@ -96,36 +76,6 @@ export default class Publish extends Extension {
         }
     }
 
-    async legacyLog(payload: KeyValue): Promise<void> {
-        /* istanbul ignore else */
-        if (settings.get().advanced.legacy_api) {
-            await this.mqtt.publish('bridge/log', stringify(payload));
-        }
-    }
-
-    legacyRetrieveState(
-        re: Device | Group,
-        converter: zhc.Tz.Converter,
-        result: zhc.Tz.ConvertSetResult,
-        target: zh.Endpoint | zh.Group,
-        key: string,
-        meta: zhc.Tz.Meta,
-    ): void {
-        // It's possible for devices to get out of sync when writing an attribute that's not reportable.
-        // So here we re-read the value after a specified timeout, this timeout could for example be the
-        // transition time of a color change or for forcing a state read for devices that don't
-        // automatically report a new state when set.
-        // When reporting is requested for a device (report: true in device-specific settings) we won't
-        // ever issue a read here, as we assume the device will properly report changes.
-        // Only do this when the retrieve_state option is enabled for this device.
-        // retrieve_state == deprecated
-        if (re instanceof Device && result && result.readAfterWriteTime !== undefined && re.options.retrieve_state) {
-            const convertGet = converter.convertGet;
-            assert(convertGet !== undefined, 'Converter has `readAfterWriteTime` but no `convertGet`');
-            setTimeout(() => convertGet(target, key, meta), result.readAfterWriteTime);
-        }
-    }
-
     updateMessageHomeAssistant(message: KeyValue, entityState: KeyValue): void {
         /**
          * Home Assistant always publishes 'state', even when e.g. only setting
@@ -154,7 +104,6 @@ export default class Publish extends Extension {
         const re = this.zigbee.resolveEntity(parsedTopic.ID);
 
         if (!re) {
-            await this.legacyLog({type: `entity_not_found`, message: {friendly_name: parsedTopic.ID}});
             logger.error(`Entity '${parsedTopic.ID}' is unknown`);
             return;
         }
@@ -194,14 +143,7 @@ export default class Publish extends Extension {
                       re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr)!)]),
                   )
                 : undefined;
-        let converters: ReadonlyArray<zhc.Tz.Converter>;
-
-        if (Array.isArray(definition)) {
-            const c = new Set(definition.map((d) => d.toZigbee).flat());
-            converters = c.size === 0 ? DEFAULT_GROUP_CONVERTERS : Array.from(c);
-        } else {
-            converters = definition?.toZigbee;
-        }
+        const converters = this.getDefinitionConverters(definition);
 
         this.updateMessageHomeAssistant(message, entityState);
 
@@ -327,8 +269,6 @@ export default class Publish extends Extension {
                             addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
                         }
                     }
-
-                    this.legacyRetrieveState(re, converter, result, localTarget, key, meta);
                 } else if (parsedTopic.type === 'get' && converter.convertGet) {
                     logger.debug(`Publishing get '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     await converter.convertGet(localTarget, key, meta);
@@ -340,7 +280,6 @@ export default class Publish extends Extension {
                 const message = `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
                 logger.debug((error as Error).stack!);
-                await this.legacyLog({type: `zigbee_publish_error`, message, meta: {friendly_name: re.name}});
             }
 
             usedConverters[endpointOrGroupID].push(converter);
@@ -358,6 +297,14 @@ export default class Publish extends Extension {
 
         if (scenesChanged) {
             this.eventBus.emitScenesChanged({entity: re});
+        }
+    }
+
+    private getDefinitionConverters(definition: zhc.Definition | zhc.Definition[]): ReadonlyArray<zhc.Tz.Converter> {
+        if (Array.isArray(definition)) {
+            return definition.length ? Array.from(new Set(definition.map((d) => d.toZigbee).flat())) : [];
+        } else {
+            return definition?.toZigbee;
         }
     }
 }

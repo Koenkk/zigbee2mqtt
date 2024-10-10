@@ -102,350 +102,8 @@ describe('Networkmap', () => {
         unsupported_router.routingTable = jest.fn().mockRejectedValue(new Error('failed'));
     }
 
-    it('Output raw networkmap legacy api', async () => {
+    it('Output raw networkmap', async () => {
         mock();
-        MQTT.events.message('zigbee2mqtt/bridge/networkmap/routes', 'raw');
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/networkmap/raw');
-
-        const expected = {
-            links: [
-                {
-                    depth: 1,
-                    linkquality: 120,
-                    lqi: 120,
-                    relationship: 2,
-                    routes: [],
-                    source: {ieeeAddr: '0x000b57fffec6a5b3', networkAddress: 40399},
-                    sourceIeeeAddr: '0x000b57fffec6a5b3',
-                    sourceNwkAddr: 40399,
-                    target: {ieeeAddr: '0x00124b00120144ae', networkAddress: 0},
-                    targetIeeeAddr: '0x00124b00120144ae',
-                },
-                {
-                    depth: 1,
-                    linkquality: 92,
-                    lqi: 92,
-                    relationship: 2,
-                    routes: [{destinationAddress: 6540, nextHop: 40369, status: 'ACTIVE'}],
-                    source: {ieeeAddr: '0x000b57fffec6a5b2', networkAddress: 40369},
-                    sourceIeeeAddr: '0x000b57fffec6a5b2',
-                    sourceNwkAddr: 40369,
-                    target: {ieeeAddr: '0x00124b00120144ae', networkAddress: 0},
-                    targetIeeeAddr: '0x00124b00120144ae',
-                },
-                {
-                    depth: 1,
-                    linkquality: 92,
-                    lqi: 92,
-                    relationship: 2,
-                    routes: [],
-                    source: {ieeeAddr: '0x0017880104e45511', networkAddress: 1114},
-                    sourceIeeeAddr: '0x0017880104e45511',
-                    sourceNwkAddr: 1114,
-                    target: {ieeeAddr: '0x00124b00120144ae', networkAddress: 0},
-                    targetIeeeAddr: '0x00124b00120144ae',
-                },
-                {
-                    depth: 2,
-                    linkquality: 110,
-                    lqi: 110,
-                    relationship: 1,
-                    routes: [],
-                    source: {ieeeAddr: '0x000b57fffec6a5b3', networkAddress: 40399},
-                    sourceIeeeAddr: '0x000b57fffec6a5b3',
-                    sourceNwkAddr: 40399,
-                    target: {ieeeAddr: '0x000b57fffec6a5b2', networkAddress: 40369},
-                    targetIeeeAddr: '0x000b57fffec6a5b2',
-                },
-                {
-                    depth: 2,
-                    linkquality: 100,
-                    lqi: 100,
-                    relationship: 1,
-                    routes: [],
-                    source: {ieeeAddr: '0x0017880104e45559', networkAddress: 6540},
-                    sourceIeeeAddr: '0x0017880104e45559',
-                    sourceNwkAddr: 6540,
-                    target: {ieeeAddr: '0x000b57fffec6a5b2', networkAddress: 40369},
-                    targetIeeeAddr: '0x000b57fffec6a5b2',
-                },
-                {
-                    depth: 2,
-                    linkquality: 130,
-                    lqi: 130,
-                    relationship: 1,
-                    routes: [],
-                    source: {ieeeAddr: '0x0017880104e45521', networkAddress: 6538},
-                    sourceIeeeAddr: '0x0017880104e45521',
-                    sourceNwkAddr: 6538,
-                    target: {ieeeAddr: '0x0017880104e45559', networkAddress: 6540},
-                    targetIeeeAddr: '0x0017880104e45559',
-                },
-            ],
-            nodes: [
-                {
-                    // definition: null,
-                    failed: [],
-                    friendlyName: 'Coordinator',
-                    ieeeAddr: '0x00124b00120144ae',
-                    lastSeen: 1000,
-                    modelID: null,
-                    networkAddress: 0,
-                    type: 'Coordinator',
-                },
-                {
-                    definition: {
-                        description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
-                        model: 'LED1545G12',
-                        supports:
-                            'light (state, brightness, color_temp, color_temp_startup, level_config), effect, power_on_behavior, color_options, identify, linkquality',
-                        vendor: 'IKEA',
-                    },
-                    failed: [],
-                    friendlyName: 'bulb',
-                    ieeeAddr: '0x000b57fffec6a5b2',
-                    lastSeen: 1000,
-                    modelID: 'TRADFRI bulb E27 WS opal 980lm',
-                    networkAddress: 40369,
-                    type: 'Router',
-                },
-                {
-                    definition: {
-                        description: 'Hue Go',
-                        model: '7146060PH',
-                        supports:
-                            'light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality',
-                        vendor: 'Philips',
-                    },
-                    failed: [],
-                    friendlyName: 'bulb_color',
-                    ieeeAddr: '0x000b57fffec6a5b3',
-                    lastSeen: 1000,
-                    modelID: 'LLC020',
-                    networkAddress: 40399,
-                    type: 'Router',
-                },
-                {
-                    definition: {
-                        description: 'Wireless remote switch (double rocker), 2016 model',
-                        model: 'WXKG02LM_rev1',
-                        supports: 'battery, voltage, power_outage_count, action, linkquality',
-                        vendor: 'Aqara',
-                    },
-                    friendlyName: 'button_double_key',
-                    ieeeAddr: '0x0017880104e45521',
-                    lastSeen: 1000,
-                    modelID: 'lumi.sensor_86sw2.es1',
-                    networkAddress: 6538,
-                    type: 'EndDevice',
-                },
-                {
-                    definition: {
-                        description: 'Automatically generated definition',
-                        model: 'notSupportedModelID',
-                        supports: 'action, linkquality',
-                        vendor: 'Boef',
-                    },
-                    failed: ['lqi', 'routingTable'],
-                    friendlyName: '0x0017880104e45525',
-                    ieeeAddr: '0x0017880104e45525',
-                    lastSeen: 1000,
-                    manufacturerName: 'Boef',
-                    modelID: 'notSupportedModelID',
-                    networkAddress: 6536,
-                    type: 'Router',
-                },
-                {
-                    definition: {description: 'CC2530 router', model: 'CC2530.ROUTER', supports: 'led, linkquality', vendor: 'Custom devices (DiY)'},
-                    failed: [],
-                    friendlyName: 'cc2530_router',
-                    ieeeAddr: '0x0017880104e45559',
-                    lastSeen: 1000,
-                    modelID: 'lumi.router',
-                    networkAddress: 6540,
-                    type: 'Router',
-                },
-                {
-                    definition: {description: 'external', model: 'external_converter_device', supports: 'linkquality', vendor: 'external'},
-                    friendlyName: '0x0017880104e45511',
-                    ieeeAddr: '0x0017880104e45511',
-                    lastSeen: 1000,
-                    modelID: 'external_converter_device',
-                    networkAddress: 1114,
-                    type: 'EndDevice',
-                },
-            ],
-        };
-        expect(JSON.parse(call[1])).toStrictEqual(expected);
-
-        /**
-         * Check again without routes
-         */
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/networkmap', 'raw');
-        await flushPromises();
-        call = MQTT.publish.mock.calls[0];
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/networkmap/raw');
-
-        // Remove routing information
-        expected.nodes.forEach((n) => {
-            if (n.failed && n.failed.includes('routingTable')) {
-                n.failed.splice(n.failed.indexOf('routingTable'), 1);
-            }
-        });
-
-        expected.links.forEach((l) => (l.routes = []));
-        expect(JSON.parse(call[1])).toStrictEqual(expected);
-    });
-
-    it('Output graphviz networkmap legacy api', async () => {
-        mock();
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.lastSeen = null;
-        const endpoint = device.getEndpoint(1);
-        const data = {modelID: 'test'};
-        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        MQTT.events.message('zigbee2mqtt/bridge/networkmap/routes', 'graphviz');
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/networkmap/graphviz');
-
-        const expected = `digraph G {
-            node[shape=record];
-              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0x0000)|0 seconds ago}"];
-              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (0x9db1)|IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)|9 seconds ago}"];
-              "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 0x198c)"]
-              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go (7146060PH)|unknown}"];
-              "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
-              "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
-              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (0x198a)|Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)|9 seconds ago}"];
-              "0x0017880104e45521" -> "0x0017880104e45559" [penwidth=1, weight=0, color="#994444", label="130"]
-              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (0x1988)failed: lqi,routingTable|Boef Automatically generated definition (notSupportedModelID)|9 seconds ago}"];
-              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (0x198c)|Custom devices (DiY) CC2530 router (CC2530.ROUTER)|9 seconds ago}"];
-              "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
-              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external (external_converter_device)|9 seconds ago}"];
-              "0x0017880104e45511" -> "0x00124b00120144ae" [penwidth=1, weight=0, color="#994444", label="92"]
-            }`;
-
-        const expectedLines = expected.split('\n');
-        const actualLines = call[1].split('\n');
-
-        for (let i = 0; i < expectedLines.length; i++) {
-            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
-        }
-    });
-
-    it('Output plantuml networkmap legacy api', async () => {
-        mock();
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.lastSeen = null;
-        const endpoint = device.getEndpoint(1);
-        const data = {modelID: 'test'};
-        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        MQTT.events.message('zigbee2mqtt/bridge/networkmap/routes', 'plantuml');
-        await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/networkmap/plantuml');
-
-        const expected = `' paste into: https://www.planttext.com/
-
-        @startuml
-        card 0x0017880104e45511 [
-        0x0017880104e45511
-        ---
-        0x0017880104e45511 (0x045a)
-        ---
-        external external (external_converter_device)
-        ---
-        9 seconds ago
-        ]
-
-        card 0x0017880104e45525 [
-        0x0017880104e45525
-        ---
-        0x0017880104e45525 (0x1988) failed: lqi,routingTable
-        ---
-        Boef Automatically generated definition (notSupportedModelID)
-        ---
-        9 seconds ago
-        ]
-
-        card 0x000b57fffec6a5b2 [
-        bulb
-        ---
-        0x000b57fffec6a5b2 (0x9db1)
-        ---
-        IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)
-        ---
-        9 seconds ago
-        ]
-
-        card 0x000b57fffec6a5b3 [
-        bulb_color
-        ---
-        0x000b57fffec6a5b3 (0x9dcf)
-        ---
-        Philips Hue Go (7146060PH)
-        ---
-        unknown
-        ]
-
-        card 0x0017880104e45521 [
-        button_double_key
-        ---
-        0x0017880104e45521 (0x198a)
-        ---
-        Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)
-        ---
-        9 seconds ago
-        ]
-
-        card 0x0017880104e45559 [
-        cc2530_router
-        ---
-        0x0017880104e45559 (0x198c)
-        ---
-        Custom devices (DiY) CC2530 router (CC2530.ROUTER)
-        ---
-        9 seconds ago
-        ]
-
-        card 0x00124b00120144ae [
-        Coordinator
-        ---
-        0x00124b00120144ae (0x0000)
-        ---
-        0 seconds ago
-        ]
-
-        0x000b57fffec6a5b3 --> 0x00124b00120144ae: 120
-        0x000b57fffec6a5b2 --> 0x00124b00120144ae: 92
-        0x0017880104e45511 --> 0x00124b00120144ae: 92
-        0x000b57fffec6a5b3 --> 0x000b57fffec6a5b2: 110
-        0x0017880104e45559 --> 0x000b57fffec6a5b2: 100
-        0x0017880104e45521 --> 0x0017880104e45559: 130
-
-        @enduml`;
-
-        const expectedLines = expected.split('\n');
-        const actualLines = call[1].split('\n');
-
-        for (let i = 0; i < expectedLines.length; i++) {
-            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
-        }
-    });
-
-    it('Should output raw networkmap', async () => {
-        mock();
-        MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -635,6 +293,147 @@ describe('Networkmap', () => {
         };
         const actual = JSON.parse(call[1]);
         expect(actual).toStrictEqual(expected);
+    });
+
+    it('Output graphviz networkmap', async () => {
+        mock();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.lastSeen = null;
+        const endpoint = device.getEndpoint(1);
+        const data = {modelID: 'test'};
+        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'graphviz', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const expected = `digraph G {
+            node[shape=record];
+              "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0x0000)|0 seconds ago}"];
+              "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (0x9db1)|IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)|9 seconds ago}"];
+              "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 0x198c)"]
+              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go (7146060PH)|unknown}"];
+              "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
+              "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
+              "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (0x198a)|Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)|9 seconds ago}"];
+              "0x0017880104e45521" -> "0x0017880104e45559" [penwidth=1, weight=0, color="#994444", label="130"]
+              "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (0x1988)failed: lqi,routingTable|Boef Automatically generated definition (notSupportedModelID)|9 seconds ago}"];
+              "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (0x198c)|Custom devices (DiY) CC2530 router (CC2530.ROUTER)|9 seconds ago}"];
+              "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
+              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external (external_converter_device)|9 seconds ago}"];
+              "0x0017880104e45511" -> "0x00124b00120144ae" [penwidth=1, weight=0, color="#994444", label="92"]
+            }`;
+
+        const expectedLines = expected.split('\n');
+        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+
+        for (let i = 0; i < expectedLines.length; i++) {
+            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
+        }
+    });
+
+    it('Output plantuml networkmap', async () => {
+        mock();
+        const device = zigbeeHerdsman.devices.bulb_color;
+        device.lastSeen = null;
+        const endpoint = device.getEndpoint(1);
+        const data = {modelID: 'test'};
+        const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
+        await zigbeeHerdsman.events.message(payload);
+        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'plantuml', routes: true}));
+        await flushPromises();
+        expect(MQTT.publish).toHaveBeenCalledTimes(1);
+        let call = MQTT.publish.mock.calls[0];
+        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+
+        const expected = `' paste into: https://www.planttext.com/
+
+        @startuml
+        card 0x0017880104e45511 [
+        0x0017880104e45511
+        ---
+        0x0017880104e45511 (0x045a)
+        ---
+        external external (external_converter_device)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x0017880104e45525 [
+        0x0017880104e45525
+        ---
+        0x0017880104e45525 (0x1988) failed: lqi,routingTable
+        ---
+        Boef Automatically generated definition (notSupportedModelID)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x000b57fffec6a5b2 [
+        bulb
+        ---
+        0x000b57fffec6a5b2 (0x9db1)
+        ---
+        IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x000b57fffec6a5b3 [
+        bulb_color
+        ---
+        0x000b57fffec6a5b3 (0x9dcf)
+        ---
+        Philips Hue Go (7146060PH)
+        ---
+        unknown
+        ]
+
+        card 0x0017880104e45521 [
+        button_double_key
+        ---
+        0x0017880104e45521 (0x198a)
+        ---
+        Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x0017880104e45559 [
+        cc2530_router
+        ---
+        0x0017880104e45559 (0x198c)
+        ---
+        Custom devices (DiY) CC2530 router (CC2530.ROUTER)
+        ---
+        9 seconds ago
+        ]
+
+        card 0x00124b00120144ae [
+        Coordinator
+        ---
+        0x00124b00120144ae (0x0000)
+        ---
+        0 seconds ago
+        ]
+
+        0x000b57fffec6a5b3 --> 0x00124b00120144ae: 120
+        0x000b57fffec6a5b2 --> 0x00124b00120144ae: 92
+        0x0017880104e45511 --> 0x00124b00120144ae: 92
+        0x000b57fffec6a5b3 --> 0x000b57fffec6a5b2: 110
+        0x0017880104e45559 --> 0x000b57fffec6a5b2: 100
+        0x0017880104e45521 --> 0x0017880104e45559: 130
+
+        @enduml`;
+
+        const expectedLines = expected.split('\n');
+        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+
+        for (let i = 0; i < expectedLines.length; i++) {
+            expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
+        }
     });
 
     it('Should throw error when requesting invalid type', async () => {

@@ -94,7 +94,7 @@ describe('Controller', () => {
         expect(logger.info).toHaveBeenCalledWith('0x0017880104e45518 (0x0017880104e45518): Not supported (EndDevice)');
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         expect(MQTT.connect).toHaveBeenCalledWith('mqtt://localhost', {
-            will: {payload: Buffer.from('offline'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
         });
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -140,7 +140,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            will: {payload: Buffer.from('offline'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
             keepalive: 30,
             ca: Buffer.from([99, 97]),
             key: Buffer.from([107, 101, 121]),
@@ -403,8 +403,8 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'device_connected', message: {friendly_name: 'bulb'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_joined', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -466,8 +466,8 @@ describe('Controller', () => {
         zigbeeHerdsman.events.deviceJoined(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'device_connected', message: {friendly_name: 'bulb'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_joined', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -480,8 +480,8 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'pairing', message: 'interview_started', meta: {friendly_name: 'bulb'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_interview', data: {friendly_name: 'bulb', status: 'started', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -494,8 +494,8 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'pairing', message: 'interview_failed', meta: {friendly_name: 'bulb'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_interview', data: {friendly_name: 'bulb', status: 'failed', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -503,40 +503,46 @@ describe('Controller', () => {
 
     it('On zigbee deviceInterview successful supported', async () => {
         await controller.start();
+        MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.bulb;
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({
-                type: 'pairing',
-                message: 'interview_successful',
-                meta: {
-                    friendly_name: 'bulb',
-                    model: 'LED1545G12',
-                    vendor: 'IKEA',
-                    description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
-                    supported: true,
-                },
-            }),
-            {retain: false, qos: 0},
-            expect.any(Function),
-        );
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
+        const parsedMessage = JSON.parse(MQTT.publish.mock.calls[1][1]);
+        expect(parsedMessage.type).toStrictEqual('device_interview');
+        expect(parsedMessage.data.friendly_name).toStrictEqual('bulb');
+        expect(parsedMessage.data.status).toStrictEqual('successful');
+        expect(parsedMessage.data.ieee_address).toStrictEqual(device.ieeeAddr);
+        expect(parsedMessage.data.supported).toStrictEqual(true);
+        expect(parsedMessage.data.definition.model).toStrictEqual('LED1545G12');
+        expect(parsedMessage.data.definition.vendor).toStrictEqual('IKEA');
+        expect(parsedMessage.data.definition.description).toStrictEqual('TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm');
+        expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
+        expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
     });
 
     it('On zigbee deviceInterview successful not supported', async () => {
         await controller.start();
+        MQTT.publish.mockClear();
         const device = zigbeeHerdsman.devices.unsupported;
         const payload = {device, status: 'successful'};
         await zigbeeHerdsman.events.deviceInterview(payload);
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'pairing', message: 'interview_successful', meta: {friendly_name: '0x0017880104e45518', supported: false}}),
-            {retain: false, qos: 0},
-            expect.any(Function),
-        );
+        expect(MQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
+        const parsedMessage = JSON.parse(MQTT.publish.mock.calls[1][1]);
+        expect(parsedMessage.type).toStrictEqual('device_interview');
+        expect(parsedMessage.data.friendly_name).toStrictEqual(device.ieeeAddr);
+        expect(parsedMessage.data.status).toStrictEqual('successful');
+        expect(parsedMessage.data.ieee_address).toStrictEqual(device.ieeeAddr);
+        expect(parsedMessage.data.supported).toStrictEqual(false);
+        expect(parsedMessage.data.definition.model).toStrictEqual('notSupportedModelID');
+        expect(parsedMessage.data.definition.vendor).toStrictEqual('notSupportedMfg');
+        expect(parsedMessage.data.definition.description).toStrictEqual('Automatically generated definition');
+        expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
+        expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
+        expect(MQTT.publish.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
     });
 
     it('On zigbee event device announce', async () => {
@@ -547,8 +553,8 @@ describe('Controller', () => {
         await flushPromises();
         expect(logger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'device_announced', message: 'announce', meta: {friendly_name: 'bulb'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_announce', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -564,8 +570,8 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'device_removed', message: 'left_network', meta: {friendly_name: '0x000b57fffec6a5b2'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_leave', data: {ieee_address: device.ieeeAddr, friendly_name: device.ieeeAddr}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -580,8 +586,8 @@ describe('Controller', () => {
         await zigbeeHerdsman.events.deviceLeave(payload);
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/log',
-            stringify({type: 'device_removed', message: 'left_network', meta: {friendly_name: '0x000b57fffec6a5b2'}}),
+            'zigbee2mqtt/bridge/event',
+            stringify({type: 'device_leave', data: {ieee_address: device.ieeeAddr, friendly_name: 'bulb'}}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -889,7 +895,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.connect).toHaveBeenCalledTimes(1);
         const expected = {
-            will: {payload: Buffer.from('offline'), retain: false, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: false, topic: 'zigbee2mqtt/bridge/state', qos: 1},
         };
         expect(MQTT.connect).toHaveBeenCalledWith('mqtt://localhost', expected);
     });
@@ -899,7 +905,7 @@ describe('Controller', () => {
         MQTT.publish.mockClear();
         MQTT.events['connect']();
         await jest.advanceTimersByTimeAsync(2500); // before any startup configure triggers
-        expect(MQTT.publish).toHaveBeenCalledTimes(14);
+        expect(MQTT.publish).toHaveBeenCalledTimes(13);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0}, expect.any(Function));
     });
 
@@ -922,17 +928,6 @@ describe('Controller', () => {
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', {retain: false, qos: 0}, expect.any(Function));
-    });
-
-    it('Should disable legacy options on new network start', async () => {
-        settings.set(['homeassistant'], true);
-        settings.reRead();
-        expect(settings.get().homeassistant.legacy_entity_attributes).toBeTruthy();
-        expect(settings.get().advanced.legacy_api).toBeTruthy();
-        zigbeeHerdsman.start.mockReturnValueOnce('reset');
-        await controller.start();
-        expect(settings.get().homeassistant.legacy_entity_attributes).toBeFalsy();
-        expect(settings.get().advanced.legacy_api).toBeFalsy();
     });
 
     it('Should publish last seen changes', async () => {

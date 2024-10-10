@@ -14,8 +14,6 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-const LEGACY_API = settings.get().advanced.legacy_api;
-const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/(bind|unbind)/.+$`);
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
 const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
     'genScenes',
@@ -226,12 +224,7 @@ export default class Bind extends Extension {
         let clusters: ParsedMQTTMessage['clusters'] | undefined;
         let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
 
-        if (LEGACY_API && data.topic.match(LEGACY_TOPIC_REGEX)) {
-            const topic = data.topic.replace(`${settings.get().mqtt.base_topic}/bridge/`, '');
-            type = topic.split('/')[0] as ParsedMQTTMessage['type'];
-            sourceKey = topic.replace(`${type}/`, '');
-            targetKey = data.message;
-        } else if (data.topic.match(TOPIC_REGEX)) {
+        if (data.topic.match(TOPIC_REGEX)) {
             type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
             const message: DataMessage = JSON.parse(data.message);
             sourceKey = message.from;
@@ -312,25 +305,9 @@ export default class Bind extends Extension {
                         logger.info(
                             `Successfully ${type === 'bind' ? 'bound' : 'unbound'} cluster '${cluster}' from '${source.name}' to '${target.name}'`,
                         );
-
-                        /* istanbul ignore else */
-                        if (settings.get().advanced.legacy_api) {
-                            await this.mqtt.publish(
-                                'bridge/log',
-                                stringify({type: `device_${type}`, message: {from: source.name, to: target.name, cluster}}),
-                            );
-                        }
                     } catch (error) {
                         failedClusters.push(cluster);
                         logger.error(`Failed to ${type} cluster '${cluster}' from '${source.name}' to '${target.name}' (${error})`);
-
-                        /* istanbul ignore else */
-                        if (settings.get().advanced.legacy_api) {
-                            await this.mqtt.publish(
-                                'bridge/log',
-                                stringify({type: `device_${type}_failed`, message: {from: source.name, to: target.name, cluster}}),
-                            );
-                        }
                     }
                 }
             }
@@ -338,11 +315,6 @@ export default class Bind extends Extension {
             if (attemptedClusters.length === 0) {
                 logger.error(`Nothing to ${type} from '${source.name}' to '${target.name}'`);
                 error = `Nothing to ${type}`;
-
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    await this.mqtt.publish('bridge/log', stringify({type: `device_${type}_failed`, message: {from: source.name, to: target.name}}));
-                }
             } else if (failedClusters.length === attemptedClusters.length) {
                 error = `Failed to ${type}`;
             }
@@ -359,13 +331,9 @@ export default class Bind extends Extension {
             }
         }
 
-        const triggeredViaLegacyApi = data.topic.match(LEGACY_TOPIC_REGEX);
+        const response = utils.getResponse(message, responseData, error);
 
-        if (!triggeredViaLegacyApi) {
-            const response = utils.getResponse(message, responseData, error);
-
-            await this.mqtt.publish(`bridge/response/device/${type}`, stringify(response));
-        }
+        await this.mqtt.publish(`bridge/response/device/${type}`, stringify(response));
 
         if (error) {
             logger.error(error);

@@ -189,7 +189,7 @@ export default class Availability extends Extension {
         }
 
         const topic = `${entity.name}/availability`;
-        const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
+        const payload = JSON.stringify({state: available ? 'online' : 'offline'});
         this.availabilityCache[entity.ID] = available;
         await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
 

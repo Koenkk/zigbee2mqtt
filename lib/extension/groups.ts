@@ -14,8 +14,6 @@ import utils, {isLightExpose} from '../util/utils';
 import Extension from './extension';
 
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
-const LEGACY_TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/(.+)/(remove|add|remove_all)$`);
-const LEGACY_TOPIC_REGEX_REMOVE_ALL = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/group/remove_all$`);
 
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     state: () => true,
@@ -37,13 +35,11 @@ interface ParsedMQTTMessage {
     error?: string;
     groupKey?: string;
     deviceKey?: string;
-    triggeredViaLegacyApi: boolean;
     skipDisableReporting: boolean;
     resolvedEntityEndpoint?: zh.Endpoint;
 }
 
 export default class Groups extends Extension {
-    private legacyApi = settings.get().advanced.legacy_api;
     private lastOptimisticState: {[s: string]: KeyValue} = {};
 
     override async start(): Promise<void> {
@@ -260,60 +256,12 @@ export default class Groups extends Extension {
         let error: ParsedMQTTMessage['error'] | undefined;
         let groupKey: ParsedMQTTMessage['groupKey'] | undefined;
         let deviceKey: ParsedMQTTMessage['deviceKey'] | undefined;
-        let triggeredViaLegacyApi: ParsedMQTTMessage['triggeredViaLegacyApi'] = false;
         let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
 
         /* istanbul ignore else */
         const topicRegexMatch = data.topic.match(TOPIC_REGEX);
-        const legacyTopicRegexRemoveAllMatch = data.topic.match(LEGACY_TOPIC_REGEX_REMOVE_ALL);
-        const legacyTopicRegexMatch = data.topic.match(LEGACY_TOPIC_REGEX);
 
-        if (this.legacyApi && (legacyTopicRegexMatch || legacyTopicRegexRemoveAllMatch)) {
-            triggeredViaLegacyApi = true;
-
-            if (legacyTopicRegexMatch) {
-                resolvedEntityGroup = this.zigbee.resolveEntity(legacyTopicRegexMatch[1]) as Group;
-                type = legacyTopicRegexMatch[2] as ParsedMQTTMessage['type'];
-
-                if (!resolvedEntityGroup || !(resolvedEntityGroup instanceof Group)) {
-                    logger.error(`Group '${legacyTopicRegexMatch[1]}' does not exist`);
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const message = {friendly_name: data.message, group: legacyTopicRegexMatch[1], error: `group doesn't exists`};
-
-                        await this.mqtt.publish('bridge/log', stringify({type: `device_group_${type}_failed`, message}));
-                    }
-
-                    return undefined;
-                }
-            } else {
-                type = 'remove_all';
-            }
-
-            const parsedEntity = this.zigbee.resolveEntityAndEndpoint(data.message);
-            resolvedEntityDevice = parsedEntity.entity as Device;
-
-            if (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device)) {
-                logger.error(`Device '${data.message}' does not exist`);
-
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    const message = {friendly_name: data.message, group: legacyTopicRegexMatch![1], error: "entity doesn't exists"};
-
-                    await this.mqtt.publish('bridge/log', stringify({type: `device_group_${type}_failed`, message}));
-                }
-
-                return undefined;
-            }
-
-            resolvedEntityEndpoint = parsedEntity.endpoint;
-
-            if (parsedEntity.endpointID && !resolvedEntityEndpoint) {
-                logger.error(`Device '${parsedEntity.ID}' does not have endpoint '${parsedEntity.endpointID}'`);
-                return undefined;
-            }
-        } else if (topicRegexMatch) {
+        if (topicRegexMatch) {
             type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
             const message = JSON.parse(data.message);
             deviceKey = message.device;
@@ -353,7 +301,6 @@ export default class Groups extends Extension {
             error,
             groupKey,
             deviceKey,
-            triggeredViaLegacyApi,
             skipDisableReporting,
             resolvedEntityEndpoint,
         };
@@ -366,16 +313,7 @@ export default class Groups extends Extension {
             return;
         }
 
-        const {
-            resolvedEntityGroup,
-            resolvedEntityDevice,
-            type,
-            triggeredViaLegacyApi,
-            groupKey,
-            deviceKey,
-            skipDisableReporting,
-            resolvedEntityEndpoint,
-        } = parsed;
+        const {resolvedEntityGroup, resolvedEntityDevice, type, groupKey, deviceKey, skipDisableReporting, resolvedEntityEndpoint} = parsed;
         let error = parsed.error;
         const changedGroups: Group[] = [];
 
@@ -404,26 +342,12 @@ export default class Groups extends Extension {
                     await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zh);
                     settings.addDeviceToGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const message = {friendly_name: resolvedEntityDevice.name, group: resolvedEntityGroup.name};
-
-                        await this.mqtt.publish('bridge/log', stringify({type: `device_group_add`, message}));
-                    }
                 } else if (type === 'remove') {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
                     await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zh);
                     settings.removeDeviceFromGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const message = {friendly_name: resolvedEntityDevice.name, group: resolvedEntityGroup.name};
-
-                        await this.mqtt.publish('bridge/log', stringify({type: `device_group_remove`, message}));
-                    }
                 } else {
                     // remove_all
                     logger.info(`Removing '${resolvedEntityDevice.name}' from all groups`);
@@ -436,13 +360,6 @@ export default class Groups extends Extension {
 
                     for (const settingsGroup of settings.getGroups()) {
                         settings.removeDeviceFromGroup(settingsGroup.ID.toString(), keys);
-
-                        /* istanbul ignore else */
-                        if (settings.get().advanced.legacy_api) {
-                            const message = {friendly_name: resolvedEntityDevice.name};
-
-                            await this.mqtt.publish('bridge/log', stringify({type: `device_group_remove_all`, message}));
-                        }
                     }
                 }
             } catch (e) {
@@ -451,16 +368,14 @@ export default class Groups extends Extension {
             }
         }
 
-        if (!triggeredViaLegacyApi) {
-            const message = utils.parseJSON(data.message, data.message);
-            const responseData: KeyValue = {device: deviceKey};
+        const message = utils.parseJSON(data.message, data.message);
+        const responseData: KeyValue = {device: deviceKey};
 
-            if (groupKey) {
-                responseData.group = groupKey;
-            }
-
-            await this.mqtt.publish(`bridge/response/group/members/${type}`, stringify(utils.getResponse(message, responseData, error)));
+        if (groupKey) {
+            responseData.group = groupKey;
         }
+
+        await this.mqtt.publish(`bridge/response/group/members/${type}`, stringify(utils.getResponse(message, responseData, error)));
 
         if (error) {
             logger.error(error);

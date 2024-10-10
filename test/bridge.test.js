@@ -49,7 +49,6 @@ describe('Bridge', () => {
     beforeAll(async () => {
         jest.useFakeTimers();
         mockRestart = jest.fn();
-        settings.set(['advanced', 'legacy_api'], false);
         controller = new Controller(mockRestart, jest.fn());
         await controller.start();
         await flushPromises();
@@ -60,7 +59,6 @@ describe('Bridge', () => {
         MQTT.mock.reconnecting = false;
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(['advanced', 'legacy_api'], false);
         data.writeDefaultState();
         logger.info.mockClear();
         logger.warning.mockClear();
@@ -94,10 +92,6 @@ describe('Bridge', () => {
                     advanced: {
                         adapter_concurrent: undefined,
                         adapter_delay: undefined,
-                        availability_blacklist: [],
-                        availability_blocklist: [],
-                        availability_passlist: [],
-                        availability_whitelist: [],
                         cache_state: true,
                         cache_state_persistent: true,
                         cache_state_send_on_startup: true,
@@ -105,8 +99,6 @@ describe('Bridge', () => {
                         elapsed: false,
                         ext_pan_id: [221, 221, 221, 221, 221, 221, 221, 221],
                         last_seen: 'disable',
-                        legacy_api: false,
-                        legacy_availability_payload: true,
                         log_debug_namespace_ignore: '',
                         log_debug_to_mqtt_frontend: false,
                         log_directory: directory,
@@ -119,8 +111,6 @@ describe('Bridge', () => {
                         log_syslog: {},
                         output: 'json',
                         pan_id: 6754,
-                        report: false,
-                        soft_reset_timeout: 0,
                         timestamp_format: 'YYYY-MM-DD HH:mm:ss',
                     },
                     blocklist: [],

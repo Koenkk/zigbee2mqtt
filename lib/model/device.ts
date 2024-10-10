@@ -117,10 +117,6 @@ export default class Device {
         return names;
     }
 
-    isIkeaTradfri(): boolean {
-        return this.zh.manufacturerID === 4476;
-    }
-
     isDevice(): this is Device {
         return true;
     }
