@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.41.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.40.2...1.41.0) (2024-10-10)
+
+
+### Features
+
+* Add `throttle` option for devices ([#24122](https://github.com/Koenkk/zigbee2mqtt/issues/24122)) ([17ac9cf](https://github.com/Koenkk/zigbee2mqtt/commit/17ac9cf8e777dfa4b86066650f3c6b2712b011b6))
+* Allow serving frontend under subpath ([#24244](https://github.com/Koenkk/zigbee2mqtt/issues/24244)) ([1fdf0a0](https://github.com/Koenkk/zigbee2mqtt/commit/1fdf0a0a47d2b11962862ff433089d7f17bb7421))
+
+
+### Bug Fixes
+
+* Fix group state change for open/close devices ([#24226](https://github.com/Koenkk/zigbee2mqtt/issues/24226)) ([076ada2](https://github.com/Koenkk/zigbee2mqtt/commit/076ada23257dccbe206ae9de9e70be850e756262))
+* **ignore:** update dependencies ([#24236](https://github.com/Koenkk/zigbee2mqtt/issues/24236)) ([5c3f712](https://github.com/Koenkk/zigbee2mqtt/commit/5c3f71292d330210474e381d18e73840ffd5f5df))
+* **ignore:** update zigbee-herdsman-converters to 20.22.0 ([#24186](https://github.com/Koenkk/zigbee2mqtt/issues/24186)) ([e5fac76](https://github.com/Koenkk/zigbee2mqtt/commit/e5fac76060b6cb9e762584b204fff69c8f68f3cf))
+* **ignore:** update zigbee-herdsman-converters to 20.23.0 ([#24201](https://github.com/Koenkk/zigbee2mqtt/issues/24201)) ([b09ae10](https://github.com/Koenkk/zigbee2mqtt/commit/b09ae105882af2008dbb6a5f0f445ee0f03d1b3c))
+* **ignore:** update zigbee-herdsman-converters to 20.23.1 ([#24225](https://github.com/Koenkk/zigbee2mqtt/issues/24225)) ([0229259](https://github.com/Koenkk/zigbee2mqtt/commit/02292590eee8e5ab0f655da39bba26681b814bec))
+* **ignore:** update zigbee-herdsman-converters to 20.24.0 ([#24246](https://github.com/Koenkk/zigbee2mqtt/issues/24246)) ([3bb4af2](https://github.com/Koenkk/zigbee2mqtt/commit/3bb4af253ad8439b1354ce7fda2cc12ad25c934f))
+* **ignore:** update zigbee-herdsman-converters to 20.25.0 ([#24285](https://github.com/Koenkk/zigbee2mqtt/issues/24285)) ([5f60187](https://github.com/Koenkk/zigbee2mqtt/commit/5f601873feca094ae9c6c73fc3ff25e4fcd01907))
+
 ## [1.40.2](https://github.com/Koenkk/zigbee2mqtt/compare/1.40.1...1.40.2) (2024-10-01)
 
 
