@@ -627,24 +627,6 @@ describe('Publish', () => {
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
     });
 
-    it('Should not respond to bridge/config/devices/get', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/config/devices/get', stringify({state: 'ON'}));
-        await flushPromises();
-        expectNothingPublished();
-    });
-
-    it('Should not respond to bridge/config/devices/set', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/config/devices/set', stringify({state: 'ON'}));
-        await flushPromises();
-        expectNothingPublished();
-    });
-
-    it('Should not respond to bridge/config/devices', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/config/devices', stringify({state: 'ON'}));
-        await flushPromises();
-        expectNothingPublished();
-    });
-
     it('Should parse topic with when base topic has multiple slashes', async () => {
         settings.set(['mqtt', 'base_topic'], 'zigbee2mqtt/at/my/home');
         loadTopicGetSetRegex();

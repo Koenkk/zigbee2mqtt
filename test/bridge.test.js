@@ -2909,16 +2909,6 @@ describe('Bridge', () => {
         expect(settings.get().blocklist).toStrictEqual(['0x123']);
     });
 
-    it('Should allow to add and remove from availabliltiy blocklist', async () => {
-        expect(settings.get().blocklist).toStrictEqual([]);
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {availability_blocklist: ['0x123', '0x1234']}}}));
-        await flushPromises();
-        expect(settings.get().advanced.availability_blocklist).toStrictEqual(['0x123', '0x1234']);
-        MQTT.events.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {availability_blocklist: ['0x123']}}}));
-        await flushPromises();
-        expect(settings.get().advanced.availability_blocklist).toStrictEqual(['0x123']);
-    });
-
     it('Should throw error on removing non-existing device', async () => {
         const device = zigbeeHerdsman.devices.bulb;
         MQTT.publish.mockClear();

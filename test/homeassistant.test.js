@@ -2230,9 +2230,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover with json availability payload value_template', async () => {
-        settings.set(['advanced', 'legacy_availability_payload'], false);
-        await resetExtension();
-
         const payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,

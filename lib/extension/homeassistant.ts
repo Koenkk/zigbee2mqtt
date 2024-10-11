@@ -518,7 +518,7 @@ export default class HomeAssistant extends Extension {
             }
         }, utils.seconds(discoverWait));
 
-        // Send availability messages, this is required if the legacy_availability_payload option has been changed.
+        // Send availability messages
         this.eventBus.emitPublishAvailability();
     }
 
