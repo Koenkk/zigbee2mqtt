@@ -400,6 +400,12 @@
                             "title": "key file path",
                             "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
                             "requiresRestart": true
+                        },
+                        "base_url": {
+                            "type": ["string", "null"],
+                            "title": "Base URL",
+                            "description": "Base URL for the frontend if the frontend is hosted under subpath. E.g. if your frontend is available at 'http://localhost/z2m', set this to '/z2m'",
+                            "requiresRestart": true
                         }
                     }
                 }
