@@ -2523,7 +2523,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith(topic, '', {retain: true, qos: 1}, expect.any(Function));
     });
 
-    it('Should discover bridge entities', async () => {
+    it('onlythis Should discover bridge entities', async () => {
         settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
         await resetExtension();
 
@@ -2719,8 +2719,9 @@ describe('HomeAssistant extension', () => {
             value_template: '{{ value_json.permit_join | lower }}',
             command_topic: 'zigbee2mqtt/bridge/request/permit_join',
             state_on: 'true',
-            payload_on: '{"value": true, "time": 254}',
-            payload_off: 'false',
+            state_off: 'false',
+            payload_on: '{"time": 254}',
+            payload_off: '{"time": 0}',
             origin: origin,
             device: devicePayload,
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],

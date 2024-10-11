@@ -2151,8 +2151,9 @@ export default class HomeAssistant extends Extension {
                     value_template: '{{ value_json.permit_join | lower }}',
                     command_topic: `${baseTopic}/request/permit_join`,
                     state_on: 'true',
-                    payload_on: '{"value": true, "time": 254}',
-                    payload_off: 'false',
+                    state_off: 'false',
+                    payload_on: '{"time": 254}',
+                    payload_off: '{"time": 0}',
                 },
             },
         );
