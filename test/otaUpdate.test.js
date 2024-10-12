@@ -163,7 +163,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {id: 'bulb', updateAvailable: false}, status: 'ok'}),
+            stringify({data: {id: 'bulb', update_available: false}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -176,7 +176,7 @@ describe('OTA update', () => {
         expect(mapped.ota.updateToLatest).toHaveBeenCalledTimes(0);
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {id: 'bulb', updateAvailable: true}, status: 'ok'}),
+            stringify({data: {id: 'bulb', update_available: true}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );

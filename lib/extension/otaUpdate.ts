@@ -179,7 +179,7 @@ export default class OTAUpdate extends Extension {
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
-        const responseData: {id: string; updateAvailable?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
+        const responseData: {id: string; update_available?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -203,7 +203,7 @@ export default class OTAUpdate extends Extension {
 
                     await this.publishEntityState(device, this.getEntityPublishPayload(device, availableResult));
                     this.lastChecked[device.ieeeAddr] = Date.now();
-                    responseData.updateAvailable = availableResult.available;
+                    responseData.update_available = availableResult.available;
                 } catch (e) {
                     error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
                     errorStack = (e as Error).stack;
