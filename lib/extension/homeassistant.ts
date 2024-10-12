@@ -517,9 +517,6 @@ export default class HomeAssistant extends Extension {
                 await this.discover(e);
             }
         }, utils.seconds(discoverWait));
-
-        // Send availability messages
-        this.eventBus.emitPublishAvailability();
     }
 
     private getDiscovered(entity: Device | Group | Bridge | string | number): Discovered {

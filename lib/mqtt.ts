@@ -84,7 +84,6 @@ export default class MQTT {
             this.client = mqtt.connect(mqttSettings.server, options);
             // https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
-            this.eventBus.onPublishAvailability(this, this.publishStateOnline);
 
             this.client.on('connect', async () => {
                 // Set timer at interval to check if connected to MQTT server.

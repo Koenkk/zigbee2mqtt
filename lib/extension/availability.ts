@@ -140,7 +140,6 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
-        this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
         // Publish initial availability
         await this.publishAvailabilityForAllEntities();

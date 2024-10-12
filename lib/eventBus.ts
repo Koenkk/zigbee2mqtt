@@ -56,13 +56,6 @@ export default class EventBus {
         this.on('permitJoinChanged', callback, key);
     }
 
-    public emitPublishAvailability(): void {
-        this.emitter.emit('publishAvailability');
-    }
-    public onPublishAvailability(key: ListenerKey, callback: () => void): void {
-        this.on('publishAvailability', callback, key);
-    }
-
     public emitEntityRenamed(data: eventdata.EntityRenamed): void {
         this.emitter.emit('deviceRenamed', data);
     }
