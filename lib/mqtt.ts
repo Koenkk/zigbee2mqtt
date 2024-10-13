@@ -1,5 +1,3 @@
-import type {QoS} from 'mqtt-packet';
-
 import fs from 'fs';
 
 import bind from 'bind-decorator';

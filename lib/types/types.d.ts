@@ -5,7 +5,6 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type {QoS} from 'mqtt-packet';
 import type * as zhc from 'zigbee-herdsman-converters';
 import type {
     CoordinatorVersion as ZHCoordinatorVersion,
@@ -31,6 +30,7 @@ declare global {
     type Device = TypeDevice;
     type State = TypeState;
     type Extension = TypeExtension;
+    type QoS = 0 | 1 | 2;
 
     // Types
     type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
