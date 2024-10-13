@@ -76,7 +76,7 @@ jobs:
                     .
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              run: pnpm publish
+              run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
             - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
