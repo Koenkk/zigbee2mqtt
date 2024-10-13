@@ -77,10 +77,8 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
 }
 
 async function getDependencyVersion(depend: string): Promise<{version: string}> {
-    const modulePath = path.dirname(require.resolve(depend));
-    const packageJSONPath = path.join(modulePath.slice(0, modulePath.indexOf(depend) + depend.length), 'package.json');
-    const packageJSON = await import(packageJSONPath);
-    const version = packageJSON.version;
+    const packageJsonPath = require.resolve(`${depend}/package.json`);
+    const version = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
     return {version};
 }
 
