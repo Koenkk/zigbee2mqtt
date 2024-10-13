@@ -179,7 +179,7 @@ declare global {
             auth_token?: string;
             host?: string;
             port: number;
-            base_url?: string;
+            base_url: string;
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
@@ -262,11 +262,5 @@ declare global {
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;
-    }
-}
-
-declare module 'http' {
-    interface IncomingMessage {
-        originalUrl?: string;
     }
 }
