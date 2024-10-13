@@ -31,10 +31,10 @@ echo "Updating..."
 git pull --no-rebase
 
 echo "Installing dependencies..."
-npm ci
+pnpm i --frozen-lockfile
 
 echo "Building..."
-npm run build
+pnpm run build
 
 echo "Restore configuration..."
 cp -R data-backup/* data

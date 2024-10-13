@@ -85,7 +85,7 @@ async function build(reason) {
             env.NODE_OPTIONS = '--max_old_space_size=256';
         }
 
-        exec('npm run build', {env, cwd: __dirname}, async (err, stdout, stderr) => {
+        exec('pnpm run build', {env, cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
 
