@@ -402,9 +402,11 @@
                             "requiresRestart": true
                         },
                         "base_url": {
-                            "type": ["string", "null"],
+                            "type": "string",
+                            "pattern": "^\\/.*",
                             "title": "Base URL",
-                            "description": "Base URL for the frontend if the frontend is hosted under subpath. E.g. if your frontend is available at 'http://localhost/z2m', set this to '/z2m'",
+                            "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
+                            "default": "/",
                             "requiresRestart": true
                         }
                     }
