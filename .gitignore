@@ -72,6 +72,7 @@ tsconfig.tsbuildinfo
 # Ignore config
 data/*
 !data/configuration.example.yaml
+data-backup/*
 
 # commit-user-lookup.json
 scripts/commit-user-lookup.json

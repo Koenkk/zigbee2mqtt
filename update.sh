@@ -22,10 +22,7 @@ else
 fi
 
 echo "Creating backup of configuration..."
-cp -R data data-backup
-
-echo "Checking out changes to package-lock.json..."
-git checkout package-lock.json
+mv data data-backup
 
 echo "Updating..."
 git pull --no-rebase
@@ -37,8 +34,7 @@ echo "Building..."
 pnpm run build
 
 echo "Restore configuration..."
-cp -R data-backup/* data
-rm -rf data-backup
+mv data-backup data
 
 if [ $NEED_RESTART -eq 1 ]; then
     echo "Starting Zigbee2MQTT..."
