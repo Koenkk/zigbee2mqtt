@@ -1,5 +1,3 @@
-import type {QoS} from 'mqtt-packet';
-
 import fs from 'fs';
 
 import bind from 'bind-decorator';
@@ -35,7 +33,7 @@ export default class MQTT {
         const options: mqtt.IClientOptions = {
             will: {
                 topic: `${settings.get().mqtt.base_topic}/bridge/state`,
-                payload: Buffer.from(utils.availabilityPayload('offline', settings.get())),
+                payload: Buffer.from(JSON.stringify({state: 'offline'})),
                 retain: settings.get().mqtt.force_disable_retain ? false : true,
                 qos: 1,
             },
@@ -84,7 +82,6 @@ export default class MQTT {
             this.client = mqtt.connect(mqttSettings.server, options);
             // https://github.com/Koenkk/zigbee2mqtt/issues/9822
             this.client.stream.setMaxListeners(0);
-            this.eventBus.onPublishAvailability(this, this.publishStateOnline);
 
             this.client.on('connect', async () => {
                 // Set timer at interval to check if connected to MQTT server.
@@ -123,13 +120,13 @@ export default class MQTT {
     }
 
     @bind async publishStateOnline(): Promise<void> {
-        await this.publish('bridge/state', utils.availabilityPayload('online', settings.get()), {retain: true, qos: 0});
+        await this.publish('bridge/state', JSON.stringify({state: 'online'}), {retain: true, qos: 0});
     }
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
         clearTimeout(this.republishRetainedTimer);
-        await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
+        await this.publish('bridge/state', JSON.stringify({state: 'offline'}), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
         this.client?.end();

@@ -66,7 +66,7 @@ describe('Settings', () => {
 
     it('Should apply environment variables', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_SOFT_RESET_TIMEOUT'] = 1;
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL'] = 15;
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'attribute_and_json';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT'] = '["console"]';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] =
@@ -97,7 +97,7 @@ describe('Settings', () => {
         };
         expected.groups = {};
         expected.serial.disable_led = true;
-        expected.advanced.soft_reset_timeout = 1;
+        expected.advanced.channel = 15;
         expected.advanced.log_output = ['console'];
         expected.advanced.output = 'attribute_and_json';
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
@@ -548,7 +548,15 @@ describe('Settings', () => {
 
         expect(() => {
             settings.changeEntityOptions('not_existing_123', {});
-        }).toThrow(new Error("Device or group 'not_existing_123' does not exist"));
+        }).toThrow(`Device or group 'not_existing_123' does not exist`);
+    });
+
+    it('Should throw error when changing entity friendlyName of non-existing device', () => {
+        write(configurationFile, {});
+
+        expect(() => {
+            settings.changeFriendlyName('not_existing_123', 'non_existing_456');
+        }).toThrow(`Device or group 'not_existing_123' does not exist`);
     });
 
     it('Should not add duplicate groups', () => {
@@ -557,7 +565,7 @@ describe('Settings', () => {
         settings.addGroup('test123');
         expect(() => {
             settings.addGroup('test123');
-        }).toThrow(new Error("friendly_name 'test123' is already in use"));
+        }).toThrow(`friendly_name 'test123' is already in use`);
         const expected = {
             1: {
                 friendly_name: 'test123',
@@ -743,19 +751,6 @@ describe('Settings', () => {
         settings.reRead();
 
         const error = 'MQTT retention requires protocol version 5';
-        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
-    });
-
-    it('Should not allow non-existing entities in availability_blocklist', () => {
-        write(configurationFile, {
-            ...minimalConfig,
-            devices: {'0x0017880104e45519': {friendly_name: 'tain'}},
-            advanced: {availability_blocklist: ['0x0017880104e45519', 'non_existing']},
-        });
-
-        settings.reRead();
-
-        const error = `Non-existing entity 'non_existing' specified in 'availability_blocklist'`;
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 

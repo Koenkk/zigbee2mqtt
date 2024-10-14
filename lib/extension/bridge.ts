@@ -70,11 +70,6 @@ export default class Bridge extends Extension {
             health_check: this.healthCheck,
             coordinator_check: this.coordinatorCheck,
             options: this.bridgeOptions,
-            // Below are deprecated
-            'config/last_seen': this.configLastSeen,
-            'config/homeassistant': this.configHomeAssistant,
-            'config/elapsed': this.configElapsed,
-            'config/log_level': this.configLogLevel,
         };
 
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
@@ -374,58 +369,6 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, response);
     }
 
-    // Deprecated
-    @bind async configLastSeen(message: KeyValue | string): Promise<MQTTResponse> {
-        const allowed = ['disable', 'ISO_8601', 'epoch', 'ISO_8601_local'];
-        const value = this.getValue(message);
-        if (typeof value !== 'string' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['advanced', 'last_seen'], value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configHomeAssistant(message: string | KeyValue): Promise<MQTTResponse> {
-        const allowed = [true, false];
-        const value = this.getValue(message);
-        if (typeof value !== 'boolean' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['homeassistant'], value);
-        await this.enableDisableExtension(value, 'HomeAssistant');
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configElapsed(message: KeyValue | string): Promise<MQTTResponse> {
-        const allowed = [true, false];
-        const value = this.getValue(message);
-        if (typeof value !== 'boolean' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['advanced', 'elapsed'], value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configLogLevel(message: KeyValue | string): Promise<MQTTResponse> {
-        const value = this.getValue(message) as settings.LogLevel;
-        if (typeof value !== 'string' || !settings.LOG_LEVELS.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${settings.LOG_LEVELS}`);
-        }
-
-        logger.setLevel(value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
     @bind async touchlinkIdentify(message: KeyValue | string): Promise<MQTTResponse> {
         if (typeof message !== 'object' || message.ieee_address === undefined || message.channel === undefined) {
             throw new Error('Invalid payload');
@@ -471,18 +414,6 @@ export default class Bridge extends Extension {
     /**
      * Utils
      */
-
-    getValue(message: KeyValue | string): string | boolean | number {
-        if (typeof message === 'object') {
-            if (message.value === undefined) {
-                throw new Error('No value given');
-            }
-
-            return message.value;
-        } else {
-            return message;
-        }
-    }
 
     async changeEntityOptions(entityType: 'device' | 'group', message: KeyValue | string): Promise<MQTTResponse> {
         if (typeof message !== 'object' || message.id === undefined || message.options === undefined) {

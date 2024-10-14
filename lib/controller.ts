@@ -19,10 +19,6 @@ import ExtensionExternalExtension from './extension/externalExtension';
 import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
 import ExtensionHomeAssistant from './extension/homeassistant';
-import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
-import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMembership';
-import ExtensionReport from './extension/legacy/report';
-import ExtensionSoftReset from './extension/legacy/softReset';
 import ExtensionNetworkMap from './extension/networkMap';
 import ExtensionOnEvent from './extension/onEvent';
 import ExtensionOTAUpdate from './extension/otaUpdate';
@@ -41,15 +37,11 @@ const AllExtensions = [
     ExtensionPublish,
     ExtensionReceive,
     ExtensionNetworkMap,
-    ExtensionSoftReset,
     ExtensionHomeAssistant,
     ExtensionConfigure,
-    ExtensionDeviceGroupMembership,
-    ExtensionBridgeLegacy,
     ExtensionBridge,
     ExtensionGroups,
     ExtensionBind,
-    ExtensionReport,
     ExtensionOnEvent,
     ExtensionOTAUpdate,
     ExtensionExternalConverters,
@@ -108,13 +100,11 @@ export class Controller {
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
             new ExtensionReceive(...this.extensionArgs),
-            new ExtensionDeviceGroupMembership(...this.extensionArgs),
             new ExtensionConfigure(...this.extensionArgs),
             new ExtensionNetworkMap(...this.extensionArgs),
             new ExtensionGroups(...this.extensionArgs),
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
-            new ExtensionReport(...this.extensionArgs),
             new ExtensionExternalExtension(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
@@ -123,21 +113,12 @@ export class Controller {
             this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
         }
 
-        if (settings.get().advanced.legacy_api) {
-            this.extensions.push(new ExtensionBridgeLegacy(...this.extensionArgs));
-        }
-
         if (settings.get().external_converters.length) {
             this.extensions.push(new ExtensionExternalConverters(...this.extensionArgs));
         }
 
         if (settings.get().homeassistant) {
             this.extensions.push(new ExtensionHomeAssistant(...this.extensionArgs));
-        }
-
-        /* istanbul ignore next */
-        if (settings.get().advanced.soft_reset_timeout !== 0) {
-            this.extensions.push(new ExtensionSoftReset(...this.extensionArgs));
         }
     }
 
@@ -156,9 +137,8 @@ export class Controller {
         }
 
         // Start zigbee
-        let startResult;
         try {
-            startResult = await this.zigbee.start();
+            await this.zigbee.start();
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
             logger.error('Failed to start zigbee-herdsman');
@@ -170,15 +150,6 @@ export class Controller {
                 logger.error('If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24199');
             }
             return await this.exit(1);
-        }
-
-        // Disable some legacy options on new network creation
-        if (startResult === 'reset') {
-            settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
-            settings.set(['advanced', 'legacy_api'], false);
-            settings.set(['advanced', 'legacy_availability_payload'], false);
-            settings.set(['device_options', 'legacy'], false);
-            await this.enableDisableExtension(false, 'BridgeLegacy');
         }
 
         // Log zigbee clients on startup
@@ -356,7 +327,7 @@ export class Controller {
         // Filter mqtt message attributes
         utils.filterProperties(entity.options.filtered_attributes, message);
 
-        if (Object.entries(message).length) {
+        if (!utils.objectIsEmpty(message)) {
             const output = settings.get().advanced.output;
             if (output === 'attribute_and_json' || output === 'json') {
                 await this.mqtt.publish(entity.name, stringify(message), options);

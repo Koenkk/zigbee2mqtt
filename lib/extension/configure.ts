@@ -16,7 +16,6 @@ export default class Configure extends Extension {
     private configuring = new Set();
     private attempts: {[s: string]: number} = {};
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
-    private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/configure`;
 
     @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
         // Disabling reporting unbinds some cluster which could be bound by configure, re-setup.
@@ -29,20 +28,7 @@ export default class Configure extends Extension {
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if (data.topic === this.legacyTopic) {
-            const device = this.zigbee.resolveEntity(data.message);
-            if (!device || !(device instanceof Device)) {
-                logger.error(`Device '${data.message}' does not exist`);
-                return;
-            }
-
-            if (!device.definition || !device.definition.configure) {
-                logger.warning(`Skipping configure of '${device.name}', device does not require this.`);
-                return;
-            }
-
-            await this.configure(device, 'mqtt_message', true);
-        } else if (data.topic === this.topic) {
+        if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
             const ID = typeof message === 'object' && message.id !== undefined ? message.id : message;
             let error: string | undefined;
