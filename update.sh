@@ -3,13 +3,6 @@ cd "$(dirname "$0")"
 
 NEED_RESTART=0
 
-if [ -d data-backup ]; then
-    echo "ERROR: Backup directory exists. May be previous restoring was failed?"
-    echo "1. Save 'data-backup' and 'data' dirs to safe location to make possibility to restore config later."
-    echo "2. Manually delete 'data-backup' dir and try again."
-    exit 1
-fi
-
 if which systemctl 2> /dev/null > /dev/null; then
     echo "Checking Zigbee2MQTT status..."
     if systemctl is-active --quiet zigbee2mqtt; then
@@ -21,9 +14,6 @@ else
     echo "Skipped stopping Zigbee2MQTT, no systemctl found"
 fi
 
-echo "Creating backup of configuration..."
-mv data data-backup
-
 echo "Updating..."
 git pull --no-rebase
 
@@ -32,9 +22,6 @@ pnpm i --frozen-lockfile
 
 echo "Building..."
 pnpm run build
-
-echo "Restore configuration..."
-mv data-backup data
 
 if [ $NEED_RESTART -eq 1 ]; then
     echo "Starting Zigbee2MQTT..."
