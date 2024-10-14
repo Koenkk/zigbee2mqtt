@@ -909,12 +909,6 @@
                 "retain": {
                     "type": "boolean"
                 },
-                "devices": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "optimistic": {
                     "type": "boolean"
                 },
