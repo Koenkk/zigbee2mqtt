@@ -5,7 +5,6 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type {QoS} from 'mqtt-packet';
 import type * as zhc from 'zigbee-herdsman-converters';
 import type {
     CoordinatorVersion as ZHCoordinatorVersion,
@@ -31,6 +30,7 @@ declare global {
     type Device = TypeDevice;
     type State = TypeState;
     type Extension = TypeExtension;
+    type QoS = 0 | 1 | 2;
 
     // Types
     type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
@@ -189,8 +189,6 @@ declare global {
         groups: {[s: string]: OptionalProps<Omit<GroupOptions, 'ID'>, 'devices'>};
         device_options: KeyValue;
         advanced: {
-            legacy_api: boolean;
-            legacy_availability_payload: boolean;
             log_rotation: boolean;
             log_symlink_current: boolean;
             log_output: ('console' | 'file' | 'syslog')[];
@@ -215,14 +213,6 @@ declare global {
             timestamp_format: string;
             output: 'json' | 'attribute' | 'attribute_and_json';
             transmit_power?: number;
-            // Everything below is deprecated
-            availability_timeout?: number;
-            availability_blocklist: string[];
-            availability_passlist: string[];
-            availability_blacklist: string[];
-            availability_whitelist: string[];
-            soft_reset_timeout: number;
-            report: boolean;
         };
     }
 
@@ -231,7 +221,6 @@ declare global {
         retention?: number;
         availability?: boolean | {timeout: number};
         optimistic?: boolean;
-        retrieve_state?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
         throttle?: number;
@@ -258,7 +247,6 @@ declare global {
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];
-        retrieve_state?: boolean;
         homeassistant?: KeyValue;
         friendly_name: string;
         description?: string;

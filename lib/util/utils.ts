@@ -77,10 +77,8 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
 }
 
 async function getDependencyVersion(depend: string): Promise<{version: string}> {
-    const modulePath = path.dirname(require.resolve(depend));
-    const packageJSONPath = path.join(modulePath.slice(0, modulePath.indexOf(depend) + depend.length), 'package.json');
-    const packageJSON = await import(packageJSONPath);
-    const version = packageJSON.version;
+    const packageJsonPath = require.resolve(`${depend}/package.json`);
+    const version = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
     return {version};
 }
 
@@ -306,21 +304,8 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
         return !!entity.options.availability;
     }
 
-    // availability_timeout = deprecated
-    if (!(settings.advanced.availability_timeout || settings.availability)) {
+    if (!settings.availability) {
         return false;
-    }
-
-    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
-
-    if (passlist.length > 0) {
-        return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
-    }
-
-    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-
-    if (blocklist.length > 0) {
-        return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
     }
 
     return true;
@@ -340,10 +325,6 @@ function arrayUnique<Type>(arr: Type[]): Type[] {
 
 function isZHGroup(obj: unknown): obj is zh.Group {
     return obj?.constructor.name.toLowerCase() === 'group';
-}
-
-function availabilityPayload(state: 'online' | 'offline', settings: Settings): string {
-    return settings.advanced.legacy_availability_payload ? state : JSON.stringify({state});
 }
 
 const hours = (hours: number): number => 1000 * 60 * 60 * hours;
@@ -460,7 +441,6 @@ export default {
     sanitizeImageParameter,
     isAvailabilityEnabledForEntity,
     publishLastSeen,
-    availabilityPayload,
     getAllFiles,
     filterProperties,
     flatten,

@@ -28,8 +28,6 @@ function isValidUrl(url: string): boolean {
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
-    update_available?: boolean;
-
     update: {
         progress?: number;
         remaining?: number;
@@ -39,13 +37,11 @@ interface UpdatePayload {
     };
 }
 
-const legacyTopicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/ota_update/.+$`);
 const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)`, 'i');
 
 export default class OTAUpdate extends Extension {
     private inProgress = new Set();
     private lastChecked: {[s: string]: number} = {};
-    private legacyApi = settings.get().advanced.legacy_api;
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -80,8 +76,12 @@ export default class OTAUpdate extends Extension {
     }
 
     private removeProgressAndRemainingFromState(device: Device): void {
-        delete this.state.get(device).update?.progress;
-        delete this.state.get(device).update?.remaining;
+        const deviceState = this.state.get(device);
+
+        if (deviceState.update) {
+            delete deviceState.update.progress;
+            delete deviceState.update.remaining;
+        }
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
@@ -110,18 +110,11 @@ export default class OTAUpdate extends Extension {
                 logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
             }
 
-            const payload = this.getEntityPublishPayload(data.device, availableResult ?? 'idle');
-            await this.publishEntityState(data.device, payload);
+            await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? 'idle'));
 
             if (availableResult?.available) {
                 const message = `Update available for '${data.device.name}'`;
                 logger.info(message);
-
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    const meta = {status: 'available', device: data.device.name};
-                    await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message, meta}));
-                }
             }
         }
 
@@ -166,24 +159,19 @@ export default class OTAUpdate extends Extension {
             },
         };
 
-        if (progress != undefined) {
+        if (progress !== undefined) {
             payload.update.progress = progress;
         }
 
-        if (remaining != undefined) {
+        if (remaining !== undefined) {
             payload.update.remaining = Math.round(remaining);
-        }
-
-        /* istanbul ignore else */
-        if (this.legacyApi) {
-            payload.update_available = typeof state === 'string' ? state === 'available' : state.available;
         }
 
         return payload;
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if ((!this.legacyApi || !data.topic.match(legacyTopicRegex)) && !data.topic.match(topicRegex)) {
+        if (!data.topic.match(topicRegex)) {
             return;
         }
 
@@ -191,7 +179,7 @@ export default class OTAUpdate extends Extension {
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
-        const responseData: {id: string; updateAvailable?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
+        const responseData: {id: string; update_available?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -199,12 +187,6 @@ export default class OTAUpdate extends Extension {
             error = `Device '${ID}' does not exist`;
         } else if (!device.definition || !device.definition.ota) {
             error = `Device '${device.name}' does not support OTA updates`;
-
-            /* istanbul ignore else */
-            if (settings.get().advanced.legacy_api) {
-                const meta = {status: `not_supported`, device: device.name};
-                await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: error, meta}));
-            }
         } else if (this.inProgress.has(device.ieeeAddr)) {
             error = `Update or check for update already in progress for '${device.name}'`;
         } else {
@@ -214,53 +196,25 @@ export default class OTAUpdate extends Extension {
                 const msg = `Checking if update available for '${device.name}'`;
                 logger.info(msg);
 
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    const meta = {status: `checking_if_available`, device: device.name};
-                    await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: msg, meta}));
-                }
-
                 try {
                     const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, undefined);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const meta = {
-                            status: availableResult.available ? 'available' : 'not_available',
-                            device: device.name,
-                        };
-                        await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: msg, meta}));
-                    }
-
-                    const payload = this.getEntityPublishPayload(device, availableResult);
-                    await this.publishEntityState(device, payload);
+                    await this.publishEntityState(device, this.getEntityPublishPayload(device, availableResult));
                     this.lastChecked[device.ieeeAddr] = Date.now();
-                    responseData.updateAvailable = availableResult.available;
+                    responseData.update_available = availableResult.available;
                 } catch (e) {
                     error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
                     errorStack = (e as Error).stack;
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const meta = {status: `check_failed`, device: device.name};
-                        await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: error, meta}));
-                    }
                 }
             } else {
                 // type === 'update'
                 const msg = `Updating '${device.name}' to latest firmware`;
                 logger.info(msg);
 
-                /* istanbul ignore else */
-                if (settings.get().advanced.legacy_api) {
-                    const meta = {status: `update_in_progress`, device: device.name};
-                    await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: msg, meta}));
-                }
-
                 try {
-                    const onProgress = async (progress: number, remaining: number): Promise<void> => {
+                    const onProgress = async (progress: number, remaining: number | null): Promise<void> => {
                         let msg = `Update of '${device.name}' at ${progress.toFixed(2)}%`;
                         if (remaining) {
                             msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
@@ -268,26 +222,17 @@ export default class OTAUpdate extends Extension {
 
                         logger.info(msg);
 
-                        const payload = this.getEntityPublishPayload(device, 'updating', progress, remaining);
-                        await this.publishEntityState(device, payload);
-
-                        /* istanbul ignore else */
-                        if (settings.get().advanced.legacy_api) {
-                            const meta = {status: `update_progress`, device: device.name, progress};
-                            await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: msg, meta}));
-                        }
+                        await this.publishEntityState(device, this.getEntityPublishPayload(device, 'updating', progress, remaining ?? undefined));
                     };
 
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
                     const fileVersion = await device.definition.ota.updateToLatest(device.zh, onProgress);
                     logger.info(`Finished update of '${device.name}'`);
                     this.removeProgressAndRemainingFromState(device);
-                    const payload = this.getEntityPublishPayload(device, {
-                        available: false,
-                        currentFileVersion: fileVersion,
-                        otaFileVersion: fileVersion,
-                    });
-                    await this.publishEntityState(device, payload);
+                    await this.publishEntityState(
+                        device,
+                        this.getEntityPublishPayload(device, {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion}),
+                    );
                     const to = await this.readSoftwareBuildIDAndDateCode(device);
                     const [fromS, toS] = [stringify(from_), stringify(to)];
                     logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
@@ -299,38 +244,21 @@ export default class OTAUpdate extends Extension {
                      */
                     this.eventBus.emitReconfigure({device});
                     this.eventBus.emitDevicesChanged();
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const meta = {status: `update_succeeded`, device: device.name, from: from_, to};
-                        await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message, meta}));
-                    }
                 } catch (e) {
                     logger.debug(`Update of '${device.name}' failed (${e})`);
                     error = `Update of '${device.name}' failed (${(e as Error).message})`;
                     errorStack = (e as Error).stack;
 
                     this.removeProgressAndRemainingFromState(device);
-                    const payload = this.getEntityPublishPayload(device, 'available');
-                    await this.publishEntityState(device, payload);
-
-                    /* istanbul ignore else */
-                    if (settings.get().advanced.legacy_api) {
-                        const meta = {status: `update_failed`, device: device.name};
-                        await this.mqtt.publish('bridge/log', stringify({type: `ota_update`, message: error, meta}));
-                    }
+                    await this.publishEntityState(device, this.getEntityPublishPayload(device, 'available'));
                 }
             }
 
             this.inProgress.delete(device.ieeeAddr);
         }
 
-        const triggeredViaLegacyApi = data.topic.match(legacyTopicRegex);
-
-        if (!triggeredViaLegacyApi) {
-            const response = utils.getResponse(message, responseData, error);
-            await this.mqtt.publish(`bridge/response/device/ota_update/${type}`, stringify(response));
-        }
+        const response = utils.getResponse(message, responseData, error);
+        await this.mqtt.publish(`bridge/response/device/ota_update/${type}`, stringify(response));
 
         if (error) {
             logger.error(error);

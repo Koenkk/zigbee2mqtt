@@ -95,7 +95,7 @@ describe('HomeAssistant extension', () => {
         let payload;
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
             command_topic: 'zigbee2mqtt/ha_discovery_group/set',
@@ -140,7 +140,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/ha_discovery_group/set',
             device: {
                 identifiers: ['zigbee2mqtt_1221051039810110150109113116116_9'],
@@ -186,7 +186,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             enabled_by_default: true,
         };
 
@@ -216,7 +216,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -245,7 +245,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -275,7 +275,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -306,7 +306,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -317,7 +317,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/wall_switch_double/left/set',
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45542'],
@@ -346,7 +346,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/wall_switch_double/right/set',
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45542'],
@@ -375,7 +375,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
             supported_color_modes: ['color_temp'],
@@ -482,7 +482,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         });
         const topic2 = 'homeassistant/device_automation/0x0017880104e45522/action_double/config';
         const payload2 = stringify({
@@ -553,7 +553,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -582,7 +582,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -611,7 +611,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -670,7 +670,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'From Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             expire_after: 90,
             icon: 'mdi:test',
         };
@@ -699,7 +699,7 @@ describe('HomeAssistant extension', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             origin: origin,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             expire_after: 30,
             icon: 'mdi:test',
             object_id: 'weather_sensor_humidity',
@@ -745,7 +745,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             enabled_by_default: true,
         };
 
@@ -775,7 +775,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -807,7 +807,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/my_switch/set',
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45541'],
@@ -896,7 +896,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Hampton Bay',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -915,6 +915,7 @@ describe('HomeAssistant extension', () => {
             availability: [
                 {
                     topic: 'zigbee2mqtt/bridge/state',
+                    value_template: '{{ value_json.state }}',
                 },
             ],
             current_temperature_template: '{{ value_json.local_temperature }}',
@@ -962,7 +963,7 @@ describe('HomeAssistant extension', () => {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
             action_topic: 'zigbee2mqtt/bosch_radiator',
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             current_temperature_template: '{{ value_json.local_temperature }}',
             current_temperature_topic: 'zigbee2mqtt/bosch_radiator',
             device: {
@@ -1028,7 +1029,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Keen Home',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1039,7 +1040,7 @@ describe('HomeAssistant extension', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/zigfred_plus/l6/set',
             device: {
                 identifiers: ['zigbee2mqtt_0xf4ce368a38be56a1'],
@@ -1101,7 +1102,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1280,7 +1281,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1449,7 +1450,10 @@ describe('HomeAssistant extension', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             availability_mode: 'all',
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}, {topic: 'zigbee2mqtt/weather_sensor/availability'}],
+            availability: [
+                {topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'},
+                {topic: 'zigbee2mqtt/weather_sensor/availability', value_template: '{{ value_json.state }}'},
+            ],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1462,7 +1466,7 @@ describe('HomeAssistant extension', () => {
 
     it('Should clear discovery when device is removed', async () => {
         MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/config/remove', 'weather_sensor');
+        MQTT.events.message('zigbee2mqtt/bridge/request/device/remove', 'weather_sensor');
         await flushPromises();
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1544,7 +1548,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1595,7 +1599,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
             command_topic: 'zigbee2mqtt/ha_discovery_group_new/set',
@@ -1681,7 +1685,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -1712,7 +1716,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'IKEA',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device_class: 'update',
             entity_category: 'diagnostic',
         };
@@ -2037,10 +2041,13 @@ describe('HomeAssistant extension', () => {
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
         logger.error.mockClear();
         MQTT.publish.mockClear();
+        const group = zigbeeHerdsman.groups.group_1;
+        group.members.push(zigbeeHerdsman.devices.bulb_color.getEndpoint(1));
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
         expect(logger.error).toHaveBeenCalledTimes(0);
+        group.members.pop();
     });
 
     it('Should counter an action payload with an empty payload', async () => {
@@ -2083,7 +2090,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message(
             'homeassistant/light/1221051039810110150109113116116_91231/light/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -2098,14 +2105,17 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
 
         // Existing group with old topic structure (1.20.0) -> clear
         MQTT.publish.mockClear();
-        await MQTT.events.message('homeassistant/light/9/light/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await MQTT.events.message(
+            'homeassistant/light/9/light/config',
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
+        );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/light/9/light/config', '', {qos: 1, retain: true}, expect.any(Function));
@@ -2114,7 +2124,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message(
             'homeassistant/light/1221051039810110150109113116116_9/switch/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -2127,7 +2137,10 @@ describe('HomeAssistant extension', () => {
 
         // Non-existing device -> clear
         MQTT.publish.mockClear();
-        await MQTT.events.message('homeassistant/sensor/0x123/temperature/config', stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}));
+        await MQTT.events.message(
+            'homeassistant/sensor/0x123/temperature/config',
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
+        );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
         expect(MQTT.publish).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', '', {qos: 1, retain: true}, expect.any(Function));
@@ -2136,7 +2149,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message(
             'homeassistant/binary_sensor/0x000b57fffec6a5b2/update_available/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(0);
@@ -2154,7 +2167,7 @@ describe('HomeAssistant extension', () => {
         MQTT.publish.mockClear();
         await MQTT.events.message(
             'homeassistant/sensor/0x000b57fffec6a5b2/update_available/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledTimes(1);
@@ -2196,7 +2209,7 @@ describe('HomeAssistant extension', () => {
 
         await MQTT.events.message(
             'homeassistant/sensor/0x000b57fffec6a5b2/update_available/config',
-            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state'}]}),
+            stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2244,7 +2257,7 @@ describe('HomeAssistant extension', () => {
                 manufacturer: 'Aqara',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2265,7 +2278,7 @@ describe('HomeAssistant extension', () => {
         await flushPromises();
 
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
             command_topic: 'zigbee2mqtt/ha_discovery_group/set',
@@ -2311,9 +2324,6 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover with json availability payload value_template', async () => {
-        settings.set(['advanced', 'legacy_availability_payload'], false);
-        await resetExtension();
-
         const payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
@@ -2413,6 +2423,7 @@ describe('HomeAssistant extension', () => {
             availability: [
                 {
                     topic: 'zigbee2mqtt/bridge/state',
+                    value_template: '{{ value_json.state }}',
                 },
             ],
             device: {
@@ -2472,7 +2483,7 @@ describe('HomeAssistant extension', () => {
                 configuration_url: 'http://zigbee.mqtt/#/device/0x0017880104e45522/info',
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2518,7 +2529,7 @@ describe('HomeAssistant extension', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             origin: origin,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
             `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
@@ -2562,7 +2573,7 @@ describe('HomeAssistant extension', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             origin: origin,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
             `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
@@ -2593,7 +2604,7 @@ describe('HomeAssistant extension', () => {
                 hw_version: 'z-Stack 20190425',
                 sw_version: z2m_version,
             },
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
 
@@ -2628,7 +2639,7 @@ describe('HomeAssistant extension', () => {
             device_class: 'connectivity',
             unique_id: 'bridge_0x00124b00120144ae_connection_state_zigbee2mqtt',
             state_topic: 'zigbee2mqtt/bridge/state',
-            value_template: '{{ value }}',
+            value_template: '{{ value_json.state }}',
             payload_on: 'online',
             payload_off: 'offline',
             origin: origin,
@@ -2654,7 +2665,7 @@ describe('HomeAssistant extension', () => {
             payload_off: false,
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2674,7 +2685,7 @@ describe('HomeAssistant extension', () => {
             payload_press: '',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2697,7 +2708,7 @@ describe('HomeAssistant extension', () => {
             options: settings.LOG_LEVELS,
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2718,7 +2729,7 @@ describe('HomeAssistant extension', () => {
             value_template: '{{ value_json.version }}',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2739,7 +2750,7 @@ describe('HomeAssistant extension', () => {
             value_template: '{{ value_json.coordinator.meta.revision }}',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2761,7 +2772,7 @@ describe('HomeAssistant extension', () => {
             json_attributes_template: '{{ value_json.data.value | tojson }}',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2782,7 +2793,7 @@ describe('HomeAssistant extension', () => {
             value_template: '{{ iif(value_json.permit_join_timeout is defined, value_json.permit_join_timeout, None) }}',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2806,7 +2817,7 @@ describe('HomeAssistant extension', () => {
             payload_off: 'false',
             origin: origin,
             device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -2842,7 +2853,7 @@ describe('HomeAssistant extension', () => {
         await zigbeeHerdsman.events.message(msg);
         await flushPromises();
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             command_topic: 'zigbee2mqtt/0x18fc26000000cafe/set/device_mode',
             device: {
                 identifiers: ['zigbee2mqtt_0x18fc26000000cafe'],

@@ -9,11 +9,11 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git npm && \
-    npm ci --production --no-audit --no-optional --no-update-notifier && \
+RUN apk add make gcc g++ python3 linux-headers git npm && \
+    npm install -g pnpm && \
+    pnpm install --frozen-lockfile --no-optional && \
     # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
-    npm rebuild --build-from-source && \
-    apk del .buildtools
+    pnpm rebuild
 
 # Release
 FROM base as release

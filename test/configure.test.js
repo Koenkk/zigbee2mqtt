@@ -191,26 +191,6 @@ describe('Configure', () => {
         );
     });
 
-    it('Legacy api: Should allow to reconfigure manually', async () => {
-        mockClear(zigbeeHerdsman.devices.remote);
-        expectRemoteNotConfigured();
-        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote');
-        await flushPromises();
-        expectRemoteConfigured();
-    });
-
-    it('Legacy api: Shouldnt manually reconfigure when device does not exist', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/configure', 'remote_random_non_existing');
-        await flushPromises();
-        expect(logger.error).toHaveBeenCalledWith(`Device 'remote_random_non_existing' does not exist`);
-    });
-
-    it('Legacy api: Should skip reconfigure when device does not require this', async () => {
-        await MQTT.events.message('zigbee2mqtt/bridge/configure', '0x0017882104a44559');
-        await flushPromises();
-        expect(logger.warning).toHaveBeenCalledWith(`Skipping configure of 'TS0601_thermostat', device does not require this.`);
-    });
-
     it('Should not configure when interview not completed', async () => {
         const device = zigbeeHerdsman.devices.remote;
         delete device.meta.configured;

@@ -17,21 +17,24 @@ jobs:
                   token: ${{secrets.GH_TOKEN}}
             - uses: actions/checkout@v4
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
                   registry-url: https://registry.npmjs.org/
-                  cache: npm
+                  cache: pnpm
             - name: Install dependencies
-              run: npm ci
+              run: pnpm i --frozen-lockfile
             - name: Build
-              run: npm run build
+              run: pnpm run build
             - name: Lint
               run: |
-                  npm run pretty:check
-                  npm run eslint
+                  pnpm run pretty:check
+                  pnpm run eslint
             - name: Test
-              run: npm run test-with-coverage
+              run: pnpm run test-with-coverage
             - name: Docker login
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
@@ -74,7 +77,7 @@ jobs:
                     .
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              run: npm publish
+              run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
             - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
@@ -139,15 +142,17 @@ jobs:
         continue-on-error: true
         steps:
             - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
             - uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.node }}
-                  registry-url: https://registry.npmjs.org/
-                  cache: 'npm'
+                  node-version: 20
+                  cache: pnpm
             - name: Install dependencies
               # --ignore-scripts prevents the serialport build which often fails on Windows
-              run: npm ci --ignore-scripts
+              run: pnpm i --frozen-lockfile --ignore-scripts
             - name: Build
-              run: npm run build
+              run: pnpm run build
             - name: Test
-              run: npm run test-with-coverage
+              run: pnpm run test-with-coverage
