@@ -120,7 +120,6 @@ declare global {
             legacy_triggers: boolean;
             experimental_event_entities: boolean;
         };
-        permit_join: boolean;
         availability?: {
             active: {timeout: number};
             passive: {timeout: number};

@@ -51,12 +51,6 @@
                 }
             ]
         },
-        "permit_join": {
-            "type": "boolean",
-            "default": false,
-            "title": "Permit join",
-            "description": "Allow new devices to join (re-applied at restart)"
-        },
         "availability": {
             "oneOf": [
                 {

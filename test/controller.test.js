@@ -10,7 +10,6 @@ const stringify = require('json-stable-stringify-without-jsonify');
 const flushPromises = require('./lib/flushPromises');
 const tmp = require('tmp');
 const mocksClear = [
-    zigbeeHerdsman.permitJoin,
     MQTT.end,
     zigbeeHerdsman.stop,
     logger.debug,
@@ -84,8 +83,6 @@ describe('Controller', () => {
         });
         expect(zigbeeHerdsman.start).toHaveBeenCalledTimes(1);
         expect(zigbeeHerdsman.setTransmitPower).toHaveBeenCalledTimes(0);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(true, undefined, undefined);
         expect(logger.info).toHaveBeenCalledWith(`Currently ${Object.values(zigbeeHerdsman.devices).length - 1} devices are joined.`);
         expect(logger.info).toHaveBeenCalledWith(
             'bulb (0x000b57fffec6a5b2): LED1545G12 - IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (Router)',
@@ -103,15 +100,6 @@ describe('Controller', () => {
             expect.any(Function),
         );
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {retain: true, qos: 0}, expect.any(Function));
-    });
-
-    it('Start controller when permit join fails', async () => {
-        zigbeeHerdsman.permitJoin.mockImplementationOnce(() => {
-            throw new Error('failed!');
-        });
-        await controller.start();
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(MQTT.connect).toHaveBeenCalledTimes(1);
     });
 
     it('Start controller with specific MQTT settings', async () => {
@@ -281,13 +269,6 @@ describe('Controller', () => {
         expect(logger.error).toHaveBeenCalledWith('MQTT failed to connect, exiting... (addr not found)');
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
-    });
-
-    it('Start controller with permit join true', async () => {
-        settings.set(['permit_join'], false);
-        await controller.start();
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsman.permitJoin).toHaveBeenCalledWith(false, undefined, undefined);
     });
 
     it('Start controller and stop with restart', async () => {

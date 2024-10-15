@@ -895,8 +895,7 @@ const mock = {
     getGroupByID: jest.fn().mockImplementation((groupID) => {
         return Object.values(groups).find((d) => d.groupID === groupID);
     }),
-    getPermitJoin: jest.fn().mockReturnValue(false),
-    getPermitJoinTimeout: jest.fn().mockReturnValue(undefined),
+    getPermitJoinTimeout: jest.fn().mockReturnValue(0),
     reset: jest.fn(),
     createGroup: jest.fn().mockImplementation((groupID) => {
         const group = new Group(groupID, []);
