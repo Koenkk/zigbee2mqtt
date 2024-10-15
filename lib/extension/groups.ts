@@ -267,13 +267,11 @@ export default class Groups extends Extension {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
                     await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zh);
-                    settings.addDeviceToGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
                 } else if (type === 'remove') {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
                     await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zh);
-                    settings.removeDeviceFromGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
                 } else {
                     // remove_all
@@ -284,10 +282,6 @@ export default class Groups extends Extension {
                     }
 
                     await resolvedEntityEndpoint.removeFromAllGroups();
-
-                    for (const settingsGroup of settings.getGroups()) {
-                        settings.removeDeviceFromGroup(settingsGroup.ID.toString(), keys);
-                    }
                 }
             } catch (e) {
                 error = `Failed to ${type} from group (${(e as Error).message})`;

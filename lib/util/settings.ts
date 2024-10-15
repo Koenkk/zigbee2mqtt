@@ -528,12 +528,12 @@ export function getGroup(IDorName: string | number): GroupOptions | undefined {
     const byID = settings.groups[IDorName];
 
     if (byID) {
-        return {devices: [], ...byID, ID: Number(IDorName)};
+        return {...byID, ID: Number(IDorName)};
     }
 
     for (const [ID, group] of Object.entries(settings.groups)) {
         if (group.friendly_name === IDorName) {
-            return {devices: [], ...group, ID: Number(ID)};
+            return {...group, ID: Number(ID)};
         }
     }
 
@@ -544,7 +544,7 @@ export function getGroups(): GroupOptions[] {
     const settings = get();
 
     return Object.entries(settings.groups).map(([ID, group]) => {
-        return {devices: [], ...group, ID: Number(ID)};
+        return {...group, ID: Number(ID)};
     });
 }
 
@@ -615,16 +615,6 @@ export function removeDevice(IDorName: string): void {
     const device = getDeviceThrowIfNotExists(IDorName);
     const settings = getInternalSettings();
     delete settings.devices?.[device.ID];
-
-    // Remove device from groups
-    if (settings.groups) {
-        const regex = new RegExp(`^(${device.friendly_name}|${device.ID})(/[^/]+)?$`);
-
-        for (const group of Object.values(settings.groups).filter((g) => g.devices)) {
-            group.devices = group.devices?.filter((device) => !device.match(regex));
-        }
-    }
-
     write();
 }
 
@@ -660,46 +650,6 @@ export function addGroup(name: string, ID?: string): GroupOptions {
     write();
 
     return getGroup(ID)!; // valid from creation above
-}
-
-function groupGetDevice(group: {devices?: string[]}, keys: string[]): string | undefined {
-    for (const device of group.devices ?? []) {
-        if (keys.includes(device)) {
-            return device;
-        }
-    }
-
-    return undefined;
-}
-
-export function addDeviceToGroup(IDorName: string, keys: string[]): void {
-    const groupID = getGroupThrowIfNotExists(IDorName).ID!;
-    const settings = getInternalSettings();
-
-    const group = settings.groups![groupID];
-
-    if (!groupGetDevice(group, keys)) {
-        if (!group.devices) group.devices = [];
-        group.devices.push(keys[0]);
-        write();
-    }
-}
-
-export function removeDeviceFromGroup(IDorName: string, keys: string[]): void {
-    const groupID = getGroupThrowIfNotExists(IDorName).ID!;
-    const settings = getInternalSettings();
-    const group = settings.groups![groupID];
-
-    if (!group.devices) {
-        return;
-    }
-
-    const key = groupGetDevice(group, keys);
-
-    if (key) {
-        group.devices = group.devices.filter((d) => d != key);
-        write();
-    }
 }
 
 export function removeGroup(IDorName: string | number): void {

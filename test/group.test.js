@@ -45,81 +45,6 @@ describe('Groups', () => {
         controller.state.state = {};
     });
 
-    it('Apply group updates add', async () => {
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['bulb', 'bulb_color']}});
-        zigbeeHerdsman.groups.group_1.members.push(zigbeeHerdsman.devices.bulb.getEndpoint(1));
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([
-            zigbeeHerdsman.devices.bulb.getEndpoint(1),
-            zigbeeHerdsman.devices.bulb_color.getEndpoint(1),
-        ]);
-    });
-
-    it('Apply group updates remove', async () => {
-        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
-    });
-
-    it('Apply group updates remove handle fail', async () => {
-        const endpoint = zigbeeHerdsman.devices.bulb_color.getEndpoint(1);
-        endpoint.removeFromGroup.mockImplementationOnce(() => {
-            throw new Error('failed!');
-        });
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
-        logger.error.mockClear();
-        await resetExtension();
-        expect(logger.error).toHaveBeenCalledWith(`Failed to remove 'bulb_color' from 'group_1'`);
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([endpoint]);
-    });
-
-    it('Move to non existing group', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        const endpoint = device.getEndpoint(1);
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {3: {friendly_name: 'group_3', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
-    });
-
-    it('Add non standard endpoint to group with name', async () => {
-        const QBKG03LM = zigbeeHerdsman.devices.QBKG03LM;
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['0x0017880104e45542/right']}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([QBKG03LM.getEndpoint(3)]);
-    });
-
-    it('Add non standard endpoint to group with number', async () => {
-        const QBKG03LM = zigbeeHerdsman.devices.QBKG03LM;
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['wall_switch_double/2']}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([QBKG03LM.getEndpoint(2)]);
-    });
-
-    it('Shouldnt crash on non-existing devices', async () => {
-        logger.error.mockClear();
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['not_existing_bla']}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([]);
-        expect(logger.error).toHaveBeenCalledWith("Cannot find 'not_existing_bla' of group 'group_1'");
-    });
-
-    it('Should resolve device friendly names', async () => {
-        settings.set(['devices', zigbeeHerdsman.devices.bulb.ieeeAddr, 'friendly_name'], 'bulb_friendly_name');
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['bulb_friendly_name', 'bulb_color']}});
-        await resetExtension();
-        expect(zigbeeHerdsman.groups.group_1.members).toStrictEqual([
-            zigbeeHerdsman.devices.bulb.getEndpoint(1),
-            zigbeeHerdsman.devices.bulb_color.getEndpoint(1),
-        ]);
-    });
-
     it('Should publish group state change when a device in it changes state', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
@@ -678,7 +603,6 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
         await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message(
@@ -687,28 +611,6 @@ describe('Groups', () => {
         );
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
-        expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(MQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/group/members/remove',
-            stringify({data: {device: 'bulb_color', group: 'group_1'}, status: 'ok'}),
-            {retain: false, qos: 0},
-            expect.any(Function),
-        );
-    });
-
-    it('Remove from group via MQTT when in zigbee but not in settings', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        const endpoint = device.getEndpoint(1);
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: ['dummy']}});
-        await resetExtension();
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: 'bulb_color'}));
-        await flushPromises();
-        expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual(['dummy']);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
@@ -723,13 +625,11 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/right`]}});
         await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: '0x0017880104e45542/3'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
