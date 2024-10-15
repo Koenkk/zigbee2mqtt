@@ -434,7 +434,6 @@ describe('Settings', () => {
         const expected = {
             ID: 1,
             friendly_name: '123',
-            devices: [],
         };
 
         expect(group).toStrictEqual(expected);
@@ -458,7 +457,6 @@ describe('Settings', () => {
         const expected = {
             ID: 1,
             friendly_name: '123',
-            devices: [],
         };
 
         expect(group).toStrictEqual(expected);
@@ -589,95 +587,6 @@ describe('Settings', () => {
         };
 
         expect(settings.get().groups).toStrictEqual(expected);
-    });
-
-    it('Should add devices to groups', () => {
-        write(configurationFile, {
-            devices: {
-                '0x123': {
-                    friendly_name: 'bulb',
-                    retain: true,
-                },
-            },
-        });
-
-        settings.addGroup('test123');
-        settings.addDeviceToGroup('test123', ['0x123']);
-        const expected = {
-            1: {
-                friendly_name: 'test123',
-                devices: ['0x123'],
-            },
-        };
-
-        expect(settings.get().groups).toStrictEqual(expected);
-    });
-
-    it('Should remove devices from groups', () => {
-        write(configurationFile, {
-            devices: {
-                '0x123': {
-                    friendly_name: 'bulb',
-                    retain: true,
-                },
-            },
-            groups: {
-                1: {
-                    friendly_name: 'test123',
-                    devices: ['0x123'],
-                },
-            },
-        });
-
-        settings.removeDeviceFromGroup('test123', ['0x123']);
-        const expected = {
-            1: {
-                friendly_name: 'test123',
-                devices: [],
-            },
-        };
-
-        expect(settings.get().groups).toStrictEqual(expected);
-    });
-
-    it('Shouldnt crash when removing device from group when group has no devices', () => {
-        write(configurationFile, {
-            devices: {
-                '0x123': {
-                    friendly_name: 'bulb',
-                    retain: true,
-                },
-            },
-            groups: {
-                1: {
-                    friendly_name: 'test123',
-                },
-            },
-        });
-
-        settings.removeDeviceFromGroup('test123', ['0x123']);
-        const expected = {
-            1: {
-                friendly_name: 'test123',
-            },
-        };
-
-        expect(settings.get().groups).toStrictEqual(expected);
-    });
-
-    it('Should throw when adding device to non-existing group', () => {
-        write(configurationFile, {
-            devices: {
-                '0x123': {
-                    friendly_name: 'bulb',
-                    retain: true,
-                },
-            },
-        });
-
-        expect(() => {
-            settings.removeDeviceFromGroup('test123', 'bulb');
-        }).toThrow(new Error("Group 'test123' does not exist"));
     });
 
     it('Should throw when adding device which already exists', () => {
