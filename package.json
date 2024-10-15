@@ -92,8 +92,8 @@
         "typescript": "^5.6.3",
         "typescript-eslint": "^8.8.1"
     },
-    "overrides": {
-        "zigbee-herdsman-converters": {
+    "pnpm": {
+        "overrides": {
             "zigbee-herdsman": "$zigbee-herdsman"
         }
     },
