@@ -13,7 +13,7 @@ const yaml = require('js-yaml');
 const objectAssignDeep = require(`object-assign-deep`);
 
 const minimalConfig = {
-    permit_join: true,
+    external_converters: [],
     homeassistant: true,
     mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost'},
 };
@@ -55,12 +55,12 @@ describe('Settings', () => {
     });
 
     it('Should return settings', () => {
-        write(configurationFile, {permit_join: true});
+        write(configurationFile, {external_converters: ['abcd.js']});
         const s = settings.get();
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
-        expected.permit_join = true;
+        expected.external_converters = ['abcd.js'];
         expect(s).toStrictEqual(expected);
     });
 
@@ -964,7 +964,7 @@ describe('Settings', () => {
             },
         });
         settings.reRead();
-        settings.apply({permit_join: false});
+        settings.apply({external_converters: []});
         expect(settings.get().device_options.homeassistant).toStrictEqual({temperature: null});
         expect(settings.get().devices['0x1234567812345678'].homeassistant).toStrictEqual({humidity: null});
     });

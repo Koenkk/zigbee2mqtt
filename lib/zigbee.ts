@@ -225,26 +225,18 @@ export default class Zigbee {
         logger.info('Stopped zigbee-herdsman');
     }
 
-    getPermitJoin(): boolean {
-        return this.herdsman.getPermitJoin();
-    }
-
-    getPermitJoinTimeout(): number | undefined {
+    getPermitJoinTimeout(): number {
         return this.herdsman.getPermitJoinTimeout();
     }
 
-    async permitJoin(permit: boolean, device?: Device, time?: number): Promise<void> {
-        if (permit) {
+    async permitJoin(time: number, device?: Device): Promise<void> {
+        if (time > 0) {
             logger.info(`Zigbee: allowing new devices to join${device ? ` via ${device.name}` : ''}.`);
         } else {
             logger.info('Zigbee: disabling joining new devices.');
         }
 
-        if (device && permit) {
-            await this.herdsman.permitJoin(permit, device.zh, time);
-        } else {
-            await this.herdsman.permitJoin(permit, undefined, time);
-        }
+        await this.herdsman.permitJoin(time, device?.zh);
     }
 
     @bind private resolveDevice(ieeeAddr: string): Device | undefined {
