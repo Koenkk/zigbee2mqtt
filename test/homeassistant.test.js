@@ -2523,7 +2523,7 @@ describe('HomeAssistant extension', () => {
         expect(MQTT.publish).not.toHaveBeenCalledWith(topic, '', {retain: true, qos: 1}, expect.any(Function));
     });
 
-    it('onlythis Should discover bridge entities', async () => {
+    it('Should discover bridge entities', async () => {
         settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
         await resetExtension();
 
