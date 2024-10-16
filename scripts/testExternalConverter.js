@@ -18,5 +18,5 @@ const sandbox = {
 };
 vm.runInNewContext(moduleCode, sandbox, moduleFakePath);
 const converter = sandbox.module.exports;
-assert(!converter.toZigbee.includes(undefined));
-assert(!converter.fromZigbee.includes(undefined));
+assert(!converter.toZigbee || !converter.toZigbee.includes(undefined));
+assert(!converter.fromZigbee || !converter.fromZigbee.includes(undefined));
