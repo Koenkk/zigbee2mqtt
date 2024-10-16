@@ -1,8 +1,8 @@
-const logger = require('./stub/logger');
-const data = require('../lib/util/data').default;
-const path = require('path');
-const tmp = require('tmp');
-const fs = require('fs');
+import path from 'path';
+
+import tmp from 'tmp';
+
+import data from '../lib/util/data';
 
 describe('Data', () => {
     describe('Get path', () => {

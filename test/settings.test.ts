@@ -1,17 +1,19 @@
-require('./stub/logger');
-require('./stub/data');
-const data = require('../lib/util/data');
-const utils = require('../lib/util/utils').default;
-const settings = require('../lib/util/settings.ts');
-const fs = require('fs');
-const configurationFile = data.joinPath('configuration.yaml');
-const devicesFile = data.joinPath('devices.yaml');
-const devicesFile2 = data.joinPath('devices2.yaml');
-const groupsFile = data.joinPath('groups.yaml');
-const secretFile = data.joinPath('secret.yaml');
-const yaml = require('js-yaml');
-const objectAssignDeep = require(`object-assign-deep`);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as data from './mocks/data';
 
+import fs from 'fs';
+
+import yaml from 'js-yaml';
+import objectAssignDeep from 'object-assign-deep';
+
+import mockedData from '../lib/util/data';
+import * as settings from '../lib/util/settings';
+
+const configurationFile = mockedData.joinPath('configuration.yaml');
+const devicesFile = mockedData.joinPath('devices.yaml');
+const devicesFile2 = mockedData.joinPath('devices2.yaml');
+const groupsFile = mockedData.joinPath('groups.yaml');
+const secretFile = mockedData.joinPath('secret.yaml');
 const minimalConfig = {
     external_converters: [],
     homeassistant: true,
@@ -19,22 +21,28 @@ const minimalConfig = {
 };
 
 describe('Settings', () => {
-    const write = (file, json, reread = true) => {
+    const write = (file: string, json: Record<string, unknown>, reread: boolean = true): void => {
         fs.writeFileSync(file, yaml.dump(json));
+
         if (reread) {
             settings.reRead();
         }
     };
-    const read = (file) => yaml.load(fs.readFileSync(file, 'utf8'));
-    const remove = (file) => {
-        if (fs.existsSync(file)) fs.unlinkSync(file);
+
+    const read = (file: string): unknown => yaml.load(fs.readFileSync(file, 'utf8'));
+
+    const remove = (file: string): void => {
+        if (fs.existsSync(file)) {
+            fs.unlinkSync(file);
+        }
     };
-    const clearEnvironmentVariables = () => {
-        Object.keys(process.env).forEach((key) => {
+
+    const clearEnvironmentVariables = (): void => {
+        for (const key in process.env) {
             if (key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
                 delete process.env[key];
             }
-        });
+        }
     };
 
     beforeEach(() => {
@@ -48,6 +56,7 @@ describe('Settings', () => {
     it('Should return default settings', () => {
         write(configurationFile, {});
         const s = settings.get();
+        // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
@@ -57,6 +66,7 @@ describe('Settings', () => {
     it('Should return settings', () => {
         write(configurationFile, {external_converters: ['abcd.js']});
         const s = settings.get();
+        // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
@@ -66,7 +76,7 @@ describe('Settings', () => {
 
     it('Should apply environment variables', () => {
         process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL'] = 15;
+        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL'] = '15';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'attribute_and_json';
         process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT'] = '["console"]';
         process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] =
@@ -88,6 +98,7 @@ describe('Settings', () => {
         expect(settings.validate()).toStrictEqual([]);
 
         const s = settings.get();
+        // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {
             '0x00158d00018255df': {
@@ -336,7 +347,7 @@ describe('Settings', () => {
         expect(read(devicesFile)).toStrictEqual(expected);
     });
 
-    function extractFromMultipleDeviceConfigs(contentDevices2) {
+    function extractFromMultipleDeviceConfigs(contentDevices2: Record<string, unknown>): void {
         const contentConfiguration = {
             devices: ['devices.yaml', 'devices2.yaml'],
         };
@@ -380,7 +391,7 @@ describe('Settings', () => {
     });
 
     it('Should add devices for first file when using 2 separates file and the second file is empty', () => {
-        extractFromMultipleDeviceConfigs(null);
+        extractFromMultipleDeviceConfigs({});
     });
 
     it('Should add devices to a separate file if devices.yaml doesnt exist', () => {
@@ -520,7 +531,7 @@ describe('Settings', () => {
     it('Should add groups', () => {
         write(configurationFile, {});
 
-        const added = settings.addGroup('test123');
+        settings.addGroup('test123');
         const expected = {
             1: {
                 friendly_name: 'test123',
@@ -533,7 +544,7 @@ describe('Settings', () => {
     it('Should add groups with specific ID', () => {
         write(configurationFile, {});
 
-        const added = settings.addGroup('test123', 123);
+        settings.addGroup('test123', '123');
         const expected = {
             123: {
                 friendly_name: 'test123',
@@ -578,9 +589,9 @@ describe('Settings', () => {
     it('Should not add duplicate groups with specific ID', () => {
         write(configurationFile, {});
 
-        settings.addGroup('test123', 123);
+        settings.addGroup('test123', '123');
         expect(() => {
-            settings.addGroup('test_id_123', 123);
+            settings.addGroup('test_id_123', '123');
         }).toThrow(new Error("Group ID '123' is already in use"));
         const expected = {
             123: {
@@ -676,7 +687,7 @@ describe('Settings', () => {
         });
 
         expect(() => {
-            settings.removeDeviceFromGroup('test123', 'bulb');
+            settings.removeDeviceFromGroup('test123', ['bulb']);
         }).toThrow(new Error("Group 'test123' does not exist"));
     });
 

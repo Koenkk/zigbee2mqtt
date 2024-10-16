@@ -148,7 +148,7 @@ async function start() {
         return exit(1);
     }
 
-    const Controller = require('./dist/controller');
+    const {Controller} = require('./dist/controller');
     controller = new Controller(restart, exit);
 
     await controller.start();
