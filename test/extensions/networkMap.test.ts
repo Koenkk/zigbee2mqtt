@@ -1,61 +1,34 @@
-const data = require('./stub/data');
-const logger = require('./stub/logger');
-const zigbeeHerdsman = require('./stub/zigbeeHerdsman');
-const stringify = require('json-stable-stringify-without-jsonify');
-const fs = require('fs');
-const path = require('path');
-const {coordinator, bulb, bulb_color, WXKG02LM_rev1, CC2530_ROUTER, unsupported_router, external_converter_device} = zigbeeHerdsman.devices;
+import * as data from '../mocks/data';
+import {mockLogger} from '../mocks/logger';
+import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
+import * as mockSleep from '../mocks/sleep';
+import {flushPromises} from '../mocks/utils';
+import {devices, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
 
-zigbeeHerdsman.returnDevices.push(coordinator.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(bulb.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(bulb_color.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(WXKG02LM_rev1.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(CC2530_ROUTER.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(unsupported_router.ieeeAddr);
-zigbeeHerdsman.returnDevices.push(external_converter_device.ieeeAddr);
-const MQTT = require('./stub/mqtt');
-const settings = require('../lib/util/settings');
-const Controller = require('../lib/controller');
-const flushPromises = require('./lib/flushPromises');
-const mocksClear = [MQTT.publish, logger.warning, logger.debug];
-const setTimeoutNative = setTimeout;
+import fs from 'fs';
+import path from 'path';
 
-describe('Networkmap', () => {
-    let controller;
+import stringify from 'json-stable-stringify-without-jsonify';
 
-    beforeAll(async () => {
-        jest.useFakeTimers();
-        Date.now = jest.fn();
-        Date.now.mockReturnValue(10000);
-        data.writeDefaultConfiguration();
-        settings.reRead();
-        data.writeEmptyState();
-        fs.copyFileSync(path.join(__dirname, 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
-        settings.set(['external_converters'], ['mock-external-converter.js']);
-        controller = new Controller(jest.fn(), jest.fn());
-        await controller.start();
-        mocksClear.forEach((m) => m.mockClear());
-        await flushPromises();
-    });
+import {Controller} from '../../lib/controller';
+import * as settings from '../../lib/util/settings';
 
-    beforeEach(async () => {
-        mocksClear.forEach((m) => m.mockClear());
-        await flushPromises();
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.lastSeen = 1000;
-        external_converter_device.lastSeen = 1000;
-        global.setTimeout = (r) => r();
-    });
+returnDevices.push(
+    devices.coordinator.ieeeAddr,
+    devices.bulb.ieeeAddr,
+    devices.bulb_color.ieeeAddr,
+    devices.WXKG02LM_rev1.ieeeAddr,
+    devices.CC2530_ROUTER.ieeeAddr,
+    devices.unsupported_router.ieeeAddr,
+    devices.external_converter_device.ieeeAddr,
+);
 
-    afterEach(async () => {
-        global.setTimeout = setTimeoutNative;
-    });
+const mocksClear = [mockMQTT.publish, mockLogger.warning, mockLogger.debug];
 
-    afterAll(async () => {
-        jest.useRealTimers();
-    });
+describe('Extension: NetworkMap', () => {
+    let controller: Controller;
 
-    function mock() {
+    const mock = (): void => {
         /**
          * Topology
          *             | -> external_device
@@ -66,49 +39,96 @@ describe('Networkmap', () => {
          *                    |  -> CC2530_ROUTER -> WXKG02LM_rev1
          *
          */
-        coordinator.lqi = jest.fn().mockResolvedValue({
+        devices.coordinator.lqi.mockResolvedValueOnce({
             neighbors: [
-                {ieeeAddr: bulb_color.ieeeAddr, networkAddress: bulb_color.networkAddress, relationship: 2, depth: 1, linkquality: 120},
-                {ieeeAddr: bulb.ieeeAddr, networkAddress: bulb.networkAddress, relationship: 2, depth: 1, linkquality: 92},
                 {
-                    ieeeAddr: external_converter_device.ieeeAddr,
-                    networkAddress: external_converter_device.networkAddress,
+                    ieeeAddr: devices.bulb_color.ieeeAddr,
+                    networkAddress: devices.bulb_color.networkAddress,
+                    relationship: 2,
+                    depth: 1,
+                    linkquality: 120,
+                },
+                {ieeeAddr: devices.bulb.ieeeAddr, networkAddress: devices.bulb.networkAddress, relationship: 2, depth: 1, linkquality: 92},
+                {
+                    ieeeAddr: devices.external_converter_device.ieeeAddr,
+                    networkAddress: devices.external_converter_device.networkAddress,
                     relationship: 2,
                     depth: 1,
                     linkquality: 92,
                 },
             ],
         });
-        coordinator.routingTable = jest.fn().mockResolvedValue({
-            table: [{destinationAddress: CC2530_ROUTER.networkAddress, status: 'ACTIVE', nextHop: bulb.networkAddress}],
+        devices.coordinator.routingTable.mockResolvedValueOnce({
+            table: [{destinationAddress: devices.CC2530_ROUTER.networkAddress, status: 'ACTIVE', nextHop: devices.bulb.networkAddress}],
         });
-        bulb.lqi = jest.fn().mockResolvedValue({
+        devices.bulb.lqi.mockResolvedValueOnce({
             neighbors: [
-                {ieeeAddr: bulb_color.ieeeAddr, networkAddress: bulb_color.networkAddress, relationship: 1, depth: 2, linkquality: 110},
-                {ieeeAddr: CC2530_ROUTER.ieeeAddr, networkAddress: CC2530_ROUTER.networkAddress, relationship: 1, depth: 2, linkquality: 100},
+                {
+                    ieeeAddr: devices.bulb_color.ieeeAddr,
+                    networkAddress: devices.bulb_color.networkAddress,
+                    relationship: 1,
+                    depth: 2,
+                    linkquality: 110,
+                },
+                {
+                    ieeeAddr: devices.CC2530_ROUTER.ieeeAddr,
+                    networkAddress: devices.CC2530_ROUTER.networkAddress,
+                    relationship: 1,
+                    depth: 2,
+                    linkquality: 100,
+                },
             ],
         });
-        bulb.routingTable = jest.fn().mockResolvedValue({table: []});
-        bulb_color.lqi = jest.fn().mockResolvedValue({neighbors: []});
-        bulb_color.routingTable = jest.fn().mockResolvedValue({table: []});
-        CC2530_ROUTER.lqi = jest.fn().mockResolvedValue({
+        devices.CC2530_ROUTER.lqi.mockResolvedValueOnce({
             neighbors: [
-                {ieeeAddr: '0x0000000000000000', networkAddress: WXKG02LM_rev1.networkAddress, relationship: 1, depth: 2, linkquality: 130},
-                {ieeeAddr: bulb_color.ieeeAddr, networkAddress: bulb_color.networkAddress, relationship: 4, depth: 2, linkquality: 130},
+                {ieeeAddr: '0x0000000000000000', networkAddress: devices.WXKG02LM_rev1.networkAddress, relationship: 1, depth: 2, linkquality: 130},
+                {
+                    ieeeAddr: devices.bulb_color.ieeeAddr,
+                    networkAddress: devices.bulb_color.networkAddress,
+                    relationship: 4,
+                    depth: 2,
+                    linkquality: 130,
+                },
             ],
         });
-        CC2530_ROUTER.routingTable = jest.fn().mockResolvedValue({table: []});
-        unsupported_router.lqi = jest.fn().mockRejectedValue(new Error('failed'));
-        unsupported_router.routingTable = jest.fn().mockRejectedValue(new Error('failed'));
-    }
+        devices.unsupported_router.lqi.mockRejectedValueOnce('failed').mockRejectedValueOnce('failed');
+        devices.unsupported_router.routingTable.mockRejectedValueOnce('failed').mockRejectedValueOnce('failed');
+    };
+
+    beforeAll(async () => {
+        jest.useFakeTimers();
+        mockSleep.mock();
+        jest.spyOn(Date, 'now').mockReturnValue(10000);
+        data.writeDefaultConfiguration();
+        settings.reRead();
+        data.writeEmptyState();
+        fs.copyFileSync(path.join(__dirname, '..', 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
+        settings.set(['external_converters'], ['mock-external-converter.js']);
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+    });
+
+    beforeEach(async () => {
+        mocksClear.forEach((m) => m.mockClear());
+        await flushPromises();
+        const device = devices.bulb_color;
+        device.lastSeen = 1000;
+        devices.external_converter_device.lastSeen = 1000;
+    });
+
+    afterEach(async () => {});
+
+    afterAll(async () => {
+        mockSleep.restore();
+        jest.useRealTimers();
+    });
 
     it('Output raw networkmap', async () => {
         mock();
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -196,7 +216,7 @@ describe('Networkmap', () => {
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',
                             lastSeen: 1000,
-                            modelID: null,
+                            // modelID: null,
                             networkAddress: 0,
                             type: 'Coordinator',
                         },
@@ -291,23 +311,22 @@ describe('Networkmap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(call[1]);
+        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 
     it('Output graphviz networkmap', async () => {
         mock();
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.lastSeen = null;
+        const device = devices.bulb_color;
+        device.lastSeen = undefined;
         const endpoint = device.getEndpoint(1);
         const data = {modelID: 'test'};
         const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'graphviz', routes: true}));
+        await mockZHEvents.message(payload);
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'graphviz', routes: true}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = `digraph G {
             node[shape=record];
@@ -327,7 +346,7 @@ describe('Networkmap', () => {
             }`;
 
         const expectedLines = expected.split('\n');
-        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+        const actualLines = JSON.parse(mockMQTT.publish.mock.calls[0][1]).data.value.split('\n');
 
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
@@ -336,17 +355,16 @@ describe('Networkmap', () => {
 
     it('Output plantuml networkmap', async () => {
         mock();
-        const device = zigbeeHerdsman.devices.bulb_color;
-        device.lastSeen = null;
+        const device = devices.bulb_color;
+        device.lastSeen = undefined;
         const endpoint = device.getEndpoint(1);
         const data = {modelID: 'test'};
         const payload = {data, cluster: 'genOnOff', device, endpoint, type: 'readResponse', linkquality: 10};
-        await zigbeeHerdsman.events.message(payload);
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'plantuml', routes: true}));
+        await mockZHEvents.message(payload);
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'plantuml', routes: true}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = `' paste into: https://www.planttext.com/
 
@@ -429,7 +447,7 @@ describe('Networkmap', () => {
         @enduml`;
 
         const expectedLines = expected.split('\n');
-        const actualLines = JSON.parse(call[1]).data.value.split('\n');
+        const actualLines = JSON.parse(mockMQTT.publish.mock.calls[0][1]).data.value.split('\n');
 
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
@@ -438,10 +456,11 @@ describe('Networkmap', () => {
 
     it('Should throw error when requesting invalid type', async () => {
         mock();
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');
+        mockMQTT.publish.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/networkmap',
             stringify({data: {}, status: 'error', error: "Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
             {retain: false, qos: 0},
@@ -452,12 +471,11 @@ describe('Networkmap', () => {
     it('Should exclude disabled devices from networkmap', async () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
+        mockMQTT.publish.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -516,12 +534,10 @@ describe('Networkmap', () => {
                     ],
                     nodes: [
                         {
-                            // definition: null,
                             failed: [],
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',
                             lastSeen: 1000,
-                            modelID: null,
                             networkAddress: 0,
                             type: 'Coordinator',
                         },
@@ -600,20 +616,19 @@ describe('Networkmap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(call[1]);
+        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 
     it('Handles retrying request when first attempt fails', async () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
-        bulb.lqi.mockRejectedValueOnce(new Error('failed'));
-        MQTT.publish.mockClear();
-        MQTT.events.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
+        devices.bulb.lqi.mockRejectedValueOnce('failed');
+        mockMQTT.publish.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(MQTT.publish).toHaveBeenCalledTimes(1);
-        let call = MQTT.publish.mock.calls[0];
-        expect(call[0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -672,12 +687,10 @@ describe('Networkmap', () => {
                     ],
                     nodes: [
                         {
-                            // definition: null,
                             failed: [],
                             friendlyName: 'Coordinator',
                             ieeeAddr: '0x00124b00120144ae',
                             lastSeen: 1000,
-                            modelID: null,
                             networkAddress: 0,
                             type: 'Coordinator',
                         },
@@ -756,7 +769,7 @@ describe('Networkmap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(call[1]);
+        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 });

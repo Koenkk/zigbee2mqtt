@@ -366,5 +366,3 @@ export class Controller {
         }
     }
 }
-
-module.exports = Controller;
