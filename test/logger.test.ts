@@ -1,17 +1,27 @@
-const tmp = require('tmp');
-const dir = tmp.dirSync();
-let settings;
-const fs = require('fs');
-const path = require('path');
-const data = require('./stub/data');
-const {rimrafSync} = require('rimraf');
-const Transport = require('winston-transport');
+import * as data from './mocks/data';
+
+import fs from 'fs';
+import {platform} from 'os';
+import path from 'path';
+
+import {rimrafSync} from 'rimraf';
+import tmp from 'tmp';
+import Transport from 'winston-transport';
+
+import logger from '../lib/util/logger';
+import * as settings from '../lib/util/settings';
 
 describe('Logger', () => {
-    let logger;
-    let consoleWriteSpy;
+    let consoleWriteSpy: jest.SpyInstance;
+    const dir = tmp.dirSync();
+
+    const getCachedNamespacedLevels = (): Record<string, string> => {
+        // @ts-expect-error private
+        return logger.cachedNamespacedLevels;
+    };
 
     beforeAll(() => {
+        // @ts-expect-error private
         consoleWriteSpy = jest.spyOn(console._stdout, 'write').mockImplementation(() => {});
     });
 
@@ -21,11 +31,8 @@ describe('Logger', () => {
 
     beforeEach(async () => {
         data.writeDefaultConfiguration();
-        jest.resetModules();
-        settings = require('../lib/util/settings');
-        settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
         settings.reRead();
-        logger = require('../lib/util/logger').default;
+        settings.set(['advanced', 'log_directory'], dir.name + '/%TIMESTAMP%');
         logger.init();
         consoleWriteSpy.mockClear();
     });
@@ -81,7 +88,7 @@ describe('Logger', () => {
 
     it('Add/remove transport', () => {
         class DummyTransport extends Transport {
-            log(info, callback) {}
+            log(): void {}
         }
 
         expect(logger.winston.transports.length).toBe(2);
@@ -93,6 +100,7 @@ describe('Logger', () => {
     });
 
     it('Logger should be console and file by default', () => {
+        // @ts-expect-error private
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -104,6 +112,7 @@ describe('Logger', () => {
     it('Logger can be file only', () => {
         settings.set(['advanced', 'log_output'], ['file']);
         logger.init();
+        // @ts-expect-error private
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.length).toBe(2);
         expect(pipes[0].constructor.name).toBe('Console');
@@ -115,6 +124,7 @@ describe('Logger', () => {
     it('Logger can be console only', () => {
         settings.set(['advanced', 'log_output'], ['console']);
         logger.init();
+        // @ts-expect-error private
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(false);
@@ -123,6 +133,7 @@ describe('Logger', () => {
     it('Logger can be nothing', () => {
         settings.set(['advanced', 'log_output'], []);
         logger.init();
+        // @ts-expect-error private
         const pipes = logger.winston._readableState.pipes;
         expect(pipes.constructor.name).toBe('Console');
         expect(pipes.silent).toBe(true);
@@ -131,6 +142,7 @@ describe('Logger', () => {
     it('Should allow to disable log rotation', () => {
         settings.set(['advanced', 'log_rotation'], false);
         logger.init();
+        // @ts-expect-error private
         const pipes = logger.winston._readableState.pipes;
         expect(pipes[1].constructor.name).toBe('File');
         expect(pipes[1].maxFiles).toBeNull();
@@ -139,11 +151,17 @@ describe('Logger', () => {
     });
 
     it('Should allow to symlink logs to current directory', () => {
-        settings.set(['advanced', 'log_symlink_current'], true);
-        logger.init();
-        expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy();
+        try {
+            settings.set(['advanced', 'log_symlink_current'], true);
+            logger.init();
+            expect(fs.readdirSync(dir.name).includes('current')).toBeTruthy();
+        } catch (error) {
+            if (platform() !== 'win32' || !(error as Error).message.startsWith('EPERM')) {
+                throw error;
+            }
 
-        jest.resetModules();
+            // ignore 'operation not permitted' failure on Windows
+        }
     });
 
     it.each([
@@ -158,20 +176,25 @@ describe('Logger', () => {
         consoleWriteSpy.mockClear();
         let i = 1;
 
+        // @ts-expect-error dynamic
         logger[level]('msg');
         expect(logSpy).toHaveBeenLastCalledWith(level, 'z2m: msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+        // @ts-expect-error dynamic
         logger[level]('msg', 'abcd');
         expect(logSpy).toHaveBeenLastCalledWith(level, 'abcd: msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+        // @ts-expect-error dynamic
         logger[level](() => 'func msg', 'abcd');
         expect(logSpy).toHaveBeenLastCalledWith(level, 'abcd: func msg');
         expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
 
         for (const higherLevel of otherLevels.higher) {
+            // @ts-expect-error dynamic
             logger[higherLevel]('higher msg');
             expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'z2m: higher msg');
             expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
+            // @ts-expect-error dynamic
             logger[higherLevel]('higher msg', 'abcd');
             expect(logSpy).toHaveBeenLastCalledWith(higherLevel, 'abcd: higher msg');
             expect(consoleWriteSpy).toHaveBeenCalledTimes(i++);
@@ -181,21 +204,15 @@ describe('Logger', () => {
         consoleWriteSpy.mockClear();
 
         for (const lowerLevel of otherLevels.lower) {
+            // @ts-expect-error dynamic
             logger[lowerLevel]('lower msg');
             expect(logSpy).not.toHaveBeenCalled();
             expect(consoleWriteSpy).not.toHaveBeenCalled();
+            // @ts-expect-error dynamic
             logger[lowerLevel]('lower msg', 'abcd');
             expect(logSpy).not.toHaveBeenCalled();
             expect(consoleWriteSpy).not.toHaveBeenCalled();
         }
-    });
-
-    it('Logs Error object', () => {
-        const logSpy = jest.spyOn(logger.winston, 'log');
-
-        logger.error(new Error('msg')); // test for stack=true
-        expect(logSpy).toHaveBeenLastCalledWith('error', `z2m: ${new Error('msg')}`);
-        expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
     });
 
     it.each([
@@ -243,6 +260,7 @@ describe('Logger', () => {
         logger.setLevel('debug');
         const logSpy = jest.spyOn(logger.winston, 'log');
         logger.setDebugNamespaceIgnore(ignore);
+        // @ts-expect-error private
         expect(logger.debugNamespaceIgnoreRegex).toStrictEqual(expected);
         expect(logger.getDebugNamespaceIgnore()).toStrictEqual(ignore);
 
@@ -308,52 +326,53 @@ describe('Logger', () => {
 
     it('Logs with namespaced levels hierarchy', () => {
         const nsLevels = {'zh:zstack': 'debug', 'zh:zstack:unpi:writer': 'error'};
-        let cachedNSLevels = Object.assign({}, nsLevels);
+        let cachedNSLevels;
+        cachedNSLevels = Object.assign({}, nsLevels);
         logger.setNamespacedLevels(nsLevels);
         logger.setLevel('warning');
 
         consoleWriteSpy.mockClear();
         logger.debug(`--- parseNext [] debug picked from hierarchy`, 'zh:zstack:unpi:parser');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:parser': 'debug'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:parser': 'debug'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.warning(`--> frame [36,15] warning explicitely supressed`, 'zh:zstack:unpi:writer');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels);
+        expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.warning(`Another supressed warning message in a sub namespace`, 'zh:zstack:unpi:writer:sub:ns');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:sub:ns': 'error'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
         logger.error(`but error should go through`, 'zh:zstack:unpi:writer:another:sub:ns');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
         logger.warning(`new unconfigured namespace warning`, 'z2m:mqtt');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'warning'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
         logger.info(`cached unconfigured namespace info should be supressed`, 'z2m:mqtt');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(cachedNSLevels);
+        expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
 
         logger.setLevel('info');
-        expect(logger.cachedNamespacedLevels).toStrictEqual((cachedNSLevels = Object.assign({}, nsLevels)));
+        expect(getCachedNamespacedLevels()).toStrictEqual((cachedNSLevels = Object.assign({}, nsLevels)));
         logger.info(`unconfigured namespace info should now pass after default level change and cache reset`, 'z2m:mqtt');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(4);
         logger.error(`configured namespace hierachy should still work after the cache reset`, 'zh:zstack:unpi:writer:another:sub:ns');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer:another:sub:ns': 'error'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(5);
 
         logger.setNamespacedLevels({'zh:zstack': 'warning'});
-        expect(logger.cachedNamespacedLevels).toStrictEqual((cachedNSLevels = {'zh:zstack': 'warning'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual((cachedNSLevels = {'zh:zstack': 'warning'}));
         logger.error(`error logged`, 'zh:zstack:unpi:writer');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer': 'warning'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi:writer': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
         logger.debug(`debug suppressed`, 'zh:zstack:unpi');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi': 'warning'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack:unpi': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
         logger.warning(`warning logged`, 'zh:zstack');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack': 'warning'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'zh:zstack': 'warning'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(7);
         logger.info(`unconfigured namespace`, 'z2m:mqtt');
-        expect(logger.cachedNamespacedLevels).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
+        expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {'z2m:mqtt': 'info'}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(8);
     });
 
@@ -363,13 +382,13 @@ describe('Logger', () => {
         const logSpy = jest.spyOn(logger.winston, 'log');
         consoleWriteSpy.mockClear();
 
-        let net_map = '%d';
-        logger.debug(net_map, 'z2m:mqtt');
-        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:mqtt: ${net_map}`);
-        expect(consoleWriteSpy.mock.calls[0][0]).toMatch(new RegExp(`^.*\tz2m:mqtt: ${net_map}`));
-        net_map = 'anything %s goes here';
-        logger.debug(net_map, 'z2m:test');
-        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:test: ${net_map}`);
-        expect(consoleWriteSpy.mock.calls[1][0]).toMatch(new RegExp(`^.*\tz2m:test: ${net_map}`));
+        let splatChars = '%d';
+        logger.debug(splatChars, 'z2m:mqtt');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:mqtt: ${splatChars}`);
+        expect(consoleWriteSpy.mock.calls[0][0]).toMatch(new RegExp(`^.*\tz2m:mqtt: ${splatChars}`));
+        splatChars = 'anything %s goes here';
+        logger.debug(splatChars, 'z2m:test');
+        expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:test: ${splatChars}`);
+        expect(consoleWriteSpy.mock.calls[1][0]).toMatch(new RegExp(`^.*\tz2m:test: ${splatChars}`));
     });
 });

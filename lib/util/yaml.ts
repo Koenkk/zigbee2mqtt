@@ -1,3 +1,4 @@
+import assert from 'assert';
 import fs from 'fs';
 
 import equals from 'fast-deep-equal/es6';
@@ -20,7 +21,8 @@ export class YAMLFileException extends YAMLException {
 function read(file: string): KeyValue {
     try {
         const result = yaml.load(fs.readFileSync(file, 'utf8'));
-        return (result as KeyValue) ?? {};
+        assert(result instanceof Object);
+        return result as KeyValue;
     } catch (error) {
         if (error instanceof YAMLException) {
             throw new YAMLFileException(error, file);
