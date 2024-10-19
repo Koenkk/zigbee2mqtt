@@ -357,7 +357,7 @@ describe('Frontend', () => {
         expect(mockWS.implementation.emit).toHaveBeenCalledWith('connection', mockWSocket, {url});
     });
 
-    it.each(['z2m', 'z2m/', '/z2m'])('Works with non-default base url %s', async (baseUrl) => {
+    it.each(['/z2m/', '/z2m'])('Works with non-default base url %s', async (baseUrl) => {
         settings.set(['frontend'], {base_url: baseUrl});
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -374,6 +374,36 @@ describe('Frontend', () => {
         mockHTTP.variables.onRequest({url: '/z2m/file.txt'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
         expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m/file.txt', url: '/file.txt'}, 2, expect.any(Function));
+        expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
+
+        mockNodeStatic.implementation.mockReset();
+        mockHTTP.variables.onRequest({url: '/z/file.txt'}, 2);
+        expect(mockNodeStatic.implementation).not.toHaveBeenCalled();
+        expect(mockFinalHandler.implementation).toHaveBeenCalled();
+    });
+
+    it('Works with non-default complex base url', async () => {
+        const baseUrl = '/z2m-more++/c0mplex.url/';
+        settings.set(['frontend'], {base_url: baseUrl});
+        controller = new Controller(jest.fn(), jest.fn());
+        await controller.start();
+
+        expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: '/z2m-more++/c0mplex.url/api'});
+
+        mockHTTP.variables.onRequest({url: '/z2m-more++/c0mplex.url'}, 2);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m-more++/c0mplex.url', url: '/'}, 2, expect.any(Function));
+        expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
+
+        mockNodeStatic.implementation.mockReset();
+        expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
+        mockHTTP.variables.onRequest({url: '/z2m-more++/c0mplex.url/file.txt'}, 2);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(
+            {originalUrl: '/z2m-more++/c0mplex.url/file.txt', url: '/file.txt'},
+            2,
+            expect.any(Function),
+        );
         expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
 
         mockNodeStatic.implementation.mockReset();
