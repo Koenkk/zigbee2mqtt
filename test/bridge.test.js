@@ -239,7 +239,6 @@ describe('Bridge', () => {
             stringify([
                 {
                     date_code: null,
-                    // definition: null,
                     disabled: false,
                     endpoints: {1: {bindings: [], clusters: {input: [], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'Coordinator',
@@ -368,8 +367,7 @@ describe('Bridge', () => {
                             {
                                 access: 7,
                                 category: 'config',
-                                description:
-                                    'Controls the behavior when the device is powered on after power loss. If you get an `UNSUPPORTED_ATTRIBUTE` error, the device does not support it.',
+                                description: 'Controls the behavior when the device is powered on after power loss',
                                 label: 'Power-on behavior',
                                 name: 'power_on_behavior',
                                 property: 'power_on_behavior',
@@ -595,8 +593,7 @@ describe('Bridge', () => {
                             {
                                 access: 7,
                                 category: 'config',
-                                description:
-                                    'Controls the behavior when the device is powered on after power loss. If you get an `UNSUPPORTED_ATTRIBUTE` error, the device does not support it.',
+                                description: 'Controls the behavior when the device is powered on after power loss',
                                 label: 'Power-on behavior',
                                 name: 'power_on_behavior',
                                 property: 'power_on_behavior',
@@ -1963,8 +1960,7 @@ describe('Bridge', () => {
                             {
                                 access: 7,
                                 category: 'config',
-                                description:
-                                    'Controls the behavior when the device is powered on after power loss. If you get an `UNSUPPORTED_ATTRIBUTE` error, the device does not support it.',
+                                description: 'Controls the behavior when the device is powered on after power loss',
                                 label: 'Power-on behavior',
                                 name: 'power_on_behavior',
                                 property: 'power_on_behavior',
@@ -2373,8 +2369,7 @@ describe('Bridge', () => {
                             {
                                 access: 7,
                                 category: 'config',
-                                description:
-                                    'Controls the behavior when the device is powered on after power loss. If you get an `UNSUPPORTED_ATTRIBUTE` error, the device does not support it.',
+                                description: 'Controls the behavior when the device is powered on after power loss',
                                 label: 'Power-on behavior',
                                 name: 'power_on_behavior',
                                 property: 'power_on_behavior',
