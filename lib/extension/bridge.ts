@@ -225,10 +225,6 @@ export default class Bridge extends Extension {
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
-        if (newSettings.permit_join != undefined) {
-            await this.zigbee.permitJoin(settings.get().permit_join);
-        }
-
         if (newSettings.homeassistant != undefined) {
             await this.enableDisableExtension(!!settings.get().homeassistant, 'HomeAssistant');
         }
@@ -323,17 +319,15 @@ export default class Bridge extends Extension {
     }
 
     @bind async permitJoin(message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message === 'object' && message.value === undefined) {
-            throw new Error('Invalid payload');
-        }
-
-        let value: boolean | string;
         let time: number | undefined;
         let device: Device | undefined;
 
         if (typeof message === 'object') {
-            value = message.value;
-            time = message.time;
+            if (message.time === undefined) {
+                throw new Error('Invalid payload');
+            }
+
+            time = Number.parseInt(message.time, 10);
 
             if (message.device) {
                 const resolved = this.zigbee.resolveEntity(message.device);
@@ -345,25 +339,15 @@ export default class Bridge extends Extension {
                 }
             }
         } else {
-            value = message;
+            time = Number.parseInt(message, 10);
         }
 
-        if (typeof value === 'string') {
-            value = value.toLowerCase() === 'true';
-        }
+        await this.zigbee.permitJoin(time, device);
 
-        await this.zigbee.permitJoin(value, device, time);
+        const response: {time: number; device?: string} = {time};
 
-        const response: {value: boolean; device?: string; time?: number} = {value};
-
-        if (typeof message === 'object') {
-            if (device) {
-                response.device = message.device;
-            }
-
-            if (time != undefined) {
-                response.time = message.time;
-            }
+        if (device) {
+            response.device = device.name;
         }
 
         return utils.getResponse(message, response);
@@ -679,7 +663,6 @@ export default class Bridge extends Extension {
             },
             network: utils.toSnakeCaseObject(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
-            permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
             restart_required: this.restartRequired,
             config,

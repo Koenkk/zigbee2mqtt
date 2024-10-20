@@ -1,40 +1,43 @@
-const events = {};
-const assert = require('assert');
+import assert from 'assert';
 
-function getKeyByValue(object, value, fallback) {
-    const key = Object.keys(object).find((k) => object[k] === value);
-    return key != null ? key : fallback;
-}
+import {Zcl} from 'zigbee-herdsman';
+import {CoordinatorVersion, DeviceType, NetworkParameters, StartResult} from 'zigbee-herdsman/dist/adapter/tstype';
 
-class Group {
-    constructor(groupID, members) {
-        this.groupID = groupID;
-        this.command = jest.fn();
-        this.meta = {};
-        this.members = members;
-        this.removeFromDatabase = jest.fn();
-        this.removeFromNetwork = jest.fn();
-        this.hasMember = (endpoint) => this.members.includes(endpoint);
-    }
-}
+import {EventHandler, JestMockAny} from './utils';
 
-const clusters = {
-    genBasic: 0,
-    genOta: 25,
-    genScenes: 5,
-    genOnOff: 6,
-    genLevelCtrl: 8,
-    lightingColorCtrl: 768,
-    closuresWindowCovering: 258,
-    hvacThermostat: 513,
-    msIlluminanceMeasurement: 1024,
-    msTemperatureMeasurement: 1026,
-    msRelativeHumidity: 1029,
-    msSoilMoisture: 1032,
-    msCO2: 1037,
+type ZHConfiguredReporting = {
+    cluster: {name: string};
+    attribute: {name: string | undefined; ID?: number};
+    minimumReportInterval: number;
+    maximumReportInterval: number;
+    reportableChange: number;
+};
+type ZHEndpointCluster = {
+    ID?: number;
+    name: string;
+};
+type ZHBind = {
+    target: Endpoint | Group;
+    cluster: ZHEndpointCluster;
 };
 
-const custom_clusters = {
+const CLUSTERS = {
+    genBasic: Zcl.Clusters.genBasic.ID,
+    genOta: Zcl.Clusters.genOta.ID,
+    genScenes: Zcl.Clusters.genScenes.ID,
+    genOnOff: Zcl.Clusters.genOnOff.ID,
+    genLevelCtrl: Zcl.Clusters.genLevelCtrl.ID,
+    lightingColorCtrl: Zcl.Clusters.lightingColorCtrl.ID,
+    closuresWindowCovering: Zcl.Clusters.closuresWindowCovering.ID,
+    hvacThermostat: Zcl.Clusters.hvacThermostat.ID,
+    msIlluminanceMeasurement: Zcl.Clusters.msIlluminanceMeasurement.ID,
+    msTemperatureMeasurement: Zcl.Clusters.msTemperatureMeasurement.ID,
+    msRelativeHumidity: Zcl.Clusters.msRelativeHumidity.ID,
+    msSoilMoisture: Zcl.Clusters.msSoilMoisture.ID,
+    msCO2: Zcl.Clusters.msCO2.ID,
+};
+
+export const CUSTOM_CLUSTERS = {
     custom_1: {
         ID: 64672,
         manufacturerCode: 4617,
@@ -48,7 +51,7 @@ const custom_clusters = {
     },
 };
 
-const customClusterBTHRA = {
+const CUSTOM_CLUSTER_BTHRA = {
     custom_1: {
         ID: 513,
         attributes: {
@@ -75,18 +78,50 @@ const customClusterBTHRA = {
     },
 };
 
-class Endpoint {
+function getClusterKey(value: unknown): string | undefined {
+    for (const key in CLUSTERS) {
+        if (CLUSTERS[key as keyof typeof CLUSTERS] === value) {
+            return key;
+        }
+    }
+
+    return undefined;
+}
+
+export class Endpoint {
+    deviceIeeeAddress: string;
+    clusterValues: Record<string, Record<string, unknown>>;
+    ID: number;
+    inputClusters: number[];
+    outputClusters: number[];
+    command: JestMockAny;
+    commandResponse: JestMockAny;
+    read: JestMockAny;
+    write: JestMockAny;
+    bind: JestMockAny;
+    unbind: JestMockAny;
+    save: JestMockAny;
+    configureReporting: JestMockAny;
+    meta: Record<string, unknown>;
+    binds: ZHBind[];
+    profileID: number | undefined;
+    deviceID: number | undefined;
+    configuredReportings: ZHConfiguredReporting[];
+    addToGroup: JestMockAny;
+    removeFromGroup: JestMockAny;
+    getClusterAttributeValue: JestMockAny;
+
     constructor(
-        ID,
-        inputClusters,
-        outputClusters,
-        deviceIeeeAddress,
-        binds = [],
-        clusterValues = {},
-        configuredReportings = [],
-        profileID = null,
-        deviceID = null,
-        meta = {},
+        ID: number,
+        inputClusters: number[],
+        outputClusters: number[],
+        deviceIeeeAddress: string,
+        binds: ZHBind[] = [],
+        clusterValues: Record<string, Record<string, unknown>> = {},
+        configuredReportings: ZHConfiguredReporting[] = [],
+        profileID: number | undefined = undefined,
+        deviceID: number | undefined = undefined,
+        meta: Record<string, unknown> = {},
     ) {
         this.deviceIeeeAddress = deviceIeeeAddress;
         this.clusterValues = clusterValues;
@@ -106,70 +141,111 @@ class Endpoint {
         this.profileID = profileID;
         this.deviceID = deviceID;
         this.configuredReportings = configuredReportings;
-        this.getInputClusters = () =>
-            inputClusters
-                .map((c) => {
-                    return {ID: c, name: getKeyByValue(clusters, c)};
-                })
-                .filter((c) => c.name);
 
-        this.getOutputClusters = () =>
-            outputClusters
-                .map((c) => {
-                    return {ID: c, name: getKeyByValue(clusters, c)};
-                })
-                .filter((c) => c.name);
-
-        this.supportsInputCluster = (cluster) => {
-            assert(clusters[cluster] !== undefined, `Undefined '${cluster}'`);
-            return this.inputClusters.includes(clusters[cluster]);
-        };
-
-        this.supportsOutputCluster = (cluster) => {
-            assert(clusters[cluster], `Undefined '${cluster}'`);
-            return this.outputClusters.includes(clusters[cluster]);
-        };
-
-        this.addToGroup = jest.fn();
-        this.addToGroup.mockImplementation((group) => {
-            if (!group.members.includes(this)) group.members.push(this);
+        this.addToGroup = jest.fn((group: Group) => {
+            if (!group.members.includes(this)) {
+                group.members.push(this);
+            }
+        });
+        this.removeFromGroup = jest.fn((group: Group) => {
+            const index = group.members.indexOf(this);
+            if (index != -1) {
+                group.members.splice(index, 1);
+            }
         });
 
-        this.getDevice = () => {
-            return Object.values(devices).find((d) => d.ieeeAddr === deviceIeeeAddress);
-        };
+        this.getClusterAttributeValue = jest.fn((cluster: string, value: string) =>
+            !(cluster in this.clusterValues) ? undefined : this.clusterValues[cluster][value],
+        );
+    }
 
-        this.removeFromGroup = jest.fn();
-        this.removeFromGroup.mockImplementation((group) => {
-            group.members = group.members.filter((e) => e !== this);
-        });
+    getInputClusters(): ZHEndpointCluster[] {
+        const clusters: ZHEndpointCluster[] = [];
 
-        this.removeFromAllGroups = () => {
-            Object.values(groups).forEach((g) => this.removeFromGroup(g));
-        };
+        for (const clusterId of this.inputClusters) {
+            const name = getClusterKey(clusterId);
 
-        this.getClusterAttributeValue = jest.fn();
-        this.getClusterAttributeValue.mockImplementation((cluster, value) => {
-            if (!(cluster in this.clusterValues)) return undefined;
-            return this.clusterValues[cluster][value];
-        });
+            if (name) {
+                clusters.push({ID: clusterId, name});
+            }
+        }
+
+        return clusters;
+    }
+
+    getOutputClusters(): ZHEndpointCluster[] {
+        const clusters: ZHEndpointCluster[] = [];
+
+        for (const clusterId of this.outputClusters) {
+            const name = getClusterKey(clusterId);
+
+            if (name) {
+                clusters.push({ID: clusterId, name});
+            }
+        }
+
+        return clusters;
+    }
+
+    supportsInputCluster(cluster: keyof typeof CLUSTERS): boolean {
+        assert(CLUSTERS[cluster] !== undefined, `Undefined '${cluster}'`);
+        return this.inputClusters.includes(CLUSTERS[cluster]);
+    }
+
+    supportsOutputCluster(cluster: keyof typeof CLUSTERS): boolean {
+        assert(CLUSTERS[cluster], `Undefined '${cluster}'`);
+        return this.outputClusters.includes(CLUSTERS[cluster]);
+    }
+
+    getDevice(): Device | undefined {
+        return Object.values(devices).find((d) => d.ieeeAddr === this.deviceIeeeAddress);
+    }
+
+    removeFromAllGroups(): void {
+        Object.values(groups).forEach((g) => this.removeFromGroup(g));
     }
 }
 
-class Device {
+export class Device {
+    type: string;
+    ieeeAddr: string;
+    dateCode: string | undefined;
+    networkAddress: number;
+    manufacturerID: number;
+    endpoints: Endpoint[];
+    powerSource: string | undefined;
+    softwareBuildID: string | undefined;
+    interviewCompleted: boolean;
+    modelID: string | undefined;
+    interview: JestMockAny;
+    interviewing: boolean;
+    meta: Record<string, unknown>;
+    ping: JestMockAny;
+    removeFromNetwork: JestMockAny;
+    removeFromDatabase: JestMockAny;
+    customClusters: Record<string, unknown>;
+    addCustomCluster: JestMockAny;
+    save: JestMockAny;
+    manufacturerName: string | undefined;
+    lastSeen: number | undefined;
+    isDeleted: boolean;
+    linkquality?: number;
+    lqi: JestMockAny;
+    routingTable: JestMockAny;
+
     constructor(
-        type,
-        ieeeAddr,
-        networkAddress,
-        manufacturerID,
-        endpoints,
-        interviewCompleted,
-        powerSource = null,
-        modelID = null,
-        interviewing = false,
-        manufacturerName,
-        dateCode = null,
-        softwareBuildID = null,
+        type: string,
+        ieeeAddr: string,
+        networkAddress: number,
+        manufacturerID: number,
+        endpoints: Endpoint[],
+        interviewCompleted: boolean,
+        powerSource: string | undefined = undefined,
+        modelID: string | undefined = undefined,
+        interviewing: boolean = false,
+        manufacturerName: string | undefined = undefined,
+        dateCode: string | undefined = undefined,
+        softwareBuildID: string | undefined = undefined,
         customClusters = {},
     ) {
         this.type = type;
@@ -193,14 +269,40 @@ class Device {
         this.save = jest.fn();
         this.manufacturerName = manufacturerName;
         this.lastSeen = 1000;
+        this.isDeleted = false;
+        this.lqi = jest.fn(() => ({neighbors: []}));
+        this.routingTable = jest.fn(() => ({table: []}));
     }
 
-    getEndpoint(ID) {
+    getEndpoint(ID: number): Endpoint | undefined {
         return this.endpoints.find((e) => e.ID === ID);
     }
 }
 
-const returnDevices = [];
+export class Group {
+    groupID: number;
+    command: JestMockAny;
+    meta: Record<string, unknown>;
+    members: Endpoint[];
+    removeFromDatabase: JestMockAny;
+    removeFromNetwork: JestMockAny;
+
+    constructor(groupID: number, members: Endpoint[]) {
+        this.groupID = groupID;
+        this.command = jest.fn();
+        this.meta = {};
+        this.members = members;
+        this.removeFromDatabase = jest.fn();
+        this.removeFromNetwork = jest.fn();
+    }
+
+    hasMember(endpoint: Endpoint): boolean {
+        return this.members.includes(endpoint);
+    }
+}
+
+export const events: Record<string, EventHandler> = {};
+export const returnDevices: string[] = [];
 
 const bulb_color = new Device(
     'Router',
@@ -230,8 +332,8 @@ const bulb_color_2 = new Device(
             [],
             {lightingColorCtrl: {colorCapabilities: 254}},
             [],
-            null,
-            null,
+            undefined,
+            undefined,
             {scenes: {'1_0': {name: 'Chill scene', state: {state: 'ON'}}, '4_9': {state: {state: 'OFF'}}}},
         ),
     ],
@@ -347,7 +449,7 @@ const zigfred_plus = new Device(
     'Siglis',
 );
 
-const groups = {
+export const groups = {
     group_1: new Group(1, []),
     group_2: new Group(2, []),
     group_tradfri_remote: new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
@@ -362,13 +464,13 @@ const groups = {
 
 const groupMembersBackup = Object.fromEntries(Object.entries(groups).map((v) => [v[0], [...v[1].members]]));
 
-function resetGroupMembers() {
+export function resetGroupMembers(): void {
     for (const key in groupMembersBackup) {
         groups[key].members = [...groupMembersBackup[key]];
     }
 }
 
-const devices = {
+export const devices = {
     coordinator: new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [], '0x00124b00120144ae')], false),
     bulb: new Device(
         'Router',
@@ -411,7 +513,7 @@ const devices = {
         'BOSCH',
         '20231122',
         '3.05.09',
-        customClusterBTHRA,
+        CUSTOM_CLUSTER_BTHRA,
     ),
     bulb_color: bulb_color,
     bulb_2: bulb_2,
@@ -429,7 +531,7 @@ const devices = {
                 {target: groups.group_1, cluster: {ID: 6, name: 'genOnOff'}},
                 {target: groups.group_1, cluster: {ID: 6, name: 'genLevelCtrl'}},
             ]),
-            new Endpoint(2, [0, 1, 3, 15, 64512], [25, 6]),
+            new Endpoint(2, [0, 1, 3, 15, 64512], [25, 6], '0x0017880104e45517'),
         ],
         true,
         'Battery',
@@ -440,7 +542,7 @@ const devices = {
         '0x0017880104e45518',
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45518')],
         true,
         'Battery',
         'notSupportedModelID',
@@ -452,7 +554,7 @@ const devices = {
         '0x0017880104e45529',
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45529')],
         true,
         'Battery',
         'notSupportedModelID',
@@ -462,7 +564,7 @@ const devices = {
         '0x0017880104e45530',
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45530')],
         true,
         'Battery',
         undefined,
@@ -473,7 +575,7 @@ const devices = {
         '0x0017880104e45519',
         6537,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45519')],
         true,
         'Battery',
         'lumi.sensor_switch.aq2',
@@ -503,23 +605,59 @@ const devices = {
         '0x0017880104e45521',
         6538,
         4151,
-        [new Endpoint(1, [0], []), new Endpoint(2, [0], [])],
+        [new Endpoint(1, [0], [], '0x0017880104e45521'), new Endpoint(2, [0], [], '0x0017880104e45521')],
         true,
         'Battery',
         'lumi.sensor_86sw2.es1',
     ),
-    WSDCGQ11LM: new Device('EndDevice', '0x0017880104e45522', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
+    WSDCGQ11LM: new Device(
+        'EndDevice',
+        '0x0017880104e45522',
+        6539,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45522')],
+        true,
+        'Battery',
+        'lumi.weather',
+    ),
     // This are not a real spammer device, just copy of previous to test the throttle filter
-    SPAMMER: new Device('EndDevice', '0x0017880104e455fe', 6539, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.weather'),
-    RTCGQ11LM: new Device('EndDevice', '0x0017880104e45523', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Battery', 'lumi.sensor_motion.aq2'),
+    SPAMMER: new Device(
+        'EndDevice',
+        '0x0017880104e455fe',
+        6539,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e455fe')],
+        true,
+        'Battery',
+        'lumi.weather',
+    ),
+    RTCGQ11LM: new Device(
+        'EndDevice',
+        '0x0017880104e45523',
+        6540,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45523')],
+        true,
+        'Battery',
+        'lumi.sensor_motion.aq2',
+    ),
     ZNCZ02LM: ZNCZ02LM,
-    E1743: new Device('Router', '0x0017880104e45540', 6540, 4476, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'TRADFRI on/off switch'),
+    E1743: new Device(
+        'Router',
+        '0x0017880104e45540',
+        6540,
+        4476,
+        [new Endpoint(1, [0], [], '0x0017880104e45540')],
+        true,
+        'Mains (single phase)',
+        'TRADFRI on/off switch',
+    ),
     QBKG04LM: new Device(
         'Router',
         '0x0017880104e45541',
         6549,
         4151,
-        [new Endpoint(1, [0], [25]), new Endpoint(2, [0, 6], [])],
+        [new Endpoint(1, [0], [25], '0x0017880104e45541'), new Endpoint(2, [0, 6], [], '0x0017880104e45541')],
         true,
         'Mains (single phase)',
         'lumi.ctrl_neutral1',
@@ -540,7 +678,11 @@ const devices = {
         '0x0017880104e45544',
         6540,
         4151,
-        [new Endpoint(11, [0], []), new Endpoint(13, [0], []), new Endpoint(12, [0], [])],
+        [
+            new Endpoint(11, [0], [], '0x0017880104e45544'),
+            new Endpoint(13, [0], [], '0x0017880104e45544'),
+            new Endpoint(12, [0], [], '0x0017880104e45544'),
+        ],
         true,
         'Mains (single phase)',
         'GL-C-008',
@@ -561,7 +703,7 @@ const devices = {
         '0x0017880104e45547',
         6540,
         4151,
-        [new Endpoint(1, [0], []), new Endpoint(2, [0], [])],
+        [new Endpoint(1, [0], [], '0x0017880104e45547'), new Endpoint(2, [0], [], '0x0017880104e45547')],
         true,
         'Mains (single phase)',
         'lumi.curtain',
@@ -571,22 +713,67 @@ const devices = {
         '0x0017880104e45548',
         6540,
         4151,
-        [new Endpoint(1, [0], []), new Endpoint(2, [0], [])],
+        [new Endpoint(1, [0], [], '0x0017880104e45548'), new Endpoint(2, [0], [], '0x0017880104e45548')],
         true,
         'Mains (single phase)',
         'HDC52EastwindFan',
     ),
-    HS2WD: new Device('Router', '0x0017880104e45549', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'WarningDevice'),
-    '1TST_EU': new Device('Router', '0x0017880104e45550', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'Thermostat'),
-    SV01: new Device('Router', '0x0017880104e45551', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'SV01-410-MP-1.0'),
-    J1: new Device('Router', '0x0017880104e45552', 6540, 4151, [new Endpoint(1, [0], [])], true, 'Mains (single phase)', 'J1 (5502)'),
-    E11_G13: new Device('EndDevice', '0x0017880104e45553', 6540, 4151, [new Endpoint(1, [0, 6], [])], true, 'Mains (single phase)', 'E11-G13'),
+    HS2WD: new Device(
+        'Router',
+        '0x0017880104e45549',
+        6540,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45549')],
+        true,
+        'Mains (single phase)',
+        'WarningDevice',
+    ),
+    '1TST_EU': new Device(
+        'Router',
+        '0x0017880104e45550',
+        6540,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45550')],
+        true,
+        'Mains (single phase)',
+        'Thermostat',
+    ),
+    SV01: new Device(
+        'Router',
+        '0x0017880104e45551',
+        6540,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45551')],
+        true,
+        'Mains (single phase)',
+        'SV01-410-MP-1.0',
+    ),
+    J1: new Device(
+        'Router',
+        '0x0017880104e45552',
+        6540,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e45552')],
+        true,
+        'Mains (single phase)',
+        'J1 (5502)',
+    ),
+    E11_G13: new Device(
+        'EndDevice',
+        '0x0017880104e45553',
+        6540,
+        4151,
+        [new Endpoint(1, [0, 6], [], '0x0017880104e45553')],
+        true,
+        'Mains (single phase)',
+        'E11-G13',
+    ),
     nomodel: new Device(
         'Router',
         '0x0017880104e45535',
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45535')],
         true,
         'Mains (single phase)',
         undefined,
@@ -597,15 +784,33 @@ const devices = {
         '0x0017880104e45525',
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5])],
+        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], '0x0017880104e45525')],
         true,
         'Mains (single phase)',
         'notSupportedModelID',
         false,
         'Boef',
     ),
-    CC2530_ROUTER: new Device('Router', '0x0017880104e45559', 6540, 4151, [new Endpoint(1, [0, 6], [])], true, 'Mains (single phase)', 'lumi.router'),
-    LIVOLO: new Device('Router', '0x0017880104e45560', 6541, 4152, [new Endpoint(6, [0, 6], [])], true, 'Mains (single phase)', 'TI0001          '),
+    CC2530_ROUTER: new Device(
+        'Router',
+        '0x0017880104e45559',
+        6540,
+        4151,
+        [new Endpoint(1, [0, 6], [], '0x0017880104e45559')],
+        true,
+        'Mains (single phase)',
+        'lumi.router',
+    ),
+    LIVOLO: new Device(
+        'Router',
+        '0x0017880104e45560',
+        6541,
+        4152,
+        [new Endpoint(6, [0, 6], [], '0x0017880104e45560')],
+        true,
+        'Mains (single phase)',
+        'TI0001          ',
+    ),
     tradfri_remote: new Device(
         'EndDevice',
         '0x90fd9ffffe4b64ae',
@@ -718,7 +923,7 @@ const devices = {
         false,
         'Centralite',
     ),
-    J1: new Device(
+    J1_cover: new Device(
         'Router',
         '0x0017880104a44559',
         6543,
@@ -735,10 +940,10 @@ const devices = {
         'EndDevice',
         '0x0017880104e45511',
         1114,
-        'external',
+        0xffff,
         [new Endpoint(1, [], [], '0x0017880104e45511')],
         false,
-        null,
+        undefined,
         'external_converter_device',
     ),
     QS_Zigbee_D02_TRIAC_2C_LN: new Device(
@@ -759,7 +964,7 @@ const devices = {
         '0x0017880104e45561',
         6544,
         4151,
-        [new Endpoint(1, [0, 3, 4, 1026], [])],
+        [new Endpoint(1, [0, 3, 4, 1026], [], '0x0017880104e45561')],
         true,
         'Battery',
         'temperature.sensor',
@@ -769,7 +974,7 @@ const devices = {
         '0x0017880104e45562',
         6545,
         4151,
-        [new Endpoint(1, [0, 3, 4, 513], [1026])],
+        [new Endpoint(1, [0, 3, 4, 513], [1026], '0x0017880104e45562')],
         true,
         'Mains (single phase)',
         'heating.actuator',
@@ -825,10 +1030,10 @@ const devices = {
         'Mains (single phase)',
         'RBSH-MMS-ZB-EU',
         false,
-        null,
-        null,
-        null,
-        custom_clusters,
+        undefined,
+        undefined,
+        undefined,
+        CUSTOM_CLUSTERS,
     ),
     bulb_custom_cluster: new Device(
         'Router',
@@ -840,91 +1045,75 @@ const devices = {
         'Mains (single phase)',
         'TRADFRI bulb E27 WS opal 980lm',
         false,
-        null,
-        null,
-        null,
-        custom_clusters,
+        undefined,
+        undefined,
+        undefined,
+        CUSTOM_CLUSTERS,
     ),
 };
 
-const mock = {
-    setTransmitPower: jest.fn(),
-    touchlinkFactoryReset: jest.fn(),
-    touchlinkFactoryResetFirst: jest.fn(),
-    touchlinkScan: jest.fn(),
-    touchlinkIdentify: jest.fn(),
-    start: jest.fn(),
-    backup: jest.fn(),
-    coordinatorCheck: jest.fn(),
-    isStopping: jest.fn(),
-    permitJoin: jest.fn(),
-    addInstallCode: jest.fn(),
-    getCoordinatorVersion: jest.fn().mockReturnValue({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
-    getNetworkParameters: jest.fn().mockReturnValue({panID: 0x162a, extendedPanID: [0, 11, 22], channel: 15}),
-    on: (type, handler) => {
+export const mockController = {
+    on: (type: string, handler: EventHandler): void => {
         events[type] = handler;
     },
+    start: jest.fn((): Promise<StartResult> => Promise.resolve('reset')),
     stop: jest.fn(),
-    getDevicesIterator: jest.fn().mockImplementation(function* (predicate) {
+    touchlinkIdentify: jest.fn(),
+    touchlinkScan: jest.fn(),
+    touchlinkFactoryReset: jest.fn(),
+    touchlinkFactoryResetFirst: jest.fn(),
+    addInstallCode: jest.fn(),
+    permitJoin: jest.fn(),
+    getPermitJoinTimeout: jest.fn((): number => 0),
+    isStopping: jest.fn((): boolean => false),
+    backup: jest.fn(),
+    coordinatorCheck: jest.fn(),
+    getCoordinatorVersion: jest.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
+    getNetworkParameters: jest.fn((): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: 0x001122, channel: 15})),
+    getDevices: jest.fn((): Device[] => []),
+    getDevicesIterator: jest.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
         for (const key in devices) {
-            const device = devices[key];
+            const device = devices[key as keyof typeof devices];
 
             if ((returnDevices.length === 0 || returnDevices.includes(device.ieeeAddr)) && !device.isDeleted && (!predicate || predicate(device))) {
                 yield device;
             }
         }
     }),
-    getDevicesByType: jest.fn().mockImplementation((type) => {
-        return Object.values(devices)
+    getDevicesByType: jest.fn((type: DeviceType): Device[] =>
+        Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
-            .filter((d) => d.type === type);
-    }),
-    getDeviceByIeeeAddr: jest.fn().mockImplementation((ieeeAddr) => {
-        return Object.values(devices)
+            .filter((d) => d.type === type),
+    ),
+    getDeviceByIeeeAddr: jest.fn((ieeeAddr: string): Device | undefined =>
+        Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
-            .find((d) => d.ieeeAddr === ieeeAddr);
-    }),
-    getDeviceByNetworkAddress: jest.fn().mockImplementation((networkAddress) => {
-        return Object.values(devices)
+            .find((d) => d.ieeeAddr === ieeeAddr),
+    ),
+    getDeviceByNetworkAddress: jest.fn((networkAddress: number): Device | undefined =>
+        Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
-            .find((d) => d.networkAddress === networkAddress);
-    }),
-    getGroupsIterator: jest.fn().mockImplementation(function* (predicate) {
+            .find((d) => d.networkAddress === networkAddress),
+    ),
+    getGroupByID: jest.fn((groupID: number): Group | undefined => Object.values(groups).find((g) => g.groupID === groupID)),
+    getGroups: jest.fn((): Group[] => []),
+    getGroupsIterator: jest.fn(function* (predicate?: (value: Group) => boolean): Generator<Group> {
         for (const key in groups) {
-            const group = groups[key];
+            const group = groups[key as keyof typeof groups];
 
             if (!predicate || predicate(group)) {
                 yield group;
             }
         }
     }),
-    getGroupByID: jest.fn().mockImplementation((groupID) => {
-        return Object.values(groups).find((d) => d.groupID === groupID);
-    }),
-    getPermitJoin: jest.fn().mockReturnValue(false),
-    getPermitJoinTimeout: jest.fn().mockReturnValue(undefined),
-    reset: jest.fn(),
-    createGroup: jest.fn().mockImplementation((groupID) => {
+    createGroup: jest.fn((groupID: number): Group => {
         const group = new Group(groupID, []);
-        groups[`group_${groupID}`] = group;
+        groups[`group_${groupID}` as keyof typeof groups] = group;
         return group;
     }),
 };
 
-const mockConstructor = jest.fn().mockImplementation(() => mock);
-
 jest.mock('zigbee-herdsman', () => ({
     ...jest.requireActual('zigbee-herdsman'),
-    Controller: mockConstructor,
+    Controller: jest.fn().mockImplementation(() => mockController),
 }));
-
-module.exports = {
-    events,
-    ...mock,
-    constructor: mockConstructor,
-    devices,
-    groups,
-    returnDevices,
-    resetGroupMembers,
-    custom_clusters,
-};

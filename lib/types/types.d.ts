@@ -119,7 +119,6 @@ declare global {
             legacy_entity_attributes: boolean;
             legacy_triggers: boolean;
         };
-        permit_join: boolean;
         availability?: {
             active: {timeout: number};
             passive: {timeout: number};

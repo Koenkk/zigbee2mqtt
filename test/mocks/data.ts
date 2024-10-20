@@ -1,16 +1,17 @@
-const tmp = require('tmp');
-const yaml = require('../../lib/util/yaml').default;
-const path = require('path');
-const fs = require('fs');
-const stringify = require('json-stable-stringify-without-jsonify');
+import fs from 'fs';
+import path from 'path';
 
-const mockDir = tmp.dirSync().name;
+import stringify from 'json-stable-stringify-without-jsonify';
+import tmp from 'tmp';
+
+import yaml from '../../lib/util/yaml';
+
+export const mockDir: string = tmp.dirSync().name;
 const stateFile = path.join(mockDir, 'state.json');
 
-function writeDefaultConfiguration() {
+export function writeDefaultConfiguration(): void {
     const config = {
         homeassistant: false,
-        permit_join: true,
         mqtt: {
             base_topic: 'zigbee2mqtt',
             server: 'mqtt://localhost',
@@ -239,17 +240,17 @@ function writeDefaultConfiguration() {
     yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
 }
 
-function writeEmptyState() {
+export function writeEmptyState(): void {
     fs.writeFileSync(stateFile, stringify({}));
 }
 
-function removeState() {
+export function removeState(): void {
     if (stateExists()) {
         fs.unlinkSync(stateFile);
     }
 }
 
-function stateExists() {
+export function stateExists(): boolean {
     return fs.existsSync(stateFile);
 }
 
@@ -268,29 +269,22 @@ const defaultState = {
     },
 };
 
-function getDefaultState() {
+export function getDefaultState(): typeof defaultState {
     return defaultState;
 }
 
-function writeDefaultState() {
+export function writeDefaultState(): void {
     fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(defaultState));
 }
 
+export function read(): ReturnType<typeof yaml.read> {
+    return yaml.read(path.join(mockDir, 'configuration.yaml'));
+}
+
 jest.mock('../../lib/util/data', () => ({
-    joinPath: (file) => require('path').join(mockDir, file),
-    getPath: () => mockDir,
+    joinPath: (file: string): string => jest.requireActual('path').join(mockDir, file),
+    getPath: (): string => mockDir,
 }));
 
 writeDefaultConfiguration();
 writeDefaultState();
-
-module.exports = {
-    mockDir,
-    read: () => yaml.read(path.join(mockDir, 'configuration.yaml')),
-    writeDefaultConfiguration,
-    writeDefaultState,
-    removeState,
-    writeEmptyState,
-    stateExists,
-    getDefaultState,
-};

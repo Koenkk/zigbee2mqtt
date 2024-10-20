@@ -1,7 +1,7 @@
-const utils = require('../lib/util/utils').default;
-const version = require('../package.json').version;
-const versionHerdsman = require('../node_modules/zigbee-herdsman/package.json').version;
-const versionHerdsmanConverters = require('../node_modules/zigbee-herdsman-converters/package.json').version;
+import fs from 'fs';
+import path from 'path';
+
+import utils from '../lib/util/utils';
 
 describe('Utils', () => {
     it('Object is empty', () => {
@@ -15,12 +15,12 @@ describe('Utils', () => {
     });
 
     it('git last commit', async () => {
-        let mockReturnValue = [];
+        const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
+        let mockReturnValue: [identical: boolean, result: {shortHash: string} | null] = [false, {shortHash: '123'}];
         jest.mock('git-last-commit', () => ({
-            getLastCommit: (cb) => cb(mockReturnValue[0], mockReturnValue[1]),
+            getLastCommit: (cb: (identical: boolean, result: {shortHash: string} | null) => void): void => cb(mockReturnValue[0], mockReturnValue[1]),
         }));
 
-        mockReturnValue = [false, {shortHash: '123'}];
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: '123', version: version});
 
         mockReturnValue = [true, null];
@@ -28,19 +28,25 @@ describe('Utils', () => {
     });
 
     it('Check dependency version', async () => {
+        const versionHerdsman = JSON.parse(
+            fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman', 'package.json'), 'utf8'),
+        ).version;
+        const versionHerdsmanConverters = JSON.parse(
+            fs.readFileSync(path.join(__dirname, '..', 'node_modules', 'zigbee-herdsman-converters', 'package.json'), 'utf8'),
+        ).version;
         expect(await utils.getDependencyVersion('zigbee-herdsman')).toStrictEqual({version: versionHerdsman});
         expect(await utils.getDependencyVersion('zigbee-herdsman-converters')).toStrictEqual({version: versionHerdsmanConverters});
     });
 
     it('To local iso string', async () => {
-        var date = new Date('August 19, 1975 23:15:30 UTC+00:00');
-        var getTimezoneOffset = Date.prototype.getTimezoneOffset;
-        Date.prototype.getTimezoneOffset = () => 60;
-        expect(utils.formatDate(date, 'ISO_8601_local').endsWith('-01:00')).toBeTruthy();
-        Date.prototype.getTimezoneOffset = () => -60;
-        expect(utils.formatDate(date, 'ISO_8601_local').endsWith('+01:00')).toBeTruthy();
-        Date.prototype.getTimezoneOffset = getTimezoneOffset;
+        const date = new Date('August 19, 1975 23:15:30 UTC+00:00').getTime();
+        const getTzOffsetSpy = jest.spyOn(Date.prototype, 'getTimezoneOffset');
+        getTzOffsetSpy.mockReturnValueOnce(60);
+        expect(utils.formatDate(date, 'ISO_8601_local').toString().endsWith('-01:00')).toBeTruthy();
+        getTzOffsetSpy.mockReturnValueOnce(-60);
+        expect(utils.formatDate(date, 'ISO_8601_local').toString().endsWith('+01:00')).toBeTruthy();
     });
+
     it('Removes null properties from object', () => {
         const obj1 = {
             ab: 0,

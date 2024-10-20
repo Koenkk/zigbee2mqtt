@@ -167,19 +167,6 @@ export class Controller {
 
         logger.info(`Currently ${deviceCount} devices are joined.`);
 
-        // Enable zigbee join
-        try {
-            if (settings.get().permit_join) {
-                logger.warning('`permit_join` set to  `true` in configuration.yaml.');
-                logger.warning('Allowing new devices to join.');
-                logger.warning('Set `permit_join` to `false` once you joined all devices.');
-            }
-
-            await this.zigbee.permitJoin(settings.get().permit_join);
-        } catch (error) {
-            logger.error(`Failed to set permit join to ${settings.get().permit_join} (${(error as Error).message})`);
-        }
-
         // MQTT
         try {
             await this.mqtt.connect();
@@ -379,5 +366,3 @@ export class Controller {
         }
     }
 }
-
-module.exports = Controller;

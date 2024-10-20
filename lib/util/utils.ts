@@ -10,6 +10,11 @@ import humanizeDuration from 'humanize-duration';
 
 import data from './data';
 
+function pad(num: number): string {
+    const norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+}
+
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:
 //  - ISO8601 (UTC) = 2019-03-01T15:32:45.941+0000
@@ -17,10 +22,6 @@ import data from './data';
 function toLocalISOString(date: Date): string {
     const tzOffset = -date.getTimezoneOffset();
     const plusOrMinus = tzOffset >= 0 ? '+' : '-';
-    const pad = (num: number): string => {
-        const norm = Math.floor(Math.abs(num));
-        return (norm < 10 ? '0' : '') + norm;
-    };
 
     return (
         date.getFullYear() +
