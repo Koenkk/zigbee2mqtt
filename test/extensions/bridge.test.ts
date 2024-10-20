@@ -1,3 +1,10 @@
+import * as data from '../mocks/data';
+import {mockJSZipFile, mockJSZipGenerateAsync} from '../mocks/jszip';
+import {mockLogger} from '../mocks/logger';
+import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
+import {flushPromises, JestMockAny} from '../mocks/utils';
+import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
+
 import type Bridge from '../../lib/extension/bridge';
 
 import assert from 'assert';
@@ -9,12 +16,6 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 import utils from '../../lib/util/utils';
-import * as data from '../mocks/data';
-import {mockJSZipFile, mockJSZipGenerateAsync} from '../mocks/jszip';
-import {mockLogger} from '../mocks/logger';
-import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
-import {flushPromises, JestMockAny} from '../mocks/utils';
-import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
 
 returnDevices.push(devices.coordinator.ieeeAddr);
 returnDevices.push(devices.bulb.ieeeAddr);

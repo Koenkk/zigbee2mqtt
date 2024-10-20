@@ -1,14 +1,15 @@
+import * as data from '../mocks/data';
+import {mockLogger} from '../mocks/logger';
+import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
+import {flushPromises} from '../mocks/utils';
+import {devices, groups, events as mockZHEvents, resetGroupMembers, returnDevices} from '../mocks/zigbeeHerdsman';
+
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {toZigbee as zhcToZigbee} from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
-import * as data from '../mocks/data';
-import {mockLogger} from '../mocks/logger';
-import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
-import {flushPromises} from '../mocks/utils';
-import {devices, groups, events as mockZHEvents, resetGroupMembers, returnDevices} from '../mocks/zigbeeHerdsman';
 
 returnDevices.push(
     devices.coordinator.ieeeAddr,
@@ -558,6 +559,7 @@ describe('Extension: Groups', () => {
         const device = devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = groups['group/with/slashes'];
+        settings.set(['groups'], {99: {friendly_name: 'group/with/slashes', retain: false}});
         expect(group.members.length).toBe(0);
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group/with/slashes', device: 'bulb_color'}));
