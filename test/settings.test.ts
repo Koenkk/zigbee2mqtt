@@ -447,6 +447,20 @@ describe('Settings', () => {
         expect(group).toStrictEqual(expected);
     });
 
+    it('Throw if removing non-existing group', () => {
+        const content = {
+            groups: {
+                1: {
+                    friendly_name: '123',
+                },
+            },
+        };
+
+        write(configurationFile, content);
+
+        expect(() => settings.removeGroup('2')).toThrow(`Group '2' does not exist`);
+    });
+
     it('Should read groups from a separate file', () => {
         const contentConfiguration = {
             groups: 'groups.yaml',

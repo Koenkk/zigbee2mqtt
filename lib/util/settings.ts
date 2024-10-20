@@ -539,14 +539,6 @@ export function getGroup(IDorName: string | number): GroupOptions | undefined {
     return undefined;
 }
 
-export function getGroups(): GroupOptions[] {
-    const settings = get();
-
-    return Object.entries(settings.groups).map(([ID, group]) => {
-        return {...group, ID: Number(ID)};
-    });
-}
-
 function getGroupThrowIfNotExists(IDorName: string): GroupOptions {
     const group = getGroup(IDorName);
 
