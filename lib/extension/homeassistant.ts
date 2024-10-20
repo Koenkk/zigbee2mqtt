@@ -29,6 +29,17 @@ interface Discovered {
     discovered: boolean;
 }
 
+interface ActionData {
+    action: string;
+    button?: string;
+    scene?: string;
+    region?: string;
+}
+
+const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
+const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
+const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
+
 const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
     object_id: 'click',
@@ -1153,9 +1164,23 @@ export default class HomeAssistant extends Extension {
                         discovery_payload: {
                             name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             state_topic: true,
-                            state_topic_postfix: 'action',
-                            event_types: firstExpose.values.map((v) => v.toString()).filter((v) => !v.includes('*')),
-                            value_template: `{ "event_type": "{{value}}" }`,
+                            event_types: this.prepareActionEventTypes(firstExpose.values),
+
+                            // TODO: Implement parsing for all event types.
+                            value_template:
+                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- if buttons -%}\n` +
+                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                `{%- elif scenes -%}\n` +
+                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                `{%- elif regions -%}\n` +
+                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                `{%- else -%}\n` +
+                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                `{%- endif -%}\n` +
+                                `{{d|to_json}}`,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
@@ -2184,5 +2209,40 @@ export default class HomeAssistant extends Extension {
         );
 
         return bridge;
+    }
+
+    private parseActionValue(action: string): ActionData {
+        const buttons = action.match(ACTION_BUTTON_PATTERN);
+        if (buttons?.groups?.action) {
+            return {...buttons.groups, action: buttons.groups.action};
+        }
+
+        const scenes = action.match(ACTION_SCENE_PATTERN);
+        if (scenes?.groups?.action) {
+            return {...scenes.groups, action: scenes.groups.action};
+        }
+
+        const regions = action.match(ACTION_REGION_PATTERN);
+        if (regions?.groups?.action) {
+            return {...regions.groups, action: 'region_' + regions.groups.action};
+        }
+
+        const sceneWildcard = action.match(/^(?<action>recall|scene)_\*$/);
+        if (sceneWildcard?.groups?.action) {
+            logger.debug('Found scene wildcard action ' + sceneWildcard.groups.action);
+            return {action: sceneWildcard.groups.action, scene: 'wildcard'};
+        }
+
+        const regionWildcard = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        if (regionWildcard?.groups?.action) {
+            logger.debug('Found region wildcard action ' + regionWildcard.groups.action);
+            return {action: 'region_' + regionWildcard.groups.action, region: 'wildcard'};
+        }
+
+        return {action};
+    }
+
+    private prepareActionEventTypes(values: zhc.Enum['values']): string[] {
+        return utils.arrayUnique(values.map((v) => this.parseActionValue(v.toString()).action).filter((v) => !v.includes('*')));
     }
 }
