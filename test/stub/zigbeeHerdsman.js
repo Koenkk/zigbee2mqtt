@@ -141,10 +141,7 @@ class Endpoint {
 
         this.removeFromGroup = jest.fn();
         this.removeFromGroup.mockImplementation((group) => {
-            const index = group.members.indexOf(this);
-            if (index != -1) {
-                group.members.splice(index, 1);
-            }
+            group.members = group.members.filter((e) => e !== this);
         });
 
         this.removeFromAllGroups = () => {
@@ -352,6 +349,7 @@ const zigfred_plus = new Device(
 
 const groups = {
     group_1: new Group(1, []),
+    group_2: new Group(2, []),
     group_tradfri_remote: new Group(15071, [bulb_color_2.endpoints[0], bulb_2.endpoints[0]]),
     'group/with/slashes': new Group(99, []),
     group_with_tradfri: new Group(11, [bulb_2.endpoints[0]]),
@@ -359,8 +357,16 @@ const groups = {
     group_with_switch: new Group(14, [ZNCZ02LM.endpoints[0], bulb_2.endpoints[0]]),
     gledopto_group: new Group(21, [GLEDOPTO_2ID.endpoints[3]]),
     default_bind_group: new Group(901, []),
-    ha_discovery_group: new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[1]]),
+    ha_discovery_group: new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[2]]),
 };
+
+const groupMembersBackup = Object.fromEntries(Object.entries(groups).map((v) => [v[0], [...v[1].members]]));
+
+function resetGroupMembers() {
+    for (const key in groupMembersBackup) {
+        groups[key].members = [...groupMembersBackup[key]];
+    }
+}
 
 const devices = {
     coordinator: new Device('Coordinator', '0x00124b00120144ae', 0, 0, [new Endpoint(1, [], [], '0x00124b00120144ae')], false),
@@ -919,5 +925,6 @@ module.exports = {
     devices,
     groups,
     returnDevices,
+    resetGroupMembers,
     custom_clusters,
 };

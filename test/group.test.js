@@ -19,11 +19,6 @@ const settings = require('../lib/util/settings');
 describe('Groups', () => {
     let controller;
 
-    let resetExtension = async () => {
-        await controller.enableDisableExtension(false, 'Groups');
-        await controller.enableDisableExtension(true, 'Groups');
-    };
-
     beforeAll(async () => {
         jest.useFakeTimers();
         controller = new Controller(jest.fn(), jest.fn());
@@ -36,7 +31,7 @@ describe('Groups', () => {
     });
 
     beforeEach(() => {
-        Object.values(zigbeeHerdsman.groups).forEach((g) => (g.members = []));
+        zigbeeHerdsman.resetGroupMembers();
         data.writeDefaultConfiguration();
         settings.reRead();
         MQTT.publish.mockClear();
@@ -50,8 +45,6 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
 
         MQTT.publish.mockClear();
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
@@ -66,8 +59,6 @@ describe('Groups', () => {
     it('Should not republish identical optimistic group states', async () => {
         const device1 = zigbeeHerdsman.devices.bulb_2;
         const device2 = zigbeeHerdsman.devices.bulb_color_2;
-        const group = zigbeeHerdsman.groups.group_tradfri_remote;
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await zigbeeHerdsman.events.message({
@@ -126,8 +117,6 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
@@ -143,8 +132,6 @@ describe('Groups', () => {
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
         settings.set(['devices', device.ieeeAddr, 'disabled'], true);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
@@ -159,8 +146,6 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON'}));
@@ -186,7 +171,6 @@ describe('Groups', () => {
 
     it('Should publish state of device with endpoint name', async () => {
         const group = zigbeeHerdsman.groups.gledopto_group;
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/gledopto_group/set', stringify({state: 'ON'}));
@@ -210,7 +194,6 @@ describe('Groups', () => {
 
     it('Should publish state of group when specific state of specific endpoint is changed', async () => {
         const group = zigbeeHerdsman.groups.gledopto_group;
-        await resetExtension();
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/GLEDOPTO_2ID/set', stringify({state_cct: 'ON'}));
@@ -236,8 +219,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, filtered_attributes: ['brightness'], devices: [device.ieeeAddr]}});
-        await resetExtension();
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, filtered_attributes: ['brightness']}});
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON', brightness: 100}));
@@ -257,8 +239,7 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', devices: [device.ieeeAddr], optimistic: false, retain: false}});
-        await resetExtension();
+        settings.set(['groups'], {1: {friendly_name: 'group_1', optimistic: false, retain: false}});
 
         MQTT.publish.mockClear();
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
@@ -272,14 +253,8 @@ describe('Groups', () => {
     it('Should publish state change of another group with shared device when a group changes its state', async () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {
-            1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]},
-            2: {friendly_name: 'group_2', retain: false, devices: [device.ieeeAddr]},
-            3: {friendly_name: 'group_3', retain: false, devices: []},
-        });
-        await resetExtension();
+        zigbeeHerdsman.groups.group_1.members.push(endpoint);
+        zigbeeHerdsman.groups.group_2.members.push(endpoint);
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
@@ -298,10 +273,6 @@ describe('Groups', () => {
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint_1);
         group.members.push(endpoint_2);
-        settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false},
-        });
-        await resetExtension();
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
@@ -322,9 +293,8 @@ describe('Groups', () => {
         group.members.push(endpoint_1);
         group.members.push(endpoint_2);
         settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false, off_state: 'last_member_state'},
+            1: {friendly_name: 'group_1', retain: false, off_state: 'last_member_state'},
         });
-        await resetExtension();
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
@@ -354,14 +324,9 @@ describe('Groups', () => {
         const device_2 = zigbeeHerdsman.devices.bulb;
         const endpoint_1 = device_1.getEndpoint(1);
         const endpoint_2 = device_2.getEndpoint(1);
-        const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint_1);
-        group.members.push(endpoint_2);
-        settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false},
-            2: {friendly_name: 'group_2', retain: false, devices: [device_1.ieeeAddr]},
-        });
-        await resetExtension();
+        zigbeeHerdsman.groups.group_1.members.push(endpoint_1);
+        zigbeeHerdsman.groups.group_1.members.push(endpoint_2);
+        zigbeeHerdsman.groups.group_2.members.push(endpoint_1);
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
@@ -383,9 +348,8 @@ describe('Groups', () => {
         group.members.push(endpoint_1);
         group.members.push(endpoint_2);
         settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false},
+            1: {friendly_name: 'group_1', retain: false},
         });
-        await resetExtension();
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
@@ -409,9 +373,8 @@ describe('Groups', () => {
         group.members.push(endpoint_1);
         group.members.push(endpoint_2);
         settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false},
+            1: {friendly_name: 'group_1', retain: false},
         });
-        await resetExtension();
         MQTT.publish.mockClear();
 
         await MQTT.events.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF', color_temp: 200}));
@@ -451,9 +414,8 @@ describe('Groups', () => {
         group.members.push(endpoint_1);
         group.members.push(endpoint_2);
         settings.set(['groups'], {
-            1: {friendly_name: 'group_1', devices: [device_1.ieeeAddr, device_2.ieeeAddr], retain: false},
+            1: {friendly_name: 'group_1', retain: false},
         });
-        await resetExtension();
 
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
@@ -472,14 +434,12 @@ describe('Groups', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: []}});
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
         expect(group.members.length).toBe(0);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({transaction: '123', group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
@@ -493,9 +453,8 @@ describe('Groups', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: []}});
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
         expect(group.members.length).toBe(0);
-        await resetExtension();
         endpoint.addToGroup.mockImplementationOnce(() => {
             throw new Error('timeout');
         });
@@ -504,7 +463,6 @@ describe('Groups', () => {
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
@@ -518,14 +476,12 @@ describe('Groups', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups['group/with/slashes'];
-        settings.set(['groups'], {99: {friendly_name: 'group/with/slashes', retain: false, devices: []}});
+        settings.set(['groups'], {99: {friendly_name: 'group/with/slashes', retain: false}});
         expect(group.members.length).toBe(0);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group/with/slashes', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(settings.getGroup('group/with/slashes').devices).toStrictEqual([`${device.ieeeAddr}/1`]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
@@ -540,12 +496,10 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(3);
         const group = zigbeeHerdsman.groups.group_1;
         expect(group.members.length).toBe(0);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'wall_switch_double/right'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([`${device.ieeeAddr}/${endpoint.ID}`]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
@@ -560,14 +514,12 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(3);
         const group = zigbeeHerdsman.groups.group_1;
         expect(group.members.length).toBe(0);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'wall_switch_double/right'}));
         await flushPromises();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: '0x0017880104e45542/3'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([`${device.ieeeAddr}/${endpoint.ID}`]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
@@ -582,13 +534,11 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [device.ieeeAddr]}});
-        await resetExtension();
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
@@ -603,7 +553,6 @@ describe('Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message(
             'zigbee2mqtt/bridge/request/group/members/remove',
@@ -621,11 +570,10 @@ describe('Groups', () => {
     });
 
     it('Remove from group via MQTT with postfix variant 1', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        const endpoint = device.getEndpoint(1);
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: '0x0017880104e45542/3'}));
         await flushPromises();
@@ -640,17 +588,15 @@ describe('Groups', () => {
     });
 
     it('Remove from group via MQTT with postfix variant 2', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        const endpoint = device.getEndpoint(1);
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [`0x0017880104e45542/right`]}});
-        await resetExtension();
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: 'wall_switch_double/3'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
@@ -661,17 +607,14 @@ describe('Groups', () => {
     });
 
     it('Remove from group via MQTT with postfix variant 3', async () => {
-        const device = zigbeeHerdsman.devices.bulb_color;
-        const endpoint = device.getEndpoint(1);
+        const device = zigbeeHerdsman.devices.QBKG03LM;
+        const endpoint = device.getEndpoint(3);
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/3`]}});
-        await resetExtension();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: '0x0017880104e45542/right'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
@@ -685,14 +628,11 @@ describe('Groups', () => {
         const device = zigbeeHerdsman.devices.bulb_color;
         const endpoint = device.getEndpoint(1);
         const group = zigbeeHerdsman.groups.group_1;
-        group.members.push(endpoint);
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [`wall_switch_double/3`]}});
-        await resetExtension();
+        group.members.push(zigbeeHerdsman.devices.QBKG03LM.endpoints[2]);
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove_all', stringify({device: '0x0017880104e45542/right'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual([]);
         expect(MQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove_all',
@@ -703,7 +643,6 @@ describe('Groups', () => {
     });
 
     it('Error when adding to non-existing group', async () => {
-        await resetExtension();
         logger.error.mockClear();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1_not_existing', device: 'bulb_color'}));
@@ -722,7 +661,6 @@ describe('Groups', () => {
     });
 
     it('Error when adding a non-existing device', async () => {
-        await resetExtension();
         logger.error.mockClear();
         MQTT.publish.mockClear();
         MQTT.events.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'bulb_color_not_existing'}));
@@ -741,7 +679,6 @@ describe('Groups', () => {
     });
 
     it('Error when adding a non-existing endpoint', async () => {
-        await resetExtension();
         logger.error.mockClear();
         MQTT.publish.mockClear();
         MQTT.events.message(
@@ -768,8 +705,7 @@ describe('Groups', () => {
         const group = zigbeeHerdsman.groups.group_1;
         group.members.push(bulbColor.getEndpoint(1));
         group.members.push(bulbColorTemp.getEndpoint(1));
-        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, devices: [bulbColor.ieeeAddr, bulbColorTemp.ieeeAddr]}});
-        await resetExtension();
+        settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false}});
 
         MQTT.publish.mockClear();
         await MQTT.events.message('zigbee2mqtt/group_1/set', stringify({color_temp: 50}));

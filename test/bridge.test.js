@@ -2154,11 +2154,12 @@ describe('Bridge', () => {
     it('Should publish groups on startup', async () => {
         await resetExtension();
         logger.setTransportsEnabled(true);
-        console.log(MQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/groups'));
+        // console.log(MQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/groups'));
         expect(MQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
             stringify([
                 {friendly_name: 'group_1', id: 1, members: [], scenes: []},
+                {friendly_name: 'group_2', id: 2, members: [], scenes: []},
                 {
                     friendly_name: 'group_tradfri_remote',
                     id: 15071,
@@ -2188,7 +2189,7 @@ describe('Bridge', () => {
                     members: [
                         {endpoint: 1, ieee_address: '0x000b57fffec6a5b4'},
                         {endpoint: 1, ieee_address: '0x000b57fffec6a5b7'},
-                        {endpoint: 2, ieee_address: '0x0017880104e45542'},
+                        {endpoint: 3, ieee_address: '0x0017880104e45542'},
                     ],
                     scenes: [{id: 4, name: 'Scene 4'}],
                 },
