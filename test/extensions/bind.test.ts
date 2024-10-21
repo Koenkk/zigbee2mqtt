@@ -545,7 +545,7 @@ describe('Extension: Bind', () => {
         );
     });
 
-    it('Should bind from non default endpoints', async () => {
+    it('Should bind from non default endpoint names', async () => {
         const device = devices.remote;
         const target = devices.QBKG03LM.getEndpoint(3)!;
         const endpoint = device.getEndpoint(2)!;
@@ -561,6 +561,29 @@ describe('Extension: Bind', () => {
             'zigbee2mqtt/bridge/response/device/bind',
             stringify({
                 data: {from: 'remote', from_endpoint: 'ep2', to: 'wall_switch_double', to_endpoint: 'right', clusters: ['genOnOff'], failed: []},
+                status: 'ok',
+            }),
+            {retain: false, qos: 0},
+            expect.any(Function),
+        );
+    });
+
+    it('Should bind from non default endpoint IDs', async () => {
+        const device = devices.remote;
+        const target = devices.QBKG03LM.getEndpoint(3)!;
+        const endpoint = device.getEndpoint(2)!;
+        mockClear(device);
+        mockMQTTEvents.message(
+            'zigbee2mqtt/bridge/request/device/bind',
+            stringify({from: 'remote', from_endpoint: 2, to: 'wall_switch_double', to_endpoint: 3}),
+        );
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', target);
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/bind',
+            stringify({
+                data: {from: 'remote', from_endpoint: 2, to: 'wall_switch_double', to_endpoint: 3, clusters: ['genOnOff'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
