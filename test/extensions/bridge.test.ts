@@ -3555,9 +3555,57 @@ describe('Extension: Bridge', () => {
         );
     });
 
-    it('Should allow to configure reporting', async () => {
+    it('Should allow to configure reporting with endpoint as number', async () => {
         const device = devices.bulb;
         const endpoint = device.getEndpoint(1)!;
+        endpoint.bind.mockClear();
+        endpoint.configureReporting.mockClear();
+        mockMQTT.publish.mockClear();
+        mockMQTTEvents.message(
+            'zigbee2mqtt/bridge/request/device/configure_reporting',
+            stringify({
+                id: '0x000b57fffec6a5b2',
+                endpoint: 1,
+                cluster: 'genLevelCtrl',
+                attribute: 'currentLevel',
+                maximum_report_interval: 10,
+                minimum_report_interval: 1,
+                reportable_change: 1,
+            }),
+        );
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith('genLevelCtrl', devices.coordinator.endpoints[0]);
+        expect(endpoint.configureReporting).toHaveBeenCalledTimes(1);
+        expect(endpoint.configureReporting).toHaveBeenCalledWith(
+            'genLevelCtrl',
+            [{attribute: 'currentLevel', maximumReportInterval: 10, minimumReportInterval: 1, reportableChange: 1}],
+            undefined,
+        );
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure_reporting',
+            stringify({
+                data: {
+                    id: '0x000b57fffec6a5b2',
+                    endpoint: 1,
+                    cluster: 'genLevelCtrl',
+                    attribute: 'currentLevel',
+                    maximum_report_interval: 10,
+                    minimum_report_interval: 1,
+                    reportable_change: 1,
+                },
+                status: 'ok',
+            }),
+            {retain: false, qos: 0},
+            expect.any(Function),
+        );
+        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), {retain: true, qos: 0}, expect.any(Function));
+    });
+
+    it('Should allow to configure reporting with endpoint as string', async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        endpoint.bind.mockClear();
         endpoint.configureReporting.mockClear();
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message(

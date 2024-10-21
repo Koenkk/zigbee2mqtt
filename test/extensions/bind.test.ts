@@ -98,7 +98,7 @@ describe('Extension: Bind', () => {
                 transaction: '1234',
                 data: {
                     from: 'remote',
-                    fromEndpoint: 'default',
+                    from_endpoint: 'default',
                     to: 'bulb_color',
                     clusters: ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
                     failed: [],
@@ -176,7 +176,7 @@ describe('Extension: Bind', () => {
                 transaction: '1234',
                 data: {
                     from: 'remote',
-                    fromEndpoint: 'default',
+                    from_endpoint: 'default',
                     to: 'bulb_color',
                     clusters: ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
                     failed: [],
@@ -247,7 +247,7 @@ describe('Extension: Bind', () => {
                 transaction: '1234',
                 data: {
                     from: 'remote',
-                    fromEndpoint: 'default',
+                    from_endpoint: 'default',
                     to: 'bulb_color',
                     clusters: ['genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
                     failed: [],
@@ -277,7 +277,7 @@ describe('Extension: Bind', () => {
         expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', target);
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
-            stringify({data: {from: 'remote', fromEndpoint: 'default', to: 'bulb_color', clusters: ['genOnOff'], failed: []}, status: 'ok'}),
+            stringify({data: {from: 'remote', from_endpoint: 'default', to: 'bulb_color', clusters: ['genOnOff'], failed: []}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -344,7 +344,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/unbind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'default', to: 'bulb_color', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
+                data: {from: 'remote', from_endpoint: 'default', to: 'bulb_color', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -371,7 +371,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/unbind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'default', to: 'Coordinator', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
+                data: {from: 'remote', from_endpoint: 'default', to: 'Coordinator', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -403,7 +403,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'default', to: 'group_1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
+                data: {from: 'remote', from_endpoint: 'default', to: 'group_1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -440,7 +440,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/unbind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'default', to: 'group_1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
+                data: {from: 'remote', from_endpoint: 'default', to: 'group_1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -518,7 +518,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'default', to: '1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
+                data: {from: 'remote', from_endpoint: 'default', to: '1', clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -552,7 +552,7 @@ describe('Extension: Bind', () => {
         mockClear(device);
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/bind',
-            stringify({from: 'remote', fromEndpoint: 'ep2', to: 'wall_switch_double', toEndpoint: 'right'}),
+            stringify({from: 'remote', from_endpoint: 'ep2', to: 'wall_switch_double', to_endpoint: 'right'}),
         );
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
@@ -560,7 +560,7 @@ describe('Extension: Bind', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
             stringify({
-                data: {from: 'remote', fromEndpoint: 'ep2', to: 'wall_switch_double', toEndpoint: 'right', clusters: ['genOnOff'], failed: []},
+                data: {from: 'remote', from_endpoint: 'ep2', to: 'wall_switch_double', to_endpoint: 'right', clusters: ['genOnOff'], failed: []},
                 status: 'ok',
             }),
             {retain: false, qos: 0},
@@ -582,7 +582,7 @@ describe('Extension: Bind', () => {
             stringify({
                 data: {
                     from: 'temperature_sensor',
-                    fromEndpoint: 'default',
+                    from_endpoint: 'default',
                     to: 'heating_actuator',
                     clusters: ['msTemperatureMeasurement'],
                     failed: [],
@@ -599,13 +599,13 @@ describe('Extension: Bind', () => {
         const target = devices.QBKG04LM.getEndpoint(2)!;
         const endpoint = device.getEndpoint(2)!;
         mockClear(device);
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'remote', fromEndpoint: 'ep2', to: 'wall_switch'}));
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/bind', stringify({from: 'remote', from_endpoint: 'ep2', to: 'wall_switch'}));
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(1);
         expect(endpoint.bind).toHaveBeenCalledWith('genOnOff', target);
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/bind',
-            stringify({data: {from: 'remote', fromEndpoint: 'ep2', to: 'wall_switch', clusters: ['genOnOff'], failed: []}, status: 'ok'}),
+            stringify({data: {from: 'remote', from_endpoint: 'ep2', to: 'wall_switch', clusters: ['genOnOff'], failed: []}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -627,7 +627,7 @@ describe('Extension: Bind', () => {
             stringify({
                 data: {
                     from: 'remote',
-                    fromEndpoint: 'default',
+                    from_endpoint: 'default',
                     to: 'default_bind_group',
                     clusters: ['genScenes', 'genOnOff', 'genLevelCtrl'],
                     failed: [],
@@ -657,7 +657,7 @@ describe('Extension: Bind', () => {
         mockClear(device);
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/bind',
-            stringify({from: 'remote', fromEndpoint: 'not_existing_endpoint', to: 'bulb_color'}),
+            stringify({from: 'remote', from_endpoint: 'not_existing_endpoint', to: 'bulb_color'}),
         );
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledWith(
@@ -686,7 +686,7 @@ describe('Extension: Bind', () => {
         mockClear(device);
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/bind',
-            stringify({from: 'remote', to: 'bulb_color', toEndpoint: 'not_existing_endpoint'}),
+            stringify({from: 'remote', to: 'bulb_color', to_endpoint: 'not_existing_endpoint'}),
         );
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledWith(

@@ -35,7 +35,7 @@ interface ParsedMQTTMessage {
     resolvedEndpoint?: zh.Endpoint;
     groupKey?: string;
     deviceKey?: string;
-    endpointKey?: string;
+    endpointKey?: string | number;
     skipDisableReporting: boolean;
 }
 

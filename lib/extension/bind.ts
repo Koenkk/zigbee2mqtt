@@ -196,9 +196,9 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
 interface ParsedMQTTMessage {
     type: 'bind' | 'unbind';
     sourceKey?: string;
-    sourceEndpointKey?: string;
+    sourceEndpointKey?: string | number;
     targetKey?: string;
-    targetEndpointKey?: string;
+    targetEndpointKey?: string | number;
     clusters?: string[];
     skipDisableReporting: boolean;
     resolvedSource?: Device;
@@ -209,9 +209,9 @@ interface ParsedMQTTMessage {
 
 interface DataMessage {
     from: ParsedMQTTMessage['sourceKey'];
-    fromEndpoint?: ParsedMQTTMessage['sourceEndpointKey'];
+    from_endpoint?: ParsedMQTTMessage['sourceEndpointKey'];
     to: ParsedMQTTMessage['targetKey'];
-    toEndpoint: ParsedMQTTMessage['targetEndpointKey'];
+    to_endpoint: ParsedMQTTMessage['targetEndpointKey'];
     clusters: ParsedMQTTMessage['clusters'];
     skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
 }
@@ -238,9 +238,9 @@ export default class Bind extends Extension {
             }
 
             const sourceKey = message.from;
-            const sourceEndpointKey = message.fromEndpoint ?? 'default';
+            const sourceEndpointKey = message.from_endpoint ?? 'default';
             const targetKey = message.to;
-            const targetEndpointKey = message.toEndpoint;
+            const targetEndpointKey = message.to_endpoint;
             const clusters = message.clusters;
             skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
             const resolvedSource = this.zigbee.resolveEntity(message.from) as Device;
@@ -390,9 +390,9 @@ export default class Bind extends Extension {
 
         const responseData: KeyValue = {
             from: sourceKey,
-            fromEndpoint: sourceEndpointKey,
+            from_endpoint: sourceEndpointKey,
             to: targetKey,
-            toEndpoint: targetEndpointKey,
+            to_endpoint: targetEndpointKey,
             clusters: successfulClusters,
             failed: failedClusters,
         };
