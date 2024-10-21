@@ -45,79 +45,6 @@ export default class Groups extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onStateChange(this, this.onStateChange);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        await this.syncGroupsWithSettings();
-    }
-
-    private async syncGroupsWithSettings(): Promise<void> {
-        const settingsGroups = settings.getGroups();
-
-        const addRemoveFromGroup = async (
-            action: 'add' | 'remove',
-            deviceName: string,
-            groupName: string | number,
-            endpoint: zh.Endpoint,
-            group: Group,
-        ): Promise<void> => {
-            try {
-                logger.info(`${action === 'add' ? 'Adding' : 'Removing'} '${deviceName}' to group '${groupName}'`);
-
-                if (action === 'remove') {
-                    await endpoint.removeFromGroup(group.zh);
-                } else {
-                    await endpoint.addToGroup(group.zh);
-                }
-            } catch (error) {
-                logger.error(`Failed to ${action} '${deviceName}' from '${groupName}'`);
-                logger.debug((error as Error).stack!);
-            }
-        };
-
-        for (const settingGroup of settingsGroups) {
-            const groupID = settingGroup.ID;
-            const zigbeeGroup = this.zigbee.groupsIterator((g) => g.groupID === groupID).next().value || this.zigbee.createGroup(groupID);
-            const settingsEndpoints: zh.Endpoint[] = [];
-
-            for (const d of settingGroup.devices) {
-                const parsed = this.zigbee.resolveEntityAndEndpoint(d);
-                const device = parsed.entity as Device;
-
-                if (!device) {
-                    logger.error(`Cannot find '${d}' of group '${settingGroup.friendly_name}'`);
-                }
-
-                if (!parsed.endpoint) {
-                    if (parsed.endpointID) {
-                        logger.error(`Cannot find endpoint '${parsed.endpointID}' of device '${parsed.ID}'`);
-                    }
-
-                    continue;
-                }
-
-                // In settings but not in zigbee
-                if (!zigbeeGroup.zh.hasMember(parsed.endpoint)) {
-                    await addRemoveFromGroup('add', device?.name, settingGroup.friendly_name, parsed.endpoint, zigbeeGroup);
-                }
-
-                settingsEndpoints.push(parsed.endpoint);
-            }
-
-            // In zigbee but not in settings
-            for (const endpoint of zigbeeGroup.zh.members) {
-                if (!settingsEndpoints.includes(endpoint)) {
-                    const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr)!.friendly_name;
-
-                    await addRemoveFromGroup('remove', deviceName, settingGroup.friendly_name, endpoint, zigbeeGroup);
-                }
-            }
-        }
-
-        for (const zigbeeGroup of this.zigbee.groupsIterator((zg) => !settingsGroups.some((sg) => sg.ID === zg.groupID))) {
-            for (const endpoint of zigbeeGroup.zh.members) {
-                const deviceName = settings.getDevice(endpoint.getDevice().ieeeAddr)!.friendly_name;
-
-                await addRemoveFromGroup('remove', deviceName, zigbeeGroup.ID, endpoint, zigbeeGroup);
-            }
-        }
     }
 
     @bind async onStateChange(data: eventdata.StateChange): Promise<void> {
@@ -320,33 +247,15 @@ export default class Groups extends Extension {
         if (!error) {
             assert(resolvedEntityEndpoint, '`resolvedEntityEndpoint` is missing');
             try {
-                const keys = [
-                    `${resolvedEntityDevice.ieeeAddr}/${resolvedEntityEndpoint.ID}`,
-                    `${resolvedEntityDevice.name}/${resolvedEntityEndpoint.ID}`,
-                ];
-                const endpointNameLocal = resolvedEntityDevice.endpointName(resolvedEntityEndpoint);
-
-                if (endpointNameLocal) {
-                    keys.push(`${resolvedEntityDevice.ieeeAddr}/${endpointNameLocal}`);
-                    keys.push(`${resolvedEntityDevice.name}/${endpointNameLocal}`);
-                }
-
-                if (!endpointNameLocal) {
-                    keys.push(resolvedEntityDevice.name);
-                    keys.push(resolvedEntityDevice.ieeeAddr);
-                }
-
                 if (type === 'add') {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
                     await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zh);
-                    settings.addDeviceToGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
                 } else if (type === 'remove') {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
                     await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zh);
-                    settings.removeDeviceFromGroup(resolvedEntityGroup.ID.toString(), keys);
                     changedGroups.push(resolvedEntityGroup);
                 } else {
                     // remove_all
@@ -357,10 +266,6 @@ export default class Groups extends Extension {
                     }
 
                     await resolvedEntityEndpoint.removeFromAllGroups();
-
-                    for (const settingsGroup of settings.getGroups()) {
-                        settings.removeDeviceFromGroup(settingsGroup.ID.toString(), keys);
-                    }
                 }
             } catch (e) {
                 error = `Failed to ${type} from group (${(e as Error).message})`;

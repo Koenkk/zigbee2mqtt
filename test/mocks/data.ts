@@ -214,30 +214,24 @@ export function writeDefaultConfiguration(): void {
             15071: {
                 friendly_name: 'group_tradfri_remote',
                 retain: false,
-                devices: ['bulb_color_2', 'bulb_2'],
             },
             11: {
                 friendly_name: 'group_with_tradfri',
                 retain: false,
-                devices: ['bulb_2'],
             },
             12: {
                 friendly_name: 'thermostat_group',
                 retain: false,
-                devices: ['TS0601_thermostat'],
             },
             14: {
                 friendly_name: 'switch_group',
                 retain: false,
-                devices: ['power_plug', 'bulb_2'],
             },
             21: {
                 friendly_name: 'gledopto_group',
-                devices: ['GLEDOPTO_2ID/cct'],
             },
             9: {
                 friendly_name: 'ha_discovery_group',
-                devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'],
             },
         },
         external_converters: [],
