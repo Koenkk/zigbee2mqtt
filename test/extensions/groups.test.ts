@@ -785,7 +785,6 @@ describe('Extension: Groups', () => {
     });
 
     it('Error when invalid payload', async () => {
-        await resetExtension();
         mockLogger.error.mockClear();
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', devicez: 'bulb_color'}));
@@ -800,7 +799,6 @@ describe('Extension: Groups', () => {
     });
 
     it('Error when add/remove with invalid payload', async () => {
-        await resetExtension();
         mockLogger.error.mockClear();
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({groupz: 'group_1', device: 'bulb_color'}));
