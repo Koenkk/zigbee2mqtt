@@ -247,22 +247,6 @@ export default class Groups extends Extension {
         if (!error) {
             assert(resolvedEntityEndpoint, '`resolvedEntityEndpoint` is missing');
             try {
-                const keys = [
-                    `${resolvedEntityDevice.ieeeAddr}/${resolvedEntityEndpoint.ID}`,
-                    `${resolvedEntityDevice.name}/${resolvedEntityEndpoint.ID}`,
-                ];
-                const endpointNameLocal = resolvedEntityDevice.endpointName(resolvedEntityEndpoint);
-
-                if (endpointNameLocal) {
-                    keys.push(`${resolvedEntityDevice.ieeeAddr}/${endpointNameLocal}`);
-                    keys.push(`${resolvedEntityDevice.name}/${endpointNameLocal}`);
-                }
-
-                if (!endpointNameLocal) {
-                    keys.push(resolvedEntityDevice.name);
-                    keys.push(resolvedEntityDevice.ieeeAddr);
-                }
-
                 if (type === 'add') {
                     assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
                     logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
