@@ -3563,7 +3563,8 @@ describe('Extension: Bridge', () => {
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/configure_reporting',
             stringify({
-                id: '0x000b57fffec6a5b2/1',
+                id: '0x000b57fffec6a5b2',
+                endpoint: '1',
                 cluster: 'genLevelCtrl',
                 attribute: 'currentLevel',
                 maximum_report_interval: 10,
@@ -3584,7 +3585,8 @@ describe('Extension: Bridge', () => {
             'zigbee2mqtt/bridge/response/device/configure_reporting',
             stringify({
                 data: {
-                    id: '0x000b57fffec6a5b2/1',
+                    id: '0x000b57fffec6a5b2',
+                    endpoint: '1',
                     cluster: 'genLevelCtrl',
                     attribute: 'currentLevel',
                     maximum_report_interval: 10,
@@ -3608,8 +3610,9 @@ describe('Extension: Bridge', () => {
             'zigbee2mqtt/bridge/request/device/configure_reporting',
             stringify({
                 id: 'bulb',
+                // endpoint: '1',
                 cluster: 'genLevelCtrl',
-                attribute_lala: 'currentLevel',
+                attribute: 'currentLevel',
                 maximum_report_interval: 10,
                 minimum_report_interval: 1,
                 reportable_change: 1,
@@ -3634,6 +3637,7 @@ describe('Extension: Bridge', () => {
             'zigbee2mqtt/bridge/request/device/configure_reporting',
             stringify({
                 id: 'non_existing_device',
+                endpoint: '1',
                 cluster: 'genLevelCtrl',
                 attribute: 'currentLevel',
                 maximum_report_interval: 10,
@@ -3659,7 +3663,8 @@ describe('Extension: Bridge', () => {
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/configure_reporting',
             stringify({
-                id: '0x000b57fffec6a5b2/non_existing_endpoint',
+                id: '0x000b57fffec6a5b2',
+                endpoint: 'non_existing_endpoint',
                 cluster: 'genLevelCtrl',
                 attribute: 'currentLevel',
                 maximum_report_interval: 10,
