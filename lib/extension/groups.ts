@@ -221,11 +221,11 @@ export default class Groups extends Extension {
                 return [message, {type, skipDisableReporting}, `Device '${message.device}' does not exist`];
             }
 
-            const endpointKey = message.endpoint;
+            const endpointKey = message.endpoint ?? 'default';
             const resolvedEndpoint = resolvedDevice.endpoint(message.endpoint);
 
             if (!resolvedEndpoint) {
-                return [message, {type, skipDisableReporting}, `Device '${resolvedDevice.name}' does not have endpoint '${message.endpoint}'`];
+                return [message, {type, skipDisableReporting}, `Device '${resolvedDevice.name}' does not have endpoint '${endpointKey}'`];
             }
 
             return [
@@ -293,14 +293,10 @@ export default class Groups extends Extension {
             return;
         }
 
-        const responseData: KeyValue = {device: deviceKey};
+        const responseData: KeyValue = {device: deviceKey, endpoint: endpointKey};
 
         if (groupKey) {
             responseData.group = groupKey;
-        }
-
-        if (endpointKey) {
-            responseData.endpoint = endpointKey;
         }
 
         await this.publishResponse(parsed.type, raw, responseData);

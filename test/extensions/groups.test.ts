@@ -527,7 +527,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
-            stringify({data: {device: 'bulb_color', group: 'group_1'}, transaction: '123', status: 'ok'}),
+            stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, transaction: '123', status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -568,7 +568,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
-            stringify({data: {device: 'bulb_color', group: 'group/with/slashes'}, status: 'ok'}),
+            stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group/with/slashes'}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -633,7 +633,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
-            stringify({data: {device: 'bulb_color', group: 'group_1'}, status: 'ok'}),
+            stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -654,7 +654,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
-            stringify({data: {device: 'bulb_color', group: 'group_1'}, status: 'ok'}),
+            stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
