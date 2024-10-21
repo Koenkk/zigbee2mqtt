@@ -431,6 +431,7 @@ export default class Bridge extends Extension {
         if (
             typeof message !== 'object' ||
             message.id === undefined ||
+            message.endpoint === undefined ||
             message.cluster === undefined ||
             message.maximum_report_interval === undefined ||
             message.minimum_report_interval === undefined ||
@@ -440,14 +441,11 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.zigbee.resolveEntityAndEndpoint(message.id);
-        if (!device.entity) {
-            throw new Error(`Device '${message.id}' does not exist`);
-        }
+        const device = this.getEntity('device', message.id);
+        const endpoint = device.endpoint(message.endpoint);
 
-        const endpoint = device.endpoint;
         if (!endpoint) {
-            throw new Error(`Device '${device.ID}' does not have endpoint '${device.endpointID}'`);
+            throw new Error(`Device '${device.ID}' does not have endpoint '${message.endpoint}'`);
         }
 
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
@@ -472,6 +470,7 @@ export default class Bridge extends Extension {
 
         return utils.getResponse(message, {
             id: message.id,
+            endpoint: message.endpoint,
             cluster: message.cluster,
             maximum_report_interval: message.maximum_report_interval,
             minimum_report_interval: message.minimum_report_interval,
@@ -485,7 +484,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.getEntity('device', message.id) as Device;
+        const device = this.getEntity('device', message.id);
         logger.info(`Interviewing '${device.name}'`);
 
         try {
@@ -508,12 +507,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.zigbee.resolveEntityAndEndpoint(message.id).entity as Device;
-
-        if (!device) {
-            throw new Error(`Device '${message.id}' does not exist`);
-        }
-
+        const device = this.getEntity('device', message.id);
         const source = await zhc.generateExternalDefinitionSource(device.zh);
 
         return utils.getResponse(message, {id: message.id, source});
@@ -634,6 +628,9 @@ export default class Bridge extends Extension {
         }
     }
 
+    getEntity(type: 'group', ID: string): Group;
+    getEntity(type: 'device', ID: string): Device;
+    getEntity(type: 'group' | 'device', ID: string): Device | Group;
     getEntity(type: 'group' | 'device', ID: string): Device | Group {
         const entity = this.zigbee.resolveEntity(ID);
         if (!entity || entity.constructor.name.toLowerCase() !== type) {
