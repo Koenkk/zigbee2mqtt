@@ -184,13 +184,13 @@ describe('Extension: Bridge', () => {
                     external_converters: [],
                     groups: {
                         1: {friendly_name: 'group_1', retain: false},
-                        11: {devices: ['bulb_2'], friendly_name: 'group_with_tradfri', retain: false},
-                        12: {devices: ['TS0601_thermostat'], friendly_name: 'thermostat_group', retain: false},
-                        14: {devices: ['power_plug', 'bulb_2'], friendly_name: 'switch_group', retain: false},
-                        15071: {devices: ['bulb_color_2', 'bulb_2'], friendly_name: 'group_tradfri_remote', retain: false},
+                        11: {friendly_name: 'group_with_tradfri', retain: false},
+                        12: {friendly_name: 'thermostat_group', retain: false},
+                        14: {friendly_name: 'switch_group', retain: false},
+                        15071: {friendly_name: 'group_tradfri_remote', retain: false},
                         2: {friendly_name: 'group_2', retain: false},
-                        21: {devices: ['GLEDOPTO_2ID/cct'], friendly_name: 'gledopto_group'},
-                        9: {devices: ['bulb_color_2', 'bulb_2', 'wall_switch_double/right'], friendly_name: 'ha_discovery_group'},
+                        21: {friendly_name: 'gledopto_group'},
+                        9: {friendly_name: 'ha_discovery_group'},
                     },
                     homeassistant: false,
                     map_options: {
@@ -2152,27 +2152,45 @@ describe('Extension: Bridge', () => {
     it('Should publish groups on startup', async () => {
         await resetExtension();
         mockLogger.setTransportsEnabled(true);
+        // console.log(MQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/groups'));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/groups',
             stringify([
                 {friendly_name: 'group_1', id: 1, members: [], scenes: []},
-                {friendly_name: 'group_tradfri_remote', id: 15071, members: [{endpoint: 1, ieee_address: '0x000b57fffec6a5b4'}], scenes: []},
+                {friendly_name: 'group_2', id: 2, members: [], scenes: []},
+                {
+                    friendly_name: 'group_tradfri_remote',
+                    id: 15071,
+                    members: [
+                        {endpoint: 1, ieee_address: '0x000b57fffec6a5b4'},
+                        {endpoint: 1, ieee_address: '0x000b57fffec6a5b7'},
+                    ],
+                    scenes: [],
+                },
                 {friendly_name: '99', id: 99, members: [], scenes: []},
-                {friendly_name: 'group_with_tradfri', id: 11, members: [], scenes: []},
-                {friendly_name: 'thermostat_group', id: 12, members: [], scenes: []},
-                {friendly_name: 'switch_group', id: 14, members: [{endpoint: 1, ieee_address: '0x0017880104e45524'}], scenes: []},
-                {friendly_name: 'gledopto_group', id: 21, members: [], scenes: []},
+                {friendly_name: 'group_with_tradfri', id: 11, members: [{endpoint: 1, ieee_address: '0x000b57fffec6a5b7'}], scenes: []},
+                {friendly_name: 'thermostat_group', id: 12, members: [{endpoint: 1, ieee_address: '0x0017882104a44559'}], scenes: []},
+                {
+                    friendly_name: 'switch_group',
+                    id: 14,
+                    members: [
+                        {endpoint: 1, ieee_address: '0x0017880104e45524'},
+                        {endpoint: 1, ieee_address: '0x000b57fffec6a5b7'},
+                    ],
+                    scenes: [],
+                },
+                {friendly_name: 'gledopto_group', id: 21, members: [{endpoint: 15, ieee_address: '0x0017880104e45724'}], scenes: []},
                 {friendly_name: 'default_bind_group', id: 901, members: [], scenes: []},
                 {
                     friendly_name: 'ha_discovery_group',
                     id: 9,
                     members: [
                         {endpoint: 1, ieee_address: '0x000b57fffec6a5b4'},
-                        {endpoint: 2, ieee_address: '0x0017880104e45542'},
+                        {endpoint: 1, ieee_address: '0x000b57fffec6a5b7'},
+                        {endpoint: 3, ieee_address: '0x0017880104e45542'},
                     ],
                     scenes: [{id: 4, name: 'Scene 4'}],
                 },
-                {friendly_name: 'group_2', id: 2, members: [], scenes: []},
             ]),
             {retain: true, qos: 0},
             expect.any(Function),
@@ -2766,22 +2784,6 @@ describe('Extension: Bridge', () => {
 
     it('Should allow to remove device by string', async () => {
         const device = devices.bulb;
-        settings.set(['groups'], {
-            1: {
-                friendly_name: 'group_1',
-                retain: false,
-                devices: [
-                    '0x999b57fffec6a5b9/1',
-                    '0x000b57fffec6a5b2/1',
-                    'bulb',
-                    'bulb/right',
-                    'other_bulb',
-                    'bulb_1',
-                    '0x000b57fffec6a5b2',
-                    'bulb/room/2',
-                ],
-            },
-        });
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/remove', 'bulb');
         await flushPromises();
@@ -2799,7 +2801,6 @@ describe('Extension: Bridge', () => {
             expect.any(Function),
         );
         expect(settings.get().blocklist).toStrictEqual([]);
-        expect(settings.getGroup('group_1').devices).toStrictEqual(['0x999b57fffec6a5b9/1', 'other_bulb', 'bulb_1', 'bulb/room/2']);
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
     });
@@ -2970,7 +2971,7 @@ describe('Extension: Bridge', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/rename', stringify({from: 'group_1', to: 'group_new_name'}));
         await flushPromises();
         expect(settings.getGroup('group_1')).toBeUndefined();
-        expect(settings.getGroup('group_new_name')).toStrictEqual({ID: 1, devices: [], friendly_name: 'group_new_name', retain: false});
+        expect(settings.getGroup('group_new_name')).toStrictEqual({ID: 1, friendly_name: 'group_new_name', retain: false});
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/rename',
@@ -3307,10 +3308,10 @@ describe('Extension: Bridge', () => {
 
     it('Should allow change group options', async () => {
         mockMQTT.publish.mockClear();
-        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, devices: [], friendly_name: 'group_1', retain: false});
+        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, friendly_name: 'group_1', retain: false});
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/options', stringify({options: {retain: true, transition: 1}, id: 'group_1'}));
         await flushPromises();
-        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, devices: [], friendly_name: 'group_1', retain: true, transition: 1});
+        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, friendly_name: 'group_1', retain: true, transition: 1});
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/options',
             stringify({data: {from: {retain: false}, to: {retain: true, transition: 1}, restart_required: false, id: 'group_1'}, status: 'ok'}),
@@ -3321,12 +3322,11 @@ describe('Extension: Bridge', () => {
 
     it('Should allow change group options with restart required', async () => {
         mockMQTT.publish.mockClear();
-        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, devices: [], friendly_name: 'group_1', retain: false});
+        expect(settings.getGroup('group_1')).toStrictEqual({ID: 1, friendly_name: 'group_1', retain: false});
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/options', stringify({options: {off_state: 'all_members_off'}, id: 'group_1'}));
         await flushPromises();
         expect(settings.getGroup('group_1')).toStrictEqual({
             ID: 1,
-            devices: [],
             friendly_name: 'group_1',
             retain: false,
             off_state: 'all_members_off',
@@ -3358,7 +3358,7 @@ describe('Extension: Bridge', () => {
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/add', 'group_193');
         await flushPromises();
-        expect(settings.getGroup('group_193')).toStrictEqual({ID: 3, devices: [], friendly_name: 'group_193'});
+        expect(settings.getGroup('group_193')).toStrictEqual({ID: 3, friendly_name: 'group_193'});
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
@@ -3372,7 +3372,7 @@ describe('Extension: Bridge', () => {
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/add', stringify({friendly_name: 'group_193', id: 92}));
         await flushPromises();
-        expect(settings.getGroup('group_193')).toStrictEqual({ID: 92, devices: [], friendly_name: 'group_193'});
+        expect(settings.getGroup('group_193')).toStrictEqual({ID: 92, friendly_name: 'group_193'});
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/add',
