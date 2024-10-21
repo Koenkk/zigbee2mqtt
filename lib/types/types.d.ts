@@ -184,7 +184,7 @@ declare global {
             ssl_key?: string;
         };
         devices: {[s: string]: DeviceOptions};
-        groups: {[s: string]: OptionalProps<Omit<GroupOptions, 'ID'>, 'devices'>};
+        groups: {[s: string]: Omit<GroupOptions, 'ID'>};
         device_options: KeyValue;
         advanced: {
             log_rotation: boolean;
@@ -238,7 +238,6 @@ declare global {
     }
 
     interface GroupOptions {
-        devices: string[];
         ID: number;
         optimistic?: boolean;
         off_state?: 'all_members_off' | 'last_member_state';
