@@ -195,15 +195,23 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
 
 interface ParsedMQTTMessage {
     type: 'bind' | 'unbind';
-    sourceKey: string;
-    targetKey: string;
+    sourceKey?: string;
+    sourceEndpointKey?: string | number;
+    targetKey?: string;
+    targetEndpointKey?: string | number;
     clusters?: string[];
     skipDisableReporting: boolean;
+    resolvedSource?: Device;
+    resolvedTarget?: Device | Group | typeof DEFAULT_BIND_GROUP;
+    resolvedSourceEndpoint?: zh.Endpoint;
+    resolvedBindTarget?: number | zh.Endpoint | zh.Group;
 }
 
 interface DataMessage {
     from: ParsedMQTTMessage['sourceKey'];
+    from_endpoint?: ParsedMQTTMessage['sourceEndpointKey'];
     to: ParsedMQTTMessage['targetKey'];
+    to_endpoint: ParsedMQTTMessage['targetEndpointKey'];
     clusters: ParsedMQTTMessage['clusters'];
     skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
 }
@@ -217,128 +225,199 @@ export default class Bind extends Extension {
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
     }
 
-    private parseMQTTMessage(data: eventdata.MQTTMessage): ParsedMQTTMessage | undefined {
-        let type: ParsedMQTTMessage['type'] | undefined;
-        let sourceKey: ParsedMQTTMessage['sourceKey'] | undefined;
-        let targetKey: ParsedMQTTMessage['targetKey'] | undefined;
-        let clusters: ParsedMQTTMessage['clusters'] | undefined;
-        let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
-
+    private parseMQTTMessage(
+        data: eventdata.MQTTMessage,
+    ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
         if (data.topic.match(TOPIC_REGEX)) {
-            type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
+            const type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
+            let skipDisableReporting = false;
             const message: DataMessage = JSON.parse(data.message);
-            sourceKey = message.from;
-            targetKey = message.to;
-            clusters = message.clusters;
-            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
-        } else {
-            return undefined;
-        }
 
-        return {type, sourceKey, targetKey, clusters, skipDisableReporting};
+            if (typeof message !== 'object' || message.from == undefined || message.to == undefined) {
+                return [message, {type, skipDisableReporting}, `Invalid payload`];
+            }
+
+            const sourceKey = message.from;
+            const sourceEndpointKey = message.from_endpoint ?? 'default';
+            const targetKey = message.to;
+            const targetEndpointKey = message.to_endpoint;
+            const clusters = message.clusters;
+            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
+            const resolvedSource = this.zigbee.resolveEntity(message.from) as Device;
+
+            if (!resolvedSource || !(resolvedSource instanceof Device)) {
+                return [message, {type, skipDisableReporting}, `Source device '${message.from}' does not exist`];
+            }
+
+            const resolvedTarget = message.to === DEFAULT_BIND_GROUP.name ? DEFAULT_BIND_GROUP : this.zigbee.resolveEntity(message.to);
+
+            if (!resolvedTarget) {
+                return [message, {type, skipDisableReporting}, `Target device or group '${message.to}' does not exist`];
+            }
+
+            const resolvedSourceEndpoint = resolvedSource.endpoint(sourceEndpointKey);
+
+            if (!resolvedSourceEndpoint) {
+                return [
+                    message,
+                    {type, skipDisableReporting},
+                    `Source device '${resolvedSource.name}' does not have endpoint '${sourceEndpointKey}'`,
+                ];
+            }
+
+            // resolves to 'default' endpoint if targetEndpointKey is invalid (used by frontend for 'Coordinator')
+            const resolvedBindTarget =
+                resolvedTarget instanceof Device
+                    ? resolvedTarget.endpoint(targetEndpointKey)
+                    : resolvedTarget instanceof Group
+                      ? resolvedTarget.zh
+                      : Number(resolvedTarget.ID);
+
+            if (resolvedTarget instanceof Device && !resolvedBindTarget) {
+                return [
+                    message,
+                    {type, skipDisableReporting},
+                    `Target device '${resolvedTarget.name}' does not have endpoint '${targetEndpointKey}'`,
+                ];
+            }
+
+            return [
+                message,
+                {
+                    type,
+                    sourceKey,
+                    sourceEndpointKey,
+                    targetKey,
+                    targetEndpointKey,
+                    clusters,
+                    skipDisableReporting,
+                    resolvedSource,
+                    resolvedTarget,
+                    resolvedSourceEndpoint,
+                    resolvedBindTarget,
+                },
+                undefined,
+            ];
+        } else {
+            return [undefined, undefined, undefined];
+        }
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const parsed = this.parseMQTTMessage(data);
+        const [raw, parsed, error] = this.parseMQTTMessage(data);
 
-        if (!parsed || !parsed.type) {
+        if (!raw || !parsed) {
             return;
         }
 
-        const {type, sourceKey, targetKey, clusters, skipDisableReporting} = parsed;
-        const message = utils.parseJSON(data.message, data.message);
+        if (error) {
+            await this.publishResponse(parsed.type, raw, {}, error);
+            return;
+        }
 
-        let error: string | undefined;
-        const parsedSource = this.zigbee.resolveEntityAndEndpoint(sourceKey);
-        const parsedTarget = this.zigbee.resolveEntityAndEndpoint(targetKey);
-        const source = parsedSource.entity;
-        const target = targetKey === DEFAULT_BIND_GROUP.name ? DEFAULT_BIND_GROUP : parsedTarget.entity;
-        const responseData: KeyValue = {from: sourceKey, to: targetKey};
+        const {
+            type,
+            sourceKey,
+            sourceEndpointKey,
+            targetKey,
+            targetEndpointKey,
+            clusters,
+            skipDisableReporting,
+            resolvedSource,
+            resolvedTarget,
+            resolvedSourceEndpoint,
+            resolvedBindTarget,
+        } = parsed;
 
-        if (!source || !(source instanceof Device)) {
-            error = `Source device '${sourceKey}' does not exist`;
-        } else if (parsedSource.endpointID && !parsedSource.endpoint) {
-            error = `Source device '${parsedSource.ID}' does not have endpoint '${parsedSource.endpointID}'`;
-        } else if (!target) {
-            error = `Target device or group '${targetKey}' does not exist`;
-        } else if (target instanceof Device && parsedTarget.endpointID && !parsedTarget.endpoint) {
-            error = `Target device '${parsedTarget.ID}' does not have endpoint '${parsedTarget.endpointID}'`;
-        } else {
-            const successfulClusters: string[] = [];
-            const failedClusters = [];
-            const attemptedClusters = [];
+        assert(resolvedSource, '`resolvedSource` is missing');
+        assert(resolvedTarget, '`resolvedTarget` is missing');
+        assert(resolvedSourceEndpoint, '`resolvedSourceEndpoint` is missing');
+        assert(resolvedBindTarget != undefined, '`resolvedBindTarget` is missing');
 
-            const bindSource = parsedSource.endpoint;
-            const bindTarget = target instanceof Device ? parsedTarget.endpoint : target instanceof Group ? target.zh : Number(target.ID);
+        const successfulClusters: string[] = [];
+        const failedClusters = [];
+        const attemptedClusters = [];
+        // Find which clusters are supported by both the source and target.
+        // Groups are assumed to support all clusters.
+        const clusterCandidates = clusters ?? ALL_CLUSTER_CANDIDATES;
 
-            assert(bindSource != undefined && bindTarget != undefined);
+        for (const cluster of clusterCandidates) {
+            let matchingClusters = false;
 
-            // Find which clusters are supported by both the source and target.
-            // Groups are assumed to support all clusters.
-            const clusterCandidates = clusters ?? ALL_CLUSTER_CANDIDATES;
+            const anyClusterValid =
+                utils.isZHGroup(resolvedBindTarget) ||
+                typeof resolvedBindTarget === 'number' ||
+                (resolvedTarget instanceof Device && resolvedTarget.zh.type === 'Coordinator');
 
-            for (const cluster of clusterCandidates) {
-                let matchingClusters = false;
+            if (!anyClusterValid && utils.isZHEndpoint(resolvedBindTarget)) {
+                matchingClusters =
+                    (resolvedBindTarget.supportsInputCluster(cluster) && resolvedSourceEndpoint.supportsOutputCluster(cluster)) ||
+                    (resolvedSourceEndpoint.supportsInputCluster(cluster) && resolvedBindTarget.supportsOutputCluster(cluster));
+            }
 
-                const anyClusterValid = utils.isZHGroup(bindTarget) || typeof bindTarget === 'number' || (target as Device).zh.type === 'Coordinator';
+            const sourceValid = resolvedSourceEndpoint.supportsInputCluster(cluster) || resolvedSourceEndpoint.supportsOutputCluster(cluster);
 
-                if (!anyClusterValid && utils.isZHEndpoint(bindTarget)) {
-                    matchingClusters =
-                        (bindTarget.supportsInputCluster(cluster) && bindSource.supportsOutputCluster(cluster)) ||
-                        (bindSource.supportsInputCluster(cluster) && bindTarget.supportsOutputCluster(cluster));
-                }
+            if (sourceValid && (anyClusterValid || matchingClusters)) {
+                logger.debug(`${type}ing cluster '${cluster}' from '${resolvedSource.name}' to '${resolvedTarget.name}'`);
+                attemptedClusters.push(cluster);
 
-                const sourceValid = bindSource.supportsInputCluster(cluster) || bindSource.supportsOutputCluster(cluster);
-
-                if (sourceValid && (anyClusterValid || matchingClusters)) {
-                    logger.debug(`${type}ing cluster '${cluster}' from '${source.name}' to '${target.name}'`);
-                    attemptedClusters.push(cluster);
-
-                    try {
-                        if (type === 'bind') {
-                            await bindSource.bind(cluster, bindTarget);
-                        } else {
-                            await bindSource.unbind(cluster, bindTarget);
-                        }
-
-                        successfulClusters.push(cluster);
-                        logger.info(
-                            `Successfully ${type === 'bind' ? 'bound' : 'unbound'} cluster '${cluster}' from '${source.name}' to '${target.name}'`,
-                        );
-                    } catch (error) {
-                        failedClusters.push(cluster);
-                        logger.error(`Failed to ${type} cluster '${cluster}' from '${source.name}' to '${target.name}' (${error})`);
+                try {
+                    if (type === 'bind') {
+                        await resolvedSourceEndpoint.bind(cluster, resolvedBindTarget);
+                    } else {
+                        await resolvedSourceEndpoint.unbind(cluster, resolvedBindTarget);
                     }
-                }
-            }
 
-            if (attemptedClusters.length === 0) {
-                logger.error(`Nothing to ${type} from '${source.name}' to '${target.name}'`);
-                error = `Nothing to ${type}`;
-            } else if (failedClusters.length === attemptedClusters.length) {
-                error = `Failed to ${type}`;
-            }
-
-            responseData[`clusters`] = successfulClusters;
-            responseData[`failed`] = failedClusters;
-
-            if (successfulClusters.length !== 0) {
-                if (type === 'bind') {
-                    await this.setupReporting(bindSource.binds.filter((b) => successfulClusters.includes(b.cluster.name) && b.target === bindTarget));
-                } else if (typeof bindTarget !== 'number' && !skipDisableReporting) {
-                    await this.disableUnnecessaryReportings(bindTarget);
+                    successfulClusters.push(cluster);
+                    logger.info(
+                        `Successfully ${type === 'bind' ? 'bound' : 'unbound'} cluster '${cluster}' from '${resolvedSource.name}' to '${resolvedTarget.name}'`,
+                    );
+                } catch (error) {
+                    failedClusters.push(cluster);
+                    logger.error(`Failed to ${type} cluster '${cluster}' from '${resolvedSource.name}' to '${resolvedTarget.name}' (${error})`);
                 }
             }
         }
 
-        const response = utils.getResponse(message, responseData, error);
+        if (attemptedClusters.length === 0) {
+            logger.error(`Nothing to ${type} from '${resolvedSource.name}' to '${resolvedTarget.name}'`);
+            await this.publishResponse(parsed.type, raw, {}, `Nothing to ${type}`);
+            return;
+        } else if (failedClusters.length === attemptedClusters.length) {
+            await this.publishResponse(parsed.type, raw, {}, `Failed to ${type}`);
+            return;
+        }
 
-        await this.mqtt.publish(`bridge/response/device/${type}`, stringify(response));
+        const responseData: KeyValue = {
+            from: sourceKey,
+            from_endpoint: sourceEndpointKey,
+            to: targetKey,
+            to_endpoint: targetEndpointKey,
+            clusters: successfulClusters,
+            failed: failedClusters,
+        };
+
+        /* istanbul ignore else */
+        if (successfulClusters.length !== 0) {
+            if (type === 'bind') {
+                await this.setupReporting(
+                    resolvedSourceEndpoint.binds.filter((b) => successfulClusters.includes(b.cluster.name) && b.target === resolvedBindTarget),
+                );
+            } else if (typeof resolvedBindTarget !== 'number' && !skipDisableReporting) {
+                await this.disableUnnecessaryReportings(resolvedBindTarget);
+            }
+        }
+
+        await this.publishResponse(parsed.type, raw, responseData);
+        this.eventBus.emitDevicesChanged();
+    }
+
+    private async publishResponse(type: ParsedMQTTMessage['type'], request: KeyValue, data: KeyValue, error?: string): Promise<void> {
+        const response = stringify(utils.getResponse(request, data, error));
+        await this.mqtt.publish(`bridge/response/device/${type}`, response);
 
         if (error) {
             logger.error(error);
-        } else {
-            this.eventBus.emitDevicesChanged();
         }
     }
 

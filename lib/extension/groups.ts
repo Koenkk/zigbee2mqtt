@@ -30,13 +30,20 @@ const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Exp
 
 interface ParsedMQTTMessage {
     type: 'remove' | 'add' | 'remove_all';
-    resolvedEntityGroup?: Group;
-    resolvedEntityDevice: Device;
-    error?: string;
+    resolvedGroup?: Group;
+    resolvedDevice?: Device;
+    resolvedEndpoint?: zh.Endpoint;
     groupKey?: string;
     deviceKey?: string;
+    endpointKey?: string | number;
     skipDisableReporting: boolean;
-    resolvedEntityEndpoint?: zh.Endpoint;
+}
+
+interface DataMessage {
+    device: ParsedMQTTMessage['deviceKey'];
+    group: ParsedMQTTMessage['groupKey'];
+    endpoint: ParsedMQTTMessage['endpointKey'];
+    skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
 }
 
 export default class Groups extends Extension {
@@ -175,120 +182,136 @@ export default class Groups extends Extension {
         return true;
     }
 
-    private async parseMQTTMessage(data: eventdata.MQTTMessage): Promise<ParsedMQTTMessage | undefined> {
-        let type: ParsedMQTTMessage['type'] | undefined;
-        let resolvedEntityGroup: ParsedMQTTMessage['resolvedEntityGroup'] | undefined;
-        let resolvedEntityDevice: ParsedMQTTMessage['resolvedEntityDevice'] | undefined;
-        let resolvedEntityEndpoint: ParsedMQTTMessage['resolvedEntityEndpoint'] | undefined;
-        let error: ParsedMQTTMessage['error'] | undefined;
-        let groupKey: ParsedMQTTMessage['groupKey'] | undefined;
-        let deviceKey: ParsedMQTTMessage['deviceKey'] | undefined;
-        let skipDisableReporting: ParsedMQTTMessage['skipDisableReporting'] = false;
-
-        /* istanbul ignore else */
+    private parseMQTTMessage(
+        data: eventdata.MQTTMessage,
+    ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
         const topicRegexMatch = data.topic.match(TOPIC_REGEX);
 
         if (topicRegexMatch) {
-            type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
-            const message = JSON.parse(data.message);
-            deviceKey = message.device;
-            skipDisableReporting = 'skip_disable_reporting' in message ? message.skip_disable_reporting : false;
+            const type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
+            let resolvedGroup;
+            let groupKey;
+            let skipDisableReporting = false;
+            const message: DataMessage = JSON.parse(data.message);
+
+            if (typeof message !== 'object' || message.device == undefined) {
+                return [message, {type, skipDisableReporting}, 'Invalid payload'];
+            }
+
+            const deviceKey = message.device;
+            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
 
             if (type !== 'remove_all') {
                 groupKey = message.group;
-                resolvedEntityGroup = this.zigbee.resolveEntity(message.group) as Group;
 
-                if (!resolvedEntityGroup || !(resolvedEntityGroup instanceof Group)) {
-                    error = `Group '${message.group}' does not exist`;
+                if (message.group == undefined) {
+                    return [message, {type, skipDisableReporting}, `Invalid payload`];
+                }
+
+                resolvedGroup = this.zigbee.resolveEntity(message.group);
+
+                if (!resolvedGroup || !(resolvedGroup instanceof Group)) {
+                    return [message, {type, skipDisableReporting}, `Group '${message.group}' does not exist`];
                 }
             }
 
-            const parsed = this.zigbee.resolveEntityAndEndpoint(message.device);
-            resolvedEntityDevice = parsed?.entity as Device;
+            const resolvedDevice = this.zigbee.resolveEntity(message.device);
 
-            if (!error && (!resolvedEntityDevice || !(resolvedEntityDevice instanceof Device))) {
-                error = `Device '${message.device}' does not exist`;
+            if (!resolvedDevice || !(resolvedDevice instanceof Device)) {
+                return [message, {type, skipDisableReporting}, `Device '${message.device}' does not exist`];
             }
 
-            if (!error) {
-                resolvedEntityEndpoint = parsed.endpoint;
+            const endpointKey = message.endpoint ?? 'default';
+            const resolvedEndpoint = resolvedDevice.endpoint(message.endpoint);
 
-                if (parsed.endpointID && !resolvedEntityEndpoint) {
-                    error = `Device '${parsed.ID}' does not have endpoint '${parsed.endpointID}'`;
-                }
+            if (!resolvedEndpoint) {
+                return [message, {type, skipDisableReporting}, `Device '${resolvedDevice.name}' does not have endpoint '${endpointKey}'`];
             }
+
+            return [
+                message,
+                {
+                    resolvedGroup,
+                    resolvedDevice,
+                    resolvedEndpoint,
+                    type,
+                    groupKey,
+                    deviceKey,
+                    endpointKey,
+                    skipDisableReporting,
+                },
+                undefined,
+            ];
         } else {
-            return undefined;
+            return [undefined, undefined, undefined];
         }
-
-        return {
-            resolvedEntityGroup,
-            resolvedEntityDevice,
-            type,
-            error,
-            groupKey,
-            deviceKey,
-            skipDisableReporting,
-            resolvedEntityEndpoint,
-        };
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const parsed = await this.parseMQTTMessage(data);
+        const [raw, parsed, error] = this.parseMQTTMessage(data);
 
-        if (!parsed || !parsed.type) {
+        if (!raw || !parsed) {
             return;
         }
 
-        const {resolvedEntityGroup, resolvedEntityDevice, type, groupKey, deviceKey, skipDisableReporting, resolvedEntityEndpoint} = parsed;
-        let error = parsed.error;
-        const changedGroups: Group[] = [];
-
-        if (!error) {
-            assert(resolvedEntityEndpoint, '`resolvedEntityEndpoint` is missing');
-            try {
-                if (type === 'add') {
-                    assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
-                    logger.info(`Adding '${resolvedEntityDevice.name}' to '${resolvedEntityGroup.name}'`);
-                    await resolvedEntityEndpoint.addToGroup(resolvedEntityGroup.zh);
-                    changedGroups.push(resolvedEntityGroup);
-                } else if (type === 'remove') {
-                    assert(resolvedEntityGroup, '`resolvedEntityGroup` is missing');
-                    logger.info(`Removing '${resolvedEntityDevice.name}' from '${resolvedEntityGroup.name}'`);
-                    await resolvedEntityEndpoint.removeFromGroup(resolvedEntityGroup.zh);
-                    changedGroups.push(resolvedEntityGroup);
-                } else {
-                    // remove_all
-                    logger.info(`Removing '${resolvedEntityDevice.name}' from all groups`);
-
-                    for (const group of this.zigbee.groupsIterator((g) => g.members.includes(resolvedEntityEndpoint))) {
-                        changedGroups.push(group);
-                    }
-
-                    await resolvedEntityEndpoint.removeFromAllGroups();
-                }
-            } catch (e) {
-                error = `Failed to ${type} from group (${(e as Error).message})`;
-                logger.debug((e as Error).stack!);
-            }
+        if (error) {
+            await this.publishResponse(parsed.type, raw, {}, error);
+            return;
         }
 
-        const message = utils.parseJSON(data.message, data.message);
-        const responseData: KeyValue = {device: deviceKey};
+        const {resolvedGroup, resolvedDevice, resolvedEndpoint, type, groupKey, deviceKey, endpointKey, skipDisableReporting} = parsed;
+        const changedGroups: Group[] = [];
+
+        assert(resolvedDevice, '`resolvedDevice` is missing');
+        assert(resolvedEndpoint, '`resolvedEndpoint` is missing');
+
+        try {
+            if (type === 'add') {
+                assert(resolvedGroup, '`resolvedGroup` is missing');
+                logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
+                await resolvedEndpoint.addToGroup(resolvedGroup.zh);
+                changedGroups.push(resolvedGroup);
+            } else if (type === 'remove') {
+                assert(resolvedGroup, '`resolvedGroup` is missing');
+                logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
+                await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
+                changedGroups.push(resolvedGroup);
+            } else {
+                // remove_all
+                logger.info(`Removing '${resolvedDevice.name}' from all groups`);
+
+                for (const group of this.zigbee.groupsIterator((g) => g.members.includes(resolvedEndpoint))) {
+                    changedGroups.push(group);
+                }
+
+                await resolvedEndpoint.removeFromAllGroups();
+            }
+        } catch (e) {
+            const errorMsg = `Failed to ${type} from group (${(e as Error).message})`;
+            await this.publishResponse(parsed.type, raw, {}, errorMsg);
+            logger.debug((e as Error).stack!);
+            return;
+        }
+
+        const responseData: KeyValue = {device: deviceKey, endpoint: endpointKey};
 
         if (groupKey) {
             responseData.group = groupKey;
         }
 
-        await this.mqtt.publish(`bridge/response/group/members/${type}`, stringify(utils.getResponse(message, responseData, error)));
+        await this.publishResponse(parsed.type, raw, responseData);
+
+        for (const group of changedGroups) {
+            this.eventBus.emitGroupMembersChanged({group, action: type, endpoint: resolvedEndpoint, skipDisableReporting});
+        }
+    }
+
+    private async publishResponse(type: ParsedMQTTMessage['type'], request: KeyValue, data: KeyValue, error?: string): Promise<void> {
+        const response = stringify(utils.getResponse(request, data, error));
+        await this.mqtt.publish(`bridge/response/group/members/${type}`, response);
 
         if (error) {
             logger.error(error);
-        } else {
-            assert(resolvedEntityEndpoint, '`resolvedEntityEndpoint` is missing');
-            for (const group of changedGroups) {
-                this.eventBus.emitGroupMembersChanged({group, action: type, endpoint: resolvedEntityEndpoint, skipDisableReporting});
-            }
         }
     }
 }
