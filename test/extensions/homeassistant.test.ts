@@ -2174,7 +2174,7 @@ describe('Extension: HomeAssistant', () => {
         mockMQTT.publish.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
-            stringify({group: 'ha_discovery_group', device: 'wall_switch_double/left'}),
+            stringify({group: 'ha_discovery_group', device: 'wall_switch_double', endpoint: 'left'}),
         );
         await flushPromises();
 
