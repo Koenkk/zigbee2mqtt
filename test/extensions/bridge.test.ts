@@ -141,6 +141,7 @@ describe('Extension: Bridge', () => {
                             retain: false,
                         },
                         '0x000b57fffec6a5b7': {friendly_name: 'bulb_2', retain: false},
+                        '0x00124b00cfcf3298': {friendly_name: 'fanbee', retain: true},
                         '0x0017880104a44559': {friendly_name: 'J1_cover'},
                         '0x0017880104e43559': {friendly_name: 'U202DST600ZB'},
                         '0x0017880104e44559': {friendly_name: '3157100_thermostat'},

@@ -872,15 +872,17 @@ export default class HomeAssistant extends Extension {
                     discovery_payload: {
                         name: null,
                         state_topic: true,
-                        state_value_template: '{{ value_json.fan_state }}',
                         command_topic: true,
-                        command_topic_postfix: 'fan_state',
                     },
                 };
 
-                const speed = (firstExpose as zhc.Fan).features.filter(isEnumExpose).find((e) => e.name === 'mode');
+                const modeEmulatedSpeed = (firstExpose as zhc.Fan).features.filter(isEnumExpose).find((e) => e.name === 'mode');
+                const nativeSpeed = (firstExpose as zhc.Fan).features.filter(isNumericExpose).find((e) => e.name === 'speed');
 
-                if (speed) {
+                // Exactly one mode needs to be active (logical xor)
+                assert(!modeEmulatedSpeed != !nativeSpeed, 'Fans need to be either mode- or speed-controlled');
+
+                if (modeEmulatedSpeed) {
                     // A fan entity in Home Assistant 2021.3 and above may have a speed,
                     // controlled by a percentage from 1 to 100, and/or non-speed presets.
                     // The MQTT Fan integration allows the speed percentage to be mapped
@@ -894,9 +896,9 @@ export default class HomeAssistant extends Extension {
                     // ZCL. This supports a generic ZCL HVAC Fan Control fan. "Off" is
                     // always a valid speed.
                     let speeds = ['off'].concat(
-                        ['low', 'medium', 'high', '1', '2', '3', '4', '5', '6', '7', '8', '9'].filter((s) => speed.values.includes(s)),
+                        ['low', 'medium', 'high', '1', '2', '3', '4', '5', '6', '7', '8', '9'].filter((s) => modeEmulatedSpeed.values.includes(s)),
                     );
-                    let presets = ['on', 'auto', 'smart'].filter((s) => speed.values.includes(s));
+                    let presets = ['on', 'auto', 'smart'].filter((s) => modeEmulatedSpeed.values.includes(s));
 
                     if (['99432'].includes(definition!.model)) {
                         // The Hampton Bay 99432 fan implements 4 speeds using the ZCL
@@ -908,22 +910,37 @@ export default class HomeAssistant extends Extension {
                     }
 
                     const allowed = [...speeds, ...presets];
-                    speed.values.forEach((s) => assert(allowed.includes(s.toString())));
+                    modeEmulatedSpeed.values.forEach((s) => assert(allowed.includes(s.toString())));
                     const percentValues = speeds.map((s, i) => `'${s}':${i}`).join(', ');
                     const percentCommands = speeds.map((s, i) => `${i}:'${s}'`).join(', ');
                     const presetList = presets.map((s) => `'${s}'`).join(', ');
 
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
-                    discoveryEntry.discovery_payload.percentage_command_topic = true;
-                    discoveryEntry.discovery_payload.percentage_value_template = `{{ {${percentValues}}[value_json.${speed.property}] | default('None') }}`;
+                    discoveryEntry.discovery_payload.percentage_command_topic = 'fan_mode';
+                    discoveryEntry.discovery_payload.percentage_value_template = `{{ {${percentValues}}[value_json.${modeEmulatedSpeed.property}] | default('None') }}`;
                     discoveryEntry.discovery_payload.percentage_command_template = `{{ {${percentCommands}}[value] | default('') }}`;
                     discoveryEntry.discovery_payload.speed_range_min = 1;
                     discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
                     assert(presets.length !== 0);
                     discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                     discoveryEntry.discovery_payload.preset_mode_command_topic = 'fan_mode';
-                    discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json.${speed.property} if value_json.${speed.property} in [${presetList}] else 'None' | default('None') }}`;
+                    discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json.${modeEmulatedSpeed.property} if value_json.${modeEmulatedSpeed.property} in [${presetList}] else 'None' | default('None') }}`;
                     discoveryEntry.discovery_payload.preset_modes = presets;
+
+                    // Emulate state based on mode
+                    discoveryEntry.discovery_payload.state_value_template = '{{ value_json.fan_state }}';
+                    discoveryEntry.discovery_payload.command_topic_postfix = 'fan_state';
+                } else if (nativeSpeed) {
+                    discoveryEntry.discovery_payload.percentage_state_topic = true;
+                    discoveryEntry.discovery_payload.percentage_command_topic = 'speed';
+                    discoveryEntry.discovery_payload.percentage_value_template = `{{ value_json.${nativeSpeed.property} | default('None') }}`;
+                    discoveryEntry.discovery_payload.percentage_command_template = `{{ value | default('') }}`;
+                    discoveryEntry.discovery_payload.speed_range_min = nativeSpeed.value_min;
+                    discoveryEntry.discovery_payload.speed_range_max = nativeSpeed.value_max;
+
+                    // Speed-controlled fans generally have an onOff cluster, use that for state
+                    discoveryEntry.discovery_payload.state_value_template = '{{ value_json.state }}';
+                    discoveryEntry.discovery_payload.command_topic_postfix = 'state';
                 }
 
                 discoveryEntries.push(discoveryEntry);
@@ -1621,7 +1638,7 @@ export default class HomeAssistant extends Extension {
             }
 
             if (payload.percentage_command_topic) {
-                payload.percentage_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
+                payload.percentage_command_topic = `${baseTopic}/${commandTopicPrefix}set/${payload.percentage_command_topic}`;
             }
 
             if (payload.preset_mode_state_topic) {

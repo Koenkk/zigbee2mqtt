@@ -1136,6 +1136,16 @@ export const devices = {
         undefined,
         CUSTOM_CLUSTERS,
     ),
+    fanbee: new Device(
+        'Router',
+        '0x00124b00cfcf3298',
+        18129,
+        0xfff1,
+        [new Endpoint(8, [0, 3, 4, 5, 6, 8], []), new Endpoint(242, [], [33])],
+        true,
+        'DC Source',
+        'FanBee1',
+    ),
 };
 
 export const mockController = {

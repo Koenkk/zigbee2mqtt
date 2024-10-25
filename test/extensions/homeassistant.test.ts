@@ -873,6 +873,42 @@ describe('Extension: HomeAssistant', () => {
         });
     });
 
+    it('Should discover devices with speed-controlled fan', async () => {
+        const payload = {
+            state_topic: 'zigbee2mqtt/fanbee',
+            state_value_template: '{{ value_json.state }}',
+            command_topic: 'zigbee2mqtt/fanbee/set/state',
+            percentage_state_topic: 'zigbee2mqtt/fanbee',
+            percentage_command_topic: 'zigbee2mqtt/fanbee/set/speed',
+            percentage_value_template: "{{ value_json.speed | default('None') }}",
+            percentage_command_template: "{{ value | default('') }}",
+            speed_range_min: 1,
+            speed_range_max: 254,
+            name: null,
+            object_id: 'fanbee',
+            unique_id: '0x00124b00cfcf3298_fan_zigbee2mqtt',
+            origin: origin,
+            device: {
+                identifiers: ['zigbee2mqtt_0x00124b00cfcf3298'],
+                name: 'fanbee',
+                model: 'Fan with valve',
+                model_id: 'FanBee',
+                manufacturer: 'Lorenz Brun',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            availability: [
+                {
+                    topic: 'zigbee2mqtt/bridge/state',
+                    value_template: '{{ value_json.state }}',
+                },
+            ],
+        };
+
+        const idx = mockMQTTPublishAsync.mock.calls.findIndex((c) => c[0] === 'homeassistant/fan/0x00124b00cfcf3298/fan/config');
+        expect(idx).not.toBe(-1);
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[idx][1])).toStrictEqual(payload);
+    });
+
     it('Should discover thermostat devices', async () => {
         const payload = {
             action_template:
