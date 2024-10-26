@@ -29,17 +29,6 @@ interface Discovered {
     discovered: boolean;
 }
 
-const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
-    type: 'sensor',
-    object_id: 'click',
-    mockProperties: [{property: 'click', value: null}],
-    discovery_payload: {
-        name: 'Click',
-        icon: 'mdi:toggle-switch',
-        value_template: '{{ value_json.click }}',
-    },
-};
-
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ['light', 'switch', 'lock', 'cover'];
@@ -49,39 +38,6 @@ const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ['closing', 'close', 'backwa
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ['stopped', 'stop', 'pause', 'paused'];
 const SWITCH_DIFFERENT: ReadonlyArray<string> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
 const LEGACY_MAPPING: ReadonlyArray<{models: string[]; discovery: DiscoveryEntry}> = [
-    {
-        models: [
-            'WXKG01LM',
-            'HS1EB/HS1EB-E',
-            'ICZB-KPD14S',
-            'TERNCY-SD01',
-            'TERNCY-PP01',
-            'ICZB-KPD18S',
-            'E1766',
-            'ZWallRemote0',
-            'ptvo.switch',
-            '2AJZ4KPKEY',
-            'ZGRC-KEY-013',
-            'HGZB-02S',
-            'HGZB-045',
-            'HGZB-1S',
-            'AV2010/34',
-            'IM6001-BTP01',
-            'WXKG11LM',
-            'WXKG03LM',
-            'WXKG02LM_rev1',
-            'WXKG02LM_rev2',
-            'QBKG04LM',
-            'QBKG03LM',
-            'QBKG11LM',
-            'QBKG21LM',
-            'QBKG22LM',
-            'WXKG12LM',
-            'QBKG12LM',
-            'E1743',
-        ],
-        discovery: SENSOR_CLICK,
-    },
     {
         models: ['ICTC-G-1'],
         discovery: {
@@ -429,7 +385,6 @@ export default class HomeAssistant extends Extension {
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic: string;
     private entityAttributes: boolean;
-    private legacyTrigger: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -460,7 +415,6 @@ export default class HomeAssistant extends Extension {
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;
         this.entityAttributes = haSettings.legacy_entity_attributes;
-        this.legacyTrigger = haSettings.legacy_triggers;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -1122,6 +1076,11 @@ export default class HomeAssistant extends Extension {
             }
             case 'enum': {
                 assertEnumExpose(firstExpose);
+
+                // Action is discovered through MQTT device trigger.
+                if (firstExpose.property === 'action') {
+                    break;
+                }
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
 
                 if (firstExpose.access & ACCESS_STATE) {
@@ -1310,18 +1269,6 @@ export default class HomeAssistant extends Extension {
 
                     await this.mqtt.publish(`${data.entity.name}/${endpoint}`, stringify(payload), {});
                 }
-            }
-        }
-
-        /**
-         * Publish an empty value for click and action payload, in this way Home Assistant
-         * can use Home Assistant entities in automations.
-         * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
-         */
-        if (this.legacyTrigger) {
-            const keys = ['action', 'click'].filter((k) => data.message[k]);
-            for (const key of keys) {
-                await this.publishEntityState(data.entity, {[key]: ''});
             }
         }
 
@@ -1523,14 +1470,6 @@ export default class HomeAssistant extends Extension {
                 configs.push(sceneEntry);
             });
         });
-
-        if (isDevice && entity.options.legacy !== undefined && !entity.options.legacy) {
-            configs = configs.filter((c) => c !== SENSOR_CLICK);
-        }
-
-        if (!this.legacyTrigger) {
-            configs = configs.filter((c) => c.object_id !== 'action' && c.object_id !== 'click');
-        }
 
         // deep clone of the config objects
         configs = JSON.parse(JSON.stringify(configs));
