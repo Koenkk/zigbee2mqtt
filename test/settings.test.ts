@@ -952,7 +952,6 @@ describe('Settings', () => {
         settings.reRead();
         expect(settings.get().homeassistant).toStrictEqual({
             discovery_topic: 'new',
-            legacy_entity_attributes: true,
             status_topic: 'olds',
         });
     });

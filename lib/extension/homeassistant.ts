@@ -384,7 +384,6 @@ export default class HomeAssistant extends Extension {
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic: string;
-    private entityAttributes: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -414,7 +413,6 @@ export default class HomeAssistant extends Extension {
         this.discoveryTopic = haSettings.discovery_topic;
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;
-        this.entityAttributes = haSettings.legacy_entity_attributes;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -1532,10 +1530,6 @@ export default class HomeAssistant extends Extension {
 
             if (payload.tilt_status_topic) {
                 payload.tilt_status_topic = stateTopic;
-            }
-
-            if (this.entityAttributes && (isDevice || isGroup)) {
-                payload.json_attributes_topic = stateTopic;
             }
 
             const devicePayload = this.getDevicePayload(entity);

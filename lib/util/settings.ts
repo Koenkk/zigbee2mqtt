@@ -16,7 +16,6 @@ objectAssignDeep(schema, schemaJson);
 // Remove legacy settings from schema
 {
     delete schema.properties.advanced.properties.homeassistant_discovery_topic;
-    delete schema.properties.advanced.properties.homeassistant_legacy_entity_attributes;
     delete schema.properties.advanced.properties.homeassistant_status_topic;
     delete schema.properties.advanced.properties.baudrate;
     delete schema.properties.advanced.properties.rtscts;
@@ -123,10 +122,10 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.homeassistant) {
-        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status', legacy_entity_attributes: true};
+        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status'};
         const sLegacy = {};
         if (_settingsWithDefaults.advanced) {
-            for (const key of ['homeassistant_discovery_topic', 'homeassistant_legacy_entity_attributes', 'homeassistant_status_topic']) {
+            for (const key of ['homeassistant_discovery_topic', 'homeassistant_status_topic']) {
                 // @ts-expect-error ignore typing
                 if (_settingsWithDefaults.advanced[key] !== undefined) {
                     // @ts-expect-error ignore typing
