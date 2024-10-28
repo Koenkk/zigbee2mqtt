@@ -1010,7 +1010,7 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === 'boolean'
-                                    ? `{% if value_json.${firstExpose.property} %} true {% else %} false {% endif %}`
+                                    ? `{% if value_json.${firstExpose.property} %}true{% else %}false{% endif %}`
                                     : `{{ value_json.${firstExpose.property} }}`,
                             payload_on: firstExpose.value_on.toString(),
                             payload_off: firstExpose.value_off.toString(),
