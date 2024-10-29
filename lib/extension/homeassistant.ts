@@ -37,22 +37,6 @@ const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ['opening', 'open', 'forward
 const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ['stopped', 'stop', 'pause', 'paused'];
 const SWITCH_DIFFERENT: ReadonlyArray<string> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
-const LEGACY_MAPPING: ReadonlyArray<{models: string[]; discovery: DiscoveryEntry}> = [
-    {
-        models: ['ICTC-G-1'],
-        discovery: {
-            type: 'sensor',
-            mockProperties: [{property: 'brightness', value: null}],
-            object_id: 'brightness',
-            discovery_payload: {
-                name: 'Brightness',
-                unit_of_measurement: 'brightness',
-                icon: 'mdi:brightness-5',
-                value_template: '{{ value_json.brightness }}',
-            },
-        },
-    },
-];
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: 'mdi:led-on'},
     auto_off: {icon: 'mdi:flash-auto'},
@@ -1325,12 +1309,6 @@ export default class HomeAssistant extends Extension {
             const exposes = entity.exposes(); // avoid calling it hundred of times/s
             for (const expose of exposes) {
                 configs.push(...this.exposeToConfig([expose], 'device', exposes, entity.definition));
-            }
-
-            for (const mapping of LEGACY_MAPPING) {
-                if (mapping.models.includes(entity.definition!.model)) {
-                    configs.push(mapping.discovery);
-                }
             }
 
             // @ts-expect-error deprecated in favour of exposes
