@@ -400,6 +400,14 @@
                             "title": "key file path",
                             "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
                             "requiresRestart": true
+                        },
+                        "base_url": {
+                            "type": "string",
+                            "pattern": "^\\/.*",
+                            "title": "Base URL",
+                            "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
+                            "default": "/",
+                            "requiresRestart": true
                         }
                     }
                 }
@@ -950,7 +958,7 @@
                     "title": "Group off state",
                     "default": "auto",
                     "requiresRestart": true,
-                    "description": "Control when to publish state OFF for a group. 'all_members_off': only publish state OFF when all group members are in state OFF, 'last_member_state': publish state OFF whenever one of its members changes to OFF"
+                    "description": "Control when to publish state OFF or CLOSE for a group. 'all_members_off': only publish state OFF/CLOSE when all group members are in state OFF/CLOSE,  'last_member_state': publish state OFF whenever one of its members changes to OFF"
                 },
                 "filtered_attributes": {
                     "type": "array",

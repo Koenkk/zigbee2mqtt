@@ -256,6 +256,8 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     people: {state_class: 'measurement', icon: 'mdi:account-multiple'},
     position: {icon: 'mdi:valve', state_class: 'measurement'},
     power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+    power_phase_b: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+    power_phase_c: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
     power_factor: {device_class: 'power_factor', enabled_by_default: false, entity_category: 'diagnostic', state_class: 'measurement'},
     power_outage_count: {icon: 'mdi:counter', enabled_by_default: false},
     precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
@@ -1013,7 +1015,7 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === 'boolean'
-                                    ? `{% if value_json.${firstExpose.property} %} true {% else %} false {% endif %}`
+                                    ? `{% if value_json.${firstExpose.property} %}true{% else %}false{% endif %}`
                                     : `{{ value_json.${firstExpose.property} }}`,
                             payload_on: firstExpose.value_on.toString(),
                             payload_off: firstExpose.value_off.toString(),

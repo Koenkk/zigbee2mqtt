@@ -1,9 +1,12 @@
+import type {IncomingMessage, Server, ServerResponse} from 'http';
+import type {Socket} from 'net';
+
 import assert from 'assert';
-import fs from 'fs';
-import http from 'http';
-import https from 'https';
-import net from 'net';
-import url from 'url';
+import {existsSync, readFileSync} from 'fs';
+import {createServer} from 'http';
+import {createServer as createSecureServer} from 'https';
+import {posix} from 'path';
+import {parse} from 'url';
 
 import bind from 'bind-decorator';
 import gzipStatic, {RequestHandler} from 'connect-gzip-static';
@@ -28,9 +31,10 @@ export default class Frontend extends Extension {
     private sslCert: string | undefined;
     private sslKey: string | undefined;
     private authToken: string | undefined;
-    private server: http.Server | undefined;
-    private fileServer: RequestHandler | undefined;
-    private wss: WebSocket.Server | undefined;
+    private server!: Server;
+    private fileServer!: RequestHandler;
+    private wss!: WebSocket.Server;
+    private baseUrl: string;
 
     constructor(
         zigbee: Zigbee,
@@ -51,12 +55,13 @@ export default class Frontend extends Extension {
         this.sslCert = frontendSettings.ssl_cert;
         this.sslKey = frontendSettings.ssl_key;
         this.authToken = frontendSettings.auth_token;
+        this.baseUrl = frontendSettings.base_url;
         this.mqttBaseTopic = settings.get().mqtt.base_topic;
     }
 
     private isHttpsConfigured(): boolean {
         if (this.sslCert && this.sslKey) {
-            if (!fs.existsSync(this.sslCert) || !fs.existsSync(this.sslKey)) {
+            if (!existsSync(this.sslCert) || !existsSync(this.sslKey)) {
                 logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`);
                 return false;
             }
@@ -66,30 +71,30 @@ export default class Frontend extends Extension {
     }
 
     override async start(): Promise<void> {
-        if (this.isHttpsConfigured()) {
-            const serverOptions = {
-                key: fs.readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
-                cert: fs.readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
-            };
-            this.server = https.createServer(serverOptions, this.onRequest);
-        } else {
-            this.server = http.createServer(this.onRequest);
-        }
-
-        this.server.on('upgrade', this.onUpgrade);
-
         /* istanbul ignore next */
         const options = {
-            setHeaders: (res: http.ServerResponse, path: string): void => {
+            setHeaders: (res: ServerResponse, path: string): void => {
                 if (path.endsWith('index.html')) {
                     res.setHeader('Cache-Control', 'no-store');
                 }
             },
         };
         this.fileServer = gzipStatic(frontend.getPath(), options);
-        this.wss = new WebSocket.Server({noServer: true});
+        this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, 'api')});
+
         this.wss.on('connection', this.onWebSocketConnection);
 
+        if (this.isHttpsConfigured()) {
+            const serverOptions = {
+                key: readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
+                cert: readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
+            };
+            this.server = createSecureServer(serverOptions, this.onRequest);
+        } else {
+            this.server = createServer(this.onRequest);
+        }
+
+        this.server.on('upgrade', this.onUpgrade);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
 
         if (!this.host) {
@@ -106,31 +111,42 @@ export default class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss?.clients.forEach((client) => {
+        this.wss.clients.forEach((client) => {
             client.send(stringify({topic: 'bridge/state', payload: 'offline'}));
             client.terminate();
         });
-        this.wss?.close();
-        /* istanbul ignore else */
-        if (this.server) {
-            return await new Promise((cb: () => void) => this.server!.close(cb));
+        this.wss.close();
+
+        await new Promise((resolve) => this.server.close(resolve));
+    }
+
+    @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
+        const fin = finalhandler(request, response);
+        const newUrl = posix.relative(this.baseUrl, request.url!);
+
+        // The request url is not within the frontend base url, so the relative path starts with '..'
+        if (newUrl.startsWith('.')) {
+            return fin();
         }
+
+        // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
+        // This is necessary for the browser to resolve relative assets paths correctly.
+        request.originalUrl = request.url;
+        request.url = '/' + newUrl;
+
+        this.fileServer(request, response, fin);
     }
 
-    @bind private onRequest(request: http.IncomingMessage, response: http.ServerResponse): void {
-        this.fileServer?.(request, response, finalhandler(request, response));
-    }
-
-    private authenticate(request: http.IncomingMessage, cb: (authenticate: boolean) => void): void {
-        const {query} = url.parse(request.url!, true);
+    private authenticate(request: IncomingMessage, cb: (authenticate: boolean) => void): void {
+        const {query} = parse(request.url!, true);
         cb(!this.authToken || this.authToken === query.token);
     }
 
-    @bind private onUpgrade(request: http.IncomingMessage, socket: net.Socket, head: Buffer): void {
-        this.wss!.handleUpgrade(request, socket, head, (ws) => {
+    @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
+        this.wss.handleUpgrade(request, socket, head, (ws) => {
             this.authenticate(request, (isAuthenticated) => {
                 if (isAuthenticated) {
-                    this.wss!.emit('connection', ws, request);
+                    this.wss.emit('connection', ws, request);
                 } else {
                     ws.close(4401, 'Unauthorized');
                 }
@@ -164,6 +180,7 @@ export default class Frontend extends Extension {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             const payload = this.state.get(device);
             const lastSeen = settings.get().advanced.last_seen;
+
             /* istanbul ignore if */
             if (lastSeen !== 'disable') {
                 payload.last_seen = utils.formatDate(device.zh.lastSeen ?? 0, lastSeen);
@@ -184,7 +201,7 @@ export default class Frontend extends Extension {
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
             const payload = utils.parseJSON(data.payload, data.payload);
 
-            for (const client of this.wss!.clients) {
+            for (const client of this.wss.clients) {
                 /* istanbul ignore else */
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(stringify({topic, payload}));

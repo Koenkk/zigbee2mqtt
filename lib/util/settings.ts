@@ -170,7 +170,7 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.frontend) {
-        const defaults = {port: 8080, auth_token: false};
+        const defaults = {port: 8080, auth_token: null, base_url: '/'};
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
         // @ts-expect-error ignore typing
         _settingsWithDefaults.frontend = {};

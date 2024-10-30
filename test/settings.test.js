@@ -978,7 +978,7 @@ describe('Settings', () => {
         write(configurationFile, {...minimalConfig, frontend: true});
 
         settings.reRead();
-        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: false});
+        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: null, base_url: '/'});
     });
 
     it('Baudrate config', () => {

@@ -228,17 +228,22 @@ export default class Groups extends Extension {
     }
 
     private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
-        return group.options.off_state === 'last_member_state' || !payload || payload.state !== 'OFF' || this.areAllMembersOff(group);
+        return (
+            group.options.off_state === 'last_member_state' ||
+            !payload ||
+            (payload.state !== 'OFF' && payload.state !== 'CLOSE') ||
+            this.areAllMembersOffOrClosed(group)
+        );
     }
 
-    private areAllMembersOff(group: Group): boolean {
+    private areAllMembersOffOrClosed(group: Group): boolean {
         for (const member of group.zh.members) {
             const device = this.zigbee.resolveEntity(member.getDevice())!;
 
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
 
-                if (state.state === 'ON') {
+                if (state.state === 'ON' || state.state === 'OPEN') {
                     return false;
                 }
             }

@@ -46,7 +46,7 @@ declare global {
         properties?: {messageExpiryInterval: number};
     }
     type Scene = {id: number; name: string};
-    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached';
+    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
     interface KeyValue {
@@ -179,6 +179,7 @@ declare global {
             auth_token?: string;
             host?: string;
             port: number;
+            base_url: string;
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
@@ -232,6 +233,7 @@ declare global {
         retrieve_state?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
+        throttle?: number;
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];

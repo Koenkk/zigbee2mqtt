@@ -3,6 +3,7 @@ import assert from 'assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
+import throttle from 'throttleit';
 
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -16,6 +17,7 @@ type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
+    private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
 
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
@@ -66,6 +68,20 @@ export default class Receive extends Extension {
         this.state.set(device, this.debouncers[device.ieeeAddr].payload);
 
         this.debouncers[device.ieeeAddr].publish();
+    }
+
+    async publishThrottle(device: Device, payload: KeyValue, time: number): Promise<void> {
+        if (!this.throttlers[device.ieeeAddr]) {
+            this.throttlers[device.ieeeAddr] = {
+                publish: throttle(this.publishEntityState, time * 1000),
+            };
+        }
+
+        // Update state cache right away. This makes sure that during throttling cached state is always up to date.
+        // By updating cache we make sure that state cache is always up-to-date.
+        this.state.set(device, payload);
+
+        await this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
     }
 
     // if debounce_ignore are specified (Array of strings)
@@ -130,9 +146,11 @@ export default class Receive extends Extension {
                 this.elapsed[data.device.ieeeAddr] = now;
             }
 
-            // Check if we have to debounce
+            // Check if we have to debounce or throttle
             if (data.device.options.debounce) {
                 this.publishDebounce(data.device, payload, data.device.options.debounce, data.device.options.debounce_ignore);
+            } else if (data.device.options.throttle) {
+                await this.publishThrottle(data.device, payload, data.device.options.throttle);
             } else {
                 await this.publishEntityState(data.device, payload);
             }

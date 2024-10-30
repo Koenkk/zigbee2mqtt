@@ -105,6 +105,8 @@ Zigbee2MQTT is made up of three modules, each developed in its own Github projec
 ### Developing
 
 Zigbee2MQTT uses TypeScript (partially for now). Therefore after making changes to files in the `lib/` directory you need to recompile Zigbee2MQTT. This can be done by executing `npm run build`. For faster development instead of running `npm run build` you can run `npm run build-watch` in another terminal session, this will recompile as you change files.
+In first time before building you need to run `npm install --include=dev`
+Before submitting changes run `npm run test-with-coverage`, `npm run pretty:check` and `npm run eslint`
 
 ## Supported devices
 
