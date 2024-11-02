@@ -1,6 +1,6 @@
 {
     "name": "zigbee2mqtt",
-    "version": "1.40.2-dev",
+    "version": "1.41.0-dev",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "repository": {
@@ -61,26 +61,26 @@
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.8.0",
         "ws": "^8.18.0",
-        "zigbee-herdsman": "2.1.5",
-        "zigbee-herdsman-converters": "20.35.0",
+        "zigbee-herdsman": "2.1.7",
+        "zigbee-herdsman-converters": "20.39.0",
         "zigbee2mqtt-frontend": "0.7.4"
     },
     "devDependencies": {
-        "@babel/core": "^7.25.8",
-        "@babel/plugin-proposal-decorators": "^7.25.7",
-        "@babel/preset-env": "^7.25.8",
-        "@babel/preset-typescript": "^7.25.7",
+        "@babel/core": "^7.26.0",
+        "@babel/plugin-proposal-decorators": "^7.25.9",
+        "@babel/preset-env": "^7.26.0",
+        "@babel/preset-typescript": "^7.26.0",
         "@eslint/core": "^0.7.0",
         "@eslint/js": "^9.13.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
-        "@types/jest": "^29.5.13",
+        "@types/jest": "^29.5.14",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^22.7.7",
+        "@types/node": "^22.8.1",
         "@types/object-assign-deep": "^0.4.3",
-        "@types/readable-stream": "4.0.15",
+        "@types/readable-stream": "4.0.16",
         "@types/sd-notify": "^2.8.2",
         "@types/ws": "8.5.12",
         "babel-jest": "^29.7.0",
@@ -90,7 +90,7 @@
         "prettier": "^3.3.3",
         "tmp": "^0.2.3",
         "typescript": "^5.6.3",
-        "typescript-eslint": "^8.10.0"
+        "typescript-eslint": "^8.11.0"
     },
     "overrides": {
         "zigbee-herdsman-converters": {
