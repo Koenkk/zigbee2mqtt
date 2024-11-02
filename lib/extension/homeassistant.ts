@@ -441,6 +441,7 @@ export default class HomeAssistant extends Extension {
     private statusTopic: string;
     private entityAttributes: boolean;
     private legacyTrigger: boolean;
+    private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -472,6 +473,7 @@ export default class HomeAssistant extends Extension {
         this.statusTopic = haSettings.status_topic;
         this.entityAttributes = haSettings.legacy_entity_attributes;
         this.legacyTrigger = haSettings.legacy_triggers;
+        this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -1156,7 +1158,12 @@ export default class HomeAssistant extends Extension {
                  * If enum attribute does not have SET access and is named 'action', then expose
                  * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
                  */
-                if (firstExpose.access & ACCESS_STATE && !(firstExpose.access & ACCESS_SET) && firstExpose.property == 'action') {
+                if (
+                    this.experimentalEventEntities &&
+                    firstExpose.access & ACCESS_STATE &&
+                    !(firstExpose.access & ACCESS_SET) &&
+                    firstExpose.property == 'action'
+                ) {
                     discoveryEntries.push({
                         type: 'event',
                         object_id: firstExpose.property,
@@ -2214,11 +2221,13 @@ export default class HomeAssistant extends Extension {
     private parseActionValue(action: string): ActionData {
         const buttons = action.match(ACTION_BUTTON_PATTERN);
         if (buttons?.groups?.action) {
+            //console.log('Recognized button actions', buttons.groups);
             return {...buttons.groups, action: buttons.groups.action};
         }
 
         const scenes = action.match(ACTION_SCENE_PATTERN);
         if (scenes?.groups?.action) {
+            //console.log('Recognized scene actions', scenes.groups);
             return {...scenes.groups, action: scenes.groups.action};
         }
 
