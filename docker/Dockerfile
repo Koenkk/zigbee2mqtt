@@ -9,7 +9,6 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk info npm
 RUN apk add make gcc g++ python3 linux-headers git pnpm && \
     pnpm i --frozen-lockfile && \
     # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
