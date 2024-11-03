@@ -6,7 +6,7 @@ RUN apk add --no-cache tzdata eudev tini #nodejs
 # Dependencies and build
 FROM base as dependencies_and_build
 
-COPY package*.json tsconfig.json index.js ./
+COPY package.json pnpm-lock.yml tsconfig.json index.js ./
 COPY lib ./lib
 
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
