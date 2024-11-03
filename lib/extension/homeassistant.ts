@@ -29,6 +29,16 @@ interface Discovered {
     discovered: boolean;
 }
 
+interface ActionData {
+    action: string;
+    button?: string;
+    scene?: string;
+    region?: string;
+}
+
+const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
+const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
+const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ['light', 'switch', 'lock', 'cover'];
@@ -152,6 +162,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         entity_category: 'diagnostic',
         state_class: 'measurement',
     },
+    distance: {device_class: 'distance', state_class: 'measurement'},
     duration: {entity_category: 'config', icon: 'mdi:timer'},
     eco2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
     eco_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
@@ -174,24 +185,28 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         state_class: 'measurement',
     },
     local_temperature: {device_class: 'temperature', state_class: 'measurement'},
+    max_range: {entity_category: 'config', icon: 'mdi:signal-distance-variant'},
     max_temperature: {entity_category: 'config', icon: 'mdi:thermometer-high'},
     max_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer-high'},
     min_temperature_limit: {entity_category: 'config', icon: 'mdi:thermometer-low'},
     min_temperature: {entity_category: 'config', icon: 'mdi:thermometer-low'},
     minimum_on_level: {entity_category: 'config'},
     measurement_poll_interval: {entity_category: 'config', icon: 'mdi:clock-out'},
+    motion_sensitivity: {entity_category: 'config', icon: 'mdi:motion-sensor'},
     noise: {device_class: 'sound_pressure', state_class: 'measurement'},
     noise_detect_level: {icon: 'mdi:volume-equal'},
     noise_timeout: {icon: 'mdi:timer'},
     occupancy_level: {icon: 'mdi:motion-sensor'},
-    occupancy_sensitivity: {icon: 'mdi:motion-sensor'},
+    occupancy_sensitivity: {entity_category: 'config', icon: 'mdi:motion-sensor'},
     occupancy_timeout: {entity_category: 'config', icon: 'mdi:timer'},
     overload_protection: {icon: 'mdi:flash'},
     pm10: {device_class: 'pm10', state_class: 'measurement'},
     pm25: {device_class: 'pm25', state_class: 'measurement'},
     people: {state_class: 'measurement', icon: 'mdi:account-multiple'},
     position: {icon: 'mdi:valve', state_class: 'measurement'},
-    power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+    power: {device_class: 'power', state_class: 'measurement'},
+    power_phase_b: {device_class: 'power', state_class: 'measurement'},
+    power_phase_c: {device_class: 'power', state_class: 'measurement'},
     power_factor: {device_class: 'power_factor', enabled_by_default: false, entity_category: 'diagnostic', state_class: 'measurement'},
     power_outage_count: {icon: 'mdi:counter', enabled_by_default: false},
     precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
@@ -367,6 +382,7 @@ export default class HomeAssistant extends Extension {
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic: string;
+    private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -396,6 +412,7 @@ export default class HomeAssistant extends Extension {
         this.discoveryTopic = haSettings.discovery_topic;
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;
+        this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -918,7 +935,7 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === 'boolean'
-                                    ? `{% if value_json.${firstExpose.property} %} true {% else %} false {% endif %}`
+                                    ? `{% if value_json.${firstExpose.property} %}true{% else %}false{% endif %}`
                                     : `{{ value_json.${firstExpose.property} }}`,
                             payload_on: firstExpose.value_on.toString(),
                             payload_off: firstExpose.value_off.toString(),
@@ -1080,6 +1097,44 @@ export default class HomeAssistant extends Extension {
                         },
                     });
                 }
+
+                /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (
+                    this.experimentalEventEntities &&
+                    firstExpose.access & ACCESS_STATE &&
+                    !(firstExpose.access & ACCESS_SET) &&
+                    firstExpose.property == 'action'
+                ) {
+                    discoveryEntries.push({
+                        type: 'event',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            state_topic: true,
+                            event_types: this.prepareActionEventTypes(firstExpose.values),
+                            // TODO: Implement parsing for all event types.
+                            value_template:
+                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- if buttons -%}\n` +
+                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                `{%- elif scenes -%}\n` +
+                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                `{%- elif regions -%}\n` +
+                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                `{%- else -%}\n` +
+                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                `{%- endif -%}\n` +
+                                `{{d|to_json}}`,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
                 break;
             }
             case 'text':
@@ -1139,9 +1194,12 @@ export default class HomeAssistant extends Extension {
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
             }
-        });
 
-        discoveryEntries.forEach((d) => {
+            // Event entities cannot have an entity_category set.
+            if (d.type === 'event' && d.discovery_payload.entity_category) {
+                delete d.discovery_payload.entity_category;
+            }
+
             // Let Home Assistant generate entity name when device_class is present
             if (d.discovery_payload.device_class) {
                 delete d.discovery_payload.name;
@@ -1986,5 +2044,42 @@ export default class HomeAssistant extends Extension {
         );
 
         return bridge;
+    }
+
+    public parseActionValue(action: string): ActionData {
+        const buttons = action.match(ACTION_BUTTON_PATTERN);
+        if (buttons?.groups?.action) {
+            //console.log('Recognized button actions', buttons.groups);
+            return {...buttons.groups, action: buttons.groups.action};
+        }
+
+        const scenes = action.match(ACTION_SCENE_PATTERN);
+        if (scenes?.groups?.action) {
+            //console.log('Recognized scene actions', scenes.groups);
+            return {...scenes.groups, action: scenes.groups.action};
+        }
+
+        const regions = action.match(ACTION_REGION_PATTERN);
+        if (regions?.groups?.action) {
+            return {...regions.groups, action: 'region_' + regions.groups.action};
+        }
+
+        const sceneWildcard = action.match(/^(?<action>recall|scene)_\*$/);
+        if (sceneWildcard?.groups?.action) {
+            logger.debug('Found scene wildcard action ' + sceneWildcard.groups.action);
+            return {action: sceneWildcard.groups.action, scene: 'wildcard'};
+        }
+
+        const regionWildcard = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        if (regionWildcard?.groups?.action) {
+            logger.debug('Found region wildcard action ' + regionWildcard.groups.action);
+            return {action: 'region_' + regionWildcard.groups.action, region: 'wildcard'};
+        }
+
+        return {action};
+    }
+
+    private prepareActionEventTypes(values: zhc.Enum['values']): string[] {
+        return utils.arrayUnique(values.map((v) => this.parseActionValue(v.toString()).action).filter((v) => !v.includes('*')));
     }
 }

@@ -122,7 +122,11 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.homeassistant) {
-        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status'};
+        const defaults = {
+            discovery_topic: 'homeassistant',
+            status_topic: 'hass/status',
+            experimental_event_entities: false,
+        };
         const sLegacy = {};
         if (_settingsWithDefaults.advanced) {
             for (const key of ['homeassistant_discovery_topic', 'homeassistant_status_topic']) {

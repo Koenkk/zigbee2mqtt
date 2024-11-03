@@ -116,6 +116,7 @@ declare global {
         homeassistant?: {
             discovery_topic: string;
             status_topic: string;
+            experimental_event_entities: boolean;
         };
         availability?: {
             active: {timeout: number};
