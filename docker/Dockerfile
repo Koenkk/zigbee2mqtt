@@ -9,7 +9,7 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git && \
+RUN apk add --no-cache --virtual .buildtools make gcc g++ python3 linux-headers git npm && \
     corepack install -g npm@10.3.0 && \
     npm ci --production --no-audit --no-optional --no-update-notifier && \
     # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
