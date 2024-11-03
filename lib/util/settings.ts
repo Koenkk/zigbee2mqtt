@@ -136,7 +136,13 @@ function loadSettingsWithDefaults(): void {
     }
 
     if (_settingsWithDefaults.homeassistant) {
-        const defaults = {discovery_topic: 'homeassistant', status_topic: 'hass/status', legacy_entity_attributes: true, legacy_triggers: true};
+        const defaults = {
+            discovery_topic: 'homeassistant',
+            status_topic: 'hass/status',
+            legacy_entity_attributes: true,
+            legacy_triggers: true,
+            experimental_event_entities: false,
+        };
         const sLegacy = {};
         if (_settingsWithDefaults.advanced) {
             for (const key of [

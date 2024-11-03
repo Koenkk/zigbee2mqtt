@@ -118,6 +118,7 @@ declare global {
             status_topic: string;
             legacy_entity_attributes: boolean;
             legacy_triggers: boolean;
+            experimental_event_entities: boolean;
         };
         permit_join: boolean;
         availability?: {
