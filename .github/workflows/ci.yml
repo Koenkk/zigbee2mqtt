@@ -47,10 +47,10 @@ jobs:
             #       ./configure --prefix=/usr/local --disable-werror --enable-virtfs
             #       make -j$(nproc)
             #       sudo make install
-            # - name: Dker/setup-qemu-action@v3
-              with:ocker setup - QEMU
+            - name: Docker setup - QEMU
               # if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              uses: doc
+              uses: docker/setup-qemu-action@v3
+              with:
                   platforms: all
                   image: tonistiigi/binfmt:master
             - name: Docker setup - Buildx
