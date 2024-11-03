@@ -41,7 +41,12 @@ jobs:
             - name: Install QEMU 9
               run: |
                   sudo apt update
-                  sudo apt install -y qemu
+                  sudo apt install -y git ninja-build pkg-config zlib1g-dev libglib2.0-dev
+                  git clone --depth=1 --branch=v9.1.1 https://git.qemu.org/git/qemu.git
+                  cd qemu
+                  ./configure --prefix=/usr/local --disable-werror --enable-virtfs
+                  make -j$(nproc)
+                  sudo make install
             # - name: Dker/setup-qemu-action@v3
             #   with:ocker setup - QEMU
             #   # if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
