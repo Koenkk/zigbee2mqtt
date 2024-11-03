@@ -422,13 +422,12 @@ describe('Extension: HomeAssistant', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
@@ -436,7 +435,7 @@ describe('Extension: HomeAssistant', () => {
             json_attributes_topic: 'zigbee2mqtt/button',
             name: 'Action',
             object_id: 'button_action',
-            origin: origin,
+            origin,
             state_topic: 'zigbee2mqtt/button',
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
@@ -444,7 +443,7 @@ describe('Extension: HomeAssistant', () => {
                 '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
-        expect(MQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
             'homeassistant/event/0x0017880104e45520/action/config',
             stringify(payload),
             {retain: true, qos: 1},
@@ -1970,13 +1969,12 @@ describe('Extension: HomeAssistant', () => {
         await resetExtension();
 
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
@@ -1992,7 +1990,7 @@ describe('Extension: HomeAssistant', () => {
                 '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
-        expect(MQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
             'homeassistant/event/0x0017880104e45520/action/config',
             stringify(payload),
             {retain: true, qos: 1},

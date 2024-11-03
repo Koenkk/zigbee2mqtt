@@ -2221,7 +2221,7 @@ export default class HomeAssistant extends Extension {
         return bridge;
     }
 
-    private parseActionValue(action: string): ActionData {
+    parseActionValue(action: string): ActionData {
         const buttons = action.match(ACTION_BUTTON_PATTERN);
         if (buttons?.groups?.action) {
             //console.log('Recognized button actions', buttons.groups);
