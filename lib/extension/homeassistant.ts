@@ -1049,6 +1049,38 @@ export default class HomeAssistant extends Extension {
 
                 // Action is discovered through MQTT device trigger.
                 if (firstExpose.property === 'action') {
+                    /**
+                     * If enum attribute does not have SET access and is named 'action', then expose
+                     * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                     */
+                    if (this.experimentalEventEntities && firstExpose.access & ACCESS_STATE && !(firstExpose.access & ACCESS_SET)) {
+                        discoveryEntries.push({
+                            type: 'event',
+                            object_id: firstExpose.property,
+                            mockProperties: [{property: firstExpose.property, value: null}],
+                            discovery_payload: {
+                                name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                                state_topic: true,
+                                event_types: this.prepareActionEventTypes(firstExpose.values),
+                                // TODO: Implement parsing for all event types.
+                                value_template:
+                                    `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- if buttons -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                    `{%- elif scenes -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                    `{%- elif regions -%}\n` +
+                                    `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                    `{%- else -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                    `{%- endif -%}\n` +
+                                    `{{d|to_json}}`,
+                                ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                            },
+                        });
+                    }
                     break;
                 }
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
@@ -1093,44 +1125,6 @@ export default class HomeAssistant extends Extension {
                         discovery_payload: {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template: valueTemplate,
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
-
-                /**
-                 * If enum attribute does not have SET access and is named 'action', then expose
-                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
-                 */
-                if (
-                    this.experimentalEventEntities &&
-                    firstExpose.access & ACCESS_STATE &&
-                    !(firstExpose.access & ACCESS_SET) &&
-                    firstExpose.property == 'action'
-                ) {
-                    discoveryEntries.push({
-                        type: 'event',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            state_topic: true,
-                            event_types: this.prepareActionEventTypes(firstExpose.values),
-                            // TODO: Implement parsing for all event types.
-                            value_template:
-                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- if buttons -%}\n` +
-                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
-                                `{%- elif scenes -%}\n` +
-                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
-                                `{%- elif regions -%}\n` +
-                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
-                                `{%- else -%}\n` +
-                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
-                                `{%- endif -%}\n` +
-                                `{{d|to_json}}`,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
@@ -2046,7 +2040,7 @@ export default class HomeAssistant extends Extension {
         return bridge;
     }
 
-    public parseActionValue(action: string): ActionData {
+    parseActionValue(action: string): ActionData {
         const buttons = action.match(ACTION_BUTTON_PATTERN);
         if (buttons?.groups?.action) {
             //console.log('Recognized button actions', buttons.groups);

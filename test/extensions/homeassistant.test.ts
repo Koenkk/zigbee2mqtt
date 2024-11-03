@@ -408,21 +408,19 @@ describe('Extension: HomeAssistant', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
             icon: 'mdi:gesture-double-tap',
-            json_attributes_topic: 'zigbee2mqtt/button',
             name: 'Action',
             object_id: 'button_action',
-            origin: origin,
+            origin,
             state_topic: 'zigbee2mqtt/button',
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
@@ -1666,7 +1664,7 @@ describe('Extension: HomeAssistant', () => {
         );
     });
 
-    it('Should discover trigger when click is published', async () => {
+    it('onlythis Should discover trigger when click is published', async () => {
         const discovered = mockMQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(5);
 
@@ -1834,18 +1832,16 @@ describe('Extension: HomeAssistant', () => {
         await resetExtension();
 
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
             icon: 'mdi:gesture-double-tap',
-            json_attributes_topic: 'zigbee2mqtt/button',
             name: 'Action',
             object_id: 'button_action',
             origin: origin,
