@@ -29,6 +29,17 @@ interface Discovered {
     discovered: boolean;
 }
 
+interface ActionData {
+    action: string;
+    button?: string;
+    scene?: string;
+    region?: string;
+}
+
+const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
+const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
+const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
+
 const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
     object_id: 'click',
@@ -435,6 +446,7 @@ export default class HomeAssistant extends Extension {
     private statusTopic: string;
     private entityAttributes: boolean;
     private legacyTrigger: boolean;
+    private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -466,6 +478,7 @@ export default class HomeAssistant extends Extension {
         this.statusTopic = haSettings.status_topic;
         this.entityAttributes = haSettings.legacy_entity_attributes;
         this.legacyTrigger = haSettings.legacy_triggers;
+        this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -1147,6 +1160,45 @@ export default class HomeAssistant extends Extension {
                 }
 
                 /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (
+                    this.experimentalEventEntities &&
+                    firstExpose.access & ACCESS_STATE &&
+                    !(firstExpose.access & ACCESS_SET) &&
+                    firstExpose.property == 'action'
+                ) {
+                    discoveryEntries.push({
+                        type: 'event',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            state_topic: true,
+                            event_types: this.prepareActionEventTypes(firstExpose.values),
+
+                            // TODO: Implement parsing for all event types.
+                            value_template:
+                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- if buttons -%}\n` +
+                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                `{%- elif scenes -%}\n` +
+                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                `{%- elif regions -%}\n` +
+                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                `{%- else -%}\n` +
+                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                `{%- endif -%}\n` +
+                                `{{d|to_json}}`,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
                  * If enum attribute has SET access then expose as SELECT entity too.
                  * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
@@ -1253,9 +1305,12 @@ export default class HomeAssistant extends Extension {
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
             }
-        });
 
-        discoveryEntries.forEach((d) => {
+            // Event entities cannot have an entity_category set.
+            if (d.type === 'event' && d.discovery_payload.entity_category) {
+                delete d.discovery_payload.entity_category;
+            }
+
             // Let Home Assistant generate entity name when device_class is present
             if (d.discovery_payload.device_class) {
                 delete d.discovery_payload.name;
@@ -1537,7 +1592,7 @@ export default class HomeAssistant extends Extension {
         }
 
         if (!this.legacyTrigger) {
-            configs = configs.filter((c) => c.object_id !== 'action' && c.object_id !== 'click');
+            configs = configs.filter((c) => (c.object_id !== 'action' && c.object_id !== 'click') || c.type == 'event');
         }
 
         // deep clone of the config objects
@@ -2166,5 +2221,42 @@ export default class HomeAssistant extends Extension {
         );
 
         return bridge;
+    }
+
+    private parseActionValue(action: string): ActionData {
+        const buttons = action.match(ACTION_BUTTON_PATTERN);
+        if (buttons?.groups?.action) {
+            //console.log('Recognized button actions', buttons.groups);
+            return {...buttons.groups, action: buttons.groups.action};
+        }
+
+        const scenes = action.match(ACTION_SCENE_PATTERN);
+        if (scenes?.groups?.action) {
+            //console.log('Recognized scene actions', scenes.groups);
+            return {...scenes.groups, action: scenes.groups.action};
+        }
+
+        const regions = action.match(ACTION_REGION_PATTERN);
+        if (regions?.groups?.action) {
+            return {...regions.groups, action: 'region_' + regions.groups.action};
+        }
+
+        const sceneWildcard = action.match(/^(?<action>recall|scene)_\*$/);
+        if (sceneWildcard?.groups?.action) {
+            logger.debug('Found scene wildcard action ' + sceneWildcard.groups.action);
+            return {action: sceneWildcard.groups.action, scene: 'wildcard'};
+        }
+
+        const regionWildcard = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        if (regionWildcard?.groups?.action) {
+            logger.debug('Found region wildcard action ' + regionWildcard.groups.action);
+            return {action: 'region_' + regionWildcard.groups.action, region: 'wildcard'};
+        }
+
+        return {action};
+    }
+
+    private prepareActionEventTypes(values: zhc.Enum['values']): string[] {
+        return utils.arrayUnique(values.map((v) => this.parseActionValue(v.toString()).action).filter((v) => !v.includes('*')));
     }
 }

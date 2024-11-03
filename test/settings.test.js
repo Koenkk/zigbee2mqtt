@@ -1026,6 +1026,7 @@ describe('Settings', () => {
         settings.reRead();
         expect(settings.get().homeassistant).toStrictEqual({
             discovery_topic: 'new',
+            experimental_event_entities: false,
             legacy_entity_attributes: true,
             legacy_triggers: true,
             status_topic: 'olds',
