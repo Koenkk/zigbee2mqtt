@@ -725,8 +725,7 @@ export default class HomeAssistant extends Extension {
             case 'lock': {
                 assert(!endpoint, `Endpoint not supported for lock type`);
                 const state = (firstExpose as zhc.Lock).features.filter(isBinaryExpose).find((f) => f.name === 'state');
-                assert(state, `Lock expose must have a 'state'`);
-                assert(state.property === 'state', "Lock property must be 'state'");
+                assert(state?.property === 'state', "Lock property must be 'state'");
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'lock',
                     object_id: 'lock',
@@ -1037,6 +1036,7 @@ export default class HomeAssistant extends Extension {
                 }
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
 
+                // istanbul ignore else
                 if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
                     discoveryEntries.push({
                         type: 'button',
@@ -1056,7 +1056,7 @@ export default class HomeAssistant extends Extension {
                     discoveryEntries.push({
                         type: 'select',
                         object_id: firstExpose.property,
-                        mockProperties: [], // Already mocked above in case access STATE is supported
+                        mockProperties: firstExpose.access & ACCESS_STATE ? [{property: firstExpose.property, value: null}] : [],
                         discovery_payload: {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template: valueTemplate,
@@ -1091,7 +1091,7 @@ export default class HomeAssistant extends Extension {
                     discoveryEntries.push({
                         type: 'text',
                         object_id: firstExposeTyped.property,
-                        mockProperties: [], // Already mocked above in case access STATE is supported
+                        mockProperties: firstExposeTyped.access & ACCESS_STATE ? [{property: firstExposeTyped.property, value: null}] : [],
                         discovery_payload: {
                             name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
                             state_topic: firstExposeTyped.access & ACCESS_STATE,
