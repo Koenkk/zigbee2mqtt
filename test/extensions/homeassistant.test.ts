@@ -422,13 +422,12 @@ describe('Extension: HomeAssistant', () => {
         );
 
         payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
@@ -436,7 +435,7 @@ describe('Extension: HomeAssistant', () => {
             json_attributes_topic: 'zigbee2mqtt/button',
             name: 'Action',
             object_id: 'button_action',
-            origin: origin,
+            origin,
             state_topic: 'zigbee2mqtt/button',
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
@@ -444,7 +443,7 @@ describe('Extension: HomeAssistant', () => {
                 "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
-        expect(MQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
             'homeassistant/event/0x0017880104e45520/action/config',
             stringify(payload),
             {retain: true, qos: 1},
@@ -1975,13 +1974,12 @@ describe('Extension: HomeAssistant', () => {
         await resetExtension();
 
         const payload = {
-            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45520'],
                 manufacturer: 'Aqara',
                 model: 'Wireless mini switch (WXKG11LM)',
                 name: 'button',
-                sw_version: null,
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
@@ -1997,7 +1995,7 @@ describe('Extension: HomeAssistant', () => {
                 "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
-        expect(MQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
             'homeassistant/event/0x0017880104e45520/action/config',
             stringify(payload),
             {retain: true, qos: 1},
