@@ -63,7 +63,6 @@ jobs:
               # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
                   docker buildx build \
-                    --network host \
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
                     --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
                     -f docker/Dockerfile \

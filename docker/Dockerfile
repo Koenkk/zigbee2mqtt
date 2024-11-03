@@ -9,12 +9,12 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk add make gcc g++ python3 linux-headers git curl && \
-    curl -fsSL https://get.pnpm.io/install.sh | env ENV="$HOME/.shrc" SHELL="$(which sh)" PNPM_VERSION=9.12.3 sh - && \
-    /root/.local/share/pnpm/pnpm i --frozen-lockfile && \
-    # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
-    /root/.local/share/pnpm/pnpm rebuild --build-from-source && \
-    rm -rf /root/.local
+RUN apk add make gcc g++ python3 linux-headers git curl 
+RUN curl -fsSL https://get.pnpm.io/install.sh | env ENV="$HOME/.shrc" SHELL="$(which sh)" PNPM_VERSION=9.12.3 sh - 
+RUN /root/.local/share/pnpm/pnpm i --frozen-lockfile 
+# RUN # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
+RUN /root/.local/share/pnpm/pnpm rebuild --build-from-source 
+RUN rm -rf /root/.local
 # Release
 FROM base as release
 
