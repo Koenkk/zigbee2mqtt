@@ -14,7 +14,7 @@ RUN apk update
 RUN apk add make gcc g++ python3 linux-headers git pnpm npm
 RUN pnpm install --frozen-lockfile --no-optional --prod
 # RUN # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
-RUN npm rebuild --build-from-source
+RUN pnpm rebuild
 # Release
 FROM base AS release
 
