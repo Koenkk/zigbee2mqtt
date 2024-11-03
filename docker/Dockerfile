@@ -12,7 +12,7 @@ COPY lib ./lib
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
 RUN apk update
 RUN apk add make gcc g++ python3 linux-headers git pnpm 
-RUN pnpm install --frozen-lockfile --no-optional
+RUN pnpm install --frozen-lockfile --no-optional --prod
 # RUN # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
 RUN pnpm rebuild
 # Release
