@@ -10,8 +10,8 @@ COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
 RUN apk info npm
-RUN apk add make gcc g++ python3 linux-headers git npm=10.3.0-r0 && \
-    npm ci --production --no-audit --no-optional --no-update-notifier && \
+RUN apk add make gcc g++ python3 linux-headers git pnpm && \
+    pnpm i --frozen-lockfile && \
     # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
     npm rebuild --build-from-source 
 # Release
