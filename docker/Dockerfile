@@ -1,12 +1,12 @@
-FROM alpine:3.20 as base
+FROM alpine:3.20 AS base
 
 WORKDIR /app
 RUN apk add --no-cache tzdata eudev tini #nodejs
 
 # Dependencies and build
-FROM base as dependencies_and_build
+FROM base AS dependencies_and_build
 
-COPY package.json pnpm-lock.yml tsconfig.json index.js ./
+COPY package.json pnpm-lock.yaml tsconfig.json index.js ./
 COPY lib ./lib
 
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
@@ -16,7 +16,7 @@ RUN pnpm i --frozen-lockfile
 # RUN # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
 RUN pnpm rebuild --build-from-source 
 # Release
-FROM base as release
+FROM base AS release
 
 LABEL org.opencontainers.image.authors="Koen Kanters"
 LABEL org.opencontainers.image.title="zigbee2mqtt"
