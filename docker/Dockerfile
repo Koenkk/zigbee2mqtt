@@ -9,12 +9,12 @@ FROM base as dependencies_and_build
 COPY package*.json tsconfig.json index.js ./
 COPY lib ./lib
 
-RUN apk add make gcc g++ python3 linux-headers git curl 
-RUN curl -fsSL https://get.pnpm.io/install.sh | env ENV="$HOME/.shrc" SHELL="$(which sh)" PNPM_VERSION=9.12.3 sh - 
-RUN /root/.local/share/pnpm/pnpm i --frozen-lockfile 
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+RUN apk update
+RUN apk add make gcc g++ python3 linux-headers git pnpm 
+RUN pnpm i --frozen-lockfile 
 # RUN # Serialport needs to be rebuild for Alpine https://serialport.io/docs/9.x.x/guide-installation#alpine-linux
-RUN /root/.local/share/pnpm/pnpm rebuild --build-from-source 
-RUN rm -rf /root/.local
+RUN pnpm rebuild --build-from-source 
 # Release
 FROM base as release
 
