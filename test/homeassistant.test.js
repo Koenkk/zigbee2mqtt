@@ -89,6 +89,9 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover devices and groups', async () => {
+        settings.set(['homeassistant'], {experimental_event_entities: true});
+        await resetExtension();
+
         let payload;
 
         payload = {
@@ -404,6 +407,52 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
+
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45520'],
+                manufacturer: 'Aqara',
+                model: 'Wireless mini switch (WXKG11LM)',
+                name: 'button',
+                sw_version: null,
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
+            icon: 'mdi:gesture-double-tap',
+            json_attributes_topic: 'zigbee2mqtt/button',
+            name: 'Action',
+            object_id: 'button_action',
+            origin: origin,
+            state_topic: 'zigbee2mqtt/button',
+            unique_id: '0x0017880104e45520_action_zigbee2mqtt',
+            // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
+            value_template:
+                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/event/0x0017880104e45520/action/config',
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
+    it.each([
+        ['recall_1', {action: 'recall', scene: '1'}],
+        ['recall_*', {action: 'recall', scene: 'wildcard'}],
+        ['on', {action: 'on'}],
+        ['on_1', {action: 'on_1'}],
+        ['release_left', {action: 'release_left'}],
+        ['region_1_enter', {action: 'region_enter', region: '1'}],
+        ['region_*_leave', {action: 'region_leave', region: 'wildcard'}],
+        ['left_press', {action: 'press', button: 'left'}],
+        ['left_press_release', {action: 'press_release', button: 'left'}],
+        ['right_hold', {action: 'hold', button: 'right'}],
+        ['right_hold_release', {action: 'hold_release', button: 'right'}],
+    ])('Should parse action names correctly', (action, expected) => {
+        expect(extension.parseActionValue(action)).toStrictEqual(expected);
     });
 
     it('Should not discovery devices which are already discovered', async () => {
@@ -1913,6 +1962,46 @@ describe('HomeAssistant extension', () => {
         );
 
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
+    });
+
+    it('Should enable experimental event entities', async () => {
+        settings.set(['homeassistant'], {experimental_event_entities: true});
+        settings.set(['devices', '0x0017880104e45520'], {
+            legacy: false,
+            friendly_name: 'button',
+            retain: false,
+        });
+        await resetExtension();
+
+        const payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45520'],
+                manufacturer: 'Aqara',
+                model: 'Wireless mini switch (WXKG11LM)',
+                name: 'button',
+                sw_version: null,
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
+            icon: 'mdi:gesture-double-tap',
+            json_attributes_topic: 'zigbee2mqtt/button',
+            name: 'Action',
+            object_id: 'button_action',
+            origin: origin,
+            state_topic: 'zigbee2mqtt/button',
+            unique_id: '0x0017880104e45520_action_zigbee2mqtt',
+            // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
+            value_template:
+                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/event/0x0017880104e45520/action/config',
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should republish payload to postfix topic with lightWithPostfix config', async () => {
