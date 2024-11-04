@@ -1,3 +1,5 @@
+import type {Ota} from 'zigbee-herdsman-converters';
+
 import assert from 'assert';
 import path from 'path';
 
@@ -5,7 +7,7 @@ import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Zcl} from 'zigbee-herdsman';
-import * as zhc from 'zigbee-herdsman-converters';
+import {ota} from 'zigbee-herdsman-converters';
 
 import Device from '../model/device';
 import dataDir from '../util/data';
@@ -40,12 +42,12 @@ export default class OTAUpdate extends Extension {
         let overrideIndexLocation = otaSettings.zigbee_ota_override_index_location;
 
         // If the file name is not a full path, then treat it as a relative to the data directory
-        if (overrideIndexLocation && !zhc.ota.isValidUrl(overrideIndexLocation) && !path.isAbsolute(overrideIndexLocation)) {
+        if (overrideIndexLocation && !ota.isValidUrl(overrideIndexLocation) && !path.isAbsolute(overrideIndexLocation)) {
             overrideIndexLocation = dataDir.joinPath(overrideIndexLocation);
         }
 
         // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
-        zhc.ota.setConfiguration({
+        ota.setConfiguration({
             dataDir: dataDir.getPath(),
             overrideIndexLocation,
             // TODO: implement me
@@ -91,11 +93,11 @@ export default class OTAUpdate extends Extension {
             if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
-            let availableResult: zhc.Ota.UpdateAvailableResult | undefined;
+            let availableResult: Ota.UpdateAvailableResult | undefined;
 
             try {
                 // never use 'previous' when responding to device request
-                availableResult = await zhc.ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as zhc.Ota.ImageInfo, false);
+                availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
             } catch (error) {
                 logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
             }
@@ -136,7 +138,7 @@ export default class OTAUpdate extends Extension {
 
     private getEntityPublishPayload(
         device: Device,
-        state: zhc.Ota.UpdateAvailableResult | UpdateState,
+        state: Ota.UpdateAvailableResult | UpdateState,
         progress?: number,
         remaining?: number,
     ): UpdatePayload {
@@ -190,7 +192,7 @@ export default class OTAUpdate extends Extension {
                 logger.info(msg);
 
                 try {
-                    const availableResult = await zhc.ota.isUpdateAvailable(device.zh, device.otaExtraMetas, undefined, downgrade);
+                    const availableResult = await ota.isUpdateAvailable(device.zh, device.otaExtraMetas, undefined, downgrade);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -208,7 +210,7 @@ export default class OTAUpdate extends Extension {
 
                 try {
                     const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
-                    const fileVersion = await zhc.ota.update(device.zh, device.otaExtraMetas, downgrade, async (progress, remaining) => {
+                    const fileVersion = await ota.update(device.zh, device.otaExtraMetas, downgrade, async (progress, remaining) => {
                         let msg = `Update of '${device.name}' at ${progress.toFixed(2)}%`;
                         if (remaining) {
                             msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
