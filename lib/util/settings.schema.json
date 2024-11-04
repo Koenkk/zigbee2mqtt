@@ -325,19 +325,29 @@
                     "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
                     "default": false
                 },
-                "ikea_ota_use_test_url": {
-                    "type": "boolean",
-                    "title": "IKEA TRADFRI OTA use test url",
-                    "requiresRestart": true,
-                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-                    "default": false
-                },
                 "zigbee_ota_override_index_location": {
                     "type": ["string", "null"],
                     "title": "OTA index override file name",
                     "requiresRestart": true,
                     "description": "Location of override OTA index file",
                     "examples": ["index.json"]
+                },
+                "image_block_response_delay": {
+                    "type": "number",
+                    "title": "Image block response delay",
+                    "description": "Limits the rate of requests during OTA updates to reduce network congestion. You can increase this value if your network appears unstable during OTA.",
+                    "default": 250,
+                    "minimum": 50,
+                    "requiresRestart": true
+                },
+                "default_maximum_data_size": {
+                    "type": "number",
+                    "title": "Default maximum data size",
+                    "description": "The size of file chunks sent during an update. Note: This value may get ignored for manufacturers that require specific values.",
+                    "default": 50,
+                    "minimum": 10,
+                    "maximum": 100,
+                    "requiresRestart": true
                 }
             }
         },
@@ -733,13 +743,6 @@
                     "title": "RTS / CTS (deprecated)",
                     "requiresRestart": true,
                     "description": "RTS / CTS Hardware Flow Control for serial port"
-                },
-                "ikea_ota_use_test_url": {
-                    "type": "boolean",
-                    "title": "IKEA TRADFRI OTA use test url (deprecated)",
-                    "requiresRestart": true,
-                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-                    "default": false
                 }
             }
         },

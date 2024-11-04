@@ -203,7 +203,12 @@ describe('Extension: Bridge', () => {
                         },
                     },
                     mqtt: {base_topic: 'zigbee2mqtt', force_disable_retain: false, include_device_information: false, server: 'mqtt://localhost'},
-                    ota: {disable_automatic_update_check: false, update_check_interval: 1440},
+                    ota: {
+                        disable_automatic_update_check: false,
+                        update_check_interval: 1440,
+                        image_block_response_delay: 250,
+                        default_maximum_data_size: 50,
+                    },
                     passlist: [],
                     serial: {disable_led: false, port: '/dev/dummy'},
                 },

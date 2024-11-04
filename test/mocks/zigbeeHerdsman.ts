@@ -204,6 +204,20 @@ export class Endpoint {
     removeFromAllGroups(): void {
         Object.values(groups).forEach((g) => this.removeFromGroup(g));
     }
+
+    mockClear(): void {
+        this.command.mockClear();
+        this.commandResponse.mockClear();
+        this.read.mockClear();
+        this.write.mockClear();
+        this.bind.mockClear();
+        this.unbind.mockClear();
+        this.save.mockClear();
+        this.configureReporting.mockClear();
+        this.addToGroup.mockClear();
+        this.removeFromGroup.mockClear();
+        this.getClusterAttributeValue.mockClear();
+    }
 }
 
 export class Device {
@@ -276,6 +290,19 @@ export class Device {
 
     getEndpoint(ID: number): Endpoint | undefined {
         return this.endpoints.find((e) => e.ID === ID);
+    }
+
+    mockClear(): void {
+        this.interview.mockClear();
+        this.ping.mockClear();
+        this.removeFromNetwork.mockClear();
+        this.removeFromDatabase.mockClear();
+        this.addCustomCluster.mockClear();
+        this.save.mockClear();
+        this.lqi.mockClear();
+        this.routingTable.mockClear();
+
+        this.endpoints.forEach((e) => e.mockClear());
     }
 }
 
@@ -466,7 +493,7 @@ const groupMembersBackup = Object.fromEntries(Object.entries(groups).map((v) => 
 
 export function resetGroupMembers(): void {
     for (const key in groupMembersBackup) {
-        groups[key].members = [...groupMembersBackup[key]];
+        groups[key as keyof typeof groups].members = [...groupMembersBackup[key]];
     }
 }
 

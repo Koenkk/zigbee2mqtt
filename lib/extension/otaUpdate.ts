@@ -3,7 +3,6 @@ import path from 'path';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
-import * as URI from 'uri-js';
 
 import {Zcl} from 'zigbee-herdsman';
 import * as zhc from 'zigbee-herdsman-converters';
@@ -14,17 +13,6 @@ import logger from '../util/logger';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
-
-function isValidUrl(url: string): boolean {
-    let parsed;
-    try {
-        parsed = URI.parse(url);
-    } catch {
-        // istanbul ignore next
-        return false;
-    }
-    return parsed.scheme === 'http' || parsed.scheme === 'https';
-}
 
 type UpdateState = 'updating' | 'idle' | 'available';
 interface UpdatePayload {
@@ -37,7 +25,7 @@ interface UpdatePayload {
     };
 }
 
-const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)`, 'i');
+const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check)/?(downgrade)?`, 'i');
 
 export default class OTAUpdate extends Extension {
     private inProgress = new Set();
@@ -46,23 +34,24 @@ export default class OTAUpdate extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
-        if (settings.get().ota.ikea_ota_use_test_url) {
-            zhc.ota.tradfri.useTestURL();
-        }
 
-        // Let zigbeeOTA module know if the override index file is provided
-        let overrideOTAIndex = settings.get().ota.zigbee_ota_override_index_location;
-        if (overrideOTAIndex) {
-            // If the file name is not a full path, then treat it as a relative to the data directory
-            if (!isValidUrl(overrideOTAIndex) && !path.isAbsolute(overrideOTAIndex)) {
-                overrideOTAIndex = dataDir.joinPath(overrideOTAIndex);
-            }
+        const otaSettings = settings.get().ota;
+        // Let OTA module know if the override index file is provided
+        let overrideIndexLocation = otaSettings.zigbee_ota_override_index_location;
 
-            zhc.ota.zigbeeOTA.useIndexOverride(overrideOTAIndex);
+        // If the file name is not a full path, then treat it as a relative to the data directory
+        if (overrideIndexLocation && !zhc.ota.isValidUrl(overrideIndexLocation) && !path.isAbsolute(overrideIndexLocation)) {
+            overrideIndexLocation = dataDir.joinPath(overrideIndexLocation);
         }
 
         // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
-        zhc.ota.setDataDir(dataDir.getPath());
+        zhc.ota.setConfiguration({
+            dataDir: dataDir.getPath(),
+            overrideIndexLocation,
+            // TODO: implement me
+            imageBlockResponseDelay: otaSettings.image_block_response_delay,
+            defaultMaximumDataSize: otaSettings.default_maximum_data_size,
+        });
 
         // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state, remove them.
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -102,10 +91,11 @@ export default class OTAUpdate extends Extension {
             if (!check) return;
 
             this.lastChecked[data.device.ieeeAddr] = Date.now();
-            let availableResult: zhc.OtaUpdateAvailableResult | undefined;
+            let availableResult: zhc.Ota.UpdateAvailableResult | undefined;
 
             try {
-                availableResult = await data.device.definition.ota.isUpdateAvailable(data.device.zh, data.data as zhc.ota.ImageInfo);
+                // never use 'previous' when responding to device request
+                availableResult = await zhc.ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as zhc.Ota.ImageInfo, false);
             } catch (error) {
                 logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
             }
@@ -146,7 +136,7 @@ export default class OTAUpdate extends Extension {
 
     private getEntityPublishPayload(
         device: Device,
-        state: zhc.OtaUpdateAvailableResult | UpdateState,
+        state: zhc.Ota.UpdateAvailableResult | UpdateState,
         progress?: number,
         remaining?: number,
     ): UpdatePayload {
@@ -171,14 +161,17 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if (!data.topic.match(topicRegex)) {
+        const topicMatch = data.topic.match(topicRegex);
+
+        if (!topicMatch) {
             return;
         }
 
         const message = utils.parseJSON(data.message, data.message);
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
-        const type = data.topic.substring(data.topic.lastIndexOf('/') + 1);
+        const type = topicMatch[1];
+        const downgrade = Boolean(topicMatch[2]);
         const responseData: {id: string; update_available?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
@@ -197,7 +190,7 @@ export default class OTAUpdate extends Extension {
                 logger.info(msg);
 
                 try {
-                    const availableResult = await device.definition.ota.isUpdateAvailable(device.zh, undefined);
+                    const availableResult = await zhc.ota.isUpdateAvailable(device.zh, device.otaExtraMetas, undefined, downgrade);
                     const msg = `${availableResult.available ? 'Update' : 'No update'} available for '${device.name}'`;
                     logger.info(msg);
 
@@ -210,11 +203,12 @@ export default class OTAUpdate extends Extension {
                 }
             } else {
                 // type === 'update'
-                const msg = `Updating '${device.name}' to latest firmware`;
+                const msg = `Updating '${device.name}' to ${downgrade ? 'previous' : 'latest'} firmware`;
                 logger.info(msg);
 
                 try {
-                    const onProgress = async (progress: number, remaining: number | null): Promise<void> => {
+                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
+                    const fileVersion = await zhc.ota.update(device.zh, device.otaExtraMetas, downgrade, async (progress, remaining) => {
                         let msg = `Update of '${device.name}' at ${progress.toFixed(2)}%`;
                         if (remaining) {
                             msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
@@ -223,10 +217,7 @@ export default class OTAUpdate extends Extension {
                         logger.info(msg);
 
                         await this.publishEntityState(device, this.getEntityPublishPayload(device, 'updating', progress, remaining ?? undefined));
-                    };
-
-                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
-                    const fileVersion = await device.definition.ota.updateToLatest(device.zh, onProgress);
+                    });
                     logger.info(`Finished update of '${device.name}'`);
                     this.removeProgressAndRemainingFromState(device);
                     await this.publishEntityState(
