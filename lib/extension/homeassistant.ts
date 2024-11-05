@@ -39,6 +39,7 @@ interface ActionData {
 const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
 const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
 const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
+const ACTION_DIAL_PATTERN: string = '(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$';
 
 const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
@@ -2224,33 +2225,36 @@ export default class HomeAssistant extends Extension {
     }
 
     private parseActionValue(action: string): ActionData {
-        const buttons = action.match(ACTION_BUTTON_PATTERN);
-        if (buttons?.groups?.action) {
-            //console.log('Recognized button actions', buttons.groups);
-            return {...buttons.groups, action: buttons.groups.action};
+        let m = action.match(ACTION_BUTTON_PATTERN);
+        if (m?.groups?.action) {
+            return {...m.groups, action: m.groups.action};
         }
 
-        const scenes = action.match(ACTION_SCENE_PATTERN);
-        if (scenes?.groups?.action) {
-            //console.log('Recognized scene actions', scenes.groups);
-            return {...scenes.groups, action: scenes.groups.action};
+        m = action.match(ACTION_SCENE_PATTERN);
+        if (m?.groups?.action) {
+            return {...m.groups, action: m.groups.action};
         }
 
-        const regions = action.match(ACTION_REGION_PATTERN);
-        if (regions?.groups?.action) {
-            return {...regions.groups, action: 'region_' + regions.groups.action};
+        m = action.match(ACTION_REGION_PATTERN);
+        if (m?.groups?.action) {
+            return {...m.groups, action: 'region_' + m.groups.action};
         }
 
-        const sceneWildcard = action.match(/^(?<action>recall|scene)_\*$/);
-        if (sceneWildcard?.groups?.action) {
-            logger.debug('Found scene wildcard action ' + sceneWildcard.groups.action);
-            return {action: sceneWildcard.groups.action, scene: 'wildcard'};
+        m = action.match(ACTION_DIAL_PATTERN);
+        if (m?.groups?.action) {
+            return {...m.groups, action: m.groups.action};
         }
 
-        const regionWildcard = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
-        if (regionWildcard?.groups?.action) {
-            logger.debug('Found region wildcard action ' + regionWildcard.groups.action);
-            return {action: 'region_' + regionWildcard.groups.action, region: 'wildcard'};
+        m = action.match(/^(?<action>recall|scene)_\*$/);
+        if (m?.groups?.action) {
+            logger.debug('Found scene wildcard action ' + m.groups.action);
+            return {action: m.groups.action, scene: 'wildcard'};
+        }
+
+        m = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        if (m?.groups?.action) {
+            logger.debug('Found region wildcard action ' + m.groups.action);
+            return {action: 'region_' + m.groups.action, region: 'wildcard'};
         }
 
         return {action};

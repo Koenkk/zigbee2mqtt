@@ -451,6 +451,8 @@ describe('HomeAssistant extension', () => {
         ['left_press_release', {action: 'press_release', button: 'left'}],
         ['right_hold', {action: 'hold', button: 'right'}],
         ['right_hold_release', {action: 'hold_release', button: 'right'}],
+        ['dial_rotate_left_step', {action: 'dial_rotate', direction: 'left', speed: 'step'}],
+        ['dial_rotate_right_fast', {action: 'dial_rotate', direction: 'right', speed: 'fast'}],
     ])('Should parse action names correctly', (action, expected) => {
         expect(extension.parseActionValue(action)).toStrictEqual(expected);
     });
