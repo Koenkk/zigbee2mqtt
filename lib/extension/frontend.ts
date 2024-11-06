@@ -74,7 +74,10 @@ export default class Frontend extends Extension {
         /* istanbul ignore next */
         const options = {
             enableBrotli: true,
+            // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
+            index: false,
             serveStatic: {
+                index: 'index.html',
                 setHeaders: (res: ServerResponse, path: string): void => {
                     if (path.endsWith('index.html')) {
                         res.setHeader('Cache-Control', 'no-store');
