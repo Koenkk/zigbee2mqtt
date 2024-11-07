@@ -967,10 +967,55 @@ export default class HomeAssistant extends Extension {
             }
             case 'numeric': {
                 assertNumericExpose(firstExpose);
+                const extraAttrs = {};
+
+                // If a variable includes Wh, mark it as energy
+                if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
+                }
 
                 const allowsSet = firstExpose.access & ACCESS_SET;
 
-                // If numeric attribute has SET access then expose as SELECT entity.
+                let key = firstExpose.name;
+
+                // Home Assistant uses a different voc device_class for µg/m³ versus ppb or ppm.
+                if (firstExpose.name === 'voc' && firstExpose.unit && ['ppb', 'ppm'].includes(firstExpose.unit)) {
+                    key = 'voc_parts';
+                }
+
+                const discoveryEntry: DiscoveryEntry = {
+                    type: 'sensor',
+                    object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
+                    mockProperties: [{property: firstExpose.property, value: null}],
+                    discovery_payload: {
+                        name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                        value_template: `{{ value_json.${firstExpose.property} }}`,
+                        enabled_by_default: !allowsSet,
+                        ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
+                        ...NUMERIC_DISCOVERY_LOOKUP[key],
+                        ...extraAttrs,
+                    },
+                };
+
+                // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
+                // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
+                if (discoveryEntry.discovery_payload.device_class && !discoveryEntry.discovery_payload.unit_of_measurement) {
+                    delete discoveryEntry.discovery_payload.device_class;
+                }
+
+                // entity_category config is not allowed for sensors
+                // https://github.com/Koenkk/zigbee2mqtt/issues/20252
+                if (discoveryEntry.discovery_payload.entity_category === 'config') {
+                    discoveryEntry.discovery_payload.entity_category = 'diagnostic';
+                }
+
+                discoveryEntries.push(discoveryEntry);
+
+                /**
+                 * If numeric attribute has SET access then expose as SELECT entity too.
+                 * Note: currently both sensor and number are discovered, this is to avoid
+                 * breaking changes for sensors already existing in HA (legacy).
+                 */
                 if (allowsSet) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: 'number',
@@ -1000,92 +1045,95 @@ export default class HomeAssistant extends Extension {
                     if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
 
                     discoveryEntries.push(discoveryEntry);
-                } else {
-                    const extraAttrs = {};
-
-                    // If a variable includes Wh, mark it as energy
-                    if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
-                        Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
-                    }
-
-                    let key = firstExpose.name;
-
-                    // Home Assistant uses a different voc device_class for µg/m³ versus ppb or ppm.
-                    if (firstExpose.name === 'voc' && firstExpose.unit && ['ppb', 'ppm'].includes(firstExpose.unit)) {
-                        key = 'voc_parts';
-                    }
-
-                    const discoveryEntry: DiscoveryEntry = {
-                        type: 'sensor',
-                        object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: `{{ value_json.${firstExpose.property} }}`,
-                            ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
-                            ...NUMERIC_DISCOVERY_LOOKUP[key],
-                            ...extraAttrs,
-                        },
-                    };
-
-                    // When a device_class is set, unit_of_measurement must be set, otherwise warnings are generated.
-                    // https://github.com/Koenkk/zigbee2mqtt/issues/15958#issuecomment-1377483202
-                    if (discoveryEntry.discovery_payload.device_class && !discoveryEntry.discovery_payload.unit_of_measurement) {
-                        delete discoveryEntry.discovery_payload.device_class;
-                    }
-
-                    // entity_category config is not allowed for sensors
-                    // https://github.com/Koenkk/zigbee2mqtt/issues/20252
-                    if (discoveryEntry.discovery_payload.entity_category === 'config') {
-                        discoveryEntry.discovery_payload.entity_category = 'diagnostic';
-                    }
-
-                    discoveryEntries.push(discoveryEntry);
                 }
                 break;
             }
             case 'enum': {
                 assertEnumExpose(firstExpose);
-
-                // Action is discovered through MQTT device trigger.
-                if (firstExpose.property === 'action') {
-                    /**
-                     * If enum attribute does not have SET access and is named 'action', then expose
-                     * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
-                     */
-                    if (this.experimentalEventEntities && firstExpose.access & ACCESS_STATE && !(firstExpose.access & ACCESS_SET)) {
-                        discoveryEntries.push({
-                            type: 'event',
-                            object_id: firstExpose.property,
-                            mockProperties: [{property: firstExpose.property, value: null}],
-                            discovery_payload: {
-                                name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                                state_topic: true,
-                                event_types: this.prepareActionEventTypes(firstExpose.values),
-                                // TODO: Implement parsing for all event types.
-                                value_template:
-                                    `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                    `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                    `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                    `{%- if buttons -%}\n` +
-                                    `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
-                                    `{%- elif scenes -%}\n` +
-                                    `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
-                                    `{%- elif regions -%}\n` +
-                                    `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
-                                    `{%- else -%}\n` +
-                                    `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
-                                    `{%- endif -%}\n` +
-                                    `{{d|to_json}}`,
-                                ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                            },
-                        });
-                    }
-                    break;
-                }
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
 
-                // istanbul ignore else
+                if (firstExpose.access & ACCESS_STATE) {
+                    discoveryEntries.push({
+                        type: 'sensor',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: valueTemplate,
+                            enabled_by_default: !(firstExpose.access & ACCESS_SET),
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (
+                    this.experimentalEventEntities &&
+                    firstExpose.access & ACCESS_STATE &&
+                    !(firstExpose.access & ACCESS_SET) &&
+                    firstExpose.property == 'action'
+                ) {
+                    discoveryEntries.push({
+                        type: 'event',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            state_topic: true,
+                            event_types: this.prepareActionEventTypes(firstExpose.values),
+
+                            // TODO: Implement parsing for all event types.
+                            value_template:
+                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                `{%- if buttons -%}\n` +
+                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                `{%- elif scenes -%}\n` +
+                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                `{%- elif regions -%}\n` +
+                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                `{%- else -%}\n` +
+                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                `{%- endif -%}\n` +
+                                `{{d|to_json}}`,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
+                 * If enum attribute has SET access then expose as SELECT entity too.
+                 * Note: currently both sensor and select are discovered, this is to avoid
+                 * breaking changes for sensors already existing in HA (legacy).
+                 */
+                if (firstExpose.access & ACCESS_SET) {
+                    discoveryEntries.push({
+                        type: 'select',
+                        object_id: firstExpose.property,
+                        mockProperties: [], // Already mocked above in case access STATE is supported
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: valueTemplate,
+                            state_topic: !!(firstExpose.access & ACCESS_STATE),
+                            command_topic_prefix: endpoint,
+                            command_topic: true,
+                            command_topic_postfix: firstExpose.property,
+                            options: firstExpose.values.map((v) => v.toString()),
+                            enabled_by_default: firstExpose.values.length !== 1, // hide if button is exposed
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
+                 * If enum has only item and only supports SET then expose as button entity.
+                 * Note: select entity is hidden by default to avoid breaking changes
+                 * for selects already existing in HA (legacy).
+                 */
                 if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
                     discoveryEntries.push({
                         type: 'button',
@@ -1101,41 +1149,30 @@ export default class HomeAssistant extends Extension {
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
-                } else if (firstExpose.access & ACCESS_SET) {
-                    discoveryEntries.push({
-                        type: 'select',
-                        object_id: firstExpose.property,
-                        mockProperties: firstExpose.access & ACCESS_STATE ? [{property: firstExpose.property, value: null}] : [],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: valueTemplate,
-                            state_topic: !!(firstExpose.access & ACCESS_STATE),
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExpose.property,
-                            options: firstExpose.values.map((v) => v.toString()),
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                } else if (firstExpose.access & ACCESS_STATE) {
-                    discoveryEntries.push({
-                        type: 'sensor',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: valueTemplate,
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
                 }
                 break;
             }
             case 'text':
             case 'composite':
             case 'list': {
+                // Deprecated: remove text sensor
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
                 const settableText = firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET;
+                if (firstExposeTyped.access & ACCESS_STATE) {
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: 'sensor',
+                        object_id: firstExposeTyped.property,
+                        mockProperties: [{property: firstExposeTyped.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
+                            // Truncate text if it's too long
+                            // https://github.com/Koenkk/zigbee2mqtt/issues/23199
+                            value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
+                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
+                        },
+                    };
+                    discoveryEntries.push(discoveryEntry);
+                }
                 if (settableText) {
                     discoveryEntries.push({
                         type: 'text',
@@ -1151,20 +1188,6 @@ export default class HomeAssistant extends Extension {
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
                         },
                     });
-                } else if (firstExposeTyped.access & ACCESS_STATE) {
-                    const discoveryEntry: DiscoveryEntry = {
-                        type: 'sensor',
-                        object_id: firstExposeTyped.property,
-                        mockProperties: [{property: firstExposeTyped.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
-                            // Truncate text if it's too long
-                            // https://github.com/Koenkk/zigbee2mqtt/issues/23199
-                            value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
-                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
-                        },
-                    };
-                    discoveryEntries.push(discoveryEntry);
                 }
                 break;
             }
