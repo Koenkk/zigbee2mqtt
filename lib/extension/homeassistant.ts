@@ -39,18 +39,6 @@ interface ActionData {
 const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
 const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
 const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
-
-const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
-    type: 'sensor',
-    object_id: 'click',
-    mockProperties: [{property: 'click', value: null}],
-    discovery_payload: {
-        name: 'Click',
-        icon: 'mdi:toggle-switch',
-        value_template: '{{ value_json.click }}',
-    },
-};
-
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ['light', 'switch', 'lock', 'cover'];
@@ -59,55 +47,6 @@ const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ['opening', 'open', 'forward
 const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ['stopped', 'stop', 'pause', 'paused'];
 const SWITCH_DIFFERENT: ReadonlyArray<string> = ['valve_detection', 'window_detection', 'auto_lock', 'away_mode'];
-const LEGACY_MAPPING: ReadonlyArray<{models: string[]; discovery: DiscoveryEntry}> = [
-    {
-        models: [
-            'WXKG01LM',
-            'HS1EB/HS1EB-E',
-            'ICZB-KPD14S',
-            'TERNCY-SD01',
-            'TERNCY-PP01',
-            'ICZB-KPD18S',
-            'E1766',
-            'ZWallRemote0',
-            'ptvo.switch',
-            '2AJZ4KPKEY',
-            'ZGRC-KEY-013',
-            'HGZB-02S',
-            'HGZB-045',
-            'HGZB-1S',
-            'AV2010/34',
-            'IM6001-BTP01',
-            'WXKG11LM',
-            'WXKG03LM',
-            'WXKG02LM_rev1',
-            'WXKG02LM_rev2',
-            'QBKG04LM',
-            'QBKG03LM',
-            'QBKG11LM',
-            'QBKG21LM',
-            'QBKG22LM',
-            'WXKG12LM',
-            'QBKG12LM',
-            'E1743',
-        ],
-        discovery: SENSOR_CLICK,
-    },
-    {
-        models: ['ICTC-G-1'],
-        discovery: {
-            type: 'sensor',
-            mockProperties: [{property: 'brightness', value: null}],
-            object_id: 'brightness',
-            discovery_payload: {
-                name: 'Brightness',
-                unit_of_measurement: 'brightness',
-                icon: 'mdi:brightness-5',
-                value_template: '{{ value_json.brightness }}',
-            },
-        },
-    },
-];
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: 'mdi:led-on'},
     auto_off: {icon: 'mdi:flash-auto'},
@@ -135,7 +74,6 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     led_disabled_night: {entity_category: 'config', icon: 'mdi:led-off'},
     led_indication: {entity_category: 'config', icon: 'mdi:led-on'},
     led_enable: {entity_category: 'config', icon: 'mdi:led-on'},
-    legacy: {entity_category: 'config', icon: 'mdi:cog'},
     motor_reversal: {entity_category: 'config', icon: 'mdi:arrow-left-right'},
     moving: {device_class: 'moving'},
     no_position_support: {entity_category: 'config', icon: 'mdi:minus-circle-outline'},
@@ -444,8 +382,6 @@ export default class HomeAssistant extends Extension {
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic: string;
-    private entityAttributes: boolean;
-    private legacyTrigger: boolean;
     private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
@@ -476,8 +412,6 @@ export default class HomeAssistant extends Extension {
         this.discoveryTopic = haSettings.discovery_topic;
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;
-        this.entityAttributes = haSettings.legacy_entity_attributes;
-        this.legacyTrigger = haSettings.legacy_triggers;
         this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
@@ -808,7 +742,7 @@ export default class HomeAssistant extends Extension {
             case 'lock': {
                 assert(!endpoint, `Endpoint not supported for lock type`);
                 const state = (firstExpose as zhc.Lock).features.filter(isBinaryExpose).find((f) => f.name === 'state');
-                assert(state, `Lock expose must have a 'state'`);
+                assert(state?.property === 'state', "Lock property must be 'state'");
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'lock',
                     object_id: 'lock',
@@ -817,34 +751,10 @@ export default class HomeAssistant extends Extension {
                         name: null,
                         command_topic: true,
                         value_template: `{{ value_json.${state.property} }}`,
+                        state_locked: state.value_on,
+                        state_unlocked: state.value_off,
                     },
                 };
-
-                // istanbul ignore if
-                if (state.property === 'keypad_lockout') {
-                    // deprecated: keypad_lockout is messy, but changing is breaking
-                    discoveryEntry.discovery_payload.name = firstExpose.label;
-                    discoveryEntry.discovery_payload.payload_lock = state.value_on;
-                    discoveryEntry.discovery_payload.payload_unlock = state.value_off;
-                    discoveryEntry.discovery_payload.state_topic = true;
-                    discoveryEntry.object_id = 'keypad_lock';
-                } else if (state.property === 'child_lock') {
-                    // deprecated: child_lock is messy, but changing is breaking
-                    discoveryEntry.discovery_payload.name = firstExpose.label;
-                    discoveryEntry.discovery_payload.payload_lock = state.value_on;
-                    discoveryEntry.discovery_payload.payload_unlock = state.value_off;
-                    discoveryEntry.discovery_payload.state_locked = 'LOCK';
-                    discoveryEntry.discovery_payload.state_unlocked = 'UNLOCK';
-                    discoveryEntry.discovery_payload.state_topic = true;
-                    discoveryEntry.object_id = 'child_lock';
-                } else {
-                    discoveryEntry.discovery_payload.state_locked = state.value_on;
-                    discoveryEntry.discovery_payload.state_unlocked = state.value_off;
-                }
-
-                if (state.property !== 'state') {
-                    discoveryEntry.discovery_payload.command_topic_postfix = state.property;
-                }
 
                 discoveryEntries.push(discoveryEntry);
                 break;
@@ -1140,8 +1050,50 @@ export default class HomeAssistant extends Extension {
             }
             case 'enum': {
                 assertEnumExpose(firstExpose);
-                const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
+                /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (firstExpose.property === 'action') {
+                    if (
+                        this.experimentalEventEntities &&
+                        firstExpose.access & ACCESS_STATE &&
+                        !(firstExpose.access & ACCESS_SET) &&
+                        firstExpose.property == 'action'
+                    ) {
+                        discoveryEntries.push({
+                            type: 'event',
+                            object_id: firstExpose.property,
+                            mockProperties: [{property: firstExpose.property, value: null}],
+                            discovery_payload: {
+                                name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                                state_topic: true,
+                                event_types: this.prepareActionEventTypes(firstExpose.values),
 
+                                // TODO: Implement parsing for all event types.
+                                value_template:
+                                    `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- if buttons -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                    `{%- elif scenes -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                    `{%- elif regions -%}\n` +
+                                    `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                    `{%- else -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                    `{%- endif -%}\n` +
+                                    `{{d|to_json}}`,
+                                ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                            },
+                        });
+                    }
+                    // Don't expose action sensor, use MQTT device trigger instead
+                    break;
+                }
+
+                const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
                 if (firstExpose.access & ACCESS_STATE) {
                     discoveryEntries.push({
                         type: 'sensor',
@@ -1151,45 +1103,6 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template: valueTemplate,
                             enabled_by_default: !(firstExpose.access & ACCESS_SET),
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
-
-                /**
-                 * If enum attribute does not have SET access and is named 'action', then expose
-                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
-                 */
-                if (
-                    this.experimentalEventEntities &&
-                    firstExpose.access & ACCESS_STATE &&
-                    !(firstExpose.access & ACCESS_SET) &&
-                    firstExpose.property == 'action'
-                ) {
-                    discoveryEntries.push({
-                        type: 'event',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            state_topic: true,
-                            event_types: this.prepareActionEventTypes(firstExpose.values),
-
-                            // TODO: Implement parsing for all event types.
-                            value_template:
-                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- if buttons -%}\n` +
-                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
-                                `{%- elif scenes -%}\n` +
-                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
-                                `{%- elif regions -%}\n` +
-                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
-                                `{%- else -%}\n` +
-                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
-                                `{%- endif -%}\n` +
-                                `{{d|to_json}}`,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
@@ -1268,7 +1181,7 @@ export default class HomeAssistant extends Extension {
                     discoveryEntries.push({
                         type: 'text',
                         object_id: firstExposeTyped.property,
-                        mockProperties: [], // Already mocked above in case access STATE is supported
+                        mockProperties: firstExposeTyped.access & ACCESS_STATE ? [{property: firstExposeTyped.property, value: null}] : [],
                         discovery_payload: {
                             name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
                             state_topic: firstExposeTyped.access & ACCESS_STATE,
@@ -1374,18 +1287,6 @@ export default class HomeAssistant extends Extension {
         }
 
         /**
-         * Publish an empty value for click and action payload, in this way Home Assistant
-         * can use Home Assistant entities in automations.
-         * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
-         */
-        if (this.legacyTrigger) {
-            const keys = ['action', 'click'].filter((k) => data.message[k]);
-            for (const key of keys) {
-                await this.publishEntityState(data.entity, {[key]: ''});
-            }
-        }
-
-        /**
          * Implements the MQTT device trigger (https://www.home-assistant.io/integrations/device_trigger.mqtt/)
          * The MQTT device trigger does not support JSON parsing, so it cannot listen to zigbee2mqtt/my_device
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
@@ -1440,20 +1341,6 @@ export default class HomeAssistant extends Extension {
             const exposes = entity.exposes(); // avoid calling it hundred of times/s
             for (const expose of exposes) {
                 configs.push(...this.exposeToConfig([expose], 'device', exposes, entity.definition));
-            }
-
-            for (const mapping of LEGACY_MAPPING) {
-                if (mapping.models.includes(entity.definition!.model)) {
-                    configs.push(mapping.discovery);
-                }
-            }
-
-            // @ts-expect-error deprecated in favour of exposes
-            const haConfig = entity.definition?.homeassistant;
-
-            /* istanbul ignore if */
-            if (haConfig != undefined) {
-                configs.push(haConfig);
             }
         } else if (isGroup) {
             // group
@@ -1512,35 +1399,6 @@ export default class HomeAssistant extends Extension {
         }
 
         if (isDevice && entity.definition?.ota) {
-            const updateStateSensor: DiscoveryEntry = {
-                type: 'sensor',
-                object_id: 'update_state',
-                mockProperties: [], // update is mocked below with updateSensor
-                discovery_payload: {
-                    name: 'Update state',
-                    icon: 'mdi:update',
-                    value_template: `{{ value_json['update']['state'] }}`,
-                    enabled_by_default: false,
-                    entity_category: 'diagnostic',
-                },
-            };
-
-            configs.push(updateStateSensor);
-            const updateAvailableSensor: DiscoveryEntry = {
-                type: 'binary_sensor',
-                object_id: 'update_available',
-                mockProperties: [{property: 'update_available', value: null}],
-                discovery_payload: {
-                    name: null,
-                    payload_on: true,
-                    payload_off: false,
-                    value_template: `{{ value_json['update']['state'] == "available" }}`,
-                    enabled_by_default: false,
-                    device_class: 'update',
-                    entity_category: 'diagnostic',
-                },
-            };
-            configs.push(updateAvailableSensor);
             const updateSensor: DiscoveryEntry = {
                 type: 'update',
                 object_id: 'update',
@@ -1583,14 +1441,6 @@ export default class HomeAssistant extends Extension {
                 configs.push(sceneEntry);
             });
         });
-
-        if (isDevice && entity.options.legacy !== undefined && !entity.options.legacy) {
-            configs = configs.filter((c) => c !== SENSOR_CLICK);
-        }
-
-        if (!this.legacyTrigger) {
-            configs = configs.filter((c) => (c.object_id !== 'action' && c.object_id !== 'click') || c.type == 'event');
-        }
 
         // deep clone of the config objects
         configs = JSON.parse(JSON.stringify(configs));
@@ -1653,10 +1503,6 @@ export default class HomeAssistant extends Extension {
 
             if (payload.tilt_status_topic) {
                 payload.tilt_status_topic = stateTopic;
-            }
-
-            if (this.entityAttributes && (isDevice || isGroup)) {
-                payload.json_attributes_topic = stateTopic;
             }
 
             const devicePayload = this.getDevicePayload(entity);

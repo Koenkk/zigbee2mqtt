@@ -15,24 +15,12 @@
                     "type": "object",
                     "title": "Home Assistant (advanced)",
                     "properties": {
-                        "legacy_triggers": {
-                            "type": "boolean",
-                            "title": "Home Assistant legacy triggers",
-                            "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
-                            "default": true
-                        },
                         "discovery_topic": {
                             "type": "string",
                             "title": "Homeassistant discovery topic",
                             "description": "Home Assistant discovery topic",
                             "requiresRestart": true,
                             "examples": ["homeassistant"]
-                        },
-                        "legacy_entity_attributes": {
-                            "type": "boolean",
-                            "title": "Home Assistant legacy entity attributes",
-                            "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-                            "default": true
                         },
                         "status_topic": {
                             "type": "string",
@@ -726,24 +714,12 @@
                     "requiresRestart": true,
                     "examples": ["homeassistant"]
                 },
-                "homeassistant_legacy_entity_attributes": {
-                    "type": "boolean",
-                    "title": "Home Assistant legacy entity attributes",
-                    "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-                    "default": true
-                },
                 "homeassistant_status_topic": {
                     "type": "string",
                     "title": "Home Assistant status topic",
                     "description": "Home Assistant status topic",
                     "requiresRestart": true,
                     "examples": ["homeassistant/status"]
-                },
-                "homeassistant_legacy_triggers": {
-                    "type": "boolean",
-                    "title": "Home Assistant legacy triggers",
-                    "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
-                    "default": true
                 },
                 "baudrate": {
                     "type": "number",
