@@ -428,7 +428,7 @@ describe('HomeAssistant extension', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
+                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(
@@ -451,6 +451,7 @@ describe('HomeAssistant extension', () => {
         ['left_press_release', {action: 'press_release', button: 'left'}],
         ['right_hold', {action: 'hold', button: 'right'}],
         ['right_hold_release', {action: 'hold_release', button: 'right'}],
+        ['button_4_hold_release', {action: 'hold_release', button: 'button_4'}],
         ['dial_rotate_left_step', {action: 'dial_rotate', direction: 'left', speed: 'step'}],
         ['dial_rotate_right_fast', {action: 'dial_rotate', direction: 'right', speed: 'fast'}],
     ])('Should parse action names correctly', (action, expected) => {
@@ -1995,7 +1996,7 @@ describe('HomeAssistant extension', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
+                '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
         expect(MQTT.publish).toHaveBeenCalledWith(

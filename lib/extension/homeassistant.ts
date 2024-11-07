@@ -36,7 +36,7 @@ interface ActionData {
     region?: string;
 }
 
-const ACTION_BUTTON_PATTERN: string = '^(?<button>[a-z]+)_(?<action>(?:press|hold)(?:_release)?)$';
+const ACTION_BUTTON_PATTERN: string = '^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold)(?:_release)?)$';
 const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
 const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
 const ACTION_DIAL_PATTERN: string = '(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$';
