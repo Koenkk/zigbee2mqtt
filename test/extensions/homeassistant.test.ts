@@ -204,6 +204,7 @@ describe('Extension: HomeAssistant', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            enabled_by_default: true,
         };
 
         expect(mockMQTT.publish).toHaveBeenCalledWith(
@@ -222,6 +223,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_humidity',
             unique_id: '0x0017880104e45522_humidity_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'weather_sensor',
@@ -248,6 +250,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_pressure',
             unique_id: '0x0017880104e45522_pressure_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'weather_sensor',
@@ -274,6 +277,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_battery',
             unique_id: '0x0017880104e45522_battery_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             entity_category: 'diagnostic',
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
@@ -464,6 +468,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_humidity',
             unique_id: '0x0017880104e45522_humidity_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'weather_sensor',
@@ -526,6 +531,7 @@ describe('Extension: HomeAssistant', () => {
             unit_of_measurement: '°C',
             device_class: 'temperature',
             state_class: 'measurement',
+            enabled_by_default: true,
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
             object_id: 'weather_sensor_temperature',
@@ -557,6 +563,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_humidity',
             unique_id: '0x0017880104e45522_humidity_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'weather_sensor',
@@ -580,6 +587,7 @@ describe('Extension: HomeAssistant', () => {
             state_class: 'measurement',
             value_template: '{{ value_json.pressure }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
+            enabled_by_default: true,
             object_id: 'weather_sensor_pressure',
             unique_id: '0x0017880104e45522_pressure_zigbee2mqtt',
             origin: origin,
@@ -636,6 +644,7 @@ describe('Extension: HomeAssistant', () => {
             state_class: 'measurement',
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
+            enabled_by_default: true,
             object_id: 'weather_sensor_temperature',
             unique_id: '0x0017880104e45522_temperature_zigbee2mqtt',
             origin: origin,
@@ -665,6 +674,7 @@ describe('Extension: HomeAssistant', () => {
             state_class: 'measurement',
             value_template: '{{ value_json.humidity }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'weather_sensor',
@@ -718,6 +728,7 @@ describe('Extension: HomeAssistant', () => {
                 via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
             },
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            enabled_by_default: true,
         };
 
         expect(mockMQTT.publish).toHaveBeenCalledWith(
@@ -736,6 +747,7 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_humidity',
             unique_id: '0x0017880104e45522_humidity_zigbee2mqtt',
             origin: origin,
+            enabled_by_default: true,
             device: {
                 identifiers: ['zigbee2mqtt_0x0017880104e45522'],
                 name: 'Weather Sensor',
@@ -1041,6 +1053,7 @@ describe('Extension: HomeAssistant', () => {
             state_class: 'measurement',
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
+            enabled_by_default: true,
             object_id: 'weather_sensor_temperature',
             unique_id: '0x0017880104e45522_temperature_zigbee2mqtt',
             origin: origin,
@@ -1212,6 +1225,7 @@ describe('Extension: HomeAssistant', () => {
         const payloadHA = {
             unit_of_measurement: '°C',
             device_class: 'temperature',
+            enabled_by_default: true,
             state_class: 'measurement',
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
@@ -1377,6 +1391,7 @@ describe('Extension: HomeAssistant', () => {
         const payload = {
             unit_of_measurement: '°C',
             device_class: 'temperature',
+            enabled_by_default: true,
             state_class: 'measurement',
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
@@ -1474,6 +1489,7 @@ describe('Extension: HomeAssistant', () => {
             unit_of_measurement: '°C',
             device_class: 'temperature',
             state_class: 'measurement',
+            enabled_by_default: true,
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor_renamed',
             object_id: 'weather_sensor_renamed_temperature',
@@ -1606,6 +1622,7 @@ describe('Extension: HomeAssistant', () => {
             unit_of_measurement: '°C',
             device_class: 'temperature',
             state_class: 'measurement',
+            enabled_by_default: true,
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor_renamed',
             object_id: 'weather_sensor_renamed_temperature',
@@ -1664,7 +1681,7 @@ describe('Extension: HomeAssistant', () => {
         );
     });
 
-    it('onlythis Should discover trigger when click is published', async () => {
+    it('Should discover trigger when action is published', async () => {
         const discovered = mockMQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(5);
 
@@ -2240,6 +2257,7 @@ describe('Extension: HomeAssistant', () => {
             unit_of_measurement: '°C',
             device_class: 'temperature',
             state_class: 'measurement',
+            enabled_by_default: true,
             value_template: '{{ value_json.temperature }}',
             state_topic: 'zigbee2mqtt/weather_sensor',
             object_id: 'weather_sensor_temperature',
@@ -2642,6 +2660,7 @@ describe('Extension: HomeAssistant', () => {
             state_topic: 'zigbee2mqtt/0x18fc26000000cafe',
             unique_id: '0x18fc26000000cafe_device_mode_zigbee2mqtt',
             value_template: '{{ value_json.device_mode }}',
+            enabled_by_default: true,
         };
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'homeassistant/select/0x18fc26000000cafe/device_mode/config',

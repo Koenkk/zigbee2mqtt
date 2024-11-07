@@ -1050,8 +1050,50 @@ export default class HomeAssistant extends Extension {
             }
             case 'enum': {
                 assertEnumExpose(firstExpose);
-                const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
+                /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (firstExpose.property === 'action') {
+                    if (
+                        this.experimentalEventEntities &&
+                        firstExpose.access & ACCESS_STATE &&
+                        !(firstExpose.access & ACCESS_SET) &&
+                        firstExpose.property == 'action'
+                    ) {
+                        discoveryEntries.push({
+                            type: 'event',
+                            object_id: firstExpose.property,
+                            mockProperties: [{property: firstExpose.property, value: null}],
+                            discovery_payload: {
+                                name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                                state_topic: true,
+                                event_types: this.prepareActionEventTypes(firstExpose.values),
 
+                                // TODO: Implement parsing for all event types.
+                                value_template:
+                                    `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
+                                    `{%- if buttons -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
+                                    `{%- elif scenes -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
+                                    `{%- elif regions -%}\n` +
+                                    `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
+                                    `{%- else -%}\n` +
+                                    `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
+                                    `{%- endif -%}\n` +
+                                    `{{d|to_json}}`,
+                                ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                            },
+                        });
+                    }
+                    // Don't expose action sensor, use MQTT device trigger instead
+                    break;
+                }
+
+                const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
                 if (firstExpose.access & ACCESS_STATE) {
                     discoveryEntries.push({
                         type: 'sensor',
@@ -1061,45 +1103,6 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template: valueTemplate,
                             enabled_by_default: !(firstExpose.access & ACCESS_SET),
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
-
-                /**
-                 * If enum attribute does not have SET access and is named 'action', then expose
-                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
-                 */
-                if (
-                    this.experimentalEventEntities &&
-                    firstExpose.access & ACCESS_STATE &&
-                    !(firstExpose.access & ACCESS_SET) &&
-                    firstExpose.property == 'action'
-                ) {
-                    discoveryEntries.push({
-                        type: 'event',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            state_topic: true,
-                            event_types: this.prepareActionEventTypes(firstExpose.values),
-
-                            // TODO: Implement parsing for all event types.
-                            value_template:
-                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- if buttons -%}\n` +
-                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
-                                `{%- elif scenes -%}\n` +
-                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
-                                `{%- elif regions -%}\n` +
-                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
-                                `{%- else -%}\n` +
-                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
-                                `{%- endif -%}\n` +
-                                `{{d|to_json}}`,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
