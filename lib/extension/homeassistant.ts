@@ -1158,7 +1158,7 @@ export default class HomeAssistant extends Extension {
             case 'text':
             case 'composite':
             case 'list': {
-                // Deprecated: remove text sensor
+                // legacy: remove text sensor
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
                 const settableText = firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET;
                 if (firstExposeTyped.access & ACCESS_STATE) {
