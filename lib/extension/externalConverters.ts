@@ -21,9 +21,7 @@ export default class ExternalConverters extends Extension {
         for (const file of settings.get().external_converters) {
             try {
                 for (const definition of loadExternalConverter(file)) {
-                    const toAdd = {...definition};
-                    delete toAdd['homeassistant'];
-                    zhc.addDefinition(toAdd);
+                    zhc.addDefinition(definition);
                 }
                 logger.info(`Loaded external converter '${file}'`);
             } catch (error) {
