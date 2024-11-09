@@ -1,19 +1,7 @@
-const homeassistantSwitch = {
-    type: 'switch',
-    object_id: 'switch',
-    discovery_payload: {
-        payload_off: 'OFF',
-        payload_on: 'ON',
-        value_template: '{{ value_json.state }}',
-        command_topic: true,
-    },
-};
-
 const mockDevices = [
     {
         mock: 1,
         model: 'external_converters_device_1',
-        homeassistant: [homeassistantSwitch],
         zigbeeModel: ['external_converter_device_1'],
         vendor: 'external_1',
         description: 'external_1',

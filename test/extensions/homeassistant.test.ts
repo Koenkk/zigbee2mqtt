@@ -1847,7 +1847,6 @@ describe('Extension: HomeAssistant', () => {
     it('Should enable experimental event entities', async () => {
         settings.set(['homeassistant'], {experimental_event_entities: true});
         settings.set(['devices', '0x0017880104e45520'], {
-            legacy: false,
             friendly_name: 'button',
             retain: false,
         });
