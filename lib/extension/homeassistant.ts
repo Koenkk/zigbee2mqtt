@@ -36,10 +36,13 @@ interface ActionData {
     region?: string;
 }
 
-const ACTION_BUTTON_PATTERN: string = '^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold)(?:_release)?)$';
-const ACTION_SCENE_PATTERN: string = '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$';
-const ACTION_REGION_PATTERN: string = '^region_(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$';
-const ACTION_DIAL_PATTERN: string = '(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$';
+const ACTION_PATTERNS: string[] = [
+    '^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold)(?:_release)?)$',
+    '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$',
+    '^(?<actionPrefix>region_)(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$',
+    '^(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$',
+    '^(?<action>brightness_step)(?:_(?<direction>up|down))?$',
+];
 
 const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
@@ -456,6 +459,7 @@ export default class HomeAssistant extends Extension {
     private bridge: Bridge;
     // @ts-expect-error initialized in `start`
     private bridgeIdentifier: string;
+    private actionValueTemplate: string;
 
     constructor(
         zigbee: Zigbee,
@@ -483,6 +487,8 @@ export default class HomeAssistant extends Extension {
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
+
+        this.actionValueTemplate = this.getActionValueTemplate();
     }
 
     override async start(): Promise<void> {
@@ -1178,22 +1184,7 @@ export default class HomeAssistant extends Extension {
                             name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             state_topic: true,
                             event_types: this.prepareActionEventTypes(firstExpose.values),
-
-                            // TODO: Implement parsing for all event types.
-                            value_template:
-                                `{%- set buttons = value_json.action|regex_findall_index(${ACTION_BUTTON_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set scenes = value_json.action|regex_findall_index(${ACTION_SCENE_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- set regions = value_json.action|regex_findall_index(${ACTION_REGION_PATTERN.replaceAll(/\?<([a-z]+)>/g, '?P<$1>')}) -%}` +
-                                `{%- if buttons -%}\n` +
-                                `   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n` +
-                                `{%- elif scenes -%}\n` +
-                                `   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n` +
-                                `{%- elif regions -%}\n` +
-                                `   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n` +
-                                `{%- else -%}\n` +
-                                `   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n` +
-                                `{%- endif -%}\n` +
-                                `{{d|to_json}}`,
+                            value_template: this.actionValueTemplate,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
@@ -2225,42 +2216,74 @@ export default class HomeAssistant extends Extension {
     }
 
     private parseActionValue(action: string): ActionData {
-        let m = action.match(ACTION_BUTTON_PATTERN);
-        if (m?.groups?.action) {
-            return {...m.groups, action: m.groups.action};
+        // Handle standard actions.
+        for (const p of ACTION_PATTERNS) {
+            const m = action.match(p);
+            if (m?.groups?.action) {
+                return this.buildAction(m.groups);
+            }
         }
 
-        m = action.match(ACTION_SCENE_PATTERN);
-        if (m?.groups?.action) {
-            return {...m.groups, action: m.groups.action};
-        }
-
-        m = action.match(ACTION_REGION_PATTERN);
-        if (m?.groups?.action) {
-            return {...m.groups, action: 'region_' + m.groups.action};
-        }
-
-        m = action.match(ACTION_DIAL_PATTERN);
-        if (m?.groups?.action) {
-            return {...m.groups, action: m.groups.action};
-        }
-
-        m = action.match(/^(?<action>recall|scene)_\*$/);
+        // Handle wildcard actions.
+        let m = action.match(/^(?<action>recall|scene)_\*(?:_(?<endpoint>e1|e2|s1|s2))?$/);
         if (m?.groups?.action) {
             logger.debug('Found scene wildcard action ' + m.groups.action);
-            return {action: m.groups.action, scene: 'wildcard'};
+            return this.buildAction(m.groups, {scene: 'wildcard'});
         }
 
-        m = action.match(/^region_\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        m = action.match(/^(?<actionPrefix>region_)\*_(?<action>enter|leave|occupied|unoccupied)$/);
         if (m?.groups?.action) {
             logger.debug('Found region wildcard action ' + m.groups.action);
-            return {action: 'region_' + m.groups.action, region: 'wildcard'};
+            return this.buildAction(m.groups, {region: 'wildcard'});
         }
 
+        // If nothing matches, keep the plain action value.
         return {action};
+    }
+
+    private buildAction(groups: {[key: string]: string}, props: {[key: string]: string} = {}): ActionData {
+        utils.removeNullPropertiesFromObject(groups);
+
+        let a: string = groups.action;
+        if (groups?.actionPrefix) {
+            a = groups.actionPrefix + a;
+            delete groups.actionPrefix;
+        }
+        return {...groups, action: a, ...props};
     }
 
     private prepareActionEventTypes(values: zhc.Enum['values']): string[] {
         return utils.arrayUnique(values.map((v) => this.parseActionValue(v.toString()).action).filter((v) => !v.includes('*')));
+    }
+
+    private parseGroupsFromRegex(pattern: string): string[] {
+        return [...pattern.matchAll(/\(\?<([a-zA-Z]+)>/g)].map((v) => v[1]);
+    }
+
+    private getActionValueTemplate(): string {
+        // TODO: Implement parsing for all event types.
+        const patterns = ACTION_PATTERNS.map((v) => {
+            return `{"pattern": '${v.replaceAll(/\?<([a-zA-Z]+)>/g, '?P<$1>')}', "groups": [${this.parseGroupsFromRegex(v)
+                .map((g) => `"${g}"`)
+                .join(', ')}]}`;
+        }).join(',\n');
+
+        const value_template =
+            `{% set patterns = [\n${patterns}\n] %}\n` +
+            `{% set ns = namespace(r=[('event_type', value_json.action)]) %}\n` +
+            `{% for p in patterns %}\n` +
+            `  {% set m = value_json.action|regex_findall(p.pattern) %}\n` +
+            `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
+            `  {% for key, value in zip(p.groups, m[0]) %}\n` +
+            `    {% set ns.r = ns.r + [(key, value)] %}\n` +
+            `  {% endfor %}\n` +
+            `{% endfor %}\n` +
+            `{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n` +
+            `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
+            `{% endif %}\n` +
+            `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix'))|to_json}}`;
+
+        return value_template;
     }
 }
