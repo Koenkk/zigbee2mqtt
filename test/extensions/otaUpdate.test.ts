@@ -18,7 +18,7 @@ import * as settings from '../../lib/util/settings';
 
 const mocksClear = [mockMQTT.publish, devices.bulb.save, mockLogger.info];
 
-describe.skip('Extension: OTAUpdate', () => {
+describe('Extension: OTAUpdate', () => {
     let controller: Controller;
     let mapped: zhc.Definition;
     let updateToLatestSpy: jest.SpyInstance;
