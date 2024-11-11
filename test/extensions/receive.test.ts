@@ -47,7 +47,7 @@ describe('Extension: Receive', () => {
         expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
-            stringify({action: 'single', click: 'single', linkquality: 10}),
+            stringify({action: 'single', linkquality: 10}),
             {retain: false, qos: 0},
             expect.any(Function),
         );
@@ -61,7 +61,7 @@ describe('Extension: Receive', () => {
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button_double_key');
-        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({click: 'left', action: 'single_left'});
+        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single_left'});
         expect(mockMQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
     });
 
@@ -73,7 +73,7 @@ describe('Extension: Receive', () => {
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button_double_key');
-        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({click: 'right', action: 'single_right'});
+        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'single_right'});
         expect(mockMQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
     });
 
@@ -560,7 +560,6 @@ describe('Extension: Receive', () => {
         expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({
             battery: 100,
             illuminance: 381,
-            illuminance_lux: 381,
             voltage: 3045,
             device_temperature: 19,
             power_outage_count: 34,
@@ -673,7 +672,7 @@ describe('Extension: Receive', () => {
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/ikea_onoff');
-        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({click: 'brightness_stop', action: 'brightness_stop'});
+        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'brightness_stop'});
         expect(mockMQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
     });
 
@@ -688,10 +687,10 @@ describe('Extension: Receive', () => {
         await flushPromises();
         expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
         expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/ikea_onoff');
-        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({click: 'brightness_stop', action: 'brightness_stop'});
+        expect(JSON.parse(mockMQTT.publish.mock.calls[0][1])).toStrictEqual({action: 'brightness_stop'});
         expect(mockMQTT.publish.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
         expect(mockMQTT.publish.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/ikea_onoff');
-        expect(JSON.parse(mockMQTT.publish.mock.calls[1][1])).toMatchObject({click: 'brightness_stop', action: 'brightness_stop'});
+        expect(JSON.parse(mockMQTT.publish.mock.calls[1][1])).toMatchObject({action: 'brightness_stop'});
         expect(JSON.parse(mockMQTT.publish.mock.calls[1][1]).elapsed).toBe(50);
         expect(mockMQTT.publish.mock.calls[1][2]).toStrictEqual({qos: 0, retain: false});
     });
