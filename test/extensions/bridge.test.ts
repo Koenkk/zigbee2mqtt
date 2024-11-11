@@ -224,7 +224,7 @@ describe('Extension: Bridge', () => {
 
     it('Should publish devices on startup', async () => {
         await resetExtension();
-        // console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
             stringify([
@@ -757,18 +757,7 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
-                                    'Set to false to disable the legacy integration (highly recommended), will change structure of the published payload (default true).',
-                                label: 'Legacy',
-                                name: 'legacy',
-                                property: 'legacy',
-                                type: 'binary',
-                                value_off: false,
-                                value_on: true,
-                            },
-                            {
-                                access: 2,
-                                description:
-                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval. Only works when legacy is false.',
+                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval.',
                                 features: [
                                     {
                                         access: 2,
@@ -869,7 +858,7 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
-                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval. ',
+                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval.',
                                 features: [
                                     {
                                         access: 2,
@@ -999,17 +988,6 @@ describe('Extension: Bridge', () => {
                                 name: 'device_temperature_calibration',
                                 property: 'device_temperature_calibration',
                                 type: 'numeric',
-                            },
-                            {
-                                access: 2,
-                                description:
-                                    'Set to false to disable the legacy integration (highly recommended), will change structure of the published payload (default true).',
-                                label: 'Legacy',
-                                name: 'legacy',
-                                property: 'legacy',
-                                type: 'binary',
-                                value_off: false,
-                                value_on: true,
                             },
                         ],
                         supports_ota: false,
@@ -2533,7 +2511,7 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
-                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval. ',
+                                    'Simulate a brightness value. If this device provides a brightness_move_up or brightness_move_down action it is possible to specify the update interval and delta. The action_brightness_delta indicates the delta for each interval.',
                                 features: [
                                     {
                                         access: 2,
