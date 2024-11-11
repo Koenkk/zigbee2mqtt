@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 3.0.0-pre.0
+  zigbee-herdsman: 3.0.0-pre.1
 
 importers:
 
@@ -2821,9 +2821,6 @@ packages:
 
   zigbee-herdsman-converters@21.0.0-pre.1:
     resolution: {integrity: sha512-ALNeNua3OiQtSGkBn8W2G2XfWrytZjV5VbzwyeIJPYzEpMqMIvBhbXMyF/l6AP88b68dYFVKqjJMuTxXbvCETQ==}
-
-  zigbee-herdsman@3.0.0-pre.0:
-    resolution: {integrity: sha512-3mCSmdwu5eJb0DEJrTDSQPYEQAz1mOGAbqvXyEOjo6UOllo++GyzpmawTxWBH4FLWrbuKc9SefiVqQdC/4uZbQ==}
 
   zigbee-herdsman@3.0.0-pre.1:
     resolution: {integrity: sha512-HRonSIS39LwWo0EBA2YRE/E9o6g0tY8RT8TkjlxH6R4uwJwPrE2mIzhLMewqU3xWbmpS6YamsZ7jw/GY9U3byw==}
@@ -5979,20 +5976,7 @@ snapshots:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
       semver: 7.6.3
-      zigbee-herdsman: 3.0.0-pre.0
-    transitivePeerDependencies:
-      - supports-color
-
-  zigbee-herdsman@3.0.0-pre.0:
-    dependencies:
-      '@serialport/bindings-cpp': 12.0.1
-      '@serialport/parser-delimiter': 12.0.0
-      '@serialport/stream': 12.0.0
-      bonjour-service: 1.2.1
-      debounce: 2.2.0
-      fast-deep-equal: 3.1.3
-      mixin-deep: 2.0.1
-      slip: 1.0.2
+      zigbee-herdsman: 3.0.0-pre.1
     transitivePeerDependencies:
       - supports-color
 
