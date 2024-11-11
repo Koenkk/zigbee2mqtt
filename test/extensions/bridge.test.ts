@@ -224,7 +224,7 @@ describe('Extension: Bridge', () => {
 
     it('Should publish devices on startup', async () => {
         await resetExtension();
-        console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        // console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
             stringify([
