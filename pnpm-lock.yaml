@@ -68,9 +68,6 @@ importers:
       throttleit:
         specifier: ^2.1.0
         version: 2.1.0
-      uri-js:
-        specifier: ^4.4.1
-        version: 4.4.1
       winston:
         specifier: ^3.16.0
         version: 3.16.0
