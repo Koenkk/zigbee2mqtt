@@ -14,7 +14,7 @@ import ExtensionBind from './extension/bind';
 import ExtensionBridge from './extension/bridge';
 import ExtensionConfigure from './extension/configure';
 import ExtensionExternalConverters from './extension/externalConverters';
-import ExtensionExternalExtension from './extension/externalExtension';
+import ExtensionExternalExtensions from './extension/externalExtensions';
 // Extensions
 import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
@@ -46,7 +46,7 @@ const AllExtensions = [
     ExtensionOTAUpdate,
     ExtensionExternalConverters,
     ExtensionFrontend,
-    ExtensionExternalExtension,
+    ExtensionExternalExtensions,
     ExtensionAvailability,
 ];
 
@@ -105,16 +105,13 @@ export class Controller {
             new ExtensionGroups(...this.extensionArgs),
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
-            new ExtensionExternalExtension(...this.extensionArgs),
+            new ExtensionExternalExtensions(...this.extensionArgs),
+            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
 
         if (settings.get().frontend) {
             this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
-        }
-
-        if (settings.get().external_converters.length) {
-            this.extensions.push(new ExtensionExternalConverters(...this.extensionArgs));
         }
 
         if (settings.get().homeassistant) {
