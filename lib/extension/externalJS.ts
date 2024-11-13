@@ -4,11 +4,11 @@ import {Context, runInNewContext} from 'vm';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
-import data from 'lib/util/data';
-import utils from 'lib/util/utils';
 
+import data from '../util/data';
+import logger from '../util/logger';
 import * as settings from '../util/settings';
-import logger from './../util/logger';
+import utils from '../util/utils';
 import Extension from './extension';
 
 export default abstract class ExternalJSExtension<M> extends Extension {
