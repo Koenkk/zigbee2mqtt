@@ -111,15 +111,19 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     @bind private async save(message: KeyValue): Promise<MQTTResponse> {
         const {name, code} = message;
 
-        await this.loadJS(name, this.loadModuleFromText(code, name));
+        try {
+            await this.loadJS(name, this.loadModuleFromText(code, name));
 
-        const filePath = this.getFilePath(name, true);
+            const filePath = this.getFilePath(name, true);
 
-        fs.writeFileSync(filePath, code, 'utf8');
-        logger.info(`${name} loaded. Contents written to '${filePath}'.`);
-        await this.publishExternalJS();
+            fs.writeFileSync(filePath, code, 'utf8');
+            logger.info(`${name} loaded. Contents written to '${filePath}'.`);
+            await this.publishExternalJS();
 
-        return utils.getResponse(message, {});
+            return utils.getResponse(message, {});
+        } catch (error) {
+            return utils.getResponse(message, {}, `${name} contains invalid code: ${(error as Error).message}`);
+        }
     }
 
     private async loadFiles(): Promise<void> {
