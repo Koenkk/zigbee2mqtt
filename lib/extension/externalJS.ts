@@ -60,6 +60,10 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     }
 
     protected *getFiles(): Generator<{name: string; code: string}> {
+        if (!fs.existsSync(this.basePath)) {
+            return;
+        }
+
         for (const fileName of fs.readdirSync(this.basePath)) {
             if (fileName.endsWith('.js')) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
