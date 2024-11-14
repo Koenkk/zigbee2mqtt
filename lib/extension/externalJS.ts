@@ -65,6 +65,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         for (const fileName of fs.readdirSync(this.basePath)) {
+            /* istanbul ignore else */
             if (fileName.endsWith('.js')) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
             }
@@ -149,8 +150,8 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         );
     }
 
-    private loadModuleFromText(moduleCode: string, name?: string): M {
-        const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name || 'externally-loaded.js');
+    private loadModuleFromText(moduleCode: string, name: string): M {
+        const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name);
         const sandbox: Context = {
             require: require,
             module: {},

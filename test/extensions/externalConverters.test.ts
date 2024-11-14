@@ -254,4 +254,36 @@ describe('Extension: ExternalConverters', () => {
         );
         expect(writeFileSyncSpy).not.toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
     });
+
+    it('returns error on failed removal', async () => {
+        const converterName = 'foo.js';
+        const converterCode = getFileCode('mock-external-converter.js');
+        const converterFilePath = path.join(mockBasePath, converterName);
+
+        await controller.start();
+        await flushPromises();
+        mocksClear.forEach((m) => m.mockClear());
+
+        //-- SAVE
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
+        await flushPromises();
+
+        const errorMsg = `Failed to remove definition`;
+
+        mockZHCRemoveDefinition.mockImplementationOnce(() => {
+            throw new Error(errorMsg);
+        });
+
+        //-- REMOVE
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
+        await flushPromises();
+
+        expect(mockMQTT.publish).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/converter/remove',
+            stringify({data: {}, status: 'error', error: errorMsg}),
+            {retain: false, qos: 0},
+            expect.any(Function),
+        );
+        expect(rmSyncSpy).not.toHaveBeenCalledWith(converterFilePath, {force: true});
+    });
 });
