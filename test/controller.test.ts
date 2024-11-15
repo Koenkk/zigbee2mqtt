@@ -338,12 +338,12 @@ describe('Controller', () => {
         mockMQTT.publishAsync.mockClear();
         // fail on device_joined (has skipLog=false)
         mockMQTT.publishAsync.mockImplementationOnce(mockMQTT.publishAsync.getMockImplementation()!).mockImplementationOnce(() => {
-            throw new Error('ECONNRESET');
+            throw new Error('client disconnecting');
         });
         await mockZHEvents.deviceJoined({device: devices.bulb});
         await flushPromises();
 
-        expect(mockLogger.error).toHaveBeenCalledWith('MQTT server error: ECONNRESET');
+        expect(mockLogger.error).toHaveBeenCalledWith('MQTT server error: client disconnecting');
     });
 
     it('Handle mqtt message', async () => {
