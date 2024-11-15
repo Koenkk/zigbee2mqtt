@@ -13,6 +13,8 @@ export const mockMQTT = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     unsubscribeAsync: jest.fn(async (topic: string): Promise<void> => {}),
     reconnecting: false,
+    disconnecting: false,
+    disconnected: false,
     on: jest.fn((type, handler) => {
         if (type === 'connect') {
             handler();

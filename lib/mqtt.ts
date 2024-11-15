@@ -86,6 +86,13 @@ export default class MQTT {
         this.client.on('error', (err) => {
             logger.error(`MQTT error: ${err.message}`);
         });
+
+        if (mqttSettings.version != undefined && mqttSettings.version >= 5) {
+            this.client.on('disconnect', (packet) => {
+                logger.error(`MQTT disconnect: reason ${packet.reasonCode}`);
+            });
+        }
+
         this.client.on('message', this.onMessage);
 
         await this.onConnect();
@@ -102,7 +109,7 @@ export default class MQTT {
 
         // Set timer at interval to check if connected to MQTT server.
         this.connectionTimer = setInterval(() => {
-            if (this.client.reconnecting) {
+            if (!this.isConnected()) {
                 logger.error('Not connected to MQTT server!');
             }
         }, utils.seconds(10));
@@ -146,7 +153,7 @@ export default class MQTT {
     }
 
     isConnected(): boolean {
-        return this.client && !this.client.reconnecting;
+        return this.client && !this.client.reconnecting && !this.client.disconnecting && !this.client.disconnected;
     }
 
     async publish(

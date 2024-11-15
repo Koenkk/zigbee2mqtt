@@ -332,6 +332,25 @@ describe('Controller', () => {
         expect(mockLogger.info).toHaveBeenCalledWith('Connected to MQTT server');
     });
 
+    it('Handles reconnecting to MQTT after v5+ DISCONNECT', async () => {
+        settings.set(['mqtt', 'version'], 5);
+        await controller.start();
+        await flushPromises();
+
+        mockLogger.error.mockClear();
+        mockLogger.info.mockClear();
+        mockMQTTEvents.disconnect({reasonCode: 149});
+        mockMQTT.disconnecting = true;
+        expect(mockLogger.error).toHaveBeenCalledWith('MQTT disconnect: reason 149');
+
+        await jest.advanceTimersByTimeAsync(11000);
+        expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
+
+        mockMQTT.disconnecting = false;
+        await mockMQTTEvents.connect();
+        expect(mockLogger.info).toHaveBeenCalledWith('Connected to MQTT server');
+    });
+
     it('Handles MQTT publish error', async () => {
         await controller.start();
         await flushPromises();
