@@ -16,7 +16,6 @@ export default class MQTT {
     private connectionTimer?: NodeJS.Timeout;
     private client!: MqttClient;
     private eventBus: EventBus;
-    private initialConnect = true;
     private republishRetainedTimer?: NodeJS.Timeout;
     public retainedMessages: {
         [s: string]: {payload: string; options: IClientPublishOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
@@ -80,16 +79,15 @@ export default class MQTT {
         }
 
         this.client = await connectAsync(mqttSettings.server, options);
-
-        await this.onConnect();
-        // https://github.com/Koenkk/zigbee2mqtt/issues/9822
-        this.client.stream.setMaxListeners(0);
-
-        this.client.on('connect', this.onConnect);
         this.client.on('error', (err) => {
             logger.error(`MQTT error: ${err.message}`);
         });
         this.client.on('message', this.onMessage);
+
+        await this.onConnect();
+        this.client.on('connect', this.onConnect);
+        // https://github.com/Koenkk/zigbee2mqtt/issues/9822
+        this.client.stream.setMaxListeners(0);
 
         this.republishRetainedTimer = setTimeout(async () => {
             // Republish retained messages in case MQTT broker does not persist them.
@@ -116,12 +114,12 @@ export default class MQTT {
         await this.client?.endAsync();
     }
 
-    async subscribe(topic: string): ReturnType<typeof this.client.subscribeAsync> {
-        return await this.client.subscribeAsync(topic);
+    async subscribe(topic: string): Promise<void> {
+        await this.client.subscribeAsync(topic);
     }
 
-    async unsubscribe(topic: string): ReturnType<typeof this.client.unsubscribeAsync> {
-        return await this.client.unsubscribeAsync(topic);
+    async unsubscribe(topic: string): Promise<void> {
+        await this.client.unsubscribeAsync(topic);
     }
 
     @bind private async onConnect(): Promise<void> {
@@ -193,6 +191,14 @@ export default class MQTT {
             actualOptions.retain = false;
         }
 
-        await this.client.publishAsync(topic, payload, actualOptions);
+        try {
+            await this.client.publishAsync(topic, payload, actualOptions);
+        } catch (error) {
+            /* istanbul ignore else */
+            if (!skipLog) {
+                logger.error(`MQTT server error: ${(error as Error).message}`);
+                logger.error(`Could not send message: topic: '${topic}', payload: '${payload}`);
+            }
+        }
     }
 }

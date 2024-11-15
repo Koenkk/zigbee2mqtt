@@ -39,7 +39,7 @@ describe('Extension: Groups', () => {
         resetGroupMembers();
         data.writeDefaultConfiguration();
         settings.reRead();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         groups.gledopto_group.command.mockClear();
         zhcToZigbee.__clearStore__();
         // @ts-expect-error private
@@ -52,26 +52,25 @@ describe('Extension: Groups', () => {
         const group = groups.group_1;
         group.members.push(endpoint);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
         await mockZHEvents.message(payload);
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should not republish identical optimistic group states', async () => {
         const device1 = devices.bulb_2;
         const device2 = devices.bulb_color_2;
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message({
             data: {onOff: 1},
             cluster: 'genOnOff',
@@ -89,37 +88,32 @@ describe('Extension: Groups', () => {
             linkquality: 10,
         });
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(6);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(6);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_tradfri_remote',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_2', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb_2', stringify({state: 'ON'}), {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color_2',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_with_tradfri',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/ha_discovery_group',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/switch_group',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -129,17 +123,16 @@ describe('Extension: Groups', () => {
         const group = groups.group_1;
         group.members.push(endpoint);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should not publish state change when group changes state and device is disabled', async () => {
@@ -149,11 +142,11 @@ describe('Extension: Groups', () => {
         group.members.push(endpoint);
         settings.set(['devices', device.ieeeAddr, 'disabled'], true);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should publish state change for group when members state change', async () => {
@@ -163,66 +156,60 @@ describe('Extension: Groups', () => {
         const group = groups.group_1;
         group.members.push(endpoint);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'OFF'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should publish state of device with endpoint name', async () => {
         const group = groups.gledopto_group;
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/gledopto_group/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/GLEDOPTO_2ID',
             stringify({state_cct: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/gledopto_group',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith('genOnOff', 'on', {}, {});
@@ -231,21 +218,19 @@ describe('Extension: Groups', () => {
     it('Should publish state of group when specific state of specific endpoint is changed', async () => {
         const group = groups.gledopto_group;
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/GLEDOPTO_2ID/set', stringify({state_cct: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/GLEDOPTO_2ID',
             stringify({state_cct: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/gledopto_group',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
         expect(group.command).toHaveBeenCalledTimes(0);
     });
@@ -257,17 +242,16 @@ describe('Extension: Groups', () => {
         group.members.push(endpoint);
         settings.set(['groups'], {1: {friendly_name: 'group_1', retain: false, filtered_attributes: ['brightness']}});
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON', brightness: 100}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON', brightness: 100}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Shouldnt publish group state change when a group is not optimistic', async () => {
@@ -277,17 +261,16 @@ describe('Extension: Groups', () => {
         group.members.push(endpoint);
         settings.set(['groups'], {1: {friendly_name: 'group_1', optimistic: false, retain: false}});
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint, type: 'attributeReport', linkquality: 10};
         await mockZHEvents.message(payload);
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -297,18 +280,17 @@ describe('Extension: Groups', () => {
         groups.group_1.members.push(endpoint);
         groups.group_2.members.push(endpoint);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_2', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_2', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should not publish state change off if any lights within are still on when changed via device', async () => {
@@ -322,16 +304,15 @@ describe('Extension: Groups', () => {
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -349,24 +330,22 @@ describe('Extension: Groups', () => {
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenNthCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenNthCalledWith(
             1,
             'zigbee2mqtt/group_1',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenNthCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenNthCalledWith(
             2,
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -381,22 +360,20 @@ describe('Extension: Groups', () => {
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/group_2/set', stringify({state: 'OFF'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_2',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -414,24 +391,22 @@ describe('Extension: Groups', () => {
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
         await mockMQTTEvents.message('zigbee2mqtt/bulb/set', stringify({state: 'OFF'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'OFF'}), {retain: true, qos: 0}, expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'OFF'}), {retain: true, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -446,33 +421,30 @@ describe('Extension: Groups', () => {
         settings.set(['groups'], {
             1: {friendly_name: 'group_1', retain: false},
         });
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF', color_temp: 200}));
         await mockMQTTEvents.message('zigbee2mqtt/bulb/set', stringify({state: 'ON', color_temp: 250}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({color_temp: 300}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({color_mode: 'color_temp', color_temp: 300, state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({color_mode: 'color_temp', color_temp: 300, state: 'ON'}),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({color_mode: 'color_temp', color_temp: 300, state: 'ON'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -490,25 +462,23 @@ describe('Extension: Groups', () => {
 
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         controller.state.state = {};
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({state: 'OFF'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -517,19 +487,18 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(1);
         const group = groups.group_1;
         expect(group.members.length).toBe(0);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
             stringify({transaction: '123', group: 'group_1', device: 'bulb_color'}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, transaction: '123', status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -542,16 +511,15 @@ describe('Extension: Groups', () => {
             throw new Error('timeout');
         });
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {}, status: 'error', error: 'Failed to add from group (timeout)'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -561,16 +529,15 @@ describe('Extension: Groups', () => {
         const group = groups['group/with/slashes'];
         settings.set(['groups'], {99: {friendly_name: 'group/with/slashes', retain: false}});
         expect(group.members.length).toBe(0);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group/with/slashes', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group/with/slashes'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -579,19 +546,18 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(3)!;
         const group = groups.group_1;
         expect(group.members.length).toBe(0);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
             stringify({group: 'group_1', device: 'wall_switch_double', endpoint: 'right'}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {device: 'wall_switch_double', endpoint: 'right', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -600,7 +566,7 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(3)!;
         const group = groups.group_1;
         expect(group.members.length).toBe(0);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
             stringify({group: 'group_1', device: 'wall_switch_double', endpoint: 'right'}),
@@ -612,12 +578,11 @@ describe('Extension: Groups', () => {
         );
         await flushPromises();
         expect(group.members).toStrictEqual([endpoint]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {device: 'wall_switch_double', endpoint: 'right', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -626,16 +591,15 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(1)!;
         const group = groups.group_1;
         group.members.push(endpoint);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1', device: 'bulb_color'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -644,19 +608,18 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(1)!;
         const group = groups.group_1;
         group.members.push(endpoint);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/remove',
             stringify({group: 'group_1', device: 'bulb_color', skip_disable_reporting: true}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {device: 'bulb_color', endpoint: 'default', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -665,19 +628,18 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(3)!;
         const group = groups.group_1;
         group.members.push(endpoint);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/remove',
             stringify({group: 'group_1', device: '0x0017880104e45542', endpoint: '3'}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {device: '0x0017880104e45542', endpoint: '3', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -686,19 +648,18 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(3)!;
         const group = groups.group_1;
         group.members.push(endpoint);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/remove',
             stringify({group: 'group_1', device: 'wall_switch_double', endpoint: '3'}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {device: 'wall_switch_double', endpoint: '3', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -707,108 +668,101 @@ describe('Extension: Groups', () => {
         const endpoint = device.getEndpoint(3)!;
         const group = groups.group_1;
         group.members.push(endpoint);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/remove',
             stringify({group: 'group_1', device: '0x0017880104e45542', endpoint: 'right'}),
         );
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {device: '0x0017880104e45542', endpoint: 'right', group: 'group_1'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Remove from group all', async () => {
         const group = groups.group_1;
         groups.group_1.members.push(devices.QBKG03LM.endpoints[2]);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/remove_all', stringify({device: '0x0017880104e45542', endpoint: 'right'}));
         await flushPromises();
         expect(group.members).toStrictEqual([]);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove_all',
             stringify({data: {device: '0x0017880104e45542', endpoint: 'right'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Error when adding to non-existing group', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/remove', stringify({group: 'group_1_not_existing', device: 'bulb_color'}));
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/remove',
             stringify({data: {}, status: 'error', error: "Group 'group_1_not_existing' does not exist"}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Error when adding a non-existing device', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', device: 'bulb_color_not_existing'}));
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {}, status: 'error', error: "Device 'bulb_color_not_existing' does not exist"}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Error when adding a non-existing endpoint', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
             stringify({group: 'group_1', device: 'bulb_color', endpoint: 'not_existing_endpoint'}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {}, status: 'error', error: "Device 'bulb_color' does not have endpoint 'not_existing_endpoint'"}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Error when invalid payload', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({group: 'group_1', devicez: 'bulb_color'}));
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {}, status: 'error', error: 'Invalid payload'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Error when add/remove with invalid payload', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/members/add', stringify({groupz: 'group_1', device: 'bulb_color'}));
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object), expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/bridge/groups', expect.any(String), expect.any(Object));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/group/members/add',
             stringify({data: {}, status: 'error', error: 'Invalid payload'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -819,50 +773,44 @@ describe('Extension: Groups', () => {
         group.members.push(bulbColor.getEndpoint(1)!);
         group.members.push(bulbColorTemp.getEndpoint(1)!);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({color_temp: 50}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({color_mode: 'color_temp', color_temp: 50}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({color_mode: 'color_temp', color_temp: 50}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({color_mode: 'color_temp', color_temp: 50}),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({color: {x: 0.5, y: 0.3}}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({color: {x: 0.5, y: 0.3}, color_mode: 'xy', color_temp: 548}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_1',
             stringify({color: {x: 0.5, y: 0.3}, color_mode: 'xy', color_temp: 548}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({color_mode: 'color_temp', color_temp: 548}),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
     });
 });

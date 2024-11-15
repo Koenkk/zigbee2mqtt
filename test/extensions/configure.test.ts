@@ -9,7 +9,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 
-const mocksClear = [mockMQTT.publish, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: Configure', () => {
     let controller: Controller;
@@ -150,22 +150,20 @@ describe('Extension: Configure', () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', 'remote');
         await flushPromises();
         expectRemoteConfigured();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {id: 'remote'}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Fail to configure via MQTT when device does not exist', async () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: 'not_existing_device'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {id: 'not_existing_device'}, status: 'error', error: "Device 'not_existing_device' does not exist"}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -175,22 +173,20 @@ describe('Extension: Configure', () => {
         });
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: 'remote'}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {id: 'remote'}, status: 'error', error: 'Failed to configure (Bind timeout after 10s)'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Fail to configure via MQTT when device has no configure', async () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: '0x0017882104a44559', transaction: 20}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {id: '0x0017882104a44559'}, status: 'error', error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 

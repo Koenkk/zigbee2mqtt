@@ -118,7 +118,7 @@ const mocksClear = [
     mockWSClient.terminate,
     mockNodeStatic,
     mockFinalHandler,
-    mockMQTT.publish,
+    mockMQTT.publishAsync,
     mockLogger.error,
 ];
 
@@ -230,12 +230,12 @@ describe('Extension: Frontend', () => {
         expect(mockWSClient.send).toHaveBeenCalledWith(stringify({topic: 'remote', payload: {brightness: 255}}));
 
         // Message
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockWSClient.send.mockClear();
         mockWSClientEvents.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 state: 'ON',
@@ -244,7 +244,6 @@ describe('Extension: Frontend', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
         mockWSClientEvents.message(undefined, false);
         mockWSClientEvents.message('', false);

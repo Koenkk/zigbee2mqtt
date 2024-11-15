@@ -13,7 +13,7 @@ import Availability from '../../lib/extension/availability';
 import * as settings from '../../lib/util/settings';
 import utils from '../../lib/util/utils';
 
-const mocksClear = [mockMQTT.publish, mockLogger.warning, mockLogger.info];
+const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.info];
 
 returnDevices.push(
     devices.bulb_color.ieeeAddr,
@@ -70,23 +70,20 @@ describe('Extension: Availability', () => {
     });
 
     it('Should publish availability on startup for device where it is enabled for', async () => {
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color_2/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -114,18 +111,17 @@ describe('Extension: Availability', () => {
     });
 
     it('Should publish offline for active device when not seen for 10 minutes', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await setTimeAndAdvanceTimers(utils.minutes(5));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         await setTimeAndAdvanceTimers(utils.minutes(7));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -137,29 +133,27 @@ describe('Extension: Availability', () => {
     });
 
     it('Should publish offline for passive device when not seen for 25 hours', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await setTimeAndAdvanceTimers(utils.hours(26));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
     it('Should reset ping timer when device last seen changes for active device', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await setTimeAndAdvanceTimers(utils.minutes(5));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         await setTimeAndAdvanceTimers(utils.minutes(7));
@@ -171,7 +165,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should ping again when first ping fails', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
 
@@ -186,17 +180,16 @@ describe('Extension: Availability', () => {
     });
 
     it('Should reset ping timer when device last seen changes for passive device', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await setTimeAndAdvanceTimers(utils.hours(24));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
 
         await mockZHEvents.lastSeenChanged({device: devices.remote});
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         await setTimeAndAdvanceTimers(utils.hours(25));
@@ -207,24 +200,22 @@ describe('Extension: Availability', () => {
     });
 
     it('Should immediately mark device as online when it lastSeen changes', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await setTimeAndAdvanceTimers(utils.minutes(15));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         devices.bulb_color.lastSeen = Date.now();
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -336,38 +327,35 @@ describe('Extension: Availability', () => {
     });
 
     it('Should republish availability when device is renamed', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/rename', stringify({from: 'bulb_color', to: 'bulb_new_name'}));
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', '', {retain: true, qos: 1}, expect.any(Function));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb_color/availability', '', {retain: true, qos: 1});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_new_name/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
         await setTimeAndAdvanceTimers(utils.hours(12));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_new_name/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
     it('Should publish availability payload in JSON format', async () => {
         await resetExtension();
         devices.remote.ping.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await setTimeAndAdvanceTimers(utils.hours(26));
         expect(devices.remote.ping).toHaveBeenCalledTimes(0);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -376,29 +364,26 @@ describe('Extension: Availability', () => {
         await resetExtension();
         devices.bulb_color_2.ping.mockClear();
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_tradfri_remote/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await setTimeAndAdvanceTimers(utils.minutes(12));
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_tradfri_remote/availability',
             stringify({state: 'offline'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         devices.bulb_color_2.lastSeen = Date.now();
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color_2});
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/group_tradfri_remote/availability',
             stringify({state: 'online'}),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 

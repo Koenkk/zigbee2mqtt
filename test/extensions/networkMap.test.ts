@@ -23,7 +23,7 @@ returnDevices.push(
     devices.external_converter_device.ieeeAddr,
 );
 
-const mocksClear = [mockMQTT.publish, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: NetworkMap', () => {
     let controller: Controller;
@@ -127,8 +127,8 @@ describe('Extension: NetworkMap', () => {
         mock();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -311,7 +311,7 @@ describe('Extension: NetworkMap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
+        const actual = JSON.parse(mockMQTT.publishAsync.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 
@@ -325,8 +325,8 @@ describe('Extension: NetworkMap', () => {
         await mockZHEvents.message(payload);
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'graphviz', routes: true}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = `digraph G {
             node[shape=record];
@@ -346,7 +346,7 @@ describe('Extension: NetworkMap', () => {
             }`;
 
         const expectedLines = expected.split('\n');
-        const actualLines = JSON.parse(mockMQTT.publish.mock.calls[0][1]).data.value.split('\n');
+        const actualLines = JSON.parse(mockMQTT.publishAsync.mock.calls[0][1]).data.value.split('\n');
 
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
@@ -363,8 +363,8 @@ describe('Extension: NetworkMap', () => {
         await mockZHEvents.message(payload);
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'plantuml', routes: true}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = `' paste into: https://www.planttext.com/
 
@@ -447,7 +447,7 @@ describe('Extension: NetworkMap', () => {
         @enduml`;
 
         const expectedLines = expected.split('\n');
-        const actualLines = JSON.parse(mockMQTT.publish.mock.calls[0][1]).data.value.split('\n');
+        const actualLines = JSON.parse(mockMQTT.publishAsync.mock.calls[0][1]).data.value.split('\n');
 
         for (let i = 0; i < expectedLines.length; i++) {
             expect(actualLines[i].trim()).toStrictEqual(expectedLines[i].trim());
@@ -456,26 +456,25 @@ describe('Extension: NetworkMap', () => {
 
     it('Should throw error when requesting invalid type', async () => {
         mock();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/networkmap',
             stringify({data: {}, status: 'error', error: "Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
     it('Should exclude disabled devices from networkmap', async () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -616,7 +615,7 @@ describe('Extension: NetworkMap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
+        const actual = JSON.parse(mockMQTT.publishAsync.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 
@@ -624,11 +623,11 @@ describe('Extension: NetworkMap', () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
         devices.bulb.lqi.mockRejectedValueOnce('failed');
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/response/networkmap');
 
         const expected = {
             data: {
@@ -769,7 +768,7 @@ describe('Extension: NetworkMap', () => {
             },
             status: 'ok',
         };
-        const actual = JSON.parse(mockMQTT.publish.mock.calls[0][1]);
+        const actual = JSON.parse(mockMQTT.publishAsync.mock.calls[0][1]);
         expect(actual).toStrictEqual(expected);
     });
 });

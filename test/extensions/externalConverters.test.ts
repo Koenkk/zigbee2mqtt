@@ -51,8 +51,8 @@ const mocksClear = [
     devices.bulb.removeFromNetwork,
     mockZHController.permitJoin,
     mockZHController.stop,
-    mockMQTT.end,
-    mockMQTT.publish,
+    mockMQTT.endAsync,
+    mockMQTT.publishAsync,
     mockLogger.debug,
     mockLogger.error,
 ];
