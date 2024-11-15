@@ -30,7 +30,6 @@ declare global {
     type Device = TypeDevice;
     type State = TypeState;
     type Extension = TypeExtension;
-    type QoS = 0 | 1 | 2;
 
     // Types
     type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
@@ -39,11 +38,6 @@ declare global {
         status: 'error' | 'ok';
         error?: string;
         transaction?: string;
-    }
-    interface MQTTOptions {
-        qos?: QoS;
-        retain?: boolean;
-        properties?: {messageExpiryInterval: number};
     }
     type Scene = {id: number; name: string};
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
