@@ -73,7 +73,7 @@ describe('Controller', () => {
 
     afterEach(async () => {
         await controller?.stop();
-    })
+    });
 
     it('Start controller', async () => {
         settings.set(['advanced', 'transmit_power'], 14);
@@ -108,11 +108,7 @@ describe('Controller', () => {
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {retain: true, qos: 0},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/remote',
-            stringify({brightness: 255}),
-            {retain: true, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {retain: true, qos: 0});
     });
 
     it('Start controller with specific MQTT settings', async () => {
@@ -178,11 +174,7 @@ describe('Controller', () => {
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: true},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/remote',
-            stringify({brightness: 255}),
-            {qos: 0, retain: true},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {qos: 0, retain: true});
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {qos: 0, retain: false});
     });
 
@@ -675,11 +667,7 @@ describe('Controller', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({state: 'ON', brightness: 200}),
-            {qos: 0, retain: true},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
     });
 
     it('Publish entity state attribute_json output filtered (device_options)', async () => {
@@ -694,11 +682,7 @@ describe('Controller', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({state: 'ON', brightness: 200}),
-            {qos: 0, retain: true},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
     });
 
     it('Publish entity state attribute_json output filtered cache', async () => {
@@ -876,11 +860,7 @@ describe('Controller', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON'}), {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({state: 'ON', brightness: 200}),
-            {qos: 0, retain: true},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
         await controller.stop();
         expect(data.stateExists()).toBeFalsy();
     });
@@ -976,11 +956,10 @@ describe('Controller', () => {
         const device = devices.remote;
         await mockZHEvents.lastSeenChanged({device, reason: 'deviceAnnounce'});
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/remote',
-            stringify({brightness: 255, last_seen: 1000}),
-            {qos: 0, retain: true},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255, last_seen: 1000}), {
+            qos: 0,
+            retain: true,
+        });
     });
 
     it('Should not publish last seen changes when reason is messageEmitted', async () => {

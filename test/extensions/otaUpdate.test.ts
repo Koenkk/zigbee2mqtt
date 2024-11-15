@@ -97,11 +97,10 @@ describe('Extension: OTAUpdate', () => {
         expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {sendPolicy: 'immediate'});
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {sendPolicy: undefined});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({update: {state: 'updating', progress: 0}}),
-            {retain: true, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'updating', progress: 0}}), {
+            retain: true,
+            qos: 0,
+        });
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({update: {state: 'updating', progress: 10, remaining: 3600}}),
@@ -134,11 +133,7 @@ describe('Extension: OTAUpdate', () => {
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', stringify({id: 'bulb'}));
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({update: {state: 'available'}}),
-            {retain: true, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'available'}}), {retain: true, qos: 0});
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
             stringify({data: {id: 'bulb'}, status: 'error', error: "Update of 'bulb' failed (Update failed)"}),
@@ -299,11 +294,7 @@ describe('Extension: OTAUpdate', () => {
         expect(isUpdateAvailableSpy).toHaveBeenCalledWith(devices.bulb, {imageType: 12382});
         expect(devices.bulb.endpoints[0].commandResponse).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].commandResponse).toHaveBeenCalledWith('genOta', 'queryNextImageResponse', {status: 0x98}, undefined, 10);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bulb',
-            stringify({update: {state: 'idle'}}),
-            {retain: true, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'idle'}}), {retain: true, qos: 0});
     });
 
     it('Should check for update when device requests it and it is not available', async () => {

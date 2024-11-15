@@ -45,11 +45,10 @@ describe('Extension: Receive', () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/button',
-            stringify({action: 'single', click: 'single', linkquality: 10}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button', stringify({action: 'single', click: 'single', linkquality: 10}), {
+            retain: false,
+            qos: 0,
+        });
     });
 
     it('Should handle a zigbee message which uses ep (left)', async () => {
@@ -109,11 +108,10 @@ describe('Extension: Receive', () => {
         });
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/J1_cover',
-            stringify({position: 10, tilt: 20, state: 'OPEN'}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/J1_cover', stringify({position: 10, tilt: 20, state: 'OPEN'}), {
+            retain: false,
+            qos: 0,
+        });
 
         // Inverted
         mockMQTT.publishAsync.mockClear();
@@ -128,11 +126,10 @@ describe('Extension: Receive', () => {
         });
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/J1_cover',
-            stringify({position: 90, tilt: 80, state: 'OPEN'}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/J1_cover', stringify({position: 90, tilt: 80, state: 'OPEN'}), {
+            retain: false,
+            qos: 0,
+        });
     });
 
     it('Should allow to disable the legacy integration', async () => {
@@ -143,11 +140,7 @@ describe('Extension: Receive', () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/button',
-            stringify({action: 'single'}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button', stringify({action: 'single'}), {retain: false, qos: 0});
     });
 
     it('Should debounce messages', async () => {
@@ -619,16 +612,8 @@ describe('Extension: Receive', () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/power_plug',
-            stringify({state: 'ON'}),
-            {retain: false, qos: 0},
-        );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/switch_group',
-            stringify({state: 'ON'}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/power_plug', stringify({state: 'ON'}), {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/switch_group', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should not handle messages from coordinator', async () => {
