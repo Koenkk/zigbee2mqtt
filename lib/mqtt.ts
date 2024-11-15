@@ -79,15 +79,18 @@ export default class MQTT {
         }
 
         this.client = await connectAsync(mqttSettings.server, options);
+
+        // https://github.com/Koenkk/zigbee2mqtt/issues/9822
+        this.client.stream.setMaxListeners(0);
+
         this.client.on('error', (err) => {
             logger.error(`MQTT error: ${err.message}`);
         });
         this.client.on('message', this.onMessage);
 
         await this.onConnect();
+
         this.client.on('connect', this.onConnect);
-        // https://github.com/Koenkk/zigbee2mqtt/issues/9822
-        this.client.stream.setMaxListeners(0);
 
         this.republishRetainedTimer = setTimeout(async () => {
             // Republish retained messages in case MQTT broker does not persist them.
