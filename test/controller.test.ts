@@ -342,9 +342,12 @@ describe('Controller', () => {
 
         mockLogger.error.mockClear();
         mockLogger.info.mockClear();
-        mockMQTTEvents.disconnect({reasonCode: 149});
+        mockMQTTEvents.disconnect({
+            reasonCode: 149,
+            properties: {reasonString: 'Maximum packet size was exceeded'},
+        });
         mockMQTT.disconnecting = true;
-        expect(mockLogger.error).toHaveBeenCalledWith('MQTT disconnect: reason 149');
+        expect(mockLogger.error).toHaveBeenCalledWith('MQTT disconnect: reason 149 (Maximum packet size was exceeded)');
 
         await jest.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');

@@ -90,7 +90,7 @@ export default class MQTT {
 
         if (mqttSettings.version != undefined && mqttSettings.version >= 5) {
             this.client.on('disconnect', (packet) => {
-                logger.error(`MQTT disconnect: reason ${packet.reasonCode}`);
+                logger.error(`MQTT disconnect: reason ${packet.reasonCode} (${packet.properties?.reasonString})`);
             });
         }
 
