@@ -1,4 +1,4 @@
-import {addDefinition, removeDefinition} from 'zigbee-herdsman-converters';
+import {addDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import ExternalJSExtension from './externalJS';
@@ -30,29 +30,33 @@ export default class ExternalConverters extends ExternalJSExtension<ModuleExport
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected async removeJS(name: string, module: ModuleExports): Promise<void> {
-        for (const definition of this.getDefinitions(module)) {
-            // TODO: implement in ZHC
-            removeDefinition(definition);
-        }
+        removeExternalDefinitions(name);
+
+        await this.zigbee.resolveDevicesDefinitions(true);
     }
 
     protected async loadJS(name: string, module: ModuleExports): Promise<void> {
-        for (const definition of this.getDefinitions(module)) {
-            try {
-                // TODO: `updateDefinition` in ZHC instead? (add if not exist, replace if exist)
-                removeDefinition(definition);
+        try {
+            removeExternalDefinitions(name);
+
+            for (const definition of this.getDefinitions(module)) {
+                definition.externalConverterName = name;
+
                 addDefinition(definition);
                 logger.info(`Loaded external converter '${name}'.`);
-            } catch (error) {
-                logger.error(`Failed to load external converter '${name}'`);
-                logger.error(`Check the code for syntax error and make sure it is up to date with the current Zigbee2MQTT version.`);
-                logger.error(
-                    `External converters are not meant for long term usage, but for local testing after which a pull request should be created to add out-of-the-box support for the device`,
-                );
-
-                throw error;
             }
+
+            await this.zigbee.resolveDevicesDefinitions(true);
+        } catch (error) {
+            logger.error(`Failed to load external converter '${name}'`);
+            logger.error(`Check the code for syntax error and make sure it is up to date with the current Zigbee2MQTT version.`);
+            logger.error(
+                `External converters are not meant for long term usage, but for local testing after which a pull request should be created to add out-of-the-box support for the device`,
+            );
+
+            throw error;
         }
     }
 

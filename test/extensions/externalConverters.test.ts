@@ -18,9 +18,6 @@ import * as settings from '../../lib/util/settings';
 
 const BASE_DIR = 'external_converters';
 
-// @ts-expect-error TODO: remove, tmp until implemented
-zhc.removeDefinition = jest.fn();
-
 describe('Extension: ExternalConverters', () => {
     const mockBasePath = path.join(data.mockDir, BASE_DIR);
     let controller: Controller;
@@ -32,7 +29,7 @@ describe('Extension: ExternalConverters', () => {
     const writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync');
 
     const zhcAddDefinitionSpy = jest.spyOn(zhc, 'addDefinition');
-    const zhcRemoveDefinitionSpy = jest.spyOn(zhc, 'removeDefinition');
+    const zhcRemoveExternalDefinitionsSpy = jest.spyOn(zhc, 'removeExternalDefinitions');
 
     const mocksClear = [
         mockMQTT.endAsync,
@@ -47,7 +44,7 @@ describe('Extension: ExternalConverters', () => {
         rmSyncSpy,
         writeFileSyncSpy,
         zhcAddDefinitionSpy,
-        zhcRemoveDefinitionSpy,
+        zhcRemoveExternalDefinitionsSpy,
     ];
 
     const useAssets = (): void => {
@@ -72,6 +69,7 @@ describe('Extension: ExternalConverters', () => {
     });
 
     beforeEach(async () => {
+        zhc.removeExternalDefinitions(); // remove all external converters
         mocksClear.forEach((m) => m.mockClear());
         data.writeDefaultConfiguration();
         data.writeDefaultState();
@@ -81,8 +79,10 @@ describe('Extension: ExternalConverters', () => {
         controller = new Controller(jest.fn(), jest.fn());
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         fs.rmSync(mockBasePath, {recursive: true, force: true});
+
+        await controller?.stop();
     });
 
     it('loads nothing from folder', async () => {
@@ -100,7 +100,7 @@ describe('Extension: ExternalConverters', () => {
         await controller.start();
         await flushPromises();
 
-        expect(getZ2MDevice(devices.external_converter_device)!.definition).toMatchObject({
+        expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
             description: 'external',
             model: 'external_converter_device',
             vendor: 'external',
@@ -115,7 +115,9 @@ describe('Extension: ExternalConverters', () => {
             {retain: true, qos: 0},
             expect.any(Function),
         );
-        expect(zhcRemoveDefinitionSpy).toHaveBeenCalledTimes(3);
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, 'mock-external-converter-multiple.js');
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, 'mock-external-converter.js');
         expect(zhcAddDefinitionSpy).toHaveBeenNthCalledWith(
             1,
             expect.objectContaining({
@@ -157,7 +159,7 @@ describe('Extension: ExternalConverters', () => {
         await flushPromises();
         mocksClear.forEach((m) => m.mockClear());
 
-        expect(getZ2MDevice(devices.external_converter_device)!.definition).toMatchObject({
+        expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
             description: 'Automatically generated definition',
             model: 'external_converter_device',
             vendor: '',
@@ -168,7 +170,7 @@ describe('Extension: ExternalConverters', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
         await flushPromises();
 
-        expect(getZ2MDevice(devices.external_converter_device)!.definition).toMatchObject({
+        expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
             description: 'external',
             model: 'external_converter_device',
             vendor: 'external',
@@ -176,7 +178,8 @@ describe('Extension: ExternalConverters', () => {
         });
         expect(mkdirSyncSpy).toHaveBeenCalledWith(mockBasePath, {recursive: true});
         expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
-        expect(zhcRemoveDefinitionSpy).toHaveBeenCalledTimes(1);
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(1);
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, converterName);
         expect(zhcAddDefinitionSpy).toHaveBeenCalledWith(
             expect.objectContaining({
                 mock: true,
@@ -197,22 +200,15 @@ describe('Extension: ExternalConverters', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
         await flushPromises();
 
-        expect(getZ2MDevice(devices.external_converter_device)!.definition).toMatchObject({
+        expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
             description: 'Automatically generated definition',
             model: 'external_converter_device',
             vendor: '',
             zigbeeModel: ['external_converter_device'],
         });
         expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
-        expect(zhcRemoveDefinitionSpy).toHaveBeenCalledWith(
-            expect.objectContaining({
-                mock: true,
-                zigbeeModel: ['external_converter_device'],
-                vendor: 'external',
-                model: 'external_converter_device',
-                description: 'external',
-            }),
-        );
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
+        expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0}, expect.any(Function));
     });
 
@@ -299,7 +295,7 @@ describe('Extension: ExternalConverters', () => {
 
         const errorMsg = `Failed to remove definition`;
 
-        zhcRemoveDefinitionSpy.mockImplementationOnce(() => {
+        zhcRemoveExternalDefinitionsSpy.mockImplementationOnce(() => {
             throw new Error(errorMsg);
         });
 
