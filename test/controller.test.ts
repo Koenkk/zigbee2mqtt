@@ -102,7 +102,7 @@ describe('Controller', () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', {
             will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
-            properties: {maximumPacketSize: 5 * 1024 * 1024},
+            properties: {maximumPacketSize: 1048576},
         });
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -132,6 +132,7 @@ describe('Controller', () => {
             client_id: 'my_client_id',
             reject_unauthorized: false,
             version: 5,
+            maximum_packet_size: 20000,
         };
         settings.set(['mqtt'], configuration);
         await controller.start();
@@ -148,7 +149,7 @@ describe('Controller', () => {
             clientId: 'my_client_id',
             rejectUnauthorized: false,
             protocolVersion: 5,
-            properties: {maximumPacketSize: 5 * 1024 * 1024},
+            properties: {maximumPacketSize: 20000},
         };
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', expected);
     });
@@ -927,7 +928,7 @@ describe('Controller', () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledTimes(1);
         const expected = {
             will: {payload: Buffer.from('{"state":"offline"}'), retain: false, topic: 'zigbee2mqtt/bridge/state', qos: 1},
-            properties: {maximumPacketSize: 5 * 1024 * 1024},
+            properties: {maximumPacketSize: 1048576},
         };
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', expected);
     });

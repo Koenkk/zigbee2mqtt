@@ -131,6 +131,7 @@ declare global {
             cert?: string;
             client_id?: string;
             reject_unauthorized?: boolean;
+            maximum_packet_size: number;
         };
         serial: {
             disable_led: boolean;

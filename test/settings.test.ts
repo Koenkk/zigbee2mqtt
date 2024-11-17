@@ -200,6 +200,7 @@ describe('Settings', () => {
         const expected = {
             base_topic: 'zigbee2mqtt',
             include_device_information: false,
+            maximum_packet_size: 1048576,
             force_disable_retain: false,
             password: 'mysecretpassword',
             server: 'my.mqtt.server',
@@ -244,6 +245,7 @@ describe('Settings', () => {
         const expected = {
             base_topic: 'zigbee2mqtt',
             include_device_information: false,
+            maximum_packet_size: 1048576,
             force_disable_retain: false,
             password: 'mysecretpassword',
             server: 'my.mqtt.server',

@@ -37,7 +37,7 @@ export default class MQTT {
                 retain: settings.get().mqtt.force_disable_retain ? false : true,
                 qos: 1,
             },
-            properties: {maximumPacketSize: 5 * 1024 * 1024},
+            properties: {maximumPacketSize: mqttSettings.maximum_packet_size},
         };
 
         if (mqttSettings.version) {
