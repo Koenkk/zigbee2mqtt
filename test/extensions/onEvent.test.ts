@@ -16,7 +16,7 @@ mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
 zhc.onEvent = mockOnEvent;
 
-const mocksClear = [mockMQTT.publish, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: OnEvent', () => {
     let controller: Controller;

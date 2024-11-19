@@ -45,6 +45,8 @@ const defaults: RecursivePartial<Settings> = {
         base_topic: 'zigbee2mqtt',
         include_device_information: false,
         force_disable_retain: false,
+        // 1MB = roughly 3.5KB per device * 300 devices for `/bridge/devices`
+        maximum_packet_size: 1048576,
     },
     serial: {
         disable_led: false,

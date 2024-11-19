@@ -439,8 +439,8 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onEntityOptionsChanged(this, async (data) => await this.discover(data.entity));
         this.eventBus.onExposesChanged(this, async (data) => await this.discover(data.device));
 
-        this.mqtt.subscribe(this.statusTopic);
-        this.mqtt.subscribe(DEFAULT_STATUS_TOPIC);
+        await this.mqtt.subscribe(this.statusTopic);
+        await this.mqtt.subscribe(DEFAULT_STATUS_TOPIC);
 
         /**
          * Prevent unnecessary re-discovery of entities by waiting 5 seconds for retained discovery messages to come in.
@@ -457,9 +457,9 @@ export default class HomeAssistant extends Extension {
         }
 
         logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`);
-        this.mqtt.subscribe(`${this.discoveryTopic}/#`);
+        await this.mqtt.subscribe(`${this.discoveryTopic}/#`);
         setTimeout(async () => {
-            this.mqtt.unsubscribe(`${this.discoveryTopic}/#`);
+            await this.mqtt.unsubscribe(`${this.discoveryTopic}/#`);
             logger.debug(`Discovering entities to Home Assistant`);
 
             await this.discover(this.bridge);

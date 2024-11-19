@@ -189,8 +189,17 @@
                     "type": "boolean",
                     "title": "Force disable retain",
                     "requiresRestart": true,
-                    "description": "Disable retain for all send messages. ONLY enable if you MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
+                    "description": "Disable retain for all send messages. ONLY enable if your MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
                     "default": false
+                },
+                "maximum_packet_size": {
+                    "type": "number",
+                    "title": "Maximum packet size",
+                    "requiresRestart": true,
+                    "description": "Specifies the maximum allowed packet length (in bytes) that the server can send to Zigbee2MQTT. NOTE: The same value exists in your MQTT broker but for the length the client can send to it instead.",
+                    "default": 1048576,
+                    "minimum": 20,
+                    "maximum": 268435456
                 }
             },
             "required": ["server"]

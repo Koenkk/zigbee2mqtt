@@ -116,7 +116,7 @@ function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
     return true;
 }
 
-function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown): unknown {
+function getObjectProperty<T>(object: KeyValue, key: string, defaultValue: NoInfer<T>): T {
     return object && object[key] !== undefined ? object[key] : defaultValue;
 }
 
