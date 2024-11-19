@@ -1604,9 +1604,9 @@ describe('Extension: HomeAssistant', () => {
             {retain: true, qos: 1},
         );
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
             stringify({
                 action: 'single',
@@ -1629,7 +1629,7 @@ describe('Extension: HomeAssistant', () => {
             {retain: true, qos: 1},
         );
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
 
         // Shouldn't rediscover when already discovered in previous session
         clearDiscoveredTrigger('0x0017880104e45520');

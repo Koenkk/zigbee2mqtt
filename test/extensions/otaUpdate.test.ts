@@ -178,7 +178,6 @@ describe('Extension: OTAUpdate', () => {
             'zigbee2mqtt/bridge/response/device/ota_update/check',
             stringify({data: {id: 'bulb', update_available: true}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
         isUpdateAvailableSpy.mockResolvedValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check/downgrade', 'bulb');
@@ -190,7 +189,6 @@ describe('Extension: OTAUpdate', () => {
             'zigbee2mqtt/bridge/response/device/ota_update/check',
             stringify({data: {id: 'bulb', update_available: false}, status: 'ok'}),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
 
         // @ts-expect-error private
