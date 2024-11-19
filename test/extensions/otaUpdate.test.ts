@@ -196,7 +196,7 @@ describe('Extension: OTAUpdate', () => {
         const originalDefinition = device.definition;
         device.definition = Object.assign({}, originalDefinition, {ota: {suppressElementImageParseFailure: true}});
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         isUpdateAvailableSpy.mockResolvedValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check/downgrade', 'bulb');
         await flushPromises();
