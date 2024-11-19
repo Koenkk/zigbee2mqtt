@@ -154,7 +154,7 @@ describe('Extension: ExternalExtensions', () => {
             'call from stop',
             {retain: false, qos: 0},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0});
     });
 
     it('returns error on invalid code', async () => {
