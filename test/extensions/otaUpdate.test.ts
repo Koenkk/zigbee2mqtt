@@ -70,7 +70,6 @@ describe('Extension: OTAUpdate', () => {
     });
 
     it.each(['update', 'update/downgrade'])('Should OTA update a device with topic %s', async (type) => {
-        devices.bulb.mockClear();
         const downgrade = type === 'update/downgrade';
         let count = 10;
         devices.bulb.endpoints[0].read.mockImplementation(() => {
@@ -106,7 +105,7 @@ describe('Extension: OTAUpdate', () => {
         expect(mockLogger.info).toHaveBeenCalledWith(
             `Device 'bulb' was updated from '{"dateCode":"${fromDateCode}","softwareBuildID":${fromSwBuildId}}' to '{"dateCode":"${toDateCode}","softwareBuildID":${toSwBuildId}}'`,
         );
-        // expect(devices.bulb.save).toHaveBeenCalledTimes(1); // TODO: problem with jest? detects x2 on second value in it.each array (no matter which one is there, extra mockClear doesn't work)
+        expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {sendPolicy: 'immediate'});
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {sendPolicy: undefined});
         expect(mockMQTT.publish).toHaveBeenCalledWith(

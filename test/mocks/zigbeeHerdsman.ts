@@ -301,6 +301,7 @@ export class Device {
         this.save.mockClear();
         this.lqi.mockClear();
         this.routingTable.mockClear();
+        this.meta = {};
 
         this.endpoints.forEach((e) => e.mockClear());
     }
