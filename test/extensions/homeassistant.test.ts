@@ -13,7 +13,7 @@ import {Controller} from '../../lib/controller';
 import HomeAssistant from '../../lib/extension/homeassistant';
 import * as settings from '../../lib/util/settings';
 
-const mocksClear = [mockMQTT.publish, mockLogger.debug, mockLogger.warning, mockLogger.error];
+const mocksClear = [mockMQTT.publishAsync, mockLogger.debug, mockLogger.warning, mockLogger.error];
 
 describe('Extension: HomeAssistant', () => {
     let controller: Controller;
@@ -55,7 +55,7 @@ describe('Extension: HomeAssistant', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockSleep.mock();
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
@@ -152,12 +152,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -180,11 +178,10 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.state }}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/switch/1221051039810110150109113116116_9/switch/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         payload = {
@@ -207,12 +204,10 @@ describe('Extension: HomeAssistant', () => {
             enabled_by_default: true,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: '%',
@@ -234,12 +229,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/humidity/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: 'hPa',
@@ -261,12 +254,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/pressure/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/pressure/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: '%',
@@ -289,12 +280,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/battery/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/battery/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             icon: 'mdi:signal',
@@ -318,12 +307,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/linkquality/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/linkquality/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -345,12 +332,10 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.state_left }}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/switch/0x0017880104e45542/switch_left/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/switch/0x0017880104e45542/switch_left/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -372,12 +357,10 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.state_right }}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/switch/0x0017880104e45542/switch_right/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/switch/0x0017880104e45542/switch_right/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -404,12 +387,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/0x000b57fffec6a5b2/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/0x000b57fffec6a5b2/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -432,12 +413,10 @@ describe('Extension: HomeAssistant', () => {
                 '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/event/0x0017880104e45520/action/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it.each([
@@ -496,7 +475,7 @@ describe('Extension: HomeAssistant', () => {
         });
 
         // Should subscribe to `homeassistant/#` to find out what devices are already discovered.
-        expect(mockMQTT.subscribe).toHaveBeenCalledWith(`homeassistant/#`);
+        expect(mockMQTT.subscribeAsync).toHaveBeenCalledWith(`homeassistant/#`);
 
         // Retained Home Assistant discovery message arrives
         await mockMQTTEvents.message(topic1, payload1);
@@ -505,11 +484,11 @@ describe('Extension: HomeAssistant', () => {
         await jest.runOnlyPendingTimersAsync();
 
         // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
-        expect(mockMQTT.unsubscribe).toHaveBeenCalledWith(`homeassistant/#`);
+        expect(mockMQTT.unsubscribeAsync).toHaveBeenCalledWith(`homeassistant/#`);
 
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(topic1, expect.anything(), expect.any(Object), expect.any(Function));
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(topic1, expect.anything(), expect.any(Object));
         // Device automation should not be cleared
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(topic2, '', expect.any(Object), expect.any(Function));
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(topic2, '', expect.any(Object));
         expect(mockLogger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`);
     });
 
@@ -547,12 +526,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: '%',
@@ -574,12 +551,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/humidity/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: 'hPa',
@@ -601,12 +576,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/pressure/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/pressure/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover devices with overridden user configuration', async () => {
@@ -661,12 +634,10 @@ describe('Extension: HomeAssistant', () => {
             icon: 'mdi:test',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: '%',
@@ -689,12 +660,10 @@ describe('Extension: HomeAssistant', () => {
             object_id: 'weather_sensor_humidity',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/humidity/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover devices with overridden name', async () => {
@@ -731,12 +700,10 @@ describe('Extension: HomeAssistant', () => {
             enabled_by_default: true,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             unit_of_measurement: '%',
@@ -758,12 +725,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/humidity/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover devices with overridden user configuration affecting type and object_id', async () => {
@@ -805,12 +770,10 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.state }}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/0x0017880104e45541/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/0x0017880104e45541/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Shouldnt discover devices when homeassistant null is set in device options', async () => {
@@ -823,7 +786,7 @@ describe('Extension: HomeAssistant', () => {
         await resetExtension();
         await flushPromises();
 
-        const topics = mockMQTT.publish.mock.calls.map((c) => c[0]);
+        const topics = mockMQTT.publishAsync.mock.calls.map((c) => c[0]);
         expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config');
         expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/temperature/config');
     });
@@ -838,7 +801,7 @@ describe('Extension: HomeAssistant', () => {
 
         await resetExtension();
 
-        const topics = mockMQTT.publish.mock.calls.map((c) => c[0]);
+        const topics = mockMQTT.publishAsync.mock.calls.map((c) => c[0]);
         expect(topics).not.toContain('homeassistant/sensor/0x0017880104e45522/humidity/config');
         expect(topics).toContain('homeassistant/sensor/0x0017880104e45522/temperature/config');
     });
@@ -872,12 +835,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/fan/0x0017880104e45548/fan/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/fan/0x0017880104e45548/fan/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover thermostat devices', async () => {
@@ -921,12 +882,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/climate/0x0017882104a44559/climate/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/climate/0x0017882104a44559/climate/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover Bosch BTH-RA with a compatibility mapping', async () => {
@@ -964,12 +923,10 @@ describe('Extension: HomeAssistant', () => {
             unique_id: '0x18fc2600000d7ae2_climate_zigbee2mqtt',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/climate/0x18fc2600000d7ae2/climate/config',
-            stringify(payload),
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/climate/0x18fc2600000d7ae2/climate/config', stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
     });
 
     it('Should discover devices with cover_position', async () => {
@@ -1000,12 +957,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/cover/0x0017880104e45551/cover/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/cover/0x0017880104e45551/cover/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         payload = {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
@@ -1035,12 +990,10 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.state }}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/cover/0xf4ce368a38be56a1/cover_l6/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/cover/0xf4ce368a38be56a1/cover_l6/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover devices with custom homeassistant_discovery_topic', async () => {
@@ -1067,11 +1020,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'my_custom_discovery_topic/sensor/0x0017880104e45522/temperature/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -1109,15 +1061,14 @@ describe('Extension: HomeAssistant', () => {
             type: 'attributeReport',
             linkquality: 10,
         };
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/weather_sensor',
             stringify({battery: null, humidity: null, linkquality: null, pressure: null, temperature: -0.85, voltage: null}),
             {retain: false, qos: 1},
-            expect.any(Function),
         );
     });
 
@@ -1125,11 +1076,11 @@ describe('Extension: HomeAssistant', () => {
         const device = devices.bulb_color;
         const data = {currentHue: 0, currentSaturation: 254};
         const payload = {data, cluster: 'lightingColorCtrl', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 color: {hue: 0, saturation: 100, h: 0, s: 100},
@@ -1140,7 +1091,6 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -1148,11 +1098,11 @@ describe('Extension: HomeAssistant', () => {
         const device = devices.bulb_color;
         const data = {currentX: 29991, currentY: 26872};
         const payload = {data, cluster: 'lightingColorCtrl', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 color: {x: 0.4576, y: 0.41},
@@ -1163,7 +1113,6 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -1171,11 +1120,11 @@ describe('Extension: HomeAssistant', () => {
         const device = devices.bulb_color;
         const data = {onOff: 1};
         const payload = {data, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 linkquality: null,
@@ -1184,7 +1133,6 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -1199,11 +1147,11 @@ describe('Extension: HomeAssistant', () => {
             type: 'attributeReport',
             linkquality: 10,
         };
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
         // 1 publish is the publish from receive
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
     });
 
     it('Should discover when not discovered yet', async () => {
@@ -1219,7 +1167,7 @@ describe('Extension: HomeAssistant', () => {
             type: 'attributeReport',
             linkquality: 10,
         };
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload);
         await flushPromises();
         const payloadHA = {
@@ -1242,12 +1190,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payloadHA),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payloadHA), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Shouldnt discover when device leaves', async () => {
@@ -1255,7 +1201,7 @@ describe('Extension: HomeAssistant', () => {
         extension.discovered = {};
         const device = devices.bulb;
         const payload = {ieeeAddr: device.ieeeAddr};
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.deviceLeave(payload);
         await flushPromises();
     });
@@ -1265,16 +1211,11 @@ describe('Extension: HomeAssistant', () => {
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         assert('ieeeAddr' in device);
         resetDiscoveryPayloads(device.ieeeAddr);
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         controller.eventBus.emitEntityOptionsChanged({entity: device, from: {}, to: {test: 123}});
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/light/${device.ID}/light/config`,
-            expect.any(String),
-            expect.any(Object),
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(`homeassistant/light/${device.ID}/light/config`, expect.any(String), expect.any(Object));
     });
 
     it('Should send all status when home assistant comes online (default topic)', async () => {
@@ -1282,14 +1223,14 @@ describe('Extension: HomeAssistant', () => {
         // @ts-expect-error private
         extension.state.load();
         await resetExtension();
-        expect(mockMQTT.subscribe).toHaveBeenCalledWith('homeassistant/status');
+        expect(mockMQTT.subscribeAsync).toHaveBeenCalledWith('homeassistant/status');
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'online');
         await flushPromises();
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({
                 state: 'ON',
@@ -1301,9 +1242,8 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
             stringify({
                 action_duration: null,
@@ -1313,9 +1253,8 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {retain: false, qos: 0});
     });
 
     it('Should send all status when home assistant comes online', async () => {
@@ -1323,13 +1262,13 @@ describe('Extension: HomeAssistant', () => {
         // @ts-expect-error private
         extension.state.load();
         await resetExtension();
-        expect(mockMQTT.subscribe).toHaveBeenCalledWith('hass/status');
-        mockMQTT.publish.mockClear();
+        expect(mockMQTT.subscribeAsync).toHaveBeenCalledWith('hass/status');
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('hass/status', 'online');
         await flushPromises();
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({
                 state: 'ON',
@@ -1341,9 +1280,8 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/remote',
             stringify({
                 action_duration: null,
@@ -1353,7 +1291,6 @@ describe('Extension: HomeAssistant', () => {
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
-            expect.any(Function),
         );
     });
 
@@ -1363,12 +1300,12 @@ describe('Extension: HomeAssistant', () => {
         extension.state.load();
         await resetExtension();
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('hass/status', 'offline');
         await flushPromises();
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
     });
 
     it('Shouldnt send all status when home assistant comes online with different topic', async () => {
@@ -1376,12 +1313,12 @@ describe('Extension: HomeAssistant', () => {
         // @ts-expect-error private
         extension.state.load();
         await resetExtension();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('hass/status_different', 'offline');
         await flushPromises();
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
     });
 
     it('Should discover devices with availability', async () => {
@@ -1412,62 +1349,33 @@ describe('Extension: HomeAssistant', () => {
             ],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should clear discovery when device is removed', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/remove', 'weather_sensor');
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/humidity/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/pressure/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/battery/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/linkquality/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', '', {retain: true, qos: 1});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/humidity/config', '', {retain: true, qos: 1});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/pressure/config', '', {retain: true, qos: 1});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/battery/config', '', {retain: true, qos: 1});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/linkquality/config', '', {retain: true, qos: 1});
     });
 
     it('Should clear discovery when group is removed', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/group/remove', stringify({id: 'ha_discovery_group'}));
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', '', {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should refresh discovery when device is renamed', async () => {
@@ -1476,7 +1384,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({topic: 'zigbee2mqtt/weather_sensor/action'}),
         );
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/rename',
             stringify({from: 'weather_sensor', to: 'weather_sensor_renamed', homeassistant_rename: true}),
@@ -1505,21 +1413,14 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', '', {retain: true, qos: 1});
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45522/action_double/config',
             stringify({
                 automation_type: 'trigger',
@@ -1537,12 +1438,11 @@ describe('Extension: HomeAssistant', () => {
                 },
             }),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
     it('Should refresh discovery when group is renamed', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/rename',
             stringify({from: 'ha_discovery_group', to: 'ha_discovery_group_new', homeassistant_rename: true}),
@@ -1588,35 +1488,29 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', '', {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Shouldnt refresh discovery when device is renamed and homeassistant_rename is false', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/rename',
             stringify({from: 'weather_sensor', to: 'weather_sensor_renamed', homeassistant_rename: false}),
         );
         await flushPromises();
 
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', '', {
+            retain: true,
+            qos: 1,
+        });
 
         const payload = {
             unit_of_measurement: '°C',
@@ -1638,12 +1532,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover update when device supports it', async () => {
@@ -1673,19 +1565,17 @@ describe('Extension: HomeAssistant', () => {
             value_template: "{{ value_json['update']['installed_version'] }}",
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/update/0x000b57fffec6a5b2/update/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/update/0x000b57fffec6a5b2/update/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover trigger when action is published', async () => {
-        const discovered = mockMQTT.publish.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
+        const discovered = mockMQTT.publishAsync.mock.calls.filter((c) => c[0].includes('0x0017880104e45520')).map((c) => c[0]);
         expect(discovered.length).toBe(5);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         const device = devices.WXKG11LM;
         const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -1708,16 +1598,15 @@ describe('Extension: HomeAssistant', () => {
             },
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             stringify(discoverPayloadAction),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
             stringify({
                 action: 'single',
@@ -1728,21 +1617,19 @@ describe('Extension: HomeAssistant', () => {
                 device_temperature: null,
             }),
             {retain: false, qos: 0},
-            expect.any(Function),
         );
 
         // Should only discover it once
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload1);
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             stringify(discoverPayloadAction),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
 
         // Shouldn't rediscover when already discovered in previous session
         clearDiscoveredTrigger('0x0017880104e45520');
@@ -1755,15 +1642,14 @@ describe('Extension: HomeAssistant', () => {
             stringify({topic: 'zigbee2mqtt/button/action'}),
         );
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         const payload2 = {data: {32768: 2}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await mockZHEvents.message(payload2);
         await flushPromises();
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_double/config',
             expect.any(String),
             expect.any(Object),
-            expect.any(Function),
         );
 
         // Should rediscover when already discovered in previous session but with different name
@@ -1773,14 +1659,13 @@ describe('Extension: HomeAssistant', () => {
             stringify({topic: 'zigbee2mqtt/button_other_name/action'}),
         );
         await flushPromises();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockZHEvents.message(payload2);
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_double/config',
             expect.any(String),
             expect.any(Object),
-            expect.any(Function),
         );
     });
 
@@ -1789,18 +1674,17 @@ describe('Extension: HomeAssistant', () => {
             homeassistant: {device_automation: null},
         });
         await resetExtension();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         const device = devices.WXKG11LM;
         const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
         await mockZHEvents.message(payload1);
         await flushPromises();
 
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(
             'homeassistant/device_automation/0x0017880104e45520/action_single/config',
             expect.any(String),
             expect.any(Object),
-            expect.any(Function),
         );
     });
 
@@ -1833,42 +1717,36 @@ describe('Extension: HomeAssistant', () => {
                 '{%- set buttons = value_json.action|regex_findall_index(^(?P<button>[a-z]+)_(?P<action>(?:press|hold)(?:_release)?)$) -%}{%- set scenes = value_json.action|regex_findall_index(^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$) -%}{%- set regions = value_json.action|regex_findall_index(^region_(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$) -%}{%- if buttons -%}\n   {%- set d = dict(event_type = "{{buttons[1]}}", button = "{{buttons[0]}}_button" -%}\n{%- elif scenes -%}\n   {%- set d = dict(event_type = "{{scenes[0]}}", scene = "{{scenes[1]}}" -%}\n{%- elif regions -%}\n   {%- set d = dict(event_type = "region_{{regions[1]}}", region = "{{regions[0]}}" -%}\n{%- else -%}\n   {%- set d = dict(event_type = "{{value_json.action}}" ) -%}\n{%- endif -%}\n{{d|to_json}}',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/event/0x0017880104e45520/action/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should republish payload to postfix topic with lightWithPostfix config', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message('zigbee2mqtt/U202DST600ZB/l2/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB',
             stringify({state_l2: 'ON', brightness_l2: 20, linkquality: null, state_l1: null, power_on_behavior_l1: null, power_on_behavior_l2: null}),
             {qos: 0, retain: false},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB/l2',
             stringify({state: 'ON', brightness: 20, power_on_behavior: null}),
             {qos: 0, retain: false},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'zigbee2mqtt/U202DST600ZB/l1',
-            stringify({state: null, power_on_behavior: null}),
-            {qos: 0, retain: false},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null, power_on_behavior: null}), {
+            qos: 0,
+            retain: false,
+        });
     });
 
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
         mockLogger.error.mockClear();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
 
@@ -1880,159 +1758,138 @@ describe('Extension: HomeAssistant', () => {
 
     it('Should clear outdated configs', async () => {
         // Non-existing group -> clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/light/1221051039810110150109113116116_91231/light/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_91231/light/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_91231/light/config', '', {
+            qos: 1,
+            retain: true,
+        });
 
         // Existing group -> dont clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/light/1221051039810110150109113116116_9/light/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Existing group with old topic structure (1.20.0) -> clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/light/9/light/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith('homeassistant/light/9/light/config', '', {qos: 1, retain: true}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/9/light/config', '', {qos: 1, retain: true});
 
         // Existing group, non existing config ->  clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/light/1221051039810110150109113116116_9/switch/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/switch/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/switch/config', '', {
+            qos: 1,
+            retain: true,
+        });
 
         // Non-existing device -> clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/sensor/0x123/temperature/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x123/temperature/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x123/temperature/config', '', {qos: 1, retain: true});
 
         // Existing device -> don't clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/update/0x000b57fffec6a5b2/update/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Non-existing device of different instance -> don't clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/sensor/0x123/temperature/config',
             stringify({availability: [{topic: 'zigbee2mqtt_different/bridge/state'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Existing device but non-existing config -> don't clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/sensor/0x000b57fffec6a5b2/update/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x000b57fffec6a5b2/update/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/update/config', '', {qos: 1, retain: true});
 
         // Non-existing device but invalid payload -> clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/sensor/0x123/temperature/config', '1}3');
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Existing device, device automation -> don't clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config',
             stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Device automation of different instance -> don't clear
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/device_automation/0x000b57fffec6a5b2_not_existing/action_button_3_single/config',
             stringify({topic: 'zigbee2mqtt_different/0x000b57fffec6a5b2_not_existing/availability'}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(0);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
 
         // Device was flagged to be excluded from homeassistant discovery
         settings.set(['devices', '0x000b57fffec6a5b2', 'homeassistant'], null);
         await resetExtension();
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         await mockMQTTEvents.message(
             'homeassistant/update/0x000b57fffec6a5b2/update/config',
             stringify({availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}]}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/update/0x000b57fffec6a5b2/update/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
-        mockMQTT.publish.mockClear();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/update/0x000b57fffec6a5b2/update/config', '', {qos: 1, retain: true});
+        mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message(
             'homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config',
             stringify({topic: 'zigbee2mqtt/0x000b57fffec6a5b2/availability'}),
         );
         await flushPromises();
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config',
-            '',
-            {qos: 1, retain: true},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/device_automation/0x000b57fffec6a5b2/action_button_3_single/config', '', {
+            qos: 1,
+            retain: true,
+        });
     });
 
     it('Should rediscover group when device is added to it', async () => {
         resetDiscoveryPayloads('9');
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/group/members/add',
             stringify({group: 'ha_discovery_group', device: 'wall_switch_double', endpoint: 'left'}),
@@ -2076,12 +1933,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover with json availability payload value_template', async () => {
@@ -2122,12 +1977,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/1221051039810110150109113116116_9/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover with availability offline when device is disabled', async () => {
@@ -2165,12 +2018,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/0x000b57fffec6a5b2/light/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/0x000b57fffec6a5b2/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover last_seen when enabled', async () => {
@@ -2203,12 +2054,10 @@ describe('Extension: HomeAssistant', () => {
             entity_category: 'diagnostic',
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x000b57fffec6a5b2/last_seen/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should discover devices with configuration url', async () => {
@@ -2238,12 +2087,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/sensor/0x0017880104e45522/temperature/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45522/temperature/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it('Should rediscover scenes when a scene is changed', async () => {
@@ -2253,18 +2100,13 @@ describe('Extension: HomeAssistant', () => {
         assert('ieeeAddr' in device);
         resetDiscoveryPayloads(device.ieeeAddr);
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         controller.eventBus.emitScenesChanged({entity: device});
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(`homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`, '', {retain: true, qos: 1});
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
@@ -2285,30 +2127,26 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`,
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(`homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`, stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
 
         // Group scenes.
         // @ts-expect-error private
         const group = controller.zigbee.resolveEntity('ha_discovery_group');
         resetDiscoveryPayloads('9');
 
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         controller.eventBus.emitScenesChanged({entity: group});
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(`homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`, '', {
+            retain: true,
+            qos: 1,
+        });
         await jest.runOnlyPendingTimersAsync();
         await flushPromises();
 
@@ -2329,17 +2167,16 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
-        expect(mockMQTT.publish).toHaveBeenCalledTimes(6);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(6);
     });
 
     it('Should not clear bridge entities unnecessarily', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
 
         const topic = 'homeassistant/button/1221051039810110150109113116116_0x00124b00120144ae/restart/config';
         const payload = {
@@ -2369,7 +2206,7 @@ describe('Extension: HomeAssistant', () => {
         });
         await flushPromises();
 
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(topic, '', {retain: true, qos: 1}, expect.any(Function));
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(topic, '', {retain: true, qos: 1});
     });
 
     it('Should discover bridge entities', async () => {
@@ -2397,11 +2234,10 @@ describe('Extension: HomeAssistant', () => {
             origin: origin,
             device: devicePayload,
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/binary_sensor/1221051039810110150109113116116_0x00124b00120144ae/connection_state/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         payload = {
@@ -2420,11 +2256,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/binary_sensor/1221051039810110150109113116116_0x00124b00120144ae/restart_required/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         // Buttons.
@@ -2440,11 +2275,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/button/1221051039810110150109113116116_0x00124b00120144ae/restart/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         // Selects.
@@ -2463,11 +2297,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/select/1221051039810110150109113116116_0x00124b00120144ae/log_level/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         // Sensors.
@@ -2484,11 +2317,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/version/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         payload = {
@@ -2505,11 +2337,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/coordinator_version/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         payload = {
@@ -2527,11 +2358,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/network_map/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         payload = {
@@ -2548,11 +2378,10 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/permit_join_timeout/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
 
         // Switches.
@@ -2573,32 +2402,26 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             availability_mode: 'all',
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'homeassistant/switch/1221051039810110150109113116116_0x00124b00120144ae/permit_join/config',
             stringify(payload),
             {retain: true, qos: 1},
-            expect.any(Function),
         );
     });
 
     it('Should remove discovery entries for removed exposes when device options change', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message(
             'zigbee2mqtt/bridge/request/device/options',
             stringify({id: '0xf4ce368a38be56a1', options: {dimmer_1_enabled: 'false', dimmer_1_dimming_enabled: 'false'}}),
         );
         await flushPromises();
 
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/light/0xf4ce368a38be56a1/light_l2/config',
-            '',
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/light/0xf4ce368a38be56a1/light_l2/config', '', {retain: true, qos: 1});
     });
 
     it('Should publish discovery message when a converter announces changed exposes', async () => {
-        mockMQTT.publish.mockClear();
+        mockMQTT.publishAsync.mockClear();
         const device = devices['BMCT-SLZ'];
         const data = {deviceMode: 0};
         const msg = {data, cluster: 'boschSpecific', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
@@ -2626,11 +2449,9 @@ describe('Extension: HomeAssistant', () => {
             value_template: '{{ value_json.device_mode }}',
             enabled_by_default: true,
         };
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/select/0x18fc26000000cafe/device_mode/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/select/0x18fc26000000cafe/device_mode/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
     });
 });

@@ -1,3 +1,4 @@
+import type {IClientPublishOptions} from 'mqtt';
 import type * as SdNotify from 'sd-notify';
 
 import assert from 'assert';
@@ -265,14 +266,14 @@ export class Controller {
             message = newState;
         }
 
-        const options: MQTTOptions = {
-            retain: utils.getObjectProperty(entity.options, 'retain', false) as boolean,
-            qos: utils.getObjectProperty(entity.options, 'qos', 0) as 0 | 1 | 2,
+        const options: IClientPublishOptions = {
+            retain: utils.getObjectProperty(entity.options, 'retain', false),
+            qos: utils.getObjectProperty(entity.options, 'qos', 0),
         };
+        const retention = utils.getObjectProperty<number | false>(entity.options, 'retention', false);
 
-        const retention = utils.getObjectProperty(entity.options, 'retention', false);
         if (retention !== false) {
-            options.properties = {messageExpiryInterval: retention as number};
+            options.properties = {messageExpiryInterval: retention};
         }
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
@@ -328,7 +329,7 @@ export class Controller {
         this.eventBus.emitPublishEntityState({entity, message, stateChangeReason, payload});
     }
 
-    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: MQTTOptions): Promise<void> {
+    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: IClientPublishOptions): Promise<void> {
         for (const [key, value] of Object.entries(payload)) {
             let subPayload = value;
             let message = null;
