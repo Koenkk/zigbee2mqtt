@@ -45,11 +45,10 @@ describe('Extension: Receive', () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/button',
-            stringify({action: 'single', linkquality: 10}),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/button', stringify({action: 'single', linkquality: 10}), {
+            retain: false,
+            qos: 0,
+        });
     });
 
     it('Should handle a zigbee message which uses ep (left)', async () => {
