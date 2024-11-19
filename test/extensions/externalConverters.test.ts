@@ -207,7 +207,7 @@ describe('Extension: ExternalConverters', () => {
         expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
         expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
         expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0}, expect.any(Function));
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
     });
 
     it('returns error on invalid code', async () => {
