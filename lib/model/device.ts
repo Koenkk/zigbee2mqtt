@@ -29,6 +29,9 @@ export default class Device {
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
     }
+    get otaExtraMetas(): zhc.Ota.ExtraMetas {
+        return typeof this.definition?.ota === 'object' ? this.definition.ota : {};
+    }
 
     constructor(device: zh.Device) {
         this.zh = device;

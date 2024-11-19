@@ -916,13 +916,6 @@ describe('Settings', () => {
         expect(settings.get().serial.baudrate).toStrictEqual(20);
     });
 
-    it('ikea_ota_use_test_url config', () => {
-        write(configurationFile, {...minimalConfig, advanced: {ikea_ota_use_test_url: true}});
-
-        settings.reRead();
-        expect(settings.get().ota.ikea_ota_use_test_url).toStrictEqual(true);
-    });
-
     it('transmit_power config', () => {
         write(configurationFile, {...minimalConfig, experimental: {transmit_power: 1337}});
 
