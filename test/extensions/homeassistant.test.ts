@@ -1715,38 +1715,12 @@ describe('Extension: HomeAssistant', () => {
             expect.any(Function),
         );
 
-        const discoverPayloadClick = {
-            automation_type: 'trigger',
-            type: 'click',
-            subtype: 'single',
-            payload: 'single',
-            topic: 'zigbee2mqtt/button/click',
-            origin: origin,
-            device: {
-                identifiers: ['zigbee2mqtt_0x0017880104e45520'],
-                name: 'button',
-                model: 'Wireless mini switch (WXKG11LM)',
-                manufacturer: 'Aqara',
-                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
-            },
-        };
-
-        expect(mockMQTT.publish).toHaveBeenCalledWith(
-            'homeassistant/device_automation/0x0017880104e45520/click_single/config',
-            stringify(discoverPayloadClick),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
-
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/click', 'single', {retain: false, qos: 0}, expect.any(Function));
 
         expect(mockMQTT.publish).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
             stringify({
                 action: 'single',
-                click: 'single',
                 battery: null,
                 linkquality: null,
                 voltage: null,
@@ -1768,16 +1742,7 @@ describe('Extension: HomeAssistant', () => {
             expect.any(Function),
         );
 
-        expect(mockMQTT.publish).not.toHaveBeenCalledWith(
-            'homeassistant/device_automation/0x0017880104e45520/click_single/config',
-            stringify(discoverPayloadClick),
-            {retain: true, qos: 1},
-            expect.any(Function),
-        );
-
         expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0}, expect.any(Function));
-
-        expect(mockMQTT.publish).toHaveBeenCalledWith('zigbee2mqtt/button/click', 'single', {retain: false, qos: 0}, expect.any(Function));
 
         // Shouldn't rediscover when already discovered in previous session
         clearDiscoveredTrigger('0x0017880104e45520');

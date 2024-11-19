@@ -176,8 +176,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     humidity_max: {entity_category: 'config', icon: 'mdi:water-percent'},
     humidity_min: {entity_category: 'config', icon: 'mdi:water-percent'},
     illuminance_calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
-    illuminance_lux: {device_class: 'illuminance', state_class: 'measurement'},
-    illuminance: {device_class: 'illuminance', enabled_by_default: false, state_class: 'measurement'},
+    illuminance: {device_class: 'illuminance', state_class: 'measurement'},
     linkquality: {
         enabled_by_default: false,
         entity_category: 'diagnostic',
@@ -1292,13 +1291,10 @@ export default class HomeAssistant extends Extension {
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_device/action
          */
-        if (entity.isDevice() && entity.definition) {
-            const keys = ['action', 'click'].filter((k) => data.message[k]);
-            for (const key of keys) {
-                const value = data.message[key].toString();
-                await this.publishDeviceTriggerDiscover(entity, key, value);
-                await this.mqtt.publish(`${data.entity.name}/${key}`, value, {});
-            }
+        if (entity.isDevice() && entity.definition && 'action' in data.message) {
+            const value = data.message['action'].toString();
+            await this.publishDeviceTriggerDiscover(entity, 'action', value);
+            await this.mqtt.publish(`${data.entity.name}/action`, value, {});
         }
     }
 
