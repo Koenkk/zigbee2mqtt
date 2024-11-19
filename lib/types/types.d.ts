@@ -171,7 +171,8 @@ declare global {
             update_check_interval: number;
             disable_automatic_update_check: boolean;
             zigbee_ota_override_index_location?: string;
-            ikea_ota_use_test_url?: boolean;
+            image_block_response_delay?: number;
+            default_maximum_data_size?: number;
         };
         frontend?: {
             auth_token?: string;

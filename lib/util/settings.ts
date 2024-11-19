@@ -19,7 +19,6 @@ objectAssignDeep(schema, schemaJson);
     delete schema.properties.advanced.properties.homeassistant_status_topic;
     delete schema.properties.advanced.properties.baudrate;
     delete schema.properties.advanced.properties.rtscts;
-    delete schema.properties.advanced.properties.ikea_ota_use_test_url;
     delete schema.properties.experimental;
     delete (schemaJson as KeyValue).properties.whitelist;
     delete (schemaJson as KeyValue).properties.ban;
@@ -75,6 +74,8 @@ const defaults: RecursivePartial<Settings> = {
     ota: {
         update_check_interval: 24 * 60,
         disable_automatic_update_check: false,
+        image_block_response_delay: 250,
+        default_maximum_data_size: 50,
     },
     device_options: {},
     advanced: {
@@ -173,12 +174,6 @@ function loadSettingsWithDefaults(): void {
     if (_settings.advanced?.rtscts !== undefined && _settings.serial?.rtscts == null) {
         // @ts-expect-error ignore typing
         _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settings.advanced?.ikea_ota_use_test_url !== undefined && _settings.ota?.ikea_ota_use_test_url == null) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.ota.ikea_ota_use_test_url = _settings.advanced.ikea_ota_use_test_url;
     }
 
     // @ts-expect-error ignore typing
