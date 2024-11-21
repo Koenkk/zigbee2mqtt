@@ -188,11 +188,10 @@ describe('Extension: ExternalConverters', () => {
                 description: 'external',
             }),
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/converters',
-            stringify([{name: converterName, code: converterCode}]),
-            {retain: true, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([{name: converterName, code: converterCode}]), {
+            retain: true,
+            qos: 0,
+        });
 
         //-- REMOVE
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
@@ -267,11 +266,10 @@ describe('Extension: ExternalConverters', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
         await flushPromises();
 
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/converter/save',
-            expect.stringContaining(errorMsg),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/converter/save', expect.stringContaining(errorMsg), {
+            retain: false,
+            qos: 0,
+        });
         expect(writeFileSyncSpy).not.toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
     });
 
