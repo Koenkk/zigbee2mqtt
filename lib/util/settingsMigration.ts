@@ -348,6 +348,11 @@ function migrateToTwo(
             note: `The entire experimental section was removed.`,
             noteIf: noteIfWasDefined,
         },
+        {
+            path: ['external_converters'],
+            note: `External converters are now automatically loaded from the 'data/external_converters' directory without requiring settings to be set. Make sure your external converters are still needed (might be supported out-of-the-box now), and if so, move them to that directory.`,
+            noteIf: noteIfWasNonEmptyArray,
+        },
     );
 
     // note only once

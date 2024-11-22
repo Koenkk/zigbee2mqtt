@@ -265,7 +265,6 @@ describe('Settings Migration', () => {
                     friendly_name: 'ha_discovery_group',
                 },
             },
-            external_converters: [],
         };
 
         beforeEach(() => {
@@ -313,6 +312,7 @@ describe('Settings Migration', () => {
             settings.set(['devices', '0x000b57fffec6a5b2', 'retrieve_state'], true);
             settings.set(['groups', '15071', 'retrieve_state'], true);
             settings.set(['groups', '12', 'devices'], ['0x0017880104e45521', '0x0017880104e45524']);
+            settings.set(['external_converters'], ['zyx.js']);
 
             // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
 
@@ -348,6 +348,7 @@ describe('Settings Migration', () => {
                         15071: {retrieve_state: true},
                         12: {devices: ['0x0017880104e45521', '0x0017880104e45524']},
                     },
+                    external_converters: ['zyx.js'],
                 }),
             );
 
@@ -388,6 +389,7 @@ describe('Settings Migration', () => {
             expect(migrationNotesContent).toContain('device_options.legacy');
             expect(migrationNotesContent).toContain('(devices|groups).xyz.retrieve_state');
             expect(migrationNotesContent).toContain('groups.xyz.devices');
+            expect(migrationNotesContent).toContain('External converters are now automatically loaded');
         });
 
         it('remove partial', () => {
