@@ -26,6 +26,20 @@ describe('Settings Migration', () => {
         expect(settings.validate()).toStrictEqual([]);
     });
 
+    it('Fails on unsupported version', () => {
+        settings.set(['version'], 0);
+
+        expect(() => settingsMigration.migrateIfNecessary()).toThrow(
+            `Your configuration.yaml has an unsupported version 0, expected one of undefined,2`,
+        );
+
+        settings.set(['version'], 99999);
+
+        expect(() => settingsMigration.migrateIfNecessary()).toThrow(
+            `Your configuration.yaml has an unsupported version 99999, expected one of undefined,2`,
+        );
+    });
+
     describe('Migrates v1.x.x to v2.0.0', () => {
         const DEFAULT_CONFIG_V2 = {
             homeassistant: false,

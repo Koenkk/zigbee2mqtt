@@ -24,6 +24,8 @@ interface SettingsTransfer extends SettingsMigration {
     newPath: string[];
 }
 
+const SUPPORTED_VERSIONS: Settings['version'][] = [undefined, settings.CURRENT_VERSION];
+
 function backupSettings(version: number): void {
     const filePath = data.joinPath('configuration.yaml');
 
@@ -398,6 +400,12 @@ function migrateToTwo(
  */
 export function migrateIfNecessary(): void {
     const currentSettings = settings.getInternalSettings();
+
+    if (!SUPPORTED_VERSIONS.includes(currentSettings.version)) {
+        throw new Error(
+            `Your configuration.yaml has an unsupported version ${currentSettings.version}, expected one of ${SUPPORTED_VERSIONS.map((v) => String(v)).join(',')}.`,
+        );
+    }
 
     // when same version as current, nothing left to do
     while (currentSettings.version !== settings.CURRENT_VERSION) {
