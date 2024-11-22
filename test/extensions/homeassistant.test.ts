@@ -1033,7 +1033,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should throw error when starting with attributes output', async () => {
-        settings.set(['experimental', 'output'], 'attribute');
+        settings.set(['advanced', 'output'], 'attribute');
         settings.set(['homeassistant'], true);
         expect(() => {
             new Controller(jest.fn(), jest.fn());
