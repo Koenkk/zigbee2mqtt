@@ -218,7 +218,7 @@ describe('Extension: Bridge', () => {
                     passlist: [],
                     serial: {disable_led: false, port: '/dev/dummy'},
                 },
-                config_schema: settings.schema,
+                config_schema: settings.schemaJson,
                 coordinator: {ieee_address: '0x00124b00120144ae', meta: {revision: 20190425, version: 1}, type: 'z-Stack'},
                 log_level: 'info',
                 network: {channel: 15, extended_pan_id: 0x001122, pan_id: 5674},
