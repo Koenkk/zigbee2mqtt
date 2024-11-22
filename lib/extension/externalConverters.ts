@@ -1,9 +1,11 @@
+import type * as zhc from 'zigbee-herdsman-converters';
+
 import {addDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import ExternalJSExtension from './externalJS';
 
-type ModuleExports = ExternalDefinition | ExternalDefinition[];
+type ModuleExports = zhc.Definition | zhc.Definition[];
 
 export default class ExternalConverters extends ExternalJSExtension<ModuleExports> {
     constructor(
@@ -60,7 +62,7 @@ export default class ExternalConverters extends ExternalJSExtension<ModuleExport
         }
     }
 
-    private getDefinitions(module: ModuleExports): ExternalDefinition[] {
+    private getDefinitions(module: ModuleExports): zhc.Definition[] {
         return Array.isArray(module) ? module : [module];
     }
 }
