@@ -1,3 +1,6 @@
+// side-effect ensures using mock paths
+import './mocks/data';
+
 import fs from 'fs';
 
 import yaml from 'js-yaml';
@@ -907,64 +910,5 @@ describe('Settings', () => {
 
         settings.reRead();
         expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: null, base_url: '/'});
-    });
-
-    it('Baudrate config', () => {
-        write(configurationFile, {...minimalConfig, advanced: {baudrate: 20}});
-
-        settings.reRead();
-        expect(settings.get().serial.baudrate).toStrictEqual(20);
-    });
-
-    it('transmit_power config', () => {
-        write(configurationFile, {...minimalConfig, experimental: {transmit_power: 1337}});
-
-        settings.reRead();
-        expect(settings.get().advanced.transmit_power).toStrictEqual(1337);
-    });
-
-    it('output config', () => {
-        write(configurationFile, {...minimalConfig, experimental: {output: 'json'}});
-
-        settings.reRead();
-        expect(settings.get().advanced.output).toStrictEqual('json');
-    });
-
-    it('Baudrartsctste config', () => {
-        write(configurationFile, {...minimalConfig, advanced: {rtscts: true}});
-
-        settings.reRead();
-        expect(settings.get().serial.rtscts).toStrictEqual(true);
-    });
-
-    it('Deprecated: Home Assistant config', () => {
-        write(configurationFile, {
-            ...minimalConfig,
-            homeassistant: {discovery_topic: 'new'},
-            advanced: {homeassistant_discovery_topic: 'old', homeassistant_status_topic: 'olds'},
-        });
-
-        settings.reRead();
-        expect(settings.get().homeassistant).toStrictEqual({
-            discovery_topic: 'new',
-            experimental_event_entities: false,
-            status_topic: 'olds',
-        });
-    });
-
-    it('Deprecated: ban/whitelist config', () => {
-        write(configurationFile, {...minimalConfig, ban: ['ban'], whitelist: ['whitelist'], passlist: ['passlist'], blocklist: ['blocklist']});
-
-        settings.reRead();
-        expect(settings.get().blocklist).toStrictEqual(['blocklist', 'ban']);
-        expect(settings.get().passlist).toStrictEqual(['passlist', 'whitelist']);
-    });
-
-    it('Deprecated: warn log level', () => {
-        write(configurationFile, {...minimalConfig, advanced: {log_level: 'warn'}});
-
-        settings.reRead();
-
-        expect(settings.get().advanced.log_level).toStrictEqual('warning');
     });
 });

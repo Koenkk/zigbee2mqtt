@@ -5,7 +5,6 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type * as zhc from 'zigbee-herdsman-converters';
 import type {
     CoordinatorVersion as ZHCoordinatorVersion,
     LQI as ZHLQI,
@@ -32,7 +31,6 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
     interface MQTTResponse {
         data: KeyValue;
         status: 'error' | 'ok';
@@ -107,6 +105,7 @@ declare global {
 
     // Settings
     interface Settings {
+        version?: number;
         homeassistant?: {
             discovery_topic: string;
             status_topic: string;
@@ -222,7 +221,6 @@ declare global {
         filtered_optimistic?: string[];
         icon?: string;
         homeassistant?: KeyValue;
-        legacy?: boolean;
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;

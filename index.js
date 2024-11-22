@@ -129,6 +129,13 @@ async function start() {
 
     settings.reRead();
 
+    // gc
+    {
+        const settingsMigration = require('./dist/util/settingsMigration');
+
+        settingsMigration.migrateIfNecessary();
+    }
+
     const errors = settings.validate();
 
     if (errors.length > 0) {

@@ -5,8 +5,8 @@
     <br>
     <br>
     <div style="display: flex;">
-        <a href="https://github.com/Koenkk/zigbee2mqtt/actions?query=workflow%3ACI">
-            <img src="https://github.com/koenkk/zigbee2mqtt/workflows/CI/badge.svg">
+        <a href="https://github.com/Koenkk/zigbee2mqtt/actions?query=workflow%3Aci">
+            <img src="https://github.com/koenkk/zigbee2mqtt/workflows/ci/badge.svg">
         </a>
         <a href="https://github.com/Koenkk/zigbee2mqtt/releases">
             <img src="https://img.shields.io/github/release/koenkk/zigbee2mqtt.svg">
