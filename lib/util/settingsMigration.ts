@@ -438,11 +438,7 @@ export function migrateIfNecessary(): void {
             const [validPath, previousValue, transfered] = transferValue(currentSettings, transfer);
 
             if (validPath && (!transfer.noteIf || transfer.noteIf(previousValue))) {
-                if (transfered) {
-                    migrationNotes.add(`[TRANSFER] ${transfer.note}`);
-                } else {
-                    migrationNotes.add(`[REMOVAL] ${transfer.note}`);
-                }
+                migrationNotes.add(`[${transfered ? 'TRANSFER' : 'REMOVAL'}] ${transfer.note}`);
             }
         }
 
