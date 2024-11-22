@@ -32,7 +32,6 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
     interface MQTTResponse {
         data: KeyValue;
         status: 'error' | 'ok';

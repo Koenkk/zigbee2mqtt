@@ -168,7 +168,7 @@ function loadModuleFromFile(modulePath: string): unknown {
     return loadModuleFromText(moduleCode);
 }
 
-export function* loadExternalConverter(moduleName: string): Generator<ExternalDefinition> {
+export function* loadExternalConverter(moduleName: string): Generator<zhc.Definition> {
     let converter;
 
     if (moduleName.endsWith('.js')) {
