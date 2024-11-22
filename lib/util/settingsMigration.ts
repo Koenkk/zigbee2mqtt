@@ -132,7 +132,7 @@ function changeValue(currentSettings: Partial<Settings>, change: SettingsChange)
     const [validPath, previousValue] = getValue(currentSettings, change.path);
     let changed: boolean = false;
 
-    if (validPath) {
+    if (validPath && previousValue !== change.newValue) {
         if (!change.previousValueAnyOf || change.previousValueAnyOf.includes(previousValue)) {
             setValue(currentSettings, change.path, change.newValue);
 

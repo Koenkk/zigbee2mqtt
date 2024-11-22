@@ -502,6 +502,40 @@ describe('Settings Migration', () => {
             expect(migrationNotesContent).toContain(`Log level 'warn' has been renamed to 'warning'.`);
         });
 
+        it('does not changes log_level', () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            afterSettings.version = 2;
+            afterSettings.advanced = {log_level: 'warning'};
+
+            settings.set(['advanced', 'log_level'], 'warning');
+
+            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+
+            expect(settings.getInternalSettings()).toStrictEqual(
+                // @ts-expect-error workaround
+                objectAssignDeep.noMutate(beforeSettings, {
+                    advanced: {
+                        log_level: 'warning',
+                    },
+                }),
+            );
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getInternalSettings();
+            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+
+            expect(migratedSettings).toStrictEqual(afterSettings);
+            expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
+            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            expect(existsSync(migrationNotes)).toStrictEqual(true);
+            const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
+            expect(migrationNotesContent).not.toContain(`Log level 'warn' has been renamed to 'warning'.`);
+        });
+
         it('transfer all', () => {
             // @ts-expect-error workaround
             const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
