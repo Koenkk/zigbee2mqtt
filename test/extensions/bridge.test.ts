@@ -340,8 +340,8 @@ describe('Extension: Bridge', () => {
                                                 label: 'Current level startup',
                                                 name: 'current_level_startup',
                                                 presets: [
-                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
-                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 'minimum'},
+                                                    {description: 'Use previous value', name: 'previous', value: 'previous'},
                                                 ],
                                                 property: 'current_level_startup',
                                                 type: 'numeric',
@@ -1911,8 +1911,8 @@ describe('Extension: Bridge', () => {
                                                 label: 'Current level startup',
                                                 name: 'current_level_startup',
                                                 presets: [
-                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
-                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 'minimum'},
+                                                    {description: 'Use previous value', name: 'previous', value: 'previous'},
                                                 ],
                                                 property: 'current_level_startup',
                                                 type: 'numeric',
@@ -2328,8 +2328,8 @@ describe('Extension: Bridge', () => {
                                                 label: 'Current level startup',
                                                 name: 'current_level_startup',
                                                 presets: [
-                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 0},
-                                                    {description: 'Use previous value', name: 'previous', value: 255},
+                                                    {description: 'Use minimum permitted value', name: 'minimum', value: 'minimum'},
+                                                    {description: 'Use previous value', name: 'previous', value: 'previous'},
                                                 ],
                                                 property: 'current_level_startup',
                                                 type: 'numeric',

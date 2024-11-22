@@ -5,7 +5,6 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type * as zhc from 'zigbee-herdsman-converters';
 import type {
     CoordinatorVersion as ZHCoordinatorVersion,
     LQI as ZHLQI,
