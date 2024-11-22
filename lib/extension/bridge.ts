@@ -663,7 +663,7 @@ export default class Bridge extends Extension {
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
             restart_required: this.restartRequired,
             config,
-            config_schema: settings.schema,
+            config_schema: settings.schemaJson,
         };
 
         await this.mqtt.publish('bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);

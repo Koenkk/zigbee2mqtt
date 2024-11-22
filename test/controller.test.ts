@@ -636,7 +636,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute output', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute');
+        settings.set(['advanced', 'output'], 'attribute');
         mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
@@ -662,7 +662,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute_json output', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute_and_json');
+        settings.set(['advanced', 'output'], 'attribute_and_json');
         mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
@@ -682,7 +682,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute_json output filtered', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute_and_json');
+        settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['devices', devices.bulb.ieeeAddr, 'filtered_attributes'], ['color_temp', 'linkquality']);
         mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
@@ -697,7 +697,7 @@ describe('Controller', () => {
 
     it('Publish entity state attribute_json output filtered (device_options)', async () => {
         await controller.start();
-        settings.set(['experimental', 'output'], 'attribute_and_json');
+        settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['device_options', 'filtered_attributes'], ['color_temp', 'linkquality']);
         mockMQTT.publishAsync.mockClear();
         // @ts-expect-error private
