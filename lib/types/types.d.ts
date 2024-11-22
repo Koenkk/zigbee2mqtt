@@ -115,7 +115,6 @@ declare global {
             active: {timeout: number};
             passive: {timeout: number};
         };
-        external_converters: string[];
         mqtt: {
             base_topic: string;
             include_device_information: boolean;

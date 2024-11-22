@@ -15,7 +15,6 @@ const devicesFile2 = mockedData.joinPath('devices2.yaml');
 const groupsFile = mockedData.joinPath('groups.yaml');
 const secretFile = mockedData.joinPath('secret.yaml');
 const minimalConfig = {
-    external_converters: [],
     homeassistant: true,
     mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost'},
 };
@@ -64,13 +63,13 @@ describe('Settings', () => {
     });
 
     it('Should return settings', () => {
-        write(configurationFile, {external_converters: ['abcd.js']});
+        write(configurationFile, {serial: {disable_led: true}});
         const s = settings.get();
         // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
-        expected.external_converters = ['abcd.js'];
+        expected.serial = {disable_led: true};
         expect(s).toStrictEqual(expected);
     });
 

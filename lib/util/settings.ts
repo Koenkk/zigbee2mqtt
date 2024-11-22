@@ -25,7 +25,6 @@ const ajvRestartRequiredGroupOptions = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s})
     .compile(schemaJson.definitions.group);
 const defaults: RecursivePartial<Settings> = {
-    external_converters: [],
     mqtt: {
         base_topic: 'zigbee2mqtt',
         include_device_information: false,

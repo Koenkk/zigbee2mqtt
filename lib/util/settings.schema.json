@@ -86,16 +86,6 @@
             "requiresRestart": true,
             "description": "Checks whether devices are online/offline"
         },
-        "external_converters": {
-            "type": "array",
-            "title": "External converters",
-            "description": "You can define external converters to e.g. add support for a DiY device",
-            "requiresRestart": true,
-            "items": {
-                "type": "string"
-            },
-            "examples": ["DIYRuZ_FreePad.js"]
-        },
         "mqtt": {
             "type": "object",
             "title": "MQTT",
