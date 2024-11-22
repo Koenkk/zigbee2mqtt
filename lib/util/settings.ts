@@ -8,28 +8,12 @@ import schemaJson from './settings.schema.json';
 import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
 
-export let schema: KeyValue = schemaJson;
-
-schema = {};
-objectAssignDeep(schema, schemaJson);
-
-// Remove legacy settings from schema
-{
-    delete schema.properties.advanced.properties.homeassistant_discovery_topic;
-    delete schema.properties.advanced.properties.homeassistant_status_topic;
-    delete schema.properties.advanced.properties.baudrate;
-    delete schema.properties.advanced.properties.rtscts;
-    delete schema.properties.experimental;
-    delete (schemaJson as KeyValue).properties.whitelist;
-    delete (schemaJson as KeyValue).properties.ban;
-}
-
+export const CURRENT_VERSION = 2;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];
 
-// DEPRECATED ZIGBEE2MQTT_CONFIG: https://github.com/Koenkk/zigbee2mqtt/issues/4697
-const file = process.env.ZIGBEE2MQTT_CONFIG ?? data.joinPath('configuration.yaml');
+const CONFIG_FILE_PATH = data.joinPath('configuration.yaml');
 const NULLABLE_SETTINGS = ['homeassistant'];
 const ajvSetting = new Ajv({allErrors: true}).addKeyword('requiresRestart').compile(schemaJson);
 const ajvRestartRequired = new Ajv({allErrors: true}).addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s}).compile(schemaJson);
@@ -114,6 +98,7 @@ function loadSettingsWithDefaults(): void {
     if (!_settings) {
         _settings = read();
     }
+
     _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
 
     if (!_settingsWithDefaults.devices) {
@@ -131,6 +116,7 @@ function loadSettingsWithDefaults(): void {
             experimental_event_entities: false,
         };
         const sLegacy = {};
+
         if (_settingsWithDefaults.advanced) {
             for (const key of ['homeassistant_discovery_topic', 'homeassistant_status_topic']) {
                 // @ts-expect-error ignore typing
@@ -144,6 +130,7 @@ function loadSettingsWithDefaults(): void {
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
         // @ts-expect-error ignore typing
         _settingsWithDefaults.homeassistant = {};
+
         // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
     }
@@ -153,6 +140,7 @@ function loadSettingsWithDefaults(): void {
         const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
         // @ts-expect-error ignore typing
         _settingsWithDefaults.availability = {};
+
         // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
     }
@@ -162,48 +150,9 @@ function loadSettingsWithDefaults(): void {
         const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
         // @ts-expect-error ignore typing
         _settingsWithDefaults.frontend = {};
+
         // @ts-expect-error ignore typing
         objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settings.advanced?.baudrate !== undefined && _settings.serial?.baudrate == null) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.serial.baudrate = _settings.advanced.baudrate;
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settings.advanced?.rtscts !== undefined && _settings.serial?.rtscts == null) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.serial.rtscts = _settings.advanced.rtscts;
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settings.experimental?.transmit_power !== undefined && _settings.advanced?.transmit_power == null) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.advanced.transmit_power = _settings.experimental.transmit_power;
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settings.experimental?.output !== undefined && _settings.advanced?.output == null) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.advanced.output = _settings.experimental.output;
-    }
-
-    if (_settings.advanced?.log_level === 'warn') {
-        _settingsWithDefaults.advanced.log_level = 'warning';
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settingsWithDefaults.ban) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.blocklist.push(..._settingsWithDefaults.ban);
-    }
-
-    // @ts-expect-error ignore typing
-    if (_settingsWithDefaults.whitelist) {
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.passlist.push(..._settingsWithDefaults.whitelist);
     }
 }
 
@@ -226,7 +175,7 @@ function write(): void {
     const toWrite: KeyValue = objectAssignDeep({}, settings);
 
     // Read settings to check if we have to split devices/groups into separate file.
-    const actual = yaml.read(file);
+    const actual = yaml.read(CONFIG_FILE_PATH);
 
     // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
     for (const path of [
@@ -268,10 +217,10 @@ function write(): void {
 
     writeDevicesOrGroups('devices');
     writeDevicesOrGroups('groups');
-
-    yaml.writeIfChanged(file, toWrite);
+    yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
     _settings = read();
+
     loadSettingsWithDefaults();
 }
 
@@ -332,6 +281,7 @@ export function validate(): string[] {
     };
 
     const settingsWithDefaults = get();
+
     Object.values(settingsWithDefaults.devices).forEach((d) => check(d));
     Object.values(settingsWithDefaults.groups).forEach((g) => check(g));
 
@@ -347,7 +297,7 @@ export function validate(): string[] {
 }
 
 function read(): Settings {
-    const s = yaml.read(file) as Settings;
+    const s = yaml.read(CONFIG_FILE_PATH) as Settings;
     applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
@@ -458,7 +408,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
     iterate(schemaJson.properties, []);
 }
 
-function getInternalSettings(): Partial<Settings> {
+export function getInternalSettings(): Partial<Settings> {
     if (!_settings) {
         _settings = read();
     }

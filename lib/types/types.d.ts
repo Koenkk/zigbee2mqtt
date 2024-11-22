@@ -107,6 +107,7 @@ declare global {
 
     // Settings
     interface Settings {
+        version?: number;
         homeassistant?: {
             discovery_topic: string;
             status_topic: string;
@@ -222,7 +223,6 @@ declare global {
         filtered_optimistic?: string[];
         icon?: string;
         homeassistant?: KeyValue;
-        legacy?: boolean;
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;

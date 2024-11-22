@@ -725,70 +725,7 @@
                     "enum": ["attribute_and_json", "attribute", "json"],
                     "title": "MQTT output type",
                     "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-                },
-                "homeassistant_discovery_topic": {
-                    "type": "string",
-                    "title": "Homeassistant discovery topic",
-                    "description": "Home Assistant discovery topic",
-                    "requiresRestart": true,
-                    "examples": ["homeassistant"]
-                },
-                "homeassistant_status_topic": {
-                    "type": "string",
-                    "title": "Home Assistant status topic",
-                    "description": "Home Assistant status topic",
-                    "requiresRestart": true,
-                    "examples": ["homeassistant/status"]
-                },
-                "baudrate": {
-                    "type": "number",
-                    "title": "Baudrate (deprecated)",
-                    "requiresRestart": true,
-                    "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-                    "examples": [38400, 57600, 115200]
-                },
-                "rtscts": {
-                    "type": "boolean",
-                    "title": "RTS / CTS (deprecated)",
-                    "requiresRestart": true,
-                    "description": "RTS / CTS Hardware Flow Control for serial port"
                 }
-            }
-        },
-        "experimental": {
-            "type": "object",
-            "title": "Experimental (deprecated)",
-            "properties": {
-                "transmit_power": {
-                    "type": ["number", "null"],
-                    "title": "Transmit power",
-                    "requiresRestart": true,
-                    "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
-                },
-                "output": {
-                    "type": "string",
-                    "enum": ["attribute_and_json", "attribute", "json"],
-                    "title": "MQTT output type",
-                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-                }
-            }
-        },
-        "whitelist": {
-            "readOnly": true,
-            "type": "array",
-            "requiresRestart": true,
-            "title": "Whitelist (deprecated, use passlist)",
-            "items": {
-                "type": "string"
-            }
-        },
-        "ban": {
-            "readOnly": true,
-            "type": "array",
-            "requiresRestart": true,
-            "title": "Ban (deprecated, use blocklist)",
-            "items": {
-                "type": "string"
             }
         }
     },

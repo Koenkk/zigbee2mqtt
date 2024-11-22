@@ -9,8 +9,8 @@ import yaml from '../../lib/util/yaml';
 export const mockDir: string = tmp.dirSync().name;
 const stateFile = path.join(mockDir, 'state.json');
 
-export function writeDefaultConfiguration(): void {
-    const config = {
+export function writeDefaultConfiguration(config: unknown = undefined): void {
+    config = config || {
         homeassistant: false,
         mqtt: {
             base_topic: 'zigbee2mqtt',
