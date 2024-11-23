@@ -5,7 +5,11 @@ class Example {
     }
 
     start() {
-        this.mqtt.publish('example/extension', 'test');
+        this.mqtt.publish('example/extension', 'call from start');
+    }
+
+    stop() {
+        this.mqtt.publish('example/extension', 'call from stop');
     }
 }
 

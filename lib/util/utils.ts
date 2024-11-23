@@ -3,12 +3,9 @@ import type * as zhc from 'zigbee-herdsman-converters';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import vm from 'vm';
 
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
-
-import data from './data';
 
 function pad(num: number): string {
     const norm = Math.floor(Math.abs(num));
@@ -142,48 +139,6 @@ function parseJSON(value: string, fallback: string): KeyValue | string {
         return JSON.parse(value);
     } catch {
         return fallback;
-    }
-}
-
-function loadModuleFromText(moduleCode: string, name?: string): unknown {
-    const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name || 'externally-loaded.js');
-    const sandbox = {
-        require: require,
-        module: {},
-        console,
-        setTimeout,
-        clearTimeout,
-        setInterval,
-        clearInterval,
-        setImmediate,
-        clearImmediate,
-    };
-    vm.runInNewContext(moduleCode, sandbox, moduleFakePath);
-    /* eslint-disable-line */ // @ts-ignore
-    return sandbox.module.exports;
-}
-
-function loadModuleFromFile(modulePath: string): unknown {
-    const moduleCode = fs.readFileSync(modulePath, {encoding: 'utf8'});
-    return loadModuleFromText(moduleCode);
-}
-
-export function* loadExternalConverter(moduleName: string): Generator<zhc.Definition> {
-    let converter;
-
-    if (moduleName.endsWith('.js')) {
-        converter = loadModuleFromFile(data.joinPath(moduleName));
-    } else {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        converter = require(moduleName);
-    }
-
-    if (Array.isArray(converter)) {
-        for (const item of converter) {
-            yield item;
-        }
-    } else {
-        yield converter;
     }
 }
 
@@ -426,8 +381,6 @@ export default {
     getObjectProperty,
     getResponse,
     parseJSON,
-    loadModuleFromText,
-    loadModuleFromFile,
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
     toSnakeCaseString,

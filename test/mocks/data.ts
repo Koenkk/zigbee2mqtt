@@ -234,7 +234,6 @@ export function writeDefaultConfiguration(config: unknown = undefined): void {
                 friendly_name: 'ha_discovery_group',
             },
         },
-        external_converters: [],
     };
 
     yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
