@@ -181,7 +181,6 @@ describe('Extension: Bridge', () => {
                             retain: false,
                         },
                     },
-                    external_converters: [],
                     groups: {
                         1: {friendly_name: 'group_1', retain: false},
                         11: {friendly_name: 'group_with_tradfri', retain: false},
@@ -3781,11 +3780,11 @@ describe('Extension: Bridge', () => {
 
     it('Change options not valid against schema', async () => {
         mockMQTT.publishAsync.mockClear();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {external_converters: 'true'}}));
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {advanced: {log_level: 123}}}));
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
-            stringify({data: {}, error: 'external_converters must be array', status: 'error'}),
+            stringify({data: {}, error: 'advanced/log_level must be string', status: 'error'}),
             {retain: false, qos: 0},
         );
     });

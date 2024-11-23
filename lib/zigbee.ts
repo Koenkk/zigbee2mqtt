@@ -72,9 +72,7 @@ export default class Zigbee {
             throw error;
         }
 
-        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
-            await device.resolveDefinition();
-        }
+        await this.resolveDevicesDefinitions();
 
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
@@ -237,6 +235,12 @@ export default class Zigbee {
         }
 
         await this.herdsman.permitJoin(time, device?.zh);
+    }
+
+    async resolveDevicesDefinitions(ignoreCache: boolean = false): Promise<void> {
+        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
+            await device.resolveDefinition(ignoreCache);
+        }
     }
 
     @bind private resolveDevice(ieeeAddr: string): Device | undefined {

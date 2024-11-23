@@ -102,8 +102,11 @@ describe('Extension: NetworkMap', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
-        fs.copyFileSync(path.join(__dirname, '..', 'assets', 'mock-external-converter.js'), path.join(data.mockDir, 'mock-external-converter.js'));
-        settings.set(['external_converters'], ['mock-external-converter.js']);
+        fs.mkdirSync(path.join(data.mockDir, 'external_converters'));
+        fs.copyFileSync(
+            path.join(__dirname, '..', 'assets', 'external_converters', 'mock-external-converter.js'),
+            path.join(data.mockDir, 'external_converters', 'mock-external-converter.js'),
+        );
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
     });
@@ -120,6 +123,7 @@ describe('Extension: NetworkMap', () => {
 
     afterAll(async () => {
         mockSleep.restore();
+        fs.rmSync(path.join(data.mockDir, 'external_converters'), {recursive: true});
         jest.useRealTimers();
     });
 
