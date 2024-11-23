@@ -8,7 +8,7 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN apk add npm && \
+RUN apk add make gcc g++ python3 linux-headers npm && \
     npm install -g pnpm && \
     pnpm install --frozen-lockfile --no-optional
 
@@ -24,7 +24,7 @@ LABEL org.opencontainers.image.source="https://github.com/Koenkk/zigbee2mqtt"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY dist ./dist
-COPY package.json LICENSE index.js data/configuration.yaml data/configuration.example.yaml ./
+COPY package.json LICENSE index.js data/configuration.example.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

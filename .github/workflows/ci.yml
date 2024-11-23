@@ -59,7 +59,7 @@ jobs:
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
                     --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
                     -f docker/Dockerfile \
-                    --provenance=false \
+                    --provenance=max \
                     --push \
                     -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
                     .
@@ -71,7 +71,7 @@ jobs:
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
                     --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
                     -f docker/Dockerfile \
-                    --provenance=false \
+                    --provenance=max \
                     --push \
                     -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
                     .
@@ -147,7 +147,7 @@ jobs:
                   version: 9
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: ${{ matrix.node }}
                   cache: pnpm
             - name: Install dependencies
               # --ignore-scripts prevents the serialport build which often fails on Windows

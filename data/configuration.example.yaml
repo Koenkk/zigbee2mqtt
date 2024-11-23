@@ -1,3 +1,6 @@
+# Indicates the configuration version (used by configuration migrations)
+version: 2
+
 # Home Assistant integration (MQTT discovery)
 homeassistant: false
 
