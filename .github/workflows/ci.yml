@@ -14,9 +14,11 @@ jobs:
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               with:
                   # Required for `release: merge dev -> master and promote dev`
-                  token: ${{secrets.GH_TOKEN}}
+                  token: ${{ secrets.GH_TOKEN }}
+
             - uses: actions/checkout@v4
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
+
             - uses: pnpm/action-setup@v4
               with:
                   version: 9
@@ -25,59 +27,80 @@ jobs:
                   node-version: 20
                   registry-url: https://registry.npmjs.org/
                   cache: pnpm
+
             - name: Install dependencies
               run: pnpm i --frozen-lockfile
+
             - name: Build
               run: pnpm run build
+
             - name: Lint
               run: |
                   pnpm run pretty:check
                   pnpm run eslint
+
             - name: Test
               run: pnpm run test-with-coverage
-            - name: Docker login
+
+            - name: Log in to the Docker container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
-            - name: Docker login ghcr.io
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.DOCKER_KEY }}
+
+            - name: Log in to the GitHub container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u koenkk --password-stdin
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.GH_TOKEN }}
+
             - name: Docker setup - QEMU
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               uses: docker/setup-qemu-action@v3
               with:
                   platforms: all
+
             - name: Docker setup - Buildx
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               id: buildx
               uses: docker/setup-buildx-action@v3
               with:
                   version: latest
-            - name: 'dev: Docker build'
+
+            - name: dev - Docker build and push
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-              run: |
-                  docker buildx build \
-                    --build-arg COMMIT=$(git rev-parse --short HEAD) \
-                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
-                    -f docker/Dockerfile \
-                    --push \
-                    -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
-                    .
-            - name: 'release: Docker build'
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: docker/Dockerfile
+                  platforms: linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7
+                  tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
+                  push: true
+                  build-args: |
+                      COMMIT=$(git rev-parse --short HEAD)
+
+            - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              run: |
-                  TAG="$(git describe --tags)"
-                  docker buildx build \
-                    --build-arg COMMIT=$(git rev-parse --short HEAD) \
-                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
-                    -f docker/Dockerfile \
-                    --push \
-                    -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
-                    .
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: docker/Dockerfile
+                  provenance: false
+                  platforms: linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7
+                  tags: koenkk/zigbee2mqtt:latest,ghcr.io/koenkk/zigbee2mqtt:latest,koenkk/zigbee2mqtt:${{ github.ref_name }},ghcr.io/koenkk/zigbee2mqtt:${{ github.ref_name }}
+                  push: true
+                  build-args: |
+                      COMMIT=$(git rev-parse --short HEAD)
+
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
+
             - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
@@ -87,6 +110,7 @@ jobs:
                     -H "Accept: application/vnd.github.v3+json" \
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
                     -d '{"ref":"master","inputs":{}}'
+
             - name: 'release: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
@@ -99,6 +123,7 @@ jobs:
                     -H "Content-Type: application/json" \
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches \
                     --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
+
             - name: 'release: Trigger zigbee2mqtt-chart image update'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
@@ -111,6 +136,7 @@ jobs:
                     -H "X-GitHub-Api-Version: 2022-11-28" \
                     https://api.github.com/repos/Koenkk/zigbee2mqtt-chart/actions/workflows/on_zigbee2mqtt_release.yaml/dispatches \
                     --data "{\"ref\": \"main\", \"inputs\": { \"zigbee2mqtt_version\": \"$TAG\"}}"
+
             - name: 'release: merge dev -> master and promote dev'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
@@ -143,14 +169,18 @@ jobs:
             - uses: pnpm/action-setup@v4
               with:
                   version: 9
+
             - uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node }}
                   cache: pnpm
+
             - name: Install dependencies
               # --ignore-scripts prevents the serialport build which often fails on Windows
               run: pnpm i --frozen-lockfile --ignore-scripts
+
             - name: Build
               run: pnpm run build
+
             - name: Test
               run: pnpm run test-with-coverage
