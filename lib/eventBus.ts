@@ -196,6 +196,11 @@ export default class EventBus {
         this.on('stateChange', callback, key);
     }
 
+    public emitExposesAndDevicesChanged(device: Device): void {
+        this.emitDevicesChanged();
+        this.emitExposesChanged({device});
+    }
+
     private on<K extends keyof EventBusMap>(event: K, callback: EventBusListener<K>, key: ListenerKey): void {
         if (!this.callbacksByExtension[key.constructor.name]) {
             this.callbacksByExtension[key.constructor.name] = [];

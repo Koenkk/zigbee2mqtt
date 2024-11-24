@@ -67,7 +67,21 @@ describe('On event', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
-        expect(mockOnEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device, settings.getDevice(device.ieeeAddr), {});
+        expect(mockOnEvent).toHaveBeenCalledWith(
+            'deviceAnnounce',
+            {device},
+            device,
+            settings.getDevice(device.ieeeAddr),
+            {},
+            {
+                deviceExposesChanged: expect.any(Function),
+            },
+        );
+
+        // Test deviceExposesChanged
+        MQTT.publish.mockClear();
+        console.log(mockOnEvent.mock.calls[0][5].deviceExposesChanged());
+        expect(MQTT.publish.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
     });
 
     it('Should call index onEvent with zigbee event', async () => {
@@ -75,6 +89,8 @@ describe('On event', () => {
         await zigbeeHerdsman.events.deviceAnnounce({device});
         await flushPromises();
         expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledTimes(1);
-        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device);
+        expect(zigbeeHerdsmanConverters.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device}, device, {
+            deviceExposesChanged: expect.any(Function),
+        });
     });
 });
