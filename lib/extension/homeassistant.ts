@@ -2270,9 +2270,10 @@ export default class HomeAssistant extends Extension {
 
         const value_template =
             `{% set patterns = [\n${patterns}\n] %}\n` +
-            `{% set ns = namespace(r=[('event_type', value_json.action)]) %}\n` +
+            `{% set action_value = value_json.action|default(None) %}\n` +
+            `{% set ns = namespace(r=[('action', action_value)]) %}\n` +
             `{% for p in patterns %}\n` +
-            `  {% set m = value_json.action|regex_findall(p.pattern) %}\n` +
+            `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
             `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
             `  {% for key, value in zip(p.groups, m[0]) %}\n` +
             `    {% set ns.r = ns.r + [(key, value)] %}\n` +
