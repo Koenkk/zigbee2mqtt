@@ -115,24 +115,12 @@ function loadSettingsWithDefaults(): void {
             status_topic: 'hass/status',
             experimental_event_entities: false,
         };
-        const sLegacy = {};
-
-        if (_settingsWithDefaults.advanced) {
-            for (const key of ['homeassistant_discovery_topic', 'homeassistant_status_topic']) {
-                // @ts-expect-error ignore typing
-                if (_settingsWithDefaults.advanced[key] !== undefined) {
-                    // @ts-expect-error ignore typing
-                    sLegacy[key.replace('homeassistant_', '')] = _settingsWithDefaults.advanced[key];
-                }
-            }
-        }
-
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
         // @ts-expect-error ignore typing
         _settingsWithDefaults.homeassistant = {};
 
         // @ts-expect-error ignore typing
-        objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, sLegacy, s);
+        objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, s);
     }
 
     if (_settingsWithDefaults.availability) {
@@ -338,7 +326,7 @@ function read(): Settings {
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file));
-                /* eslint-disable-line */ // @ts-expect-error
+                // @ts-expect-error noMutate not typed properly
                 s[type] = objectAssignDeep.noMutate(s[type], content);
             }
         }
@@ -370,23 +358,22 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
 
                         if (type.indexOf('object') >= 0 || type.indexOf('array') >= 0) {
                             try {
-                                // @ts-expect-error ignore typing
-                                setting[key] = JSON.parse(envVariable);
+                                setting[key as keyof Settings] = JSON.parse(envVariable);
                             } catch {
-                                // @ts-expect-error ignore typing
-                                setting[key] = envVariable;
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                setting[key as keyof Settings] = envVariable as any;
                             }
                         } else if (type.indexOf('number') >= 0) {
-                            // @ts-expect-error ignore typing
-                            setting[key] = (envVariable as unknown as number) * 1;
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            setting[key as keyof Settings] = ((envVariable as unknown as number) * 1) as any;
                         } else if (type.indexOf('boolean') >= 0) {
-                            // @ts-expect-error ignore typing
-                            setting[key] = envVariable.toLowerCase() === 'true';
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            setting[key as keyof Settings] = (envVariable.toLowerCase() === 'true') as any;
                         } else {
                             /* istanbul ignore else */
                             if (type.indexOf('string') >= 0) {
-                                // @ts-expect-error ignore typing
-                                setting[key] = envVariable;
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                setting[key as keyof Settings] = envVariable as any;
                             }
                         }
                     }
@@ -446,7 +433,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 
 export function apply(settings: Record<string, unknown>): boolean {
     getInternalSettings(); // Ensure _settings is initialized.
-    // @ts-expect-error ignore typing
+    // @ts-expect-error noMutate not typed properly
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);
