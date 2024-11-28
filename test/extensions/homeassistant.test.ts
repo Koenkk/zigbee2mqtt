@@ -1001,8 +1001,8 @@ describe('Extension: HomeAssistant', () => {
         });
     });
 
-    it('Should discover devices with custom homeassistant_discovery_topic', async () => {
-        settings.set(['advanced', 'homeassistant_discovery_topic'], 'my_custom_discovery_topic');
+    it('Should discover devices with custom homeassistant.discovery_topic', async () => {
+        settings.set(['homeassistant'], {discovery_topic: 'my_custom_discovery_topic'});
         await resetExtension();
 
         const payload = {
