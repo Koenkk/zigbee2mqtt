@@ -2276,7 +2276,7 @@ export default class HomeAssistant extends Extension {
             `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
             `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
             `  {% for key, value in zip(p.groups, m[0]) %}\n` +
-            `    {% set ns.r = ns.r + [(key, value)] %}\n` +
+            `    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n` +
             `  {% endfor %}\n` +
             `{% endfor %}\n` +
             `{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n` +
