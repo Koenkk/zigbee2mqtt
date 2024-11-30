@@ -200,6 +200,10 @@ function writeDefaultConfiguration() {
             '0x0017880104e45562': {
                 friendly_name: 'heating_actuator',
             },
+            '0x00124b00cfcf3298': {
+                friendly_name: 'fanbee',
+                retain: true,
+            },
         },
         groups: {
             1: {
