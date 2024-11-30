@@ -227,6 +227,10 @@ export default class Zigbee {
         return this.herdsman.getPermitJoin();
     }
 
+    getPermitJoinEnd(): number | undefined {
+        return this.herdsman.getPermitJoinEnd();
+    }
+
     async permitJoin(time: number, device?: Device): Promise<void> {
         if (time > 0) {
             logger.info(`Zigbee: allowing new devices to join${device ? ` via ${device.name}` : ''}.`);
