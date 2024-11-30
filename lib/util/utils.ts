@@ -121,7 +121,8 @@ function getObjectProperty<T>(object: KeyValue, key: string, defaultValue: NoInf
 }
 
 function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
-    const response: MQTTResponse = {data, status: error ? 'error' : 'ok'};
+    // On `error`, always return an empty `data` payload.
+    const response: MQTTResponse = {data: error ? {} : data, status: error ? 'error' : 'ok'};
 
     if (error) {
         response.error = error;
