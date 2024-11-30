@@ -2369,26 +2369,6 @@ describe('Extension: HomeAssistant', () => {
             {retain: true, qos: 1},
         );
 
-        payload = {
-            name: 'Permit join timeout',
-            object_id: 'zigbee2mqtt_bridge_permit_join_timeout',
-            entity_category: 'diagnostic',
-            device_class: 'duration',
-            unit_of_measurement: 's',
-            unique_id: 'bridge_0x00124b00120144ae_permit_join_timeout_zigbee2mqtt',
-            state_topic: 'zigbee2mqtt/bridge/info',
-            value_template: '{{ iif(value_json.permit_join_timeout is defined, value_json.permit_join_timeout, None) }}',
-            origin: origin,
-            device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
-            availability_mode: 'all',
-        };
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/permit_join_timeout/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-        );
-
         // Switches.
         payload = {
             name: 'Permit join',

@@ -660,7 +660,7 @@ export default class Bridge extends Extension {
             },
             network: utils.toSnakeCaseObject(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
-            permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
+            permit_join: this.zigbee.getPermitJoin(),
             restart_required: this.restartRequired,
             config,
             config_schema: settings.schemaJson,
