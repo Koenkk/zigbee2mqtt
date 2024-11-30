@@ -2270,7 +2270,7 @@ export default class HomeAssistant extends Extension {
 
         const value_template =
             `{% set patterns = [\n${patterns}\n] %}\n` +
-            `{% set action_value = value_json.action|default(None) %}\n` +
+            `{% set action_value = value_json.action|default('') %}\n` +
             `{% set ns = namespace(r=[('action', action_value)]) %}\n` +
             `{% for p in patterns %}\n` +
             `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
@@ -2283,7 +2283,7 @@ export default class HomeAssistant extends Extension {
             `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
             `{% endif %}\n` +
             `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix'))|to_json}}`;
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', '')))|to_json}}`;
 
         return value_template;
     }
