@@ -2283,7 +2283,7 @@ export default class HomeAssistant extends Extension {
             `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
             `{% endif %}\n` +
             `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', '')))|to_json}}`;
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
 
         return value_template;
     }
