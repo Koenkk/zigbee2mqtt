@@ -149,7 +149,7 @@ describe('Extension: OTAUpdate', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'available'}}), {retain: true, qos: 0});
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            stringify({data: {id: 'bulb'}, status: 'error', error: "Update of 'bulb' failed (Update failed)"}),
+            stringify({data: {}, status: 'error', error: "Update of 'bulb' failed (Update failed)"}),
             {retain: false, qos: 0},
         );
     });
@@ -222,7 +222,7 @@ describe('Extension: OTAUpdate', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
             stringify({
-                data: {id: 'bulb'},
+                data: {},
                 status: 'error',
                 error: `Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`,
             }),
@@ -235,7 +235,7 @@ describe('Extension: OTAUpdate', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {id: 'not_existing_deviceooo'}, status: 'error', error: `Device 'not_existing_deviceooo' does not exist`}),
+            stringify({data: {}, status: 'error', error: `Device 'not_existing_deviceooo' does not exist`}),
             {retain: false, qos: 0},
         );
     });
@@ -245,7 +245,7 @@ describe('Extension: OTAUpdate', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {id: 'dimmer_wall_switch'}, status: 'error', error: `Device 'dimmer_wall_switch' does not support OTA updates`}),
+            stringify({data: {}, status: 'error', error: `Device 'dimmer_wall_switch' does not support OTA updates`}),
             {retain: false, qos: 0},
         );
     });
@@ -268,7 +268,7 @@ describe('Extension: OTAUpdate', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {id: 'bulb'}, status: 'error', error: `Update or check for update already in progress for 'bulb'`}),
+            stringify({data: {}, status: 'error', error: `Update or check for update already in progress for 'bulb'`}),
             {retain: false, qos: 0},
         );
     });

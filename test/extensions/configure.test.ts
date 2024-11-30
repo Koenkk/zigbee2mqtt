@@ -162,7 +162,7 @@ describe('Extension: Configure', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            stringify({data: {id: 'not_existing_device'}, status: 'error', error: "Device 'not_existing_device' does not exist"}),
+            stringify({data: {}, status: 'error', error: "Device 'not_existing_device' does not exist"}),
             {retain: false, qos: 0},
         );
     });
@@ -175,7 +175,7 @@ describe('Extension: Configure', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            stringify({data: {id: 'remote'}, status: 'error', error: 'Failed to configure (Bind timeout after 10s)'}),
+            stringify({data: {}, status: 'error', error: 'Failed to configure (Bind timeout after 10s)'}),
             {retain: false, qos: 0},
         );
     });
@@ -185,7 +185,7 @@ describe('Extension: Configure', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
-            stringify({data: {id: '0x0017882104a44559'}, status: 'error', error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
+            stringify({data: {}, status: 'error', error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
             {retain: false, qos: 0},
         );
     });
