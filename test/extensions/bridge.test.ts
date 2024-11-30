@@ -222,6 +222,7 @@ describe('Extension: Bridge', () => {
                 log_level: 'info',
                 network: {channel: 15, extended_pan_id: 0x001122, pan_id: 5674},
                 permit_join: false,
+                permit_join_end: undefined,
                 restart_required: false,
                 version: version.version,
                 zigbee_herdsman: zhVersion,
