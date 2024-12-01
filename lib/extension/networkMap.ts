@@ -38,9 +38,6 @@ interface Topology {
  * This extension creates a network map
  */
 export default class NetworkMap extends Extension {
-    private legacyApi = settings.get().advanced.legacy_api;
-    private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
-    private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
     private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string} = {
         raw: this.raw,
@@ -53,17 +50,6 @@ export default class NetworkMap extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        /* istanbul ignore else */
-        if (this.legacyApi) {
-            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats[data.message] !== undefined) {
-                const includeRoutes = data.topic === this.legacyTopicRoutes;
-                const topology = await this.networkScan(includeRoutes);
-                let converted = this.supportedFormats[data.message](topology);
-                converted = data.message === 'raw' ? stringify(converted) : converted;
-                await this.mqtt.publish(`bridge/networkmap/${data.message}`, converted as string, {});
-            }
-        }
-
         if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message);
             try {
@@ -242,6 +228,7 @@ export default class NetworkMap extends Extension {
                 logger.debug((error as Error).stack!);
             }
 
+            /* istanbul ignore else */
             if (includeRoutes) {
                 try {
                     const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
@@ -329,6 +316,7 @@ export default class NetworkMap extends Extension {
 
                 const routingTable = routingTables.get(device);
 
+                /* istanbul ignore else */
                 if (routingTable) {
                     for (const entry of routingTable.table) {
                         if (entry.status === 'ACTIVE' && entry.nextHop === neighbor.networkAddress) {

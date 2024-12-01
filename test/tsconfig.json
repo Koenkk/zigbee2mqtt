@@ -1,0 +1,10 @@
+{
+    "extends": "../tsconfig",
+    "include": ["./**/*"],
+    "compilerOptions": {
+        "types": ["jest"],
+        "rootDir": "..",
+        "noEmit": true
+    },
+    "references": [{"path": ".."}]
+}

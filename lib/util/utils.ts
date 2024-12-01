@@ -3,12 +3,14 @@ import type * as zhc from 'zigbee-herdsman-converters';
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import vm from 'vm';
 
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
 
-import data from './data';
+function pad(num: number): string {
+    const norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+}
 
 // construct a local ISO8601 string (instead of UTC-based)
 // Example:
@@ -17,10 +19,6 @@ import data from './data';
 function toLocalISOString(date: Date): string {
     const tzOffset = -date.getTimezoneOffset();
     const plusOrMinus = tzOffset >= 0 ? '+' : '-';
-    const pad = (num: number): string => {
-        const norm = Math.floor(Math.abs(num));
-        return (norm < 10 ? '0' : '') + norm;
-    };
 
     return (
         date.getFullYear() +
@@ -77,10 +75,8 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
 }
 
 async function getDependencyVersion(depend: string): Promise<{version: string}> {
-    const modulePath = path.dirname(require.resolve(depend));
-    const packageJSONPath = path.join(modulePath.slice(0, modulePath.indexOf(depend) + depend.length), 'package.json');
-    const packageJSON = await import(packageJSONPath);
-    const version = packageJSON.version;
+    const packageJsonPath = require.resolve(`${depend}/package.json`);
+    const version = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
     return {version};
 }
 
@@ -120,12 +116,13 @@ function equalsPartial(object: KeyValue, expected: KeyValue): boolean {
     return true;
 }
 
-function getObjectProperty(object: KeyValue, key: string, defaultValue: unknown): unknown {
+function getObjectProperty<T>(object: KeyValue, key: string, defaultValue: NoInfer<T>): T {
     return object && object[key] !== undefined ? object[key] : defaultValue;
 }
 
 function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
-    const response: MQTTResponse = {data, status: error ? 'error' : 'ok'};
+    // On `error`, always return an empty `data` payload.
+    const response: MQTTResponse = {data: error ? {} : data, status: error ? 'error' : 'ok'};
 
     if (error) {
         response.error = error;
@@ -143,48 +140,6 @@ function parseJSON(value: string, fallback: string): KeyValue | string {
         return JSON.parse(value);
     } catch {
         return fallback;
-    }
-}
-
-function loadModuleFromText(moduleCode: string, name?: string): unknown {
-    const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name || 'externally-loaded.js');
-    const sandbox = {
-        require: require,
-        module: {},
-        console,
-        setTimeout,
-        clearTimeout,
-        setInterval,
-        clearInterval,
-        setImmediate,
-        clearImmediate,
-    };
-    vm.runInNewContext(moduleCode, sandbox, moduleFakePath);
-    /* eslint-disable-line */ // @ts-ignore
-    return sandbox.module.exports;
-}
-
-function loadModuleFromFile(modulePath: string): unknown {
-    const moduleCode = fs.readFileSync(modulePath, {encoding: 'utf8'});
-    return loadModuleFromText(moduleCode);
-}
-
-export function* loadExternalConverter(moduleName: string): Generator<ExternalDefinition> {
-    let converter;
-
-    if (moduleName.endsWith('.js')) {
-        converter = loadModuleFromFile(data.joinPath(moduleName));
-    } else {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        converter = require(moduleName);
-    }
-
-    if (Array.isArray(converter)) {
-        for (const item of converter) {
-            yield item;
-        }
-    } else {
-        yield converter;
     }
 }
 
@@ -306,21 +261,8 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
         return !!entity.options.availability;
     }
 
-    // availability_timeout = deprecated
-    if (!(settings.advanced.availability_timeout || settings.availability)) {
+    if (!settings.availability) {
         return false;
-    }
-
-    const passlist = settings.advanced.availability_passlist.concat(settings.advanced.availability_whitelist);
-
-    if (passlist.length > 0) {
-        return passlist.includes(entity.name) || passlist.includes(entity.ieeeAddr);
-    }
-
-    const blocklist = settings.advanced.availability_blacklist.concat(settings.advanced.availability_blocklist);
-
-    if (blocklist.length > 0) {
-        return !blocklist.includes(entity.name) && !blocklist.includes(entity.ieeeAddr);
     }
 
     return true;
@@ -340,10 +282,6 @@ function arrayUnique<Type>(arr: Type[]): Type[] {
 
 function isZHGroup(obj: unknown): obj is zh.Group {
     return obj?.constructor.name.toLowerCase() === 'group';
-}
-
-function availabilityPayload(state: 'online' | 'offline', settings: Settings): string {
-    return settings.advanced.legacy_availability_payload ? state : JSON.stringify({state});
 }
 
 const hours = (hours: number): number => 1000 * 60 * 60 * hours;
@@ -444,8 +382,6 @@ export default {
     getObjectProperty,
     getResponse,
     parseJSON,
-    loadModuleFromText,
-    loadModuleFromFile,
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
     toSnakeCaseString,
@@ -460,7 +396,6 @@ export default {
     sanitizeImageParameter,
     isAvailabilityEnabledForEntity,
     publishLastSeen,
-    availabilityPayload,
     getAllFiles,
     filterProperties,
     flatten,

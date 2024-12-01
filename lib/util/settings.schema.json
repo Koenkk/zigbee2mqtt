@@ -15,24 +15,12 @@
                     "type": "object",
                     "title": "Home Assistant (advanced)",
                     "properties": {
-                        "legacy_triggers": {
-                            "type": "boolean",
-                            "title": "Home Assistant legacy triggers",
-                            "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discoverd",
-                            "default": true
-                        },
                         "discovery_topic": {
                             "type": "string",
                             "title": "Homeassistant discovery topic",
                             "description": "Home Assistant discovery topic",
                             "requiresRestart": true,
                             "examples": ["homeassistant"]
-                        },
-                        "legacy_entity_attributes": {
-                            "type": "boolean",
-                            "title": "Home Assistant legacy entity attributes",
-                            "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-                            "default": true
                         },
                         "status_topic": {
                             "type": "string",
@@ -50,12 +38,6 @@
                     }
                 }
             ]
-        },
-        "permit_join": {
-            "type": "boolean",
-            "default": false,
-            "title": "Permit join",
-            "description": "Allow new devices to join (re-applied at restart)"
         },
         "availability": {
             "oneOf": [
@@ -103,16 +85,6 @@
             "title": "Availability",
             "requiresRestart": true,
             "description": "Checks whether devices are online/offline"
-        },
-        "external_converters": {
-            "type": "array",
-            "title": "External converters",
-            "description": "You can define external converters to e.g. add support for a DiY device",
-            "requiresRestart": true,
-            "items": {
-                "type": "string"
-            },
-            "examples": ["DIYRuZ_FreePad.js"]
         },
         "mqtt": {
             "type": "object",
@@ -207,8 +179,17 @@
                     "type": "boolean",
                     "title": "Force disable retain",
                     "requiresRestart": true,
-                    "description": "Disable retain for all send messages. ONLY enable if you MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
+                    "description": "Disable retain for all send messages. ONLY enable if your MQTT broker doesn't support retained message (e.g. AWS IoT core, Azure IoT Hub, Google Cloud IoT core, IBM Watson IoT Platform). Enabling will break the Home Assistant integration",
                     "default": false
+                },
+                "maximum_packet_size": {
+                    "type": "number",
+                    "title": "Maximum packet size",
+                    "requiresRestart": true,
+                    "description": "Specifies the maximum allowed packet length (in bytes) that the server can send to Zigbee2MQTT. NOTE: The same value exists in your MQTT broker but for the length the client can send to it instead.",
+                    "default": 1048576,
+                    "minimum": 20,
+                    "maximum": 268435456
                 }
             },
             "required": ["server"]
@@ -343,19 +324,29 @@
                     "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
                     "default": false
                 },
-                "ikea_ota_use_test_url": {
-                    "type": "boolean",
-                    "title": "IKEA TRADFRI OTA use test url",
-                    "requiresRestart": true,
-                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-                    "default": false
-                },
                 "zigbee_ota_override_index_location": {
                     "type": ["string", "null"],
                     "title": "OTA index override file name",
                     "requiresRestart": true,
                     "description": "Location of override OTA index file",
                     "examples": ["index.json"]
+                },
+                "image_block_response_delay": {
+                    "type": "number",
+                    "title": "Image block response delay",
+                    "description": "Limits the rate of requests (in milliseconds) during OTA updates to reduce network congestion. You can increase this value if your network appears unstable during OTA.",
+                    "default": 250,
+                    "minimum": 50,
+                    "requiresRestart": true
+                },
+                "default_maximum_data_size": {
+                    "type": "number",
+                    "title": "Default maximum data size",
+                    "description": "The size of file chunks sent during an update (in bytes). Note: This value may get ignored for manufacturers that require specific values.",
+                    "default": 50,
+                    "minimum": 10,
+                    "maximum": 100,
+                    "requiresRestart": true
                 }
             }
         },
@@ -451,20 +442,6 @@
             "type": "object",
             "title": "Advanced",
             "properties": {
-                "legacy_api": {
-                    "type": "boolean",
-                    "title": "Legacy API",
-                    "requiresRestart": true,
-                    "description": "Disables the legacy api (false = disable)",
-                    "default": true
-                },
-                "legacy_availability_payload": {
-                    "type": "boolean",
-                    "title": "Legacy availability payload",
-                    "requiresRestart": true,
-                    "description": "Payload to be used for device availability and bridge/state topics. true = text, false = JSON",
-                    "default": true
-                },
                 "log_rotation": {
                     "type": "boolean",
                     "title": "Log rotation",
@@ -738,104 +715,7 @@
                     "enum": ["attribute_and_json", "attribute", "json"],
                     "title": "MQTT output type",
                     "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-                },
-                "homeassistant_discovery_topic": {
-                    "type": "string",
-                    "title": "Homeassistant discovery topic",
-                    "description": "Home Assistant discovery topic",
-                    "requiresRestart": true,
-                    "examples": ["homeassistant"]
-                },
-                "homeassistant_legacy_entity_attributes": {
-                    "type": "boolean",
-                    "title": "Home Assistant legacy entity attributes",
-                    "description": "Home Assistant legacy entity attributes, when enabled Zigbee2MQTT will add state attributes to each entity, additional to the separate entities and devices it already creates",
-                    "default": true
-                },
-                "homeassistant_status_topic": {
-                    "type": "string",
-                    "title": "Home Assistant status topic",
-                    "description": "Home Assistant status topic",
-                    "requiresRestart": true,
-                    "examples": ["homeassistant/status"]
-                },
-                "homeassistant_legacy_triggers": {
-                    "type": "boolean",
-                    "title": "Home Assistant legacy triggers",
-                    "description": "Home Assistant legacy triggers, when enabled Zigbee2mqt will send an empty 'action' or 'click' after one has been send. A 'sensor_action' and 'sensor_click' will be discovered",
-                    "default": true
-                },
-                "soft_reset_timeout": {
-                    "type": "number",
-                    "minimum": 0,
-                    "requiresRestart": true,
-                    "title": "Soft reset timeout (deprecated)",
-                    "description": "Soft reset ZNP after timeout",
-                    "readOnly": true
-                },
-                "report": {
-                    "type": "boolean",
-                    "title": "Reporting",
-                    "requiresRestart": true,
-                    "readOnly": true,
-                    "description": "Enables report feature (deprecated)"
-                },
-                "baudrate": {
-                    "type": "number",
-                    "title": "Baudrate (deprecated)",
-                    "requiresRestart": true,
-                    "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-                    "examples": [38400, 57600, 115200]
-                },
-                "rtscts": {
-                    "type": "boolean",
-                    "title": "RTS / CTS (deprecated)",
-                    "requiresRestart": true,
-                    "description": "RTS / CTS Hardware Flow Control for serial port"
-                },
-                "ikea_ota_use_test_url": {
-                    "type": "boolean",
-                    "title": "IKEA TRADFRI OTA use test url (deprecated)",
-                    "requiresRestart": true,
-                    "description": "Use IKEA TRADFRI OTA test server, see OTA updates documentation",
-                    "default": false
                 }
-            }
-        },
-        "experimental": {
-            "type": "object",
-            "title": "Experimental (deprecated)",
-            "properties": {
-                "transmit_power": {
-                    "type": ["number", "null"],
-                    "title": "Transmit power",
-                    "requiresRestart": true,
-                    "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
-                },
-                "output": {
-                    "type": "string",
-                    "enum": ["attribute_and_json", "attribute", "json"],
-                    "title": "MQTT output type",
-                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
-                }
-            }
-        },
-        "whitelist": {
-            "readOnly": true,
-            "type": "array",
-            "requiresRestart": true,
-            "title": "Whitelist (deprecated, use passlist)",
-            "items": {
-                "type": "string"
-            }
-        },
-        "ban": {
-            "readOnly": true,
-            "type": "array",
-            "requiresRestart": true,
-            "title": "Ban (deprecated, use blocklist)",
-            "items": {
-                "type": "string"
             }
         }
     },
@@ -945,12 +825,6 @@
                 },
                 "retain": {
                     "type": "boolean"
-                },
-                "devices": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "optimistic": {
                     "type": "boolean"

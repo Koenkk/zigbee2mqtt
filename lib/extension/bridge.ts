@@ -70,11 +70,6 @@ export default class Bridge extends Extension {
             health_check: this.healthCheck,
             coordinator_check: this.coordinatorCheck,
             options: this.bridgeOptions,
-            // Below are deprecated
-            'config/last_seen': this.configLastSeen,
-            'config/homeassistant': this.configHomeAssistant,
-            'config/elapsed': this.configElapsed,
-            'config/log_level': this.configLogLevel,
         };
 
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
@@ -230,10 +225,6 @@ export default class Bridge extends Extension {
         if (restartRequired) this.restartRequired = true;
 
         // Apply some settings on-the-fly.
-        if (newSettings.permit_join != undefined) {
-            await this.zigbee.permitJoin(settings.get().permit_join);
-        }
-
         if (newSettings.homeassistant != undefined) {
             await this.enableDisableExtension(!!settings.get().homeassistant, 'HomeAssistant');
         }
@@ -328,17 +319,15 @@ export default class Bridge extends Extension {
     }
 
     @bind async permitJoin(message: KeyValue | string): Promise<MQTTResponse> {
-        if (typeof message === 'object' && message.value === undefined) {
-            throw new Error('Invalid payload');
-        }
-
-        let value: boolean | string;
         let time: number | undefined;
         let device: Device | undefined;
 
         if (typeof message === 'object') {
-            value = message.value;
-            time = message.time;
+            if (message.time === undefined) {
+                throw new Error('Invalid payload');
+            }
+
+            time = Number.parseInt(message.time, 10);
 
             if (message.device) {
                 const resolved = this.zigbee.resolveEntity(message.device);
@@ -350,80 +339,18 @@ export default class Bridge extends Extension {
                 }
             }
         } else {
-            value = message;
+            time = Number.parseInt(message, 10);
         }
 
-        if (typeof value === 'string') {
-            value = value.toLowerCase() === 'true';
-        }
+        await this.zigbee.permitJoin(time, device);
 
-        await this.zigbee.permitJoin(value, device, time);
+        const response: {time: number; device?: string} = {time};
 
-        const response: {value: boolean; device?: string; time?: number} = {value};
-
-        if (typeof message === 'object') {
-            if (device) {
-                response.device = message.device;
-            }
-
-            if (time != undefined) {
-                response.time = message.time;
-            }
+        if (device) {
+            response.device = device.name;
         }
 
         return utils.getResponse(message, response);
-    }
-
-    // Deprecated
-    @bind async configLastSeen(message: KeyValue | string): Promise<MQTTResponse> {
-        const allowed = ['disable', 'ISO_8601', 'epoch', 'ISO_8601_local'];
-        const value = this.getValue(message);
-        if (typeof value !== 'string' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['advanced', 'last_seen'], value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configHomeAssistant(message: string | KeyValue): Promise<MQTTResponse> {
-        const allowed = [true, false];
-        const value = this.getValue(message);
-        if (typeof value !== 'boolean' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['homeassistant'], value);
-        await this.enableDisableExtension(value, 'HomeAssistant');
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configElapsed(message: KeyValue | string): Promise<MQTTResponse> {
-        const allowed = [true, false];
-        const value = this.getValue(message);
-        if (typeof value !== 'boolean' || !allowed.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${allowed}`);
-        }
-
-        settings.set(['advanced', 'elapsed'], value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
-    }
-
-    // Deprecated
-    @bind async configLogLevel(message: KeyValue | string): Promise<MQTTResponse> {
-        const value = this.getValue(message) as settings.LogLevel;
-        if (typeof value !== 'string' || !settings.LOG_LEVELS.includes(value)) {
-            throw new Error(`'${value}' is not an allowed value, allowed: ${settings.LOG_LEVELS}`);
-        }
-
-        logger.setLevel(value);
-        await this.publishInfo();
-        return utils.getResponse(message, {value});
     }
 
     @bind async touchlinkIdentify(message: KeyValue | string): Promise<MQTTResponse> {
@@ -472,18 +399,6 @@ export default class Bridge extends Extension {
      * Utils
      */
 
-    getValue(message: KeyValue | string): string | boolean | number {
-        if (typeof message === 'object') {
-            if (message.value === undefined) {
-                throw new Error('No value given');
-            }
-
-            return message.value;
-        } else {
-            return message;
-        }
-    }
-
     async changeEntityOptions(entityType: 'device' | 'group', message: KeyValue | string): Promise<MQTTResponse> {
         if (typeof message !== 'object' || message.id === undefined || message.options === undefined) {
             throw new Error(`Invalid payload`);
@@ -516,6 +431,7 @@ export default class Bridge extends Extension {
         if (
             typeof message !== 'object' ||
             message.id === undefined ||
+            message.endpoint === undefined ||
             message.cluster === undefined ||
             message.maximum_report_interval === undefined ||
             message.minimum_report_interval === undefined ||
@@ -525,14 +441,11 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.zigbee.resolveEntityAndEndpoint(message.id);
-        if (!device.entity) {
-            throw new Error(`Device '${message.id}' does not exist`);
-        }
+        const device = this.getEntity('device', message.id);
+        const endpoint = device.endpoint(message.endpoint);
 
-        const endpoint = device.endpoint;
         if (!endpoint) {
-            throw new Error(`Device '${device.ID}' does not have endpoint '${device.endpointID}'`);
+            throw new Error(`Device '${device.ID}' does not have endpoint '${message.endpoint}'`);
         }
 
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
@@ -557,6 +470,7 @@ export default class Bridge extends Extension {
 
         return utils.getResponse(message, {
             id: message.id,
+            endpoint: message.endpoint,
             cluster: message.cluster,
             maximum_report_interval: message.maximum_report_interval,
             minimum_report_interval: message.minimum_report_interval,
@@ -570,7 +484,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.getEntity('device', message.id) as Device;
+        const device = this.getEntity('device', message.id);
         logger.info(`Interviewing '${device.name}'`);
 
         try {
@@ -593,12 +507,7 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const device = this.zigbee.resolveEntityAndEndpoint(message.id).entity as Device;
-
-        if (!device) {
-            throw new Error(`Device '${message.id}' does not exist`);
-        }
-
+        const device = this.getEntity('device', message.id);
         const source = await zhc.generateExternalDefinitionSource(device.zh);
 
         return utils.getResponse(message, {id: message.id, source});
@@ -719,6 +628,9 @@ export default class Bridge extends Extension {
         }
     }
 
+    getEntity(type: 'group', ID: string): Group;
+    getEntity(type: 'device', ID: string): Device;
+    getEntity(type: 'group' | 'device', ID: string): Device | Group;
     getEntity(type: 'group' | 'device', ID: string): Device | Group {
         const entity = this.zigbee.resolveEntity(ID);
         if (!entity || entity.constructor.name.toLowerCase() !== type) {
@@ -748,11 +660,10 @@ export default class Bridge extends Extension {
             },
             network: utils.toSnakeCaseObject(await this.zigbee.getNetworkParameters()),
             log_level: logger.getLevel(),
-            permit_join: this.zigbee.getPermitJoin(),
             permit_join_timeout: this.zigbee.getPermitJoinTimeout(),
             restart_required: this.restartRequired,
             config,
-            config_schema: settings.schema,
+            config_schema: settings.schemaJson,
         };
 
         await this.mqtt.publish('bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
