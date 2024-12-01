@@ -15,7 +15,6 @@ const dontCacheProperties = [
     'button',
     'button_left',
     'button_right',
-    'click',
     'forgotten',
     'keyerror',
     'step_size',
