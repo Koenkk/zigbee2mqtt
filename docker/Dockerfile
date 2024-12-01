@@ -9,7 +9,7 @@ FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
 RUN apk add make gcc g++ python3 linux-headers npm pnpm && \
-    npm config set update-notifier false && \
+    pnpm config set update-notifier false && \
     pnpm install --frozen-lockfile --no-optional
 
 # Release
