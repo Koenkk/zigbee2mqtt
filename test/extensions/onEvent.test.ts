@@ -11,7 +11,7 @@ import * as settings from '../../lib/util/settings';
 
 const mockOnEvent = jest.fn();
 const mockLivoloOnEvent = jest.fn();
-const mappedLivolo = zhc.findByModel('TI0001');
+const mappedLivolo = zhc.findByModel('TI0001')!;
 mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
 zhc.onEvent = mockOnEvent;
@@ -75,7 +75,15 @@ describe('Extension: OnEvent', () => {
             devices.LIVOLO,
             settings.getDevice(devices.LIVOLO.ieeeAddr),
             {},
+            {
+                deviceExposesChanged: expect.any(Function),
+            },
         );
+
+        // Test deviceExposesChanged
+        mockMQTT.publishAsync.mockClear();
+        console.log(mockLivoloOnEvent.mock.calls[0][5].deviceExposesChanged());
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
     });
 
     it('Should call index onEvent with zigbee event', async () => {
@@ -83,6 +91,8 @@ describe('Extension: OnEvent', () => {
         await mockZHEvents.deviceAnnounce({device: devices.LIVOLO});
         await flushPromises();
         expect(mockOnEvent).toHaveBeenCalledTimes(1);
-        expect(mockOnEvent).toHaveBeenCalledWith('deviceAnnounce', {device: devices.LIVOLO}, devices.LIVOLO);
+        expect(zhc.onEvent).toHaveBeenCalledWith('deviceAnnounce', {device: devices.LIVOLO}, devices.LIVOLO, {
+            deviceExposesChanged: expect.any(Function),
+        });
     });
 });

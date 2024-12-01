@@ -2110,19 +2110,20 @@ export default class HomeAssistant extends Extension {
 
         const value_template =
             `{% set patterns = [\n${patterns}\n] %}\n` +
-            `{% set ns = namespace(r=[('event_type', value_json.action)]) %}\n` +
+            `{% set action_value = value_json.action|default('') %}\n` +
+            `{% set ns = namespace(r=[('action', action_value)]) %}\n` +
             `{% for p in patterns %}\n` +
-            `  {% set m = value_json.action|regex_findall(p.pattern) %}\n` +
+            `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
             `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
             `  {% for key, value in zip(p.groups, m[0]) %}\n` +
-            `    {% set ns.r = ns.r + [(key, value)] %}\n` +
+            `    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n` +
             `  {% endfor %}\n` +
             `{% endfor %}\n` +
             `{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n` +
             `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
             `{% endif %}\n` +
             `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix'))|to_json}}`;
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
 
         return value_template;
     }
