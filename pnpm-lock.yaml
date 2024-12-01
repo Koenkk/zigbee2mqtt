@@ -17,9 +17,6 @@ importers:
       bind-decorator:
         specifier: ^1.0.11
         version: 1.0.11
-      connect-gzip-static:
-        specifier: 3.0.1
-        version: 3.0.1
       debounce:
         specifier: ^2.2.0
         version: 2.2.0
@@ -828,10 +825,6 @@ packages:
     resolution: {integrity: sha512-2b/g5hRmpbb1o4GnTZax9N9m0FXzz9OV42ZzI4rDDMDuHUqigAiQCEWChBWCY4ztAGVRjoWT19v0yMmc5/L5kA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@folder/readdir@3.1.0':
-    resolution: {integrity: sha512-mqkVdQ77BcCOWur/dxoPxjJS2eJg8Eqqx1Dgdc/qbTeGI5UMPDLmT0peGEjxLdlnD9SvhMnpJuiyaYl2btdT6A==}
-    engines: {node: '>=10'}
-
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -1369,9 +1362,6 @@ packages:
   concat-stream@2.0.0:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
-
-  connect-gzip-static@3.0.1:
-    resolution: {integrity: sha512-VVqi1fJ4uZK8aIrb1BN9n7tsRAbc3BhkIo/mz1VuNhYC2KDuP1ZgCDapjYIfT3mcGgWzyUr04kv7nmnGOnCvWg==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -3574,8 +3564,6 @@ snapshots:
     dependencies:
       levn: 0.4.1
 
-  '@folder/readdir@3.1.0': {}
-
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -4288,16 +4276,6 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 3.6.2
       typedarray: 0.0.6
-
-  connect-gzip-static@3.0.1:
-    dependencies:
-      '@folder/readdir': 3.1.0
-      debug: 4.3.7
-      parseurl: 1.3.3
-      send: 0.19.0
-      serve-static: 1.16.2
-    transitivePeerDependencies:
-      - supports-color
 
   convert-source-map@2.0.0: {}
 
