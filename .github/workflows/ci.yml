@@ -81,7 +81,7 @@ jobs:
                   tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
                   push: true
                   build-args: |
-                      COMMIT=$(git rev-parse --short HEAD)
+                      COMMIT=${{ github.sha }}
 
             - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -94,7 +94,7 @@ jobs:
                   tags: koenkk/zigbee2mqtt:latest,ghcr.io/koenkk/zigbee2mqtt:latest,koenkk/zigbee2mqtt:${{ github.ref_name }},ghcr.io/koenkk/zigbee2mqtt:${{ github.ref_name }}
                   push: true
                   build-args: |
-                      COMMIT=$(git rev-parse --short HEAD)
+                      COMMIT=${{ github.sha }}
 
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
