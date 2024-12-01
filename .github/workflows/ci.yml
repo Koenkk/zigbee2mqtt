@@ -14,7 +14,7 @@ jobs:
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               with:
                   # Required for `release: merge dev -> master and promote dev`
-                  token: ${{secrets.GH_TOKEN}}
+                  token: ${{github.token}}
             - uses: actions/checkout@v4
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
             - uses: actions/setup-node@v4
@@ -33,11 +33,11 @@ jobs:
             - name: Test
               run: npm run test-with-coverage
             - name: Docker login
-              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ secrets.DOCKER_KEY }} | docker login -u koenkk --password-stdin
+              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push' && false
+              run: echo ${{ secrets.DOCKER_KEY }} | docker login -u ${{ github.repository_owner }} --password-stdin
             - name: Docker login ghcr.io
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
-              run: echo ${{ secrets.GH_TOKEN }} | docker login ghcr.io -u koenkk --password-stdin
+              run: echo ${{ github.token }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             - name: Docker setup - QEMU
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               uses: docker/setup-qemu-action@v3
@@ -54,11 +54,11 @@ jobs:
               run: |
                   docker buildx build \
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
-                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
+                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64 \
                     -f docker/Dockerfile \
                     --provenance=false \
                     --push \
-                    -t koenkk/zigbee2mqtt:latest-dev -t ghcr.io/koenkk/zigbee2mqtt:latest-dev \
+                    -t ${{ github.repository }}:latest-dev -t ghcr.io/${{ github.repository }}:latest-dev \
                     .
             - name: 'release: Docker build'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -66,11 +66,11 @@ jobs:
                   TAG="$(git describe --tags)"
                   docker buildx build \
                     --build-arg COMMIT=$(git rev-parse --short HEAD) \
-                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7 \
+                    --platform linux/arm64/v8,linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64 \
                     -f docker/Dockerfile \
                     --provenance=false \
                     --push \
-                    -t koenkk/zigbee2mqtt:latest -t "koenkk/zigbee2mqtt:$TAG" -t ghcr.io/koenkk/zigbee2mqtt:latest -t "ghcr.io/koenkk/zigbee2mqtt:$TAG" \
+                    -t ${{ github.repository }}:latest -t "${{ github.repository }}:$TAG" -t ghcr.io/${{ github.repository }}:latest -t "ghcr.io/${{ github.repository }}:$TAG" \
                     .
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -82,7 +82,7 @@ jobs:
               run: |
                   curl \
                     -X POST \
-                    -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+                    -H "Authorization: token ${{ github.token }}" \
                     -H "Accept: application/vnd.github.v3+json" \
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
                     -d '{"ref":"master","inputs":{}}'
@@ -93,7 +93,7 @@ jobs:
                   echo "Triggering with tag '$TAG'"
                   curl \
                     -X POST \
-                    -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+                    -H "Authorization: token ${{ github.token }}" \
                     -H "Accept: application/vnd.github.everest-preview+json" \
                     -H "Content-Type: application/json" \
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches \
@@ -106,7 +106,7 @@ jobs:
                   curl -L \
                     -X POST \
                     -H "Accept: application/vnd.github+json" \
-                    -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+                    -H "Authorization: Bearer ${{ github.token }}" \
                     -H "X-GitHub-Api-Version: 2022-11-28" \
                     https://api.github.com/repos/Koenkk/zigbee2mqtt-chart/actions/workflows/on_zigbee2mqtt_release.yaml/dispatches \
                     --data "{\"ref\": \"main\", \"inputs\": { \"zigbee2mqtt_version\": \"$TAG\"}}"
