@@ -1131,18 +1131,16 @@ export default class HomeAssistant extends Extension {
                 /**
                  * Otherwise expose as SENSOR entity.
                  */
-                if (firstExpose.access & ACCESS_STATE) {
-                    discoveryEntries.push({
-                        type: 'sensor',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: valueTemplate,
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
+                discoveryEntries.push({
+                    type: 'sensor',
+                    object_id: firstExpose.property,
+                    mockProperties: [{property: firstExpose.property, value: null}],
+                    discovery_payload: {
+                        name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                        value_template: valueTemplate,
+                        ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                    },
+                });
                 break;
             }
             case 'text':
