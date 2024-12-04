@@ -95,7 +95,7 @@ describe('Extension: ExternalConverters', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
     });
 
-    it('loads from folder', async () => {
+    it('onlythisloads from folder', async () => {
         useAssets();
 
         await controller.start();
@@ -149,9 +149,9 @@ describe('Extension: ExternalConverters', () => {
             }),
         );
 
-        const bridgeDevices = mockMQTT.publishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices');
-        assert(bridgeDevices);
-        expect(JSON.parse(bridgeDevices[1])).toEqual(
+        const bridgeDevices = mockMQTT.publishAsync.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/devices');
+        expect(bridgeDevices.length).toBe(1);
+        expect(JSON.parse(bridgeDevices[0][1])).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({
                     model_id: 'external_converter_device',
