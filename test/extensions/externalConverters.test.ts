@@ -6,7 +6,6 @@ import {devices, mockController as mockZHController, returnDevices} from '../moc
 
 import type Device from '../../lib/model/device';
 
-import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
@@ -95,7 +94,7 @@ describe('Extension: ExternalConverters', () => {
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
     });
 
-    it('onlythisloads from folder', async () => {
+    it('loads from folder', async () => {
         useAssets();
 
         await controller.start();
