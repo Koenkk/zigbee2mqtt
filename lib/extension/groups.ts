@@ -158,7 +158,7 @@ export default class Groups extends Extension {
     }
 
     private shouldPublishPayloadForGroup(group: Group, payload: KeyValue, endpointName: string | undefined): boolean {
-        const stateKey = endpointName ? `state_${endpointName}` : 'state'
+        const stateKey = endpointName ? `state_${endpointName}` : 'state';
         return (
             group.options.off_state === 'last_member_state' ||
             !payload ||
@@ -173,8 +173,8 @@ export default class Groups extends Extension {
 
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
-                const endpointNames = device.isDevice() && device.getEndpointNames()
-                const stateKey = (endpointNames && endpointNames.length >= member.ID) ? `state_${endpointNames[member.ID - 1]}` : 'state'
+                const endpointNames = device.isDevice() && device.getEndpointNames();
+                const stateKey = endpointNames && endpointNames.length >= member.ID ? `state_${endpointNames[member.ID - 1]}` : 'state';
 
                 if (state[stateKey] === 'ON' || state[stateKey] === 'OPEN') {
                     return false;
