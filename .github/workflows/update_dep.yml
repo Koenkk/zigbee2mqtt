@@ -24,7 +24,7 @@ jobs:
               with:
                   node-version: 20
                   cache: pnpm
-            - run: pnpm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
+            - run: pnpm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact --no-frozen-lockfile
             - uses: peter-evans/create-pull-request@v7
               id: cpr
               with:
