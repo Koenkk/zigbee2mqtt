@@ -97,6 +97,7 @@ export class Controller {
         ];
 
         this.extensions = [
+            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
@@ -107,7 +108,6 @@ export class Controller {
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
             new ExtensionExternalExtensions(...this.extensionArgs),
-            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
 
