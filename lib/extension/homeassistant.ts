@@ -1131,26 +1131,44 @@ export default class HomeAssistant extends Extension {
                 /**
                  * Otherwise expose as SENSOR entity.
                  */
-                discoveryEntries.push({
-                    type: 'sensor',
-                    object_id: firstExpose.property,
-                    mockProperties: [{property: firstExpose.property, value: null}],
-                    discovery_payload: {
-                        name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                        value_template: valueTemplate,
-                        ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                    },
-                });
+                /* istanbul ignore else */
+                if (firstExpose.access & ACCESS_STATE) {
+                    discoveryEntries.push({
+                        type: 'sensor',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: valueTemplate,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
                 break;
             }
             case 'text':
             case 'composite':
             case 'list': {
-                // legacy: remove text sensor
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
-                const settableText = firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET;
+                if (firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET) {
+                    discoveryEntries.push({
+                        type: 'text',
+                        object_id: firstExposeTyped.property,
+                        mockProperties: [{property: firstExposeTyped.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
+                            state_topic: firstExposeTyped.access & ACCESS_STATE,
+                            value_template: `{{ value_json.${firstExposeTyped.property} }}`,
+                            command_topic_prefix: endpoint,
+                            command_topic: true,
+                            command_topic_postfix: firstExposeTyped.property,
+                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
+                        },
+                    });
+                    break;
+                }
                 if (firstExposeTyped.access & ACCESS_STATE) {
-                    const discoveryEntry: DiscoveryEntry = {
+                    discoveryEntries.push({
                         type: 'sensor',
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
@@ -1159,24 +1177,6 @@ export default class HomeAssistant extends Extension {
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
                             value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
-                            enabled_by_default: !settableText,
-                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
-                        },
-                    };
-                    discoveryEntries.push(discoveryEntry);
-                }
-                if (settableText) {
-                    discoveryEntries.push({
-                        type: 'text',
-                        object_id: firstExposeTyped.property,
-                        mockProperties: firstExposeTyped.access & ACCESS_STATE ? [{property: firstExposeTyped.property, value: null}] : [],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
-                            state_topic: firstExposeTyped.access & ACCESS_STATE,
-                            value_template: `{{ value_json.${firstExposeTyped.property} }}`,
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExposeTyped.property,
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
                         },
                     });
