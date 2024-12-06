@@ -100,7 +100,7 @@ export default class Groups extends Extension {
                         if (
                             group.zh.hasMember(endpoint) &&
                             !equals(this.lastOptimisticState[group.ID], payload) &&
-                            this.shouldPublishPayloadForGroup(group, payload, endpointName)
+                            this.shouldPublishPayloadForGroup(group, payload)
                         ) {
                             this.lastOptimisticState[group.ID] = payload;
 
@@ -142,7 +142,7 @@ export default class Groups extends Extension {
                     await this.publishEntityState(device, memberPayload, reason);
 
                     for (const zigbeeGroup of groups) {
-                        if (zigbeeGroup.zh.hasMember(member) && this.shouldPublishPayloadForGroup(zigbeeGroup, memberPayload, endpointName)) {
+                        if (zigbeeGroup.zh.hasMember(member) && this.shouldPublishPayloadForGroup(zigbeeGroup, payload)) {
                             groupsToPublish.add(zigbeeGroup);
                         }
                     }
@@ -157,12 +157,11 @@ export default class Groups extends Extension {
         }
     }
 
-    private shouldPublishPayloadForGroup(group: Group, payload: KeyValue, endpointName: string | undefined): boolean {
-        const stateKey = endpointName ? `state_${endpointName}` : 'state';
+    private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
         return (
             group.options.off_state === 'last_member_state' ||
             !payload ||
-            (payload[stateKey] !== 'OFF' && payload[stateKey] !== 'CLOSE') ||
+            (payload.state !== 'OFF' && payload.state !== 'CLOSE') ||
             this.areAllMembersOffOrClosed(group)
         );
     }
