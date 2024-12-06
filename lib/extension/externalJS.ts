@@ -1,3 +1,5 @@
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from 'lib/types/api';
+
 import fs from 'fs';
 import path from 'path';
 import {Context, runInNewContext} from 'vm';
@@ -11,12 +13,9 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-export default abstract class ExternalJSExtension<M> extends Extension {
-    private requestLookup: {[s: string]: (message: KeyValue) => Promise<MQTTResponse>} = {
-        save: this.save,
-        remove: this.remove,
-    };
+const SUPPORTED_OPERATIONS = ['save', 'remove'];
 
+export default abstract class ExternalJSExtension<M> extends Extension {
     protected mqttTopic: string;
     protected requestRegex: RegExp;
     protected basePath: string;
@@ -75,11 +74,21 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         const match = data.topic.match(this.requestRegex);
 
-        if (match && this.requestLookup[match[1].toLowerCase()]) {
-            const message = utils.parseJSON(data.message, data.message) as KeyValue;
+        if (match && SUPPORTED_OPERATIONS.includes(match[1].toLowerCase())) {
+            const message = utils.parseJSON(data.message, data.message);
 
             try {
-                const response = await this.requestLookup[match[1].toLowerCase()](message);
+                let response;
+
+                if (match[1].toLowerCase() === 'save') {
+                    response = await this.save(
+                        message as Zigbee2MQTTAPI['bridge/request/converter/save'] | Zigbee2MQTTAPI['bridge/request/extension/save'],
+                    );
+                } else {
+                    response = await this.remove(
+                        message as Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
+                    );
+                }
 
                 await this.mqtt.publish(`bridge/response/${this.mqttTopic}/${match[1]}`, stringify(response));
             } catch (error) {
@@ -96,7 +105,13 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     protected abstract loadJS(name: string, module: M): Promise<void>;
 
-    @bind private async remove(message: KeyValue): Promise<MQTTResponse> {
+    @bind private async remove(
+        message: Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
+    ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/remove' | 'bridge/response/extension/remove'>> {
+        if (!message.name) {
+            return utils.getResponse(message, {}, `Invalid payload`);
+        }
+
         const {name} = message;
         const toBeRemoved = this.getFilePath(name);
 
@@ -113,7 +128,13 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
     }
 
-    @bind private async save(message: KeyValue): Promise<MQTTResponse> {
+    @bind private async save(
+        message: Zigbee2MQTTAPI['bridge/request/converter/save'] | Zigbee2MQTTAPI['bridge/request/extension/save'],
+    ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/save' | 'bridge/response/extension/save'>> {
+        if (!message.name || !message.code) {
+            return utils.getResponse(message, {}, `Invalid payload`);
+        }
+
         const {name, code} = message;
 
         try {

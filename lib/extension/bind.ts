@@ -1,3 +1,5 @@
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
+
 import assert from 'assert';
 
 import bind from 'bind-decorator';
@@ -207,15 +209,6 @@ interface ParsedMQTTMessage {
     resolvedBindTarget?: number | zh.Endpoint | zh.Group;
 }
 
-interface DataMessage {
-    from: ParsedMQTTMessage['sourceKey'];
-    from_endpoint?: ParsedMQTTMessage['sourceEndpointKey'];
-    to: ParsedMQTTMessage['targetKey'];
-    to_endpoint: ParsedMQTTMessage['targetEndpointKey'];
-    clusters: ParsedMQTTMessage['clusters'];
-    skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
-}
-
 export default class Bind extends Extension {
     private pollDebouncers: {[s: string]: () => void} = {};
 
@@ -231,7 +224,7 @@ export default class Bind extends Extension {
         if (data.topic.match(TOPIC_REGEX)) {
             const type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
             let skipDisableReporting = false;
-            const message: DataMessage = JSON.parse(data.message);
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/device/bind'];
 
             if (typeof message !== 'object' || message.from == undefined || message.to == undefined) {
                 return [message, {type, skipDisableReporting}, `Invalid payload`];
@@ -388,10 +381,10 @@ export default class Bind extends Extension {
             return;
         }
 
-        const responseData: KeyValue = {
-            from: sourceKey,
-            from_endpoint: sourceEndpointKey,
-            to: targetKey,
+        const responseData: Zigbee2MQTTAPI['bridge/response/device/bind'] | Zigbee2MQTTAPI['bridge/response/device/unbind'] = {
+            from: sourceKey!, // valid with assert above on `resolvedSource`
+            from_endpoint: sourceEndpointKey!, // valid with assert above on `resolvedSourceEndpoint`
+            to: targetKey!, // valid with assert above on `resolvedTarget`
             to_endpoint: targetEndpointKey,
             clusters: successfulClusters,
             failed: failedClusters,
@@ -412,9 +405,14 @@ export default class Bind extends Extension {
         this.eventBus.emitDevicesChanged();
     }
 
-    private async publishResponse(type: ParsedMQTTMessage['type'], request: KeyValue, data: KeyValue, error?: string): Promise<void> {
-        const response = stringify(utils.getResponse(request, data, error));
-        await this.mqtt.publish(`bridge/response/device/${type}`, response);
+    private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
+        type: ParsedMQTTMessage['type'],
+        request: KeyValue,
+        data: Zigbee2MQTTAPI[T],
+        error?: string,
+    ): Promise<void> {
+        const response = utils.getResponse(request, data, error);
+        await this.mqtt.publish(`bridge/response/device/${type}`, stringify(response));
 
         if (error) {
             logger.error(error);
