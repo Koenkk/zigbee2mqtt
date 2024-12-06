@@ -100,7 +100,7 @@ export default class Groups extends Extension {
                         if (
                             group.zh.hasMember(endpoint) &&
                             !equals(this.lastOptimisticState[group.ID], payload) &&
-                            this.shouldPublishPayloadForGroup(group, payload)
+                            this.shouldPublishPayloadForGroup(group, payload, endpointName)
                         ) {
                             this.lastOptimisticState[group.ID] = payload;
 
@@ -142,7 +142,7 @@ export default class Groups extends Extension {
                     await this.publishEntityState(device, memberPayload, reason);
 
                     for (const zigbeeGroup of groups) {
-                        if (zigbeeGroup.zh.hasMember(member) && this.shouldPublishPayloadForGroup(zigbeeGroup, payload)) {
+                        if (zigbeeGroup.zh.hasMember(member) && this.shouldPublishPayloadForGroup(zigbeeGroup, memberPayload, endpointName)) {
                             groupsToPublish.add(zigbeeGroup);
                         }
                     }
@@ -157,11 +157,12 @@ export default class Groups extends Extension {
         }
     }
 
-    private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
+    private shouldPublishPayloadForGroup(group: Group, payload: KeyValue, endpointName: string | undefined): boolean {
+        const stateKey = endpointName ? `state_${endpointName}` : 'state';
         return (
             group.options.off_state === 'last_member_state' ||
             !payload ||
-            (payload.state !== 'OFF' && payload.state !== 'CLOSE') ||
+            (payload[stateKey] !== 'OFF' && payload[stateKey] !== 'CLOSE') ||
             this.areAllMembersOffOrClosed(group)
         );
     }
@@ -172,8 +173,10 @@ export default class Groups extends Extension {
 
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
+                const endpointNames = device.isDevice() && device.getEndpointNames();
+                const stateKey = endpointNames && endpointNames.length >= member.ID ? `state_${endpointNames[member.ID - 1]}` : 'state';
 
-                if (state.state === 'ON' || state.state === 'OPEN') {
+                if (state[stateKey] === 'ON' || state[stateKey] === 'OPEN') {
                     return false;
                 }
             }
