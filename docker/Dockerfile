@@ -1,4 +1,4 @@
-FROM alpine:3.18.4 AS base
+FROM alpine:3.21.0 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
