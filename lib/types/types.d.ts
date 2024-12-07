@@ -10,7 +10,6 @@ import type {
     LQI as ZHLQI,
     NetworkParameters as ZHNetworkParameters,
     RoutingTable as ZHRoutingTable,
-    RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import type {Device as ZHDevice, Endpoint as ZHEndpoint, Group as ZHGroup} from 'zigbee-herdsman/dist/controller/model';
@@ -31,13 +30,6 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    interface MQTTResponse {
-        data: KeyValue;
-        status: 'error' | 'ok';
-        error?: string;
-        transaction?: string;
-    }
-    type Scene = {id: number; name: string};
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
@@ -53,12 +45,10 @@ declare global {
         type Group = ZHGroup;
         type LQI = ZHLQI;
         type RoutingTable = ZHRoutingTable;
-        type RoutingTableEntry = ZHRoutingTableEntry;
         type CoordinatorVersion = ZHCoordinatorVersion;
         type NetworkParameters = ZHNetworkParameters;
-        type Cluster = ZHCluster;
         interface Bind {
-            cluster: zh.Cluster;
+            cluster: ZHCluster;
             target: zh.Endpoint | zh.Group;
         }
     }

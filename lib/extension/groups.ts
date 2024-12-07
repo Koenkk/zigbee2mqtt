@@ -1,3 +1,5 @@
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
+
 import assert from 'assert';
 
 import bind from 'bind-decorator';
@@ -37,13 +39,6 @@ interface ParsedMQTTMessage {
     deviceKey?: string;
     endpointKey?: string | number;
     skipDisableReporting: boolean;
-}
-
-interface DataMessage {
-    device: ParsedMQTTMessage['deviceKey'];
-    group: ParsedMQTTMessage['groupKey'];
-    endpoint: ParsedMQTTMessage['endpointKey'];
-    skip_disable_reporting?: ParsedMQTTMessage['skipDisableReporting'];
 }
 
 export default class Groups extends Extension {
@@ -194,7 +189,7 @@ export default class Groups extends Extension {
             let resolvedGroup;
             let groupKey;
             let skipDisableReporting = false;
-            const message: DataMessage = JSON.parse(data.message);
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/group/members/add'];
 
             if (typeof message !== 'object' || message.device == undefined) {
                 return [message, {type, skipDisableReporting}, 'Invalid payload'];
@@ -273,11 +268,21 @@ export default class Groups extends Extension {
                 logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
                 await resolvedEndpoint.addToGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
+                await this.publishResponse<'bridge/response/group/members/add'>(parsed.type, raw, {
+                    device: deviceKey!, // valid from resolved asserts
+                    endpoint: endpointKey!, // valid from resolved asserts
+                    group: groupKey!, // valid from resolved asserts
+                });
             } else if (type === 'remove') {
                 assert(resolvedGroup, '`resolvedGroup` is missing');
                 logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
                 await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
+                await this.publishResponse<'bridge/response/group/members/remove'>(parsed.type, raw, {
+                    device: deviceKey!, // valid from resolved asserts
+                    endpoint: endpointKey!, // valid from resolved asserts
+                    group: groupKey!, // valid from resolved asserts
+                });
             } else {
                 // remove_all
                 logger.info(`Removing '${resolvedDevice.name}' from all groups`);
@@ -287,6 +292,10 @@ export default class Groups extends Extension {
                 }
 
                 await resolvedEndpoint.removeFromAllGroups();
+                await this.publishResponse<'bridge/response/group/members/remove_all'>(parsed.type, raw, {
+                    device: deviceKey!, // valid from resolved asserts
+                    endpoint: endpointKey!, // valid from resolved asserts
+                });
             }
         } catch (e) {
             const errorMsg = `Failed to ${type} from group (${(e as Error).message})`;
@@ -295,22 +304,19 @@ export default class Groups extends Extension {
             return;
         }
 
-        const responseData: KeyValue = {device: deviceKey, endpoint: endpointKey};
-
-        if (groupKey) {
-            responseData.group = groupKey;
-        }
-
-        await this.publishResponse(parsed.type, raw, responseData);
-
         for (const group of changedGroups) {
             this.eventBus.emitGroupMembersChanged({group, action: type, endpoint: resolvedEndpoint, skipDisableReporting});
         }
     }
 
-    private async publishResponse(type: ParsedMQTTMessage['type'], request: KeyValue, data: KeyValue, error?: string): Promise<void> {
-        const response = stringify(utils.getResponse(request, data, error));
-        await this.mqtt.publish(`bridge/response/group/members/${type}`, response);
+    private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
+        type: ParsedMQTTMessage['type'],
+        request: KeyValue,
+        data: Zigbee2MQTTAPI[T],
+        error?: string,
+    ): Promise<void> {
+        const response = utils.getResponse(request, data, error);
+        await this.mqtt.publish(`bridge/response/group/members/${type}`, stringify(response));
 
         if (error) {
             logger.error(error);
