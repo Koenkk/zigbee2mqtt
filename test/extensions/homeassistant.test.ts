@@ -1090,6 +1090,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({
                 color: {hue: 0, saturation: 100, h: 0, s: 100},
                 color_mode: 'hs',
+                effect: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1112,6 +1113,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({
                 color: {x: 0.4576, y: 0.41},
                 color_mode: 'xy',
+                effect: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1133,6 +1135,7 @@ describe('Extension: HomeAssistant', () => {
             'zigbee2mqtt/bulb_color',
             stringify({
                 linkquality: null,
+                effect: null,
                 state: 'ON',
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1242,6 +1245,8 @@ describe('Extension: HomeAssistant', () => {
                 color_options: null,
                 brightness: 50,
                 color_temp: 370,
+                effect: null,
+                identify: null,
                 linkquality: 99,
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1280,6 +1285,8 @@ describe('Extension: HomeAssistant', () => {
                 color_options: null,
                 brightness: 50,
                 color_temp: 370,
+                effect: null,
+                identify: null,
                 linkquality: 99,
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1735,18 +1742,31 @@ describe('Extension: HomeAssistant', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB',
-            stringify({state_l2: 'ON', brightness_l2: 20, linkquality: null, state_l1: null, power_on_behavior_l1: null, power_on_behavior_l2: null}),
+            stringify({
+                state_l2: 'ON',
+                brightness_l2: 20,
+                linkquality: null,
+                state_l1: null,
+                effect_l1: null,
+                effect_l2: null,
+                power_on_behavior_l1: null,
+                power_on_behavior_l2: null,
+            }),
             {qos: 0, retain: false},
         );
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB/l2',
-            stringify({state: 'ON', brightness: 20, power_on_behavior: null}),
+            stringify({state: 'ON', brightness: 20, effect: null, power_on_behavior: null}),
             {qos: 0, retain: false},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null, power_on_behavior: null}), {
-            qos: 0,
-            retain: false,
-        });
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/U202DST600ZB/l1',
+            stringify({state: null, effect: null, power_on_behavior: null}),
+            {
+                qos: 0,
+                retain: false,
+            },
+        );
     });
 
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
@@ -2452,7 +2472,6 @@ describe('Extension: HomeAssistant', () => {
             state_topic: 'zigbee2mqtt/0x18fc26000000cafe',
             unique_id: '0x18fc26000000cafe_device_mode_zigbee2mqtt',
             value_template: '{{ value_json.device_mode }}',
-            enabled_by_default: true,
         };
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/select/0x18fc26000000cafe/device_mode/config', stringify(payload), {
             retain: true,

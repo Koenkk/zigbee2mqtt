@@ -973,14 +973,49 @@ export default class HomeAssistant extends Extension {
             }
             case 'numeric': {
                 assertNumericExpose(firstExpose);
+                const allowsSet = firstExpose.access & ACCESS_SET;
+
+                /**
+                 * If numeric attribute has SET access then expose as SELECT entity.
+                 */
+                if (allowsSet) {
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: 'number',
+                        object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: `{{ value_json.${firstExpose.property} }}`,
+                            command_topic: true,
+                            command_topic_prefix: endpoint,
+                            command_topic_postfix: firstExpose.property,
+                            ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
+                            ...(firstExpose.value_step && {step: firstExpose.value_step}),
+                            ...NUMERIC_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    };
+
+                    if (NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.device_class === 'temperature') {
+                        discoveryEntry.discovery_payload.device_class = NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.device_class;
+                    } else {
+                        delete discoveryEntry.discovery_payload.device_class;
+                    }
+
+                    // istanbul ignore else
+                    if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
+                    // istanbul ignore else
+                    if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
+
+                    discoveryEntries.push(discoveryEntry);
+                    break;
+                }
+
                 const extraAttrs = {};
 
                 // If a variable includes Wh, mark it as energy
                 if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
                     Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
                 }
-
-                const allowsSet = firstExpose.access & ACCESS_SET;
 
                 let key = firstExpose.name;
 
@@ -1016,42 +1051,6 @@ export default class HomeAssistant extends Extension {
                 }
 
                 discoveryEntries.push(discoveryEntry);
-
-                /**
-                 * If numeric attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and number are discovered, this is to avoid
-                 * breaking changes for sensors already existing in HA (legacy).
-                 */
-                if (allowsSet) {
-                    const discoveryEntry: DiscoveryEntry = {
-                        type: 'number',
-                        object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: `{{ value_json.${firstExpose.property} }}`,
-                            command_topic: true,
-                            command_topic_prefix: endpoint,
-                            command_topic_postfix: firstExpose.property,
-                            ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
-                            ...(firstExpose.value_step && {step: firstExpose.value_step}),
-                            ...NUMERIC_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    };
-
-                    if (NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.device_class === 'temperature') {
-                        discoveryEntry.discovery_payload.device_class = NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.device_class;
-                    } else {
-                        delete discoveryEntry.discovery_payload.device_class;
-                    }
-
-                    // istanbul ignore else
-                    if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
-                    // istanbul ignore else
-                    if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
-
-                    discoveryEntries.push(discoveryEntry);
-                }
                 break;
             }
             case 'enum': {
@@ -1085,54 +1084,15 @@ export default class HomeAssistant extends Extension {
                 }
 
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
-                if (firstExpose.access & ACCESS_STATE) {
-                    discoveryEntries.push({
-                        type: 'sensor',
-                        object_id: firstExpose.property,
-                        mockProperties: [{property: firstExpose.property, value: null}],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: valueTemplate,
-                            enabled_by_default: !(firstExpose.access & ACCESS_SET),
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
 
                 /**
-                 * If enum attribute has SET access then expose as SELECT entity too.
-                 * Note: currently both sensor and select are discovered, this is to avoid
-                 * breaking changes for sensors already existing in HA (legacy).
-                 */
-                if (firstExpose.access & ACCESS_SET) {
-                    discoveryEntries.push({
-                        type: 'select',
-                        object_id: firstExpose.property,
-                        mockProperties: [], // Already mocked above in case access STATE is supported
-                        discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
-                            value_template: valueTemplate,
-                            state_topic: !!(firstExpose.access & ACCESS_STATE),
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExpose.property,
-                            options: firstExpose.values.map((v) => v.toString()),
-                            enabled_by_default: firstExpose.values.length !== 1, // hide if button is exposed
-                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
-                        },
-                    });
-                }
-
-                /**
-                 * If enum has only item and only supports SET then expose as button entity.
-                 * Note: select entity is hidden by default to avoid breaking changes
-                 * for selects already existing in HA (legacy).
+                 * If enum has only one item and has SET access then expose as BUTTON entity.
                  */
                 if (firstExpose.access & ACCESS_SET && firstExpose.values.length === 1) {
                     discoveryEntries.push({
                         type: 'button',
                         object_id: firstExpose.property,
-                        mockProperties: [],
+                        mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             state_topic: false,
@@ -1143,17 +1103,72 @@ export default class HomeAssistant extends Extension {
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
+                    break;
+                }
+
+                /**
+                 * If enum attribute has SET access then expose as SELECT entity.
+                 */
+                if (firstExpose.access & ACCESS_SET) {
+                    discoveryEntries.push({
+                        type: 'select',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: valueTemplate,
+                            state_topic: !!(firstExpose.access & ACCESS_STATE),
+                            command_topic_prefix: endpoint,
+                            command_topic: true,
+                            command_topic_postfix: firstExpose.property,
+                            options: firstExpose.values.map((v) => v.toString()),
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                    break;
+                }
+
+                /**
+                 * Otherwise expose as SENSOR entity.
+                 */
+                /* istanbul ignore else */
+                if (firstExpose.access & ACCESS_STATE) {
+                    discoveryEntries.push({
+                        type: 'sensor',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            value_template: valueTemplate,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
                 }
                 break;
             }
             case 'text':
             case 'composite':
             case 'list': {
-                // legacy: remove text sensor
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
-                const settableText = firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET;
+                if (firstExposeTyped.type === 'text' && firstExposeTyped.access & ACCESS_SET) {
+                    discoveryEntries.push({
+                        type: 'text',
+                        object_id: firstExposeTyped.property,
+                        mockProperties: [{property: firstExposeTyped.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
+                            state_topic: firstExposeTyped.access & ACCESS_STATE,
+                            value_template: `{{ value_json.${firstExposeTyped.property} }}`,
+                            command_topic_prefix: endpoint,
+                            command_topic: true,
+                            command_topic_postfix: firstExposeTyped.property,
+                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
+                        },
+                    });
+                    break;
+                }
                 if (firstExposeTyped.access & ACCESS_STATE) {
-                    const discoveryEntry: DiscoveryEntry = {
+                    discoveryEntries.push({
                         type: 'sensor',
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
@@ -1162,24 +1177,6 @@ export default class HomeAssistant extends Extension {
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
                             value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
-                            enabled_by_default: !settableText,
-                            ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
-                        },
-                    };
-                    discoveryEntries.push(discoveryEntry);
-                }
-                if (settableText) {
-                    discoveryEntries.push({
-                        type: 'text',
-                        object_id: firstExposeTyped.property,
-                        mockProperties: firstExposeTyped.access & ACCESS_STATE ? [{property: firstExposeTyped.property, value: null}] : [],
-                        discovery_payload: {
-                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
-                            state_topic: firstExposeTyped.access & ACCESS_STATE,
-                            value_template: `{{ value_json.${firstExposeTyped.property} }}`,
-                            command_topic_prefix: endpoint,
-                            command_topic: true,
-                            command_topic_postfix: firstExposeTyped.property,
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
                         },
                     });
