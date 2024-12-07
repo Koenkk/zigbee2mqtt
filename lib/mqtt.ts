@@ -1,5 +1,7 @@
 import type {IClientOptions, IClientPublishOptions, MqttClient} from 'mqtt';
 
+import type {Zigbee2MQTTAPI} from './types/api';
+
 import fs from 'fs';
 
 import bind from 'bind-decorator';
@@ -119,7 +121,10 @@ export default class MQTT {
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
         clearTimeout(this.republishRetainedTimer);
-        await this.publish('bridge/state', JSON.stringify({state: 'offline'}), {retain: true, qos: 0});
+
+        const stateData: Zigbee2MQTTAPI['bridge/state'] = {state: 'offline'};
+
+        await this.publish('bridge/state', JSON.stringify(stateData), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
         await this.client?.endAsync();
@@ -135,7 +140,10 @@ export default class MQTT {
 
     @bind private async onConnect(): Promise<void> {
         logger.info('Connected to MQTT server');
-        await this.publish('bridge/state', JSON.stringify({state: 'online'}), {retain: true, qos: 0});
+
+        const stateData: Zigbee2MQTTAPI['bridge/state'] = {state: 'online'};
+
+        await this.publish('bridge/state', JSON.stringify(stateData), {retain: true, qos: 0});
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 

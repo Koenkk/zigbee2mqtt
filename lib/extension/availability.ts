@@ -1,3 +1,5 @@
+import type {Zigbee2MQTTAPI} from 'lib/types/api';
+
 import assert from 'assert';
 
 import bind from 'bind-decorator';
@@ -188,9 +190,9 @@ export default class Availability extends Extension {
         }
 
         const topic = `${entity.name}/availability`;
-        const payload = JSON.stringify({state: available ? 'online' : 'offline'});
+        const payload: Zigbee2MQTTAPI['{friendlyName}/availability'] = {state: available ? 'online' : 'offline'};
         this.availabilityCache[entity.ID] = available;
-        await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
+        await this.mqtt.publish(topic, JSON.stringify(payload), {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
             for (const group of this.zigbee.groupsIterator()) {

@@ -12,7 +12,7 @@ export {schemaJson};
 export const CURRENT_VERSION = 2;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
-export type LogLevel = (typeof LOG_LEVELS)[number];
+export type LogLevel = 'error' | 'warning' | 'info' | 'debug';
 
 const CONFIG_FILE_PATH = data.joinPath('configuration.yaml');
 const NULLABLE_SETTINGS = ['homeassistant'];
