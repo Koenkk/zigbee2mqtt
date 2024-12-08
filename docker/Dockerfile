@@ -9,8 +9,8 @@ FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
 RUN apk add make gcc g++ python3 linux-headers pnpm && \
-    echo "UPDATE PNPM CONFIG" && \
-    pnpm config set update-notifier false && \
+    echo " PNPM VERSION" && \
+    pnpm --version && \
     echo " PNPM INSTALL" && \
     pnpm install --frozen-lockfile --no-optional
 
