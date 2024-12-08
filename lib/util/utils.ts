@@ -1,3 +1,4 @@
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from 'lib/types/api';
 import type * as zhc from 'zigbee-herdsman-converters';
 
 import assert from 'assert';
@@ -120,19 +121,35 @@ function getObjectProperty<T>(object: KeyValue, key: string, defaultValue: NoInf
     return object && object[key] !== undefined ? object[key] : defaultValue;
 }
 
-function getResponse(request: KeyValue | string, data: KeyValue, error?: string): MQTTResponse {
-    // On `error`, always return an empty `data` payload.
-    const response: MQTTResponse = {data: error ? {} : data, status: error ? 'error' : 'ok'};
+function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
+    request: KeyValue | string,
+    data: Zigbee2MQTTAPI[T],
+    error?: string,
+): Zigbee2MQTTResponse<T> {
+    if (error !== undefined) {
+        const response: Zigbee2MQTTResponse<T> = {
+            data: {}, // always return an empty `data` payload on error
+            status: 'error',
+            error: error,
+        };
 
-    if (error) {
-        response.error = error;
+        if (typeof request === 'object' && request.transaction !== undefined) {
+            response.transaction = request.transaction;
+        }
+
+        return response;
+    } else {
+        const response: Zigbee2MQTTResponse<T> = {
+            data, // valid from error check
+            status: 'ok',
+        };
+
+        if (typeof request === 'object' && request.transaction !== undefined) {
+            response.transaction = request.transaction;
+        }
+
+        return response;
     }
-
-    if (typeof request === 'object' && request['transaction'] !== undefined) {
-        response.transaction = request.transaction;
-    }
-
-    return response;
 }
 
 function parseJSON(value: string, fallback: string): KeyValue | string {
@@ -164,26 +181,6 @@ function removeNullPropertiesFromObject(obj: KeyValue, ignoreKeys: string[] = []
 function toNetworkAddressHex(value: number): string {
     const hex = value.toString(16);
     return `0x${'0'.repeat(4 - hex.length)}${hex}`;
-}
-
-function toSnakeCaseObject(value: KeyValue): KeyValue {
-    value = {...value};
-    for (const key of Object.keys(value)) {
-        const keySnakeCase = toSnakeCaseString(key);
-        assert(typeof keySnakeCase === 'string');
-        if (key !== keySnakeCase) {
-            value[keySnakeCase] = value[key];
-            delete value[key];
-        }
-    }
-    return value;
-}
-
-function toSnakeCaseString(value: string): string {
-    return value
-        .replace(/\.?([A-Z])/g, (x, y) => '_' + y.toLowerCase())
-        .replace(/^_/, '')
-        .replace('_i_d', '_id');
 }
 
 function charRange(start: string, stop: string): number[] {
@@ -345,8 +342,8 @@ export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
     return expose.type === 'light';
 }
 
-function getScenes(entity: zh.Endpoint | zh.Group): Scene[] {
-    const scenes: {[id: number]: Scene} = {};
+function getScenes(entity: zh.Endpoint | zh.Group): Zigbee2MQTTScene[] {
+    const scenes: {[id: number]: Zigbee2MQTTScene} = {};
     const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;
     const groupID = isZHEndpoint(entity) ? 0 : entity.groupID;
 
@@ -384,8 +381,6 @@ export default {
     parseJSON,
     removeNullPropertiesFromObject,
     toNetworkAddressHex,
-    toSnakeCaseString,
-    toSnakeCaseObject,
     isZHEndpoint,
     isZHGroup,
     hours,

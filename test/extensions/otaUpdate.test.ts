@@ -102,8 +102,11 @@ describe('Extension: OTAUpdate', () => {
         expect(mockLogger.info).toHaveBeenCalledWith(`Update of 'bulb' at 0.00%`);
         expect(mockLogger.info).toHaveBeenCalledWith(`Update of 'bulb' at 10.00%, ≈ 60 minutes remaining`);
         expect(mockLogger.info).toHaveBeenCalledWith(`Finished update of 'bulb'`);
-        expect(mockLogger.info).toHaveBeenCalledWith(
+        // note this is a lambda for `info`, so go down to `log` call to get actual message
+        expect(mockLogger.log).toHaveBeenCalledWith(
+            'info',
             `Device 'bulb' was updated from '{"dateCode":"${fromDateCode}","softwareBuildID":${fromSwBuildId}}' to '{"dateCode":"${toDateCode}","softwareBuildID":${toSwBuildId}}'`,
+            'z2m',
         );
         expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith('genBasic', ['dateCode', 'swBuildId'], {sendPolicy: 'immediate'});
@@ -281,7 +284,7 @@ describe('Extension: OTAUpdate', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/update',
-            stringify({data: {id: 'bulb', from: null, to: null}, status: 'ok'}),
+            stringify({data: {id: 'bulb', from: undefined, to: undefined}, status: 'ok'}),
             {retain: false, qos: 0},
         );
     });
