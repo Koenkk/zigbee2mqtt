@@ -169,7 +169,8 @@ export interface Zigbee2MQTTAPI {
             channel: number;
         };
         log_level: 'debug' | 'info' | 'warning' | 'error';
-        permit_join_timeout: number;
+        permit_join: boolean;
+        permit_join_end: number | undefined;
         restart_required: boolean;
         config: Settings;
         config_schema: typeof schemaJson;
