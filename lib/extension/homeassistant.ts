@@ -2014,20 +2014,6 @@ export default class HomeAssistant extends Extension {
                     json_attributes_template: '{{ value_json.data.value | tojson }}',
                 },
             },
-            {
-                type: 'sensor',
-                object_id: 'permit_join_timeout',
-                mockProperties: [],
-                discovery_payload: {
-                    name: 'Permit join timeout',
-                    device_class: 'duration',
-                    unit_of_measurement: 's',
-                    entity_category: 'diagnostic',
-                    state_topic: true,
-                    state_topic_postfix: 'info',
-                    value_template: '{{ iif(value_json.permit_join_timeout is defined, value_json.permit_join_timeout, None) }}',
-                },
-            },
 
             // Switches.
             {
