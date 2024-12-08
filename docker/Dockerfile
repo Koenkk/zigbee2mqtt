@@ -1,4 +1,4 @@
-FROM alpine:edge AS base
+FROM alpine:3.21 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -8,7 +8,8 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN apk add make gcc g++ python3 linux-headers npm pnpm && \
+RUN apk add make gcc g++ python3 linux-headers pnpm && \
+    pnpm install -g pnpm && \
     pnpm config set update-notifier false && \
     pnpm install --frozen-lockfile --no-optional
 
