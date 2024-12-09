@@ -2102,7 +2102,7 @@ export default class HomeAssistant extends Extension {
             `    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n` +
             `  {% endfor %}\n` +
             `{% endfor %}\n` +
-            `{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n` +
+            `{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n` +
             `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
             `{% endif %}\n` +
             `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
