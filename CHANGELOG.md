@@ -1,5 +1,59 @@
 # Changelog
 
+## [2.0.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.42.0...2.0.0) (2024-12-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove `permit_join_timeout` ([#25082](https://github.com/Koenkk/zigbee2mqtt/issues/25082))
+* Home Assistant: remove duplicate `sensor`/`select` for `select`/`number`/`button` entities ([#25026](https://github.com/Koenkk/zigbee2mqtt/issues/25026))
+* Ensure `data` in response is always empty on `error` ([#24971](https://github.com/Koenkk/zigbee2mqtt/issues/24971))
+* Rework OTA ([#24634](https://github.com/Koenkk/zigbee2mqtt/issues/24634))
+* Remove deprecated Home Assistant integration features ([#24494](https://github.com/Koenkk/zigbee2mqtt/issues/24494))
+* Improve bind/bridge/groups parsing and resolving consistency ([#24432](https://github.com/Koenkk/zigbee2mqtt/issues/24432))
+* Remove configuring group members through `configuration.yaml` ([#24338](https://github.com/Koenkk/zigbee2mqtt/issues/24338))
+* Improve permit join ([#24257](https://github.com/Koenkk/zigbee2mqtt/issues/24257))
+* The big cleanup ([#24200](https://github.com/Koenkk/zigbee2mqtt/issues/24200))
+* HA permit join switch: disable automatically after 254 seconds ([#24245](https://github.com/Koenkk/zigbee2mqtt/issues/24245))
+
+### Features
+
+* Automatic settings migration ([#24871](https://github.com/Koenkk/zigbee2mqtt/issues/24871)) ([c6958c4](https://github.com/Koenkk/zigbee2mqtt/commit/c6958c4991c2cfbac87907c78e75bc634401a894))
+* Live loading of external JS (converters/extensions) ([#24764](https://github.com/Koenkk/zigbee2mqtt/issues/24764)) ([9907005](https://github.com/Koenkk/zigbee2mqtt/commit/9907005256c65902cbb9475e9410b795b262b41a))
+* The big cleanup ([#24200](https://github.com/Koenkk/zigbee2mqtt/issues/24200)) ([b618662](https://github.com/Koenkk/zigbee2mqtt/commit/b6186623f0bcf9d88de1772aebd8a9eaead21a4c))
+* Typing for MQTT API ([#25098](https://github.com/Koenkk/zigbee2mqtt/issues/25098)) ([1a9c79b](https://github.com/Koenkk/zigbee2mqtt/commit/1a9c79bb2f9b5e123b8cd017e82498ab534596fd))
+
+
+### Bug Fixes
+
+* Add more OCI Image Labels ([#25074](https://github.com/Koenkk/zigbee2mqtt/issues/25074)) ([b370b80](https://github.com/Koenkk/zigbee2mqtt/commit/b370b80dfb6701b8601c32f44102aec60a5d5ac8))
+* Cleanup Dockerfile ([23d8cea](https://github.com/Koenkk/zigbee2mqtt/commit/23d8cea4e243429bf5a376db94d09f535776de49))
+* Cleanup leftover legacy settings logic ([#24947](https://github.com/Koenkk/zigbee2mqtt/issues/24947)) ([d78c6fa](https://github.com/Koenkk/zigbee2mqtt/commit/d78c6facab57e0ec5676eb76ec099f5dce0f801a))
+* Ensure `data` in response is always empty on `error` ([#24971](https://github.com/Koenkk/zigbee2mqtt/issues/24971)) ([a6b3605](https://github.com/Koenkk/zigbee2mqtt/commit/a6b36051f032a2acebefe0232a20abebfb9641be))
+* Fix Home Assistant event entities for openHAB ([#25140](https://github.com/Koenkk/zigbee2mqtt/issues/25140)) ([226945c](https://github.com/Koenkk/zigbee2mqtt/commit/226945cae031007a86865dbbe22a42e951999f03))
+* Fixed calculation of group state when including non-default endpoints ([#25059](https://github.com/Koenkk/zigbee2mqtt/issues/25059)) ([9227e13](https://github.com/Koenkk/zigbee2mqtt/commit/9227e139de86299eb3ec4b1585bdd21448bfa94a))
+* HA permit join switch: disable automatically after 254 seconds ([#24245](https://github.com/Koenkk/zigbee2mqtt/issues/24245)) ([3220b27](https://github.com/Koenkk/zigbee2mqtt/commit/3220b27c8a91fc65912d299db22b8ac489b929b2))
+* Home Assistant: remove duplicate `sensor`/`select` for `select`/`number`/`button` entities ([#25026](https://github.com/Koenkk/zigbee2mqtt/issues/25026)) ([ba45445](https://github.com/Koenkk/zigbee2mqtt/commit/ba45445544948ad74e3db67ffee1d23996a37fb5))
+* **ignore:** Changes for improved adapter discovery ([#24147](https://github.com/Koenkk/zigbee2mqtt/issues/24147)) ([98b9770](https://github.com/Koenkk/zigbee2mqtt/commit/98b977030ec73e5a75c28f4f779fce9189b12d13))
+* **ignore:** Fix external converter loading ([#25063](https://github.com/Koenkk/zigbee2mqtt/issues/25063)) ([51f364a](https://github.com/Koenkk/zigbee2mqtt/commit/51f364a1d5dfd46f50830c6412ae78fb74994929))
+* **ignore:** fix tests ([b581dc6](https://github.com/Koenkk/zigbee2mqtt/commit/b581dc6994c92e125b9a83a69ae74f23f4dc20b9))
+* **ignore:** Fixed additional case of calculation of group state when including no… ([#25104](https://github.com/Koenkk/zigbee2mqtt/issues/25104)) ([d891320](https://github.com/Koenkk/zigbee2mqtt/commit/d891320314b48d463d2926da8fb1f674913efcc9))
+* **ignore:** Remove external definition type ([8aef77e](https://github.com/Koenkk/zigbee2mqtt/commit/8aef77e57e76aeb23ba9fd5f848ea5ee50c14a56))
+* **ignore:** Small cleanup ([#24696](https://github.com/Koenkk/zigbee2mqtt/issues/24696)) ([95279b0](https://github.com/Koenkk/zigbee2mqtt/commit/95279b02afe87788c2080ad7b9b2df2c5cbb5f7b))
+* **ignore:** some fixes ([cc61f67](https://github.com/Koenkk/zigbee2mqtt/commit/cc61f672155918c11ec7ac6c48096b9f0629695e))
+* **ignore:** update dependencies ([#24999](https://github.com/Koenkk/zigbee2mqtt/issues/24999)) ([32e10d8](https://github.com/Koenkk/zigbee2mqtt/commit/32e10d89f48871d8646f31772569fddab6d6824a))
+* **ignore:** update dependencies ([#25120](https://github.com/Koenkk/zigbee2mqtt/issues/25120)) ([7803a16](https://github.com/Koenkk/zigbee2mqtt/commit/7803a166d233ba0067e05ddf2afd35569f8d07e7))
+* **ignore:** update deps ([1ce45c8](https://github.com/Koenkk/zigbee2mqtt/commit/1ce45c8c4176a17d7aa03117fc6f39510b06f4a4))
+* **ignore:** Update usb discovery discussion link ([9bd20af](https://github.com/Koenkk/zigbee2mqtt/commit/9bd20afb9c7172a67c2d36f373ab151f20027cb9))
+* Improve bind/bridge/groups parsing and resolving consistency ([#24432](https://github.com/Koenkk/zigbee2mqtt/issues/24432)) ([9537ef0](https://github.com/Koenkk/zigbee2mqtt/commit/9537ef05d563de815b24e45176a1bec68eb811b8))
+* Improve permit join ([#24257](https://github.com/Koenkk/zigbee2mqtt/issues/24257)) ([2124d34](https://github.com/Koenkk/zigbee2mqtt/commit/2124d3450cbc5ad5901a7fa2d657b881152a6db6))
+* Refactor tests to TS ([#24357](https://github.com/Koenkk/zigbee2mqtt/issues/24357)) ([6f6e7c3](https://github.com/Koenkk/zigbee2mqtt/commit/6f6e7c3ee040504231e1aecda004edbd16301578))
+* Remove `permit_join_timeout` ([#25082](https://github.com/Koenkk/zigbee2mqtt/issues/25082)) ([7d63a87](https://github.com/Koenkk/zigbee2mqtt/commit/7d63a87aad954225c77156d22576939b1ffe7d6c))
+* Remove configuring group members through `configuration.yaml` ([#24338](https://github.com/Koenkk/zigbee2mqtt/issues/24338)) ([3f76586](https://github.com/Koenkk/zigbee2mqtt/commit/3f76586a506a3674333d17cff93d32810c76687e))
+* Remove deprecated Home Assistant integration features ([#24494](https://github.com/Koenkk/zigbee2mqtt/issues/24494)) ([e290057](https://github.com/Koenkk/zigbee2mqtt/commit/e290057e21ce5551563068420ea2942979206509))
+* Rework OTA ([#24634](https://github.com/Koenkk/zigbee2mqtt/issues/24634)) ([563514c](https://github.com/Koenkk/zigbee2mqtt/commit/563514c446e39134ccd18829b10f6d2e02bef09b))
+* Use built-in async for mqtt ([#24786](https://github.com/Koenkk/zigbee2mqtt/issues/24786)) ([e052988](https://github.com/Koenkk/zigbee2mqtt/commit/e052988663d967ed8c41ecb5ea0e52e6f85905b4))
+
 ## [1.42.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.41.0...1.42.0) (2024-12-01)
 
 
