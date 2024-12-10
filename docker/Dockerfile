@@ -1,7 +1,9 @@
 ARG TARGETPLATFORM
 ARG COMMIT
 
-FROM alpine:3.18.4 AS blaa-alpine
+FROM alpine:3.18.4 AS arm-alpine
+FROM alpine:3.21 AS arm64-alpine
+FROM alpine:3.21 AS amd64-alpine
 
 FROM ${TARGETARCH}-alpine as base
 
