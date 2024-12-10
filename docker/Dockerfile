@@ -11,7 +11,8 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN apk add pnpm && \
+RUN apk add npm && \
+    npm install -g pnpm && \
     pnpm install --frozen-lockfile --no-optional
 
 # Release
