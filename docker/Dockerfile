@@ -1,7 +1,9 @@
-ARG ALPINE_VERSION=3.21
+ARG TARGETPLATFORM
 ARG COMMIT
 
-FROM alpine:${ALPINE_VERSION} AS base
+FROM alpine:3.18.4 AS blaa-alpine
+
+FROM ${TARGETARCH}-alpine as base
 
 ENV NODE_ENV=production
 WORKDIR /app

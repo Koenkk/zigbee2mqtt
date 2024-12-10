@@ -77,26 +77,11 @@ jobs:
               with:
                   context: .
                   file: docker/Dockerfile
-                  platforms: linux/arm64/v8,linux/amd64
+                  platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7
                   tags: koenkk/zigbee2mqtt:test-0.0.0
-                  push: true
+                  push: false
                   build-args: |
                       COMMIT=${{ github.sha }}
-
-            # arm/v6 and arm/v7 require Alpine 3.18.4 which uses Node 18 to fix build hanging
-            # See https://github.com/nodejs/docker-node/issues/2077
-            - name: dev - Docker build and push (arm/v6, arm/v7)
-              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: docker/Dockerfile
-                  platforms: linux/arm/v6,linux/arm/v7
-                  tags: koenkk/zigbee2mqtt:test-0.0.0
-                  push: true
-                  build-args: |
-                      COMMIT=${{ github.sha }}
-                      ALPINE_VERSION=3.18.4
 
             - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
