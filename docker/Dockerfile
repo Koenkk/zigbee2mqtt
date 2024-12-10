@@ -1,4 +1,11 @@
-FROM alpine:3.18.4 AS base
+ARG TARGETPLATFORM
+ARG COMMIT
+
+FROM alpine:3.18.4 AS arm-alpine
+FROM alpine:3.21 AS arm64-alpine
+FROM alpine:3.21 AS amd64-alpine
+
+FROM ${TARGETARCH}-alpine as base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -8,7 +15,7 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN apk add make gcc g++ python3 linux-headers npm && \
+RUN apk add npm && \
     npm install -g pnpm && \
     pnpm install --frozen-lockfile --no-optional
 
@@ -18,7 +25,7 @@ FROM base AS release
 ARG DATE
 ARG VERSION
 LABEL org.opencontainers.image.authors="Koen Kanters"
-LABEL org.opencontainers.image.title="zigbee2mqtt"
+LABEL org.opencontainers.image.title="Zigbee2MQTT"
 LABEL org.opencontainers.image.description="Zigbee to MQTT bridge using Zigbee-herdsman"
 LABEL org.opencontainers.image.url="https://github.com/Koenkk/zigbee2mqtt"
 LABEL org.opencontainers.image.documentation="https://www.zigbee2mqtt.io/"
@@ -36,7 +43,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir /app/data
 
-ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
 
 ENTRYPOINT ["docker-entrypoint.sh"]
