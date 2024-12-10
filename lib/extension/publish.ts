@@ -202,7 +202,9 @@ export default class Publish extends Extension {
             /* istanbul ignore next */
             // Match any key if the toZigbee converter defines no key.
             const converter = converters.find(
-                (c) => (!c.key || c.key.includes(key)) && (!c.endpoints || (endpointName && c.endpoints.includes(endpointName))),
+                (c) =>
+                    (!c.key || c.key.includes(key)) &&
+                    (target instanceof Group || !c.endpoints || (endpointName && c.endpoints.includes(endpointName))),
             );
 
             if (parsedTopic.type === 'set' && converter && usedConverters[endpointOrGroupID].includes(converter)) {
