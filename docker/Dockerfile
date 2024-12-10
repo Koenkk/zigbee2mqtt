@@ -1,4 +1,4 @@
-FROM alpine:3.18.4 AS base
+FROM alpine:3.21 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -8,8 +8,10 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
-RUN apk add make gcc g++ python3 linux-headers npm && \
-    npm install -g pnpm && \
+RUN apk add make gcc g++ python3 linux-headers pnpm && \
+    echo " PNPM VERSION" && \
+    pnpm --version && \
+    echo " PNPM INSTALL" && \
     pnpm install --frozen-lockfile --no-optional
 
 # Release
