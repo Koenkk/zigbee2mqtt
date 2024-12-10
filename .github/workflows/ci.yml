@@ -78,7 +78,7 @@ jobs:
                   context: .
                   file: docker/Dockerfile
                   platforms: linux/arm64/v8,linux/amd64
-                  tags: koenkk/zigbee2mqtt-test:0.0.0
+                  tags: koenkk/zigbee2mqtt:test-0.0.0
                   push: true
                   build-args: |
                       COMMIT=${{ github.sha }}
@@ -90,7 +90,7 @@ jobs:
                   context: .
                   file: docker/Dockerfile
                   platforms: linux/arm/v6,linux/arm/v7
-                  tags: koenkk/zigbee2mqtt-test:0.0.0
+                  tags: koenkk/zigbee2mqtt:test-0.0.0
                   push: true
                   build-args: |
                       COMMIT=${{ github.sha }}
