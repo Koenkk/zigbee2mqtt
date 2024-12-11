@@ -1098,7 +1098,9 @@ export const mockController = {
     backup: jest.fn(),
     coordinatorCheck: jest.fn(),
     getCoordinatorVersion: jest.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
-    getNetworkParameters: jest.fn((): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: 0x001122, channel: 15})),
+    getNetworkParameters: jest.fn(
+        (): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
+    ),
     getDevices: jest.fn((): Device[] => []),
     getDevicesIterator: jest.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
         for (const key in devices) {
