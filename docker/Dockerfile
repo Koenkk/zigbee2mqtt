@@ -5,6 +5,7 @@ ARG TARGETPLATFORM
 FROM alpine:3.18.4 AS arm-alpine
 FROM alpine:3.21 AS arm64-alpine
 FROM alpine:3.21 AS amd64-alpine
+FROM alpine:3.21 as riscv64-alpine
 
 FROM ${TARGETARCH}-alpine AS base
 
@@ -16,6 +17,7 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
+# Make and such are needed to compile serialport for riscv64
 RUN apk add make gcc g++ python3 linux-headers npm && \
     npm install -g pnpm && \
     pnpm install --frozen-lockfile --no-optional
