@@ -29,16 +29,15 @@ export default class Zigbee {
     async start(): Promise<'reset' | 'resumed' | 'restored'> {
         const infoHerdsman = await utils.getDependencyVersion('zigbee-herdsman');
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
+        const panId = settings.get().advanced.pan_id;
+        const extPanId = settings.get().advanced.ext_pan_id;
+        const networkKey = settings.get().advanced.network_key;
         const herdsmanSettings = {
             network: {
-                panID: settings.get().advanced.pan_id === 'GENERATE' ? this.generatePanID() : (settings.get().advanced.pan_id as number),
-                extendedPanID:
-                    settings.get().advanced.ext_pan_id === 'GENERATE' ? this.generateExtPanID() : (settings.get().advanced.ext_pan_id as number[]),
+                panID: panId === 'GENERATE' ? this.generatePanID() : panId,
+                extendedPanID: extPanId === 'GENERATE' ? this.generateExtPanID() : extPanId,
                 channelList: [settings.get().advanced.channel],
-                networkKey:
-                    settings.get().advanced.network_key === 'GENERATE'
-                        ? this.generateNetworkKey()
-                        : (settings.get().advanced.network_key as number[]),
+                networkKey: networkKey === 'GENERATE' ? this.generateNetworkKey() : networkKey,
             },
             databasePath: data.joinPath('database.db'),
             databaseBackupPath: data.joinPath('database.db.backup'),
