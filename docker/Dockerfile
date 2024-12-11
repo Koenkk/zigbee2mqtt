@@ -1,4 +1,12 @@
-FROM alpine:3.18.4 AS base
+ARG TARGETPLATFORM
+
+# Need to use Alpine 3.18.4 which uses Node 18 for arm/v6 and arm/v7, otherwise the build hangs.
+# See https://github.com/nodejs/docker-node/issues/2077
+FROM alpine:3.18.4 AS arm-alpine
+FROM alpine:3.21 AS arm64-alpine
+FROM alpine:3.21 AS amd64-alpine
+
+FROM ${TARGETARCH}-alpine AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -18,7 +26,7 @@ FROM base AS release
 ARG DATE
 ARG VERSION
 LABEL org.opencontainers.image.authors="Koen Kanters"
-LABEL org.opencontainers.image.title="zigbee2mqtt"
+LABEL org.opencontainers.image.title="Zigbee2MQTT"
 LABEL org.opencontainers.image.description="Zigbee to MQTT bridge using Zigbee-herdsman"
 LABEL org.opencontainers.image.url="https://github.com/Koenkk/zigbee2mqtt"
 LABEL org.opencontainers.image.documentation="https://www.zigbee2mqtt.io/"
