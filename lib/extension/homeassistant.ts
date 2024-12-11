@@ -1069,7 +1069,7 @@ export default class HomeAssistant extends Extension {
                         discoveryEntries.push({
                             type: 'event',
                             object_id: firstExpose.property,
-                            mockProperties: [{property: firstExpose.property, value: null}],
+                            mockProperties: [],
                             discovery_payload: {
                                 name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                                 state_topic: true,
