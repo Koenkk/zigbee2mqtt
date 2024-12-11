@@ -1,3 +1,5 @@
+import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from 'lib/types/api';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
@@ -6,87 +8,60 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-interface Link {
-    source: {ieeeAddr: string; networkAddress: number};
-    target: {ieeeAddr: string; networkAddress: number};
-    linkquality: number;
-    depth: number;
-    routes: zh.RoutingTableEntry[];
-    sourceIeeeAddr: string;
-    targetIeeeAddr: string;
-    sourceNwkAddr: number;
-    lqi: number;
-    relationship: number;
-}
-
-interface Topology {
-    nodes: {
-        ieeeAddr: string;
-        friendlyName: string;
-        type: string;
-        networkAddress: number;
-        manufacturerName: string | undefined;
-        modelID: string | undefined;
-        failed: string[];
-        lastSeen: number | undefined;
-        definition?: {model: string; vendor: string; supports: string; description: string};
-    }[];
-    links: Link[];
-}
+const SUPPORTED_FORMATS = ['raw', 'graphviz', 'plantuml'];
 
 /**
  * This extension creates a network map
  */
 export default class NetworkMap extends Extension {
-    private legacyApi = settings.get().advanced.legacy_api;
-    private legacyTopic = `${settings.get().mqtt.base_topic}/bridge/networkmap`;
-    private legacyTopicRoutes = `${settings.get().mqtt.base_topic}/bridge/networkmap/routes`;
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
-    private supportedFormats: {[s: string]: (topology: Topology) => KeyValue | string} = {
-        raw: this.raw,
-        graphviz: this.graphviz,
-        plantuml: this.plantuml,
-    };
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        /* istanbul ignore else */
-        if (this.legacyApi) {
-            if ((data.topic === this.legacyTopic || data.topic === this.legacyTopicRoutes) && this.supportedFormats[data.message] !== undefined) {
-                const includeRoutes = data.topic === this.legacyTopicRoutes;
-                const topology = await this.networkScan(includeRoutes);
-                let converted = this.supportedFormats[data.message](topology);
-                converted = data.message === 'raw' ? stringify(converted) : converted;
-                await this.mqtt.publish(`bridge/networkmap/${data.message}`, converted as string, {});
-            }
-        }
-
         if (data.topic === this.topic) {
-            const message = utils.parseJSON(data.message, data.message);
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI['bridge/request/networkmap'];
+
             try {
                 const type = typeof message === 'object' ? message.type : message;
-                if (this.supportedFormats[type] === undefined) {
-                    throw new Error(`Type '${type}' not supported, allowed are: ${Object.keys(this.supportedFormats)}`);
+
+                if (!SUPPORTED_FORMATS.includes(type)) {
+                    throw new Error(`Type '${type}' not supported, allowed are: ${SUPPORTED_FORMATS.join(',')}`);
                 }
 
                 const routes = typeof message === 'object' && message.routes;
                 const topology = await this.networkScan(routes);
-                const value = this.supportedFormats[type](topology);
-                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {routes, type, value})));
+                let responseData: Zigbee2MQTTAPI['bridge/response/networkmap'];
+
+                switch (type) {
+                    case 'raw': {
+                        responseData = {type, routes, value: this.raw(topology)};
+                        break;
+                    }
+                    case 'graphviz': {
+                        responseData = {type, routes, value: this.graphviz(topology)};
+                        break;
+                    }
+                    case 'plantuml': {
+                        responseData = {type, routes, value: this.plantuml(topology)};
+                        break;
+                    }
+                }
+
+                await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, responseData)));
             } catch (error) {
                 await this.mqtt.publish('bridge/response/networkmap', stringify(utils.getResponse(message, {}, (error as Error).message)));
             }
         }
     }
 
-    @bind raw(topology: Topology): KeyValue {
+    raw(topology: Zigbee2MQTTNetworkMap): Zigbee2MQTTNetworkMap {
         return topology;
     }
 
-    @bind graphviz(topology: Topology): string {
+    graphviz(topology: Zigbee2MQTTNetworkMap): string {
         const colors = settings.get().map_options.graphviz.colors;
 
         let text = 'digraph G {\nnode[shape=record];\n';
@@ -152,7 +127,7 @@ export default class NetworkMap extends Extension {
         return text.replace(/\0/g, '');
     }
 
-    @bind plantuml(topology: Topology): string {
+    plantuml(topology: Zigbee2MQTTNetworkMap): string {
         const text = [];
 
         text.push(`' paste into: https://www.planttext.com/`);
@@ -207,7 +182,7 @@ export default class NetworkMap extends Extension {
         return text.join(`\n`);
     }
 
-    async networkScan(includeRoutes: boolean): Promise<Topology> {
+    async networkScan(includeRoutes: boolean): Promise<Zigbee2MQTTNetworkMap> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
         const lqis: Map<Device, zh.LQI> = new Map();
         const routingTables: Map<Device, zh.RoutingTable> = new Map();
@@ -242,6 +217,7 @@ export default class NetworkMap extends Extension {
                 logger.debug((error as Error).stack!);
             }
 
+            /* istanbul ignore else */
             if (includeRoutes) {
                 try {
                     const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
@@ -257,7 +233,7 @@ export default class NetworkMap extends Extension {
 
         logger.info(`Network scan finished`);
 
-        const topology: Topology = {nodes: [], links: []};
+        const topology: Zigbee2MQTTNetworkMap = {nodes: [], links: []};
 
         // XXX: display GP/disabled devices in the map, better feedback than just hiding them?
         for (const device of this.zigbee.devicesIterator((d) => d.type !== 'GreenPower')) {
@@ -313,7 +289,7 @@ export default class NetworkMap extends Extension {
                     }
                 }
 
-                const link: Link = {
+                const link: Zigbee2MQTTNetworkMap['links'][number] = {
                     source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
                     target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
                     linkquality: neighbor.linkquality,
@@ -329,6 +305,7 @@ export default class NetworkMap extends Extension {
 
                 const routingTable = routingTables.get(device);
 
+                /* istanbul ignore else */
                 if (routingTable) {
                     for (const entry of routingTable.table) {
                         if (entry.status === 'ACTIVE' && entry.nextHop === neighbor.networkAddress) {

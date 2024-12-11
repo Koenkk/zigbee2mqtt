@@ -1,9 +1,11 @@
-import type {QoS} from 'mqtt-packet';
+import type {IClientOptions, IClientPublishOptions, MqttClient} from 'mqtt';
+
+import type {Zigbee2MQTTAPI} from './types/api';
 
 import fs from 'fs';
 
 import bind from 'bind-decorator';
-import * as mqtt from 'mqtt';
+import {connectAsync} from 'mqtt';
 
 import logger from './util/logger';
 import * as settings from './util/settings';
@@ -14,13 +16,11 @@ const NS = 'z2m:mqtt';
 export default class MQTT {
     private publishedTopics: Set<string> = new Set();
     private connectionTimer?: NodeJS.Timeout;
-    // @ts-expect-error initialized in `connect`
-    private client: mqtt.MqttClient;
+    private client!: MqttClient;
     private eventBus: EventBus;
-    private initialConnect = true;
     private republishRetainedTimer?: NodeJS.Timeout;
     public retainedMessages: {
-        [s: string]: {payload: string; options: MQTTOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
+        [s: string]: {payload: string; options: IClientPublishOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
     } = {};
 
     constructor(eventBus: EventBus) {
@@ -32,13 +32,14 @@ export default class MQTT {
 
         logger.info(`Connecting to MQTT server at ${mqttSettings.server}`);
 
-        const options: mqtt.IClientOptions = {
+        const options: IClientOptions = {
             will: {
                 topic: `${settings.get().mqtt.base_topic}/bridge/state`,
-                payload: Buffer.from(utils.availabilityPayload('offline', settings.get())),
+                payload: Buffer.from(JSON.stringify({state: 'offline'})),
                 retain: settings.get().mqtt.force_disable_retain ? false : true,
                 qos: 1,
             },
+            properties: {maximumPacketSize: mqttSettings.maximum_packet_size},
         };
 
         if (mqttSettings.version) {
@@ -80,67 +81,70 @@ export default class MQTT {
             options.rejectUnauthorized = false;
         }
 
-        return await new Promise((resolve, reject) => {
-            this.client = mqtt.connect(mqttSettings.server, options);
-            // https://github.com/Koenkk/zigbee2mqtt/issues/9822
-            this.client.stream.setMaxListeners(0);
-            this.eventBus.onPublishAvailability(this, this.publishStateOnline);
+        this.client = await connectAsync(mqttSettings.server, options);
 
-            this.client.on('connect', async () => {
-                // Set timer at interval to check if connected to MQTT server.
-                clearTimeout(this.connectionTimer);
-                this.connectionTimer = setInterval(() => {
-                    if (this.client.reconnecting) {
-                        logger.error('Not connected to MQTT server!');
-                    }
-                }, utils.seconds(10));
+        // https://github.com/Koenkk/zigbee2mqtt/issues/9822
+        this.client.stream.setMaxListeners(0);
 
-                logger.info('Connected to MQTT server');
-                await this.publishStateOnline();
-
-                if (!this.initialConnect) {
-                    this.republishRetainedTimer = setTimeout(async () => {
-                        // Republish retained messages in case MQTT broker does not persist them.
-                        // https://github.com/Koenkk/zigbee2mqtt/issues/9629
-                        for (const msg of Object.values(this.retainedMessages)) {
-                            await this.publish(msg.topic, msg.payload, msg.options, msg.base, msg.skipLog, msg.skipReceive);
-                        }
-                    }, 2000);
-                }
-
-                this.initialConnect = false;
-                this.subscribe(`${settings.get().mqtt.base_topic}/#`);
-                resolve();
-            });
-
-            this.client.on('error', (err) => {
-                logger.error(`MQTT error: ${err.message}`);
-                reject(err);
-            });
-
-            this.client.on('message', this.onMessage);
+        this.client.on('error', (err) => {
+            logger.error(`MQTT error: ${err.message}`);
         });
-    }
 
-    @bind async publishStateOnline(): Promise<void> {
-        await this.publish('bridge/state', utils.availabilityPayload('online', settings.get()), {retain: true, qos: 0});
+        if (mqttSettings.version != undefined && mqttSettings.version >= 5) {
+            this.client.on('disconnect', (packet) => {
+                logger.error(`MQTT disconnect: reason ${packet.reasonCode} (${packet.properties?.reasonString})`);
+            });
+        }
+
+        this.client.on('message', this.onMessage);
+
+        await this.onConnect();
+
+        this.client.on('connect', this.onConnect);
+
+        this.republishRetainedTimer = setTimeout(async () => {
+            // Republish retained messages in case MQTT broker does not persist them.
+            // https://github.com/Koenkk/zigbee2mqtt/issues/9629
+            for (const msg of Object.values(this.retainedMessages)) {
+                await this.publish(msg.topic, msg.payload, msg.options, msg.base, msg.skipLog, msg.skipReceive);
+            }
+        }, 2000);
+
+        // Set timer at interval to check if connected to MQTT server.
+        this.connectionTimer = setInterval(() => {
+            if (!this.isConnected()) {
+                logger.error('Not connected to MQTT server!');
+            }
+        }, utils.seconds(10));
     }
 
     async disconnect(): Promise<void> {
         clearTimeout(this.connectionTimer);
         clearTimeout(this.republishRetainedTimer);
-        await this.publish('bridge/state', utils.availabilityPayload('offline', settings.get()), {retain: true, qos: 0});
+
+        const stateData: Zigbee2MQTTAPI['bridge/state'] = {state: 'offline'};
+
+        await this.publish('bridge/state', JSON.stringify(stateData), {retain: true, qos: 0});
         this.eventBus.removeListeners(this);
         logger.info('Disconnecting from MQTT server');
-        this.client?.end();
+        await this.client?.endAsync();
     }
 
-    subscribe(topic: string): void {
-        this.client.subscribe(topic);
+    async subscribe(topic: string): Promise<void> {
+        await this.client.subscribeAsync(topic);
     }
 
-    unsubscribe(topic: string): void {
-        this.client.unsubscribe(topic);
+    async unsubscribe(topic: string): Promise<void> {
+        await this.client.unsubscribeAsync(topic);
+    }
+
+    @bind private async onConnect(): Promise<void> {
+        logger.info('Connected to MQTT server');
+
+        const stateData: Zigbee2MQTTAPI['bridge/state'] = {state: 'online'};
+
+        await this.publish('bridge/state', JSON.stringify(stateData), {retain: true, qos: 0});
+        await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
     @bind public onMessage(topic: string, message: Buffer): void {
@@ -158,18 +162,18 @@ export default class MQTT {
     }
 
     isConnected(): boolean {
-        return this.client && !this.client.reconnecting;
+        return this.client && !this.client.reconnecting && !this.client.disconnecting && !this.client.disconnected;
     }
 
     async publish(
         topic: string,
         payload: string,
-        options: MQTTOptions = {},
+        options: IClientPublishOptions = {},
         base = settings.get().mqtt.base_topic,
         skipLog = false,
         skipReceive = true,
     ): Promise<void> {
-        const defaultOptions: {qos: QoS; retain: boolean} = {qos: 0, retain: false};
+        const defaultOptions = {qos: 0 as const, retain: false};
         topic = `${base}/${topic}`;
 
         if (skipReceive) {
@@ -200,14 +204,20 @@ export default class MQTT {
             logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
-        const actualOptions: mqtt.IClientPublishOptions = {...defaultOptions, ...options};
+        const actualOptions: IClientPublishOptions = {...defaultOptions, ...options};
 
         if (settings.get().mqtt.force_disable_retain) {
             actualOptions.retain = false;
         }
 
-        return await new Promise<void>((resolve) => {
-            this.client.publish(topic, payload, actualOptions, () => resolve());
-        });
+        try {
+            await this.client.publishAsync(topic, payload, actualOptions);
+        } catch (error) {
+            /* istanbul ignore else */
+            if (!skipLog) {
+                logger.error(`MQTT server error: ${(error as Error).message}`);
+                logger.error(`Could not send message: topic: '${topic}', payload: '${payload}`);
+            }
+        }
     }
 }

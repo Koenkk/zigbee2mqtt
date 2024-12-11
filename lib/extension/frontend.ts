@@ -9,7 +9,7 @@ import {posix} from 'path';
 import {parse} from 'url';
 
 import bind from 'bind-decorator';
-import gzipStatic, {RequestHandler} from 'connect-gzip-static';
+import expressStaticGzip, {RequestHandler} from 'express-static-gzip';
 import finalhandler from 'finalhandler';
 import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';
@@ -73,13 +73,19 @@ export default class Frontend extends Extension {
     override async start(): Promise<void> {
         /* istanbul ignore next */
         const options = {
-            setHeaders: (res: ServerResponse, path: string): void => {
-                if (path.endsWith('index.html')) {
-                    res.setHeader('Cache-Control', 'no-store');
-                }
+            enableBrotli: true,
+            // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
+            index: false,
+            serveStatic: {
+                index: 'index.html',
+                setHeaders: (res: ServerResponse, path: string): void => {
+                    if (path.endsWith('index.html')) {
+                        res.setHeader('Cache-Control', 'no-store');
+                    }
+                },
             },
         };
-        this.fileServer = gzipStatic(frontend.getPath(), options);
+        this.fileServer = expressStaticGzip(frontend.getPath(), options);
         this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, 'api')});
 
         this.wss.on('connection', this.onWebSocketConnection);
@@ -111,11 +117,11 @@ export default class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss.clients.forEach((client) => {
+        this.wss?.clients.forEach((client) => {
             client.send(stringify({topic: 'bridge/state', payload: 'offline'}));
             client.terminate();
         });
-        this.wss.close();
+        this.wss?.close();
 
         await new Promise((resolve) => this.server.close(resolve));
     }
@@ -133,6 +139,7 @@ export default class Frontend extends Extension {
         // This is necessary for the browser to resolve relative assets paths correctly.
         request.originalUrl = request.url;
         request.url = '/' + newUrl;
+        request.path = request.url;
 
         this.fileServer(request, response, fin);
     }

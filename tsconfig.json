@@ -13,12 +13,11 @@
         "declarationMap": true,
         "outDir": "dist",
         "baseUrl": ".",
-        "allowJs": true,
         "rootDir": "lib",
         "inlineSourceMap": true,
         "resolveJsonModule": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "composite": true
     },
-    "include": ["lib/**/*", "lib/util/settings.schema.json"],
-    "exclude": ["node_modules"]
+    "include": ["./lib/**/*", "./lib/util/settings.schema.json"]
 }
