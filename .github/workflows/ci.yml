@@ -79,7 +79,7 @@ jobs:
                   file: docker/Dockerfile
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64
                   tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
-                  push: false
+                  push: true
                   build-args: |
                       COMMIT=${{ github.sha }}
                       VERSION=dev
