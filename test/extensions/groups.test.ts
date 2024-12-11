@@ -266,6 +266,75 @@ describe('Extension: Groups', () => {
         expect(mockMQTT.publishAsync).toHaveBeenNthCalledWith(2, 'zigbee2mqtt/bulb_color', stringify({state: 'OFF'}), {retain: false, qos: 0});
     });
 
+    it('Should not publish state change off if any lights within with non default-ep are still on when changed via device', async () => {
+        const device_1 = devices.bulb_color;
+        const device_2 = devices.QBKG03LM;
+        const endpoint_1 = device_1.getEndpoint(1)!;
+        const endpoint_2 = device_2.getEndpoint(2)!;
+        const group = groups.group_1;
+        group.members.push(endpoint_1);
+        group.members.push(endpoint_2);
+
+        await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
+        await flushPromises();
+        mockMQTT.publishAsync.mockClear();
+
+        await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
+        await flushPromises();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb_color', stringify({state: 'OFF'}), {retain: false, qos: 0});
+    });
+
+    it('Should not publish state change off if any lights within are still on when changed via device with non default-ep', async () => {
+        const device_1 = devices.bulb_color;
+        const device_2 = devices.QBKG03LM;
+        const endpoint_1 = device_1.getEndpoint(1)!;
+        const endpoint_2 = device_2.getEndpoint(2)!;
+        const endpoint_3 = device_2.getEndpoint(3)!;
+        endpoint_3.removeFromGroup(groups.ha_discovery_group);
+        const group = groups.group_1;
+        group.members.push(endpoint_1);
+        group.members.push(endpoint_2);
+        group.members.push(endpoint_3);
+
+        await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
+        await flushPromises();
+        mockMQTT.publishAsync.mockClear();
+
+        await mockMQTTEvents.message('zigbee2mqtt/wall_switch_double/set', stringify({state_left: 'OFF'}));
+        await flushPromises();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_left: 'OFF', state_right: 'ON'}), {
+            retain: false,
+            qos: 0,
+        });
+    });
+
+    it('Should publish state change off if all lights within turn off with non default-ep', async () => {
+        const device_1 = devices.bulb_color;
+        const device_2 = devices.QBKG03LM;
+        const endpoint_1 = device_1.getEndpoint(1)!;
+        const endpoint_2 = device_2.getEndpoint(2)!;
+        const group = groups.group_1;
+        group.members.push(endpoint_1);
+        group.members.push(endpoint_2);
+        settings.set(['groups'], {
+            1: {friendly_name: 'group_1', retain: false},
+        });
+
+        await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
+        await flushPromises();
+        mockMQTT.publishAsync.mockClear();
+
+        await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
+        await mockMQTTEvents.message('zigbee2mqtt/wall_switch_double/set', stringify({state_left: 'OFF'}));
+        await flushPromises();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb_color', stringify({state: 'OFF'}), {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_left: 'OFF'}), {retain: false, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'OFF'}), {retain: false, qos: 0});
+    });
+
     it('Should not publish state change off if any lights within are still on when changed via shared group', async () => {
         const device_1 = devices.bulb_color;
         const device_2 = devices.bulb;

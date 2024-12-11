@@ -74,7 +74,7 @@ describe('Extension: ExternalConverters', () => {
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
-        returnDevices.push(devices.external_converter_device.ieeeAddr);
+        returnDevices.push(devices.external_converter_device.ieeeAddr, devices.coordinator.ieeeAddr);
 
         controller = new Controller(jest.fn(), jest.fn());
     });
@@ -146,6 +146,21 @@ describe('Extension: ExternalConverters', () => {
                 model: 'external_converter_device',
                 description: 'external',
             }),
+        );
+
+        const bridgeDevices = mockMQTT.publishAsync.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/devices');
+        expect(bridgeDevices.length).toBe(1);
+        expect(JSON.parse(bridgeDevices[0][1])).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    model_id: 'external_converter_device',
+                    supported: true,
+                    definition: expect.objectContaining({
+                        description: 'external',
+                        model: 'external_converter_device',
+                    }),
+                }),
+            ]),
         );
     });
 
@@ -302,5 +317,29 @@ describe('Extension: ExternalConverters', () => {
             {retain: false, qos: 0},
         );
         expect(rmSyncSpy).not.toHaveBeenCalledWith(converterFilePath, {force: true});
+    });
+
+    it('handles invalid payloads', async () => {
+        await controller.start();
+        await flushPromises();
+        mocksClear.forEach((m) => m.mockClear());
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: 'test.js', transaction: 1 /* code */}));
+        await flushPromises();
+
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/converter/save',
+            stringify({data: {}, status: 'error', error: `Invalid payload`, transaction: 1}),
+            {retain: false, qos: 0},
+        );
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({namex: 'test.js', transaction: 2}));
+        await flushPromises();
+
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/converter/remove',
+            stringify({data: {}, status: 'error', error: `Invalid payload`, transaction: 2}),
+            {retain: false, qos: 0},
+        );
     });
 });

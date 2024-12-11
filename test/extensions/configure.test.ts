@@ -190,6 +190,16 @@ describe('Extension: Configure', () => {
         );
     });
 
+    it('Handles invalid payload for configure via MQTT', async () => {
+        await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({idx: '0x0017882104a44559'}));
+        await flushPromises();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/configure',
+            stringify({data: {}, status: 'error', error: 'Invalid payload'}),
+            {retain: false, qos: 0},
+        );
+    });
+
     it('Should not configure when interview not completed', async () => {
         const device = devices.remote;
         delete device.meta.configured;

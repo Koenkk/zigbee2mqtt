@@ -1,6 +1,8 @@
 import type {IClientPublishOptions} from 'mqtt';
 import type * as SdNotify from 'sd-notify';
 
+import type {Zigbee2MQTTAPI} from './types/api';
+
 import assert from 'assert';
 
 import bind from 'bind-decorator';
@@ -97,6 +99,7 @@ export class Controller {
         ];
 
         this.extensions = [
+            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
@@ -107,7 +110,6 @@ export class Controller {
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
             new ExtensionExternalExtensions(...this.extensionArgs),
-            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
 
@@ -253,7 +255,7 @@ export class Controller {
     }
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {
-        let message = {...payload};
+        let message: Zigbee2MQTTAPI['{friendlyName}'] = {...payload};
 
         // Update state cache with new state.
         const newState = this.state.set(entity, payload, stateChangeReason);

@@ -239,6 +239,7 @@ describe('Extension: Frontend', () => {
             'zigbee2mqtt/bulb_color',
             stringify({
                 state: 'ON',
+                effect: null,
                 power_on_behavior: null,
                 linkquality: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -261,6 +262,7 @@ describe('Extension: Frontend', () => {
                 topic: 'bulb_color',
                 payload: {
                     state: 'ON',
+                    effect: null,
                     power_on_behavior: null,
                     linkquality: null,
                     update: {state: null, installed_version: -1, latest_version: -1},

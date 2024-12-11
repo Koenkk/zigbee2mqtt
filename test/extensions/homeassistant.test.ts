@@ -410,7 +410,7 @@ describe('Extension: HomeAssistant', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
@@ -1090,6 +1090,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({
                 color: {hue: 0, saturation: 100, h: 0, s: 100},
                 color_mode: 'hs',
+                effect: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1112,6 +1113,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({
                 color: {x: 0.4576, y: 0.41},
                 color_mode: 'xy',
+                effect: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1133,6 +1135,7 @@ describe('Extension: HomeAssistant', () => {
             'zigbee2mqtt/bulb_color',
             stringify({
                 linkquality: null,
+                effect: null,
                 state: 'ON',
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1242,6 +1245,8 @@ describe('Extension: HomeAssistant', () => {
                 color_options: null,
                 brightness: 50,
                 color_temp: 370,
+                effect: null,
+                identify: null,
                 linkquality: 99,
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1280,6 +1285,8 @@ describe('Extension: HomeAssistant', () => {
                 color_options: null,
                 brightness: 50,
                 color_temp: 370,
+                effect: null,
+                identify: null,
                 linkquality: 99,
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
@@ -1719,7 +1726,7 @@ describe('Extension: HomeAssistant', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
@@ -1735,18 +1742,31 @@ describe('Extension: HomeAssistant', () => {
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB',
-            stringify({state_l2: 'ON', brightness_l2: 20, linkquality: null, state_l1: null, power_on_behavior_l1: null, power_on_behavior_l2: null}),
+            stringify({
+                state_l2: 'ON',
+                brightness_l2: 20,
+                linkquality: null,
+                state_l1: null,
+                effect_l1: null,
+                effect_l2: null,
+                power_on_behavior_l1: null,
+                power_on_behavior_l2: null,
+            }),
             {qos: 0, retain: false},
         );
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/U202DST600ZB/l2',
-            stringify({state: 'ON', brightness: 20, power_on_behavior: null}),
+            stringify({state: 'ON', brightness: 20, effect: null, power_on_behavior: null}),
             {qos: 0, retain: false},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/U202DST600ZB/l1', stringify({state: null, power_on_behavior: null}), {
-            qos: 0,
-            retain: false,
-        });
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/U202DST600ZB/l1',
+            stringify({state: null, effect: null, power_on_behavior: null}),
+            {
+                qos: 0,
+                retain: false,
+            },
+        );
     });
 
     it('Shouldnt crash in onPublishEntityState on group publish', async () => {
@@ -2369,26 +2389,6 @@ describe('Extension: HomeAssistant', () => {
             {retain: true, qos: 1},
         );
 
-        payload = {
-            name: 'Permit join timeout',
-            object_id: 'zigbee2mqtt_bridge_permit_join_timeout',
-            entity_category: 'diagnostic',
-            device_class: 'duration',
-            unit_of_measurement: 's',
-            unique_id: 'bridge_0x00124b00120144ae_permit_join_timeout_zigbee2mqtt',
-            state_topic: 'zigbee2mqtt/bridge/info',
-            value_template: '{{ iif(value_json.permit_join_timeout is defined, value_json.permit_join_timeout, None) }}',
-            origin: origin,
-            device: devicePayload,
-            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
-            availability_mode: 'all',
-        };
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'homeassistant/sensor/1221051039810110150109113116116_0x00124b00120144ae/permit_join_timeout/config',
-            stringify(payload),
-            {retain: true, qos: 1},
-        );
-
         // Switches.
         payload = {
             name: 'Permit join',
@@ -2452,7 +2452,6 @@ describe('Extension: HomeAssistant', () => {
             state_topic: 'zigbee2mqtt/0x18fc26000000cafe',
             unique_id: '0x18fc26000000cafe_device_mode_zigbee2mqtt',
             value_template: '{{ value_json.device_mode }}',
-            enabled_by_default: true,
         };
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/select/0x18fc26000000cafe/device_mode/config', stringify(payload), {
             retain: true,

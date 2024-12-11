@@ -1,3 +1,4 @@
+import type {Zigbee2MQTTAPI} from 'lib/types/api';
 import type {Ota} from 'zigbee-herdsman-converters';
 
 import assert from 'assert';
@@ -169,12 +170,15 @@ export default class OTAUpdate extends Extension {
             return;
         }
 
-        const message = utils.parseJSON(data.message, data.message);
+        const message = utils.parseJSON(data.message, data.message) as
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/check']
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/check/downgrade']
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/update']
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/update/downgrade'];
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1];
         const downgrade = Boolean(topicMatch[2]);
-        const responseData: {id: string; update_available?: boolean; from?: KeyValue | null; to?: KeyValue | null} = {id: ID};
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -197,8 +201,14 @@ export default class OTAUpdate extends Extension {
                     logger.info(msg);
 
                     await this.publishEntityState(device, this.getEntityPublishPayload(device, availableResult));
+
                     this.lastChecked[device.ieeeAddr] = Date.now();
-                    responseData.update_available = availableResult.available;
+                    const response = utils.getResponse<'bridge/response/device/ota_update/check'>(message, {
+                        id: ID,
+                        update_available: availableResult.available,
+                    });
+
+                    await this.mqtt.publish(`bridge/response/device/ota_update/check`, stringify(response));
                 } catch (e) {
                     error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
                     errorStack = (e as Error).stack;
@@ -209,9 +219,10 @@ export default class OTAUpdate extends Extension {
                 logger.info(msg);
 
                 try {
-                    const from_ = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
+                    const firmwareFrom = await this.readSoftwareBuildIDAndDateCode(device, 'immediate');
                     const fileVersion = await ota.update(device.zh, device.otaExtraMetas, downgrade, async (progress, remaining) => {
                         let msg = `Update of '${device.name}' at ${progress.toFixed(2)}%`;
+
                         if (remaining) {
                             msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
                         }
@@ -220,23 +231,32 @@ export default class OTAUpdate extends Extension {
 
                         await this.publishEntityState(device, this.getEntityPublishPayload(device, 'updating', progress, remaining ?? undefined));
                     });
+
                     logger.info(`Finished update of '${device.name}'`);
                     this.removeProgressAndRemainingFromState(device);
                     await this.publishEntityState(
                         device,
                         this.getEntityPublishPayload(device, {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion}),
                     );
-                    const to = await this.readSoftwareBuildIDAndDateCode(device);
-                    const [fromS, toS] = [stringify(from_), stringify(to)];
-                    logger.info(`Device '${device.name}' was updated from '${fromS}' to '${toS}'`);
-                    responseData.from = from_ ? utils.toSnakeCaseObject(from_) : null;
-                    responseData.to = to ? utils.toSnakeCaseObject(to) : null;
+
+                    const firmwareTo = await this.readSoftwareBuildIDAndDateCode(device);
+
+                    logger.info(() => `Device '${device.name}' was updated from '${stringify(firmwareFrom)}' to '${stringify(firmwareTo)}'`);
+
                     /**
                      * Re-configure after reading software build ID and date code, some devices use a
                      * custom attribute for this (e.g. Develco SMSZB-120)
                      */
                     this.eventBus.emitReconfigure({device});
                     this.eventBus.emitDevicesChanged();
+
+                    const response = utils.getResponse<'bridge/response/device/ota_update/update'>(message, {
+                        id: ID,
+                        from: firmwareFrom ? {software_build_id: firmwareFrom.softwareBuildID, date_code: firmwareFrom.dateCode} : undefined,
+                        to: firmwareTo ? {software_build_id: firmwareTo.softwareBuildID, date_code: firmwareTo.dateCode} : undefined,
+                    });
+
+                    await this.mqtt.publish(`bridge/response/device/ota_update/update`, stringify(response));
                 } catch (e) {
                     logger.debug(`Update of '${device.name}' failed (${e})`);
                     error = `Update of '${device.name}' failed (${(e as Error).message})`;
@@ -250,10 +270,10 @@ export default class OTAUpdate extends Extension {
             this.inProgress.delete(device.ieeeAddr);
         }
 
-        const response = utils.getResponse(message, responseData, error);
-        await this.mqtt.publish(`bridge/response/device/ota_update/${type}`, stringify(response));
-
         if (error) {
+            const response = utils.getResponse(message, {}, error);
+
+            await this.mqtt.publish(`bridge/response/device/ota_update/${type}`, stringify(response));
             logger.error(error);
 
             if (errorStack) {
