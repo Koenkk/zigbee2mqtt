@@ -1,5 +1,4 @@
 ARG TARGETPLATFORM
-ARG COMMIT
 
 # Need to use Alpine 3.18.4 which uses Node 18 for arm/v6 and arm/v7, otherwise the build hangs
 # See https://github.com/nodejs/docker-node/issues/2077
@@ -45,6 +44,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir /app/data
 
+ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
 
 ENTRYPOINT ["docker-entrypoint.sh"]
