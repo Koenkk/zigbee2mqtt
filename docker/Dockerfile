@@ -6,6 +6,7 @@ FROM alpine:3.18.4 AS arm-alpine
 FROM alpine:3.21 AS arm64-alpine
 FROM alpine:3.21 AS amd64-alpine
 FROM alpine:3.21 AS riscv64-alpine
+FROM alpine:3.21 AS 386-alpine
 
 FROM ${TARGETARCH}-alpine AS base
 
