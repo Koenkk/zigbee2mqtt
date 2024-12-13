@@ -21,7 +21,10 @@ COPY package.json pnpm-lock.yaml ./
 # Make and such are needed to compile serialport for riscv64
 RUN apk add make gcc g++ python3 linux-headers npm && \
     npm install -g pnpm && \
-    pnpm install --frozen-lockfile --no-optional
+    pnpm install --frozen-lockfile --no-optional && \
+    # Serialport requires to be re-build, otherwise starts fails
+    # See e.g. https://github.com/Koenkk/zigbee2mqtt/issues/25092
+    pnpm rebuild
 
 # Release
 FROM base AS release
