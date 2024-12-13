@@ -113,6 +113,7 @@ function loadSettingsWithDefaults(): void {
         const defaults = {
             discovery_topic: 'homeassistant',
             status_topic: 'hass/status',
+            legacy_action_sensor: false,
             experimental_event_entities: false,
         };
         const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};

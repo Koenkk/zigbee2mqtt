@@ -417,6 +417,12 @@ describe('Extension: HomeAssistant', () => {
             retain: true,
             qos: 1,
         });
+
+        // Should NOT discovery leagcy action sensor as option is not enabled.
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45520/action/config', expect.any(String), {
+            retain: true,
+            qos: 1,
+        });
     });
 
     it.each([
@@ -2457,5 +2463,45 @@ describe('Extension: HomeAssistant', () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it('Legacy action sensor', async () => {
+        settings.set(['homeassistant'], {legacy_action_sensor: true});
+        await resetExtension();
+
+        // Should discovery action sensor
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45520/action/config', expect.any(String), {
+            retain: true,
+            qos: 1,
+        });
+
+        // Should counter an action payload with an empty payload
+        mockMQTT.publishAsync.mockClear();
+        const device = devices.WXKG11LM;
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(mockMQTT.publishAsync.mock.calls[0][1])).toStrictEqual({
+            action: 'single',
+            battery: null,
+            linkquality: null,
+            voltage: null,
+            power_outage_count: null,
+            device_temperature: null,
+        });
+        expect(mockMQTT.publishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
+        expect(mockMQTT.publishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(mockMQTT.publishAsync.mock.calls[1][1])).toStrictEqual({
+            action: '',
+            battery: null,
+            linkquality: null,
+            voltage: null,
+            power_outage_count: null,
+            device_temperature: null,
+        });
+        expect(mockMQTT.publishAsync.mock.calls[1][2]).toStrictEqual({qos: 0, retain: false});
+        expect(mockMQTT.publishAsync.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
+        expect(mockMQTT.publishAsync.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
     });
 });
