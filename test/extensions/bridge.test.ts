@@ -274,7 +274,7 @@ describe('Extension: Bridge', () => {
                 config_schema: settings.schemaJson,
                 coordinator: {ieee_address: '0x00124b00120144ae', meta: {revision: 20190425, version: 1}, type: 'z-Stack'},
                 log_level: 'info',
-                network: {channel: 15, extended_pan_id: '0x001122', pan_id: 5674},
+                network: {channel: 15, extended_pan_id: '0x64c5fd698daf0c00', pan_id: 5674},
                 permit_join: false,
                 permit_join_end: undefined,
                 restart_required: false,

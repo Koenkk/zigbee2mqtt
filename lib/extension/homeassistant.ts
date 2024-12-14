@@ -385,6 +385,7 @@ export default class HomeAssistant extends Extension {
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
     private statusTopic: string;
+    private legacyActionSensor: boolean;
     private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
@@ -416,6 +417,7 @@ export default class HomeAssistant extends Extension {
         this.discoveryTopic = haSettings.discovery_topic;
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;
+        this.legacyActionSensor = haSettings.legacy_action_sensor;
         this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
@@ -1069,7 +1071,7 @@ export default class HomeAssistant extends Extension {
                         discoveryEntries.push({
                             type: 'event',
                             object_id: firstExpose.property,
-                            mockProperties: [{property: firstExpose.property, value: null}],
+                            mockProperties: [],
                             discovery_payload: {
                                 name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                                 state_topic: true,
@@ -1079,8 +1081,9 @@ export default class HomeAssistant extends Extension {
                             },
                         });
                     }
-                    // Don't expose action sensor, use MQTT device trigger instead
-                    break;
+                    if (!this.legacyActionSensor) {
+                        break;
+                    }
                 }
 
                 const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json.${firstExpose.property} }}` : undefined;
@@ -1275,12 +1278,21 @@ export default class HomeAssistant extends Extension {
         }
 
         /**
+         * Publish an empty value for click and action payload, in this way Home Assistant
+         * can use Home Assistant entities in automations.
+         * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
+         */
+        if (this.legacyActionSensor && data.message.action) {
+            await this.publishEntityState(data.entity, {action: ''});
+        }
+
+        /**
          * Implements the MQTT device trigger (https://www.home-assistant.io/integrations/device_trigger.mqtt/)
          * The MQTT device trigger does not support JSON parsing, so it cannot listen to zigbee2mqtt/my_device
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_device/action
          */
-        if (entity.isDevice() && entity.definition && 'action' in data.message) {
+        if (entity.isDevice() && entity.definition && data.message.action) {
             const value = data.message['action'].toString();
             await this.publishDeviceTriggerDiscover(entity, 'action', value);
             await this.mqtt.publish(`${data.entity.name}/action`, value, {});
@@ -2106,7 +2118,7 @@ export default class HomeAssistant extends Extension {
             `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
             `{% endif %}\n` +
             `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
 
         return value_template;
     }

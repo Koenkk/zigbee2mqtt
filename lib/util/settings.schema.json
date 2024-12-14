@@ -29,6 +29,12 @@
                             "requiresRestart": true,
                             "examples": ["homeassistant/status"]
                         },
+                        "legacy_action_sensor": {
+                            "type": "boolean",
+                            "title": "Home Assistant legacy action sensors",
+                            "description": "Home Assistant legacy actions sensor, when enabled a action sensor will be discoverd and an empty `action` will be send after every published action.",
+                            "default": false
+                        },
                         "experimental_event_entities": {
                             "type": "boolean",
                             "title": "Home Assistant experimental event entities",

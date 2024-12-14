@@ -1,4 +1,14 @@
-FROM alpine:3.18.4 AS base
+ARG TARGETPLATFORM
+
+# Need to use Alpine 3.18.4 which uses Node 18 for arm/v6 and arm/v7, otherwise the build hangs.
+# See https://github.com/nodejs/docker-node/issues/2077
+FROM alpine:3.18.4 AS linux-arm-alpine
+FROM alpine:3.21 AS linux-arm64-alpine
+FROM alpine:3.21 AS linux-amd64-alpine
+FROM alpine:3.21 AS linux-riscv64-alpine
+FROM alpine:3.21 AS linux-386-alpine
+
+FROM linux-${TARGETARCH}-alpine AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -8,9 +18,13 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
+# Make and such are needed to compile serialport for riscv64
 RUN apk add make gcc g++ python3 linux-headers npm && \
     npm install -g pnpm && \
-    pnpm install --frozen-lockfile --no-optional
+    pnpm install --frozen-lockfile --no-optional && \
+    # Serialport requires to be re-build, otherwise starts fails
+    # See e.g. https://github.com/Koenkk/zigbee2mqtt/issues/25092
+    pnpm rebuild
 
 # Release
 FROM base AS release
@@ -18,7 +32,7 @@ FROM base AS release
 ARG DATE
 ARG VERSION
 LABEL org.opencontainers.image.authors="Koen Kanters"
-LABEL org.opencontainers.image.title="zigbee2mqtt"
+LABEL org.opencontainers.image.title="Zigbee2MQTT"
 LABEL org.opencontainers.image.description="Zigbee to MQTT bridge using Zigbee-herdsman"
 LABEL org.opencontainers.image.url="https://github.com/Koenkk/zigbee2mqtt"
 LABEL org.opencontainers.image.documentation="https://www.zigbee2mqtt.io/"

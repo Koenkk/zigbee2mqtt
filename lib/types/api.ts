@@ -165,7 +165,8 @@ export interface Zigbee2MQTTAPI {
         };
         network: {
             pan_id: number;
-            extended_pan_id: number;
+            /** `0x${string}` 8-len */
+            extended_pan_id: string;
             channel: number;
         };
         log_level: 'debug' | 'info' | 'warning' | 'error';

@@ -410,10 +410,16 @@ describe('Extension: HomeAssistant', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
+        // Should NOT discovery leagcy action sensor as option is not enabled.
+        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45520/action/config', expect.any(String), {
             retain: true,
             qos: 1,
         });
@@ -1726,7 +1732,7 @@ describe('Extension: HomeAssistant', () => {
             unique_id: '0x0017880104e45520_action_zigbee2mqtt',
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/event/0x0017880104e45520/action/config', stringify(payload), {
@@ -2457,5 +2463,45 @@ describe('Extension: HomeAssistant', () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it('Legacy action sensor', async () => {
+        settings.set(['homeassistant'], {legacy_action_sensor: true});
+        await resetExtension();
+
+        // Should discovery action sensor
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45520/action/config', expect.any(String), {
+            retain: true,
+            qos: 1,
+        });
+
+        // Should counter an action payload with an empty payload
+        mockMQTT.publishAsync.mockClear();
+        const device = devices.WXKG11LM;
+        const payload = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(mockMQTT.publishAsync.mock.calls[0][1])).toStrictEqual({
+            action: 'single',
+            battery: null,
+            linkquality: null,
+            voltage: null,
+            power_outage_count: null,
+            device_temperature: null,
+        });
+        expect(mockMQTT.publishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
+        expect(mockMQTT.publishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/button');
+        expect(JSON.parse(mockMQTT.publishAsync.mock.calls[1][1])).toStrictEqual({
+            action: '',
+            battery: null,
+            linkquality: null,
+            voltage: null,
+            power_outage_count: null,
+            device_temperature: null,
+        });
+        expect(mockMQTT.publishAsync.mock.calls[1][2]).toStrictEqual({qos: 0, retain: false});
+        expect(mockMQTT.publishAsync.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
+        expect(mockMQTT.publishAsync.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
     });
 });
