@@ -233,6 +233,9 @@ export function writeDefaultConfiguration(config: unknown = undefined): void {
             9: {
                 friendly_name: 'ha_discovery_group',
             },
+            19: {
+                friendly_name: 'hue_twilight_group',
+            },
         },
     };
 

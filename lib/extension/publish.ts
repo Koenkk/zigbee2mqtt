@@ -1,5 +1,7 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
+import 'zigbee-herdsman/';
+
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
@@ -144,7 +146,6 @@ export default class Publish extends Extension {
                   )
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
-        logger.debug(`== ALL CONVERTERS: ${converters.map((c) => c.key)}`);
 
         this.updateMessageHomeAssistant(message, entityState);
 
@@ -202,19 +203,10 @@ export default class Publish extends Extension {
             if (usedConverters[endpointOrGroupID] === undefined) usedConverters[endpointOrGroupID] = [];
             /* istanbul ignore next */
             // Match any key if the toZigbee converter defines no key.
-            logger.debug(`== FIND CONVERTER: ${key}`);
-            for (const converter of converters) {
-                logger.debug(
-                    `== MATCHING CONVERTER: key='${converter.key}', endpoints='${converter.endpoints}', isGroup=${target instanceof Group}, endpointName=${endpointName}`,
-                );
-            }
             const converter = converters.find(
                 (c) =>
-                    (!c.key || c.key.includes(key)) &&
-                    (target instanceof Group || !c.endpoints || (endpointName && c.endpoints.includes(endpointName))),
+                    (!c.key || c.key.includes(key)) && (re instanceof Group || !c.endpoints || (endpointName && c.endpoints.includes(endpointName))),
             );
-
-            logger.debug(`== USING CONVERTER: ${converter?.key}`);
 
             if (parsedTopic.type === 'set' && converter && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
