@@ -429,6 +429,19 @@ describe('Extension: Publish', () => {
         );
     });
 
+    it('Should publish messages to group with just 1 Hue Twilight in int (convers have an `endpoint` on it)', async () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/24792
+        const group = groups.hue_twilight_group;
+        await mockMQTTEvents.message('zigbee2mqtt/hue_twilight_group/set', stringify({state: 'ON'}));
+        await flushPromises();
+        console.log(mockLogger.warning.mock.calls);
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(group.command).toHaveBeenCalledWith('genOnOff', 'on', {}, {});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTT.publishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/hue_twilight_group');
+        expect(JSON.parse(mockMQTT.publishAsync.mock.calls[1][1])).toStrictEqual({state: 'ON'});
+    });
+
     it('Should publish messages to groups with on and brightness', async () => {
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
@@ -483,10 +496,10 @@ describe('Extension: Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         settings.addGroup('group_12312', '12312');
-        expect(Object.values(groups).length).toBe(10);
+        expect(Object.values(groups).length).toBe(11);
         await mockMQTTEvents.message('zigbee2mqtt/group_12312/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(groups).length).toBe(11);
+        expect(Object.values(groups).length).toBe(12);
         // group contains no device
         // @ts-expect-error runtime mock
         expect(groups.group_12312.command).toHaveBeenCalledTimes(0);

@@ -383,6 +383,26 @@ const bulb_2 = new Device(
     'Mains (single phase)',
     'TRADFRI bulb E27 WS opal 980lm',
 );
+const hue_twilight = new Device(
+    'Router',
+    '0x000b57cdfec6a5b3',
+    40399,
+    4107,
+    [
+        new Endpoint(1, [0, 3, 4, 5, 6, 8, 768, 2821, 4096], [5, 25, 32, 4096], '0x000b57cdfec6a5b3', [], {
+            lightingColorCtrl: {colorCapabilities: 254},
+        }),
+        new Endpoint(11, [0, 3, 4, 5, 6, 8, 768, 2821, 4096], [5, 25, 32, 4096], '0x000b57cdfec6a5b3', [], {
+            lightingColorCtrl: {colorCapabilities: 254},
+        }),
+        new Endpoint(12, [0, 3, 4, 5, 6, 8, 768, 2821, 4096], [5, 25, 32, 4096], '0x000b57cdfec6a5b3', [], {
+            lightingColorCtrl: {colorCapabilities: 254},
+        }),
+    ],
+    true,
+    'Mains (single phase)',
+    'LGT003',
+);
 const TS0601_thermostat = new Device(
     'EndDevice',
     '0x0017882104a44559',
@@ -488,6 +508,7 @@ export const groups = {
     gledopto_group: new Group(21, [GLEDOPTO_2ID.endpoints[3]]),
     default_bind_group: new Group(901, []),
     ha_discovery_group: new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[2]]),
+    hue_twilight_group: new Group(19, [hue_twilight.endpoints[1]]),
 };
 
 const groupMembersBackup = Object.fromEntries(Object.entries(groups).map((v) => [v[0], [...v[1].members]]));
@@ -545,6 +566,7 @@ export const devices = {
     ),
     bulb_color: bulb_color,
     bulb_2: bulb_2,
+    hue_twilight,
     bulb_color_2: bulb_color_2,
     remote: new Device(
         'EndDevice',
