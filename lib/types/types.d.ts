@@ -100,6 +100,7 @@ declare global {
             discovery_topic: string;
             status_topic: string;
             experimental_event_entities: boolean;
+            legacy_action_sensor: boolean;
         };
         availability?: {
             active: {timeout: number};
