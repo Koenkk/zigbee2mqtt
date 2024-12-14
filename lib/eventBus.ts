@@ -27,6 +27,7 @@ interface EventBusMap {
     scenesChanged: [data: eventdata.ScenesChanged];
     reconfigure: [data: eventdata.Reconfigure];
     stateChange: [data: eventdata.StateChange];
+    sourceRoute: [data: eventdata.SourceRouteChanged];
 }
 type EventBusListener<K> = K extends keyof EventBusMap
     ? EventBusMap[K] extends unknown[]
@@ -192,6 +193,13 @@ export default class EventBus {
     public emitExposesAndDevicesChanged(device: Device): void {
         this.emitDevicesChanged();
         this.emitExposesChanged({device});
+    }
+
+    public emitSourceRoute(data: eventdata.SourceRouteChanged): void {
+        this.emitter.emit('sourceRoute', data);
+    }
+    public onSourceRoute(key: ListenerKey, callback: (data: eventdata.SourceRouteChanged) => void): void {
+        this.on('sourceRoute', callback, key);
     }
 
     private on<K extends keyof EventBusMap>(event: K, callback: EventBusListener<K>, key: ListenerKey): void {

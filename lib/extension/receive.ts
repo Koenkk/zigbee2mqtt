@@ -22,6 +22,7 @@ export default class Receive extends Extension {
     async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
+        this.eventBus.onSourceRoute(this, this.onSourceRouteChanged);
     }
 
     @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
@@ -182,5 +183,15 @@ export default class Receive extends Extension {
         } else {
             await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
         }
+    }
+
+    @bind async onSourceRouteChanged(data: eventdata.SourceRouteChanged): Promise<void> {
+        const device = this.zigbee.resolveEntity(data.device.ieeeAddr);
+        if (!device) {
+            logger.warning(`Source route indication received for unknown device '${data.device.ieeeAddr}'`);
+            return;
+        }
+        logger.debug(`Source route indication received for '${device.name}'`);
+        this.state.set(device, {source_route: data.relaylist});
     }
 }
