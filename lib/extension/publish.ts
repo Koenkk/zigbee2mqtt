@@ -82,7 +82,7 @@ export default class Publish extends Extension {
          * the color temperature. This would lead to 2 zigbee publishes, where the first one
          * (state) is probably unnecessary.
          */
-        if (settings.get().homeassistant) {
+        if (settings.get().homeassistant.enabled) {
             const hasColorTemp = message.color_temp !== undefined;
             const hasColor = message.color !== undefined;
             const hasBrightness = message.brightness !== undefined;

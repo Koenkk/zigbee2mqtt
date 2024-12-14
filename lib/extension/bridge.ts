@@ -230,13 +230,12 @@ export default class Bridge extends Extension {
             throw new Error(`Invalid payload`);
         }
 
-        const newSettings = message.options;
-        const restartRequired = settings.apply(newSettings);
-        if (restartRequired) this.restartRequired = true;
+        const newSettings = message.options as Partial<Settings>;
+        this.restartRequired = settings.apply(newSettings);
 
         // Apply some settings on-the-fly.
-        if (newSettings.homeassistant != undefined) {
-            await this.enableDisableExtension(!!settings.get().homeassistant, 'HomeAssistant');
+        if (newSettings.homeassistant) {
+            await this.enableDisableExtension(settings.get().homeassistant.enabled, 'HomeAssistant');
         }
 
         if (newSettings.advanced?.log_level != undefined) {
@@ -671,10 +670,7 @@ export default class Bridge extends Extension {
         // @ts-expect-error hidden from publish
         delete config.advanced.network_key;
         delete config.mqtt.password;
-
-        if (config.frontend) {
-            delete config.frontend.auth_token;
-        }
+        delete config.frontend.auth_token;
 
         const networkParams = await this.zigbee.getNetworkParameters();
         const payload: Zigbee2MQTTAPI['bridge/info'] = {

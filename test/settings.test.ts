@@ -15,7 +15,7 @@ const devicesFile2 = mockedData.joinPath('devices2.yaml');
 const groupsFile = mockedData.joinPath('groups.yaml');
 const secretFile = mockedData.joinPath('secret.yaml');
 const minimalConfig = {
-    homeassistant: true,
+    homeassistant: {enabled: true},
     mqtt: {base_topic: 'zigbee2mqtt', server: 'localhost'},
 };
 
@@ -905,9 +905,9 @@ describe('Settings', () => {
     });
 
     it('Frontend config', () => {
-        write(configurationFile, {...minimalConfig, frontend: true});
+        write(configurationFile, {frontend: {enabled: true}});
 
         settings.reRead();
-        expect(settings.get().frontend).toStrictEqual({port: 8080, auth_token: null, base_url: '/'});
+        expect(settings.get().frontend).toStrictEqual({enabled: true, port: 8080, base_url: '/'});
     });
 });

@@ -168,8 +168,12 @@ function parseJSON(value: string, fallback: string): KeyValue | string {
  */
 function removeNullPropertiesFromObject(obj: KeyValue, ignoreKeys: string[] = []): void {
     for (const key of Object.keys(obj)) {
-        if (ignoreKeys.includes(key)) continue;
+        if (ignoreKeys.includes(key)) {
+            continue;
+        }
+
         const value = obj[key];
+
         if (value == null) {
             delete obj[key];
         } else if (typeof value === 'object') {
@@ -258,7 +262,7 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
         return !!entity.options.availability;
     }
 
-    if (!settings.availability) {
+    if (!settings.availability.enabled) {
         return false;
     }
 

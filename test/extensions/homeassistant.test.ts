@@ -51,7 +51,7 @@ describe('Extension: HomeAssistant', () => {
         version = `Zigbee2MQTT ${z2m_version}`;
         origin.sw = z2m_version;
         jest.useFakeTimers();
-        settings.set(['homeassistant'], true);
+        settings.set(['homeassistant'], {enabled: true});
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
@@ -69,7 +69,7 @@ describe('Extension: HomeAssistant', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(['homeassistant'], true);
+        settings.set(['homeassistant'], {enabled: true});
         data.writeEmptyState();
         // @ts-expect-error private
         controller.state.load();
@@ -110,7 +110,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should discover devices and groups', async () => {
-        settings.set(['homeassistant'], {experimental_event_entities: true});
+        settings.set(['homeassistant', 'experimental_event_entities'], true);
         await resetExtension();
 
         let payload;
@@ -1008,7 +1008,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should discover devices with custom homeassistant.discovery_topic', async () => {
-        settings.set(['homeassistant'], {discovery_topic: 'my_custom_discovery_topic'});
+        settings.set(['homeassistant', 'discovery_topic'], 'my_custom_discovery_topic');
         await resetExtension();
 
         const payload = {
@@ -1040,7 +1040,7 @@ describe('Extension: HomeAssistant', () => {
 
     it('Should throw error when starting with attributes output', async () => {
         settings.set(['advanced', 'output'], 'attribute');
-        settings.set(['homeassistant'], true);
+        settings.set(['homeassistant'], {enabled: true});
         expect(() => {
             new Controller(jest.fn(), jest.fn());
         }).toThrow('Home Assistant integration is not possible with attribute output!');
@@ -1340,7 +1340,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should discover devices with availability', async () => {
-        settings.set(['availability'], true);
+        settings.set(['availability'], {enabled: true});
         await resetExtension();
 
         const payload = {
@@ -1707,7 +1707,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should enable experimental event entities', async () => {
-        settings.set(['homeassistant'], {experimental_event_entities: true});
+        settings.set(['homeassistant', 'experimental_event_entities'], true);
         settings.set(['devices', '0x0017880104e45520'], {
             friendly_name: 'button',
             retain: false,
@@ -2466,7 +2466,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Legacy action sensor', async () => {
-        settings.set(['homeassistant'], {legacy_action_sensor: true});
+        settings.set(['homeassistant', 'legacy_action_sensor'], true);
         await resetExtension();
 
         // Should discovery action sensor

@@ -22,8 +22,12 @@ describe('Settings Migration', () => {
     });
 
     afterEach(() => {
-        // always validate after each test
-        expect(settings.validate()).toStrictEqual([]);
+        settings.testing.CURRENT_VERSION = settings.CURRENT_VERSION;
+
+        if (settings.get().version === settings.CURRENT_VERSION) {
+            // always validate after each test when up to current version (matching current schema)
+            expect(settings.validate()).toStrictEqual([]);
+        }
     });
 
     it('Fails on unsupported version', () => {
@@ -41,7 +45,7 @@ describe('Settings Migration', () => {
     });
 
     describe('Migrates v1.x.x to v2.0.0', () => {
-        const DEFAULT_CONFIG_V2 = {
+        const BASE_CONFIG = {
             homeassistant: false,
             mqtt: {
                 base_topic: 'zigbee2mqtt',
@@ -268,27 +272,28 @@ describe('Settings Migration', () => {
         };
 
         beforeEach(() => {
-            data.writeDefaultConfiguration(DEFAULT_CONFIG_V2);
+            settings.testing.CURRENT_VERSION = 2; // stop update after this version
+            data.writeDefaultConfiguration(BASE_CONFIG);
             settings.reRead();
         });
 
         it('no change needed - only add version', () => {
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
         });
 
         it('remove all', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
 
             settings.set(['homeassistant', 'legacy_triggers'], true);
@@ -314,9 +319,7 @@ describe('Settings Migration', () => {
             settings.set(['groups', '12', 'devices'], ['0x0017880104e45521', '0x0017880104e45524']);
             settings.set(['external_converters'], ['zyx.js']);
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
-
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     permit_join: true,
@@ -354,8 +357,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings.advanced).toStrictEqual({});
             expect(migratedSettings.device_options).toStrictEqual({});
@@ -394,9 +396,9 @@ describe('Settings Migration', () => {
 
         it('remove partial', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
 
             settings.set(['advanced', 'homeassistant_legacy_triggers'], true);
@@ -412,9 +414,9 @@ describe('Settings Migration', () => {
             settings.set(['device_options', 'legacy'], true);
             settings.set(['groups', '12', 'devices'], ['0x0017880104e45521', '0x0017880104e45524']);
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     permit_join: true,
@@ -436,8 +438,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings.advanced).toStrictEqual({});
             expect(migratedSettings.device_options).toStrictEqual({});
@@ -472,17 +473,17 @@ describe('Settings Migration', () => {
 
         it('changes log_level', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
             afterSettings.advanced = {log_level: 'warning'};
 
             settings.set(['advanced', 'log_level'], 'warn');
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     advanced: {
@@ -493,8 +494,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
@@ -506,17 +506,17 @@ describe('Settings Migration', () => {
 
         it('does not changes already migrated log_level', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
             afterSettings.advanced = {log_level: 'warning'};
 
             settings.set(['advanced', 'log_level'], 'warning');
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     advanced: {
@@ -527,8 +527,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
@@ -540,17 +539,17 @@ describe('Settings Migration', () => {
 
         it('does not changes other log_level', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
             afterSettings.advanced = {log_level: 'info'};
 
             settings.set(['advanced', 'log_level'], 'info');
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     advanced: {
@@ -561,8 +560,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
@@ -574,9 +572,9 @@ describe('Settings Migration', () => {
 
         it('transfer all', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
             afterSettings.advanced = {
                 transmit_power: 12,
@@ -603,9 +601,9 @@ describe('Settings Migration', () => {
             settings.set(['ban'], ['abcd']);
             settings.set(['whitelist'], ['efgh']);
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     advanced: {
@@ -628,8 +626,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
@@ -653,9 +650,9 @@ describe('Settings Migration', () => {
 
         it('transfer partial', () => {
             // @ts-expect-error workaround
-            const beforeSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
-            const afterSettings = objectAssignDeep.noMutate({}, settings.getInternalSettings());
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             afterSettings.version = 2;
             afterSettings.advanced = {}; // caused by pushing to key and removing all
             afterSettings.serial.baudrate = 115200;
@@ -673,9 +670,9 @@ describe('Settings Migration', () => {
             settings.set(['ban'], ['abcd']);
             settings.set(['blocklist'], ['efgh']);
 
-            // console.log(JSON.stringify(settings.getInternalSettings(), undefined, 2));
+            // console.log(JSON.stringify(settings.getWrittenSettings(), undefined, 2));
 
-            expect(settings.getInternalSettings()).toStrictEqual(
+            expect(settings.getPersistedSettings()).toStrictEqual(
                 // @ts-expect-error workaround
                 objectAssignDeep.noMutate(beforeSettings, {
                     homeassistant: {discovery_topic: 'ha_disc_newer'},
@@ -694,8 +691,7 @@ describe('Settings Migration', () => {
 
             settingsMigration.migrateIfNecessary();
 
-            const migratedSettings = settings.getInternalSettings();
-            // console.log(JSON.stringify(migratedSettings, undefined, 2));
+            const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
@@ -705,6 +701,111 @@ describe('Settings Migration', () => {
             expect(migrationNotesContent).toContain(`[TRANSFER] Baudrate was moved from advanced.baudrate to serial.baudrate.`);
             expect(migrationNotesContent).toContain(`[REMOVAL] RTSCTS was moved from advanced.rtscts to serial.rtscts.`);
             expect(migrationNotesContent).toContain(`[TRANSFER] ban was renamed to passlist.`);
+        });
+    });
+
+    describe('Migrates v1.0.x to v2.1.0', () => {
+        const BASE_CONFIG = {
+            mqtt: {
+                server: 'mqtt://localhost',
+            },
+        };
+
+        beforeEach(() => {
+            settings.testing.CURRENT_VERSION = 2.1; // stop update after this version
+            data.writeDefaultConfiguration(BASE_CONFIG);
+            settings.reRead();
+        });
+
+        it('Update', () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 2.1;
+            afterSettings.homeassistant = {enabled: false};
+            afterSettings.frontend = {enabled: true};
+            afterSettings.availability = {enabled: true, active: {timeout: 15}};
+            afterSettings.advanced = {
+                log_level: 'warning',
+                transmit_power: 12,
+            };
+
+            settings.set(['homeassistant'], false);
+            settings.set(['frontend'], true);
+            settings.set(['availability'], {active: {timeout: 15}});
+            settings.set(['permit_join'], true);
+            settings.set(['advanced', 'log_level'], 'warn');
+            settings.set(['experimental', 'transmit_power'], 12);
+
+            expect(settings.getPersistedSettings()).toStrictEqual(
+                // @ts-expect-error workaround
+                objectAssignDeep.noMutate(beforeSettings, {
+                    homeassistant: false,
+                    frontend: true,
+                    availability: {active: {timeout: 15}},
+                    permit_join: true,
+                    advanced: {log_level: 'warn'},
+                    experimental: {transmit_power: 12},
+                }),
+            );
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+
+            expect(migratedSettings).toStrictEqual(afterSettings);
+        });
+    });
+
+    describe('Migrates v2.0.x to v2.1.0', () => {
+        const BASE_CONFIG = {
+            version: 2,
+            mqtt: {
+                server: 'mqtt://localhost',
+            },
+        };
+
+        beforeEach(() => {
+            settings.testing.CURRENT_VERSION = 2.1; // stop update after this version
+            data.writeDefaultConfiguration(BASE_CONFIG);
+            settings.reRead();
+        });
+
+        it('Update', () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 2.1;
+            afterSettings.homeassistant = {enabled: false};
+            afterSettings.frontend = {enabled: true};
+            afterSettings.availability = {enabled: true, active: {timeout: 15}};
+
+            settings.set(['homeassistant'], false);
+            settings.set(['frontend'], true);
+            settings.set(['availability'], {active: {timeout: 15}});
+
+            expect(settings.getPersistedSettings()).toStrictEqual(
+                // @ts-expect-error workaround
+                objectAssignDeep.noMutate(beforeSettings, {
+                    homeassistant: false,
+                    frontend: true,
+                    availability: {active: {timeout: 15}},
+                }),
+            );
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+
+            expect(migratedSettings).toStrictEqual(afterSettings);
+            const migrationNotes = mockedData.joinPath('migration-2.0.x-to-2.1.x.log');
+            expect(existsSync(migrationNotes)).toStrictEqual(true);
+            const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'homeassistant' is now always an object.`);
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
         });
     });
 });

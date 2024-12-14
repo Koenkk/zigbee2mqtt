@@ -413,7 +413,7 @@ export default class HomeAssistant extends Extension {
         }
 
         const haSettings = settings.get().homeassistant;
-        assert(haSettings, 'Home Assistant extension used without settings');
+        assert(haSettings.enabled, `Home Assistant extension created with setting 'enabled: false'`);
         this.discoveryTopic = haSettings.discovery_topic;
         this.discoveryRegex = new RegExp(`${haSettings.discovery_topic}/(.*)/(.*)/(.*)/config`);
         this.statusTopic = haSettings.status_topic;

@@ -44,7 +44,7 @@ describe('Extension: Availability', () => {
         jest.spyOn(utils, 'sleep').mockImplementation();
         jest.useFakeTimers();
         settings.reRead();
-        settings.set(['availability'], true);
+        settings.set(['availability'], {enabled: true});
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         await flushPromises();
@@ -54,7 +54,7 @@ describe('Extension: Availability', () => {
         jest.setSystemTime(utils.minutes(1));
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(['availability'], true);
+        settings.set(['availability'], {enabled: true});
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], false);
         Object.values(devices).forEach((d) => (d.lastSeen = utils.minutes(1)));
         mocksClear.forEach((m) => m.mockClear());
@@ -223,7 +223,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should allow to change availability timeout via avaiability options', async () => {
-        settings.set(['availability'], {active: {timeout: 30}});
+        settings.set(['availability', 'active', 'timeout'], 30);
         await resetExtension();
         devices.bulb_color.ping.mockClear();
 
@@ -257,7 +257,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should allow to be disabled', async () => {
-        settings.set(['availability'], false);
+        settings.set(['availability'], {enabled: false});
         await resetExtension();
         devices.bulb_color.ping.mockClear();
 
@@ -266,7 +266,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should allow to enable availability for just one device', async () => {
-        settings.set(['availability'], false);
+        settings.set(['availability'], {enabled: false});
         settings.set(['devices', devices.bulb_color.ieeeAddr, 'availability'], true);
 
         await resetExtension();
