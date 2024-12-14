@@ -496,10 +496,10 @@ describe('Extension: Publish', () => {
 
     it('Should create and publish to group which is in configuration.yaml but not in zigbee-herdsman', async () => {
         settings.addGroup('group_12312', '12312');
-        expect(Object.values(groups).length).toBe(10);
+        expect(Object.values(groups).length).toBe(11);
         await mockMQTTEvents.message('zigbee2mqtt/group_12312/set', stringify({state: 'ON'}));
         await flushPromises();
-        expect(Object.values(groups).length).toBe(11);
+        expect(Object.values(groups).length).toBe(12);
         // group contains no device
         // @ts-expect-error runtime mock
         expect(groups.group_12312.command).toHaveBeenCalledTimes(0);

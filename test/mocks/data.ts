@@ -201,6 +201,9 @@ export function writeDefaultConfiguration(config: unknown = undefined): void {
             '0x0017880104e45562': {
                 friendly_name: 'heating_actuator',
             },
+            '0x000b57cdfec6a5b3': {
+                friendly_name: 'hue_twilight',
+            },
         },
         groups: {
             1: {
