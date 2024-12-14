@@ -202,6 +202,9 @@ export const DEFAULT_CONFIGURATION = {
         '0x0017880104e45562': {
             friendly_name: 'heating_actuator',
         },
+        '0x000b57cdfec6a5b3': {
+            friendly_name: 'hue_twilight',
+        },
     },
     groups: {
         1: {
@@ -233,6 +236,9 @@ export const DEFAULT_CONFIGURATION = {
         },
         9: {
             friendly_name: 'ha_discovery_group',
+        },
+        19: {
+            friendly_name: 'hue_twilight_group',
         },
     },
 };
