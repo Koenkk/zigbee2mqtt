@@ -25,6 +25,7 @@ returnDevices.push(
     devices.ZNCZ02LM.ieeeAddr,
     devices.GLEDOPTO_2ID.ieeeAddr,
     devices.QBKG03LM.ieeeAddr,
+    devices.hue_twilight.ieeeAddr,
 );
 
 describe('Extension: Availability', () => {

@@ -85,7 +85,7 @@ describe('Extension: Bridge', () => {
         const zhVersion = await utils.getDependencyVersion('zigbee-herdsman');
         const zhcVersion = await utils.getDependencyVersion('zigbee-herdsman-converters');
         const directory = settings.get().advanced.log_directory;
-        // console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/info')[1])
+        // console.log(mockMQTT.publishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/info')![1]);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/info',
             stringify({
@@ -118,36 +118,78 @@ describe('Extension: Bridge', () => {
                     blocklist: [],
                     device_options: {},
                     devices: {
-                        '0x000b57fffec6a5b2': {description: 'this is my bulb', friendly_name: 'bulb', retain: true},
+                        '0x000b57cdfec6a5b3': {friendly_name: 'hue_twilight'},
+                        '0x000b57fffec6a5b2': {
+                            description: 'this is my bulb',
+                            friendly_name: 'bulb',
+                            retain: true,
+                        },
                         '0x000b57fffec6a5b3': {friendly_name: 'bulb_color', retain: false},
-                        '0x000b57fffec6a5b4': {friendly_name: 'bulb_color_2', retain: false},
+                        '0x000b57fffec6a5b4': {
+                            friendly_name: 'bulb_color_2',
+                            retain: false,
+                        },
                         '0x000b57fffec6a5b7': {friendly_name: 'bulb_2', retain: false},
                         '0x0017880104a44559': {friendly_name: 'J1_cover'},
                         '0x0017880104e43559': {friendly_name: 'U202DST600ZB'},
                         '0x0017880104e44559': {friendly_name: '3157100_thermostat'},
                         '0x0017880104e45517': {friendly_name: 'remote', retain: true},
                         '0x0017880104e45520': {friendly_name: 'button', retain: false},
-                        '0x0017880104e45521': {friendly_name: 'button_double_key', retain: false},
-                        '0x0017880104e45522': {friendly_name: 'weather_sensor', qos: 1, retain: false},
-                        '0x0017880104e45523': {friendly_name: 'occupancy_sensor', retain: false},
+                        '0x0017880104e45521': {
+                            friendly_name: 'button_double_key',
+                            retain: false,
+                        },
+                        '0x0017880104e45522': {
+                            friendly_name: 'weather_sensor',
+                            qos: 1,
+                            retain: false,
+                        },
+                        '0x0017880104e45523': {
+                            friendly_name: 'occupancy_sensor',
+                            retain: false,
+                        },
                         '0x0017880104e45524': {friendly_name: 'power_plug', retain: false},
                         '0x0017880104e45526': {friendly_name: 'GL-S-007ZS'},
-                        '0x0017880104e45529': {friendly_name: 'unsupported2', retain: false},
-                        '0x0017880104e45530': {friendly_name: 'button_double_key_interviewing', retain: false},
+                        '0x0017880104e45529': {
+                            friendly_name: 'unsupported2',
+                            retain: false,
+                        },
+                        '0x0017880104e45530': {
+                            friendly_name: 'button_double_key_interviewing',
+                            retain: false,
+                        },
                         '0x0017880104e45540': {friendly_name: 'ikea_onoff'},
                         '0x0017880104e45541': {friendly_name: 'wall_switch', retain: false},
-                        '0x0017880104e45542': {friendly_name: 'wall_switch_double', retain: false},
-                        '0x0017880104e45543': {friendly_name: 'led_controller_1', retain: false},
-                        '0x0017880104e45544': {friendly_name: 'led_controller_2', retain: false},
-                        '0x0017880104e45545': {friendly_name: 'dimmer_wall_switch', retain: false},
+                        '0x0017880104e45542': {
+                            friendly_name: 'wall_switch_double',
+                            retain: false,
+                        },
+                        '0x0017880104e45543': {
+                            friendly_name: 'led_controller_1',
+                            retain: false,
+                        },
+                        '0x0017880104e45544': {
+                            friendly_name: 'led_controller_2',
+                            retain: false,
+                        },
+                        '0x0017880104e45545': {
+                            friendly_name: 'dimmer_wall_switch',
+                            retain: false,
+                        },
                         '0x0017880104e45547': {friendly_name: 'curtain', retain: false},
                         '0x0017880104e45548': {friendly_name: 'fan', retain: false},
                         '0x0017880104e45549': {friendly_name: 'siren', retain: false},
                         '0x0017880104e45550': {friendly_name: 'thermostat', retain: false},
                         '0x0017880104e45551': {friendly_name: 'smart vent', retain: false},
                         '0x0017880104e45552': {friendly_name: 'j1', retain: false},
-                        '0x0017880104e45553': {friendly_name: 'bulb_enddevice', retain: false},
-                        '0x0017880104e45559': {friendly_name: 'cc2530_router', retain: false},
+                        '0x0017880104e45553': {
+                            friendly_name: 'bulb_enddevice',
+                            retain: false,
+                        },
+                        '0x0017880104e45559': {
+                            friendly_name: 'cc2530_router',
+                            retain: false,
+                        },
                         '0x0017880104e45560': {friendly_name: 'livolo', retain: false},
                         '0x0017880104e45561': {friendly_name: 'temperature_sensor'},
                         '0x0017880104e45562': {friendly_name: 'heating_actuator'},
@@ -160,7 +202,10 @@ describe('Extension: Bridge', () => {
                         '0x90fd9ffffe4b64aa': {friendly_name: 'SP600_OLD'},
                         '0x90fd9ffffe4b64ab': {friendly_name: 'SP600_NEW'},
                         '0x90fd9ffffe4b64ac': {friendly_name: 'MKS-CM-W5'},
-                        '0x90fd9ffffe4b64ae': {friendly_name: 'tradfri_remote', retain: false},
+                        '0x90fd9ffffe4b64ae': {
+                            friendly_name: 'tradfri_remote',
+                            retain: false,
+                        },
                         '0x90fd9ffffe4b64af': {friendly_name: 'roller_shutter'},
                         '0x90fd9ffffe4b64ax': {friendly_name: 'ZNLDP12LM'},
                         '0xf4ce368a38be56a1': {
@@ -187,6 +232,7 @@ describe('Extension: Bridge', () => {
                         12: {friendly_name: 'thermostat_group', retain: false},
                         14: {friendly_name: 'switch_group', retain: false},
                         15071: {friendly_name: 'group_tradfri_remote', retain: false},
+                        19: {friendly_name: 'hue_twilight_group'},
                         2: {friendly_name: 'group_2', retain: false},
                         21: {friendly_name: 'gledopto_group'},
                         9: {friendly_name: 'ha_discovery_group'},
@@ -211,8 +257,16 @@ describe('Extension: Bridge', () => {
                     map_options: {
                         graphviz: {
                             colors: {
-                                fill: {coordinator: '#e04e5d', enddevice: '#fff8ce', router: '#4ea3e0'},
-                                font: {coordinator: '#ffffff', enddevice: '#000000', router: '#ffffff'},
+                                fill: {
+                                    coordinator: '#e04e5d',
+                                    enddevice: '#fff8ce',
+                                    router: '#4ea3e0',
+                                },
+                                font: {
+                                    coordinator: '#ffffff',
+                                    enddevice: '#000000',
+                                    router: '#ffffff',
+                                },
                                 line: {active: '#009900', inactive: '#994444'},
                             },
                         },
@@ -225,10 +279,10 @@ describe('Extension: Bridge', () => {
                         server: 'mqtt://localhost',
                     },
                     ota: {
-                        disable_automatic_update_check: false,
-                        update_check_interval: 1440,
-                        image_block_response_delay: 250,
                         default_maximum_data_size: 50,
+                        disable_automatic_update_check: false,
+                        image_block_response_delay: 250,
+                        update_check_interval: 1440,
                     },
                     passlist: [],
                     serial: {disable_led: false, port: '/dev/dummy'},
@@ -2189,6 +2243,12 @@ describe('Extension: Bridge', () => {
                         {endpoint: 3, ieee_address: '0x0017880104e45542'},
                     ],
                     scenes: [{id: 4, name: 'Scene 4'}],
+                },
+                {
+                    friendly_name: 'hue_twilight_group',
+                    id: 19,
+                    members: [{endpoint: 11, ieee_address: '0x000b57cdfec6a5b3'}],
+                    scenes: [],
                 },
             ]),
             {retain: true, qos: 0},
