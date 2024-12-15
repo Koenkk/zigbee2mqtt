@@ -22,9 +22,9 @@ COPY package.json pnpm-lock.yaml ./
 RUN apk add make gcc g++ python3 linux-headers npm && \
     npm install -g pnpm && \
     pnpm install --frozen-lockfile --no-optional && \
-    # Serialport requires to be re-build, otherwise starts fails
-    # See e.g. https://github.com/Koenkk/zigbee2mqtt/issues/25092
-    pnpm rebuild
+    # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
+    rm -rf `find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d` && \
+    pnpm rebuild @serialport/bindings-cpp
 
 # Release
 FROM base AS release
