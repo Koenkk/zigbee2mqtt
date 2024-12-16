@@ -18,17 +18,18 @@ jobs:
               with:
                   ref: dev
                   token: ${{ secrets.GH_TOKEN }}
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  cache: npm
-            # connect-gzip-static@4.0.0 requires Node 20 >=
-            - run: npx npm-check-updates -u -x connect-gzip-static
-            - run: rm -f package-lock.json
-            - run: npm install
+                  cache: pnpm
+            - run: |
+                  pnpm up --latest
             - uses: peter-evans/create-pull-request@v7
               with:
                   commit-message: 'fix(ignore): update dependencies'
                   branch: 'deps/all'
-                  title: Update dependencies
+                  title: 'fix(ignore): update dependencies'
                   token: ${{ secrets.GH_TOKEN }}

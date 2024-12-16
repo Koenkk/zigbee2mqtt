@@ -86,7 +86,7 @@ jest.mock('https', () => ({
     Agent: jest.fn(),
 }));
 
-jest.mock('connect-gzip-static', () =>
+jest.mock('express-static-gzip', () =>
     jest.fn().mockImplementation((path) => {
         mockNodeStatic.variables.path = path;
         return mockNodeStatic.implementation;
@@ -321,7 +321,11 @@ describe('Frontend', () => {
 
         mockHTTP.variables.onRequest({url: '/file.txt'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/file.txt', url: '/file.txt'}, 2, expect.any(Function));
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(
+            {originalUrl: '/file.txt', url: '/file.txt', path: '/file.txt'},
+            2,
+            expect.any(Function),
+        );
     });
 
     it('Static server', async () => {
@@ -367,14 +371,18 @@ describe('Frontend', () => {
 
         mockHTTP.variables.onRequest({url: '/z2m'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m', url: '/'}, 2, expect.any(Function));
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m', url: '/', path: '/'}, 2, expect.any(Function));
         expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
 
         mockNodeStatic.implementation.mockReset();
         expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
         mockHTTP.variables.onRequest({url: '/z2m/file.txt'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m/file.txt', url: '/file.txt'}, 2, expect.any(Function));
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(
+            {originalUrl: '/z2m/file.txt', url: '/file.txt', path: '/file.txt'},
+            2,
+            expect.any(Function),
+        );
         expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
 
         mockNodeStatic.implementation.mockReset();
@@ -393,7 +401,11 @@ describe('Frontend', () => {
 
         mockHTTP.variables.onRequest({url: '/z2m-more++/c0mplex.url'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic.implementation).toHaveBeenCalledWith({originalUrl: '/z2m-more++/c0mplex.url', url: '/'}, 2, expect.any(Function));
+        expect(mockNodeStatic.implementation).toHaveBeenCalledWith(
+            {originalUrl: '/z2m-more++/c0mplex.url', url: '/', path: '/'},
+            2,
+            expect.any(Function),
+        );
         expect(mockFinalHandler.implementation).not.toHaveBeenCalledWith();
 
         mockNodeStatic.implementation.mockReset();
@@ -401,7 +413,7 @@ describe('Frontend', () => {
         mockHTTP.variables.onRequest({url: '/z2m-more++/c0mplex.url/file.txt'}, 2);
         expect(mockNodeStatic.implementation).toHaveBeenCalledTimes(1);
         expect(mockNodeStatic.implementation).toHaveBeenCalledWith(
-            {originalUrl: '/z2m-more++/c0mplex.url/file.txt', url: '/file.txt'},
+            {originalUrl: '/z2m-more++/c0mplex.url/file.txt', url: '/file.txt', path: '/file.txt'},
             2,
             expect.any(Function),
         );

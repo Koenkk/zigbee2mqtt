@@ -29,6 +29,21 @@ interface Discovered {
     discovered: boolean;
 }
 
+interface ActionData {
+    action: string;
+    button?: string;
+    scene?: string;
+    region?: string;
+}
+
+const ACTION_PATTERNS: string[] = [
+    '^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold)(?:_release)?)$',
+    '^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$',
+    '^(?<actionPrefix>region_)(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$',
+    '^(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$',
+    '^(?<action>brightness_step)(?:_(?<direction>up|down))?$',
+];
+
 const SENSOR_CLICK: Readonly<DiscoveryEntry> = {
     type: 'sensor',
     object_id: 'click',
@@ -255,9 +270,9 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     pm25: {device_class: 'pm25', state_class: 'measurement'},
     people: {state_class: 'measurement', icon: 'mdi:account-multiple'},
     position: {icon: 'mdi:valve', state_class: 'measurement'},
-    power: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
-    power_phase_b: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
-    power_phase_c: {device_class: 'power', entity_category: 'diagnostic', state_class: 'measurement'},
+    power: {device_class: 'power', state_class: 'measurement'},
+    power_phase_b: {device_class: 'power', state_class: 'measurement'},
+    power_phase_c: {device_class: 'power', state_class: 'measurement'},
     power_factor: {device_class: 'power_factor', enabled_by_default: false, entity_category: 'diagnostic', state_class: 'measurement'},
     power_outage_count: {icon: 'mdi:counter', enabled_by_default: false},
     precision: {entity_category: 'config', icon: 'mdi:decimal-comma-increase'},
@@ -435,6 +450,7 @@ export default class HomeAssistant extends Extension {
     private statusTopic: string;
     private entityAttributes: boolean;
     private legacyTrigger: boolean;
+    private experimentalEventEntities: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -443,6 +459,7 @@ export default class HomeAssistant extends Extension {
     private bridge: Bridge;
     // @ts-expect-error initialized in `start`
     private bridgeIdentifier: string;
+    private actionValueTemplate: string;
 
     constructor(
         zigbee: Zigbee,
@@ -466,9 +483,12 @@ export default class HomeAssistant extends Extension {
         this.statusTopic = haSettings.status_topic;
         this.entityAttributes = haSettings.legacy_entity_attributes;
         this.legacyTrigger = haSettings.legacy_triggers;
+        this.experimentalEventEntities = haSettings.experimental_event_entities;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
+
+        this.actionValueTemplate = this.getActionValueTemplate();
     }
 
     override async start(): Promise<void> {
@@ -1147,6 +1167,30 @@ export default class HomeAssistant extends Extension {
                 }
 
                 /**
+                 * If enum attribute does not have SET access and is named 'action', then expose
+                 * as EVENT entity. Wildcard actions like `recall_*` are currently not supported.
+                 */
+                if (
+                    this.experimentalEventEntities &&
+                    firstExpose.access & ACCESS_STATE &&
+                    !(firstExpose.access & ACCESS_SET) &&
+                    firstExpose.property == 'action'
+                ) {
+                    discoveryEntries.push({
+                        type: 'event',
+                        object_id: firstExpose.property,
+                        mockProperties: [{property: firstExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            state_topic: true,
+                            event_types: this.prepareActionEventTypes(firstExpose.values),
+                            value_template: this.actionValueTemplate,
+                            ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
+                        },
+                    });
+                }
+
+                /**
                  * If enum attribute has SET access then expose as SELECT entity too.
                  * Note: currently both sensor and select are discovered, this is to avoid
                  * breaking changes for sensors already existing in HA (legacy).
@@ -1253,9 +1297,12 @@ export default class HomeAssistant extends Extension {
             if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
                 d.discovery_payload.entity_category = 'diagnostic';
             }
-        });
 
-        discoveryEntries.forEach((d) => {
+            // Event entities cannot have an entity_category set.
+            if (d.type === 'event' && d.discovery_payload.entity_category) {
+                delete d.discovery_payload.entity_category;
+            }
+
             // Let Home Assistant generate entity name when device_class is present
             if (d.discovery_payload.device_class) {
                 delete d.discovery_payload.name;
@@ -1537,7 +1584,7 @@ export default class HomeAssistant extends Extension {
         }
 
         if (!this.legacyTrigger) {
-            configs = configs.filter((c) => c.object_id !== 'action' && c.object_id !== 'click');
+            configs = configs.filter((c) => (c.object_id !== 'action' && c.object_id !== 'click') || c.type == 'event');
         }
 
         // deep clone of the config objects
@@ -2166,5 +2213,78 @@ export default class HomeAssistant extends Extension {
         );
 
         return bridge;
+    }
+
+    private parseActionValue(action: string): ActionData {
+        // Handle standard actions.
+        for (const p of ACTION_PATTERNS) {
+            const m = action.match(p);
+            if (m?.groups?.action) {
+                return this.buildAction(m.groups);
+            }
+        }
+
+        // Handle wildcard actions.
+        let m = action.match(/^(?<action>recall|scene)_\*(?:_(?<endpoint>e1|e2|s1|s2))?$/);
+        if (m?.groups?.action) {
+            logger.debug('Found scene wildcard action ' + m.groups.action);
+            return this.buildAction(m.groups, {scene: 'wildcard'});
+        }
+
+        m = action.match(/^(?<actionPrefix>region_)\*_(?<action>enter|leave|occupied|unoccupied)$/);
+        if (m?.groups?.action) {
+            logger.debug('Found region wildcard action ' + m.groups.action);
+            return this.buildAction(m.groups, {region: 'wildcard'});
+        }
+
+        // If nothing matches, keep the plain action value.
+        return {action};
+    }
+
+    private buildAction(groups: {[key: string]: string}, props: {[key: string]: string} = {}): ActionData {
+        utils.removeNullPropertiesFromObject(groups);
+
+        let a: string = groups.action;
+        if (groups?.actionPrefix) {
+            a = groups.actionPrefix + a;
+            delete groups.actionPrefix;
+        }
+        return {...groups, action: a, ...props};
+    }
+
+    private prepareActionEventTypes(values: zhc.Enum['values']): string[] {
+        return utils.arrayUnique(values.map((v) => this.parseActionValue(v.toString()).action).filter((v) => !v.includes('*')));
+    }
+
+    private parseGroupsFromRegex(pattern: string): string[] {
+        return [...pattern.matchAll(/\(\?<([a-zA-Z]+)>/g)].map((v) => v[1]);
+    }
+
+    private getActionValueTemplate(): string {
+        // TODO: Implement parsing for all event types.
+        const patterns = ACTION_PATTERNS.map((v) => {
+            return `{"pattern": '${v.replaceAll(/\?<([a-zA-Z]+)>/g, '?P<$1>')}', "groups": [${this.parseGroupsFromRegex(v)
+                .map((g) => `"${g}"`)
+                .join(', ')}]}`;
+        }).join(',\n');
+
+        const value_template =
+            `{% set patterns = [\n${patterns}\n] %}\n` +
+            `{% set action_value = value_json.action|default('') %}\n` +
+            `{% set ns = namespace(r=[('action', action_value)]) %}\n` +
+            `{% for p in patterns %}\n` +
+            `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
+            `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
+            `  {% for key, value in zip(p.groups, m[0]) %}\n` +
+            `    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n` +
+            `  {% endfor %}\n` +
+            `{% endfor %}\n` +
+            `{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n` +
+            `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
+            `{% endif %}\n` +
+            `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
+            `{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
+
+        return value_template;
     }
 }

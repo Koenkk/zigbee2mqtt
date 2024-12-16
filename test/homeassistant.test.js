@@ -89,6 +89,9 @@ describe('HomeAssistant extension', () => {
     });
 
     it('Should discover devices and groups', async () => {
+        settings.set(['homeassistant'], {experimental_event_entities: true});
+        await resetExtension();
+
         let payload;
 
         payload = {
@@ -404,6 +407,57 @@ describe('HomeAssistant extension', () => {
             {retain: true, qos: 1},
             expect.any(Function),
         );
+
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45520'],
+                manufacturer: 'Aqara',
+                model: 'Wireless mini switch (WXKG11LM)',
+                name: 'button',
+                sw_version: null,
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
+            icon: 'mdi:gesture-double-tap',
+            json_attributes_topic: 'zigbee2mqtt/button',
+            name: 'Action',
+            object_id: 'button_action',
+            origin: origin,
+            state_topic: 'zigbee2mqtt/button',
+            unique_id: '0x0017880104e45520_action_zigbee2mqtt',
+            // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
+            value_template:
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/event/0x0017880104e45520/action/config',
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
+    });
+
+    it.each([
+        ['recall_1', {action: 'recall', scene: '1'}],
+        ['recall_*', {action: 'recall', scene: 'wildcard'}],
+        ['on', {action: 'on'}],
+        ['on_1', {action: 'on_1'}],
+        ['release_left', {action: 'release_left'}],
+        ['region_1_enter', {action: 'region_enter', region: '1'}],
+        ['region_*_leave', {action: 'region_leave', region: 'wildcard'}],
+        ['left_press', {action: 'press', button: 'left'}],
+        ['left_press_release', {action: 'press_release', button: 'left'}],
+        ['right_hold', {action: 'hold', button: 'right'}],
+        ['right_hold_release', {action: 'hold_release', button: 'right'}],
+        ['button_4_hold_release', {action: 'hold_release', button: 'button_4'}],
+        ['dial_rotate_left_step', {action: 'dial_rotate', direction: 'left', speed: 'step'}],
+        ['dial_rotate_right_fast', {action: 'dial_rotate', direction: 'right', speed: 'fast'}],
+        ['brightness_step_up', {action: 'brightness_step', direction: 'up'}],
+        ['brightness_stop', {action: 'brightness_stop'}],
+    ])('Should parse action names correctly', (action, expected) => {
+        expect(extension.parseActionValue(action)).toStrictEqual(expected);
     });
 
     it('Should not discovery devices which are already discovered', async () => {
@@ -1913,6 +1967,46 @@ describe('HomeAssistant extension', () => {
         );
 
         expect(MQTT.publish).toHaveBeenCalledTimes(3);
+    });
+
+    it('Should enable experimental event entities', async () => {
+        settings.set(['homeassistant'], {experimental_event_entities: true});
+        settings.set(['devices', '0x0017880104e45520'], {
+            legacy: false,
+            friendly_name: 'button',
+            retain: false,
+        });
+        await resetExtension();
+
+        const payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state'}],
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45520'],
+                manufacturer: 'Aqara',
+                model: 'Wireless mini switch (WXKG11LM)',
+                name: 'button',
+                sw_version: null,
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            event_types: ['single', 'double', 'triple', 'quadruple', 'hold', 'release'],
+            icon: 'mdi:gesture-double-tap',
+            json_attributes_topic: 'zigbee2mqtt/button',
+            name: 'Action',
+            object_id: 'button_action',
+            origin: origin,
+            state_topic: 'zigbee2mqtt/button',
+            unique_id: '0x0017880104e45520_action_zigbee2mqtt',
+            // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
+            value_template:
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if ns.r|selectattr(0, 'eq', 'actionPrefix')|first is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', 'action, actionPrefix')|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+        };
+
+        expect(MQTT.publish).toHaveBeenCalledWith(
+            'homeassistant/event/0x0017880104e45520/action/config',
+            stringify(payload),
+            {retain: true, qos: 1},
+            expect.any(Function),
+        );
     });
 
     it('Should republish payload to postfix topic with lightWithPostfix config', async () => {
