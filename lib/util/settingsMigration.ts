@@ -534,9 +534,11 @@ export function migrateIfNecessary(): void {
             console.log(`Migration notes written in ${migrationNotesFilePath}`);
         }
 
-        // don't throw when in Jest test to allow stepping through versions (validates against current schema)
-        settings.apply(currentSettings as unknown as Record<string, unknown>, !process.env.JEST_WORKER_ID);
+        // don't throw to allow stepping through versions (validates against current schema)
+        settings.apply(currentSettings as unknown as Record<string, unknown>, false);
         settings.reRead();
         currentSettings = settings.getPersistedSettings();
     }
+
+    settings.validate();
 }
