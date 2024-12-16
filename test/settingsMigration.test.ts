@@ -44,7 +44,7 @@ describe('Settings Migration', () => {
         );
     });
 
-    describe('Migrates v1.x.x to v2.0.0', () => {
+    describe('Migrates v1 to v2', () => {
         const BASE_CONFIG = {
             homeassistant: false,
             mqtt: {
@@ -372,7 +372,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain('homeassistant.legacy_triggers');
@@ -450,7 +450,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain('homeassistant.legacy_triggers');
@@ -498,7 +498,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain(`Log level 'warn' has been renamed to 'warning'.`);
@@ -531,7 +531,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).not.toContain(`Log level 'warn' has been renamed to 'warning'.`);
@@ -564,7 +564,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).not.toContain(`Log level 'warn' has been renamed to 'warning'.`);
@@ -630,7 +630,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain(
@@ -695,7 +695,7 @@ describe('Settings Migration', () => {
 
             expect(migratedSettings).toStrictEqual(afterSettings);
             expect(existsSync(mockedData.joinPath('configuration_backup_v1.yaml'))).toStrictEqual(true);
-            const migrationNotes = mockedData.joinPath('migration-1.x.x-to-2.0.0.log');
+            const migrationNotes = mockedData.joinPath('migration-1-to-2.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain(`[TRANSFER] Baudrate was moved from advanced.baudrate to serial.baudrate.`);
@@ -704,7 +704,7 @@ describe('Settings Migration', () => {
         });
     });
 
-    describe('Migrates v1.0.x to v2.1.0', () => {
+    describe('Migrates v1 to v3', () => {
         const BASE_CONFIG = {
             mqtt: {
                 server: 'mqtt://localhost',
@@ -712,7 +712,7 @@ describe('Settings Migration', () => {
         };
 
         beforeEach(() => {
-            settings.testing.CURRENT_VERSION = 2.1; // stop update after this version
+            settings.testing.CURRENT_VERSION = 3; // stop update after this version
             data.writeDefaultConfiguration(BASE_CONFIG);
             settings.reRead();
         });
@@ -722,7 +722,7 @@ describe('Settings Migration', () => {
             const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
             const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
-            afterSettings.version = 2.1;
+            afterSettings.version = 3;
             afterSettings.homeassistant = {enabled: false};
             afterSettings.frontend = {enabled: true};
             afterSettings.availability = {enabled: true, active: {timeout: 15}};
@@ -758,7 +758,7 @@ describe('Settings Migration', () => {
         });
     });
 
-    describe('Migrates v2.0.x to v2.1.0', () => {
+    describe('Migrates v2 to v3', () => {
         const BASE_CONFIG = {
             version: 2,
             mqtt: {
@@ -767,7 +767,7 @@ describe('Settings Migration', () => {
         };
 
         beforeEach(() => {
-            settings.testing.CURRENT_VERSION = 2.1; // stop update after this version
+            settings.testing.CURRENT_VERSION = 3; // stop update after this version
             data.writeDefaultConfiguration(BASE_CONFIG);
             settings.reRead();
         });
@@ -777,7 +777,7 @@ describe('Settings Migration', () => {
             const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
             const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
-            afterSettings.version = 2.1;
+            afterSettings.version = 3;
             afterSettings.homeassistant = {enabled: false};
             afterSettings.frontend = {enabled: true};
             afterSettings.availability = {enabled: true, active: {timeout: 15}};
@@ -800,7 +800,7 @@ describe('Settings Migration', () => {
             const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
-            const migrationNotes = mockedData.joinPath('migration-2.0.x-to-2.1.x.log');
+            const migrationNotes = mockedData.joinPath('migration-2-to-3.log');
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain(`[SPECIAL] Property 'homeassistant' is now always an object.`);

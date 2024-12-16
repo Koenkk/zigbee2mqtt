@@ -4,14 +4,11 @@ version: 2
 # Home Assistant integration (MQTT discovery)
 homeassistant:
     enabled: false
-    # discovery_topic: 'homeassistant'
-    # status_topic: 'hass/status'
 
 # Enable the frontend, runs on port 8080 by default
 frontend:
     enabled: true
     # port: 8080
-    # base_url: '/'
 
 # MQTT settings
 mqtt:
@@ -37,10 +34,6 @@ mqtt:
 # Periodically check whether devices are online/offline
 # availability:
 #     enabled: false
-#     active:
-#         timeout: 10
-#     passive:
-#         timeout: 1500
 
 # Advanced settings
 advanced:

@@ -9,7 +9,7 @@ import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
 
 export {schemaJson};
-export const CURRENT_VERSION = 2.1;
+export const CURRENT_VERSION = 3;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
 export type LogLevel = 'error' | 'warning' | 'info' | 'debug';

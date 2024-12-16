@@ -387,7 +387,7 @@ function migrateToTwo(
     customHandlers.push();
 }
 
-function migrateFromTwoToTwoOne(
+function migrateToThree(
     currentSettings: Partial<Settings>,
     transfers: SettingsTransfer[],
     changes: SettingsChange[],
@@ -398,8 +398,8 @@ function migrateFromTwoToTwoOne(
     transfers.push();
     changes.push({
         path: ['version'],
-        note: `Migrated settings to version 2.1`,
-        newValue: 2.1,
+        note: `Migrated settings to version 3`,
+        newValue: 3,
     });
     additions.push();
     removals.push();
@@ -475,14 +475,14 @@ export function migrateIfNecessary(): void {
         // each version should only bump to the next version so as to gradually migrate if necessary
         /* istanbul ignore else */
         if (currentSettings.version == undefined) {
-            // migrating from 1.x.x (`version` did not exist) to 2.0.0
-            migrationNotesFileName = 'migration-1.x.x-to-2.0.0.log';
+            // migrating from 1 (`version` did not exist) to 2
+            migrationNotesFileName = 'migration-1-to-2.log';
 
             migrateToTwo(currentSettings, transfers, changes, additions, removals, customHandlers);
         } else if (currentSettings.version === 2) {
-            migrationNotesFileName = 'migration-2.0.x-to-2.1.x.log';
+            migrationNotesFileName = 'migration-2-to-3.log';
 
-            migrateFromTwoToTwoOne(currentSettings, transfers, changes, additions, removals, customHandlers);
+            migrateToThree(currentSettings, transfers, changes, additions, removals, customHandlers);
         } /* else if (currentSettings.version === 2.1) {} */
 
         for (const transfer of transfers) {
@@ -539,6 +539,4 @@ export function migrateIfNecessary(): void {
         settings.reRead();
         currentSettings = settings.getPersistedSettings();
     }
-
-    settings.validate();
 }
