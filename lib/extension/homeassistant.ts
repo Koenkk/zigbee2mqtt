@@ -781,7 +781,7 @@ export default class HomeAssistant extends Extension {
                 const motorState = allExposes
                     ?.filter(isEnumExpose)
                     .find((e) => ['motor_state', 'moving'].includes(e.name) && e.access === ACCESS_STATE);
-                const running = allExposes?.find((e) => e.type === 'binary' && e.name === 'running');
+                const running = allExposes?.filter(isBinaryExpose)?.find((e) => e.name === 'running');
 
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'cover',
@@ -801,8 +801,8 @@ export default class HomeAssistant extends Extension {
                 if (running) {
                     assert(position, `Cover must have 'position' when it has 'running'`);
                     discoveryEntry.discovery_payload.value_template =
-                        `{% if "${running.property}" in value_json ` +
-                        `and value_json.${running.property} %} {% if value_json.${position.property} > 0 %} closing ` +
+                        `{% if "${featurePropertyWithoutEndpoint(running)}" in value_json ` +
+                        `and value_json.${featurePropertyWithoutEndpoint(running)} %} {% if value_json.${featurePropertyWithoutEndpoint(position)} > 0 %} closing ` +
                         `{% else %} opening {% endif %} {% else %} stopped {% endif %}`;
                 }
 
@@ -819,8 +819,8 @@ export default class HomeAssistant extends Extension {
                         discoveryEntry.discovery_payload.state_closing = closingState;
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
                         discoveryEntry.discovery_payload.value_template =
-                            `{% if "${motorState.property}" in value_json ` +
-                            `and value_json.${motorState.property} %} {{ value_json.${motorState.property} }} {% else %} ` +
+                            `{% if "${featurePropertyWithoutEndpoint(motorState)}" in value_json ` +
+                            `and value_json.${featurePropertyWithoutEndpoint(motorState)} %} {{ value_json.${featurePropertyWithoutEndpoint(motorState)} }} {% else %} ` +
                             `${stoppedState} {% endif %}`;
                     }
                 }
