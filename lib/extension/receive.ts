@@ -19,7 +19,7 @@ export default class Receive extends Extension {
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
     private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
 
-    async start(): Promise<void> {
+    override async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }

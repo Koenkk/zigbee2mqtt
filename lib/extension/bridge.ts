@@ -69,7 +69,7 @@ export default class Bridge extends Extension {
 
         if (debugToMQTTFrontend) {
             class DebugEventTransport extends Transport {
-                log(info: {message: string; level: string; namespace: string}, next: () => void): void {
+                override log(info: {message: string; level: string; namespace: string}, next: () => void): void {
                     bridgeLogging(info.message, info.level, info.namespace);
                     next();
                 }
@@ -78,7 +78,7 @@ export default class Bridge extends Extension {
             this.logTransport = new DebugEventTransport();
         } else {
             class EventTransport extends Transport {
-                log(info: {message: string; level: string; namespace: string}, next: () => void): void {
+                override log(info: {message: string; level: string; namespace: string}, next: () => void): void {
                     if (info.level !== 'debug') {
                         bridgeLogging(info.message, info.level, info.namespace);
                     }
