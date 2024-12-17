@@ -2,7 +2,7 @@ import type {IClientOptions, IClientPublishOptions, MqttClient} from 'mqtt';
 
 import type {Zigbee2MQTTAPI} from './types/api';
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import bind from 'bind-decorator';
 import {connectAsync} from 'mqtt';

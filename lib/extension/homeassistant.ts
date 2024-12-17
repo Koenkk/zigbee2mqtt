@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';

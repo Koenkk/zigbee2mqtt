@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 import objectAssignDeep from 'object-assign-deep';
 

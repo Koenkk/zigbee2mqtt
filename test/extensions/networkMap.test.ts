@@ -5,8 +5,8 @@ import * as mockSleep from '../mocks/sleep';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 

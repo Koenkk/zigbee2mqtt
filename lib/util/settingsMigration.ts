@@ -1,4 +1,4 @@
-import {copyFileSync, writeFileSync} from 'fs';
+import {copyFileSync, writeFileSync} from 'node:fs';
 
 import data from './data';
 import * as settings from './settings';

@@ -5,7 +5,7 @@ import * as mockSleep from '../mocks/sleep';
 import {flushPromises} from '../mocks/utils';
 import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 

@@ -1,9 +1,9 @@
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from 'lib/types/api';
 import type * as zhc from 'zigbee-herdsman-converters';
 
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';

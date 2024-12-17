@@ -1,6 +1,6 @@
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import equals from 'fast-deep-equal/es6';

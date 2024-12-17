@@ -5,7 +5,7 @@ import * as mockSleep from '../mocks/sleep';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
-import path from 'path';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 import OTAUpdate from 'lib/extension/otaUpdate';

@@ -1,4 +1,4 @@
-import {randomInt} from 'crypto';
+import {randomInt} from 'node:crypto';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 import * as zhc from 'zigbee-herdsman-converters';
 import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';

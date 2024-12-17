@@ -1,7 +1,7 @@
 // side-effect ensures using mock paths
 import './mocks/data';
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import yaml from 'js-yaml';
 import objectAssignDeep from 'object-assign-deep';

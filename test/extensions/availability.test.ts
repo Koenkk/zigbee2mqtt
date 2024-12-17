@@ -4,7 +4,7 @@ import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 

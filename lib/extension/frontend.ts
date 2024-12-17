@@ -1,12 +1,12 @@
-import type {IncomingMessage, Server, ServerResponse} from 'http';
-import type {Socket} from 'net';
+import type {IncomingMessage, Server, ServerResponse} from 'node:http';
+import type {Socket} from 'node:net';
 
-import assert from 'assert';
-import {existsSync, readFileSync} from 'fs';
-import {createServer} from 'http';
-import {createServer as createSecureServer} from 'https';
-import {posix} from 'path';
-import {parse} from 'url';
+import assert from 'node:assert';
+import {existsSync, readFileSync} from 'node:fs';
+import {createServer} from 'node:http';
+import {createServer as createSecureServer} from 'node:https';
+import {posix} from 'node:path';
+import {parse} from 'node:url';
 
 import bind from 'bind-decorator';
 import expressStaticGzip, {RequestHandler} from 'express-static-gzip';

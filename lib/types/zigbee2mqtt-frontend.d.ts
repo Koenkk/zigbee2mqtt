@@ -10,7 +10,7 @@ declare module 'http' {
 }
 
 declare module 'express-static-gzip' {
-    import {IncomingMessage, ServerResponse} from 'http';
+    import {IncomingMessage, ServerResponse} from 'node:http';
     export type RequestHandler = (req: IncomingMessage, res: ServerResponse, finalhandler: (err: unknown) => void) => void;
     export default function expressStaticGzip(root: string, options?: Record<string, unknown>): RequestHandler;
 }

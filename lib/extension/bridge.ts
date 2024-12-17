@@ -1,6 +1,6 @@
 import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
