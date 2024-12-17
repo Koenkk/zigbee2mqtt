@@ -1007,6 +1007,76 @@ describe('Extension: HomeAssistant', () => {
         });
     });
 
+    it('Should discover dual cover devices', async () => {
+        const payload_left = {
+            availability: [
+                {
+                    topic: 'zigbee2mqtt/bridge/state',
+                    value_template: '{{ value_json.state }}',
+                },
+            ],
+            command_topic: 'zigbee2mqtt/0xa4c138018cf95021/left/set',
+            device: {
+                identifiers: ['zigbee2mqtt_0xa4c138018cf95021'],
+                manufacturer: 'Lonsonho',
+                model: 'Dual curtain/blind module (TS130F_dual)',
+                name: '0xa4c138018cf95021',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            name: 'Left',
+            object_id: '0xa4c138018cf95021_left',
+            origin: origin,
+            position_template: '{{ value_json.position }}',
+            position_topic: 'zigbee2mqtt/0xa4c138018cf95021/left',
+            set_position_template: '{ "position_left": {{ position }} }',
+            set_position_topic: 'zigbee2mqtt/0xa4c138018cf95021/left/set',
+            state_closing: 'DOWN',
+            state_opening: 'UP',
+            state_stopped: 'STOP',
+            state_topic: 'zigbee2mqtt/0xa4c138018cf95021/left',
+            unique_id: '0xa4c138018cf95021_cover_left_zigbee2mqtt',
+            value_template: '{% if "moving" in value_json and value_json.moving %} {{ value_json.moving }} {% else %} STOP {% endif %}',
+        };
+        const payload_right = {
+            availability: [
+                {
+                    topic: 'zigbee2mqtt/bridge/state',
+                    value_template: '{{ value_json.state }}',
+                },
+            ],
+            command_topic: 'zigbee2mqtt/0xa4c138018cf95021/right/set',
+            device: {
+                identifiers: ['zigbee2mqtt_0xa4c138018cf95021'],
+                manufacturer: 'Lonsonho',
+                model: 'Dual curtain/blind module (TS130F_dual)',
+                name: '0xa4c138018cf95021',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            name: 'Right',
+            object_id: '0xa4c138018cf95021_right',
+            origin: origin,
+            position_template: '{{ value_json.position }}',
+            position_topic: 'zigbee2mqtt/0xa4c138018cf95021/right',
+            set_position_template: '{ "position_right": {{ position }} }',
+            set_position_topic: 'zigbee2mqtt/0xa4c138018cf95021/right/set',
+            state_closing: 'DOWN',
+            state_opening: 'UP',
+            state_stopped: 'STOP',
+            state_topic: 'zigbee2mqtt/0xa4c138018cf95021/right',
+            unique_id: '0xa4c138018cf95021_cover_right_zigbee2mqtt',
+            value_template: '{% if "moving" in value_json and value_json.moving %} {{ value_json.moving }} {% else %} STOP {% endif %}',
+        };
+
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/cover/0xa4c138018cf95021/cover_left/config', stringify(payload_left), {
+            retain: true,
+            qos: 1,
+        });
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('homeassistant/cover/0xa4c138018cf95021/cover_right/config', stringify(payload_right), {
+            retain: true,
+            qos: 1,
+        });
+    });
+
     it('Should discover devices with custom homeassistant.discovery_topic', async () => {
         settings.set(['homeassistant', 'discovery_topic'], 'my_custom_discovery_topic');
         await resetExtension();
