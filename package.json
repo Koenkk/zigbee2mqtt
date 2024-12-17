@@ -48,7 +48,6 @@
         "js-yaml": "^4.1.0",
         "json-stable-stringify-without-jsonify": "^1.0.1",
         "jszip": "^3.10.1",
-        "mkdir-recursive": "^0.4.0",
         "moment": "^2.30.1",
         "mqtt": "^5.10.3",
         "object-assign-deep": "^0.4.0",

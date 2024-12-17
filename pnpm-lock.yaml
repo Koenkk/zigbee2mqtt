@@ -44,9 +44,6 @@ importers:
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
-      mkdir-recursive:
-        specifier: ^0.4.0
-        version: 0.4.0
       moment:
         specifier: ^2.30.1
         version: 2.30.1
@@ -2089,10 +2086,6 @@ packages:
   mixin-deep@2.0.1:
     resolution: {integrity: sha512-imbHQNRglyaplMmjBLL3V5R6Bfq5oM+ivds3SKgc6oRtzErEnBUUc5No11Z2pilkUvl42gJvi285xTNswcKCMA==}
     engines: {node: '>=6'}
-
-  mkdir-recursive@0.4.0:
-    resolution: {integrity: sha512-gbTtiEu8P/GSMh1lAa0YYNr8XIfDzFgnWtetw3Hfz9nw6YXySHNYOZF/uUTgyp8GHvFnNw/EG7VhOkD6zfVb6A==}
-    engines: {node: '>=4'}
 
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
@@ -5120,8 +5113,6 @@ snapshots:
   minipass@7.1.2: {}
 
   mixin-deep@2.0.1: {}
-
-  mkdir-recursive@0.4.0: {}
 
   moment@2.30.1: {}
 

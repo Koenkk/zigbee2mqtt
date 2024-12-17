@@ -2,7 +2,6 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
-import fx from 'mkdir-recursive';
 import moment from 'moment';
 import {rimrafSync} from 'rimraf';
 import winston from 'winston';
@@ -73,7 +72,7 @@ class Logger {
             logging += `, file (filename: ${logFilename})`;
 
             // Make sure that log directory exists when not logging to stdout only
-            fx.mkdirSync(this.directory);
+            fs.mkdirSync(this.directory, {recursive: true});
 
             if (settings.get().advanced.log_symlink_current) {
                 const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
