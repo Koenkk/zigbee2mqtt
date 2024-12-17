@@ -28,7 +28,7 @@ interface ParsedTopic {
 }
 
 export default class Publish extends Extension {
-    async start(): Promise<void> {
+    override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 
