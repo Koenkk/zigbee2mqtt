@@ -31,14 +31,9 @@ export default class Availability extends Extension {
             return utils.minutes(device.options.availability.timeout);
         }
 
-        const key = this.isActiveDevice(device) ? 'active' : 'passive';
-        let value = settings.get().availability?.[key]?.timeout;
+        const type = this.isActiveDevice(device) ? 'active' : 'passive';
 
-        if (value == null) {
-            value = key == 'active' ? 10 : 1500;
-        }
-
-        return utils.minutes(value);
+        return utils.minutes(settings.get().availability[type].timeout);
     }
 
     private isActiveDevice(device: Device): boolean {

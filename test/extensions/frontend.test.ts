@@ -134,8 +134,8 @@ describe('Extension: Frontend', () => {
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
-        settings.set(['frontend'], {port: 8081, host: '127.0.0.1'});
-        settings.set(['homeassistant'], true);
+        settings.set(['frontend'], {enabled: true, port: 8081, host: '127.0.0.1'});
+        settings.set(['homeassistant'], {enabled: true});
         devices.bulb.linkquality = 10;
         mocksClear.forEach((m) => m.mockClear());
         mockWSClient.readyState = 'close';
@@ -162,7 +162,7 @@ describe('Extension: Frontend', () => {
     });
 
     it('Start/stop without host', async () => {
-        settings.set(['frontend'], {port: 8081});
+        settings.set(['frontend'], {enabled: true, port: 8081});
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         expect(mockNodeStaticPath).toBe('my/dummy/path');
@@ -175,7 +175,7 @@ describe('Extension: Frontend', () => {
     });
 
     it('Start/stop unix socket', async () => {
-        settings.set(['frontend'], {host: '/tmp/zigbee2mqtt.sock'});
+        settings.set(['frontend', 'host'], '/tmp/zigbee2mqtt.sock');
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
         expect(mockNodeStaticPath).toBe('my/dummy/path');
@@ -313,7 +313,7 @@ describe('Extension: Frontend', () => {
 
     it('Authentification', async () => {
         const authToken = 'sample-secure-token';
-        settings.set(['frontend'], {auth_token: authToken});
+        settings.set(['frontend', 'auth_token'], authToken);
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
@@ -339,7 +339,7 @@ describe('Extension: Frontend', () => {
     });
 
     it.each(['/z2m/', '/z2m'])('Works with non-default base url %s', async (baseUrl) => {
-        settings.set(['frontend'], {base_url: baseUrl});
+        settings.set(['frontend', 'base_url'], baseUrl);
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 
@@ -365,7 +365,7 @@ describe('Extension: Frontend', () => {
 
     it('Works with non-default complex base url', async () => {
         const baseUrl = '/z2m-more++/c0mplex.url/';
-        settings.set(['frontend'], {base_url: baseUrl});
+        settings.set(['frontend', 'base_url'], baseUrl);
         controller = new Controller(jest.fn(), jest.fn());
         await controller.start();
 

@@ -96,13 +96,15 @@ declare global {
     // Settings
     interface Settings {
         version?: number;
-        homeassistant?: {
+        homeassistant: {
+            enabled: boolean;
             discovery_topic: string;
             status_topic: string;
             experimental_event_entities: boolean;
             legacy_action_sensor: boolean;
         };
-        availability?: {
+        availability: {
+            enabled: boolean;
             active: {timeout: number};
             passive: {timeout: number};
         };
@@ -158,7 +160,8 @@ declare global {
             image_block_response_delay?: number;
             default_maximum_data_size?: number;
         };
-        frontend?: {
+        frontend: {
+            enabled: boolean;
             auth_token?: string;
             host?: string;
             port: number;

@@ -9,7 +9,7 @@ import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
 
 export {schemaJson};
-export const CURRENT_VERSION = 2;
+export const CURRENT_VERSION = 3;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
 export type LogLevel = 'error' | 'warning' | 'info' | 'debug';
@@ -24,7 +24,24 @@ const ajvRestartRequiredDeviceOptions = new Ajv({allErrors: true})
 const ajvRestartRequiredGroupOptions = new Ajv({allErrors: true})
     .addKeyword({keyword: 'requiresRestart', validate: (s: unknown) => !s})
     .compile(schemaJson.definitions.group);
-const defaults: RecursivePartial<Settings> = {
+export const defaults: RecursivePartial<Settings> = {
+    homeassistant: {
+        enabled: false,
+        discovery_topic: 'homeassistant',
+        status_topic: 'hass/status',
+        legacy_action_sensor: false,
+        experimental_event_entities: false,
+    },
+    availability: {
+        enabled: false,
+        active: {timeout: 10},
+        passive: {timeout: 1500},
+    },
+    frontend: {
+        enabled: false,
+        port: 8080,
+        base_url: '/',
+    },
     mqtt: {
         base_topic: 'zigbee2mqtt',
         include_device_information: false,
@@ -99,7 +116,7 @@ function loadSettingsWithDefaults(): void {
         _settings = read();
     }
 
-    _settingsWithDefaults = objectAssignDeep({}, defaults, getInternalSettings()) as Settings;
+    _settingsWithDefaults = objectAssignDeep({}, defaults, getPersistedSettings()) as Settings;
 
     if (!_settingsWithDefaults.devices) {
         _settingsWithDefaults.devices = {};
@@ -107,41 +124,6 @@ function loadSettingsWithDefaults(): void {
 
     if (!_settingsWithDefaults.groups) {
         _settingsWithDefaults.groups = {};
-    }
-
-    if (_settingsWithDefaults.homeassistant) {
-        const defaults = {
-            discovery_topic: 'homeassistant',
-            status_topic: 'hass/status',
-            legacy_action_sensor: false,
-            experimental_event_entities: false,
-        };
-        const s = typeof _settingsWithDefaults.homeassistant === 'object' ? _settingsWithDefaults.homeassistant : {};
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.homeassistant = {};
-
-        // @ts-expect-error ignore typing
-        objectAssignDeep(_settingsWithDefaults.homeassistant, defaults, s);
-    }
-
-    if (_settingsWithDefaults.availability) {
-        const defaults = {};
-        const s = typeof _settingsWithDefaults.availability === 'object' ? _settingsWithDefaults.availability : {};
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.availability = {};
-
-        // @ts-expect-error ignore typing
-        objectAssignDeep(_settingsWithDefaults.availability, defaults, s);
-    }
-
-    if (_settingsWithDefaults.frontend) {
-        const defaults = {port: 8080, auth_token: null, base_url: '/'};
-        const s = typeof _settingsWithDefaults.frontend === 'object' ? _settingsWithDefaults.frontend : {};
-        // @ts-expect-error ignore typing
-        _settingsWithDefaults.frontend = {};
-
-        // @ts-expect-error ignore typing
-        objectAssignDeep(_settingsWithDefaults.frontend, defaults, s);
     }
 }
 
@@ -160,7 +142,7 @@ function parseValueRef(text: string): {filename: string; key: string} | null {
 }
 
 function write(): void {
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
 
     // Read settings to check if we have to split devices/groups into separate file.
@@ -215,7 +197,7 @@ function write(): void {
 
 export function validate(): string[] {
     try {
-        getInternalSettings();
+        getPersistedSettings();
     } catch (error) {
         if (error instanceof YAMLFileException) {
             return [`Your YAML file: '${error.file}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
@@ -285,8 +267,8 @@ export function validate(): string[] {
     return errors;
 }
 
-function read(): Settings {
-    const s = yaml.read(CONFIG_FILE_PATH) as Settings;
+function read(): Partial<Settings> {
+    const s = yaml.read(CONFIG_FILE_PATH) as Partial<Settings>;
     applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
@@ -396,7 +378,12 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
     iterate(schemaJson.properties, []);
 }
 
-export function getInternalSettings(): Partial<Settings> {
+/**
+ * Get the settings actually written in the yaml.
+ * Env vars are applied on top.
+ * Defaults merged on startup are not included.
+ */
+export function getPersistedSettings(): Partial<Settings> {
     if (!_settings) {
         _settings = read();
     }
@@ -414,7 +401,7 @@ export function get(): Settings {
 
 export function set(path: string[], value: string | number | boolean | KeyValue): void {
     /* eslint-disable-next-line */
-    let settings: any = getInternalSettings();
+    let settings: any = getPersistedSettings();
 
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
@@ -432,16 +419,21 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
     write();
 }
 
-export function apply(settings: Record<string, unknown>): boolean {
-    getInternalSettings(); // Ensure _settings is initialized.
+export function apply(settings: Record<string, unknown>, throwOnError: boolean = true): boolean {
+    getPersistedSettings(); // Ensure _settings is initialized.
     // @ts-expect-error noMutate not typed properly
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
+
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
     ajvSetting(newSettings);
-    const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
-    if (errors?.length) {
-        const error = errors[0];
-        throw new Error(`${error.instancePath.substring(1)} ${error.message}`);
+
+    if (throwOnError) {
+        const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
+
+        if (errors?.length) {
+            const error = errors[0];
+            throw new Error(`${error.instancePath.substring(1)} ${error.message}`);
+        }
     }
 
     _settings = newSettings;
@@ -512,7 +504,7 @@ export function addDevice(ID: string): DeviceOptionsWithId {
         throw new Error(`Device '${ID}' already exists`);
     }
 
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
 
     if (!settings.devices) {
         settings.devices = {};
@@ -525,7 +517,7 @@ export function addDevice(ID: string): DeviceOptionsWithId {
 }
 
 export function blockDevice(ID: string): void {
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     if (!settings.blocklist) {
         settings.blocklist = [];
     }
@@ -536,7 +528,7 @@ export function blockDevice(ID: string): void {
 
 export function removeDevice(IDorName: string): void {
     const device = getDeviceThrowIfNotExists(IDorName);
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     delete settings.devices?.[device.ID];
     write();
 }
@@ -548,7 +540,7 @@ export function addGroup(name: string, ID?: string): GroupOptions {
         throw new Error(`friendly_name '${name}' is already in use`);
     }
 
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     if (!settings.groups) {
         settings.groups = {};
     }
@@ -577,14 +569,14 @@ export function addGroup(name: string, ID?: string): GroupOptions {
 
 export function removeGroup(IDorName: string | number): void {
     const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID!;
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
 
     delete settings.groups![groupID];
     write();
 }
 
 export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boolean {
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     delete newOptions.friendly_name;
     delete newOptions.devices;
     let validator: ValidateFunction;
@@ -620,7 +612,7 @@ export function changeFriendlyName(IDorName: string, newName: string): void {
         throw new Error(`friendly_name '${newName}' is already in use`);
     }
 
-    const settings = getInternalSettings();
+    const settings = getPersistedSettings();
     const device = getDevice(IDorName);
 
     if (device) {
@@ -640,7 +632,7 @@ export function changeFriendlyName(IDorName: string, newName: string): void {
 
 export function reRead(): void {
     _settings = undefined;
-    getInternalSettings();
+    getPersistedSettings();
     _settingsWithDefaults = undefined;
     get();
 }
@@ -652,4 +644,5 @@ export const testing = {
         _settingsWithDefaults = undefined;
     },
     defaults,
+    CURRENT_VERSION,
 };

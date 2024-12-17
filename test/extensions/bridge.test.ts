@@ -237,7 +237,23 @@ describe('Extension: Bridge', () => {
                         21: {friendly_name: 'gledopto_group'},
                         9: {friendly_name: 'ha_discovery_group'},
                     },
-                    homeassistant: false,
+                    homeassistant: {
+                        enabled: false,
+                        discovery_topic: 'homeassistant',
+                        status_topic: 'hass/status',
+                        legacy_action_sensor: false,
+                        experimental_event_entities: false,
+                    },
+                    availability: {
+                        enabled: false,
+                        active: {timeout: 10},
+                        passive: {timeout: 1500},
+                    },
+                    frontend: {
+                        enabled: false,
+                        port: 8080,
+                        base_url: '/',
+                    },
                     map_options: {
                         graphviz: {
                             colors: {
@@ -3722,7 +3738,7 @@ describe('Extension: Bridge', () => {
         // @ts-expect-error private
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
         mockMQTT.publishAsync.mockClear();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: true}}));
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
         await flushPromises();
         // @ts-expect-error private
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();

@@ -24,7 +24,11 @@ interface SettingsTransfer extends SettingsMigration {
     newPath: string[];
 }
 
-const SUPPORTED_VERSIONS: Settings['version'][] = [undefined, settings.CURRENT_VERSION];
+interface SettingsCustomHandler extends Omit<SettingsMigration, 'path'> {
+    execute: (currentSettings: Partial<Settings>) => [validPath: boolean, previousValue: unknown, changed: boolean];
+}
+
+const SUPPORTED_VERSIONS: Settings['version'][] = [undefined, 2, settings.CURRENT_VERSION];
 
 function backupSettings(version: number): void {
     const filePath = data.joinPath('configuration.yaml');
@@ -187,6 +191,7 @@ function migrateToTwo(
     changes: SettingsChange[],
     additions: SettingsAdd[],
     removals: SettingsRemove[],
+    customHandlers: SettingsCustomHandler[],
 ): void {
     transfers.push(
         {
@@ -378,21 +383,60 @@ function migrateToTwo(
             noteIf: noteIfWasDefined,
         });
     }
+
+    customHandlers.push();
 }
 
-// Future
-// function migrateFromTwoToThree(currentSettings: Settings, transfers: SettingsTransfer[], changes: SettingsChange[], additions: SettingsAdd[], removals: SettingsRemove[]): void {
-//     transfers.push();
-//     changes.push(
-//         {
-//             path: ['version'],
-//             note: `Migrated settings to version 3`,
-//             newValue: 3,
-//         }
-//     );
-//     additions.push();
-//     removals.push();
-// }
+function migrateToThree(
+    currentSettings: Partial<Settings>,
+    transfers: SettingsTransfer[],
+    changes: SettingsChange[],
+    additions: SettingsAdd[],
+    removals: SettingsRemove[],
+    customHandlers: SettingsCustomHandler[],
+): void {
+    transfers.push();
+    changes.push({
+        path: ['version'],
+        note: `Migrated settings to version 3`,
+        newValue: 3,
+    });
+    additions.push();
+    removals.push();
+
+    const changeToObject = (currentSettings: Partial<Settings>, path: string[]): ReturnType<SettingsCustomHandler['execute']> => {
+        const [validPath, previousValue] = getValue(currentSettings, path);
+
+        /* istanbul ignore else */
+        if (validPath) {
+            if (typeof previousValue === 'boolean') {
+                setValue(currentSettings, path, {enabled: previousValue});
+            } else {
+                setValue(currentSettings, path, {enabled: true, ...(previousValue as object)});
+            }
+        }
+
+        return [validPath, previousValue, validPath];
+    };
+
+    customHandlers.push(
+        {
+            note: `Property 'homeassistant' is now always an object.`,
+            noteIf: () => true,
+            execute: (currentSettings) => changeToObject(currentSettings, ['homeassistant']),
+        },
+        {
+            note: `Property 'frontend' is now always an object.`,
+            noteIf: () => true,
+            execute: (currentSettings) => changeToObject(currentSettings, ['frontend']),
+        },
+        {
+            note: `Property 'availability' is now always an object.`,
+            noteIf: () => true,
+            execute: (currentSettings) => changeToObject(currentSettings, ['availability']),
+        },
+    );
+}
 
 /**
  * Order of execution:
@@ -404,7 +448,7 @@ function migrateToTwo(
  * Should allow the most flexibility whenever combination of migrations is necessary (e.g. Transfer + Change)
  */
 export function migrateIfNecessary(): void {
-    const currentSettings = settings.getInternalSettings();
+    let currentSettings = settings.getPersistedSettings();
 
     if (!SUPPORTED_VERSIONS.includes(currentSettings.version)) {
         throw new Error(
@@ -412,8 +456,11 @@ export function migrateIfNecessary(): void {
         );
     }
 
+    /* istanbul ignore next */
+    const finalVersion = process.env.JEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
+
     // when same version as current, nothing left to do
-    while (currentSettings.version !== settings.CURRENT_VERSION) {
+    while (currentSettings.version !== finalVersion) {
         let migrationNotesFileName: string | undefined;
         // don't duplicate outputs
         const migrationNotes: Set<string> = new Set();
@@ -421,23 +468,22 @@ export function migrateIfNecessary(): void {
         const changes: SettingsChange[] = [];
         const additions: SettingsAdd[] = [];
         const removals: SettingsRemove[] = [];
+        const customHandlers: SettingsCustomHandler[] = [];
 
         backupSettings(currentSettings.version || 1);
 
         // each version should only bump to the next version so as to gradually migrate if necessary
         /* istanbul ignore else */
         if (currentSettings.version == undefined) {
-            // migrating from 1.x.x (`version` did not exist) to 2.0.0
-            migrationNotesFileName = 'migration-1.x.x-to-2.0.0.log';
+            // migrating from 1 (`version` did not exist) to 2
+            migrationNotesFileName = 'migration-1-to-2.log';
 
-            migrateToTwo(currentSettings, transfers, changes, additions, removals);
-        } /* else if (currentSettings.version === 2) {
-            // Future
-            // migrating from 2.x.x to 3.0.0
-            migrationNotesFileName = 'migration-2.x.x-to-3.0.0.log';
+            migrateToTwo(currentSettings, transfers, changes, additions, removals, customHandlers);
+        } else if (currentSettings.version === 2) {
+            migrationNotesFileName = 'migration-2-to-3.log';
 
-            migrateFromTwoToThree(currentSettings, transfers, changes, additions, removals);
-        }*/
+            migrateToThree(currentSettings, transfers, changes, additions, removals, customHandlers);
+        } /* else if (currentSettings.version === 2.1) {} */
 
         for (const transfer of transfers) {
             const [validPath, previousValue, transfered] = transferValue(currentSettings, transfer);
@@ -469,6 +515,15 @@ export function migrateIfNecessary(): void {
             }
         }
 
+        for (const customHandler of customHandlers) {
+            const [validPath, previousValue, changed] = customHandler.execute(currentSettings);
+
+            /* istanbul ignore else */
+            if (validPath && changed && (!customHandler.noteIf || customHandler.noteIf(previousValue))) {
+                migrationNotes.add(`[SPECIAL] ${customHandler.note}`);
+            }
+        }
+
         /* istanbul ignore else */
         if (migrationNotesFileName && migrationNotes.size > 0) {
             migrationNotes.add(`For more details, see https://github.com/Koenkk/zigbee2mqtt/discussions/24198`);
@@ -479,7 +534,9 @@ export function migrateIfNecessary(): void {
             console.log(`Migration notes written in ${migrationNotesFilePath}`);
         }
 
-        settings.apply(currentSettings as unknown as Record<string, unknown>);
+        // don't throw to allow stepping through versions (validates against current schema)
+        settings.apply(currentSettings as unknown as Record<string, unknown>, false);
         settings.reRead();
+        currentSettings = settings.getPersistedSettings();
     }
 }

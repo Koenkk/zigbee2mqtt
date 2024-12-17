@@ -49,7 +49,7 @@ export default class Frontend extends Extension {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
 
         const frontendSettings = settings.get().frontend;
-        assert(frontendSettings, 'Frontend extension created without having frontend settings');
+        assert(frontendSettings.enabled, `Frontend extension created with setting 'enabled: false'`);
         this.host = frontendSettings.host;
         this.port = frontendSettings.port;
         this.sslCert = frontendSettings.ssl_cert;

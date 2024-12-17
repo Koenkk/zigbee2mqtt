@@ -113,11 +113,11 @@ export class Controller {
             new ExtensionAvailability(...this.extensionArgs),
         ];
 
-        if (settings.get().frontend) {
+        if (settings.get().frontend.enabled) {
             this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
         }
 
-        if (settings.get().homeassistant) {
+        if (settings.get().homeassistant.enabled) {
             this.extensions.push(new ExtensionHomeAssistant(...this.extensionArgs));
         }
     }

@@ -3,94 +3,93 @@
     "properties": {
         "homeassistant": {
             "title": "Home Assistant integration",
-            "requiresRestart": true,
             "description": "Home Assistant integration (MQTT discovery)",
-            "default": false,
-            "oneOf": [
-                {
+            "type": "object",
+            "properties": {
+                "enabled": {
                     "type": "boolean",
-                    "title": "Home Assistant (simple)"
+                    "title": "Enabled",
+                    "description": "Enable Home Assistant integration",
+                    "default": false,
+                    "requiresRestart": true
                 },
-                {
-                    "type": "object",
-                    "title": "Home Assistant (advanced)",
-                    "properties": {
-                        "discovery_topic": {
-                            "type": "string",
-                            "title": "Homeassistant discovery topic",
-                            "description": "Home Assistant discovery topic",
-                            "requiresRestart": true,
-                            "examples": ["homeassistant"]
-                        },
-                        "status_topic": {
-                            "type": "string",
-                            "title": "Home Assistant status topic",
-                            "description": "Home Assistant status topic",
-                            "requiresRestart": true,
-                            "examples": ["homeassistant/status"]
-                        },
-                        "legacy_action_sensor": {
-                            "type": "boolean",
-                            "title": "Home Assistant legacy action sensors",
-                            "description": "Home Assistant legacy actions sensor, when enabled a action sensor will be discoverd and an empty `action` will be send after every published action.",
-                            "default": false
-                        },
-                        "experimental_event_entities": {
-                            "type": "boolean",
-                            "title": "Home Assistant experimental event entities",
-                            "description": "Home Assistant experimental event entities, when enabled Zigbee2MQTT will add event entities for exposed actions. The events and attributes are currently deemed experimental and subject to change.",
-                            "default": false
-                        }
-                    }
+                "discovery_topic": {
+                    "type": "string",
+                    "title": "Homeassistant discovery topic",
+                    "description": "Home Assistant discovery topic",
+                    "default": "homeassistant",
+                    "requiresRestart": true,
+                    "examples": ["homeassistant"]
+                },
+                "status_topic": {
+                    "type": "string",
+                    "title": "Home Assistant status topic",
+                    "description": "Home Assistant status topic",
+                    "default": "hass/status",
+                    "requiresRestart": true,
+                    "examples": ["homeassistant/status"]
+                },
+                "legacy_action_sensor": {
+                    "type": "boolean",
+                    "title": "Home Assistant legacy action sensors",
+                    "description": "Home Assistant legacy actions sensor, when enabled a action sensor will be discoverd and an empty `action` will be send after every published action.",
+                    "default": false
+                },
+                "experimental_event_entities": {
+                    "type": "boolean",
+                    "title": "Home Assistant experimental event entities",
+                    "description": "Home Assistant experimental event entities, when enabled Zigbee2MQTT will add event entities for exposed actions. The events and attributes are currently deemed experimental and subject to change.",
+                    "default": false
                 }
-            ]
+            },
+            "required": ["enabled"]
         },
         "availability": {
-            "oneOf": [
-                {
-                    "type": "boolean",
-                    "title": "Availability (simple)"
-                },
-                {
-                    "type": "object",
-                    "title": "Availability (advanced)",
-                    "properties": {
-                        "active": {
-                            "type": "object",
-                            "title": "Active",
-                            "requiresRestart": true,
-                            "description": "Options for active devices (routers/mains powered)",
-                            "properties": {
-                                "timeout": {
-                                    "type": "number",
-                                    "title": "Timeout",
-                                    "requiresRestart": true,
-                                    "default": 10,
-                                    "description": "Time after which an active device will be marked as offline in minutes"
-                                }
-                            }
-                        },
-                        "passive": {
-                            "type": "object",
-                            "title": "Passive",
-                            "requiresRestart": true,
-                            "description": "Options for passive devices (mostly battery powered)",
-                            "properties": {
-                                "timeout": {
-                                    "type": "number",
-                                    "title": "Timeout",
-                                    "requiresRestart": true,
-                                    "default": 1500,
-                                    "description": "Time after which an passive device will be marked as offline in minutes"
-                                }
-                            }
-                        }
-                    }
-                }
-            ],
+            "type": "object",
             "title": "Availability",
-            "requiresRestart": true,
-            "description": "Checks whether devices are online/offline"
+            "description": "Checks whether devices are online/offline",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable availability checks",
+                    "default": false,
+                    "requiresRestart": true
+                },
+                "active": {
+                    "type": "object",
+                    "title": "Active",
+                    "requiresRestart": true,
+                    "description": "Options for active devices (routers/mains powered)",
+                    "properties": {
+                        "timeout": {
+                            "type": "number",
+                            "title": "Timeout",
+                            "requiresRestart": true,
+                            "default": 10,
+                            "description": "Time after which an active device will be marked as offline in minutes"
+                        }
+                    },
+                    "required": ["timeout"]
+                },
+                "passive": {
+                    "type": "object",
+                    "title": "Passive",
+                    "requiresRestart": true,
+                    "description": "Options for passive devices (mostly battery powered)",
+                    "properties": {
+                        "timeout": {
+                            "type": "number",
+                            "title": "Timeout",
+                            "requiresRestart": true,
+                            "default": 1500,
+                            "description": "Time after which an passive device will be marked as offline in minutes"
+                        }
+                    },
+                    "required": ["timeout"]
+                }
+            },
+            "required": ["enabled"]
         },
         "mqtt": {
             "type": "object",
@@ -357,66 +356,64 @@
             }
         },
         "frontend": {
-            "oneOf": [
-                {
-                    "type": "boolean",
-                    "title": "Frontend (simple)"
-                },
-                {
-                    "type": "object",
-                    "title": "Frontend (advanced)",
-                    "properties": {
-                        "port": {
-                            "type": "number",
-                            "title": "Port",
-                            "description": "Frontend binding port. Ignored when using a unix domain socket",
-                            "default": 8080,
-                            "requiresRestart": true
-                        },
-                        "host": {
-                            "type": ["string", "null"],
-                            "title": "Bind host",
-                            "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
-                            "examples": ["127.0.0.1", "::1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
-                            "requiresRestart": true
-                        },
-                        "auth_token": {
-                            "type": ["string", "null"],
-                            "title": "Auth token",
-                            "description": "Enables authentication, disabled by default",
-                            "requiresRestart": true
-                        },
-                        "url": {
-                            "type": ["string", "null"],
-                            "title": "URL",
-                            "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
-                            "requiresRestart": true
-                        },
-                        "ssl_cert": {
-                            "type": ["string", "null"],
-                            "title": "Certificate file path",
-                            "description": "SSL Certificate file path for exposing HTTPS. The sibling property 'ssl_key' must be set for HTTPS to be activated.",
-                            "requiresRestart": true
-                        },
-                        "ssl_key": {
-                            "type": ["string", "null"],
-                            "title": "key file path",
-                            "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
-                            "requiresRestart": true
-                        },
-                        "base_url": {
-                            "type": "string",
-                            "pattern": "^\\/.*",
-                            "title": "Base URL",
-                            "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
-                            "default": "/",
-                            "requiresRestart": true
-                        }
-                    }
-                }
-            ],
+            "type": "object",
             "title": "Frontend",
-            "requiresRestart": true
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable frontend",
+                    "default": false,
+                    "requiresRestart": true
+                },
+                "port": {
+                    "type": "number",
+                    "title": "Port",
+                    "description": "Frontend binding port. Ignored when using a unix domain socket",
+                    "default": 8080,
+                    "requiresRestart": true
+                },
+                "host": {
+                    "type": ["string", "null"],
+                    "title": "Bind host",
+                    "description": "Frontend binding host. Binds to a unix socket when an absolute path is given instead.",
+                    "examples": ["127.0.0.1", "::1", "/run/zigbee2mqtt/zigbee2mqtt.sock"],
+                    "requiresRestart": true
+                },
+                "auth_token": {
+                    "type": ["string", "null"],
+                    "title": "Auth token",
+                    "description": "Enables authentication, disabled by default",
+                    "requiresRestart": true
+                },
+                "url": {
+                    "type": ["string", "null"],
+                    "title": "URL",
+                    "description": "URL on which the frontend can be reached, currently only used for the Home Assistant device configuration page",
+                    "requiresRestart": true
+                },
+                "ssl_cert": {
+                    "type": ["string", "null"],
+                    "title": "Certificate file path",
+                    "description": "SSL Certificate file path for exposing HTTPS. The sibling property 'ssl_key' must be set for HTTPS to be activated.",
+                    "requiresRestart": true
+                },
+                "ssl_key": {
+                    "type": ["string", "null"],
+                    "title": "key file path",
+                    "description": "SSL key file path for exposing HTTPS. The sibling property 'ssl_cert' must be set for HTTPS to be activated.",
+                    "requiresRestart": true
+                },
+                "base_url": {
+                    "type": "string",
+                    "pattern": "^\\/.*",
+                    "title": "Base URL",
+                    "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
+                    "default": "/",
+                    "requiresRestart": true
+                }
+            },
+            "required": ["enabled"]
         },
         "devices": {
             "type": "object",
