@@ -4,7 +4,7 @@ import {mockMQTT} from '../mocks/mqtt';
 import {EventHandler, flushPromises} from '../mocks/utils';
 import {devices} from '../mocks/zigbeeHerdsman';
 
-import path from 'path';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 import ws from 'ws';
@@ -65,7 +65,7 @@ const mockNodeStatic = jest.fn();
 
 const mockFinalHandler = jest.fn();
 
-jest.mock('http', () => ({
+jest.mock('node:http', () => ({
     createServer: jest.fn().mockImplementation((onRequest) => {
         mockHTTPOnRequest = onRequest;
         return mockHTTP;
@@ -73,7 +73,7 @@ jest.mock('http', () => ({
     Agent: jest.fn(),
 }));
 
-jest.mock('https', () => ({
+jest.mock('node:https', () => ({
     createServer: jest.fn().mockImplementation((onRequest) => {
         mockHTTPSOnRequest = onRequest;
         return mockHTTPS;

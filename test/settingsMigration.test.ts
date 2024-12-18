@@ -1,7 +1,7 @@
 // side-effect ensures using mock paths
 import * as data from './mocks/data';
 
-import {existsSync, readFileSync, rmSync} from 'fs';
+import {existsSync, readFileSync, rmSync} from 'node:fs';
 
 import objectAssignDeep from 'object-assign-deep';
 

@@ -3,7 +3,7 @@ import type * as SdNotify from 'sd-notify';
 
 import type {Zigbee2MQTTAPI} from './types/api';
 
-import assert from 'assert';
+import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';

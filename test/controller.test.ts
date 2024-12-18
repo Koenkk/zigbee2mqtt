@@ -4,8 +4,8 @@ import {mockMQTT, mockMQTTConnectAsync, events as mockMQTTEvents} from './mocks/
 import {flushPromises, JestMockAny} from './mocks/utils';
 import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from './mocks/zigbeeHerdsman';
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 import tmp from 'tmp';

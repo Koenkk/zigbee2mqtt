@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 import tmp from 'tmp';
@@ -291,7 +291,7 @@ export function read(): ReturnType<typeof yaml.read> {
 }
 
 jest.mock('../../lib/util/data', () => ({
-    joinPath: (file: string): string => jest.requireActual('path').join(mockDir, file),
+    joinPath: (file: string): string => jest.requireActual('node:path').join(mockDir, file),
     getPath: (): string => mockDir,
 }));
 

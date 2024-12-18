@@ -1,5 +1,5 @@
-import assert from 'assert';
-import fs from 'fs';
+import assert from 'node:assert';
+import fs from 'node:fs';
 
 import equals from 'fast-deep-equal/es6';
 import yaml, {YAMLException} from 'js-yaml';

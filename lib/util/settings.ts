@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 import Ajv, {ValidateFunction} from 'ajv';
 import objectAssignDeep from 'object-assign-deep';

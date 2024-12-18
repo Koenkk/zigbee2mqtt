@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 import {Zcl} from 'zigbee-herdsman';
 import {CoordinatorVersion, DeviceType, NetworkParameters, StartResult} from 'zigbee-herdsman/dist/adapter/tstype';

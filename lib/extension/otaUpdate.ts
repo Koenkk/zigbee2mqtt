@@ -1,8 +1,8 @@
 import type {Zigbee2MQTTAPI} from 'lib/types/api';
 import type {Ota} from 'zigbee-herdsman-converters';
 
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';

@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 
 function setPath(): string {
     return process.env.ZIGBEE2MQTT_DATA ? process.env.ZIGBEE2MQTT_DATA : path.normalize(path.join(__dirname, '..', '..', 'data'));

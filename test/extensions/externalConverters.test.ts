@@ -6,8 +6,8 @@ import {devices, mockController as mockZHController, returnDevices} from '../moc
 
 import type Device from '../../lib/model/device';
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 

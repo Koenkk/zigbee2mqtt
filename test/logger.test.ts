@@ -1,8 +1,8 @@
 import * as data from './mocks/data';
 
-import fs from 'fs';
-import {platform} from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import {platform} from 'node:os';
+import path from 'node:path';
 
 import {rimrafSync} from 'rimraf';
 import tmp from 'tmp';
