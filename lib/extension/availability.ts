@@ -42,7 +42,7 @@ export default class Availability extends Extension {
 
     private isAvailable(entity: Device | Group): boolean {
         if (entity.isDevice()) {
-            return Date.now() - (entity.zh.lastSeen ?? /* istanbul ignore next */ 0) < this.getTimeout(entity);
+            return Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0) < this.getTimeout(entity);
         } else {
             const membersDevices = entity.membersDevices();
             return membersDevices.length === 0 || membersDevices.some((d) => this.availabilityCache[d.ieeeAddr]);
@@ -164,7 +164,7 @@ export default class Availability extends Extension {
 
     private async publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish = false, skipGroups = false): Promise<void> {
         if (logLastSeen && entity.isDevice()) {
-            const ago = Date.now() - (entity.zh.lastSeen ?? /* istanbul ignore next */ 0);
+            const ago = Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0);
 
             if (this.isActiveDevice(entity)) {
                 logger.debug(`Active device '${entity.name}' was last seen '${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);

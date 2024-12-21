@@ -54,14 +54,15 @@ function setValue(currentSettings: any, path: string[], value: unknown, createPa
             currentSettings[key] = value;
         } else {
             if (!currentSettings[key]) {
-                /* istanbul ignore else */
                 if (createPathIfNotExist) {
                     currentSettings[key] = {};
+                    /* v8 ignore start */
                 } else {
                     // invalid path
                     // ignored in test since currently call is always guarded by get-validated path, so this is never reached
                     return false;
                 }
+                /* v8 ignore stop */
             }
 
             currentSettings = currentSettings[key];
@@ -407,7 +408,6 @@ function migrateToThree(
     const changeToObject = (currentSettings: Partial<Settings>, path: string[]): ReturnType<SettingsCustomHandler['execute']> => {
         const [validPath, previousValue] = getValue(currentSettings, path);
 
-        /* istanbul ignore else */
         if (validPath) {
             if (typeof previousValue === 'boolean') {
                 setValue(currentSettings, path, {enabled: previousValue});
@@ -456,7 +456,7 @@ export function migrateIfNecessary(): void {
         );
     }
 
-    /* istanbul ignore next */
+    /* v8 ignore next */
     const finalVersion = process.env.VITEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
 
     // when same version as current, nothing left to do
@@ -473,7 +473,6 @@ export function migrateIfNecessary(): void {
         backupSettings(currentSettings.version || 1);
 
         // each version should only bump to the next version so as to gradually migrate if necessary
-        /* istanbul ignore else */
         if (currentSettings.version == undefined) {
             // migrating from 1 (`version` did not exist) to 2
             migrationNotesFileName = 'migration-1-to-2.log';
@@ -518,13 +517,11 @@ export function migrateIfNecessary(): void {
         for (const customHandler of customHandlers) {
             const [validPath, previousValue, changed] = customHandler.execute(currentSettings);
 
-            /* istanbul ignore else */
             if (validPath && changed && (!customHandler.noteIf || customHandler.noteIf(previousValue))) {
                 migrationNotes.add(`[SPECIAL] ${customHandler.note}`);
             }
         }
 
-        /* istanbul ignore else */
         if (migrationNotesFileName && migrationNotes.size > 0) {
             migrationNotes.add(`For more details, see https://github.com/Koenkk/zigbee2mqtt/discussions/24198`);
             const migrationNotesFilePath = data.joinPath(migrationNotesFileName);

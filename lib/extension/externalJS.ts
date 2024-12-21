@@ -64,7 +64,6 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         for (const fileName of fs.readdirSync(this.basePath)) {
-            /* istanbul ignore else */
             if (fileName.endsWith('.js')) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
             }

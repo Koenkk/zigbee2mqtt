@@ -60,7 +60,7 @@ class Logger {
                 format: winston.format.combine(
                     winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
                     winston.format.printf(
-                        /* istanbul ignore next */ (info) => {
+                        (info) => {
                             return `[${info.timestamp}] ${info.level}: \t${info.message}`;
                         },
                     ),
@@ -77,10 +77,13 @@ class Logger {
             if (settings.get().advanced.log_symlink_current) {
                 const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
                 const actual = './' + timestamp;
-                /* istanbul ignore next */
+
+                /* v8 ignore start */
                 if (fs.existsSync(current)) {
                     fs.unlinkSync(current);
                 }
+                /* v8 ignore stop */
+
                 fs.symlinkSync(actual, current);
             }
 
@@ -89,7 +92,7 @@ class Logger {
             const transportFileOptions: winston.transports.FileTransportOptions = {
                 filename: path.join(this.directory, logFilename),
                 format: winston.format.printf(
-                    /* istanbul ignore next */ (info) => {
+                    (info) => {
                         return `[${info.timestamp}] ${info.level}: \t${info.message}`;
                     },
                 ),
@@ -106,7 +109,7 @@ class Logger {
             this.cleanup();
         }
 
-        /* istanbul ignore next */
+        /* v8 ignore start */
         if (this.output.includes('syslog')) {
             logging += `, syslog`;
             // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
@@ -125,6 +128,7 @@ class Logger {
             // @ts-expect-error untyped transport
             this.logger.add(new winston.transports.Syslog(options));
         }
+        /* v8 ignore stop */
 
         this.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
 
@@ -240,7 +244,7 @@ class Logger {
 
     // Workaround for https://github.com/winstonjs/winston/issues/1629.
     // https://github.com/Koenkk/zigbee2mqtt/pull/10905
-    /* istanbul ignore next */
+    /* v8 ignore start */
     public async end(): Promise<void> {
         this.logger.end();
 
@@ -259,6 +263,7 @@ class Logger {
             }
         });
     }
+    /* v8 ignore stop */
 }
 
 export default new Logger();
