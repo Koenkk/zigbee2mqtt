@@ -3,6 +3,12 @@ import path from 'node:path';
 
 import utils from '../lib/util/utils';
 
+const mockGetLastCommit= vi.fn<() => [boolean, {shortHash: string} | null]>(() => [false, {shortHash: '123'}]);
+
+vi.mock('git-last-commit', () => ({
+    getLastCommit: vi.fn((cb) => cb(...mockGetLastCommit())),
+}));
+
 describe('Utils', () => {
     it('Object is empty', () => {
         expect(utils.objectIsEmpty({})).toBeTruthy();
@@ -16,14 +22,10 @@ describe('Utils', () => {
 
     it('git last commit', async () => {
         const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
-        let mockReturnValue: [identical: boolean, result: {shortHash: string} | null] = [false, {shortHash: '123'}];
-        jest.mock('git-last-commit', () => ({
-            getLastCommit: (cb: (identical: boolean, result: {shortHash: string} | null) => void): void => cb(mockReturnValue[0], mockReturnValue[1]),
-        }));
 
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: '123', version: version});
 
-        mockReturnValue = [true, null];
+        mockGetLastCommit.mockReturnValueOnce([true, null]);
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: expect.any(String), version: version});
     });
 
@@ -40,7 +42,7 @@ describe('Utils', () => {
 
     it('To local iso string', async () => {
         const date = new Date('August 19, 1975 23:15:30 UTC+00:00').getTime();
-        const getTzOffsetSpy = jest.spyOn(Date.prototype, 'getTimezoneOffset');
+        const getTzOffsetSpy = vi.spyOn(Date.prototype, 'getTimezoneOffset');
         getTzOffsetSpy.mockReturnValueOnce(60);
         expect(utils.formatDate(date, 'ISO_8601_local').toString().endsWith('-01:00')).toBeTruthy();
         getTzOffsetSpy.mockReturnValueOnce(-60);

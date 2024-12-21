@@ -18,11 +18,11 @@ describe('Extension: ExternalExtensions', () => {
     let controller: Controller;
     const mockBasePath = path.join(data.mockDir, BASE_DIR);
 
-    const existsSyncSpy = jest.spyOn(fs, 'existsSync');
-    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync');
-    const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync');
-    const rmSyncSpy = jest.spyOn(fs, 'rmSync');
-    const writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync');
+    const existsSyncSpy = vi.spyOn(fs, 'existsSync');
+    const readdirSyncSpy = vi.spyOn(fs, 'readdirSync');
+    const mkdirSyncSpy = vi.spyOn(fs, 'mkdirSync');
+    const rmSyncSpy = vi.spyOn(fs, 'rmSync');
+    const writeFileSyncSpy = vi.spyOn(fs, 'writeFileSync');
 
     const mocksClear = [
         mockMQTT.endAsync,
@@ -47,11 +47,11 @@ describe('Extension: ExternalExtensions', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     beforeEach(async () => {
@@ -61,7 +61,7 @@ describe('Extension: ExternalExtensions', () => {
         settings.reRead();
         returnDevices.splice(0);
 
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
     });
 
     afterEach(() => {

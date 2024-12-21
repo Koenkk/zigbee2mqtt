@@ -96,9 +96,9 @@ describe('Extension: NetworkMap', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         mockSleep.mock();
-        jest.spyOn(Date, 'now').mockReturnValue(10000);
+        vi.spyOn(Date, 'now').mockReturnValue(10000);
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
@@ -107,7 +107,7 @@ describe('Extension: NetworkMap', () => {
             path.join(__dirname, '..', 'assets', 'external_converters', 'mock-external-converter.js'),
             path.join(data.mockDir, 'external_converters', 'mock-external-converter.js'),
         );
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
     });
 
@@ -124,7 +124,7 @@ describe('Extension: NetworkMap', () => {
     afterAll(async () => {
         mockSleep.restore();
         fs.rmSync(path.join(data.mockDir, 'external_converters'), {recursive: true});
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Output raw networkmap', async () => {
@@ -460,7 +460,6 @@ describe('Extension: NetworkMap', () => {
 
     it('Should throw error when requesting invalid type', async () => {
         mock();
-        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', 'not_existing');
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
@@ -474,7 +473,6 @@ describe('Extension: NetworkMap', () => {
     it('Should exclude disabled devices from networkmap', async () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
-        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
@@ -627,7 +625,6 @@ describe('Extension: NetworkMap', () => {
         settings.set(['devices', '0x000b57fffec6a5b2', 'disabled'], true);
         mock();
         devices.bulb.lqi.mockRejectedValueOnce('failed');
-        mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/networkmap', stringify({type: 'raw', routes: true}));
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);

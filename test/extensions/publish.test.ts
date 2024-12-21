@@ -32,9 +32,9 @@ describe('Extension: Publish', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         data.writeEmptyState();
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         mockSleep.mock();
         await controller.start();
         await flushPromises();
@@ -62,8 +62,8 @@ describe('Extension: Publish', () => {
     });
 
     afterAll(async () => {
-        await jest.runOnlyPendingTimersAsync();
-        jest.useRealTimers();
+        await vi.runOnlyPendingTimersAsync();
+        vi.useRealTimers();
         mockSleep.restore();
     });
 
@@ -1481,7 +1481,7 @@ describe('Extension: Publish', () => {
         const endpoint = device.getEndpoint(1)!;
         await mockMQTTEvents.message('zigbee2mqtt/GL-S-007ZS/set', stringify({state: 'ON', brightness: 20}));
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         expect(endpoint.command).toHaveBeenCalledTimes(2);
         expect(endpoint.command.mock.calls[0]).toEqual(['genOnOff', 'on', {}, {}]);
         expect(endpoint.command.mock.calls[1]).toEqual(['genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 0}, {}]);

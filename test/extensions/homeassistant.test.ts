@@ -30,7 +30,7 @@ describe('Extension: HomeAssistant', () => {
         extension = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
 
         if (runTimers) {
-            await jest.runOnlyPendingTimersAsync();
+            await vi.runOnlyPendingTimersAsync();
         }
     };
 
@@ -50,19 +50,19 @@ describe('Extension: HomeAssistant', () => {
         z2m_version = (await getZigbee2MQTTVersion()).version;
         version = `Zigbee2MQTT ${z2m_version}`;
         origin.sw = z2m_version;
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         settings.set(['homeassistant'], {enabled: true});
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeEmptyState();
         mockMQTT.publishAsync.mockClear();
         mockSleep.mock();
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
         mockSleep.restore();
     });
 
@@ -492,7 +492,7 @@ describe('Extension: HomeAssistant', () => {
         await mockMQTTEvents.message(topic1, payload1);
         await mockMQTTEvents.message(topic2, payload2);
 
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
 
         // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
         expect(mockMQTT.unsubscribeAsync).toHaveBeenCalledWith(`homeassistant/#`);
@@ -1112,14 +1112,14 @@ describe('Extension: HomeAssistant', () => {
         settings.set(['advanced', 'output'], 'attribute');
         settings.set(['homeassistant'], {enabled: true});
         expect(() => {
-            new Controller(jest.fn(), jest.fn());
+            new Controller(vi.fn(), vi.fn());
         }).toThrow('Home Assistant integration is not possible with attribute output!');
     });
 
     it('Should throw error when homeassistant.discovery_topic equals the mqtt.base_topic', async () => {
         settings.set(['mqtt', 'base_topic'], 'homeassistant');
         expect(() => {
-            new Controller(jest.fn(), jest.fn());
+            new Controller(vi.fn(), vi.fn());
         }).toThrow("'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got 'homeassistant')");
     });
 
@@ -1312,7 +1312,7 @@ describe('Extension: HomeAssistant', () => {
         mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'online');
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -1352,7 +1352,7 @@ describe('Extension: HomeAssistant', () => {
         mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'online');
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
@@ -1391,7 +1391,7 @@ describe('Extension: HomeAssistant', () => {
         mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'offline');
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
     });
@@ -1404,7 +1404,7 @@ describe('Extension: HomeAssistant', () => {
         mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status_different', 'offline');
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
     });
@@ -1478,7 +1478,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({from: 'weather_sensor', to: 'weather_sensor_renamed', homeassistant_rename: true}),
         );
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
         const payload = {
@@ -1536,7 +1536,7 @@ describe('Extension: HomeAssistant', () => {
             stringify({from: 'ha_discovery_group', to: 'ha_discovery_group_new', homeassistant_rename: true}),
         );
         await flushPromises();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
         const payload = {
@@ -2208,7 +2208,7 @@ describe('Extension: HomeAssistant', () => {
 
         // Discovery messages for scenes have been purged.
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(`homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`, '', {retain: true, qos: 1});
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
         let payload = {
@@ -2248,7 +2248,7 @@ describe('Extension: HomeAssistant', () => {
             retain: true,
             qos: 1,
         });
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
         payload = {

@@ -65,10 +65,10 @@ describe('Extension: Configure', () => {
     const wait = async (ms: number): Promise<void> => await new Promise((resolve) => setTimeout(resolve, ms));
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        controller = new Controller(jest.fn(), jest.fn());
+        vi.useFakeTimers();
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
     });
 
     beforeEach(async () => {
@@ -77,11 +77,11 @@ describe('Extension: Configure', () => {
         mocksClear.forEach((m) => m.mockClear());
         coordinatorEndpoint = devices.coordinator.getEndpoint(1)!;
         await resetExtension();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should configure Router on startup', async () => {

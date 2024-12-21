@@ -1,10 +1,9 @@
 export type EventHandler = (...args: unknown[]) => unknown;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type JestMockAny = jest.Mock<any, any, any>;
+export async function flushPromises(): Promise<void> {
+    const nodeTimers = await vi.importActual<typeof import('node:timers')>('node:timers');
 
-export function flushPromises(): Promise<void> {
-    return new Promise(jest.requireActual('node:timers').setImmediate);
+    return await new Promise(nodeTimers.setImmediate);
 }
 
 // https://github.com/jestjs/jest/issues/6028#issuecomment-567669082

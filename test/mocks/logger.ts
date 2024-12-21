@@ -1,7 +1,7 @@
 import type {LogLevel} from 'lib/util/settings';
 import type Transport from 'winston-transport';
 
-let level = 'info';
+let level: LogLevel = 'info';
 let debugNamespaceIgnore: string = '';
 let namespacedLevels: Record<string, LogLevel> = {};
 let transports: Transport[] = [];
@@ -9,20 +9,20 @@ let transportsEnabled: boolean = false;
 const getMessage = (messageOrLambda: string | (() => string)): string => (messageOrLambda instanceof Function ? messageOrLambda() : messageOrLambda);
 
 export const mockLogger = {
-    log: jest.fn().mockImplementation((level, message, namespace = 'z2m') => {
+    log: vi.fn().mockImplementation((level, message, namespace = 'z2m') => {
         if (transportsEnabled) {
             for (const transport of transports) {
                 transport.log!({level, message, namespace}, () => {});
             }
         }
     }),
-    init: jest.fn(),
-    info: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('info', getMessage(messageOrLambda), namespace)),
-    warning: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('warning', getMessage(messageOrLambda), namespace)),
-    error: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('error', getMessage(messageOrLambda), namespace)),
-    debug: jest.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('debug', getMessage(messageOrLambda), namespace)),
-    cleanup: jest.fn(),
-    logOutput: jest.fn(),
+    init: vi.fn(),
+    info: vi.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('info', getMessage(messageOrLambda), namespace)),
+    warning: vi.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('warning', getMessage(messageOrLambda), namespace)),
+    error: vi.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('error', getMessage(messageOrLambda), namespace)),
+    debug: vi.fn().mockImplementation((messageOrLambda, namespace = 'z2m') => mockLogger.log('debug', getMessage(messageOrLambda), namespace)),
+    cleanup: vi.fn(),
+    logOutput: vi.fn(),
     add: (transport: Transport): void => {
         transports.push(transport);
     },
@@ -47,7 +47,9 @@ export const mockLogger = {
     setTransportsEnabled: (value: boolean): void => {
         transportsEnabled = value;
     },
-    end: jest.fn(),
+    end: vi.fn(),
 };
 
-jest.mock('../../lib/util/logger', () => mockLogger);
+vi.mock('../../lib/util/logger', () => ({
+    default: mockLogger
+}));
