@@ -103,6 +103,7 @@ class Logger {
 
             this.fileTransport = new winston.transports.File(transportFileOptions);
             this.logger.add(this.fileTransport);
+            this.cleanup();
         }
 
         /* istanbul ignore next */
@@ -219,7 +220,7 @@ class Logger {
     }
 
     // Cleanup any old log directory.
-    public cleanup(): void {
+    private cleanup(): void {
         if (settings.get().advanced.log_directory.includes('%TIMESTAMP%')) {
             const rootDirectory = path.join(this.directory, '..');
 
