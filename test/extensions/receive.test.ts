@@ -16,11 +16,11 @@ describe('Extension: Receive', () => {
     let controller: Controller;
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        controller = new Controller(jest.fn(), jest.fn());
+        vi.useFakeTimers();
+        controller = new Controller(vi.fn(), vi.fn());
         mockSleep.mock();
         await controller.start();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
     });
 
     beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('Extension: Receive', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
         mockSleep.restore();
     });
 
@@ -177,9 +177,9 @@ describe('Extension: Receive', () => {
         };
         await mockZHEvents.message(payload3);
         await flushPromises();
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
@@ -223,9 +223,9 @@ describe('Extension: Receive', () => {
         };
         await mockZHEvents.message(payload3);
         await flushPromises();
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/weather_sensor');
@@ -274,10 +274,10 @@ describe('Extension: Receive', () => {
         };
         await mockZHEvents.message(humidityMsg);
         await flushPromises();
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
         expect(JSON.parse(mockMQTT.publishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.08, pressure: 2});
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
         expect(JSON.parse(mockMQTT.publishAsync.mock.calls[1][1])).toStrictEqual({temperature: 0.07, pressure: 2, humidity: 0.03});
@@ -287,7 +287,6 @@ describe('Extension: Receive', () => {
         // Summary:
         // First send multiple measurements to device that is debouncing. Make sure only one message is sent out to mockMQTT. This also ensures first message is cached to "State".
         // Then send another measurement to that same device and trigger asynchronous event to push data from Cache. Newest value should be sent out.
-
         const device = devices.WSDCGQ11LM;
         settings.set(['devices', device.ieeeAddr, 'debounce'], 0.1);
         await mockZHEvents.message({
@@ -315,11 +314,10 @@ describe('Extension: Receive', () => {
             linkquality: 10,
         });
         await flushPromises();
-        jest.advanceTimersByTime(50);
+        vi.advanceTimersByTime(50);
         // Test that measurements are combined(=debounced)
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
-        jest.runOnlyPendingTimers();
-        await flushPromises();
+        vi.runOnlyPendingTimers();
 
         // Test that only one MQTT is sent out and test its values.
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
@@ -340,8 +338,7 @@ describe('Extension: Receive', () => {
 
         // Trigger asynchronous event while device is "debouncing" to trigger Message to be sent out from State cache.
         await controller.publishEntityState(realDevice, {});
-        jest.runOnlyPendingTimers();
-        await flushPromises();
+        vi.runOnlyPendingTimers();
 
         // Total of 3 messages should have triggered.
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
@@ -399,7 +396,7 @@ describe('Extension: Receive', () => {
 
         // Now we try after elapsed time to see if it publishes next message
         const timeshift = throttle_for_testing * 2000;
-        jest.advanceTimersByTime(timeshift);
+        vi.advanceTimersByTime(timeshift);
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
         await flushPromises();
 
@@ -439,7 +436,7 @@ describe('Extension: Receive', () => {
         });
         await mockMQTTEvents.message('zigbee2mqtt/bulb/set', stringify({state: 'ON'}));
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
         expect(JSON.parse(mockMQTT.publishAsync.mock.calls[0][1])).toStrictEqual({state: 'ON'});
         expect(JSON.parse(mockMQTT.publishAsync.mock.calls[1][1])).toStrictEqual({state: 'ON'});
@@ -659,7 +656,7 @@ describe('Extension: Receive', () => {
         settings.set(['advanced', 'elapsed'], true);
         const device = devices.E1743;
         const payload = {data: {}, cluster: 'genLevelCtrl', device, endpoint: device.getEndpoint(1), type: 'commandStopWithOnOff'};
-        jest.spyOn(Date, 'now').mockReturnValueOnce(150).mockReturnValueOnce(200);
+        vi.spyOn(Date, 'now').mockReturnValueOnce(150).mockReturnValueOnce(200);
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 2}});
         await flushPromises();
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 3}});

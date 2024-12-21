@@ -290,10 +290,16 @@ export function read(): ReturnType<typeof yaml.read> {
     return yaml.read(path.join(mockDir, 'configuration.yaml'));
 }
 
-jest.mock('../../lib/util/data', () => ({
-    joinPath: (file: string): string => jest.requireActual('node:path').join(mockDir, file),
-    getPath: (): string => mockDir,
-}));
+vi.mock('../../lib/util/data', async () => {
+    const nodePath = await vi.importActual<typeof import('node:path')>('node:path');
+
+    return {
+        default: {
+            joinPath: (file: string): string => nodePath.join(mockDir, file),
+            getPath: (): string => mockDir,
+        },
+    };
+});
 
 writeDefaultConfiguration();
 writeDefaultState();

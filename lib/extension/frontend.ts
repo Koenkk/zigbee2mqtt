@@ -9,7 +9,7 @@ import {posix} from 'node:path';
 import {parse} from 'node:url';
 
 import bind from 'bind-decorator';
-import expressStaticGzip, {RequestHandler} from 'express-static-gzip';
+import expressStaticGzip, {type RequestHandler} from 'express-static-gzip';
 import finalhandler from 'finalhandler';
 import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';

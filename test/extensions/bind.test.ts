@@ -31,15 +31,15 @@ describe('Extension: Bind', () => {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
             endpoint.configureReporting.mockClear();
-            endpoint.bind = jest.fn();
+            endpoint.bind = vi.fn();
             endpoint.bind.mockClear();
             endpoint.unbind.mockClear();
         }
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        controller = new Controller(jest.fn(), jest.fn());
+        vi.useFakeTimers();
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
@@ -53,7 +53,7 @@ describe('Extension: Bind', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should bind to device and configure reporting', async () => {

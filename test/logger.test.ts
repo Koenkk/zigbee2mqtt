@@ -1,3 +1,5 @@
+import type { MockInstance } from 'vitest';
+
 import * as data from './mocks/data';
 
 import fs from 'node:fs';
@@ -12,7 +14,7 @@ import logger from '../lib/util/logger';
 import * as settings from '../lib/util/settings';
 
 describe('Logger', () => {
-    let consoleWriteSpy: jest.SpyInstance;
+    let consoleWriteSpy: MockInstance;
     const dir = tmp.dirSync();
 
     const getCachedNamespacedLevels = (): Record<string, string> => {
@@ -22,7 +24,7 @@ describe('Logger', () => {
 
     beforeAll(() => {
         // @ts-expect-error private
-        consoleWriteSpy = jest.spyOn(console._stdout, 'write').mockImplementation(() => {});
+        consoleWriteSpy = vi.spyOn(console._stdout, 'write').mockImplementation(() => {});
     });
 
     afterAll(() => {
@@ -170,9 +172,9 @@ describe('Logger', () => {
         ['warning', {higher: ['error'], lower: ['debug', 'info']}],
         ['error', {higher: [], lower: ['debug', 'info', 'warning']}],
     ])('Logs relevant levels for %s', (level, otherLevels) => {
-        logger.setLevel(level);
+        logger.setLevel(level as settings.LogLevel);
 
-        const logSpy = jest.spyOn(logger.winston, 'log');
+        const logSpy = vi.spyOn(logger.winston, 'log');
         consoleWriteSpy.mockClear();
         let i = 1;
 
@@ -258,7 +260,7 @@ describe('Logger', () => {
         ],
     ])('Sets namespace ignore for debug level %s', (ignore, expected, tests) => {
         logger.setLevel('debug');
-        const logSpy = jest.spyOn(logger.winston, 'log');
+        const logSpy = vi.spyOn(logger.winston, 'log');
         logger.setDebugNamespaceIgnore(ignore);
         // @ts-expect-error private
         expect(logger.debugNamespaceIgnoreRegex).toStrictEqual(expected);
@@ -286,7 +288,7 @@ describe('Logger', () => {
         expect(logger.getNamespacedLevels()).toStrictEqual({'z2m:mqtt': 'warning'});
         expect(logger.getLevel()).toStrictEqual('debug');
 
-        const logSpy = jest.spyOn(logger.winston, 'log');
+        const logSpy = vi.spyOn(logger.winston, 'log');
 
         consoleWriteSpy.mockClear();
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
@@ -307,7 +309,7 @@ describe('Logger', () => {
         expect(logger.getNamespacedLevels()).toStrictEqual({'z2m:mqtt': 'info'});
         expect(logger.getLevel()).toStrictEqual('warning');
 
-        const logSpy = jest.spyOn(logger.winston, 'log');
+        const logSpy = vi.spyOn(logger.winston, 'log');
 
         consoleWriteSpy.mockClear();
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, 'z2m:mqtt');
@@ -325,7 +327,7 @@ describe('Logger', () => {
     });
 
     it('Logs with namespaced levels hierarchy', () => {
-        const nsLevels = {'zh:zstack': 'debug', 'zh:zstack:unpi:writer': 'error'};
+        const nsLevels = {'zh:zstack': 'debug' as const, 'zh:zstack:unpi:writer': 'error' as const};
         let cachedNSLevels;
         cachedNSLevels = Object.assign({}, nsLevels);
         logger.setNamespacedLevels(nsLevels);
@@ -379,7 +381,7 @@ describe('Logger', () => {
     it('Ignores SPLAT chars', () => {
         logger.setLevel('debug');
 
-        const logSpy = jest.spyOn(logger.winston, 'log');
+        const logSpy = vi.spyOn(logger.winston, 'log');
         consoleWriteSpy.mockClear();
 
         let splatChars = '%d';

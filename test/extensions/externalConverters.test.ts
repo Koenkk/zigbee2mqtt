@@ -22,14 +22,14 @@ describe('Extension: ExternalConverters', () => {
     const mockBasePath = path.join(data.mockDir, BASE_DIR);
     let controller: Controller;
 
-    const existsSyncSpy = jest.spyOn(fs, 'existsSync');
-    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync');
-    const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync');
-    const rmSyncSpy = jest.spyOn(fs, 'rmSync');
-    const writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync');
+    const existsSyncSpy = vi.spyOn(fs, 'existsSync');
+    const readdirSyncSpy = vi.spyOn(fs, 'readdirSync');
+    const mkdirSyncSpy = vi.spyOn(fs, 'mkdirSync');
+    const rmSyncSpy = vi.spyOn(fs, 'rmSync');
+    const writeFileSyncSpy = vi.spyOn(fs, 'writeFileSync');
 
-    const zhcAddDefinitionSpy = jest.spyOn(zhc, 'addDefinition');
-    const zhcRemoveExternalDefinitionsSpy = jest.spyOn(zhc, 'removeExternalDefinitions');
+    const zhcAddDefinitionSpy = vi.spyOn(zhc, 'addDefinition');
+    const zhcRemoveExternalDefinitionsSpy = vi.spyOn(zhc, 'removeExternalDefinitions');
 
     const mocksClear = [
         mockMQTT.endAsync,
@@ -61,11 +61,11 @@ describe('Extension: ExternalConverters', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     beforeEach(async () => {
@@ -76,7 +76,7 @@ describe('Extension: ExternalConverters', () => {
         settings.reRead();
         returnDevices.push(devices.external_converter_device.ieeeAddr, devices.coordinator.ieeeAddr);
 
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
     });
 
     afterEach(async () => {

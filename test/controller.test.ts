@@ -1,7 +1,9 @@
+import type {Mock, MockInstance} from 'vitest';
+
 import * as data from './mocks/data';
 import {mockLogger} from './mocks/logger';
 import {mockMQTT, mockMQTTConnectAsync, events as mockMQTTEvents} from './mocks/mqtt';
-import {flushPromises, JestMockAny} from './mocks/utils';
+import {flushPromises} from './mocks/utils';
 import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from './mocks/zigbeeHerdsman';
 
 import fs from 'node:fs';
@@ -18,19 +20,13 @@ import * as settings from '../lib/util/settings';
 process.env.NOTIFY_SOCKET = 'mocked';
 const LOG_MQTT_NS = 'z2m:mqtt';
 
-jest.mock(
-    'sd-notify',
-    () => {
-        return {
-            watchdogInterval: jest.fn(() => 3000),
-            startWatchdogMode: jest.fn(),
-            stopWatchdogMode: jest.fn(),
-            ready: jest.fn(),
-            stopping: jest.fn(),
-        };
-    },
-    {virtual: true},
-);
+vi.mock('sd-notify', () => ({
+    watchdogInterval: vi.fn(() => 3000),
+    startWatchdogMode: vi.fn(),
+    stopWatchdogMode: vi.fn(),
+    ready: vi.fn(),
+    stopping: vi.fn(),
+}));
 
 const mocksClear = [
     mockZHController.stop,
@@ -50,25 +46,25 @@ const mocksClear = [
 
 describe('Controller', () => {
     let controller: Controller;
-    let mockExit: JestMockAny;
+    let mockExit: Mock;
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     beforeEach(() => {
         returnDevices.splice(0);
-        mockExit = jest.fn();
+        mockExit = vi.fn();
         data.writeDefaultConfiguration();
         settings.reRead();
-        controller = new Controller(jest.fn(), mockExit);
+        controller = new Controller(vi.fn(), mockExit);
         mocksClear.forEach((m) => m.mockClear());
         settings.reRead();
         data.writeDefaultState();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     afterEach(async () => {
@@ -160,9 +156,9 @@ describe('Controller', () => {
         settings.set(['advanced', 'ext_pan_id'], 'GENERATE');
         await controller.start();
         await flushPromises();
-        expect((ZHController as unknown as jest.Mock).mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
-        expect((ZHController as unknown as jest.Mock).mock.calls[0][0].network.extendedPanID.length).toStrictEqual(8);
-        expect((ZHController as unknown as jest.Mock).mock.calls[0][0].network.panID).toStrictEqual(expect.any(Number));
+        expect((ZHController as unknown as MockInstance).mock.calls[0][0].network.networkKey.length).toStrictEqual(16);
+        expect((ZHController as unknown as MockInstance).mock.calls[0][0].network.extendedPanID.length).toStrictEqual(8);
+        expect((ZHController as unknown as MockInstance).mock.calls[0][0].network.panID).toStrictEqual(expect.any(Number));
         expect(data.read().advanced.network_key.length).toStrictEqual(16);
         expect(data.read().advanced.ext_pan_id.length).toStrictEqual(8);
         expect(data.read().advanced.pan_id).toStrictEqual(expect.any(Number));
@@ -209,7 +205,7 @@ describe('Controller', () => {
         mockLogger.error.mockClear();
         // @ts-expect-error private
         controller.mqtt.client.reconnecting = true;
-        jest.advanceTimersByTime(11 * 1000);
+        vi.advanceTimersByTime(11 * 1000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
         // @ts-expect-error private
         controller.mqtt.client.reconnecting = false;
@@ -327,7 +323,7 @@ describe('Controller', () => {
         mockMQTT.reconnecting = true;
         expect(mockLogger.error).toHaveBeenCalledWith('MQTT error: ECONNRESET');
 
-        await jest.advanceTimersByTimeAsync(11000);
+        await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
 
         mockMQTT.reconnecting = false;
@@ -349,7 +345,7 @@ describe('Controller', () => {
         mockMQTT.disconnecting = true;
         expect(mockLogger.error).toHaveBeenCalledWith('MQTT disconnect: reason 149 (Maximum packet size was exceeded)');
 
-        await jest.advanceTimersByTimeAsync(11000);
+        await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
 
         mockMQTT.disconnecting = false;
@@ -373,7 +369,7 @@ describe('Controller', () => {
 
     it('Handle mqtt message', async () => {
         // @ts-expect-error private
-        const spyEventbusEmitMQTTMessage = jest.spyOn(controller.eventBus, 'emitMQTTMessage').mockImplementation();
+        const spyEventbusEmitMQTTMessage = vi.spyOn(controller.eventBus, 'emitMQTTMessage').mockImplementation(vi.fn());
 
         await controller.start();
         mockLogger.debug.mockClear();
@@ -384,7 +380,7 @@ describe('Controller', () => {
 
     it('Skip MQTT messages on topic we published to', async () => {
         // @ts-expect-error private
-        const spyEventbusEmitMQTTMessage = jest.spyOn(controller.eventBus, 'emitMQTTMessage').mockImplementation();
+        const spyEventbusEmitMQTTMessage = vi.spyOn(controller.eventBus, 'emitMQTTMessage').mockImplementation(vi.fn());
 
         await controller.start();
         mockLogger.debug.mockClear();
@@ -461,7 +457,7 @@ describe('Controller', () => {
         await controller.start();
         const device = devices.bulb;
         settings.set(['blocklist'], [device.ieeeAddr]);
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(false);
     });
 
@@ -469,7 +465,7 @@ describe('Controller', () => {
         await controller.start();
         const device = devices.bulb;
         settings.set(['blocklist'], ['123']);
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
@@ -477,7 +473,7 @@ describe('Controller', () => {
         await controller.start();
         const device = devices.bulb;
         settings.set(['passlist'], [device.ieeeAddr]);
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
@@ -485,7 +481,7 @@ describe('Controller', () => {
         await controller.start();
         const device = devices.bulb;
         settings.set(['passlist'], ['123']);
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(false);
     });
 
@@ -494,14 +490,14 @@ describe('Controller', () => {
         const device = devices.bulb;
         settings.set(['passlist'], [device.ieeeAddr]);
         settings.set(['blocklist'], [device.ieeeAddr]);
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
     it('acceptJoiningDeviceHandler accept when not on blocklist and passlist', async () => {
         await controller.start();
         const device = devices.bulb;
-        const handler = (ZHController as unknown as jest.Mock).mock.calls[0][0].acceptJoiningDeviceHandler;
+        const handler = (ZHController as unknown as MockInstance).mock.calls[0][0].acceptJoiningDeviceHandler;
         expect(await handler(device.ieeeAddr)).toBe(true);
     });
 
@@ -946,7 +942,7 @@ describe('Controller', () => {
         ).length;
 
         mockMQTT.publishAsync.mockClear();
-        await jest.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(retainedMessages);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
@@ -957,7 +953,7 @@ describe('Controller', () => {
         await flushPromises();
         mockMQTT.publishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/bridge/info', 'dummy');
-        await jest.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
         expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
     });
@@ -1034,7 +1030,7 @@ describe('Controller', () => {
     it('EventBus should handle errors', async () => {
         // @ts-expect-error private
         const eventbus = controller.eventBus;
-        const callback = jest.fn().mockImplementation(async () => {
+        const callback = vi.fn().mockImplementation(async () => {
             throw new Error('Whoops!');
         });
         eventbus.onStateChange({constructor: {name: 'Test'}}, callback);
