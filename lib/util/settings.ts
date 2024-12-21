@@ -87,7 +87,7 @@ export const defaults: RecursivePartial<Settings> = {
         log_output: ['console', 'file'],
         log_directory: path.join(data.getPath(), 'log', '%TIMESTAMP%'),
         log_file: 'log.log',
-        log_level: /* istanbul ignore next */ process.env.DEBUG ? 'debug' : 'info',
+        log_level: /* v8 ignore next */ process.env.DEBUG ? 'debug' : 'info',
         log_namespaced_levels: {},
         log_syslog: {},
         log_debug_to_mqtt_frontend: false,
@@ -353,7 +353,6 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             setting[key as keyof Settings] = (envVariable.toLowerCase() === 'true') as any;
                         } else {
-                            /* istanbul ignore else */
                             if (type.indexOf('string') >= 0) {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 setting[key as keyof Settings] = envVariable as any;

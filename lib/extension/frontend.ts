@@ -71,18 +71,19 @@ export default class Frontend extends Extension {
     }
 
     override async start(): Promise<void> {
-        /* istanbul ignore next */
         const options = {
             enableBrotli: true,
             // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
             index: false,
             serveStatic: {
                 index: 'index.html',
+                /* v8 ignore start */
                 setHeaders: (res: ServerResponse, path: string): void => {
                     if (path.endsWith('index.html')) {
                         res.setHeader('Cache-Control', 'no-store');
                     }
                 },
+                /* v8 ignore stop */
             },
         };
         this.fileServer = expressStaticGzip(frontend.getPath(), options);
@@ -172,7 +173,6 @@ export default class Frontend extends Extension {
         });
 
         for (const [topic, payload] of Object.entries(this.mqtt.retainedMessages)) {
-            /* istanbul ignore else */
             if (topic.startsWith(`${this.mqttBaseTopic}/`)) {
                 ws.send(
                     stringify({
@@ -188,9 +188,8 @@ export default class Frontend extends Extension {
             const payload = this.state.get(device);
             const lastSeen = settings.get().advanced.last_seen;
 
-            /* istanbul ignore if */
             if (lastSeen !== 'disable') {
-                payload.last_seen = utils.formatDate(device.zh.lastSeen ?? 0, lastSeen);
+                payload.last_seen = utils.formatDate(device.zh.lastSeen ?? /* v8 ignore next */ 0, lastSeen);
             }
 
             if (device.zh.linkquality !== undefined) {
@@ -202,14 +201,12 @@ export default class Frontend extends Extension {
     }
 
     @bind private onMQTTPublishMessage(data: eventdata.MQTTMessagePublished): void {
-        /* istanbul ignore else */
         if (data.topic.startsWith(`${this.mqttBaseTopic}/`)) {
             // Send topic without base_topic
             const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
             const payload = utils.parseJSON(data.payload, data.payload);
 
             for (const client of this.wss.clients) {
-                /* istanbul ignore else */
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(stringify({topic, payload}));
                 }

@@ -131,10 +131,11 @@ export class Controller {
         try {
             this.sdNotify = process.env.NOTIFY_SOCKET ? await import('sd-notify') : undefined;
             logger.debug('sd-notify loaded');
+            /* v8 ignore start */
         } catch {
-            // istanbul ignore next
             logger.debug('sd-notify is not installed');
         }
+        /* v8 ignore stop */
 
         // Start zigbee
         try {
@@ -145,10 +146,13 @@ export class Controller {
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions');
             logger.error('Exiting...');
             logger.error((error as Error).stack!);
-            /* istanbul ignore if */
+
+            /* v8 ignore start */
             if ((error as Error).message.includes('USB adapter discovery error (No valid USB adapter found)')) {
                 logger.error('If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364');
             }
+            /* v8 ignore stop */
+
             return await this.exit(1);
         }
 
@@ -292,6 +296,7 @@ export class Controller {
                 softwareBuildID: entity.zh.softwareBuildID,
                 // Manufacturer name can contain \u0000, remove this.
                 // https://github.com/home-assistant/core/issues/85691
+                /* v8 ignore next */
                 manufacturerName: entity.zh.manufacturerName?.split('\u0000')[0],
             };
         }
@@ -360,7 +365,6 @@ export class Controller {
             try {
                 await extension[method]?.();
             } catch (error) {
-                /* istanbul ignore next */
                 logger.error(`Failed to call '${extension.constructor.name}' '${method}' (${(error as Error).stack})`);
             }
         }
