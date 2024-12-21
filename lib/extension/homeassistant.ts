@@ -46,7 +46,6 @@ const ACTION_PATTERNS: string[] = [
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ['light', 'switch', 'lock', 'cover'];
-const DEFAULT_STATUS_TOPIC = 'homeassistant/status';
 const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ['opening', 'open', 'forward', 'up', 'rising'];
 const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ['closing', 'close', 'backward', 'back', 'reverse', 'down', 'declining'];
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ['stopped', 'stop', 'pause', 'paused'];
@@ -449,7 +448,6 @@ export default class HomeAssistant extends Extension {
         this.eventBus.onExposesChanged(this, async (data) => await this.discover(data.device));
 
         await this.mqtt.subscribe(this.statusTopic);
-        await this.mqtt.subscribe(DEFAULT_STATUS_TOPIC);
 
         /**
          * Prevent unnecessary re-discovery of entities by waiting 5 seconds for retained discovery messages to come in.
@@ -1748,7 +1746,7 @@ export default class HomeAssistant extends Extension {
             } else if (entity) {
                 this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
             }
-        } else if ((data.topic === this.statusTopic || data.topic === DEFAULT_STATUS_TOPIC) && data.message.toLowerCase() === 'online') {
+        } else if (data.topic === this.statusTopic && data.message.toLowerCase() === 'online') {
             const timer = setTimeout(async () => {
                 // Publish all device states.
                 for (const entity of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
