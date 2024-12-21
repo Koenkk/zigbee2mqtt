@@ -1,9 +1,11 @@
+import type {Mock} from 'vitest';
+
 import assert from 'node:assert';
 
 import {Zcl} from 'zigbee-herdsman';
 import {CoordinatorVersion, DeviceType, NetworkParameters, StartResult} from 'zigbee-herdsman/dist/adapter/tstype';
 
-import {EventHandler, JestMockAny} from './utils';
+import {EventHandler} from './utils';
 
 type ZHConfiguredReporting = {
     cluster: {name: string};
@@ -94,22 +96,22 @@ export class Endpoint {
     ID: number;
     inputClusters: number[];
     outputClusters: number[];
-    command: JestMockAny;
-    commandResponse: JestMockAny;
-    read: JestMockAny;
-    write: JestMockAny;
-    bind: JestMockAny;
-    unbind: JestMockAny;
-    save: JestMockAny;
-    configureReporting: JestMockAny;
+    command: Mock;
+    commandResponse: Mock;
+    read: Mock;
+    write: Mock;
+    bind: Mock;
+    unbind: Mock;
+    save: Mock;
+    configureReporting: Mock;
     meta: Record<string, unknown>;
     binds: ZHBind[];
     profileID: number | undefined;
     deviceID: number | undefined;
     configuredReportings: ZHConfiguredReporting[];
-    addToGroup: JestMockAny;
-    removeFromGroup: JestMockAny;
-    getClusterAttributeValue: JestMockAny;
+    addToGroup: Mock;
+    removeFromGroup: Mock;
+    getClusterAttributeValue: Mock;
 
     constructor(
         ID: number,
@@ -128,33 +130,33 @@ export class Endpoint {
         this.ID = ID;
         this.inputClusters = inputClusters;
         this.outputClusters = outputClusters;
-        this.command = jest.fn();
-        this.commandResponse = jest.fn();
-        this.read = jest.fn();
-        this.write = jest.fn();
-        this.bind = jest.fn();
-        this.unbind = jest.fn();
-        this.save = jest.fn();
-        this.configureReporting = jest.fn();
+        this.command = vi.fn();
+        this.commandResponse = vi.fn();
+        this.read = vi.fn();
+        this.write = vi.fn();
+        this.bind = vi.fn();
+        this.unbind = vi.fn();
+        this.save = vi.fn();
+        this.configureReporting = vi.fn();
         this.meta = meta;
         this.binds = binds;
         this.profileID = profileID;
         this.deviceID = deviceID;
         this.configuredReportings = configuredReportings;
 
-        this.addToGroup = jest.fn((group: Group) => {
+        this.addToGroup = vi.fn((group: Group) => {
             if (!group.members.includes(this)) {
                 group.members.push(this);
             }
         });
-        this.removeFromGroup = jest.fn((group: Group) => {
+        this.removeFromGroup = vi.fn((group: Group) => {
             const index = group.members.indexOf(this);
             if (index != -1) {
                 group.members.splice(index, 1);
             }
         });
 
-        this.getClusterAttributeValue = jest.fn((cluster: string, value: string) =>
+        this.getClusterAttributeValue = vi.fn((cluster: string, value: string) =>
             !(cluster in this.clusterValues) ? undefined : this.clusterValues[cluster][value],
         );
     }
@@ -231,21 +233,21 @@ export class Device {
     softwareBuildID: string | undefined;
     interviewCompleted: boolean;
     modelID: string | undefined;
-    interview: JestMockAny;
+    interview: Mock;
     interviewing: boolean;
     meta: Record<string, unknown>;
-    ping: JestMockAny;
-    removeFromNetwork: JestMockAny;
-    removeFromDatabase: JestMockAny;
+    ping: Mock;
+    removeFromNetwork: Mock;
+    removeFromDatabase: Mock;
     customClusters: Record<string, unknown>;
-    addCustomCluster: JestMockAny;
-    save: JestMockAny;
+    addCustomCluster: Mock;
+    save: Mock;
     manufacturerName: string | undefined;
     lastSeen: number | undefined;
     isDeleted: boolean;
     linkquality?: number;
-    lqi: JestMockAny;
-    routingTable: JestMockAny;
+    lqi: Mock;
+    routingTable: Mock;
 
     constructor(
         type: string,
@@ -272,20 +274,20 @@ export class Device {
         this.softwareBuildID = softwareBuildID;
         this.interviewCompleted = interviewCompleted;
         this.modelID = modelID;
-        this.interview = jest.fn();
+        this.interview = vi.fn();
         this.interviewing = interviewing;
         this.meta = {};
-        this.ping = jest.fn();
-        this.removeFromNetwork = jest.fn();
-        this.removeFromDatabase = jest.fn();
+        this.ping = vi.fn();
+        this.removeFromNetwork = vi.fn();
+        this.removeFromDatabase = vi.fn();
         this.customClusters = customClusters;
-        this.addCustomCluster = jest.fn();
-        this.save = jest.fn();
+        this.addCustomCluster = vi.fn();
+        this.save = vi.fn();
         this.manufacturerName = manufacturerName;
         this.lastSeen = 1000;
         this.isDeleted = false;
-        this.lqi = jest.fn(() => ({neighbors: []}));
-        this.routingTable = jest.fn(() => ({table: []}));
+        this.lqi = vi.fn(() => ({neighbors: []}));
+        this.routingTable = vi.fn(() => ({table: []}));
     }
 
     getEndpoint(ID: number): Endpoint | undefined {
@@ -309,19 +311,19 @@ export class Device {
 
 export class Group {
     groupID: number;
-    command: JestMockAny;
+    command: Mock;
     meta: Record<string, unknown>;
     members: Endpoint[];
-    removeFromDatabase: JestMockAny;
-    removeFromNetwork: JestMockAny;
+    removeFromDatabase: Mock;
+    removeFromNetwork: Mock;
 
     constructor(groupID: number, members: Endpoint[]) {
         this.groupID = groupID;
-        this.command = jest.fn();
+        this.command = vi.fn();
         this.meta = {};
         this.members = members;
-        this.removeFromDatabase = jest.fn();
-        this.removeFromNetwork = jest.fn();
+        this.removeFromDatabase = vi.fn();
+        this.removeFromNetwork = vi.fn();
     }
 
     hasMember(endpoint: Endpoint): boolean {
@@ -1121,25 +1123,23 @@ export const mockController = {
     on: (type: string, handler: EventHandler): void => {
         events[type] = handler;
     },
-    start: jest.fn((): Promise<StartResult> => Promise.resolve('reset')),
-    stop: jest.fn(),
-    touchlinkIdentify: jest.fn(),
-    touchlinkScan: jest.fn(),
-    touchlinkFactoryReset: jest.fn(),
-    touchlinkFactoryResetFirst: jest.fn(),
-    addInstallCode: jest.fn(),
-    permitJoin: jest.fn(),
-    getPermitJoin: jest.fn((): boolean => false),
-    getPermitJoinEnd: jest.fn((): number | undefined => undefined),
-    isStopping: jest.fn((): boolean => false),
-    backup: jest.fn(),
-    coordinatorCheck: jest.fn(),
-    getCoordinatorVersion: jest.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
-    getNetworkParameters: jest.fn(
-        (): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
-    ),
-    getDevices: jest.fn((): Device[] => []),
-    getDevicesIterator: jest.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
+    start: vi.fn((): Promise<StartResult> => Promise.resolve('reset')),
+    stop: vi.fn(),
+    touchlinkIdentify: vi.fn(),
+    touchlinkScan: vi.fn(),
+    touchlinkFactoryReset: vi.fn(),
+    touchlinkFactoryResetFirst: vi.fn(),
+    addInstallCode: vi.fn(),
+    permitJoin: vi.fn(),
+    getPermitJoin: vi.fn((): boolean => false),
+    getPermitJoinEnd: vi.fn((): number | undefined => undefined),
+    isStopping: vi.fn((): boolean => false),
+    backup: vi.fn(),
+    coordinatorCheck: vi.fn(),
+    getCoordinatorVersion: vi.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
+    getNetworkParameters: vi.fn((): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15})),
+    getDevices: vi.fn((): Device[] => []),
+    getDevicesIterator: vi.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
         for (const key in devices) {
             const device = devices[key as keyof typeof devices];
 
@@ -1148,24 +1148,24 @@ export const mockController = {
             }
         }
     }),
-    getDevicesByType: jest.fn((type: DeviceType): Device[] =>
+    getDevicesByType: vi.fn((type: DeviceType): Device[] =>
         Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
             .filter((d) => d.type === type),
     ),
-    getDeviceByIeeeAddr: jest.fn((ieeeAddr: string): Device | undefined =>
+    getDeviceByIeeeAddr: vi.fn((ieeeAddr: string): Device | undefined =>
         Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
             .find((d) => d.ieeeAddr === ieeeAddr),
     ),
-    getDeviceByNetworkAddress: jest.fn((networkAddress: number): Device | undefined =>
+    getDeviceByNetworkAddress: vi.fn((networkAddress: number): Device | undefined =>
         Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
             .find((d) => d.networkAddress === networkAddress),
     ),
-    getGroupByID: jest.fn((groupID: number): Group | undefined => Object.values(groups).find((g) => g.groupID === groupID)),
-    getGroups: jest.fn((): Group[] => []),
-    getGroupsIterator: jest.fn(function* (predicate?: (value: Group) => boolean): Generator<Group> {
+    getGroupByID: vi.fn((groupID: number): Group | undefined => Object.values(groups).find((g) => g.groupID === groupID)),
+    getGroups: vi.fn((): Group[] => []),
+    getGroupsIterator: vi.fn(function* (predicate?: (value: Group) => boolean): Generator<Group> {
         for (const key in groups) {
             const group = groups[key as keyof typeof groups];
 
@@ -1174,14 +1174,14 @@ export const mockController = {
             }
         }
     }),
-    createGroup: jest.fn((groupID: number): Group => {
+    createGroup: vi.fn((groupID: number): Group => {
         const group = new Group(groupID, []);
         groups[`group_${groupID}` as keyof typeof groups] = group;
         return group;
     }),
 };
 
-jest.mock('zigbee-herdsman', () => ({
-    ...jest.requireActual('zigbee-herdsman'),
-    Controller: jest.fn().mockImplementation(() => mockController),
+vi.mock('zigbee-herdsman', async (importOriginal) => ({
+    ...(await importOriginal()),
+    Controller: vi.fn().mockImplementation(() => mockController),
 }));

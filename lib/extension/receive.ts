@@ -102,7 +102,7 @@ export default class Receive extends Extension {
     }
 
     @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
-        /* istanbul ignore next */
+        /* v8 ignore next */
         if (!data.device) return;
 
         if (!data.device.definition || data.device.zh.interviewing) {
@@ -171,10 +171,12 @@ export default class Receive extends Extension {
                 if (converted) {
                     payload = {...payload, ...converted};
                 }
-            } catch (error) /* istanbul ignore next */ {
+                /* v8 ignore start */
+            } catch (error) {
                 logger.error(`Exception while calling fromZigbee converter: ${(error as Error).message}}`);
                 logger.debug((error as Error).stack!);
             }
+            /* v8 ignore stop */
         }
 
         if (!utils.objectIsEmpty(payload)) {

@@ -1,3 +1,5 @@
-export const mockDebounce = jest.fn((fn) => fn);
+export const mockDebounce = vi.fn((fn) => fn);
 
-jest.mock('debounce', () => mockDebounce);
+vi.mock('debounce', () => ({
+    default: mockDebounce,
+}));

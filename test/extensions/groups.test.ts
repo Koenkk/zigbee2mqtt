@@ -25,14 +25,14 @@ describe('Extension: Groups', () => {
     let controller: Controller;
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        controller = new Controller(jest.fn(), jest.fn());
+        vi.useFakeTimers();
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     beforeEach(() => {

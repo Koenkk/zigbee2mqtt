@@ -9,8 +9,8 @@ import * as zhc from 'zigbee-herdsman-converters';
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 
-const mockOnEvent = jest.fn();
-const mockLivoloOnEvent = jest.fn();
+const mockOnEvent = vi.fn();
+const mockLivoloOnEvent = vi.fn();
 const mappedLivolo = zhc.findByModel('TI0001')!;
 mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
@@ -22,10 +22,10 @@ describe('Extension: OnEvent', () => {
     let controller: Controller;
 
     beforeEach(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         data.writeDefaultConfiguration();
         settings.reRead();
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
@@ -40,7 +40,7 @@ describe('Extension: OnEvent', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should call with start event', async () => {

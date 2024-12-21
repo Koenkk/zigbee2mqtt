@@ -39,7 +39,6 @@ export default class Device {
 
     exposes(): zhc.Expose[] {
         assert(this.definition, 'Cannot retreive exposes before definition is resolved');
-        /* istanbul ignore if */
         if (typeof this.definition.exposes == 'function') {
             const options: KeyValue = this.options;
             return this.definition.exposes(this.zh, options);
@@ -81,7 +80,6 @@ export default class Device {
                 return undefined;
             }
         } else {
-            /* istanbul ignore next */
             if (key !== 'default') {
                 return undefined;
             }
@@ -104,7 +102,7 @@ export default class Device {
             }
         }
 
-        /* istanbul ignore next */
+        /* v8 ignore next */
         return epName === 'default' ? undefined : epName;
     }
 
@@ -123,7 +121,7 @@ export default class Device {
     isDevice(): this is Device {
         return true;
     }
-    /* istanbul ignore next */
+
     isGroup(): this is Group {
         return false;
     }

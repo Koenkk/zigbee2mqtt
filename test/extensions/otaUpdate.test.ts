@@ -25,8 +25,8 @@ const DEFAULT_CONFIG: zhc.Ota.Settings = {
 
 describe('Extension: OTAUpdate', () => {
     let controller: Controller;
-    const updateSpy = jest.spyOn(zhc.ota, 'update');
-    const isUpdateAvailableSpy = jest.spyOn(zhc.ota, 'isUpdateAvailable');
+    const updateSpy = vi.spyOn(zhc.ota, 'update');
+    const isUpdateAvailableSpy = vi.spyOn(zhc.ota, 'isUpdateAvailable');
 
     const resetExtension = async (): Promise<void> => {
         await controller.enableDisableExtension(false, 'OTAUpdate');
@@ -34,19 +34,19 @@ describe('Extension: OTAUpdate', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         mockSleep.mock();
         data.writeDefaultConfiguration();
         settings.reRead();
         settings.reRead();
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
 
     afterAll(async () => {
         mockSleep.restore();
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     beforeEach(async () => {
@@ -267,7 +267,7 @@ describe('Extension: OTAUpdate', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
         await flushPromises();
         expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(1);
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         await flushPromises();
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/ota_update/check',
@@ -278,7 +278,7 @@ describe('Extension: OTAUpdate', () => {
 
     it('Shouldnt crash when read modelID before/after OTA update fails', async () => {
         devices.bulb.endpoints[0].read.mockRejectedValueOnce('Failed from').mockRejectedValueOnce('Failed to');
-        updateSpy.mockImplementation();
+        updateSpy.mockImplementationOnce(vi.fn());
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
         await flushPromises();
@@ -427,7 +427,7 @@ describe('Extension: OTAUpdate', () => {
     });
 
     it('Sets given configuration', async () => {
-        const setConfiguration = jest.spyOn(zhc.ota, 'setConfiguration');
+        const setConfiguration = vi.spyOn(zhc.ota, 'setConfiguration');
         settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
         settings.set(['ota', 'image_block_response_delay'], 10000);
         settings.set(['ota', 'default_maximum_data_size'], 10);

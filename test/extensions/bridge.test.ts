@@ -2,8 +2,10 @@ import * as data from '../mocks/data';
 import {mockJSZipFile, mockJSZipGenerateAsync} from '../mocks/jszip';
 import {mockLogger} from '../mocks/logger';
 import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
-import {flushPromises, JestMockAny} from '../mocks/utils';
+import {flushPromises} from '../mocks/utils';
 import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
+
+import type {Mock} from 'vitest';
 
 import type Bridge from '../../lib/extension/bridge';
 
@@ -40,7 +42,7 @@ const mocksClear = [
 
 describe('Extension: Bridge', () => {
     let controller: Controller;
-    let mockRestart: JestMockAny;
+    let mockRestart: Mock;
     let extension: Bridge;
 
     const resetExtension = async (): Promise<void> => {
@@ -51,9 +53,9 @@ describe('Extension: Bridge', () => {
     };
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        mockRestart = jest.fn();
-        controller = new Controller(mockRestart, jest.fn());
+        vi.useFakeTimers();
+        mockRestart = vi.fn();
+        controller = new Controller(mockRestart, vi.fn());
         await controller.start();
         await flushPromises();
         // @ts-expect-error private
@@ -76,7 +78,29 @@ describe('Extension: Bridge', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
+    });
+
+    it('Change options and apply - homeassistant', async () => {
+        // TODO: there appears to be a race condition somewhere in here
+        // @ts-expect-error private
+        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
+        mockMQTT.publishAsync.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
+        await flushPromises();
+        // @ts-expect-error private
+        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/options',
+            stringify({data: {restart_required: true}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+        // revert
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
+        await flushPromises();
+        // @ts-expect-error private
+        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
     });
 
     it('Should publish bridge info on startup', async () => {
@@ -3075,7 +3099,7 @@ describe('Extension: Bridge', () => {
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         assert('resolveDefinition' in device);
-        device.resolveDefinition = jest.fn();
+        device.resolveDefinition = vi.fn();
         mockMQTT.publishAsync.mockClear();
         devices.bulb.interview.mockClear();
         expect(device.resolveDefinition).toHaveBeenCalledTimes(0);
@@ -3726,28 +3750,12 @@ describe('Extension: Bridge', () => {
         mockMQTT.publishAsync.mockClear();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/restart', '');
         await flushPromises();
-        jest.runOnlyPendingTimers();
+        vi.runOnlyPendingTimers();
         expect(mockRestart).toHaveBeenCalledTimes(1);
         expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/response/restart', stringify({data: {}, status: 'ok'}), {
             retain: false,
             qos: 0,
         });
-    });
-
-    it('Change options and apply - homeassistant', async () => {
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
-        mockMQTT.publishAsync.mockClear();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
-        await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/options',
-            stringify({data: {restart_required: true}, status: 'ok'}),
-            {retain: false, qos: 0},
-        );
     });
 
     it('Change options and apply - log_level', async () => {

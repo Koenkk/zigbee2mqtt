@@ -61,10 +61,11 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
             if (err) {
                 try {
                     commitHash = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', '.hash'), 'utf-8');
+                    /* v8 ignore start */
                 } catch {
-                    /* istanbul ignore next */
                     commitHash = 'unknown';
                 }
+                /* v8 ignore stop */
             } else {
                 commitHash = commit.shortHash;
             }
@@ -369,7 +370,7 @@ function deviceNotCoordinator(device: zh.Device): boolean {
     return device.type !== 'Coordinator';
 }
 
-/* istanbul ignore next */
+/* v8 ignore next */
 const noop = (): void => {};
 
 export default {

@@ -199,7 +199,6 @@ export default class Publish extends Extension {
             }
 
             if (usedConverters[endpointOrGroupID] === undefined) usedConverters[endpointOrGroupID] = [];
-            /* istanbul ignore next */
             // Match any key if the toZigbee converter defines no key.
             const converter = converters.find(
                 (c) =>

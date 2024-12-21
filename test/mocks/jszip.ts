@@ -1,11 +1,11 @@
-export const mockJSZipFile = jest.fn();
-export const mockJSZipGenerateAsync = jest.fn().mockReturnValue('THISISBASE64');
+export const mockJSZipFile = vi.fn();
+export const mockJSZipGenerateAsync = vi.fn().mockReturnValue('THISISBASE64');
 
-jest.mock('jszip', () =>
-    jest.fn().mockImplementation(() => {
+vi.mock('jszip', () => ({
+    default: vi.fn().mockImplementation(() => {
         return {
             file: mockJSZipFile,
             generateAsync: mockJSZipGenerateAsync,
         };
     }),
-);
+}));

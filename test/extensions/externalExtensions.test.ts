@@ -18,11 +18,11 @@ describe('Extension: ExternalExtensions', () => {
     let controller: Controller;
     const mockBasePath = path.join(data.mockDir, BASE_DIR);
 
-    const existsSyncSpy = jest.spyOn(fs, 'existsSync');
-    const readdirSyncSpy = jest.spyOn(fs, 'readdirSync');
-    const mkdirSyncSpy = jest.spyOn(fs, 'mkdirSync');
-    const rmSyncSpy = jest.spyOn(fs, 'rmSync');
-    const writeFileSyncSpy = jest.spyOn(fs, 'writeFileSync');
+    const existsSyncSpy = vi.spyOn(fs, 'existsSync');
+    const readdirSyncSpy = vi.spyOn(fs, 'readdirSync');
+    const mkdirSyncSpy = vi.spyOn(fs, 'mkdirSync');
+    const rmSyncSpy = vi.spyOn(fs, 'rmSync');
+    const writeFileSyncSpy = vi.spyOn(fs, 'writeFileSync');
 
     const mocksClear = [
         mockMQTT.endAsync,
@@ -46,12 +46,21 @@ describe('Extension: ExternalExtensions', () => {
         return fs.readFileSync(path.join(__dirname, '..', 'assets', BASE_DIR, fileName), 'utf8');
     };
 
+    const resetExtension = async (): Promise<void> => {
+        await controller.enableDisableExtension(false, 'ExternalExtensions');
+        await controller.enableDisableExtension(true, 'ExternalExtensions');
+    };
+
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
+
+        controller = new Controller(vi.fn(), vi.fn());
+        await controller.start();
+        await flushPromises();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     beforeEach(async () => {
@@ -60,72 +69,80 @@ describe('Extension: ExternalExtensions', () => {
         data.writeDefaultState();
         settings.reRead();
         returnDevices.splice(0);
-
-        controller = new Controller(jest.fn(), jest.fn());
     });
 
     afterEach(() => {
         fs.rmSync(mockBasePath, {recursive: true, force: true});
     });
 
-    it('loads nothing from folder', async () => {
-        await controller.start();
-        await flushPromises();
-
-        expect(existsSyncSpy).toHaveBeenCalledWith(mockBasePath);
-        expect(readdirSyncSpy).not.toHaveBeenCalledWith(mockBasePath);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0});
-    });
-
-    it('loads from folder', async () => {
-        useAssets();
-
-        await controller.start();
-        await flushPromises();
-
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example2/extension', 'call2 from constructor', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example2/extension', 'call2 from start', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from constructor', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/extensions',
-            stringify([
-                {name: 'example2Extension.js', code: getFileCode('example2Extension.js')},
-                {name: 'exampleExtension.js', code: getFileCode('exampleExtension.js')},
-            ]),
-            {retain: true, qos: 0},
-        );
-    });
-
-    it('saves and removes from MQTT', async () => {
-        const extensionName = 'foo.js';
-        const extensionCode = getFileCode('exampleExtension.js');
-        const extensionFilePath = path.join(mockBasePath, extensionName);
-
-        await controller.start();
-        await flushPromises();
-        mocksClear.forEach((m) => m.mockClear());
-
-        //-- SAVE
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
-        await flushPromises();
-
-        expect(mkdirSyncSpy).toHaveBeenCalledWith(mockBasePath, {recursive: true});
-        expect(writeFileSyncSpy).toHaveBeenCalledWith(extensionFilePath, extensionCode, 'utf8');
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from constructor', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([{name: extensionName, code: extensionCode}]), {
-            retain: true,
-            qos: 0,
+    describe('from folder', () => {
+        beforeEach(async () => {
+            controller = new Controller(vi.fn(), vi.fn());
         });
 
-        //-- REMOVE
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: extensionName}));
-        await flushPromises();
+        it('loads nothing', async () => {
+            await controller.start();
+            await flushPromises();
 
-        expect(rmSyncSpy).toHaveBeenCalledWith(extensionFilePath, {force: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from stop', {retain: false, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0});
+            expect(existsSyncSpy).toHaveBeenCalledWith(mockBasePath);
+            expect(readdirSyncSpy).not.toHaveBeenCalledWith(mockBasePath);
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0});
+        });
+
+        it('loads extensions', async () => {
+            useAssets();
+
+            await controller.start();
+            await flushPromises();
+
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example2/extension', 'call2 from constructor', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example2/extension', 'call2 from start', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from constructor', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/extensions',
+                stringify([
+                    {name: 'example2Extension.js', code: getFileCode('example2Extension.js')},
+                    {name: 'exampleExtension.js', code: getFileCode('exampleExtension.js')},
+                ]),
+                {retain: true, qos: 0},
+            );
+        });
+
+        it('saves and removes from MQTT', async () => {
+            const extensionName = 'foo.js';
+            const extensionCode = getFileCode('exampleExtension.js');
+            const extensionFilePath = path.join(mockBasePath, extensionName);
+
+            await controller.start();
+            await flushPromises();
+            mocksClear.forEach((m) => m.mockClear());
+
+            //-- SAVE
+            mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
+            await flushPromises();
+
+            expect(mkdirSyncSpy).toHaveBeenCalledWith(mockBasePath, {recursive: true});
+            expect(writeFileSyncSpy).toHaveBeenCalledWith(extensionFilePath, extensionCode, 'utf8');
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from constructor', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/extensions',
+                stringify([{name: extensionName, code: extensionCode}]),
+                {
+                    retain: true,
+                    qos: 0,
+                },
+            );
+
+            //-- REMOVE
+            mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: extensionName}));
+            await flushPromises();
+
+            expect(rmSyncSpy).toHaveBeenCalledWith(extensionFilePath, {force: true});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from stop', {retain: false, qos: 0});
+            expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/extensions', stringify([]), {retain: true, qos: 0});
+        });
     });
 
     it('returns error on invalid code', async () => {
@@ -133,8 +150,7 @@ describe('Extension: ExternalExtensions', () => {
         const extensionCode = 'definetly not a correct javascript code';
         const extensionFilePath = path.join(mockBasePath, extensionName);
 
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         mocksClear.forEach((m) => m.mockClear());
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
@@ -152,8 +168,7 @@ describe('Extension: ExternalExtensions', () => {
         const converterName = 'invalid.js';
         const converterFilePath = path.join(mockBasePath, converterName);
 
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         mocksClear.forEach((m) => m.mockClear());
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: converterName}));
@@ -168,8 +183,7 @@ describe('Extension: ExternalExtensions', () => {
     });
 
     it('handles invalid payloads', async () => {
-        await controller.start();
-        await flushPromises();
+        await resetExtension();
         mocksClear.forEach((m) => m.mockClear());
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: 'test.js', transaction: 1 /* code */}));
