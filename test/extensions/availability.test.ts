@@ -37,22 +37,22 @@ describe('Extension: Availability', () => {
     };
 
     const setTimeAndAdvanceTimers = async (value: number): Promise<void> => {
-        jest.setSystemTime(Date.now() + value);
-        await jest.advanceTimersByTimeAsync(value);
+        vi.setSystemTime(Date.now() + value);
+        await vi.advanceTimersByTimeAsync(value);
     };
 
     beforeAll(async () => {
-        jest.spyOn(utils, 'sleep').mockImplementation();
-        jest.useFakeTimers();
+        vi.spyOn(utils, 'sleep').mockImplementation(vi.fn());
+        vi.useFakeTimers();
         settings.reRead();
         settings.set(['availability'], {enabled: true});
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
 
     beforeEach(async () => {
-        jest.setSystemTime(utils.minutes(1));
+        vi.setSystemTime(utils.minutes(1));
         data.writeDefaultConfiguration();
         settings.reRead();
         settings.set(['availability'], {enabled: true});
@@ -67,7 +67,7 @@ describe('Extension: Availability', () => {
 
     afterAll(async () => {
         await controller.stop();
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should publish availability on startup for device where it is enabled for', async () => {
@@ -365,7 +365,7 @@ describe('Extension: Availability', () => {
         // @ts-expect-error private
         const availability = controller.extensions.find((extension) => extension instanceof Availability)!;
         // @ts-expect-error private
-        const publishAvailabilitySpy = jest.spyOn(availability, 'publishAvailability');
+        const publishAvailabilitySpy = vi.spyOn(availability, 'publishAvailability');
 
         devices.bulb_color.ping.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 1000)));
         // @ts-expect-error private
@@ -380,7 +380,7 @@ describe('Extension: Availability', () => {
         expect(availability.pingQueue).toEqual([]);
         // Validate the stop-interrupt implicitly by checking that it prevents further function invocations
         expect(publishAvailabilitySpy).not.toHaveBeenCalled();
-        devices.bulb_color.ping = jest.fn(); // ensure reset
+        devices.bulb_color.ping = vi.fn(); // ensure reset
     });
 
     it('Should prevent instance restart', async () => {

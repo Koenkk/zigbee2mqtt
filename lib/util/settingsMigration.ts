@@ -457,7 +457,7 @@ export function migrateIfNecessary(): void {
     }
 
     /* istanbul ignore next */
-    const finalVersion = process.env.JEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
+    const finalVersion = process.env.VITEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
 
     // when same version as current, nothing left to do
     while (currentSettings.version !== finalVersion) {
