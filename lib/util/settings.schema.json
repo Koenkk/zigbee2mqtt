@@ -25,7 +25,7 @@
                     "type": "string",
                     "title": "Home Assistant status topic",
                     "description": "Home Assistant status topic",
-                    "default": "hass/status",
+                    "default": "homeassistant/status",
                     "requiresRestart": true,
                     "examples": ["homeassistant/status"]
                 },
