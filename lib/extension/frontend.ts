@@ -1,6 +1,8 @@
 import type {IncomingMessage, Server, ServerResponse} from 'node:http';
 import type {Socket} from 'node:net';
 
+import type {RequestHandler} from 'express-static-gzip';
+
 import assert from 'node:assert';
 import {existsSync, readFileSync} from 'node:fs';
 import {createServer} from 'node:http';
@@ -9,7 +11,7 @@ import {posix} from 'node:path';
 import {parse} from 'node:url';
 
 import bind from 'bind-decorator';
-import expressStaticGzip, {type RequestHandler} from 'express-static-gzip';
+import expressStaticGzip from 'express-static-gzip';
 import finalhandler from 'finalhandler';
 import stringify from 'json-stable-stringify-without-jsonify';
 import WebSocket from 'ws';

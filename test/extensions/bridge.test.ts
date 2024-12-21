@@ -1,11 +1,11 @@
-import type { Mock } from 'vitest';
-
 import * as data from '../mocks/data';
 import {mockJSZipFile, mockJSZipGenerateAsync} from '../mocks/jszip';
 import {mockLogger} from '../mocks/logger';
 import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
+
+import type {Mock} from 'vitest';
 
 import type Bridge from '../../lib/extension/bridge';
 

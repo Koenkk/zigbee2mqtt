@@ -1137,9 +1137,7 @@ export const mockController = {
     backup: vi.fn(),
     coordinatorCheck: vi.fn(),
     getCoordinatorVersion: vi.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
-    getNetworkParameters: vi.fn(
-        (): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
-    ),
+    getNetworkParameters: vi.fn((): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15})),
     getDevices: vi.fn((): Device[] => []),
     getDevicesIterator: vi.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
         for (const key in devices) {
