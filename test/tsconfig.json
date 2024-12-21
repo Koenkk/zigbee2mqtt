@@ -1,8 +1,8 @@
 {
     "extends": "../tsconfig",
-    "include": ["./**/*"],
+    "include": ["./**/*", "vitest.config.mts"],
     "compilerOptions": {
-        "types": ["jest"],
+        "types": ["vitest/globals"],
         "rootDir": "..",
         "noEmit": true
     },
