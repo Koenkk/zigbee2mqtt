@@ -51,23 +51,27 @@ describe('Logger', () => {
             rimrafSync(path.join(dir.name, d));
         }
 
-        for (let i = 0; i < 21; i++) {
+        for (let i = 0; i < 20; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
-        expect(fs.readdirSync(dir.name).length).toBe(21);
-        logger.cleanup();
+        expect(fs.readdirSync(dir.name).length).toBe(20);
+        logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(10);
     });
 
     it('Should not cleanup when there is no timestamp set', () => {
-        for (let i = 30; i < 40; i++) {
+        for (const d of fs.readdirSync(dir.name)) {
+            rimrafSync(path.join(dir.name, d));
+        }
+
+        for (let i = 30; i < 50; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
         settings.set(['advanced', 'log_directory'], dir.name + '/bla');
-        expect(fs.readdirSync(dir.name).length).toBe(21);
-        logger.cleanup();
+        expect(fs.readdirSync(dir.name).length).toBe(20);
+        logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(21);
     });
 
