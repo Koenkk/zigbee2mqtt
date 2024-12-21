@@ -3743,12 +3743,12 @@ describe('Extension: Bridge', () => {
     });
 
     it('Change options and apply - homeassistant', async () => {
-        // TODO: there appears to be a race condition somewhere in here
         // @ts-expect-error private
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
+        // TODO: there appears to be a race condition somewhere in here, calls in `bridgeOptions` are not properly ordered when logged
+        await vi.advanceTimersByTimeAsync(10000);
         await flushPromises();
-        console.log(mockMQTTPublishAsync.mock.calls);
         // @ts-expect-error private
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
