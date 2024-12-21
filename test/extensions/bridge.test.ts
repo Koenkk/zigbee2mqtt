@@ -3737,6 +3737,7 @@ describe('Extension: Bridge', () => {
     });
 
     it('Change options and apply - homeassistant', async () => {
+        // TODO: there appears to be a race condition somewhere in here
         // @ts-expect-error private
         expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
         mockMQTT.publishAsync.mockClear();
