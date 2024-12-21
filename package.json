@@ -26,9 +26,9 @@
         "pretty:write": "prettier --write .",
         "pretty:check": "prettier --check .",
         "start": "node index.js",
-        "test-with-coverage": "jest test --silent --maxWorkers=50% --coverage",
-        "test": "jest test --silent --maxWorkers=50%",
-        "test-watch": "jest test --silent --maxWorkers=25% --watch"
+        "test": "vitest run --config ./test/vitest.config.mts",
+        "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
+        "test:watch": "vitest watch --config ./test/vitest.config.mts"
     },
     "author": "Koen Kanters",
     "license": "GPL-3.0",
@@ -77,31 +77,19 @@
         "@types/sd-notify": "^2.8.2",
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.5.13",
+        "@vitest/coverage-v8": "^2.1.8",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^9.1.0",
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.18.0"
+        "typescript-eslint": "^8.18.0",
+        "vitest": "^2.1.8"
     },
     "pnpm": {
         "overrides": {
             "zigbee-herdsman": "$zigbee-herdsman"
         }
-    },
-    "jest": {
-        "coverageThreshold": {
-            "global": {
-                "branches": 100,
-                "functions": 100,
-                "lines": 100,
-                "statements": 100
-            }
-        },
-        "collectCoverageFrom": [
-            "lib/**/*.js",
-            "lib/**/*.ts"
-        ]
     },
     "bin": {
         "zigbee2mqtt": "cli.js"
