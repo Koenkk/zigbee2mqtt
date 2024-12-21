@@ -217,7 +217,6 @@ export default class NetworkMap extends Extension {
                 logger.debug((error as Error).stack!);
             }
 
-            /* istanbul ignore else */
             if (includeRoutes) {
                 try {
                     const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
@@ -283,7 +282,6 @@ export default class NetworkMap extends Extension {
                 if (neighbor.ieeeAddr === '0x0000000000000000') {
                     const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.networkAddress);
 
-                    /* istanbul ignore else */
                     if (neighborDevice) {
                         neighbor.ieeeAddr = neighborDevice.ieeeAddr;
                     }
@@ -305,7 +303,6 @@ export default class NetworkMap extends Extension {
 
                 const routingTable = routingTables.get(device);
 
-                /* istanbul ignore else */
                 if (routingTable) {
                     for (const entry of routingTable.table) {
                         if (entry.status === 'ACTIVE' && entry.nextHop === neighbor.networkAddress) {

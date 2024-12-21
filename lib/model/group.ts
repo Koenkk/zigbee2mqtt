@@ -34,7 +34,6 @@ export default class Group {
         const definitions: zhc.Definition[] = [];
 
         for (const member of this.membersDevices()) {
-            /* istanbul ignore else */
             if (member.definition) {
                 definitions.push(member.definition);
             }
