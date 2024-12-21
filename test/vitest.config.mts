@@ -3,6 +3,7 @@ import {defineConfig} from 'vitest/config';
 export default defineConfig({
     test: {
         globals: true,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onConsoleLog(log: string, type: 'stdout' | 'stderr'): boolean | void {
             return false;
         },

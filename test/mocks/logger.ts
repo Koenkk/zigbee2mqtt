@@ -51,5 +51,5 @@ export const mockLogger = {
 };
 
 vi.mock('../../lib/util/logger', () => ({
-    default: mockLogger
+    default: mockLogger,
 }));

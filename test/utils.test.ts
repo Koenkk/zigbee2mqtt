@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import utils from '../lib/util/utils';
 
-const mockGetLastCommit= vi.fn<() => [boolean, {shortHash: string} | null]>(() => [false, {shortHash: '123'}]);
+const mockGetLastCommit = vi.fn<() => [boolean, {shortHash: string} | null]>(() => [false, {shortHash: '123'}]);
 
 vi.mock('git-last-commit', () => ({
     getLastCommit: vi.fn((cb) => cb(...mockGetLastCommit())),

@@ -1,10 +1,10 @@
-import type {Mock, MockInstance} from 'vitest';
-
 import * as data from './mocks/data';
 import {mockLogger} from './mocks/logger';
 import {mockMQTT, mockMQTTConnectAsync, events as mockMQTTEvents} from './mocks/mqtt';
 import {flushPromises} from './mocks/utils';
 import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from './mocks/zigbeeHerdsman';
+
+import type {Mock, MockInstance} from 'vitest';
 
 import fs from 'node:fs';
 import path from 'node:path';
