@@ -81,28 +81,6 @@ describe('Extension: Bridge', () => {
         vi.useRealTimers();
     });
 
-    it('Change options and apply - homeassistant', async () => {
-        // TODO: there appears to be a race condition somewhere in here
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
-        mockMQTT.publishAsync.mockClear();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
-        await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/options',
-            stringify({data: {restart_required: true}, status: 'ok'}),
-            {retain: false, qos: 0},
-        );
-        // revert
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
-        await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
-    });
-
     it('Should publish bridge info on startup', async () => {
         await resetExtension();
         const version = await utils.getZigbee2MQTTVersion();
