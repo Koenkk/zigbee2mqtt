@@ -1,3 +1,5 @@
+import type { MockInstance } from 'vitest';
+
 import * as data from './mocks/data';
 
 import type {MockInstance} from 'vitest';

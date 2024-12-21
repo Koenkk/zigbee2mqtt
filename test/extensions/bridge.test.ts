@@ -1,3 +1,5 @@
+import type { Mock } from 'vitest';
+
 import * as data from '../mocks/data';
 import {mockJSZipFile, mockJSZipGenerateAsync} from '../mocks/jszip';
 import {mockLogger} from '../mocks/logger';
