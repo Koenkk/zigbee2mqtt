@@ -1,6 +1,13 @@
 import * as data from './mocks/data';
 import {mockLogger} from './mocks/logger';
-import {mockMQTT, mockMQTTConnectAsync, events as mockMQTTEvents} from './mocks/mqtt';
+import {
+    mockMQTTConnectAsync,
+    mockMQTTEndAsync,
+    events as mockMQTTEvents,
+    mockMQTTPublishAsync,
+    mockMQTTSubscribeAsync,
+    mockMQTTUnsubscribeAsync,
+} from './mocks/mqtt';
 import {flushPromises} from './mocks/utils';
 import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from './mocks/zigbeeHerdsman';
 
@@ -30,11 +37,11 @@ vi.mock('sd-notify', () => ({
 
 const mocksClear = [
     mockZHController.stop,
-    mockMQTT.endAsync,
-    mockMQTT.publishAsync,
-    mockMQTT.subscribeAsync,
-    mockMQTT.unsubscribeAsync,
-    mockMQTT.endAsync,
+    mockMQTTEndAsync,
+    mockMQTTPublishAsync,
+    mockMQTTSubscribeAsync,
+    mockMQTTUnsubscribeAsync,
+    mockMQTTEndAsync,
     mockMQTTConnectAsync,
     devices.bulb_color.removeFromNetwork,
     devices.bulb.removeFromNetwork,
@@ -100,12 +107,12 @@ describe('Controller', () => {
             will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
             properties: {maximumPacketSize: 1048576},
         });
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {retain: true, qos: 0},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {retain: true, qos: 0});
     });
 
     it('Start controller with specific MQTT settings', async () => {
@@ -168,13 +175,13 @@ describe('Controller', () => {
         data.writeDefaultState();
         await controller.start();
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: true},
         );
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {qos: 0, retain: false});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'ON'}), {qos: 0, retain: false});
     });
 
     it('Start controller should not publish cached states when disabled', async () => {
@@ -182,7 +189,7 @@ describe('Controller', () => {
         data.writeDefaultState();
         await controller.start();
         await flushPromises();
-        const publishedTopics = mockMQTT.publishAsync.mock.calls.map((m) => m[0]);
+        const publishedTopics = mockMQTTPublishAsync.mock.calls.map((m) => m[0]);
         expect(publishedTopics).toEqual(expect.not.arrayContaining(['zigbee2mqtt/bulb', 'zigbee2mqtt/remote']));
     });
 
@@ -191,12 +198,12 @@ describe('Controller', () => {
         data.writeDefaultState();
         await controller.start();
         await flushPromises();
-        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             `{"state":"ON","brightness":50,"color_temp":370,"linkquality":99}`,
             {qos: 0, retain: true},
         );
-        expect(mockMQTT.publishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/remote', `{"brightness":255}`, {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/remote', `{"brightness":255}`, {qos: 0, retain: true});
     });
 
     it('Log when MQTT client is unavailable', async () => {
@@ -285,7 +292,7 @@ describe('Controller', () => {
     it('Start controller and stop with restart', async () => {
         await controller.start();
         await controller.stop(true);
-        expect(mockMQTT.endAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
         expect(mockZHController.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(0, true);
@@ -295,7 +302,7 @@ describe('Controller', () => {
         mockZHController.stop.mockRejectedValueOnce('failed');
         await controller.start();
         await controller.stop();
-        expect(mockMQTT.endAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
         expect(mockZHController.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
@@ -306,7 +313,7 @@ describe('Controller', () => {
         await controller.start();
         await mockZHEvents.adapterDisconnected();
         await flushPromises();
-        expect(mockMQTT.endAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
         expect(mockZHController.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
@@ -320,13 +327,15 @@ describe('Controller', () => {
         mockLogger.info.mockClear();
 
         mockMQTTEvents.error(new Error('ECONNRESET'));
-        mockMQTT.reconnecting = true;
+        // @ts-expect-error private
+        controller.mqtt.client.reconnecting = true;
         expect(mockLogger.error).toHaveBeenCalledWith('MQTT error: ECONNRESET');
 
         await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
 
-        mockMQTT.reconnecting = false;
+        // @ts-expect-error private
+        controller.mqtt.client.reconnecting = false;
         await mockMQTTEvents.connect();
         expect(mockLogger.info).toHaveBeenCalledWith('Connected to MQTT server');
     });
@@ -342,13 +351,15 @@ describe('Controller', () => {
             reasonCode: 149,
             properties: {reasonString: 'Maximum packet size was exceeded'},
         });
-        mockMQTT.disconnecting = true;
+        // @ts-expect-error private
+        controller.mqtt.client.disconnecting = true;
         expect(mockLogger.error).toHaveBeenCalledWith('MQTT disconnect: reason 149 (Maximum packet size was exceeded)');
 
         await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith('Not connected to MQTT server!');
 
-        mockMQTT.disconnecting = false;
+        // @ts-expect-error private
+        controller.mqtt.client.disconnecting = false;
         await mockMQTTEvents.connect();
         expect(mockLogger.info).toHaveBeenCalledWith('Connected to MQTT server');
     });
@@ -356,9 +367,9 @@ describe('Controller', () => {
     it('Handles MQTT publish error', async () => {
         await controller.start();
         await flushPromises();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // fail on device_joined (has skipLog=false)
-        mockMQTT.publishAsync.mockImplementationOnce(mockMQTT.publishAsync.getMockImplementation()!).mockImplementationOnce(() => {
+        mockMQTTPublishAsync.mockImplementationOnce(mockMQTTPublishAsync.getMockImplementation()!).mockImplementationOnce(() => {
             throw new Error('client disconnecting');
         });
         await mockZHEvents.deviceJoined({device: devices.bulb});
@@ -446,7 +457,7 @@ describe('Controller', () => {
         const payload = {device};
         await mockZHEvents.deviceJoined(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_joined', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -508,7 +519,7 @@ describe('Controller', () => {
         mockZHEvents.deviceJoined(payload);
         mockZHEvents.deviceJoined(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_joined', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -521,7 +532,7 @@ describe('Controller', () => {
         const payload = {device, status: 'started'};
         await mockZHEvents.deviceInterview(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_interview', data: {friendly_name: 'bulb', status: 'started', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -534,7 +545,7 @@ describe('Controller', () => {
         const payload = {device, status: 'failed'};
         await mockZHEvents.deviceInterview(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_interview', data: {friendly_name: 'bulb', status: 'failed', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -543,13 +554,13 @@ describe('Controller', () => {
 
     it('On zigbee deviceInterview successful supported', async () => {
         await controller.start();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const device = devices.bulb;
         const payload = {device, status: 'successful'};
         await mockZHEvents.deviceInterview(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
-        const parsedMessage = JSON.parse(mockMQTT.publishAsync.mock.calls[1][1]);
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
+        const parsedMessage = JSON.parse(mockMQTTPublishAsync.mock.calls[1][1]);
         expect(parsedMessage.type).toStrictEqual('device_interview');
         expect(parsedMessage.data.friendly_name).toStrictEqual('bulb');
         expect(parsedMessage.data.status).toStrictEqual('successful');
@@ -560,18 +571,18 @@ describe('Controller', () => {
         expect(parsedMessage.data.definition.description).toStrictEqual('TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm');
         expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
         expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
-        expect(mockMQTT.publishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
+        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
     });
 
     it('On zigbee deviceInterview successful not supported', async () => {
         await controller.start();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const device = devices.unsupported;
         const payload = {device, status: 'successful'};
         await mockZHEvents.deviceInterview(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
-        const parsedMessage = JSON.parse(mockMQTT.publishAsync.mock.calls[1][1]);
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/bridge/event');
+        const parsedMessage = JSON.parse(mockMQTTPublishAsync.mock.calls[1][1]);
         expect(parsedMessage.type).toStrictEqual('device_interview');
         expect(parsedMessage.data.friendly_name).toStrictEqual(device.ieeeAddr);
         expect(parsedMessage.data.status).toStrictEqual('successful');
@@ -582,7 +593,7 @@ describe('Controller', () => {
         expect(parsedMessage.data.definition.description).toStrictEqual('Automatically generated definition');
         expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
         expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
-        expect(mockMQTT.publishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
+        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
     });
 
     it('On zigbee event device announce', async () => {
@@ -592,7 +603,7 @@ describe('Controller', () => {
         await mockZHEvents.deviceAnnounce(payload);
         await flushPromises();
         expect(mockLogger.debug).toHaveBeenCalledWith(`Device 'bulb' announced itself`);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_announce', data: {friendly_name: 'bulb', ieee_address: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -603,12 +614,12 @@ describe('Controller', () => {
         await controller.start();
         returnDevices.push('0x00124b00120144ae');
         settings.set(['devices'], {});
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const device = devices.bulb;
         const payload = {ieeeAddr: device.ieeeAddr};
         await mockZHEvents.deviceLeave(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_leave', data: {ieee_address: device.ieeeAddr, friendly_name: device.ieeeAddr}}),
             {retain: false, qos: 0},
@@ -619,11 +630,11 @@ describe('Controller', () => {
         await controller.start();
         returnDevices.push('0x00124b00120144ae');
         const device = devices.bulb;
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const payload = {ieeeAddr: device.ieeeAddr};
         await mockZHEvents.deviceLeave(payload);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({type: 'device_leave', data: {ieee_address: device.ieeeAddr, friendly_name: 'bulb'}}),
             {retain: false, qos: 0},
@@ -633,7 +644,7 @@ describe('Controller', () => {
     it('Publish entity state attribute output', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute');
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {
@@ -646,30 +657,30 @@ describe('Controller', () => {
             brightness: 50,
         });
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '50', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color_temp', '370', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color', '100,50,10', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/dummy-1', 'yes', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/dummy-2', 'no', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/test1', '', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/test', '', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '50', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color_temp', '370', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color', '100,50,10', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/dummy-1', 'yes', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/dummy-2', 'no', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/test1', '', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/test', '', {qos: 0, retain: true});
     });
 
     it('Publish entity state attribute_json output', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(5);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color_temp', '370', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '99', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(5);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/color_temp', '370', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '99', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 200, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: true},
@@ -680,37 +691,37 @@ describe('Controller', () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['devices', devices.bulb.ieeeAddr, 'filtered_attributes'], ['color_temp', 'linkquality']);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
     });
 
     it('Publish entity state attribute_json output filtered (device_options)', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['device_options', 'filtered_attributes'], ['color_temp', 'linkquality']);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON', brightness: 200, color_temp: 370, linkquality: 99});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(3);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
     });
 
     it('Publish entity state attribute_json output filtered cache', async () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['devices', devices.bulb.ieeeAddr, 'filtered_cache'], ['linkquality']);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
 
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
@@ -722,11 +733,11 @@ describe('Controller', () => {
 
         // @ts-expect-error private
         expect(controller.state.state[device.ieeeAddr]).toStrictEqual({brightness: 200, color_temp: 370, state: 'ON'});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(5);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '87', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(5);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '87', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 200, color_temp: 370, linkquality: 87}),
             {qos: 0, retain: true},
@@ -737,7 +748,7 @@ describe('Controller', () => {
         await controller.start();
         settings.set(['advanced', 'output'], 'attribute_and_json');
         settings.set(['device_options', 'filtered_cache'], ['linkquality']);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
 
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
@@ -749,11 +760,11 @@ describe('Controller', () => {
 
         // @ts-expect-error private
         expect(controller.state.state[device.ieeeAddr]).toStrictEqual({brightness: 200, color_temp: 370, state: 'ON'});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(5);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '87', {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(5);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/state', 'ON', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/brightness', '200', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb/linkquality', '87', {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 200, color_temp: 370, linkquality: 87}),
             {qos: 0, retain: true},
@@ -763,12 +774,12 @@ describe('Controller', () => {
     it('Publish entity state with device information', async () => {
         await controller.start();
         settings.set(['mqtt', 'include_device_information'], true);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         let device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({
                 state: 'ON',
@@ -793,7 +804,7 @@ describe('Controller', () => {
         device = controller.zigbee.resolveEntity('unsupported2')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/unsupported2',
             stringify({
                 state: 'ON',
@@ -814,12 +825,12 @@ describe('Controller', () => {
     it('Should publish entity state without retain', async () => {
         await controller.start();
         settings.set(['devices', devices.bulb.ieeeAddr, 'retain'], false);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: false},
@@ -829,12 +840,12 @@ describe('Controller', () => {
     it('Should publish entity state with retain', async () => {
         await controller.start();
         settings.set(['devices', devices.bulb.ieeeAddr, 'retain'], true);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: true},
@@ -846,12 +857,12 @@ describe('Controller', () => {
         settings.set(['mqtt', 'version'], 5);
         settings.set(['devices', devices.bulb.ieeeAddr, 'retain'], true);
         settings.set(['devices', devices.bulb.ieeeAddr, 'retention'], 37);
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb',
             stringify({state: 'ON', brightness: 50, color_temp: 370, linkquality: 99}),
             {qos: 0, retain: true, properties: {messageExpiryInterval: 37}},
@@ -861,27 +872,27 @@ describe('Controller', () => {
     it('Publish entity state no empty messages', async () => {
         data.writeEmptyState();
         await controller.start();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
     });
 
     it('Should allow to disable state persistency', async () => {
         settings.set(['advanced', 'cache_state_persistent'], false);
         data.removeState();
         await controller.start();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await controller.publishEntityState(device, {brightness: 200});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON'}), {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON'}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON', brightness: 200}), {qos: 0, retain: true});
         await controller.stop();
         expect(data.stateExists()).toBeFalsy();
     });
@@ -901,15 +912,15 @@ describe('Controller', () => {
         settings.set(['advanced', 'cache_state'], false);
         data.writeEmptyState();
         await controller.start();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity('bulb')!;
         await controller.publishEntityState(device, {state: 'ON'});
         await controller.publishEntityState(device, {brightness: 200});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(2);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON'}), {qos: 0, retain: true});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({brightness: 200}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({state: 'ON'}), {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({brightness: 200}), {qos: 0, retain: true});
     });
 
     it('Should start when state is corrupted', async () => {
@@ -941,44 +952,44 @@ describe('Controller', () => {
             controller.mqtt.retainedMessages,
         ).length;
 
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(retainedMessages);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(retainedMessages);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
     });
 
     it('Should not republish retained messages on MQTT initial connect when retained message are sent', async () => {
         await controller.start();
         await flushPromises();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/bridge/info', 'dummy');
         await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
     });
 
     it('Should prevent any message being published with retain flag when force_disable_retain is set', async () => {
         settings.set(['mqtt', 'force_disable_retain'], true);
         // @ts-expect-error private
         await controller.mqtt.connect();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
         await controller.mqtt.publish('fo', 'bar', {retain: true});
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/fo', 'bar', {retain: false, qos: 0});
     });
 
     it('Should publish last seen changes', async () => {
         settings.set(['advanced', 'last_seen'], 'epoch');
         await controller.start();
         await flushPromises();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const device = devices.remote;
         await mockZHEvents.lastSeenChanged({device, reason: 'deviceAnnounce'});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255, last_seen: 1000}), {
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/remote', stringify({brightness: 255, last_seen: 1000}), {
             qos: 0,
             retain: true,
         });
@@ -988,10 +999,10 @@ describe('Controller', () => {
         settings.set(['advanced', 'last_seen'], 'epoch');
         await controller.start();
         await flushPromises();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         const device = devices.remote;
         await mockZHEvents.lastSeenChanged({device, reason: 'messageEmitted'});
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
     });
 
     it('Ignore messages from coordinator', async () => {

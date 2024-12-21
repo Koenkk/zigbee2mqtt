@@ -1,6 +1,6 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
-import {mockMQTT} from '../mocks/mqtt';
+import {mockMQTTPublishAsync} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
@@ -16,7 +16,7 @@ mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
 zhc.onEvent = mockOnEvent;
 
-const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: OnEvent', () => {
     let controller: Controller;
@@ -81,9 +81,9 @@ describe('Extension: OnEvent', () => {
         );
 
         // Test deviceExposesChanged
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         console.log(mockLivoloOnEvent.mock.calls[0][5].deviceExposesChanged());
-        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
+        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
     });
 
     it('Should call index onEvent with zigbee event', async () => {

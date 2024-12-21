@@ -1,6 +1,6 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
-import {mockMQTT} from '../mocks/mqtt';
+import {mockMQTTPublishAsync} from '../mocks/mqtt';
 import {EventHandler, flushPromises} from '../mocks/utils';
 import {devices} from '../mocks/zigbeeHerdsman';
 
@@ -123,7 +123,7 @@ const mocksClear = [
     mockWSClient.terminate,
     mockNodeStatic,
     mockFinalHandler,
-    mockMQTT.publishAsync,
+    mockMQTTPublishAsync,
     mockLogger.error,
 ];
 
@@ -235,12 +235,12 @@ describe('Extension: Frontend', () => {
         expect(mockWSClient.send).toHaveBeenCalledWith(stringify({topic: 'remote', payload: {brightness: 255}}));
 
         // Message
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         mockWSClient.send.mockClear();
         mockWSClientEvents.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 state: 'ON',
