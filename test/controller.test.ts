@@ -1,5 +1,3 @@
-import type {Mock, MockInstance} from 'vitest';
-
 import * as data from './mocks/data';
 import {mockLogger} from './mocks/logger';
 import {mockMQTT, mockMQTTConnectAsync, events as mockMQTTEvents} from './mocks/mqtt';
