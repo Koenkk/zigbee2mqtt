@@ -59,11 +59,9 @@ class Logger {
                 // winston.config.syslog.levels sets 'warning' as 'red'
                 format: winston.format.combine(
                     winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
-                    winston.format.printf(
-                        (info) => {
-                            return `[${info.timestamp}] ${info.level}: \t${info.message}`;
-                        },
-                    ),
+                    winston.format.printf((info) => {
+                        return `[${info.timestamp}] ${info.level}: \t${info.message}`;
+                    }),
                 ),
             }),
         );
@@ -91,11 +89,9 @@ class Logger {
             // NOTE: the initiation of the logger even when not added as transport tries to create the logging directory
             const transportFileOptions: winston.transports.FileTransportOptions = {
                 filename: path.join(this.directory, logFilename),
-                format: winston.format.printf(
-                    (info) => {
-                        return `[${info.timestamp}] ${info.level}: \t${info.message}`;
-                    },
-                ),
+                format: winston.format.printf((info) => {
+                    return `[${info.timestamp}] ${info.level}: \t${info.message}`;
+                }),
             };
 
             if (settings.get().advanced.log_rotation) {

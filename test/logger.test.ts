@@ -1,6 +1,6 @@
-import type { MockInstance } from 'vitest';
-
 import * as data from './mocks/data';
+
+import type {MockInstance} from 'vitest';
 
 import fs from 'node:fs';
 import {platform} from 'node:os';
