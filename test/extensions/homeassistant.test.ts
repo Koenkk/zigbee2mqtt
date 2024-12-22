@@ -1348,8 +1348,8 @@ describe('Extension: HomeAssistant', () => {
         // @ts-expect-error private
         extension.state.load();
         await resetExtension();
-        expect(mockMQTT.subscribeAsync).toHaveBeenCalledWith('homeassistant/status');
-        mockMQTT.publishAsync.mockClear();
+        expect(mockMQTTSubscribeAsync).toHaveBeenCalledWith('homeassistant/status');
+        mockMQTTPublishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'online');
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
@@ -1388,7 +1388,7 @@ describe('Extension: HomeAssistant', () => {
         extension.state.load();
         await resetExtension();
         await flushPromises();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status', 'offline');
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
@@ -1401,7 +1401,7 @@ describe('Extension: HomeAssistant', () => {
         // @ts-expect-error private
         extension.state.load();
         await resetExtension();
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         await mockMQTTEvents.message('homeassistant/status_different', 'offline');
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
