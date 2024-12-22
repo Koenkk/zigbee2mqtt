@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 
 import objectAssignDeep from 'object-assign-deep';
 
@@ -15,7 +15,6 @@ const dontCacheProperties = [
     'button',
     'button_left',
     'button_right',
-    'click',
     'forgotten',
     'keyerror',
     'step_size',

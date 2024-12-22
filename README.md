@@ -56,8 +56,8 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Home Assistant](https://www.home-assistant.io/)
 
--   [Home Assistant OS](https://www.home-assistant.io/installation/): Using [the official addon](https://github.com/zigbee2mqtt/hassio-zigbee2mqtt)
--   Other installation: using instructions [here](https://www.zigbee2mqtt.io/guide/usage/integrations/home_assistant.html)
+- [Home Assistant OS](https://www.home-assistant.io/installation/): Using [the official addon](https://github.com/zigbee2mqtt/hassio-zigbee2mqtt)
+- Other installation: using instructions [here](https://www.zigbee2mqtt.io/guide/usage/integrations/home_assistant.html)
 
 <br>
 
@@ -65,8 +65,8 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Homey](https://homey.app/)
 
--   Integration implemented in the [Homey App](https://homey.app/nl-nl/app/com.gruijter.zigbee2mqtt/)
--   Documentation and support in the [Homey Forum](https://community.homey.app/t/83214)
+- Integration implemented in the [Homey App](https://homey.app/nl-nl/app/com.gruijter.zigbee2mqtt/)
+- Documentation and support in the [Homey Forum](https://community.homey.app/t/83214)
 
 <br>
 
@@ -74,7 +74,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Domoticz](https://www.domoticz.com/)
 
--   Integration implemented in Domoticz ([documentation](https://www.domoticz.com/wiki/Zigbee2MQTT)).
+- Integration implemented in Domoticz ([documentation](https://www.domoticz.com/wiki/Zigbee2MQTT)).
 
 <br>
 
@@ -82,7 +82,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Gladys Assistant](https://gladysassistant.com/)
 
--   Integration implemented natively in Gladys Assistant ([documentation](https://gladysassistant.com/docs/integrations/zigbee2mqtt/)).
+- Integration implemented natively in Gladys Assistant ([documentation](https://gladysassistant.com/docs/integrations/zigbee2mqtt/)).
 
 <br>
 
@@ -90,7 +90,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [IoBroker](https://www.iobroker.net/)
 
--   Integration implemented in IoBroker ([documentation](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)).
+- Integration implemented in IoBroker ([documentation](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)).
 
 <br>
 
@@ -104,9 +104,9 @@ Zigbee2MQTT is made up of three modules, each developed in its own Github projec
 
 ### Developing
 
-Zigbee2MQTT uses TypeScript (partially for now). Therefore after making changes to files in the `lib/` directory you need to recompile Zigbee2MQTT. This can be done by executing `npm run build`. For faster development instead of running `npm run build` you can run `npm run build-watch` in another terminal session, this will recompile as you change files.
-In first time before building you need to run `npm install --include=dev`
-Before submitting changes run `npm run test-with-coverage`, `npm run pretty:check` and `npm run eslint`
+Zigbee2MQTT uses TypeScript (partially for now). Therefore after making changes to files in the `lib/` directory you need to recompile Zigbee2MQTT. This can be done by executing `pnpm run build`. For faster development instead of running `pnpm run build` you can run `pnpm run build-watch` in another terminal session, this will recompile as you change files.
+In first time before building you need to run `pnpm install --include=dev`
+Before submitting changes run `pnpm run test-with-coverage`, `pnpm run pretty:check` and `pnpm run eslint`
 
 ## Supported devices
 

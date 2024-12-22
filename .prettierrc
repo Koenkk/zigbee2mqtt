@@ -7,6 +7,7 @@
     "endOfLine": "lf",
     "tabWidth": 4,
     "importOrder": [
+        "^[./]*/mocks",
         "",
         "<TYPES>^(node:)",
         "",

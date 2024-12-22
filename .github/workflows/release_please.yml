@@ -16,6 +16,10 @@ jobs:
             release_created: ${{ steps.release.outputs.release_created }}
             version: '${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}'
         steps:
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 20
@@ -52,7 +56,7 @@ jobs:
                   MASTER_FRONTEND_VERSION=$(cat z2m-master/package.json | jq -r '.dependencies."zigbee2mqtt-frontend"')
                   wget -q -O - https://raw.githubusercontent.com/Koenkk/zigbee2mqtt/release-please--branches--dev--components--zigbee2mqtt/CHANGELOG.md > z2m/CHANGELOG.md
                   cd z2m
-                  npm ci
+                  pnpm i --frozen-lockfile
                   node scripts/generateChangelog.js $MASTER_Z2M_VERSION $MASTER_ZHC_VERSION $MASTER_ZH_VERSION $MASTER_FRONTEND_VERSION >> ../changelog.md
               env:
                   GH_TOKEN: ${{secrets.GH_TOKEN}}

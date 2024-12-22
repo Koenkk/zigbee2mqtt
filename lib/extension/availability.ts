@@ -1,4 +1,6 @@
-import assert from 'assert';
+import type {Zigbee2MQTTAPI} from 'lib/types/api';
+
+import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import debounce from 'debounce';
@@ -29,14 +31,9 @@ export default class Availability extends Extension {
             return utils.minutes(device.options.availability.timeout);
         }
 
-        const key = this.isActiveDevice(device) ? 'active' : 'passive';
-        let value = settings.get().availability?.[key]?.timeout;
+        const type = this.isActiveDevice(device) ? 'active' : 'passive';
 
-        if (value == null) {
-            value = key == 'active' ? 10 : 1500;
-        }
-
-        return utils.minutes(value);
+        return utils.minutes(settings.get().availability[type].timeout);
     }
 
     private isActiveDevice(device: Device): boolean {
@@ -140,7 +137,6 @@ export default class Availability extends Extension {
         this.eventBus.onDeviceLeave(this, (data) => clearTimeout(this.timers[data.ieeeAddr]));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
-        this.eventBus.onPublishAvailability(this, this.publishAvailabilityForAllEntities);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
         // Publish initial availability
         await this.publishAvailabilityForAllEntities();
@@ -189,9 +185,9 @@ export default class Availability extends Extension {
         }
 
         const topic = `${entity.name}/availability`;
-        const payload = utils.availabilityPayload(available ? 'online' : 'offline', settings.get());
+        const payload: Zigbee2MQTTAPI['{friendlyName}/availability'] = {state: available ? 'online' : 'offline'};
         this.availabilityCache[entity.ID] = available;
-        await this.mqtt.publish(topic, payload, {retain: true, qos: 1});
+        await this.mqtt.publish(topic, JSON.stringify(payload), {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
             for (const group of this.zigbee.groupsIterator()) {

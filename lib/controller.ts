@@ -1,6 +1,9 @@
+import type {IClientPublishOptions} from 'mqtt';
 import type * as SdNotify from 'sd-notify';
 
-import assert from 'assert';
+import type {Zigbee2MQTTAPI} from './types/api';
+
+import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -14,15 +17,11 @@ import ExtensionBind from './extension/bind';
 import ExtensionBridge from './extension/bridge';
 import ExtensionConfigure from './extension/configure';
 import ExtensionExternalConverters from './extension/externalConverters';
-import ExtensionExternalExtension from './extension/externalExtension';
+import ExtensionExternalExtensions from './extension/externalExtensions';
 // Extensions
 import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
 import ExtensionHomeAssistant from './extension/homeassistant';
-import ExtensionBridgeLegacy from './extension/legacy/bridgeLegacy';
-import ExtensionDeviceGroupMembership from './extension/legacy/deviceGroupMembership';
-import ExtensionReport from './extension/legacy/report';
-import ExtensionSoftReset from './extension/legacy/softReset';
 import ExtensionNetworkMap from './extension/networkMap';
 import ExtensionOnEvent from './extension/onEvent';
 import ExtensionOTAUpdate from './extension/otaUpdate';
@@ -41,20 +40,16 @@ const AllExtensions = [
     ExtensionPublish,
     ExtensionReceive,
     ExtensionNetworkMap,
-    ExtensionSoftReset,
     ExtensionHomeAssistant,
     ExtensionConfigure,
-    ExtensionDeviceGroupMembership,
-    ExtensionBridgeLegacy,
     ExtensionBridge,
     ExtensionGroups,
     ExtensionBind,
-    ExtensionReport,
     ExtensionOnEvent,
     ExtensionOTAUpdate,
     ExtensionExternalConverters,
     ExtensionFrontend,
-    ExtensionExternalExtension,
+    ExtensionExternalExtensions,
     ExtensionAvailability,
 ];
 
@@ -104,40 +99,26 @@ export class Controller {
         ];
 
         this.extensions = [
+            new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionBridge(...this.extensionArgs),
             new ExtensionPublish(...this.extensionArgs),
             new ExtensionReceive(...this.extensionArgs),
-            new ExtensionDeviceGroupMembership(...this.extensionArgs),
             new ExtensionConfigure(...this.extensionArgs),
             new ExtensionNetworkMap(...this.extensionArgs),
             new ExtensionGroups(...this.extensionArgs),
             new ExtensionBind(...this.extensionArgs),
             new ExtensionOTAUpdate(...this.extensionArgs),
-            new ExtensionReport(...this.extensionArgs),
-            new ExtensionExternalExtension(...this.extensionArgs),
+            new ExtensionExternalExtensions(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
         ];
 
-        if (settings.get().frontend) {
+        if (settings.get().frontend.enabled) {
             this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
         }
 
-        if (settings.get().advanced.legacy_api) {
-            this.extensions.push(new ExtensionBridgeLegacy(...this.extensionArgs));
-        }
-
-        if (settings.get().external_converters.length) {
-            this.extensions.push(new ExtensionExternalConverters(...this.extensionArgs));
-        }
-
-        if (settings.get().homeassistant) {
+        if (settings.get().homeassistant.enabled) {
             this.extensions.push(new ExtensionHomeAssistant(...this.extensionArgs));
-        }
-
-        /* istanbul ignore next */
-        if (settings.get().advanced.soft_reset_timeout !== 0) {
-            this.extensions.push(new ExtensionSoftReset(...this.extensionArgs));
         }
     }
 
@@ -156,25 +137,19 @@ export class Controller {
         }
 
         // Start zigbee
-        let startResult;
         try {
-            startResult = await this.zigbee.start();
+            await this.zigbee.start();
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
-            logger.error('Failed to start zigbee');
+            logger.error('Failed to start zigbee-herdsman');
             logger.error('Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html for possible solutions');
             logger.error('Exiting...');
             logger.error((error as Error).stack!);
+            /* istanbul ignore if */
+            if ((error as Error).message.includes('USB adapter discovery error (No valid USB adapter found)')) {
+                logger.error('If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364');
+            }
             return await this.exit(1);
-        }
-
-        // Disable some legacy options on new network creation
-        if (startResult === 'reset') {
-            settings.set(['advanced', 'homeassistant_legacy_entity_attributes'], false);
-            settings.set(['advanced', 'legacy_api'], false);
-            settings.set(['advanced', 'legacy_availability_payload'], false);
-            settings.set(['device_options', 'legacy'], false);
-            await this.enableDisableExtension(false, 'BridgeLegacy');
         }
 
         // Log zigbee clients on startup
@@ -191,19 +166,6 @@ export class Controller {
         }
 
         logger.info(`Currently ${deviceCount} devices are joined.`);
-
-        // Enable zigbee join
-        try {
-            if (settings.get().permit_join) {
-                logger.warning('`permit_join` set to  `true` in configuration.yaml.');
-                logger.warning('Allowing new devices to join.');
-                logger.warning('Set `permit_join` to `false` once you joined all devices.');
-            }
-
-            await this.zigbee.permitJoin(settings.get().permit_join);
-        } catch (error) {
-            logger.error(`Failed to set permit join to ${settings.get().permit_join} (${(error as Error).message})`);
-        }
 
         // MQTT
         try {
@@ -293,7 +255,7 @@ export class Controller {
     }
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {
-        let message = {...payload};
+        let message: Zigbee2MQTTAPI['{friendlyName}'] = {...payload};
 
         // Update state cache with new state.
         const newState = this.state.set(entity, payload, stateChangeReason);
@@ -303,14 +265,14 @@ export class Controller {
             message = newState;
         }
 
-        const options: MQTTOptions = {
-            retain: utils.getObjectProperty(entity.options, 'retain', false) as boolean,
-            qos: utils.getObjectProperty(entity.options, 'qos', 0) as 0 | 1 | 2,
+        const options: IClientPublishOptions = {
+            retain: utils.getObjectProperty(entity.options, 'retain', false),
+            qos: utils.getObjectProperty(entity.options, 'qos', 0),
         };
+        const retention = utils.getObjectProperty<number | false>(entity.options, 'retention', false);
 
-        const retention = utils.getObjectProperty(entity.options, 'retention', false);
         if (retention !== false) {
-            options.properties = {messageExpiryInterval: retention as number};
+            options.properties = {messageExpiryInterval: retention};
         }
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
@@ -352,7 +314,7 @@ export class Controller {
         // Filter mqtt message attributes
         utils.filterProperties(entity.options.filtered_attributes, message);
 
-        if (Object.entries(message).length) {
+        if (!utils.objectIsEmpty(message)) {
             const output = settings.get().advanced.output;
             if (output === 'attribute_and_json' || output === 'json') {
                 await this.mqtt.publish(entity.name, stringify(message), options);
@@ -366,7 +328,7 @@ export class Controller {
         this.eventBus.emitPublishEntityState({entity, message, stateChangeReason, payload});
     }
 
-    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: MQTTOptions): Promise<void> {
+    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: IClientPublishOptions): Promise<void> {
         for (const [key, value] of Object.entries(payload)) {
             let subPayload = value;
             let message = null;
@@ -404,5 +366,3 @@ export class Controller {
         }
     }
 }
-
-module.exports = Controller;

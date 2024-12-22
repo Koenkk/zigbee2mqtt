@@ -1,4 +1,4 @@
-import {randomInt} from 'crypto';
+import {randomInt} from 'node:crypto';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -29,16 +29,15 @@ export default class Zigbee {
     async start(): Promise<'reset' | 'resumed' | 'restored'> {
         const infoHerdsman = await utils.getDependencyVersion('zigbee-herdsman');
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
+        const panId = settings.get().advanced.pan_id;
+        const extPanId = settings.get().advanced.ext_pan_id;
+        const networkKey = settings.get().advanced.network_key;
         const herdsmanSettings = {
             network: {
-                panID: settings.get().advanced.pan_id === 'GENERATE' ? this.generatePanID() : (settings.get().advanced.pan_id as number),
-                extendedPanID:
-                    settings.get().advanced.ext_pan_id === 'GENERATE' ? this.generateExtPanID() : (settings.get().advanced.ext_pan_id as number[]),
+                panID: panId === 'GENERATE' ? this.generatePanID() : panId,
+                extendedPanID: extPanId === 'GENERATE' ? this.generateExtPanID() : extPanId,
                 channelList: [settings.get().advanced.channel],
-                networkKey:
-                    settings.get().advanced.network_key === 'GENERATE'
-                        ? this.generateNetworkKey()
-                        : (settings.get().advanced.network_key as number[]),
+                networkKey: networkKey === 'GENERATE' ? this.generateNetworkKey() : networkKey,
             },
             databasePath: data.joinPath('database.db'),
             databaseBackupPath: data.joinPath('database.db.backup'),
@@ -72,9 +71,7 @@ export default class Zigbee {
             throw error;
         }
 
-        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
-            await device.resolveDefinition();
-        }
+        await this.resolveDevicesDefinitions();
 
         this.herdsman.on('adapterDisconnected', () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on('lastSeenChanged', (data: ZHEvents.LastSeenChangedPayload) => {
@@ -219,10 +216,6 @@ export default class Zigbee {
         return await this.herdsman.getNetworkParameters();
     }
 
-    async reset(type: 'soft' | 'hard'): Promise<void> {
-        await this.herdsman.reset(type);
-    }
-
     async stop(): Promise<void> {
         logger.info('Stopping zigbee-herdsman...');
         await this.herdsman.stop();
@@ -233,21 +226,23 @@ export default class Zigbee {
         return this.herdsman.getPermitJoin();
     }
 
-    getPermitJoinTimeout(): number | undefined {
-        return this.herdsman.getPermitJoinTimeout();
+    getPermitJoinEnd(): number | undefined {
+        return this.herdsman.getPermitJoinEnd();
     }
 
-    async permitJoin(permit: boolean, device?: Device, time?: number): Promise<void> {
-        if (permit) {
+    async permitJoin(time: number, device?: Device): Promise<void> {
+        if (time > 0) {
             logger.info(`Zigbee: allowing new devices to join${device ? ` via ${device.name}` : ''}.`);
         } else {
             logger.info('Zigbee: disabling joining new devices.');
         }
 
-        if (device && permit) {
-            await this.herdsman.permitJoin(permit, device.zh, time);
-        } else {
-            await this.herdsman.permitJoin(permit, undefined, time);
+        await this.herdsman.permitJoin(time, device?.zh);
+    }
+
+    async resolveDevicesDefinitions(ignoreCache: boolean = false): Promise<void> {
+        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
+            await device.resolveDefinition(ignoreCache);
         }
     }
 

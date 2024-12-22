@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 import * as zhc from 'zigbee-herdsman-converters';
 import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
@@ -29,6 +29,9 @@ export default class Device {
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
     }
+    get otaExtraMetas(): zhc.Ota.ExtraMetas {
+        return typeof this.definition?.ota === 'object' ? this.definition.ota : {};
+    }
 
     constructor(device: zh.Device) {
         this.zh = device;
@@ -45,7 +48,7 @@ export default class Device {
         }
     }
 
-    async resolveDefinition(ignoreCache = false): Promise<void> {
+    async resolveDefinition(ignoreCache: boolean = false): Promise<void> {
         if (!this.zh.interviewing && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
@@ -115,10 +118,6 @@ export default class Device {
         }
 
         return names;
-    }
-
-    isIkeaTradfri(): boolean {
-        return this.zh.manufacturerID === 4476;
     }
 
     isDevice(): this is Device {

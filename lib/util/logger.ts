@@ -1,8 +1,7 @@
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
-import fx from 'mkdir-recursive';
 import moment from 'moment';
 import {rimrafSync} from 'rimraf';
 import winston from 'winston';
@@ -73,7 +72,7 @@ class Logger {
             logging += `, file (filename: ${logFilename})`;
 
             // Make sure that log directory exists when not logging to stdout only
-            fx.mkdirSync(this.directory);
+            fs.mkdirSync(this.directory, {recursive: true});
 
             if (settings.get().advanced.log_symlink_current) {
                 const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
@@ -104,6 +103,7 @@ class Logger {
 
             this.fileTransport = new winston.transports.File(transportFileOptions);
             this.logger.add(this.fileTransport);
+            this.cleanup();
         }
 
         /* istanbul ignore next */
@@ -220,7 +220,7 @@ class Logger {
     }
 
     // Cleanup any old log directory.
-    public cleanup(): void {
+    private cleanup(): void {
         if (settings.get().advanced.log_directory.includes('%TIMESTAMP%')) {
             const rootDirectory = path.join(this.directory, '..');
 

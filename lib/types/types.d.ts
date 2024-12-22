@@ -5,14 +5,11 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type {QoS} from 'mqtt-packet';
-import type * as zhc from 'zigbee-herdsman-converters';
 import type {
     CoordinatorVersion as ZHCoordinatorVersion,
     LQI as ZHLQI,
     NetworkParameters as ZHNetworkParameters,
     RoutingTable as ZHRoutingTable,
-    RoutingTableEntry as ZHRoutingTableEntry,
 } from 'zigbee-herdsman/dist/adapter/tstype';
 import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 import type {Device as ZHDevice, Endpoint as ZHEndpoint, Group as ZHGroup} from 'zigbee-herdsman/dist/controller/model';
@@ -33,19 +30,6 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    type ExternalDefinition = zhc.Definition & {homeassistant: unknown};
-    interface MQTTResponse {
-        data: KeyValue;
-        status: 'error' | 'ok';
-        error?: string;
-        transaction?: string;
-    }
-    interface MQTTOptions {
-        qos?: QoS;
-        retain?: boolean;
-        properties?: {messageExpiryInterval: number};
-    }
-    type Scene = {id: number; name: string};
     type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
@@ -61,12 +45,10 @@ declare global {
         type Group = ZHGroup;
         type LQI = ZHLQI;
         type RoutingTable = ZHRoutingTable;
-        type RoutingTableEntry = ZHRoutingTableEntry;
         type CoordinatorVersion = ZHCoordinatorVersion;
         type NetworkParameters = ZHNetworkParameters;
-        type Cluster = ZHCluster;
         interface Bind {
-            cluster: zh.Cluster;
+            cluster: ZHCluster;
             target: zh.Endpoint | zh.Group;
         }
     }
@@ -113,19 +95,19 @@ declare global {
 
     // Settings
     interface Settings {
-        homeassistant?: {
+        version?: number;
+        homeassistant: {
+            enabled: boolean;
             discovery_topic: string;
             status_topic: string;
-            legacy_entity_attributes: boolean;
-            legacy_triggers: boolean;
             experimental_event_entities: boolean;
+            legacy_action_sensor: boolean;
         };
-        permit_join: boolean;
-        availability?: {
+        availability: {
+            enabled: boolean;
             active: {timeout: number};
             passive: {timeout: number};
         };
-        external_converters: string[];
         mqtt: {
             base_topic: string;
             include_device_information: boolean;
@@ -140,6 +122,7 @@ declare global {
             cert?: string;
             client_id?: string;
             reject_unauthorized?: boolean;
+            maximum_packet_size: number;
         };
         serial: {
             disable_led: boolean;
@@ -174,9 +157,11 @@ declare global {
             update_check_interval: number;
             disable_automatic_update_check: boolean;
             zigbee_ota_override_index_location?: string;
-            ikea_ota_use_test_url?: boolean;
+            image_block_response_delay?: number;
+            default_maximum_data_size?: number;
         };
-        frontend?: {
+        frontend: {
+            enabled: boolean;
             auth_token?: string;
             host?: string;
             port: number;
@@ -186,11 +171,9 @@ declare global {
             ssl_key?: string;
         };
         devices: {[s: string]: DeviceOptions};
-        groups: {[s: string]: OptionalProps<Omit<GroupOptions, 'ID'>, 'devices'>};
+        groups: {[s: string]: Omit<GroupOptions, 'ID'>};
         device_options: KeyValue;
         advanced: {
-            legacy_api: boolean;
-            legacy_availability_payload: boolean;
             log_rotation: boolean;
             log_symlink_current: boolean;
             log_output: ('console' | 'file' | 'syslog')[];
@@ -215,14 +198,6 @@ declare global {
             timestamp_format: string;
             output: 'json' | 'attribute' | 'attribute_and_json';
             transmit_power?: number;
-            // Everything below is deprecated
-            availability_timeout?: number;
-            availability_blocklist: string[];
-            availability_passlist: string[];
-            availability_blacklist: string[];
-            availability_whitelist: string[];
-            soft_reset_timeout: number;
-            report: boolean;
         };
     }
 
@@ -231,7 +206,6 @@ declare global {
         retention?: number;
         availability?: boolean | {timeout: number};
         optimistic?: boolean;
-        retrieve_state?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
         throttle?: number;
@@ -240,7 +214,6 @@ declare global {
         filtered_optimistic?: string[];
         icon?: string;
         homeassistant?: KeyValue;
-        legacy?: boolean;
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;
@@ -251,14 +224,12 @@ declare global {
     }
 
     interface GroupOptions {
-        devices: string[];
         ID: number;
         optimistic?: boolean;
         off_state?: 'all_members_off' | 'last_member_state';
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];
-        retrieve_state?: boolean;
         homeassistant?: KeyValue;
         friendly_name: string;
         description?: string;
