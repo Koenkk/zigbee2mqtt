@@ -804,7 +804,7 @@ export default class Bridge extends Extension {
         let icon = device.options.icon ?? definitionIcon;
 
         if (icon) {
-            /* istanbul ignore next */
+            /* v8 ignore next */
             icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID ?? ''));
             icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
         }

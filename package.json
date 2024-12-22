@@ -26,9 +26,10 @@
         "pretty:write": "prettier --write .",
         "pretty:check": "prettier --check .",
         "start": "node index.js",
-        "test-with-coverage": "jest test --silent --maxWorkers=50% --coverage",
-        "test": "jest test --silent --maxWorkers=50%",
-        "test-watch": "jest test --silent --maxWorkers=25% --watch"
+        "test": "vitest run --config ./test/vitest.config.mts",
+        "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
+        "test:watch": "vitest watch --config ./test/vitest.config.mts",
+        "clean": "rimraf coverage dist tsconfig.tsbuildinfo"
     },
     "author": "Koen Kanters",
     "license": "GPL-3.0",
@@ -64,17 +65,12 @@
         "zigbee2mqtt-frontend": "0.9.1"
     },
     "devDependencies": {
-        "@babel/core": "^7.26.0",
-        "@babel/plugin-proposal-decorators": "^7.25.9",
-        "@babel/preset-env": "^7.26.0",
-        "@babel/preset-typescript": "^7.26.0",
         "@eslint/core": "^0.9.1",
         "@eslint/js": "^9.17.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
-        "@types/jest": "^29.5.14",
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^22.10.2",
         "@types/object-assign-deep": "^0.4.3",
@@ -82,33 +78,19 @@
         "@types/sd-notify": "^2.8.2",
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.5.13",
-        "babel-jest": "^29.7.0",
+        "@vitest/coverage-v8": "^2.1.8",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^9.1.0",
-        "jest": "^29.7.0",
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.18.0"
+        "typescript-eslint": "^8.18.0",
+        "vitest": "^2.1.8"
     },
     "pnpm": {
         "overrides": {
             "zigbee-herdsman": "$zigbee-herdsman"
         }
-    },
-    "jest": {
-        "coverageThreshold": {
-            "global": {
-                "branches": 100,
-                "functions": 100,
-                "lines": 100,
-                "statements": 100
-            }
-        },
-        "collectCoverageFrom": [
-            "lib/**/*.js",
-            "lib/**/*.ts"
-        ]
     },
     "bin": {
         "zigbee2mqtt": "cli.js"

@@ -1,6 +1,6 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
-import {mockMQTT, events as mockMQTTEvents} from '../mocks/mqtt';
+import {events as mockMQTTEvents, mockMQTTPublishAsync} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {Device, devices, Endpoint, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
@@ -9,7 +9,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 
-const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: Configure', () => {
     let controller: Controller;
@@ -65,10 +65,10 @@ describe('Extension: Configure', () => {
     const wait = async (ms: number): Promise<void> => await new Promise((resolve) => setTimeout(resolve, ms));
 
     beforeAll(async () => {
-        jest.useFakeTimers();
-        controller = new Controller(jest.fn(), jest.fn());
+        vi.useFakeTimers();
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
     });
 
     beforeEach(async () => {
@@ -77,11 +77,11 @@ describe('Extension: Configure', () => {
         mocksClear.forEach((m) => m.mockClear());
         coordinatorEndpoint = devices.coordinator.getEndpoint(1)!;
         await resetExtension();
-        await jest.runOnlyPendingTimersAsync();
+        await vi.runOnlyPendingTimersAsync();
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should configure Router on startup', async () => {
@@ -150,7 +150,7 @@ describe('Extension: Configure', () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', 'remote');
         await flushPromises();
         expectRemoteConfigured();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {id: 'remote'}, status: 'ok'}),
             {retain: false, qos: 0},
@@ -160,7 +160,7 @@ describe('Extension: Configure', () => {
     it('Fail to configure via MQTT when device does not exist', async () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: 'not_existing_device'}));
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {}, status: 'error', error: "Device 'not_existing_device' does not exist"}),
             {retain: false, qos: 0},
@@ -173,7 +173,7 @@ describe('Extension: Configure', () => {
         });
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: 'remote'}));
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {}, status: 'error', error: 'Failed to configure (Bind timeout after 10s)'}),
             {retain: false, qos: 0},
@@ -183,7 +183,7 @@ describe('Extension: Configure', () => {
     it('Fail to configure via MQTT when device has no configure', async () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({id: '0x0017882104a44559', transaction: 20}));
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {}, status: 'error', error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
             {retain: false, qos: 0},
@@ -193,7 +193,7 @@ describe('Extension: Configure', () => {
     it('Handles invalid payload for configure via MQTT', async () => {
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/configure', stringify({idx: '0x0017882104a44559'}));
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/device/configure',
             stringify({data: {}, status: 'error', error: 'Invalid payload'}),
             {retain: false, qos: 0},

@@ -360,8 +360,7 @@ class Bridge {
     constructor(ieeeAdress: string, version: zh.CoordinatorVersion, discovery: DiscoveryEntry[]) {
         this.coordinatorIeeeAddress = ieeeAdress;
         this.coordinatorType = version.type;
-        /* istanbul ignore next */
-        this.coordinatorFirmwareVersion = version.meta.revision ? `${version.meta.revision}` : '';
+        this.coordinatorFirmwareVersion = version.meta.revision ? `${version.meta.revision}` : /* v8 ignore next */ '';
         this.discoveryEntries = discovery;
 
         this.options = {
@@ -718,11 +717,8 @@ export default class HomeAssistant extends Extension {
                         },
                     };
 
-                    // istanbul ignore else
                     if (tempCalibration.value_min != null) discoveryEntry.discovery_payload.min = tempCalibration.value_min;
-                    // istanbul ignore else
                     if (tempCalibration.value_max != null) discoveryEntry.discovery_payload.max = tempCalibration.value_max;
-                    // istanbul ignore else
                     if (tempCalibration.value_step != null) {
                         discoveryEntry.discovery_payload.step = tempCalibration.value_step;
                     }
@@ -733,10 +729,10 @@ export default class HomeAssistant extends Extension {
                 if (piHeatingDemand) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: 'sensor',
-                        object_id: endpoint ? /* istanbul ignore next */ `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
+                        object_id: endpoint ? /* v8 ignore next */ `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
                         mockProperties: [{property: piHeatingDemand.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* istanbul ignore next */ `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
+                            name: endpoint ? /* v8 ignore next */ `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
                             value_template: `{{ value_json.${piHeatingDemand.property} }}`,
                             ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
                             entity_category: 'diagnostic',
@@ -816,7 +812,6 @@ export default class HomeAssistant extends Extension {
                     const closingState = motorState.values.find((s) => COVER_CLOSING_LOOKUP.includes(s.toString().toLowerCase()));
                     const stoppedState = motorState.values.find((s) => COVER_STOPPED_LOOKUP.includes(s.toString().toLowerCase()));
 
-                    // istanbul ignore else
                     if (openingState && closingState && stoppedState) {
                         discoveryEntry.discovery_payload.state_opening = openingState;
                         discoveryEntry.discovery_payload.state_closing = closingState;
@@ -836,10 +831,11 @@ export default class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_stopped = 'STOP';
                 }
 
-                // istanbul ignore if
+                /* v8 ignore start */
                 if (!position && !tilt) {
                     discoveryEntry.discovery_payload.optimistic = true;
                 }
+                /* v8 ignore stop */
 
                 if (position) {
                     discoveryEntry.discovery_payload = {
@@ -879,7 +875,7 @@ export default class HomeAssistant extends Extension {
                 };
 
                 const speed = (firstExpose as zhc.Fan).features.filter(isEnumExpose).find((e) => e.name === 'mode');
-                // istanbul ignore else
+
                 if (speed) {
                     // A fan entity in Home Assistant 2021.3 and above may have a speed,
                     // controlled by a percentage from 1 to 100, and/or non-speed presets.
@@ -943,7 +939,7 @@ export default class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         object_id: endpoint ? `switch_${firstExpose.name}_${endpoint}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === 'boolean'
                                     ? `{% if value_json.${firstExpose.property} %}true{% else %}false{% endif %}`
@@ -964,7 +960,7 @@ export default class HomeAssistant extends Extension {
                         object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             value_template: `{{ value_json.${firstExpose.property} }}`,
                             payload_on: firstExpose.value_on,
                             payload_off: firstExpose.value_off,
@@ -1006,9 +1002,7 @@ export default class HomeAssistant extends Extension {
                         delete discoveryEntry.discovery_payload.device_class;
                     }
 
-                    // istanbul ignore else
                     if (firstExpose.value_min != null) discoveryEntry.discovery_payload.min = firstExpose.value_min;
-                    // istanbul ignore else
                     if (firstExpose.value_max != null) discoveryEntry.discovery_payload.max = firstExpose.value_max;
 
                     discoveryEntries.push(discoveryEntry);
@@ -1076,7 +1070,7 @@ export default class HomeAssistant extends Extension {
                             object_id: firstExpose.property,
                             mockProperties: [],
                             discovery_payload: {
-                                name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                                name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                                 state_topic: true,
                                 event_types: this.prepareActionEventTypes(firstExpose.values),
                                 value_template: this.actionValueTemplate,
@@ -1100,7 +1094,7 @@ export default class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* istanbul ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
                             state_topic: false,
                             command_topic_prefix: endpoint,
                             command_topic: true,
@@ -1137,7 +1131,6 @@ export default class HomeAssistant extends Extension {
                 /**
                  * Otherwise expose as SENSOR entity.
                  */
-                /* istanbul ignore else */
                 if (firstExpose.access & ACCESS_STATE) {
                     discoveryEntries.push({
                         type: 'sensor',
@@ -1189,9 +1182,10 @@ export default class HomeAssistant extends Extension {
                 }
                 break;
             }
-            /* istanbul ignore next */
+            /* v8 ignore start */
             default:
                 throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
+            /* v8 ignore stop */
         }
 
         // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
@@ -1249,14 +1243,16 @@ export default class HomeAssistant extends Extension {
          * zigbee2mqtt/mydevice/l1.
          */
         const entity = this.zigbee.resolveEntity(data.entity.name)!;
+
         if (entity.isDevice()) {
             for (const topic in this.getDiscovered(entity).messages) {
                 const topicMatch = topic.match(this.discoveryRegexWoTopic);
 
-                // istanbul ignore if
+                /* v8 ignore start */
                 if (!topicMatch) {
                     continue;
                 }
+                /* v8 ignore stop */
 
                 const objectID = topicMatch[3];
                 const lightMatch = /^light_(.*)/.exec(objectID);
@@ -1333,7 +1329,8 @@ export default class HomeAssistant extends Extension {
     private getConfigs(entity: Device | Group | Bridge): DiscoveryEntry[] {
         const isDevice = entity.isDevice();
         const isGroup = entity.isGroup();
-        /* istanbul ignore next */
+
+        /* v8 ignore next */
         if (!entity || (isDevice && !entity.definition)) return [];
 
         let configs: DiscoveryEntry[] = [];
@@ -1390,7 +1387,6 @@ export default class HomeAssistant extends Extension {
                 },
             };
 
-            /* istanbul ignore else */
             if (settings.get().advanced.last_seen.startsWith('ISO_8601')) {
                 config.discovery_payload.device_class = 'timestamp';
             }
@@ -1491,7 +1487,6 @@ export default class HomeAssistant extends Extension {
             if (payload.state_topic === undefined || payload.state_topic) {
                 payload.state_topic = stateTopic;
             } else {
-                /* istanbul ignore else */
                 if (payload.state_topic !== undefined) {
                     delete payload.state_topic;
                 }
@@ -1744,7 +1739,6 @@ export default class HomeAssistant extends Extension {
             // Device was flagged to be excluded from homeassistant discovery
             clear = clear || Boolean(entity && entity.options.homeassistant !== undefined && !entity.options.homeassistant);
 
-            /* istanbul ignore else */
             if (clear) {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
                 await this.mqtt.publish(topic, '', {retain: true, qos: 1}, this.discoveryTopic, false, false);

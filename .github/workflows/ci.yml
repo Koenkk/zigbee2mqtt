@@ -41,7 +41,7 @@ jobs:
                   pnpm run eslint
 
             - name: Test
-              run: pnpm run test-with-coverage
+              run: pnpm run test:coverage
 
             - name: Log in to the Docker container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
@@ -188,4 +188,4 @@ jobs:
               run: pnpm run build
 
             - name: Test
-              run: pnpm run test-with-coverage
+              run: pnpm run test:coverage

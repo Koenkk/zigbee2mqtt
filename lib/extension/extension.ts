@@ -43,7 +43,6 @@ abstract class Extension {
     /**
      * Is called once the extension has to start
      */
-    /* istanbul ignore next */
     async start(): Promise<void> {}
 
     /**

@@ -1,6 +1,6 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
-import {mockMQTT} from '../mocks/mqtt';
+import {mockMQTTPublishAsync} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
@@ -9,23 +9,23 @@ import * as zhc from 'zigbee-herdsman-converters';
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 
-const mockOnEvent = jest.fn();
-const mockLivoloOnEvent = jest.fn();
+const mockOnEvent = vi.fn();
+const mockLivoloOnEvent = vi.fn();
 const mappedLivolo = zhc.findByModel('TI0001')!;
 mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
 zhc.onEvent = mockOnEvent;
 
-const mocksClear = [mockMQTT.publishAsync, mockLogger.warning, mockLogger.debug];
+const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: OnEvent', () => {
     let controller: Controller;
 
     beforeEach(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         data.writeDefaultConfiguration();
         settings.reRead();
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
     });
@@ -40,7 +40,7 @@ describe('Extension: OnEvent', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     it('Should call with start event', async () => {
@@ -81,9 +81,9 @@ describe('Extension: OnEvent', () => {
         );
 
         // Test deviceExposesChanged
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         console.log(mockLivoloOnEvent.mock.calls[0][5].deviceExposesChanged());
-        expect(mockMQTT.publishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
+        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/bridge/devices');
     });
 
     it('Should call index onEvent with zigbee event', async () => {

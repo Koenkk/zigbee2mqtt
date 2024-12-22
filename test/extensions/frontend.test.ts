@@ -1,6 +1,6 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
-import {mockMQTT} from '../mocks/mqtt';
+import {mockMQTTPublishAsync} from '../mocks/mqtt';
 import {EventHandler, flushPromises} from '../mocks/utils';
 import {devices} from '../mocks/zigbeeHerdsman';
 
@@ -15,26 +15,26 @@ import * as settings from '../../lib/util/settings';
 let mockHTTPOnRequest: (request: {url: string}, response: number) => void;
 const mockHTTPEvents: Record<string, EventHandler> = {};
 const mockHTTP = {
-    listen: jest.fn(),
+    listen: vi.fn(),
     on: (event: string, handler: EventHandler): void => {
         mockHTTPEvents[event] = handler;
     },
-    close: jest.fn().mockImplementation((cb) => cb()),
+    close: vi.fn<(cb: (err?: Error) => void) => void>((cb) => cb()),
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mockHTTPSOnRequest: (request: {url: string}, response: number) => void;
 const mockHTTPSEvents: Record<string, EventHandler> = {};
 const mockHTTPS = {
-    listen: jest.fn(),
+    listen: vi.fn(),
     on: (event: string, handler: EventHandler): void => {
         mockHTTPSEvents[event] = handler;
     },
-    close: jest.fn().mockImplementation((cb) => cb()),
+    close: vi.fn<(cb: (err?: Error) => void) => void>((cb) => cb()),
 };
 
 const mockWSocket = {
-    close: jest.fn(),
+    close: vi.fn<(cb: (err?: Error) => void) => void>(),
 };
 
 const mockWSClientEvents: Record<string, EventHandler> = {};
@@ -42,8 +42,8 @@ const mockWSClient = {
     on: (event: string, handler: EventHandler): void => {
         mockWSClientEvents[event] = handler;
     },
-    send: jest.fn(),
-    terminate: jest.fn(),
+    send: vi.fn<(data: string) => void>(),
+    terminate: vi.fn<() => void>(),
     readyState: 'close',
 };
 const mockWSEvents: Record<string, EventHandler> = {};
@@ -53,57 +53,62 @@ const mockWS = {
     on: (event: string, handler: EventHandler): void => {
         mockWSEvents[event] = handler;
     },
-    handleUpgrade: jest.fn().mockImplementation((request, socket, head, cb) => {
+    handleUpgrade: vi.fn().mockImplementation((request, socket, head, cb) => {
         cb(mockWSocket);
     }),
-    emit: jest.fn(),
-    close: jest.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    emit: vi.fn<(eventName: string, ...args: any[]) => void>(),
+    close: vi.fn<(code?: number, data?: string | Buffer) => void>(),
 };
 
 let mockNodeStaticPath: string = '';
-const mockNodeStatic = jest.fn();
+const mockNodeStatic = vi.fn();
 
-const mockFinalHandler = jest.fn();
+const mockFinalHandler = vi.fn();
 
-jest.mock('node:http', () => ({
-    createServer: jest.fn().mockImplementation((onRequest) => {
+vi.mock('node:http', () => ({
+    createServer: vi.fn().mockImplementation((onRequest) => {
         mockHTTPOnRequest = onRequest;
         return mockHTTP;
     }),
-    Agent: jest.fn(),
+    Agent: vi.fn(),
 }));
 
-jest.mock('node:https', () => ({
-    createServer: jest.fn().mockImplementation((onRequest) => {
+vi.mock('node:https', () => ({
+    createServer: vi.fn().mockImplementation((onRequest) => {
         mockHTTPSOnRequest = onRequest;
         return mockHTTPS;
     }),
-    Agent: jest.fn(),
+    Agent: vi.fn(),
 }));
 
-jest.mock('express-static-gzip', () =>
-    jest.fn().mockImplementation((path) => {
+vi.mock('express-static-gzip', () => ({
+    default: vi.fn().mockImplementation((path) => {
         mockNodeStaticPath = path;
         return mockNodeStatic;
     }),
-);
-
-jest.mock('zigbee2mqtt-frontend', () => ({
-    getPath: (): string => 'my/dummy/path',
 }));
 
-jest.mock('ws', () => ({
-    OPEN: 'open',
-    Server: jest.fn().mockImplementation(() => {
-        return mockWS;
-    }),
+vi.mock('zigbee2mqtt-frontend', () => ({
+    default: {
+        getPath: (): string => 'my/dummy/path',
+    },
 }));
 
-jest.mock('finalhandler', () =>
-    jest.fn().mockImplementation(() => {
+vi.mock('ws', () => ({
+    default: {
+        OPEN: 'open',
+        Server: vi.fn().mockImplementation(() => {
+            return mockWS;
+        }),
+    },
+}));
+
+vi.mock('finalhandler', () => ({
+    default: vi.fn().mockImplementation(() => {
         return mockFinalHandler;
     }),
-);
+}));
 
 const mocksClear = [
     mockHTTP.close,
@@ -118,7 +123,7 @@ const mocksClear = [
     mockWSClient.terminate,
     mockNodeStatic,
     mockFinalHandler,
-    mockMQTT.publishAsync,
+    mockMQTTPublishAsync,
     mockLogger.error,
 ];
 
@@ -126,7 +131,7 @@ describe('Extension: Frontend', () => {
     let controller: Controller;
 
     beforeAll(async () => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     beforeEach(async () => {
@@ -142,7 +147,7 @@ describe('Extension: Frontend', () => {
     });
 
     afterAll(async () => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     afterEach(async () => {
@@ -150,7 +155,7 @@ describe('Extension: Frontend', () => {
     });
 
     it('Start/stop with defaults', async () => {
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockNodeStaticPath).toBe('my/dummy/path');
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
@@ -163,7 +168,7 @@ describe('Extension: Frontend', () => {
 
     it('Start/stop without host', async () => {
         settings.set(['frontend'], {enabled: true, port: 8081});
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockNodeStaticPath).toBe('my/dummy/path');
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081);
@@ -176,7 +181,7 @@ describe('Extension: Frontend', () => {
 
     it('Start/stop unix socket', async () => {
         settings.set(['frontend', 'host'], '/tmp/zigbee2mqtt.sock');
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockNodeStaticPath).toBe('my/dummy/path');
         expect(mockHTTP.listen).toHaveBeenCalledWith('/tmp/zigbee2mqtt.sock');
@@ -190,7 +195,7 @@ describe('Extension: Frontend', () => {
     it('Start/stop HTTPS valid', async () => {
         settings.set(['frontend', 'ssl_cert'], path.join(__dirname, '..', 'assets', 'certs', 'dummy.crt'));
         settings.set(['frontend', 'ssl_key'], path.join(__dirname, '..', 'assets', 'certs', 'dummy.key'));
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockHTTP.listen).not.toHaveBeenCalledWith(8081, '127.0.0.1');
         expect(mockHTTPS.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
@@ -199,7 +204,7 @@ describe('Extension: Frontend', () => {
 
     it('Start/stop HTTPS invalid : missing config', async () => {
         settings.set(['frontend', 'ssl_cert'], path.join(__dirname, '..', 'assets', 'certs', 'dummy.crt'));
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
         expect(mockHTTPS.listen).not.toHaveBeenCalledWith(8081, '127.0.0.1');
@@ -209,7 +214,7 @@ describe('Extension: Frontend', () => {
     it('Start/stop HTTPS invalid : missing file', async () => {
         settings.set(['frontend', 'ssl_cert'], 'filesNotExists.crt');
         settings.set(['frontend', 'ssl_key'], path.join(__dirname, '..', 'assets', 'certs', 'dummy.key'));
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
         expect(mockHTTPS.listen).not.toHaveBeenCalledWith(8081, '127.0.0.1');
@@ -217,25 +222,25 @@ describe('Extension: Frontend', () => {
     });
 
     it('Websocket interaction', async () => {
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         mockWSClient.readyState = 'open';
         mockWS.clients.push(mockWSClient);
         await mockWSEvents.connection(mockWSClient);
 
-        const allTopics = mockWSClient.send.mock.calls.map((m) => JSON.parse(m).topic);
+        const allTopics = mockWSClient.send.mock.calls.map(([m]) => JSON.parse(m).topic);
         expect(allTopics).toContain('bridge/devices');
         expect(allTopics).toContain('bridge/info');
         expect(mockWSClient.send).toHaveBeenCalledWith(stringify({topic: 'bridge/state', payload: {state: 'online'}}));
         expect(mockWSClient.send).toHaveBeenCalledWith(stringify({topic: 'remote', payload: {brightness: 255}}));
 
         // Message
-        mockMQTT.publishAsync.mockClear();
+        mockMQTTPublishAsync.mockClear();
         mockWSClient.send.mockClear();
         mockWSClientEvents.message(stringify({topic: 'bulb_color/set', payload: {state: 'ON'}}), false);
         await flushPromises();
-        expect(mockMQTT.publishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTT.publishAsync).toHaveBeenCalledWith(
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bulb_color',
             stringify({
                 state: 'ON',
@@ -288,10 +293,10 @@ describe('Extension: Frontend', () => {
     });
 
     it('onRequest/onUpgrade', async () => {
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
 
-        const mockSocket = {destroy: jest.fn()};
+        const mockSocket = {destroy: vi.fn()};
         mockHTTPEvents.upgrade({url: 'http://localhost:8080/api'}, mockSocket, 3);
         expect(mockWS.handleUpgrade).toHaveBeenCalledTimes(1);
         expect(mockSocket.destroy).toHaveBeenCalledTimes(0);
@@ -305,7 +310,7 @@ describe('Extension: Frontend', () => {
     });
 
     it('Static server', async () => {
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
 
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
@@ -314,10 +319,10 @@ describe('Extension: Frontend', () => {
     it('Authentification', async () => {
         const authToken = 'sample-secure-token';
         settings.set(['frontend', 'auth_token'], authToken);
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
 
-        const mockSocket = {destroy: jest.fn()};
+        const mockSocket = {destroy: vi.fn()};
         mockHTTPEvents.upgrade({url: '/api'}, mockSocket, mockWSocket);
         expect(mockWS.handleUpgrade).toHaveBeenCalledTimes(1);
         expect(mockSocket.destroy).toHaveBeenCalledTimes(0);
@@ -340,7 +345,7 @@ describe('Extension: Frontend', () => {
 
     it.each(['/z2m/', '/z2m'])('Works with non-default base url %s', async (baseUrl) => {
         settings.set(['frontend', 'base_url'], baseUrl);
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
 
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: '/z2m/api'});
@@ -366,7 +371,7 @@ describe('Extension: Frontend', () => {
     it('Works with non-default complex base url', async () => {
         const baseUrl = '/z2m-more++/c0mplex.url/';
         settings.set(['frontend', 'base_url'], baseUrl);
-        controller = new Controller(jest.fn(), jest.fn());
+        controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
 
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: '/z2m-more++/c0mplex.url/api'});
