@@ -28,7 +28,8 @@
         "start": "node index.js",
         "test": "vitest run --config ./test/vitest.config.mts",
         "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
-        "test:watch": "vitest watch --config ./test/vitest.config.mts"
+        "test:watch": "vitest watch --config ./test/vitest.config.mts",
+        "clean": "rimraf coverage dist tsconfig.tsbuildinfo"
     },
     "author": "Koen Kanters",
     "license": "GPL-3.0",
