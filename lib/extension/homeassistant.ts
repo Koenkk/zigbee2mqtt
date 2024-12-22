@@ -244,6 +244,11 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     illuminance_calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
     illuminance_lux: {device_class: 'illuminance', state_class: 'measurement'},
     illuminance: {device_class: 'illuminance', enabled_by_default: false, state_class: 'measurement'},
+    internal_temperature: {
+        device_class: 'temperature',
+        entity_category: 'diagnostic',
+        state_class: 'measurement',
+    },
     linkquality: {
         enabled_by_default: false,
         entity_category: 'diagnostic',
