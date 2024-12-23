@@ -3241,6 +3241,38 @@ describe('Extension: Bridge', () => {
         );
     });
 
+    it.each([
+        ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ', 'device_icons/effcad234beeb56ea7c457cf2d36d10b.png', true],
+        ['some_icon.png', 'some_icon.png', false],
+    ])('Should save as image as file when changing device icon', async (mqttIcon, settingsIcon, checkFileExists) => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {icon: mqttIcon}, id: 'bulb'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toStrictEqual({
+            ID: '0x000b57fffec6a5b2',
+            friendly_name: 'bulb',
+            icon: settingsIcon,
+            description: 'this is my bulb',
+            retain: true,
+        });
+        if (checkFileExists) {
+            expect(fs.existsSync(path.join(data.mockDir, settingsIcon))).toBeTruthy();
+        }
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/options',
+            stringify({
+                data: {
+                    from: {retain: true, description: 'this is my bulb'},
+                    to: {retain: true, description: 'this is my bulb', icon: settingsIcon},
+                    id: 'bulb',
+                    restart_required: false,
+                },
+                status: 'ok',
+            }),
+            {retain: false, qos: 0},
+        );
+    });
+
     it('Should allow to remove device option', async () => {
         mockMQTTPublishAsync.mockClear();
         settings.set(['devices', '0x000b57fffec6a5b2', 'qos'], 1);

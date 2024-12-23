@@ -1,6 +1,8 @@
 import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
 
+import crypto from 'node:crypto';
 import fs from 'node:fs';
+import path from 'node:path';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -21,6 +23,7 @@ import utils from '../util/utils';
 import Extension from './extension';
 
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
+const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.*)`);
 
 export default class Bridge extends Extension {
     private zigbee2mqttVersion!: {commitHash?: string; version: string};
@@ -432,6 +435,20 @@ export default class Bridge extends Extension {
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
+
+        if (message.options.icon) {
+            const match = message.options.icon.match(BASE64_IMAGE_REGEX);
+            if (match) {
+                const md5Hash = crypto.createHash('md5').update(match.groups.data).digest('hex');
+                const fileSettings = path.join('device_icons', `${md5Hash}.${match.groups.extension}`);
+                const file = path.join(data.getPath(), fileSettings);
+                fs.mkdirSync(path.dirname(file), {recursive: true});
+                fs.writeFileSync(file, match.groups.data, {encoding: 'base64'});
+                message.options.icon = fileSettings;
+                logger.debug(`Saved base64 image as file to '${fileSettings}'`);
+            }
+        }
+
         const restartRequired = settings.changeEntityOptions(ID, message.options);
         if (restartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
