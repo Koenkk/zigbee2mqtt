@@ -23,7 +23,6 @@ import utils from '../util/utils';
 import Extension from './extension';
 
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
-const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.*)`);
 
 export default class Bridge extends Extension {
     private zigbee2mqttVersion!: {commitHash?: string; version: string};
@@ -437,13 +436,13 @@ export default class Bridge extends Extension {
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
 
         if (message.options.icon) {
-            const match = message.options.icon.match(BASE64_IMAGE_REGEX);
-            if (match) {
-                const md5Hash = crypto.createHash('md5').update(match.groups.data).digest('hex');
-                const fileSettings = path.join('device_icons', `${md5Hash}.${match.groups.extension}`);
+            const base64Match = utils.isBase64File(message.options.icon);
+            if (base64Match) {
+                const md5Hash = crypto.createHash('md5').update(base64Match.data).digest('hex');
+                const fileSettings = path.join('device_icons', `${md5Hash}.${base64Match.extension}`);
                 const file = path.join(data.getPath(), fileSettings);
                 fs.mkdirSync(path.dirname(file), {recursive: true});
-                fs.writeFileSync(file, match.groups.data, {encoding: 'base64'});
+                fs.writeFileSync(file, base64Match.data, {encoding: 'base64'});
                 message.options.icon = fileSettings;
                 logger.debug(`Saved base64 image as file to '${fileSettings}'`);
             }

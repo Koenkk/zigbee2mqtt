@@ -8,6 +8,8 @@ import path from 'node:path';
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
 
+const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.+)`);
+
 function pad(num: number): string {
     const norm = Math.floor(Math.abs(num));
     return (norm < 10 ? '0' : '') + norm;
@@ -370,10 +372,21 @@ function deviceNotCoordinator(device: zh.Device): boolean {
     return device.type !== 'Coordinator';
 }
 
+function isBase64File(value: string): {extension: string; data: string} | false {
+    const match = value.match(BASE64_IMAGE_REGEX);
+    console.log('match', match);
+    if (match) {
+        assert(match.groups?.extension && match.groups?.data);
+        return {extension: match.groups.extension, data: match.groups.data};
+    }
+    return false;
+}
+
 /* v8 ignore next */
 const noop = (): void => {};
 
 export default {
+    isBase64File,
     capitalize,
     getZigbee2MQTTVersion,
     getDependencyVersion,

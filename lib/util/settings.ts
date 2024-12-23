@@ -246,6 +246,9 @@ export function validate(): string[] {
         if (names.includes(e.friendly_name)) errors.push(`Duplicate friendly_name '${e.friendly_name}' found`);
         errors.push(...utils.validateFriendlyName(e.friendly_name));
         names.push(e.friendly_name);
+        if ('icon' in e && e.icon && !utils.isBase64File(e.icon) && !e.icon.startsWith('device_icons/')) {
+            errors.push(`Device icon of '${e.friendly_name}' should start with 'device_icons/', got '${e.icon}'`);
+        }
         if (e.qos != null && ![0, 1, 2].includes(e.qos)) {
             errors.push(`QOS for '${e.friendly_name}' not valid, should be 0, 1 or 2 got ${e.qos}`);
         }
