@@ -374,7 +374,6 @@ function deviceNotCoordinator(device: zh.Device): boolean {
 
 function isBase64File(value: string): {extension: string; data: string} | false {
     const match = value.match(BASE64_IMAGE_REGEX);
-    console.log('match', match);
     if (match) {
         assert(match.groups?.extension && match.groups?.data);
         return {extension: match.groups.extension, data: match.groups.data};
