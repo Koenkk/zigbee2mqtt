@@ -123,6 +123,15 @@ export default class Zigbee {
             if (device.zh.type === 'Coordinator') return;
             this.eventBus.emitDeviceMessage({...data, device});
         });
+        this.herdsman.on('sourceRoute', (data: ZHEvents.SrcRouteIndPayload) => {
+            logger.debug(`Source route indication received: ${stringify(data)}`);
+            const device = this.herdsman.getDeviceByNetworkAddress(data.dstaddr);
+            if (!device) {
+                logger.warning(`Source route indication received for unknown device '${data.dstaddr}'`);
+                return;
+            }
+            this.eventBus.emitSourceRoute({device: device, ...data});
+        });
 
         logger.info(`zigbee-herdsman started (${startResult})`);
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
