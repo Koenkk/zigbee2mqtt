@@ -439,7 +439,7 @@ export default class Bridge extends Extension {
             const base64Match = utils.isBase64File(message.options.icon);
             if (base64Match) {
                 const md5Hash = crypto.createHash('md5').update(base64Match.data).digest('hex');
-                const fileSettings = path.join('device_icons', `${md5Hash}.${base64Match.extension}`);
+                const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
                 const file = path.join(data.getPath(), fileSettings);
                 fs.mkdirSync(path.dirname(file), {recursive: true});
                 fs.writeFileSync(file, base64Match.data, {encoding: 'base64'});
