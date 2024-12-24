@@ -40,6 +40,8 @@ const mocksClear = [
     devices.bulb.removeFromNetwork,
 ];
 
+const deviceIconsDir = path.join(data.mockDir, 'device_icons');
+
 describe('Extension: Bridge', () => {
     let controller: Controller;
     let mockRestart: Mock;
@@ -80,6 +82,7 @@ describe('Extension: Bridge', () => {
         extension.restartRequired = false;
         // @ts-expect-error private
         controller.state.state = {[devices.bulb.ieeeAddr]: {brightness: 50}};
+        fs.rmSync(deviceIconsDir, {force: true, recursive: true});
     });
 
     afterAll(async () => {
