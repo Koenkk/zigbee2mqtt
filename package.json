@@ -29,6 +29,7 @@
         "test": "vitest run --config ./test/vitest.config.mts",
         "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
         "test:watch": "vitest watch --config ./test/vitest.config.mts",
+        "prepack": "pnpm run clean && pnpm run build",
         "clean": "rimraf coverage dist tsconfig.tsbuildinfo"
     },
     "author": "Koen Kanters",
