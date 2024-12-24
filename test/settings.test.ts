@@ -756,7 +756,6 @@ describe('Settings', () => {
     it.each([
         ['bla.png', `Device icon of 'myname' should start with 'device_icons/', got 'bla.png'`],
         ['device_icons/bla.png', undefined],
-        ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ', undefined],
     ])('Device icons should be in `device_icons` directory', (icon, error) => {
         write(configurationFile, {
             ...minimalConfig,

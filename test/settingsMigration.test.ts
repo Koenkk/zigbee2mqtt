@@ -823,7 +823,7 @@ describe('Settings Migration', () => {
             settings.reRead();
         });
 
-        it('onlythis Update', () => {
+        it('Update', () => {
             // @ts-expect-error workaround
             const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
             // @ts-expect-error workaround
@@ -836,11 +836,10 @@ describe('Settings Migration', () => {
                 },
                 '0x223127fffe8d96bc': {
                     friendly_name: '0x223127fffe8d96bc',
-                    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
+                    icon: 'device_icons/effcad234beeb56ea7c457cf2d36d10b.png',
                 },
                 '0x323127fffe8d96bc': {
                     friendly_name: '0x323127fffe8d96bc',
-                    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
                 },
             };
 
@@ -855,7 +854,6 @@ describe('Settings Migration', () => {
                 },
                 '0x323127fffe8d96bc': {
                     friendly_name: '0x323127fffe8d96bc',
-                    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
                 },
             });
 
@@ -873,7 +871,6 @@ describe('Settings Migration', () => {
                         },
                         '0x323127fffe8d96bc': {
                             friendly_name: '0x323127fffe8d96bc',
-                            icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
                         },
                     },
                 }),
@@ -884,12 +881,10 @@ describe('Settings Migration', () => {
             const migratedSettings = settings.getPersistedSettings();
 
             expect(migratedSettings).toStrictEqual(afterSettings);
-            // const migrationNotes = mockedData.joinPath('migration-2-to-3.log');
-            // expect(existsSync(migrationNotes)).toStrictEqual(true);
-            // const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
-            // expect(migrationNotesContent).toContain(`[SPECIAL] Property 'homeassistant' is now always an object.`);
-            // expect(migrationNotesContent).toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
-            // expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
+            const migrationNotes = mockedData.joinPath('migration-3-to-4.log');
+            expect(existsSync(migrationNotes)).toStrictEqual(true);
+            const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
+            expect(migrationNotesContent).toContain(`[SPECIAL] Device icons are now saved as images.`);
         });
     });
 });
