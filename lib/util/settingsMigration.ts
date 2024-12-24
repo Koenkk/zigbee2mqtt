@@ -2,6 +2,7 @@ import {copyFileSync, writeFileSync} from 'node:fs';
 
 import data from './data';
 import * as settings from './settings';
+import utils from './utils';
 
 interface SettingsMigration {
     path: string[];
@@ -28,7 +29,7 @@ interface SettingsCustomHandler extends Omit<SettingsMigration, 'path'> {
     execute: (currentSettings: Partial<Settings>) => [validPath: boolean, previousValue: unknown, changed: boolean];
 }
 
-const SUPPORTED_VERSIONS: Settings['version'][] = [undefined, 2, settings.CURRENT_VERSION];
+const SUPPORTED_VERSIONS: Settings['version'][] = [undefined, 2, 3, settings.CURRENT_VERSION];
 
 function backupSettings(version: number): void {
     const filePath = data.joinPath('configuration.yaml');
@@ -438,6 +439,43 @@ function migrateToThree(
     );
 }
 
+function migrateToFour(
+    currentSettings: Partial<Settings>,
+    transfers: SettingsTransfer[],
+    changes: SettingsChange[],
+    additions: SettingsAdd[],
+    removals: SettingsRemove[],
+    customHandlers: SettingsCustomHandler[],
+): void {
+    transfers.push();
+    changes.push({
+        path: ['version'],
+        note: `Migrated settings to version 4`,
+        newValue: 4,
+    });
+    additions.push();
+    removals.push();
+
+    const saveBase64DeviceIconsAsImage = (currentSettings: Partial<Settings>): ReturnType<SettingsCustomHandler['execute']> => {
+        const [validPath, previousValue] = getValue(currentSettings, ['devices']);
+
+        for (const deviceKey in currentSettings.devices) {
+            const base64Match = utils.isBase64File(currentSettings.devices[deviceKey].icon ?? '');
+            if (base64Match) {
+                currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
+            }
+        }
+
+        return [validPath, previousValue, validPath];
+    };
+
+    customHandlers.push({
+        note: `Device icons are now saved as images.`,
+        noteIf: () => true,
+        execute: (currentSettings) => saveBase64DeviceIconsAsImage(currentSettings),
+    });
+}
+
 /**
  * Order of execution:
  * - Transfer
@@ -482,7 +520,11 @@ export function migrateIfNecessary(): void {
             migrationNotesFileName = 'migration-2-to-3.log';
 
             migrateToThree(currentSettings, transfers, changes, additions, removals, customHandlers);
-        } /* else if (currentSettings.version === 2.1) {} */
+        } else if (currentSettings.version === 3) {
+            migrationNotesFileName = 'migration-3-to-4.log';
+
+            migrateToFour(currentSettings, transfers, changes, additions, removals, customHandlers);
+        }
 
         for (const transfer of transfers) {
             const [validPath, previousValue, transfered] = transferValue(currentSettings, transfer);

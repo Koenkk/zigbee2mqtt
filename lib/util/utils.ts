@@ -2,11 +2,14 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, 
 import type * as zhc from 'zigbee-herdsman-converters';
 
 import assert from 'node:assert';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
+
+import data from './data';
 
 const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.+)`);
 
@@ -381,11 +384,21 @@ function isBase64File(value: string): {extension: string; data: string} | false 
     return false;
 }
 
+function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {
+    const md5Hash = crypto.createHash('md5').update(base64Match.data).digest('hex');
+    const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
+    const file = path.join(data.getPath(), fileSettings);
+    fs.mkdirSync(path.dirname(file), {recursive: true});
+    fs.writeFileSync(file, base64Match.data, {encoding: 'base64'});
+    return fileSettings;
+}
+
 /* v8 ignore next */
 const noop = (): void => {};
 
 export default {
     isBase64File,
+    saveBase64DeviceIcon,
     capitalize,
     getZigbee2MQTTVersion,
     getDependencyVersion,

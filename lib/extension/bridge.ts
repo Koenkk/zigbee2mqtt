@@ -1,8 +1,6 @@
 import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
 
-import crypto from 'node:crypto';
 import fs from 'node:fs';
-import path from 'node:path';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -438,11 +436,7 @@ export default class Bridge extends Extension {
         if (message.options.icon) {
             const base64Match = utils.isBase64File(message.options.icon);
             if (base64Match) {
-                const md5Hash = crypto.createHash('md5').update(base64Match.data).digest('hex');
-                const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
-                const file = path.join(data.getPath(), fileSettings);
-                fs.mkdirSync(path.dirname(file), {recursive: true});
-                fs.writeFileSync(file, base64Match.data, {encoding: 'base64'});
+                const fileSettings = utils.saveBase64DeviceIcon(base64Match);
                 message.options.icon = fileSettings;
                 logger.debug(`Saved base64 image as file to '${fileSettings}'`);
             }
