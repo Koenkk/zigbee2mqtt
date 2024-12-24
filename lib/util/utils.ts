@@ -375,7 +375,7 @@ function deviceNotCoordinator(device: zh.Device): boolean {
     return device.type !== 'Coordinator';
 }
 
-function isBase64File(value: string): {extension: string; data: string} | false {
+function matchBase64File(value: string): {extension: string; data: string} | false {
     const match = value.match(BASE64_IMAGE_REGEX);
     if (match) {
         assert(match.groups?.extension && match.groups?.data);
@@ -397,7 +397,7 @@ function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): s
 const noop = (): void => {};
 
 export default {
-    isBase64File,
+    matchBase64File,
     saveBase64DeviceIcon,
     capitalize,
     getZigbee2MQTTVersion,

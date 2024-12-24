@@ -460,7 +460,7 @@ function migrateToFour(
         const [validPath, previousValue] = getValue(currentSettings, ['devices']);
 
         for (const deviceKey in currentSettings.devices) {
-            const base64Match = utils.isBase64File(currentSettings.devices[deviceKey].icon ?? '');
+            const base64Match = utils.matchBase64File(currentSettings.devices[deviceKey].icon ?? '');
             if (base64Match) {
                 currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
             }

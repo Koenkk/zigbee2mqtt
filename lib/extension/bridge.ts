@@ -434,7 +434,7 @@ export default class Bridge extends Extension {
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
 
         if (message.options.icon) {
-            const base64Match = utils.isBase64File(message.options.icon);
+            const base64Match = utils.matchBase64File(message.options.icon);
             if (base64Match) {
                 const fileSettings = utils.saveBase64DeviceIcon(base64Match);
                 message.options.icon = fileSettings;
