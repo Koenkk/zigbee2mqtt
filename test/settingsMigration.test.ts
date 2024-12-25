@@ -808,4 +808,83 @@ describe('Settings Migration', () => {
             expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
         });
     });
+
+    describe('Migrates v3 to v4', () => {
+        const BASE_CONFIG = {
+            version: 3,
+            mqtt: {
+                server: 'mqtt://localhost',
+            },
+        };
+
+        beforeEach(() => {
+            settings.testing.CURRENT_VERSION = 4; // stop update after this version
+            data.writeDefaultConfiguration(BASE_CONFIG);
+            settings.reRead();
+        });
+
+        it('Update', () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 4;
+            afterSettings.devices = {
+                '0x123127fffe8d96bc': {
+                    friendly_name: '0x847127fffe8d96bc',
+                    icon: 'device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png',
+                },
+                '0x223127fffe8d96bc': {
+                    friendly_name: '0x223127fffe8d96bc',
+                    icon: 'device_icons/effcad234beeb56ea7c457cf2d36d10b.png',
+                },
+                '0x323127fffe8d96bc': {
+                    friendly_name: '0x323127fffe8d96bc',
+                },
+            };
+
+            settings.set(['devices'], {
+                '0x123127fffe8d96bc': {
+                    friendly_name: '0x847127fffe8d96bc',
+                    icon: 'device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png',
+                },
+                '0x223127fffe8d96bc': {
+                    friendly_name: '0x223127fffe8d96bc',
+                    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
+                },
+                '0x323127fffe8d96bc': {
+                    friendly_name: '0x323127fffe8d96bc',
+                },
+            });
+
+            expect(settings.getPersistedSettings()).toStrictEqual(
+                // @ts-expect-error workaround
+                objectAssignDeep.noMutate(beforeSettings, {
+                    devices: {
+                        '0x123127fffe8d96bc': {
+                            friendly_name: '0x847127fffe8d96bc',
+                            icon: 'device_icons/08a9016bbc0657cf5f581ae9c19c31a5.png',
+                        },
+                        '0x223127fffe8d96bc': {
+                            friendly_name: '0x223127fffe8d96bc',
+                            icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ',
+                        },
+                        '0x323127fffe8d96bc': {
+                            friendly_name: '0x323127fffe8d96bc',
+                        },
+                    },
+                }),
+            );
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+
+            expect(migratedSettings).toStrictEqual(afterSettings);
+            const migrationNotes = mockedData.joinPath('migration-3-to-4.log');
+            expect(existsSync(migrationNotes)).toStrictEqual(true);
+            const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
+            expect(migrationNotesContent).toContain(`[SPECIAL] Device icons are now saved as images.`);
+        });
+    });
 });

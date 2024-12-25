@@ -7,6 +7,7 @@ import {devices} from '../mocks/zigbeeHerdsman';
 import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
+import {Mock} from 'vitest';
 import ws from 'ws';
 
 import {Controller} from '../../lib/controller';
@@ -61,8 +62,9 @@ const mockWS = {
     close: vi.fn<(code?: number, data?: string | Buffer) => void>(),
 };
 
-let mockNodeStaticPath: string = '';
-const mockNodeStatic = vi.fn();
+const frontendPath = 'frontend-path';
+const deviceIconsPath = path.join(data.mockDir, 'device_icons');
+let mockNodeStatic: {[s: string]: Mock} = {};
 
 const mockFinalHandler = vi.fn();
 
@@ -83,15 +85,15 @@ vi.mock('node:https', () => ({
 }));
 
 vi.mock('express-static-gzip', () => ({
-    default: vi.fn().mockImplementation((path) => {
-        mockNodeStaticPath = path;
-        return mockNodeStatic;
+    default: vi.fn().mockImplementation((path: string) => {
+        mockNodeStatic[path] = vi.fn();
+        return mockNodeStatic[path];
     }),
 }));
 
 vi.mock('zigbee2mqtt-frontend', () => ({
     default: {
-        getPath: (): string => 'my/dummy/path',
+        getPath: (): string => frontendPath,
     },
 }));
 
@@ -121,7 +123,6 @@ const mocksClear = [
     mockWS.emit,
     mockWSClient.send,
     mockWSClient.terminate,
-    mockNodeStatic,
     mockFinalHandler,
     mockMQTTPublishAsync,
     mockLogger.error,
@@ -135,6 +136,7 @@ describe('Extension: Frontend', () => {
     });
 
     beforeEach(async () => {
+        mockNodeStatic = {};
         mockWS.clients = [];
         data.writeDefaultConfiguration();
         data.writeDefaultState();
@@ -157,7 +159,7 @@ describe('Extension: Frontend', () => {
     it('Start/stop with defaults', async () => {
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
-        expect(mockNodeStaticPath).toBe('my/dummy/path');
+        expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, '127.0.0.1');
         mockWS.clients.push(mockWSClient);
         await controller.stop();
@@ -170,7 +172,7 @@ describe('Extension: Frontend', () => {
         settings.set(['frontend'], {enabled: true, port: 8081});
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
-        expect(mockNodeStaticPath).toBe('my/dummy/path');
+        expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081);
         mockWS.clients.push(mockWSClient);
         await controller.stop();
@@ -183,7 +185,7 @@ describe('Extension: Frontend', () => {
         settings.set(['frontend', 'host'], '/tmp/zigbee2mqtt.sock');
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
-        expect(mockNodeStaticPath).toBe('my/dummy/path');
+        expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith('/tmp/zigbee2mqtt.sock');
         mockWS.clients.push(mockWSClient);
         await controller.stop();
@@ -305,8 +307,27 @@ describe('Extension: Frontend', () => {
         expect(mockWS.emit).toHaveBeenCalledWith('connection', 99, {url: 'http://localhost:8080/api'});
 
         mockHTTPOnRequest({url: '/file.txt'}, 2);
-        expect(mockNodeStatic).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic).toHaveBeenCalledWith({originalUrl: '/file.txt', path: '/file.txt', url: '/file.txt'}, 2, expect.any(Function));
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(0);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
+            {originalUrl: '/file.txt', path: '/file.txt', url: '/file.txt'},
+            2,
+            expect.any(Function),
+        );
+    });
+
+    it('Should serve device icons', async () => {
+        controller = new Controller(vi.fn(), vi.fn());
+        await controller.start();
+
+        mockHTTPOnRequest({url: '/device_icons/my_device.png'}, 2);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(0);
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith(
+            {originalUrl: '/device_icons/my_device.png', path: '/my_device.png', url: '/my_device.png'},
+            2,
+            expect.any(Function),
+        );
     });
 
     it('Static server', async () => {
@@ -351,21 +372,33 @@ describe('Extension: Frontend', () => {
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: '/z2m/api'});
 
         mockHTTPOnRequest({url: '/z2m'}, 2);
-        expect(mockNodeStatic).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic).toHaveBeenCalledWith({originalUrl: '/z2m', path: '/', url: '/'}, 2, expect.any(Function));
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({originalUrl: '/z2m', path: '/', url: '/'}, 2, expect.any(Function));
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
 
-        mockNodeStatic.mockReset();
+        mockNodeStatic[frontendPath].mockReset();
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
         mockHTTPOnRequest({url: '/z2m/file.txt'}, 2);
-        expect(mockNodeStatic).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic).toHaveBeenCalledWith({originalUrl: '/z2m/file.txt', path: '/file.txt', url: '/file.txt'}, 2, expect.any(Function));
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
+            {originalUrl: '/z2m/file.txt', path: '/file.txt', url: '/file.txt'},
+            2,
+            expect.any(Function),
+        );
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
 
-        mockNodeStatic.mockReset();
+        mockNodeStatic[frontendPath].mockReset();
         mockHTTPOnRequest({url: '/z/file.txt'}, 2);
-        expect(mockNodeStatic).not.toHaveBeenCalled();
+        expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
         expect(mockFinalHandler).toHaveBeenCalled();
+
+        mockHTTPOnRequest({url: '/z2m/device_icons/my-device.png'}, 2);
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith(
+            {originalUrl: '/z2m/device_icons/my-device.png', path: '/my-device.png', url: '/my-device.png'},
+            2,
+            expect.any(Function),
+        );
     });
 
     it('Works with non-default complex base url', async () => {
@@ -377,24 +410,28 @@ describe('Extension: Frontend', () => {
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: '/z2m-more++/c0mplex.url/api'});
 
         mockHTTPOnRequest({url: '/z2m-more++/c0mplex.url'}, 2);
-        expect(mockNodeStatic).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic).toHaveBeenCalledWith({originalUrl: '/z2m-more++/c0mplex.url', path: '/', url: '/'}, 2, expect.any(Function));
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
+            {originalUrl: '/z2m-more++/c0mplex.url', path: '/', url: '/'},
+            2,
+            expect.any(Function),
+        );
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
 
-        mockNodeStatic.mockReset();
+        mockNodeStatic[frontendPath].mockReset();
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
         mockHTTPOnRequest({url: '/z2m-more++/c0mplex.url/file.txt'}, 2);
-        expect(mockNodeStatic).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic).toHaveBeenCalledWith(
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
             {originalUrl: '/z2m-more++/c0mplex.url/file.txt', path: '/file.txt', url: '/file.txt'},
             2,
             expect.any(Function),
         );
         expect(mockFinalHandler).not.toHaveBeenCalledWith();
 
-        mockNodeStatic.mockReset();
+        mockNodeStatic[frontendPath].mockReset();
         mockHTTPOnRequest({url: '/z/file.txt'}, 2);
-        expect(mockNodeStatic).not.toHaveBeenCalled();
+        expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
         expect(mockFinalHandler).toHaveBeenCalled();
     });
 });

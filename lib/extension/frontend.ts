@@ -18,6 +18,7 @@ import WebSocket from 'ws';
 
 import frontend from 'zigbee2mqtt-frontend';
 
+import data from '../util/data';
 import logger from '../util/logger';
 import * as settings from '../util/settings';
 import utils from '../util/utils';
@@ -35,6 +36,7 @@ export default class Frontend extends Extension {
     private authToken: string | undefined;
     private server!: Server;
     private fileServer!: RequestHandler;
+    private deviceIconsFileServer!: RequestHandler;
     private wss!: WebSocket.Server;
     private baseUrl: string;
 
@@ -89,6 +91,7 @@ export default class Frontend extends Extension {
             },
         };
         this.fileServer = expressStaticGzip(frontend.getPath(), options);
+        this.deviceIconsFileServer = expressStaticGzip(data.joinPath('device_icons'), options);
         this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, 'api')});
 
         this.wss.on('connection', this.onWebSocketConnection);
@@ -144,7 +147,13 @@ export default class Frontend extends Extension {
         request.url = '/' + newUrl;
         request.path = request.url;
 
-        this.fileServer(request, response, fin);
+        if (newUrl.startsWith('device_icons/')) {
+            request.path = request.path.replace('device_icons/', '');
+            request.url = request.url.replace('/device_icons', '');
+            this.deviceIconsFileServer(request, response, fin);
+        } else {
+            this.fileServer(request, response, fin);
+        }
     }
 
     private authenticate(request: IncomingMessage, cb: (authenticate: boolean) => void): void {

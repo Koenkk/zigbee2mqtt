@@ -432,6 +432,16 @@ export default class Bridge extends Extension {
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
+
+        if (message.options.icon) {
+            const base64Match = utils.matchBase64File(message.options.icon);
+            if (base64Match) {
+                const fileSettings = utils.saveBase64DeviceIcon(base64Match);
+                message.options.icon = fileSettings;
+                logger.debug(`Saved base64 image as file to '${fileSettings}'`);
+            }
+        }
+
         const restartRequired = settings.changeEntityOptions(ID, message.options);
         if (restartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);

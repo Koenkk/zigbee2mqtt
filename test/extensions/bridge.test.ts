@@ -40,6 +40,8 @@ const mocksClear = [
     devices.bulb.removeFromNetwork,
 ];
 
+const deviceIconsDir = path.join(data.mockDir, 'device_icons');
+
 describe('Extension: Bridge', () => {
     let controller: Controller;
     let mockRestart: Mock;
@@ -80,6 +82,7 @@ describe('Extension: Bridge', () => {
         extension.restartRequired = false;
         // @ts-expect-error private
         controller.state.state = {[devices.bulb.ieeeAddr]: {brightness: 50}};
+        fs.rmSync(deviceIconsDir, {force: true, recursive: true});
     });
 
     afterAll(async () => {
@@ -3234,6 +3237,38 @@ describe('Extension: Bridge', () => {
                     to: {retain: false, transition: 1, description: 'this is my bulb'},
                     restart_required: false,
                     id: 'bulb',
+                },
+                status: 'ok',
+            }),
+            {retain: false, qos: 0},
+        );
+    });
+
+    it.each([
+        ['data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ', 'device_icons/effcad234beeb56ea7c457cf2d36d10b.png', true],
+        ['some_icon.png', 'some_icon.png', false],
+    ])('Should save as image as file when changing device icon', async (mqttIcon, settingsIcon, checkFileExists) => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/options', stringify({options: {icon: mqttIcon}, id: 'bulb'}));
+        await flushPromises();
+        expect(settings.getDevice('bulb')).toStrictEqual({
+            ID: '0x000b57fffec6a5b2',
+            friendly_name: 'bulb',
+            icon: settingsIcon,
+            description: 'this is my bulb',
+            retain: true,
+        });
+        if (checkFileExists) {
+            expect(fs.existsSync(path.join(data.mockDir, settingsIcon))).toBeTruthy();
+        }
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/options',
+            stringify({
+                data: {
+                    from: {retain: true, description: 'this is my bulb'},
+                    to: {retain: true, description: 'this is my bulb', icon: settingsIcon},
+                    id: 'bulb',
+                    restart_required: false,
                 },
                 status: 'ok',
             }),
