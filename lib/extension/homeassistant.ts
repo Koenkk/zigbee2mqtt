@@ -205,8 +205,6 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     cube_side: {icon: 'mdi:cube'},
     current: {
         device_class: 'current',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
         state_class: 'measurement',
     },
     current_phase_b: {
@@ -304,8 +302,6 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
     voltage: {
         device_class: 'voltage',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
         state_class: 'measurement',
     },
     voltage_phase_b: {
