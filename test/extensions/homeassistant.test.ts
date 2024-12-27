@@ -418,6 +418,86 @@ describe('Extension: HomeAssistant', () => {
             qos: 1,
         });
 
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            command_topic: 'zigbee2mqtt/garage_door_lock/relay/set',
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45563'],
+                name: 'garage_door_lock',
+                model: 'Garage door with lock (GADOLOCK)',
+                manufacturer: 'Custom devices (DiY)',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            object_id: 'garage_door_lock_relay',
+            origin: origin,
+            payload_off: 'OFF',
+            payload_on: 'ON',
+            state_topic: 'zigbee2mqtt/garage_door_lock',
+            unique_id: '0x0017880104e45563_switch_relay_zigbee2mqtt',
+            value_template: '{{ value_json.state_relay }}',
+            name: 'Relay',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/switch/0x0017880104e45563/switch_relay/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            command_topic: 'zigbee2mqtt/garage_door_lock/door/set',
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45563'],
+                name: 'garage_door_lock',
+                model: 'Garage door with lock (GADOLOCK)',
+                manufacturer: 'Custom devices (DiY)',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            object_id: 'garage_door_lock_door',
+            origin: origin,
+            unique_id: '0x0017880104e45563_cover_door_zigbee2mqtt',
+            value_template: '{{ value_json.state }}',
+            position_template: '{{ value_json.position }}',
+            position_topic: 'zigbee2mqtt/garage_door_lock/door',
+            state_topic: 'zigbee2mqtt/garage_door_lock/door',
+            set_position_template: '{ "position_door": {{ position }} }',
+            set_position_topic: 'zigbee2mqtt/garage_door_lock/door/set',
+            name: 'Door',
+            state_closed: 'CLOSE',
+            state_open: 'OPEN',
+            state_stopped: 'STOP',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/cover/0x0017880104e45563/cover_door/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            command_topic: 'zigbee2mqtt/garage_door_lock/latch/set/state_latch',
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45563'],
+                name: 'garage_door_lock',
+                model: 'Garage door with lock (GADOLOCK)',
+                manufacturer: 'Custom devices (DiY)',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            object_id: 'garage_door_lock_latch',
+            origin: origin,
+            state_locked: 'LOCK',
+            state_unlocked: 'UNLOCK',
+            state_topic: 'zigbee2mqtt/garage_door_lock',
+            unique_id: '0x0017880104e45563_lock_latch_zigbee2mqtt',
+            value_template: '{{ value_json.state_latch }}',
+            name: 'Latch',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/lock/0x0017880104e45563/lock_latch/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
         // Should NOT discovery leagcy action sensor as option is not enabled.
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith('homeassistant/sensor/0x0017880104e45520/action/config', expect.any(String), {
             retain: true,

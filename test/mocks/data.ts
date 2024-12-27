@@ -205,6 +205,9 @@ export const DEFAULT_CONFIGURATION = {
         '0x000b57cdfec6a5b3': {
             friendly_name: 'hue_twilight',
         },
+        '0x0017880104e45563': {
+            friendly_name: 'garage_door_lock',
+        },
     },
     groups: {
         1: {

@@ -236,6 +236,9 @@ describe('Settings Migration', () => {
                 '0x0017880104e45562': {
                     friendly_name: 'heating_actuator',
                 },
+                '0x0017880104e45563': {
+                    friendly_name: 'garage_door_lock',
+                },
             },
             groups: {
                 1: {
