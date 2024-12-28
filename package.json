@@ -29,6 +29,7 @@
         "test": "vitest run --config ./test/vitest.config.mts",
         "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
         "test:watch": "vitest watch --config ./test/vitest.config.mts",
+        "prepack": "pnpm run clean && pnpm run build",
         "clean": "rimraf coverage dist tsconfig.tsbuildinfo"
     },
     "author": "Koen Kanters",
@@ -61,7 +62,7 @@
         "winston-transport": "^4.9.0",
         "ws": "^8.18.0",
         "zigbee-herdsman": "3.1.1",
-        "zigbee-herdsman-converters": "21.8.0",
+        "zigbee-herdsman-converters": "21.9.2",
         "zigbee2mqtt-frontend": "0.9.2"
     },
     "devDependencies": {
