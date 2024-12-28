@@ -804,7 +804,7 @@
                 "icon": {
                     "type": "string",
                     "title": "Icon",
-                    "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) (you cannot use a path to a local file) or base64 encoded data URL (e.g. image/svg+xml;base64,PHN2ZyB3aW....R0aD)"
+                    "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) or a path to a local file inside the `device_icons` directory."
                 },
                 "homeassistant": {
                     "type": ["object", "null"],

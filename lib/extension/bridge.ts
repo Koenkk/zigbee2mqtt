@@ -9,8 +9,8 @@ import objectAssignDeep from 'object-assign-deep';
 import winston from 'winston';
 import Transport from 'winston-transport';
 
+import {Zcl} from 'zigbee-herdsman';
 import * as zhc from 'zigbee-herdsman-converters';
-import {Clusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/cluster';
 
 import Device from '../model/device';
 import Group from '../model/group';
@@ -432,6 +432,16 @@ export default class Bridge extends Extension {
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
+
+        if (message.options.icon) {
+            const base64Match = utils.matchBase64File(message.options.icon);
+            if (base64Match) {
+                const fileSettings = utils.saveBase64DeviceIcon(base64Match);
+                message.options.icon = fileSettings;
+                logger.debug(`Saved base64 image as file to '${fileSettings}'`);
+            }
+        }
+
         const restartRequired = settings.changeEntityOptions(ID, message.options);
         if (restartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
@@ -782,7 +792,7 @@ export default class Bridge extends Extension {
 
     async publishDefinitions(): Promise<void> {
         const data: Zigbee2MQTTAPI['bridge/definition'] = {
-            clusters: Clusters,
+            clusters: Zcl.Clusters,
             custom_clusters: {},
         };
 
