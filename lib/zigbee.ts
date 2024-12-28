@@ -1,10 +1,11 @@
+import type {Events as ZHEvents} from 'zigbee-herdsman';
+
 import {randomInt} from 'node:crypto';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from 'zigbee-herdsman';
-import * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
 
 import Device from './model/device';
 import Group from './model/group';
