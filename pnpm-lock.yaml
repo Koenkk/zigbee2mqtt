@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 3.1.1
+  zigbee-herdsman: 3.2.0
 
 importers:
 
@@ -78,14 +78,14 @@ importers:
         specifier: ^8.18.0
         version: 8.18.0
       zigbee-herdsman:
-        specifier: 3.1.1
-        version: 3.1.1
+        specifier: 3.2.0
+        version: 3.2.0
       zigbee-herdsman-converters:
-        specifier: 21.9.2
-        version: 21.9.2
+        specifier: 21.10.0
+        version: 21.10.0
       zigbee2mqtt-frontend:
-        specifier: 0.9.2
-        version: 0.9.2
+        specifier: 0.9.3
+        version: 0.9.3
     optionalDependencies:
       sd-notify:
         specifier: ^2.8.0
@@ -1834,14 +1834,14 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zigbee-herdsman-converters@21.9.2:
-    resolution: {integrity: sha512-+keCtl9H4cSs3NBLaX+TO+ywkeU4Md6jetQkBCLL3Suqwlhs68hY49//ooQ10yTGg6/1joqVUtw53hrUbHUpag==}
+  zigbee-herdsman-converters@21.10.0:
+    resolution: {integrity: sha512-dQ11n4EB6Wvu5QxlC7ihr+4WcjdlME7w0EBtgfpbCNESdmgJCMYA9s88z4kLNax0zEo2Ph5YRFSTz7pQpbHbpg==}
 
-  zigbee-herdsman@3.1.1:
-    resolution: {integrity: sha512-pOCxmzLMLfvWxhpjMARUmvF4ElJQOJBSzT22XgOqZ9WxxkIK+XnSHwdQnsvfXqqk7obL9R3KW3ZzJLuUEpMY0A==}
+  zigbee-herdsman@3.2.0:
+    resolution: {integrity: sha512-riF+sptb6PP33oeNer8P+KXK1b5cQh1EvsvZd0hqxCX/6uCZ5wFFCjqnsbixG2rXwxYGXmGb/QqYW45a1+qQPw==}
 
-  zigbee2mqtt-frontend@0.9.2:
-    resolution: {integrity: sha512-MSd4kV0qpJpYmTb5PkhNmBt0kmjoQosJVMXcuKRriDR9gB9LWJf1+ws4NKLvZ6L+kyySSuoDbUMu6BVX7yModg==}
+  zigbee2mqtt-frontend@0.9.3:
+    resolution: {integrity: sha512-MEGYNY3wz2Q8xx1/Dsi5ngLRCpMhPxpCevYSPf7Hv/84JFVS1Cf0NY6kHqHGWMtf+yboChL/Eds5hhWCxUc3hg==}
     engines: {node: '>=18'}
 
 snapshots:
@@ -3505,16 +3505,16 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zigbee-herdsman-converters@21.9.2:
+  zigbee-herdsman-converters@21.10.0:
     dependencies:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
       semver: 7.6.3
-      zigbee-herdsman: 3.1.1
+      zigbee-herdsman: 3.2.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@3.1.1:
+  zigbee-herdsman@3.2.0:
     dependencies:
       '@serialport/bindings-cpp': 12.0.1
       '@serialport/parser-delimiter': 12.0.0
@@ -3527,4 +3527,4 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  zigbee2mqtt-frontend@0.9.2: {}
+  zigbee2mqtt-frontend@0.9.3: {}
