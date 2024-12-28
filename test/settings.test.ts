@@ -756,7 +756,9 @@ describe('Settings', () => {
     it.each([
         ['bla.png', `Device icon of 'myname' should start with 'device_icons/', got 'bla.png'`],
         ['device_icons/bla.png', undefined],
-    ])('Device icons should be in `device_icons` directory', (icon, error) => {
+        ['https://www.example.org/my-device.png', undefined],
+        ['http://www.example.org/my-device.png', undefined],
+    ])('onlythis Device icons should be in `device_icons` directory or a url', (icon, error) => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {'0x0017880104e45519': {friendly_name: 'myname', icon}},

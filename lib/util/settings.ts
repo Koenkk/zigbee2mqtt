@@ -9,6 +9,9 @@ import utils from './utils';
 import yaml, {YAMLFileException} from './yaml';
 
 export {schemaJson};
+// When updating also update:
+// - https://github.com/Koenkk/zigbee2mqtt/blob/dev/data/configuration.example.yaml#L2
+// - https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/blob/master/common/rootfs/docker-entrypoint.sh#L54
 export const CURRENT_VERSION = 4;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
@@ -246,7 +249,7 @@ export function validate(): string[] {
         if (names.includes(e.friendly_name)) errors.push(`Duplicate friendly_name '${e.friendly_name}' found`);
         errors.push(...utils.validateFriendlyName(e.friendly_name));
         names.push(e.friendly_name);
-        if ('icon' in e && e.icon && !e.icon.startsWith('device_icons/')) {
+        if ('icon' in e && e.icon && !e.icon.startsWith('http://') && !e.icon.startsWith('https://') && !e.icon.startsWith('device_icons/')) {
             errors.push(`Device icon of '${e.friendly_name}' should start with 'device_icons/', got '${e.icon}'`);
         }
         if (e.qos != null && ![0, 1, 2].includes(e.qos)) {
