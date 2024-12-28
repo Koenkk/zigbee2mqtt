@@ -86,7 +86,7 @@ function getValue(currentSettings: any, path: string[]): [validPath: boolean, va
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
 
-        if (i === path.length - 1) {
+        if (i === path.length - 1 && currentSettings[key] !== undefined) {
             return [true, currentSettings[key]];
         } else {
             if (!currentSettings[key]) {
