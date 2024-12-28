@@ -834,8 +834,8 @@ describe('Settings Migration', () => {
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
             expect(migrationNotesContent).toContain(`[SPECIAL] Property 'homeassistant' is now always an object.`);
-            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
-            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
+            expect(migrationNotesContent).not.toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
+            expect(migrationNotesContent).not.toContain(`[SPECIAL] Property 'availability' is now always an object.`);
         });
     });
 });
