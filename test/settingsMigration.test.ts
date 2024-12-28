@@ -807,5 +807,35 @@ describe('Settings Migration', () => {
             expect(migrationNotesContent).toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
             expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
         });
+
+        it('Update when not set, tests that frontend/availability is not added when not set', () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 3;
+            afterSettings.homeassistant = {enabled: false};
+
+            settings.set(['homeassistant'], false);
+
+            expect(settings.getPersistedSettings()).toStrictEqual(
+                // @ts-expect-error workaround
+                objectAssignDeep.noMutate(beforeSettings, {
+                    homeassistant: false,
+                }),
+            );
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+
+            expect(migratedSettings).toStrictEqual(afterSettings);
+            const migrationNotes = mockedData.joinPath('migration-2-to-3.log');
+            expect(existsSync(migrationNotes)).toStrictEqual(true);
+            const migrationNotesContent = readFileSync(migrationNotes, 'utf8');
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'homeassistant' is now always an object.`);
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'frontend' is now always an object.`);
+            expect(migrationNotesContent).toContain(`[SPECIAL] Property 'availability' is now always an object.`);
+        });
     });
 });

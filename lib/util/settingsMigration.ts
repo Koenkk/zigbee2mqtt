@@ -408,7 +408,7 @@ function migrateToThree(
     const changeToObject = (currentSettings: Partial<Settings>, path: string[]): ReturnType<SettingsCustomHandler['execute']> => {
         const [validPath, previousValue] = getValue(currentSettings, path);
 
-        if (validPath) {
+        if (validPath && previousValue !== undefined) {
             if (typeof previousValue === 'boolean') {
                 setValue(currentSettings, path, {enabled: previousValue});
             } else {
