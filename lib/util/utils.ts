@@ -376,10 +376,12 @@ function deviceNotCoordinator(device: zh.Device): boolean {
 }
 
 function matchBase64File(value: string): {extension: string; data: string} | false {
-    const match = value.match(BASE64_IMAGE_REGEX);
-    if (match) {
-        assert(match.groups?.extension && match.groups?.data);
-        return {extension: match.groups.extension, data: match.groups.data};
+    if (value !== undefined) {
+        const match = value.match(BASE64_IMAGE_REGEX);
+        if (match) {
+            assert(match.groups?.extension && match.groups?.data);
+            return {extension: match.groups.extension, data: match.groups.data};
+        }
     }
     return false;
 }
