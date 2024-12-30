@@ -88,11 +88,7 @@ function getValue(currentSettings: any, path: string[]): [validPath: boolean, va
         const value = currentSettings[key];
 
         if (i === path.length - 1) {
-            if (value == undefined) {
-                return [false, undefined];
-            } else {
-                return [true, value];
-            }
+            return [value !== undefined, value];
         } else {
             if (!value) {
                 // invalid path
