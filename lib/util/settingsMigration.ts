@@ -86,16 +86,17 @@ function setValue(currentSettings: any, path: string[], value: unknown, createPa
 function getValue(currentSettings: any, path: string[]): [validPath: boolean, value: unknown] {
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
+        const value = currentSettings[key];
 
         if (i === path.length - 1) {
-            return [true, currentSettings[key]];
+            return [value !== undefined, value];
         } else {
-            if (!currentSettings[key]) {
+            if (!value) {
                 // invalid path
                 break;
             }
 
-            currentSettings = currentSettings[key];
+            currentSettings = value;
         }
     }
 
