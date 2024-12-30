@@ -84,8 +84,8 @@ importers:
         specifier: 21.10.0
         version: 21.10.0
       zigbee2mqtt-frontend:
-        specifier: 0.9.3
-        version: 0.9.3
+        specifier: 0.9.4
+        version: 0.9.4
     optionalDependencies:
       sd-notify:
         specifier: ^2.8.0
@@ -1840,8 +1840,8 @@ packages:
   zigbee-herdsman@3.2.0:
     resolution: {integrity: sha512-riF+sptb6PP33oeNer8P+KXK1b5cQh1EvsvZd0hqxCX/6uCZ5wFFCjqnsbixG2rXwxYGXmGb/QqYW45a1+qQPw==}
 
-  zigbee2mqtt-frontend@0.9.3:
-    resolution: {integrity: sha512-MEGYNY3wz2Q8xx1/Dsi5ngLRCpMhPxpCevYSPf7Hv/84JFVS1Cf0NY6kHqHGWMtf+yboChL/Eds5hhWCxUc3hg==}
+  zigbee2mqtt-frontend@0.9.4:
+    resolution: {integrity: sha512-JBs/JHDku6H5bi7Wiyce3qJrZsjCj3iso/YmgjumA+jhija6kpADwaV2CpJF3V8PloKj1PNgxnLOGnxolipTRg==}
     engines: {node: '>=18'}
 
 snapshots:
@@ -3527,4 +3527,4 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  zigbee2mqtt-frontend@0.9.3: {}
+  zigbee2mqtt-frontend@0.9.4: {}
