@@ -5,14 +5,7 @@ import type TypeGroup from 'lib/model/group';
 import type TypeMQTT from 'lib/mqtt';
 import type TypeState from 'lib/state';
 import type TypeZigbee from 'lib/zigbee';
-import type {
-    CoordinatorVersion as ZHCoordinatorVersion,
-    LQI as ZHLQI,
-    NetworkParameters as ZHNetworkParameters,
-    RoutingTable as ZHRoutingTable,
-} from 'zigbee-herdsman/dist/adapter/tstype';
-import type * as ZHEvents from 'zigbee-herdsman/dist/controller/events';
-import type {Device as ZHDevice, Endpoint as ZHEndpoint, Group as ZHGroup} from 'zigbee-herdsman/dist/controller/model';
+import type {AdapterTypes as ZHAdapterTypes, Events as ZHEvents, Models as ZHModels} from 'zigbee-herdsman';
 import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import {LogLevel} from 'lib/util/settings';
@@ -40,13 +33,13 @@ declare global {
 
     // zigbee-herdsman
     namespace zh {
-        type Endpoint = ZHEndpoint;
-        type Device = ZHDevice;
-        type Group = ZHGroup;
-        type LQI = ZHLQI;
-        type RoutingTable = ZHRoutingTable;
-        type CoordinatorVersion = ZHCoordinatorVersion;
-        type NetworkParameters = ZHNetworkParameters;
+        type Endpoint = ZHModels.Endpoint;
+        type Device = ZHModels.Device;
+        type Group = ZHModels.Group;
+        type LQI = ZHAdapterTypes.LQI;
+        type RoutingTable = ZHAdapterTypes.RoutingTable;
+        type CoordinatorVersion = ZHAdapterTypes.CoordinatorVersion;
+        type NetworkParameters = ZHAdapterTypes.NetworkParameters;
         interface Bind {
             cluster: ZHCluster;
             target: zh.Endpoint | zh.Group;

@@ -1,9 +1,9 @@
 import type {Mock} from 'vitest';
+import type {AdapterTypes} from 'zigbee-herdsman';
 
 import assert from 'node:assert';
 
 import {Zcl} from 'zigbee-herdsman';
-import {CoordinatorVersion, DeviceType, NetworkParameters, StartResult} from 'zigbee-herdsman/dist/adapter/tstype';
 
 import {EventHandler} from './utils';
 
@@ -1123,7 +1123,7 @@ export const mockController = {
     on: (type: string, handler: EventHandler): void => {
         events[type] = handler;
     },
-    start: vi.fn((): Promise<StartResult> => Promise.resolve('reset')),
+    start: vi.fn((): Promise<AdapterTypes.StartResult> => Promise.resolve('reset')),
     stop: vi.fn(),
     touchlinkIdentify: vi.fn(),
     touchlinkScan: vi.fn(),
@@ -1136,8 +1136,12 @@ export const mockController = {
     isStopping: vi.fn((): boolean => false),
     backup: vi.fn(),
     coordinatorCheck: vi.fn(),
-    getCoordinatorVersion: vi.fn((): Promise<CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}})),
-    getNetworkParameters: vi.fn((): Promise<NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15})),
+    getCoordinatorVersion: vi.fn(
+        (): Promise<AdapterTypes.CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
+    ),
+    getNetworkParameters: vi.fn(
+        (): Promise<AdapterTypes.NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
+    ),
     getDevices: vi.fn((): Device[] => []),
     getDevicesIterator: vi.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
         for (const key in devices) {
@@ -1148,7 +1152,7 @@ export const mockController = {
             }
         }
     }),
-    getDevicesByType: vi.fn((type: DeviceType): Device[] =>
+    getDevicesByType: vi.fn((type: AdapterTypes.DeviceType): Device[] =>
         Object.values(devices)
             .filter((d) => returnDevices.length === 0 || returnDevices.includes(d.ieeeAddr))
             .filter((d) => d.type === type),

@@ -1,5 +1,5 @@
 # Indicates the configuration version (used by configuration migrations)
-version: 2
+version: 4
 
 # Home Assistant integration (MQTT discovery)
 homeassistant:
