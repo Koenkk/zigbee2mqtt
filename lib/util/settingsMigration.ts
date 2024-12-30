@@ -459,15 +459,19 @@ function migrateToFour(
 
     const saveBase64DeviceIconsAsImage = (currentSettings: Partial<Settings>): ReturnType<SettingsCustomHandler['execute']> => {
         const [validPath, previousValue] = getValue(currentSettings, ['devices']);
+        let changed = false;
 
-        for (const deviceKey in currentSettings.devices) {
-            const base64Match = utils.matchBase64File(currentSettings.devices[deviceKey].icon ?? '');
-            if (base64Match) {
-                currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
+        if (validPath) {
+            for (const deviceKey in currentSettings.devices) {
+                const base64Match = utils.matchBase64File(currentSettings.devices[deviceKey].icon);
+                if (base64Match) {
+                    changed = true;
+                    currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
+                }
             }
         }
 
-        return [validPath, previousValue, validPath];
+        return [validPath, previousValue, changed];
     };
 
     customHandlers.push({
