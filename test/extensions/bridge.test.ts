@@ -203,7 +203,6 @@ describe('Extension: Bridge', () => {
                         '0x0017880104e45560': {friendly_name: 'livolo', retain: false},
                         '0x0017880104e45561': {friendly_name: 'temperature_sensor'},
                         '0x0017880104e45562': {friendly_name: 'heating_actuator'},
-                        '0x0017880104e45563': {friendly_name: 'garage_door_lock'},
                         '0x0017880104e45724': {friendly_name: 'GLEDOPTO_2ID'},
                         '0x0017882104a44559': {friendly_name: 'TS0601_thermostat'},
                         '0x0017882104a44560': {friendly_name: 'TS0601_switch'},

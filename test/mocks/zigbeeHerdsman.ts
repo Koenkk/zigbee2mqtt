@@ -1046,20 +1046,6 @@ export const devices = {
         'Mains (single phase)',
         'heating.actuator',
     ),
-    garage_door_lock: new Device(
-        'Router',
-        '0x0017880104e45563',
-        6540,
-        1684,
-        [
-            new Endpoint(1, [0, 6], [], '0x0017880104e45563'),
-            new Endpoint(2, [258], [], '0x0017880104e45563'),
-            new Endpoint(3, [257], [], '0x0017880104e45563'),
-        ],
-        true,
-        'Mains (single phase)',
-        'GADOLOCK',
-    ),
     bj_scene_switch: new Device(
         'EndDevice',
         '0xd85def11a1002caa',
