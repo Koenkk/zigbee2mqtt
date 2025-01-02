@@ -1807,9 +1807,11 @@ export default class HomeAssistant extends Extension {
         const url = settings.get().frontend?.url ?? '';
         if (entity.isDevice()) {
             assert(entity.definition, `Cannot 'getDevicePayload' for unsupported device`);
-            payload.model = `${entity.definition.description} (${entity.definition.model})`;
+            payload.model = entity.definition.description;
+            payload.model_id = entity.definition.model;
             payload.manufacturer = entity.definition.vendor;
             payload.sw_version = entity.zh.softwareBuildID;
+            payload.hw_version = entity.zh.hardwareVersion;
             payload.configuration_url = `${url}/#/device/${entity.ieeeAddr}/info`;
         } else if (entity.isGroup()) {
             payload.model = 'Group';
