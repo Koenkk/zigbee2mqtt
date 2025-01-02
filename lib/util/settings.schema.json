@@ -42,7 +42,7 @@
                     "default": false
                 }
             },
-            "required": ["enabled"]
+            "required": []
         },
         "availability": {
             "type": "object",
@@ -89,7 +89,7 @@
                     "required": ["timeout"]
                 }
             },
-            "required": ["enabled"]
+            "required": []
         },
         "mqtt": {
             "type": "object",
@@ -413,7 +413,7 @@
                     "requiresRestart": true
                 }
             },
-            "required": ["enabled"]
+            "required": []
         },
         "devices": {
             "type": "object",
