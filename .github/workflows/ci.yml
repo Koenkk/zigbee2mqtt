@@ -155,9 +155,7 @@ jobs:
                   git push origin master
                   git checkout dev
                   jq --indent 4 ".version = \"$TAG-dev\"" package.json > package.json.tmp
-                  jq --indent 4 ".version = \"$TAG-dev\"" package-lock.json > package-lock.json.tmp
                   mv package.json.tmp package.json
-                  mv package-lock.json.tmp package-lock.json
                   git add -A
                   git commit -m "chore: promote to dev"
                   git push origin dev
