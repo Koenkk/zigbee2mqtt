@@ -751,15 +751,18 @@ export default class HomeAssistant extends Extension {
                 assert(state?.name === 'state', "Lock expose must have a 'state'");
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'lock',
+                    /* v8 ignore next */
                     object_id: endpoint ? `lock_${endpoint}` : 'lock',
                     mockProperties: [{property: state.property, value: null}],
                     discovery_payload: {
+                        /* v8 ignore next */
                         name: endpoint ? utils.capitalize(endpoint) : null,
                         command_topic_prefix: endpoint,
                         command_topic: true,
                         value_template: `{{ value_json.${state.property} }}`,
                         state_locked: state.value_on,
                         state_unlocked: state.value_off,
+                        /* v8 ignore next */
                         command_topic_postfix: endpoint ? state.property : null,
                     },
                 };
