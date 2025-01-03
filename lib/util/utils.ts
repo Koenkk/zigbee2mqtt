@@ -375,11 +375,13 @@ function deviceNotCoordinator(device: zh.Device): boolean {
     return device.type !== 'Coordinator';
 }
 
-function matchBase64File(value: string): {extension: string; data: string} | false {
-    const match = value.match(BASE64_IMAGE_REGEX);
-    if (match) {
-        assert(match.groups?.extension && match.groups?.data);
-        return {extension: match.groups.extension, data: match.groups.data};
+function matchBase64File(value: string | undefined): {extension: string; data: string} | false {
+    if (value !== undefined) {
+        const match = value.match(BASE64_IMAGE_REGEX);
+        if (match) {
+            assert(match.groups?.extension && match.groups?.data);
+            return {extension: match.groups.extension, data: match.groups.data};
+        }
     }
     return false;
 }

@@ -28,6 +28,7 @@ const dontCacheProperties = [
     'elapsed',
     'from_side',
     'to_side',
+    'illuminance_lux', // removed in z2m 2.0.0
 ];
 
 class State {

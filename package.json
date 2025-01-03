@@ -61,9 +61,9 @@
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
         "ws": "^8.18.0",
-        "zigbee-herdsman": "3.2.0",
-        "zigbee-herdsman-converters": "21.10.0",
-        "zigbee2mqtt-frontend": "0.9.3"
+        "zigbee-herdsman": "3.2.1",
+        "zigbee-herdsman-converters": "21.11.0",
+        "zigbee2mqtt-frontend": "0.9.4"
     },
     "devDependencies": {
         "@eslint/core": "^0.9.1",
@@ -85,7 +85,7 @@
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.18.1",
+        "typescript-eslint": "^8.18.2",
         "vitest": "^2.1.8"
     },
     "pnpm": {

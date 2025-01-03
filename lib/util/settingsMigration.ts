@@ -86,16 +86,17 @@ function setValue(currentSettings: any, path: string[], value: unknown, createPa
 function getValue(currentSettings: any, path: string[]): [validPath: boolean, value: unknown] {
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
+        const value = currentSettings[key];
 
         if (i === path.length - 1) {
-            return [true, currentSettings[key]];
+            return [value !== undefined, value];
         } else {
-            if (!currentSettings[key]) {
+            if (!value) {
                 // invalid path
                 break;
             }
 
-            currentSettings = currentSettings[key];
+            currentSettings = value;
         }
     }
 
@@ -458,15 +459,19 @@ function migrateToFour(
 
     const saveBase64DeviceIconsAsImage = (currentSettings: Partial<Settings>): ReturnType<SettingsCustomHandler['execute']> => {
         const [validPath, previousValue] = getValue(currentSettings, ['devices']);
+        let changed = false;
 
-        for (const deviceKey in currentSettings.devices) {
-            const base64Match = utils.matchBase64File(currentSettings.devices[deviceKey].icon ?? '');
-            if (base64Match) {
-                currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
+        if (validPath) {
+            for (const deviceKey in currentSettings.devices) {
+                const base64Match = utils.matchBase64File(currentSettings.devices[deviceKey].icon);
+                if (base64Match) {
+                    changed = true;
+                    currentSettings.devices[deviceKey].icon = utils.saveBase64DeviceIcon(base64Match);
+                }
             }
         }
 
-        return [validPath, previousValue, validPath];
+        return [validPath, previousValue, changed];
     };
 
     customHandlers.push({
