@@ -747,22 +747,25 @@ export default class HomeAssistant extends Extension {
                 break;
             }
             case 'lock': {
-                assert(!endpoint, `Endpoint not supported for lock type`);
                 const state = (firstExpose as zhc.Lock).features.filter(isBinaryExpose).find((f) => f.name === 'state');
-                assert(state?.property === 'state', "Lock property must be 'state'");
+                assert(state?.name === 'state', "Lock expose must have a 'state'");
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'lock',
-                    object_id: 'lock',
+                    /* v8 ignore next */
+                    object_id: endpoint ? `lock_${endpoint}` : 'lock',
                     mockProperties: [{property: state.property, value: null}],
                     discovery_payload: {
-                        name: null,
+                        /* v8 ignore next */
+                        name: endpoint ? utils.capitalize(endpoint) : null,
+                        command_topic_prefix: endpoint,
                         command_topic: true,
                         value_template: `{{ value_json.${state.property} }}`,
                         state_locked: state.value_on,
                         state_unlocked: state.value_off,
+                        /* v8 ignore next */
+                        command_topic_postfix: endpoint ? state.property : null,
                     },
                 };
-
                 discoveryEntries.push(discoveryEntry);
                 break;
             }
