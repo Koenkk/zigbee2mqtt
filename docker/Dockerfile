@@ -47,7 +47,6 @@ COPY package.json LICENSE index.js data/configuration.example.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN setcap 'cap_net_bind_service=+ep' /usr/bin/node
 
 RUN mkdir /app/data
 
