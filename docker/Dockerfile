@@ -12,7 +12,7 @@ FROM linux-${TARGETARCH}-alpine AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apk add --no-cache tzdata eudev tini nodejs libcap
+RUN apk add --no-cache tzdata eudev tini nodejs
 
 # Dependencies and build
 FROM base AS deps
