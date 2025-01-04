@@ -85,6 +85,19 @@ jobs:
                       VERSION=dev
                       DATE=${{ github.event.repository.updated_at }}
 
+            - name: release - Docker meta
+              if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+              uses: docker/metadata-action@v5
+              id: meta
+              with:
+                  images: |
+                      koenkk/zigbee2mqtt
+                      ghcr.io/koenkk/zigbee2mqtt
+                  tags: |
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+                      type=semver,pattern={{major}}
+
             - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               uses: docker/build-push-action@v6
@@ -93,7 +106,7 @@ jobs:
                   file: docker/Dockerfile
                   provenance: false
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
-                  tags: koenkk/zigbee2mqtt:latest,ghcr.io/koenkk/zigbee2mqtt:latest,koenkk/zigbee2mqtt:${{ github.ref_name }},ghcr.io/koenkk/zigbee2mqtt:${{ github.ref_name }}
+                  tags: ${{ steps.meta.outputs.tags }}
                   push: true
                   build-args: |
                       COMMIT=${{ github.sha }}
