@@ -12,7 +12,7 @@ FROM linux-${TARGETARCH}-alpine AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apk add --no-cache tzdata eudev tini nodejs libcap
+RUN apk add --no-cache tzdata eudev tini nodejs
 
 # Dependencies and build
 FROM base AS deps
@@ -47,7 +47,6 @@ COPY package.json LICENSE index.js data/configuration.example.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN setcap 'cap_net_bind_service=+ep' /usr/bin/node
 
 RUN mkdir /app/data
 
