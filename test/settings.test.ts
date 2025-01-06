@@ -554,6 +554,25 @@ describe('Settings', () => {
         expect(settings.get().groups).toStrictEqual(expected);
     });
 
+    it('Should allow username without password', () => {
+        const contentConfiguration = {
+            mqtt: {
+                server: 'my.mqtt.server',
+                user: 'myusername',
+            },
+        };
+        const expected = {
+            base_topic: 'zigbee2mqtt',
+            include_device_information: false,
+            maximum_packet_size: 1048576,
+            force_disable_retain: false,
+            server: 'my.mqtt.server',
+            user: 'myusername',
+        };
+        write(configurationFile, contentConfiguration);
+        expect(settings.get().mqtt).toStrictEqual(expected);
+    });
+
     it('Should add groups with specific ID', () => {
         write(configurationFile, {});
 
