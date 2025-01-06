@@ -157,6 +157,46 @@ describe('Controller', () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', expected);
     });
 
+    it('Start controller with username MQTT settings', async () => {
+        const ca = tmp.fileSync().name;
+        fs.writeFileSync(ca, 'ca');
+        const key = tmp.fileSync().name;
+        fs.writeFileSync(key, 'key');
+        const cert = tmp.fileSync().name;
+        fs.writeFileSync(cert, 'cert');
+
+        const configuration = {
+            base_topic: 'zigbee2mqtt',
+            server: 'mqtt://localhost',
+            keepalive: 30,
+            ca,
+            cert,
+            key,
+            user: 'user1',
+            client_id: 'my_client_id',
+            reject_unauthorized: false,
+            version: 5,
+            maximum_packet_size: 20000,
+        };
+        settings.set(['mqtt'], configuration);
+        await controller.start();
+        await flushPromises();
+        expect(mockMQTTConnectAsync).toHaveBeenCalledTimes(1);
+        const expected = {
+            will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: 'zigbee2mqtt/bridge/state', qos: 1},
+            keepalive: 30,
+            ca: Buffer.from([99, 97]),
+            key: Buffer.from([107, 101, 121]),
+            cert: Buffer.from([99, 101, 114, 116]),
+            username: 'user1',
+            clientId: 'my_client_id',
+            rejectUnauthorized: false,
+            protocolVersion: 5,
+            properties: {maximumPacketSize: 20000},
+        };
+        expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', expected);
+    });
+
     it('Should generate network_key, pan_id and ext_pan_id when set to GENERATE', async () => {
         settings.set(['advanced', 'network_key'], 'GENERATE');
         settings.set(['advanced', 'pan_id'], 'GENERATE');
