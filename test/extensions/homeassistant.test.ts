@@ -1680,7 +1680,8 @@ describe('Extension: HomeAssistant', () => {
             payload_install: `{"id": "0x000b57fffec6a5b2"}`,
             state_topic: 'zigbee2mqtt/bulb',
             unique_id: '0x000b57fffec6a5b2_update_zigbee2mqtt',
-            value_template: "{\"latest_version\": \"{{ value_json['update']['latest_version'] }}\", \"installed_version\": \"{{ value_json['update']['installed_version'] }}\", \"update_percentage\": {{ value_json['update'].get('progress', 'null') }} }",
+            value_template:
+                "{\"latest_version\": \"{{ value_json['update']['latest_version'] }}\", \"installed_version\": \"{{ value_json['update']['installed_version'] }}\", \"update_percentage\": {{ value_json['update'].get('progress', 'null') }} }",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/update/0x000b57fffec6a5b2/update/config', stringify(payload), {
