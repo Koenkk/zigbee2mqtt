@@ -32,6 +32,9 @@ importers:
       git-last-commit:
         specifier: ^1.0.1
         version: 1.0.1
+      glob:
+        specifier: ^11.0.0
+        version: 11.0.0
       humanize-duration:
         specifier: ^3.32.1
         version: 3.32.1

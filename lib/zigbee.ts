@@ -58,6 +58,13 @@ export default class Zigbee {
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
 
+        try {
+            utils.checkSerial(`${herdsmanSettings.serialPort.path}`);
+        } catch (error) {
+            logger.error(`Error while checking serial port`);
+            throw error;
+        }
+
         logger.debug(
             () =>
                 `Using zigbee-herdsman with settings: '${stringify(JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"'))}'`,

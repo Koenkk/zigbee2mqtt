@@ -8,6 +8,9 @@ import path from 'node:path';
 
 import equals from 'fast-deep-equal/es6';
 import humanizeDuration from 'humanize-duration';
+import logger from './logger';
+
+import { globSync } from 'glob';
 
 import data from './data';
 
@@ -395,6 +398,78 @@ function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): s
     return fileSettings;
 }
 
+function checkSerial(serialPath: string): boolean {
+    var realPath: string;
+
+    // If it is a network path, ignore
+    if (serialPath.indexOf('tcp://') === 0) {
+        return true;
+    }
+
+    // Throw an error in case of non existent file
+    try {
+        // Extract the real device file if it is a symlink
+        if (fs.lstatSync(serialPath).isSymbolicLink()) {
+            realPath = fs.readlinkSync(serialPath);
+        } else {
+            realPath = serialPath;
+        }
+        logger.info(`Checking serial port: '${serialPath}' ['${realPath}']`);
+        // Now check the existence of the real file
+        fs.statSync(realPath);
+    } catch (error) {
+        logger.error(`Unable to find serial port device, check configuration.yaml`);
+        throw error;
+        return false;
+    }
+
+    // Check if /proc filesystem is available otherwise skip further checks
+    try {
+        const procFile = `/proc/cpuinfo`;
+
+        fs.statSync(procFile);
+    } catch (error) {
+        logger.debug(`/proc filesystem unavailable, skipping further checks`);
+        return true;
+    }
+
+    // Obtain a list of open files from /proc filesystem: returned files are symlinks to real files
+    const procFolders = `/proc/*/fd/*`;
+    const openSymlinks = globSync(procFolders);
+
+    // Traverse the list of open files symlinks
+    for (const openSymlink of openSymlinks) {
+        var openFile: string;
+
+        // ignore all open files related to self process (it's ourself or one of our thread)
+        if (openSymlink.includes('self') === true) {
+            continue;
+        }
+
+        // Extract the PID from the symlink path
+        const pathElements = openSymlink.split('/');
+        const openFilePid = pathElements[2];
+
+        // Follow the symlink to detect the real open file path
+        try {
+            openFile = fs.readlinkSync(openSymlink);
+        } catch (error) {
+            // Ignore errors while traversing symlinks because files may be closed between glob and readlink
+            continue;
+        }
+
+        // Check if serial file is already opened by another process
+        if (openFile === realPath) {
+            const exeSymlink = '/proc/' + openFilePid + '/exe';
+            const exeFile = fs.readlinkSync(exeSymlink);
+            logger.error(`Serial port device is opened by process '${exeFile}' with PID '${openFilePid}'`);
+            throw new Error();
+            return false;
+        }
+    }
+    return true;
+}
+
 /* v8 ignore next */
 const noop = (): void => {};
 
@@ -429,5 +504,6 @@ export default {
     arrayUnique,
     getScenes,
     deviceNotCoordinator,
+    checkSerial,
     noop,
 };
