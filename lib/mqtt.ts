@@ -67,7 +67,11 @@ export default class MQTT {
             logger.debug(`Using MQTT login with username: ${mqttSettings.user}`);
             options.username = mqttSettings.user;
             options.password = mqttSettings.password;
-        } else {
+        } else if(mqttSettings.user) {
+            logger.debug(`Using MQTT login with username only: ${mqttSettings.user}`);
+            options.username = mqttSettings.user;
+        }
+        else {
             logger.debug(`Using MQTT anonymous login`);
         }
 
