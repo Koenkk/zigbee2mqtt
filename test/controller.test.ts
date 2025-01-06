@@ -157,7 +157,7 @@ describe('Controller', () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith('mqtt://localhost', expected);
     });
 
-    it('Start controller with username MQTT settings', async () => {
+    it('Start controller with only username MQTT settings', async () => {
         const ca = tmp.fileSync().name;
         fs.writeFileSync(ca, 'ca');
         const key = tmp.fileSync().name;
