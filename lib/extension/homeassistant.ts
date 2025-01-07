@@ -1603,10 +1603,6 @@ export default class HomeAssistant extends Extension {
                 payload.fan_mode_state_topic = stateTopic;
             }
 
-            if (payload.latest_version_topic) {
-                payload.latest_version_topic = stateTopic;
-            }
-
             if (payload.fan_mode_command_topic) {
                 payload.fan_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/fan_mode`;
             }
