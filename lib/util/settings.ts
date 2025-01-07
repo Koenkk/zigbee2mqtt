@@ -86,6 +86,7 @@ export const defaults: RecursivePartial<Settings> = {
     device_options: {},
     advanced: {
         log_rotation: true,
+        log_console_json: false,
         log_symlink_current: false,
         log_output: ['console', 'file'],
         log_directory: path.join(data.getPath(), 'log', '%TIMESTAMP%'),

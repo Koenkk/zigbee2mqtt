@@ -452,6 +452,13 @@
                     "description": "Log rotation",
                     "default": true
                 },
+                "log_console_json": {
+                    "type": "boolean",
+                    "title": "Console json log",
+                    "requiresRestart": true,
+                    "description": "Console json log",
+                    "default": false
+                },
                 "log_symlink_current": {
                     "type": "boolean",
                     "title": "Log symlink current",
