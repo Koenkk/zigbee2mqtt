@@ -1405,16 +1405,12 @@ export default class HomeAssistant extends Extension {
                 discovery_payload: {
                     name: null,
                     entity_picture: 'https://github.com/Koenkk/zigbee2mqtt/raw/master/images/logo.png',
-                    latest_version_topic: true,
                     state_topic: true,
                     device_class: 'firmware',
                     entity_category: 'config',
                     command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
                     payload_install: `{"id": "${entity.ieeeAddr}"}`,
-                    value_template: `{{ value_json['update']['installed_version'] }}`,
-                    latest_version_template: `{{ value_json['update']['latest_version'] }}`,
-                    json_attributes_topic: `${settings.get().mqtt.base_topic}/${entity.name}`, // state topic
-                    json_attributes_template: `{"in_progress": {{ iif(value_json['update']['state'] == 'updating', 'true', 'false') }} }`,
+                    value_template: `{"latest_version":"{{ value_json['update']['latest_version'] }}","installed_version":"{{ value_json['update']['installed_version'] }}","update_percentage":{{ value_json['update'].get('progress', 'null') }}}`,
                 },
             };
             configs.push(updateSensor);
@@ -1605,10 +1601,6 @@ export default class HomeAssistant extends Extension {
 
             if (payload.fan_mode_state_topic) {
                 payload.fan_mode_state_topic = stateTopic;
-            }
-
-            if (payload.latest_version_topic) {
-                payload.latest_version_topic = stateTopic;
             }
 
             if (payload.fan_mode_command_topic) {
