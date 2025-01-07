@@ -418,6 +418,7 @@ describe('Logger', () => {
         consoleWriteSpy.mockClear();
         logger.info(`Test JSON message`, 'z2m');
 
-        expect(consoleWriteSpy.mock.calls[0][0].endsWith('[32minfo[39m: 	z2m: Test JSON message\r\n')).toStrictEqual(true);
+        const outputStr: string = consoleWriteSpy.mock.calls[0][0];
+        expect(outputStr.trim().endsWith('\u001b[32minfo\u001b[39m: \tz2m: Test JSON message')).toStrictEqual(true);
     });
 });
