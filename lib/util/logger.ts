@@ -53,20 +53,20 @@ class Logger {
         let logging = `Logging to console${consoleSilenced ? ' (silenced)' : ''}`;
 
         // Setup default console logger
-	// winston.config.syslog.levels sets 'warning' as 'red'
-	let console_format = winston.format.combine(
-                    winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
-                    winston.format.printf((info) => {
-                        return `[${info.timestamp}] ${info.level}: \t${info.message}`;
-                    }),
-                )
-	if (settings.get().advanced.log_console_json) {
-		console_format = winston.format.json()
-	}
+        // winston.config.syslog.levels sets 'warning' as 'red'
+        let console_format = winston.format.combine(
+            winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
+            winston.format.printf((info) => {
+                return `[${info.timestamp}] ${info.level}: \t${info.message}`;
+            }),
+        );
+        if (settings.get().advanced.log_console_json) {
+            console_format = winston.format.json();
+        }
         this.logger.add(
             new winston.transports.Console({
                 silent: consoleSilenced,
-                format: console_format
+                format: console_format,
             }),
         );
 
