@@ -1405,13 +1405,12 @@ export default class HomeAssistant extends Extension {
                 discovery_payload: {
                     name: null,
                     entity_picture: 'https://github.com/Koenkk/zigbee2mqtt/raw/master/images/logo.png',
-                    latest_version_topic: false,
                     state_topic: true,
                     device_class: 'firmware',
                     entity_category: 'config',
                     command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
                     payload_install: `{"id": "${entity.ieeeAddr}"}`,
-                    value_template: `{"latest_version": "{{ value_json['update']['latest_version'] }}","installed_version":"{{ value_json['update']['installed_version'] }}", "update_percentage": {{ value_json['update'].get('progress', 'null') }} }`,
+                    value_template: `{"latest_version":"{{ value_json['update']['latest_version'] }}","installed_version":"{{ value_json['update']['installed_version'] }}","update_percentage":{{ value_json['update'].get('progress', 'null') }}}`,
                 },
             };
             configs.push(updateSensor);
