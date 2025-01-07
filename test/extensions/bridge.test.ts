@@ -118,6 +118,7 @@ describe('Extension: Bridge', () => {
                         log_level: 'info',
                         log_namespaced_levels: {},
                         log_output: ['console', 'file'],
+                        log_console_json: false,
                         log_rotation: true,
                         log_symlink_current: false,
                         log_syslog: {},
