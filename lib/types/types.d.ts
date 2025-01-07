@@ -168,6 +168,7 @@ declare global {
         device_options: KeyValue;
         advanced: {
             log_rotation: boolean;
+            log_console_json: boolean;
             log_symlink_current: boolean;
             log_output: ('console' | 'file' | 'syslog')[];
             log_directory: string;
