@@ -397,4 +397,28 @@ describe('Logger', () => {
         expect(logSpy).toHaveBeenLastCalledWith('debug', `z2m:test: ${splatChars}`);
         expect(consoleWriteSpy.mock.calls[1][0]).toMatch(new RegExp(`^.*\tz2m:test: ${splatChars}`));
     });
+
+    it('Logs to console in JSON when configured', () => {
+        settings.set(['advanced', 'log_console_json'], true);
+        logger.init();
+
+        consoleWriteSpy.mockClear();
+        logger.info(`Test JSON message`, 'z2m');
+
+        const outputJSON = JSON.parse(consoleWriteSpy.mock.calls[0][0]);
+        expect(outputJSON).toStrictEqual({
+            level: 'info',
+            message: 'z2m: Test JSON message',
+            timestamp: expect.any(String),
+        });
+
+        settings.set(['advanced', 'log_console_json'], false);
+        logger.init();
+
+        consoleWriteSpy.mockClear();
+        logger.info(`Test JSON message`, 'z2m');
+
+        const outputStr: string = consoleWriteSpy.mock.calls[0][0];
+        expect(outputStr.trim().endsWith('\u001b[32minfo\u001b[39m: \tz2m: Test JSON message')).toStrictEqual(true);
+    });
 });

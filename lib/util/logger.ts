@@ -56,13 +56,15 @@ class Logger {
         this.logger.add(
             new winston.transports.Console({
                 silent: consoleSilenced,
-                // winston.config.syslog.levels sets 'warning' as 'red'
-                format: winston.format.combine(
-                    winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
-                    winston.format.printf((info) => {
-                        return `[${info.timestamp}] ${info.level}: \t${info.message}`;
-                    }),
-                ),
+                format: settings.get().advanced.log_console_json
+                    ? winston.format.json()
+                    : winston.format.combine(
+                          // winston.config.syslog.levels sets 'warning' as 'red'
+                          winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
+                          winston.format.printf((info) => {
+                              return `[${info.timestamp}] ${info.level}: \t${info.message}`;
+                          }),
+                      ),
             }),
         );
 
