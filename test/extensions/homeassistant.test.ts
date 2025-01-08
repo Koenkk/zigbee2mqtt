@@ -1674,17 +1674,14 @@ describe('Extension: HomeAssistant', () => {
             device_class: 'firmware',
             entity_category: 'config',
             entity_picture: 'https://github.com/Koenkk/zigbee2mqtt/raw/master/images/logo.png',
-            json_attributes_template: `{"in_progress": {{ iif(value_json['update']['state'] == 'updating', 'true', 'false') }} }`,
-            json_attributes_topic: 'zigbee2mqtt/bulb',
-            latest_version_template: "{{ value_json['update']['latest_version'] }}",
-            latest_version_topic: 'zigbee2mqtt/bulb',
             name: null,
             object_id: 'bulb',
             origin,
             payload_install: `{"id": "0x000b57fffec6a5b2"}`,
             state_topic: 'zigbee2mqtt/bulb',
             unique_id: '0x000b57fffec6a5b2_update_zigbee2mqtt',
-            value_template: "{{ value_json['update']['installed_version'] }}",
+            value_template:
+                "{\"latest_version\":\"{{ value_json['update']['latest_version'] }}\",\"installed_version\":\"{{ value_json['update']['installed_version'] }}\",\"update_percentage\":{{ value_json['update'].get('progress', 'null') }}}",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/update/0x000b57fffec6a5b2/update/config', stringify(payload), {
