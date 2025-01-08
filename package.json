@@ -62,7 +62,7 @@
         "winston-transport": "^4.9.0",
         "ws": "^8.18.0",
         "zigbee-herdsman": "3.2.1",
-        "zigbee-herdsman-converters": "21.12.0",
+        "zigbee-herdsman-converters": "21.14.0",
         "zigbee2mqtt-frontend": "0.9.4"
     },
     "devDependencies": {
@@ -73,7 +73,7 @@
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^22.10.2",
+        "@types/node": "^22.10.5",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.18",
         "@types/sd-notify": "^2.8.2",
@@ -85,7 +85,7 @@
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
         "typescript": "^5.7.2",
-        "typescript-eslint": "^8.18.2",
+        "typescript-eslint": "^8.19.1",
         "vitest": "^2.1.8"
     },
     "pnpm": {
