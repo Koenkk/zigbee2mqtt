@@ -53,7 +53,14 @@ describe('Settings', () => {
     });
 
     it('Ensures configuration.example.yaml is never out of sync with settings', () => {
-        const exampleYaml = read('../data/configuration.example.yaml') as Record<string, unknown>;
+        let path = './data/configuration.example.yaml';
+
+        // allow running in single-test mode
+        if (!fs.existsSync('./data')) {
+            path = '../data/configuration.example.yaml';
+        }
+
+        const exampleYaml = read(path) as Record<string, unknown>;
 
         // force keeping an eye on example yaml whenever CURRENT_VERSION changes
         expect(exampleYaml).toStrictEqual({
