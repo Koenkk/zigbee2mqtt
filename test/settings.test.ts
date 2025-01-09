@@ -52,6 +52,30 @@ describe('Settings', () => {
         clearEnvironmentVariables();
     });
 
+    it('Ensures configuration.example.yaml is never out of sync with settings', () => {
+        const exampleYaml = read('../data/configuration.example.yaml') as Record<string, unknown>;
+
+        // force keeping an eye on example yaml whenever CURRENT_VERSION changes
+        expect(exampleYaml).toStrictEqual({
+            version: settings.CURRENT_VERSION,
+            homeassistant: {
+                enabled: false,
+            },
+            frontend: {
+                enabled: true,
+            },
+            mqtt: {
+                base_topic: 'zigbee2mqtt',
+                server: 'mqtt://localhost',
+            },
+            advanced: {
+                network_key: 'GENERATE',
+                pan_id: 'GENERATE',
+                ext_pan_id: 'GENERATE',
+            },
+        });
+    });
+
     it('Should return default settings', () => {
         write(configurationFile, {});
         const s = settings.get();
