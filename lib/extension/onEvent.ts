@@ -9,7 +9,7 @@ import Extension from './extension';
 export default class OnEvent extends Extension {
     override async start(): Promise<void> {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
-            await this.callOnEvent(device, 'start', {});
+            void this.callOnEvent(device, 'start', {});
         }
 
         this.eventBus.onDeviceMessage(this, (data) => this.callOnEvent(data.device, 'message', this.convertData(data)));
