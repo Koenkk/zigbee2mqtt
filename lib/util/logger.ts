@@ -244,12 +244,9 @@ class Logger {
     // https://github.com/Koenkk/zigbee2mqtt/pull/10905
     /* v8 ignore start */
     public async end(): Promise<void> {
-        this.logger.end();
-
-        await new Promise<void>((resolve) => {
-            if (!this.fileTransport) {
-                process.nextTick(resolve);
-            } else {
+        // Flush the file transport
+        if (this.fileTransport) {
+            await new Promise<void>((resolve) => {
                 // @ts-expect-error workaround
                 if (this.fileTransport._dest) {
                     // @ts-expect-error workaround
@@ -258,8 +255,9 @@ class Logger {
                     // @ts-expect-error workaround
                     this.fileTransport.on('open', () => this.fileTransport._dest.on('finish', resolve));
                 }
-            }
-        });
+                this.fileTransport.end();
+            });
+        }
     }
     /* v8 ignore stop */
 }
