@@ -129,7 +129,7 @@ export default class Frontend extends Extension {
         });
         this.wss?.close();
 
-        await new Promise((resolve) => this.server.close(resolve));
+        await new Promise((resolve) => this.server?.close(resolve));
     }
 
     @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
