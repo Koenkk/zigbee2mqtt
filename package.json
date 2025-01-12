@@ -66,8 +66,8 @@
         "zigbee2mqtt-frontend": "0.9.4"
     },
     "devDependencies": {
-        "@eslint/core": "^0.9.1",
-        "@eslint/js": "^9.17.0",
+        "@eslint/core": "^0.10.0",
+        "@eslint/js": "^9.18.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
@@ -80,12 +80,12 @@
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.5.13",
         "@vitest/coverage-v8": "^2.1.8",
-        "eslint": "^9.17.0",
+        "eslint": "^9.18.0",
         "eslint-config-prettier": "^9.1.0",
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
-        "typescript": "^5.7.2",
-        "typescript-eslint": "^8.19.0",
+        "typescript": "^5.7.3",
+        "typescript-eslint": "^8.19.1",
         "vitest": "^2.1.8"
     },
     "pnpm": {
