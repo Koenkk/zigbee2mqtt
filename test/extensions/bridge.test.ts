@@ -315,28 +315,22 @@ describe('Extension: Bridge', () => {
 
     it('Should publish devices on startup', async () => {
         await resetExtension();
-        // console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
             stringify([
                 {
-                    date_code: undefined,
-                    // definition: undefined,
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: [], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: [], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'Coordinator',
                     ieee_address: '0x00124b00120144ae',
                     interview_completed: false,
                     interviewing: false,
-                    model_id: undefined,
                     network_address: 0,
-                    power_source: undefined,
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Coordinator',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                         exposes: [
@@ -552,7 +546,7 @@ describe('Extension: Bridge', () => {
                     description: 'this is my bulb',
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -577,7 +571,6 @@ describe('Extension: Bridge', () => {
                     model_id: 'TRADFRI bulb E27 WS opal 980lm',
                     network_address: 40369,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
@@ -754,7 +747,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -777,7 +770,6 @@ describe('Extension: Bridge', () => {
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Hue dimmer switch',
                         exposes: [
@@ -881,7 +873,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [
                                 {cluster: 'genLevelCtrl', target: {endpoint: 1, ieee_address: '0x000b57fffec6a5b3', type: 'endpoint'}},
                                 {cluster: 'genOnOff', target: {endpoint: 1, ieee_address: '0x000b57fffec6a5b3', type: 'endpoint'}},
@@ -893,7 +885,7 @@ describe('Extension: Bridge', () => {
                             configured_reportings: [],
                             scenes: [],
                         },
-                        2: {bindings: [], clusters: {input: ['genBasic'], output: ['genOta', 'genOnOff']}, configured_reportings: [], scenes: []},
+                        '2': {bindings: [], clusters: {input: ['genBasic'], output: ['genOta', 'genOnOff']}, configured_reportings: [], scenes: []},
                     },
                     friendly_name: 'remote',
                     ieee_address: '0x0017880104e45517',
@@ -902,12 +894,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'RWL021',
                     network_address: 6535,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Automatically generated definition',
                         exposes: [
@@ -982,7 +972,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {input: ['genBasic'], output: ['genBasic', 'genOnOff', 'genLevelCtrl', 'genScenes']},
                             configured_reportings: [],
@@ -997,12 +987,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'notSupportedModelID',
                     network_address: 6536,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: false,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Wireless mini switch',
                         exposes: [
@@ -1086,7 +1074,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {input: ['genBasic'], output: ['genBasic', 'genOnOff', 'genLevelCtrl', 'genScenes']},
                             configured_reportings: [
@@ -1108,12 +1096,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.sensor_switch.aq2',
                     network_address: 6537,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Temperature and humidity sensor',
                         exposes: [
@@ -1243,7 +1229,7 @@ describe('Extension: Bridge', () => {
                         vendor: 'Aqara',
                     },
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: ['genBasic'], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: ['genBasic'], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'weather_sensor',
                     ieee_address: '0x0017880104e45522',
                     interview_completed: true,
@@ -1251,12 +1237,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.weather',
                     network_address: 6539,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Mi smart plug',
                         exposes: [
@@ -1392,7 +1376,7 @@ describe('Extension: Bridge', () => {
                         vendor: 'Xiaomi',
                     },
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: ['genBasic', 'genOnOff'], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: ['genBasic', 'genOnOff'], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'power_plug',
                     ieee_address: '0x0017880104e45524',
                     interview_completed: true,
@@ -1400,12 +1384,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.plug',
                     network_address: 6540,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'zigfred plus smart in-wall switch',
                         exposes: [
@@ -1435,18 +1417,6 @@ describe('Extension: Bridge', () => {
                                     'button_4_hold',
                                     'button_4_release',
                                 ],
-                            },
-                            {
-                                access: 1,
-                                category: 'diagnostic',
-                                description: 'Link quality (signal strength)',
-                                label: 'Linkquality',
-                                name: 'linkquality',
-                                property: 'linkquality',
-                                type: 'numeric',
-                                unit: 'lqi',
-                                value_max: 255,
-                                value_min: 0,
                             },
                             {
                                 endpoint: 'l1',
@@ -1684,6 +1654,18 @@ describe('Extension: Bridge', () => {
                                 ],
                                 type: 'cover',
                             },
+                            {
+                                access: 1,
+                                category: 'diagnostic',
+                                description: 'Link quality (signal strength)',
+                                label: 'Linkquality',
+                                name: 'linkquality',
+                                property: 'linkquality',
+                                type: 'numeric',
+                                unit: 'lqi',
+                                value_max: 255,
+                                value_min: 0,
+                            },
                         ],
                         model: 'ZFP-1A-CH',
                         options: [
@@ -1851,43 +1833,43 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        10: {
+                        '10': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        11: {
+                        '11': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'closuresWindowCovering'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        12: {
+                        '12': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'closuresWindowCovering'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        5: {
+                        '5': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        7: {
+                        '7': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        8: {
+                        '8': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        9: {
+                        '9': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
@@ -1902,12 +1884,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'zigfred plus',
                     network_address: 6589,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                         exposes: [
@@ -2122,7 +2102,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -2136,11 +2116,9 @@ describe('Extension: Bridge', () => {
                     ieee_address: '0x000b57fffec6a5c2',
                     interview_completed: true,
                     interviewing: false,
-                    manufacturer: undefined,
                     model_id: 'TRADFRI bulb E27 WS opal 980lm',
                     network_address: 40369,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
