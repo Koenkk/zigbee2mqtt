@@ -62,9 +62,6 @@ importers:
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
-      throttleit:
-        specifier: ^2.1.0
-        version: 2.1.0
       winston:
         specifier: ^3.17.0
         version: 3.17.0
@@ -1625,10 +1622,6 @@ packages:
 
   text-hex@1.0.0:
     resolution: {integrity: sha512-uuVGNWzgJ4yhRaNSiubPY7OjISw4sw4E5Uv0wbjp+OzcbmVU/rsT8ujgcXJhn9ypzsgr5vlzpPqP+MBBKcGvbg==}
-
-  throttleit@2.1.0:
-    resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
-    engines: {node: '>=18'}
 
   thunky@1.1.0:
     resolution: {integrity: sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==}
@@ -3304,8 +3297,6 @@ snapshots:
       minimatch: 9.0.5
 
   text-hex@1.0.0: {}
-
-  throttleit@2.1.0: {}
 
   thunky@1.1.0: {}
 
