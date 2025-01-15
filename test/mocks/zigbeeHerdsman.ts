@@ -683,6 +683,16 @@ export const devices = {
         'Battery',
         'lumi.weather',
     ),
+    SPAMMER2: new Device(
+        'EndDevice',
+        '0x0017880104e455ab',
+        6539,
+        4151,
+        [new Endpoint(1, [0], [], '0x0017880104e455ab')],
+        true,
+        'Battery',
+        'lumi.weather',
+    ),
     RTCGQ11LM: new Device(
         'EndDevice',
         '0x0017880104e45523',

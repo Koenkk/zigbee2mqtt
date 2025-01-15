@@ -349,6 +349,100 @@ describe('Extension: Receive', () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[2][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
     });
 
+    it('Should handle the throttle value changing without restart', async () => {
+        const device = devices.SPAMMER2;
+        const throttle_for_testing = 10;
+        settings.set(['device_options', 'throttle'], throttle_for_testing);
+        settings.set(['device_options', 'retain'], true);
+        settings.set(['devices', device.ieeeAddr, 'friendly_name'], 'spammer1');
+        const data1 = {measuredValue: 1};
+        const payload1 = {
+            data: data1,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload1);
+        const data2 = {measuredValue: 2};
+        const payload2 = {
+            data: data2,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload2);
+        const data3 = {measuredValue: 3};
+        const payload3 = {
+            data: data3,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload3);
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual('zigbee2mqtt/spammer1');
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.01});
+        expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: true});
+
+        // Now we try after elapsed time to see if it publishes next message
+        const timeshift = throttle_for_testing * 2000;
+        vi.advanceTimersByTime(timeshift);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual('zigbee2mqtt/spammer1');
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({temperature: 0.03});
+        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({qos: 0, retain: true});
+
+        // Set throttle to 1s, without any reloading
+        settings.set(['device_options', 'throttle'], throttle_for_testing / 10);
+
+        const data4 = {measuredValue: 4};
+        const payload4 = {
+            data: data4,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload4);
+        // Advance clock by 2s, not enough time for previous throttle value to pass
+        vi.advanceTimersByTime((throttle_for_testing * 2000) / 10);
+
+        const data5 = {measuredValue: 5};
+        const payload5 = {
+            data: data5,
+            cluster: 'msTemperatureMeasurement',
+            device,
+            endpoint: device.getEndpoint(1),
+            type: 'attributeReport',
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload5);
+        await flushPromises();
+
+        // Check both messages were published straight away
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(4);
+        expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual('zigbee2mqtt/spammer1');
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[2][1])).toStrictEqual({temperature: 0.04});
+        expect(mockMQTTPublishAsync.mock.calls[2][2]).toStrictEqual({qos: 0, retain: true});
+
+        expect(mockMQTTPublishAsync.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/spammer1');
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[3][1])).toStrictEqual({temperature: 0.05});
+        expect(mockMQTTPublishAsync.mock.calls[3][2]).toStrictEqual({qos: 0, retain: true});
+    });
+
     it('Should throttle multiple messages from spamming devices', async () => {
         const device = devices.SPAMMER;
         const throttle_for_testing = 1;
