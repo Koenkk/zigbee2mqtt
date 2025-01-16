@@ -244,9 +244,6 @@ class Logger {
     // https://github.com/Koenkk/zigbee2mqtt/pull/10905
     /* v8 ignore start */
     public async end(): Promise<void> {
-        // Only flush the file transport, don't end logger itself as log() might still be called
-        // causing a UnhandledPromiseRejection (`Error: write after end`). Flushing the file transport
-        // ensures the log files are written before stopping.
         if (this.fileTransport) {
             await new Promise<void>((resolve) => {
                 // @ts-expect-error workaround
@@ -260,6 +257,8 @@ class Logger {
                 this.fileTransport.end();
             });
         }
+        // Ensure all logs are written before exiting so ending has to happen after the file transport is flushed
+        void this.logger.end();
     }
     /* v8 ignore stop */
 }
