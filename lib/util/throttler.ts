@@ -1,3 +1,5 @@
+// Vendored and modified slightly from https://github.com/sindresorhus/throttleit/blob/main/index.js
+
 export default function throttle<Args extends unknown[]>(fn: (...args: Args) => Promise<void>, wait: number): (...args: Args) => Promise<void> {
     let timeoutId: ReturnType<typeof setTimeout>;
     let lastCallTime = 0;
