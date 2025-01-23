@@ -1294,7 +1294,7 @@ export default class HomeAssistant extends Extension {
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_device/action
          */
-        if (entity.isDevice() && entity.definition && data.message.action) {
+        if (settings.get().advanced.output === 'json' && entity.isDevice() && entity.definition && data.message.action) {
             const value = data.message['action'].toString();
             await this.publishDeviceTriggerDiscover(entity, 'action', value);
             await this.mqtt.publish(`${data.entity.name}/action`, value, {});

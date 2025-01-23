@@ -1724,8 +1724,6 @@ describe('Extension: HomeAssistant', () => {
             {retain: true, qos: 1},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
-
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/button',
             stringify({
@@ -1748,8 +1746,6 @@ describe('Extension: HomeAssistant', () => {
             stringify(discoverPayloadAction),
             {retain: true, qos: 1},
         );
-
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
 
         // Shouldn't rediscover when already discovered in previous session
         clearDiscoveredTrigger('0x0017880104e45520');
@@ -1787,6 +1783,19 @@ describe('Extension: HomeAssistant', () => {
             expect.any(String),
             expect.any(Object),
         );
+    });
+
+    test.each(['attribute_and_json', 'json', 'attribute'])('Should publish /action for MQTT device trigger', async (output) => {
+        settings.set(['advanced', 'output'], output);
+        mockMQTTPublishAsync.mockClear();
+
+        const device = devices.WXKG11LM;
+        const payload1 = {data: {onOff: 1}, cluster: 'genOnOff', device, endpoint: device.getEndpoint(1), type: 'attributeReport', linkquality: 10};
+        await mockZHEvents.message(payload1);
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/button/action', 'single', {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync.mock.calls.filter((c) => c[1] === 'single')).toHaveLength(1);
     });
 
     it('Should not discover device_automation when disabled', async () => {
