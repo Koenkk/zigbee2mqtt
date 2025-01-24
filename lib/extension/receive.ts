@@ -3,12 +3,12 @@ import assert from 'node:assert';
 import bind from 'bind-decorator';
 import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
-import throttle from 'throttleit';
 
 import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import * as settings from '../util/settings';
+import throttle from '../util/throttler';
 import utils from '../util/utils';
 import Extension from './extension';
 
@@ -71,8 +71,9 @@ export default class Receive extends Extension {
     }
 
     async publishThrottle(device: Device, payload: KeyValue, time: number): Promise<void> {
-        if (!this.throttlers[device.ieeeAddr]) {
-            this.throttlers[device.ieeeAddr] = {
+        const throttleKey = device.ieeeAddr + device.options.throttle;
+        if (!this.throttlers[throttleKey]) {
+            this.throttlers[throttleKey] = {
                 publish: throttle(this.publishEntityState, time * 1000),
             };
         }
@@ -81,7 +82,7 @@ export default class Receive extends Extension {
         // By updating cache we make sure that state cache is always up-to-date.
         this.state.set(device, payload);
 
-        await this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
+        await this.throttlers[throttleKey].publish(device, payload, 'publishThrottle');
     }
 
     // if debounce_ignore are specified (Array of strings)
