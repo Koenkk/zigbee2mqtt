@@ -760,10 +760,17 @@
                     "title": "QoS",
                     "description": "QoS level for MQTT messages of this device"
                 },
+                "throttle": {
+                    "type": "number",
+                    "title": "Throttle",
+                    "description": "The minimum time between payloads in seconds. Payloads received whilst the device is being throttled will be discarded",
+                    "requiresRestart": true
+                },
                 "debounce": {
                     "type": "number",
                     "title": "Debounce",
-                    "description": "Debounces messages of this device"
+                    "description": "Debounces messages of this device",
+                    "requiresRestart": true
                 },
                 "debounce_ignore": {
                     "type": "array",
