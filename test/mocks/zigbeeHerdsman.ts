@@ -1117,6 +1117,25 @@ export const devices = {
         undefined,
         CUSTOM_CLUSTERS,
     ),
+    'InovelliVZM31SN': new Device(
+        'Router',
+        '0xb43a31fffe2f1f6a',
+        59545,
+        4655,
+        [
+            new Endpoint(1, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {"multiEndpointSkip": ['state', 'power', 'energy', 'brightness']}),
+            new Endpoint(2, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {"multiEndpointSkip": ['state', 'power', 'energy', 'brightness']}),
+            new Endpoint(3, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {"multiEndpointSkip": ['state', 'power', 'energy', 'brightness']}),
+        ],
+        true,
+        'Mains (single phase)',
+        'VZM31-SN',
+        false,
+        undefined,
+        undefined,
+        undefined,
+        CUSTOM_CLUSTERS,
+    ),
 };
 
 export const mockController = {
