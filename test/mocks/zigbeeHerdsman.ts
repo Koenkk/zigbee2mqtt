@@ -1117,7 +1117,7 @@ export const devices = {
         undefined,
         CUSTOM_CLUSTERS,
     ),
-    'InovelliVZM31SN': new Device(
+    InovelliVZM31SN: new Device(
         'Router',
         '0xb43a31fffe2f1f6a',
         59545,
