@@ -360,7 +360,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_left: 'OFF'}), {retain: false, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'OFF'}), {retain: false, qos: 0});
     });
-    
+
     it('Should not publish state change off if any lights within are still on when changed via shared group', async () => {
         const device_1 = devices.bulb_color;
         const device_2 = devices.bulb;
