@@ -336,7 +336,7 @@ describe('Extension: Groups', () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'OFF'}), {retain: false, qos: 0});
     });
 
-        it('Should publish state change off if all lights within turn off with non default-ep, but device state does not use them', async () => {
+    it('Should publish state change off if all lights within turn off with non default-ep, but device state does not use them', async () => {
         const device_1 = devices.bulb_color;
         const device_2 = devices.InovelliVZM31SN;
         const endpoint_1 = device_1.getEndpoint(1)!;
