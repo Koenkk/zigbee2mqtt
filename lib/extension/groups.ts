@@ -167,7 +167,13 @@ export default class Groups extends Extension {
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
                 const endpointNames = device.isDevice() && device.getEndpointNames();
-                const stateKey = endpointNames && endpointNames.length >= member.ID ? `state_${endpointNames[member.ID - 1]}` : 'state';
+                const stateKey =
+                    endpointNames &&
+                    endpointNames.length >= member.ID &&
+                    device.definition?.meta?.multiEndpoint &&
+                    (!device.definition.meta.multiEndpointSkip || !device.definition.meta.multiEndpointSkip.includes('state'))
+                        ? `state_${endpointNames[member.ID - 1]}`
+                        : 'state';
 
                 if (state[stateKey] === 'ON' || state[stateKey] === 'OPEN') {
                     return false;

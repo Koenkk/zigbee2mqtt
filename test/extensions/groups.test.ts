@@ -19,6 +19,7 @@ returnDevices.push(
     devices.bulb_color_2.ieeeAddr,
     devices.bulb_2.ieeeAddr,
     devices.GLEDOPTO_2ID.ieeeAddr,
+    devices.InovelliVZM31SN.ieeeAddr,
 );
 
 describe('Extension: Groups', () => {
@@ -313,6 +314,31 @@ describe('Extension: Groups', () => {
     it('Should publish state change off if all lights within turn off with non default-ep', async () => {
         const device_1 = devices.bulb_color;
         const device_2 = devices.QBKG03LM;
+        const endpoint_1 = device_1.getEndpoint(1)!;
+        const endpoint_2 = device_2.getEndpoint(2)!;
+        const group = groups.group_1;
+        group.members.push(endpoint_1);
+        group.members.push(endpoint_2);
+        settings.set(['groups'], {
+            1: {friendly_name: 'group_1', retain: false},
+        });
+
+        await mockMQTTEvents.message('zigbee2mqtt/group_1/set', stringify({state: 'ON'}));
+        await flushPromises();
+        mockMQTTPublishAsync.mockClear();
+
+        await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
+        await mockMQTTEvents.message('zigbee2mqtt/wall_switch_double/set', stringify({state_left: 'OFF'}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb_color', stringify({state: 'OFF'}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/wall_switch_double', stringify({state_left: 'OFF'}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/group_1', stringify({state: 'OFF'}), {retain: false, qos: 0});
+    });
+
+    it('Should publish state change off if all lights within turn off with non default-ep, but device state does not use them', async () => {
+        const device_1 = devices.bulb_color;
+        const device_2 = devices.InovelliVZM31SN;
         const endpoint_1 = device_1.getEndpoint(1)!;
         const endpoint_2 = device_2.getEndpoint(2)!;
         const group = groups.group_1;
