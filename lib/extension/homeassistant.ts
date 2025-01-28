@@ -172,6 +172,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     energy: {device_class: 'energy', state_class: 'total_increasing'},
     external_temperature_input: {icon: 'mdi:thermometer'},
     formaldehyd: {state_class: 'measurement'},
+    flow: {device_class: 'volume_flow_rate', state_class: 'measurement'},
     gas_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
     hcho: {icon: 'mdi:air-filter', state_class: 'measurement'},
     humidity: {device_class: 'humidity', state_class: 'measurement'},
