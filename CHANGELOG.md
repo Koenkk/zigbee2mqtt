@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.1.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.0.0...2.1.0) (2025-02-01)
+
+
+### Features
+
+* Add a settings option to log to console in json format ([#25649](https://github.com/Koenkk/zigbee2mqtt/issues/25649)) ([26ef565](https://github.com/Koenkk/zigbee2mqtt/commit/26ef565c8a20d1b6c2e09c679eb96d3f56811a87))
+* Allow Home Assistant OTA Update entity to show progress while updating ([#25632](https://github.com/Koenkk/zigbee2mqtt/issues/25632)) ([318dc04](https://github.com/Koenkk/zigbee2mqtt/commit/318dc0413284d204d13a99afd400a5f00f5ef338))
+
+
+### Bug Fixes
+
+* Add Home Assistant device class for flow rates (e.g., Sonoff SWV) ([#26035](https://github.com/Koenkk/zigbee2mqtt/issues/26035)) ([cdbd553](https://github.com/Koenkk/zigbee2mqtt/commit/cdbd55320acbf7d857c518e8aac8ab9e495eb6b5))
+* Add semver tags to Docker releases ([#25530](https://github.com/Koenkk/zigbee2mqtt/issues/25530)) ([0d30eb5](https://github.com/Koenkk/zigbee2mqtt/commit/0d30eb553b9cb027f8ae5424b9e740136742f74c))
+* Allow to set throttle via frontend ([#25997](https://github.com/Koenkk/zigbee2mqtt/issues/25997)) ([5cf4547](https://github.com/Koenkk/zigbee2mqtt/commit/5cf4547fe04e9a5627826225c3b26586aea3edc1))
+* Container: remove modifying capabilities of `/usr/bin/node` ([#25456](https://github.com/Koenkk/zigbee2mqtt/issues/25456)) ([43a5b24](https://github.com/Koenkk/zigbee2mqtt/commit/43a5b24dcc22af3ec4c0bb76b45a2706f898421f))
+* Enable use of MQTT username without password  ([#25611](https://github.com/Koenkk/zigbee2mqtt/issues/25611)) ([a28a5ba](https://github.com/Koenkk/zigbee2mqtt/commit/a28a5baf17b8dd3fe4703cdb38d80796157521af))
+* Fix `Error: write after end` error ([#25737](https://github.com/Koenkk/zigbee2mqtt/issues/25737)) ([2d5e7bf](https://github.com/Koenkk/zigbee2mqtt/commit/2d5e7bf9ff611387f2334a55caab6991d65ad3fa))
+* Fix `Failed to call 'Frontend' 'stop' (TypeError: Cannot read properties of undefined (reading 'close')` https://github.com/Koenkk/zigbee2mqtt/issues/25715 ([9daeba1](https://github.com/Koenkk/zigbee2mqtt/commit/9daeba1f0ab350d9609bcd4c1e8bc291b5eaab8b))
+* Fix duplicate `action` publish when `advanced.output` has `attribute` ([#25963](https://github.com/Koenkk/zigbee2mqtt/issues/25963)) ([2af65cf](https://github.com/Koenkk/zigbee2mqtt/commit/2af65cf28eea397013a0f629761536339d6ace63))
+* **ignore:** Ensure config example is never out of sync with settings ([#25707](https://github.com/Koenkk/zigbee2mqtt/issues/25707)) ([23b709c](https://github.com/Koenkk/zigbee2mqtt/commit/23b709cee28a5926f1608e70e30703ba52011005))
+* **ignore:** Remove `adapter` `auto` from schema ([#25896](https://github.com/Koenkk/zigbee2mqtt/issues/25896)) ([5e60f1d](https://github.com/Koenkk/zigbee2mqtt/commit/5e60f1dc8dae96a04d1a76a677f89f426da64a94))
+* **ignore:** update dependencies ([#25535](https://github.com/Koenkk/zigbee2mqtt/issues/25535)) ([6f3524b](https://github.com/Koenkk/zigbee2mqtt/commit/6f3524b251ed8218ffed132df262eb0850687e61))
+* **ignore:** update dependencies ([#25760](https://github.com/Koenkk/zigbee2mqtt/issues/25760)) ([5b82d7e](https://github.com/Koenkk/zigbee2mqtt/commit/5b82d7e4df9fdc868689f8a745e502b5beea837a))
+* **ignore:** update dependencies ([#25890](https://github.com/Koenkk/zigbee2mqtt/issues/25890)) ([8da5fa6](https://github.com/Koenkk/zigbee2mqtt/commit/8da5fa663d2fbf4a68e797cff9938b57dd620935))
+* **ignore:** update dependencies ([#26005](https://github.com/Koenkk/zigbee2mqtt/issues/26005)) ([85460cd](https://github.com/Koenkk/zigbee2mqtt/commit/85460cd5ce2a17a2036a54d3984a5f59b75be41b))
+* Long startup time when `OnEvent` 'start' times out (repeatedly) ([#25693](https://github.com/Koenkk/zigbee2mqtt/issues/25693)) ([f1f73bd](https://github.com/Koenkk/zigbee2mqtt/commit/f1f73bd46425262fc1ff7e897d879faf16e3d8a9))
+* Only use endpoint-specific states if the device definition uses them ([#26019](https://github.com/Koenkk/zigbee2mqtt/issues/26019)) ([0462b94](https://github.com/Koenkk/zigbee2mqtt/commit/0462b94f5a346e64a85a90cb6c7e33a36ac98311))
+* Remove invalid `warn` `log_level` https://github.com/nurikk/zigbee2mqtt-frontend/issues/2369 ([#25634](https://github.com/Koenkk/zigbee2mqtt/issues/25634)) ([1667ba6](https://github.com/Koenkk/zigbee2mqtt/commit/1667ba64ac2b8272cb0dea7ce30e459450e1c847))
+
 ## [2.0.0](https://github.com/Koenkk/zigbee2mqtt/compare/1.42.0...2.0.0) (2025-01-03)
 
 
