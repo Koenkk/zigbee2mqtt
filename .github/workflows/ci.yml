@@ -20,8 +20,6 @@ jobs:
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
 
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
 
             - uses: actions/setup-node@v4
               with:
@@ -183,8 +181,6 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
 
             - uses: actions/setup-node@v4
               with:
