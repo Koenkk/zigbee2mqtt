@@ -81,8 +81,8 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       zigbee-herdsman-converters:
-        specifier: 21.27.0
-        version: 21.27.0
+        specifier: 21.27.1
+        version: 21.27.1
       zigbee2mqtt-frontend:
         specifier: 0.9.4
         version: 0.9.4
@@ -1524,6 +1524,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.0:
+    resolution: {integrity: sha512-DrfFnPzblFmNrIZzg5RzHegbiRWg7KMR7btwi2yjHwx06zsUbO5g613sVwEV7FTwmzJu+Io0lJe2GJ3LxqpvBQ==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   send@0.19.0:
     resolution: {integrity: sha512-dW41u5VfLXu8SJh5bwRmyYUbAoSB3c9uQh6L8h/KtsFREPWpbX1lrljJo186Jc4nmci/sGUZ9a0a0J2zgfq2hw==}
     engines: {node: '>= 0.8.0'}
@@ -1844,8 +1849,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zigbee-herdsman-converters@21.27.0:
-    resolution: {integrity: sha512-SoREUc7Hg8i0I3NX+iBAcAv9azlEOp4f5NHAPJxgX/sgJXiV18iI6jDSQuOOWJ6RNDUAGBYstC5pRVCsbGGq7A==}
+  zigbee-herdsman-converters@21.27.1:
+    resolution: {integrity: sha512-15Ld+dnr8NjWK0rZ/2ruJLq0pO4H89RE9NEaZWKHH5DcVwkIWyidbX+9mripndIPlp+bGlKwWtT8UAt9xJstUg==}
 
   zigbee-herdsman@3.2.5:
     resolution: {integrity: sha512-cKBlrooChofpmd/D06SXEr73ChhZsinvLVYtUDiTK36Dh1sqXqdnkXmonYU1AkET7XUQds/aZ3OPBymUxHmKtg==}
@@ -3207,6 +3212,8 @@ snapshots:
 
   semver@7.6.3: {}
 
+  semver@7.7.0: {}
+
   send@0.19.0:
     dependencies:
       debug: 2.6.9
@@ -3522,11 +3529,11 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zigbee-herdsman-converters@21.27.0:
+  zigbee-herdsman-converters@21.27.1:
     dependencies:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
-      semver: 7.6.3
+      semver: 7.7.0
       zigbee-herdsman: 3.2.5
     transitivePeerDependencies:
       - supports-color
