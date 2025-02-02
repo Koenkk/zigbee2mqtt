@@ -55,7 +55,7 @@
         "mqtt": "^5.10.3",
         "object-assign-deep": "^0.4.0",
         "rimraf": "^6.0.1",
-        "semver": "^7.6.3",
+        "semver": "^7.7.0",
         "source-map-support": "^0.5.21",
         "throttleit": "^2.1.0",
         "winston": "^3.17.0",
@@ -67,14 +67,14 @@
         "zigbee2mqtt-frontend": "0.9.4"
     },
     "devDependencies": {
-        "@eslint/core": "^0.10.0",
+        "@eslint/core": "^0.11.0",
         "@eslint/js": "^9.19.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
         "@types/eslint__js": "^8.42.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^22.10.10",
+        "@types/node": "^22.13.0",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.18",
         "@types/sd-notify": "^2.8.2",
@@ -86,7 +86,7 @@
         "prettier": "^3.4.2",
         "tmp": "^0.2.3",
         "typescript": "^5.7.3",
-        "typescript-eslint": "^8.21.0",
+        "typescript-eslint": "^8.22.0",
         "vitest": "^3.0.4"
     },
     "pnpm": {
