@@ -84,6 +84,12 @@ declare global {
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl};
         };
         type ScenesChanged = {entity: Device | Group};
+        type SourceRouteChanged = {
+            device: zh.Device;
+            dstaddr: number;
+            relaycount: number;
+            relaylist: number[];
+        };
     }
 
     // Settings
