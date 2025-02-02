@@ -181,7 +181,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     humidity_min: {entity_category: 'config', icon: 'mdi:water-percent'},
     illuminance_calibration: {entity_category: 'config', icon: 'mdi:wrench-clock'},
     illuminance: {device_class: 'illuminance', state_class: 'measurement'},
-    internal_temperature: {
+    internalTemperature: {
         device_class: 'temperature',
         entity_category: 'diagnostic',
         state_class: 'measurement',
