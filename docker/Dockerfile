@@ -1,14 +1,6 @@
 ARG TARGETPLATFORM
 
-# Need to use Alpine 3.18.4 which uses Node 18 for arm/v6 and arm/v7, otherwise the build hangs.
-# See https://github.com/nodejs/docker-node/issues/2077
-FROM alpine:3.18.4 AS linux-arm-alpine
-FROM alpine:3.21 AS linux-arm64-alpine
-FROM alpine:3.21 AS linux-amd64-alpine
-FROM alpine:3.21 AS linux-riscv64-alpine
-FROM alpine:3.21 AS linux-386-alpine
-
-FROM linux-${TARGETARCH}-alpine AS base
+FROM alpine:3.21 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -20,8 +12,8 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
 # Make and such are needed to compile serialport for riscv64
 RUN apk add make gcc g++ python3 linux-headers npm && \
-    npm install -g pnpm && \
-    pnpm install --frozen-lockfile --no-optional && \
+    npm --maxsockets=1 install -g pnpm && \
+    pnpm --maxsockets=1 install --frozen-lockfile --no-optional && \
     # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
     rm -rf `find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d` && \
     pnpm rebuild @serialport/bindings-cpp
