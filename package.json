@@ -1,6 +1,6 @@
 {
     "name": "zigbee2mqtt",
-    "version": "2.1.0-dev",
+    "version": "2.1.1",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "packageManager": "pnpm@9.15.4",
