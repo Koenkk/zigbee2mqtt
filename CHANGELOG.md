@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.0...2.1.1) (2025-02-02)
+
+
+### Bug Fixes
+
+* **ignore:** update dependencies ([#26126](https://github.com/Koenkk/zigbee2mqtt/issues/26126)) ([b960775](https://github.com/Koenkk/zigbee2mqtt/commit/b960775160b33dcd276376efaa7dc1ca3f791a53))
+
 ## [2.1.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.0.0...2.1.0) (2025-02-01)
 
 
