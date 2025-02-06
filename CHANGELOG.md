@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.0...2.1.1) (2025-02-06)
+
+
+### Bug Fixes
+
+* **ignore:** update dependencies ([#26126](https://github.com/Koenkk/zigbee2mqtt/issues/26126)) ([b960775](https://github.com/Koenkk/zigbee2mqtt/commit/b960775160b33dcd276376efaa7dc1ca3f791a53))
+* Rename `internal_temperature` to `internalTemperature` to correct typo ([#26114](https://github.com/Koenkk/zigbee2mqtt/issues/26114)) ([e4e4f16](https://github.com/Koenkk/zigbee2mqtt/commit/e4e4f16ec8994a63ba148b36d7e18a09f49ac298))
+
 ## [2.1.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.0.0...2.1.0) (2025-02-01)
 
 
