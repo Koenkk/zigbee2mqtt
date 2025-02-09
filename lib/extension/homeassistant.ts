@@ -1411,7 +1411,7 @@ export default class HomeAssistant extends Extension {
                     entity_category: 'config',
                     command_topic: `${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/update`,
                     payload_install: `{"id": "${entity.ieeeAddr}"}`,
-                    value_template: `{"latest_version":"{{ value_json['update']['latest_version'] }}","installed_version":"{{ value_json['update']['installed_version'] }}","update_percentage":{{ value_json['update'].get('progress', 'null') }},"is_updating":{{ value_json['update']['state'] == 'updating' }}}`,
+                    value_template: `{"latest_version":"{{ value_json['update']['latest_version'] }}","installed_version":"{{ value_json['update']['installed_version'] }}","update_percentage":{{ value_json['update'].get('progress', 'null') }},"in_progress":{{ (value_json['update']['state'] == 'updating')|lower }}`,
                 },
             };
             configs.push(updateSensor);
