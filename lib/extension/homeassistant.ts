@@ -1020,6 +1020,16 @@ export default class HomeAssistant extends Extension {
                     Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
                 }
 
+                // If a variable includes A or mA, mark it as energy
+                if (firstExpose.unit && ['A', 'mA'].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: 'current', state_class: 'measurement'});
+                }
+
+                // If a variable includes mW, W, kW, MW, GW, TW, mark it as energy
+                if (firstExpose.unit && ['mW', 'W', 'kW', 'MW', 'GW', 'TW'].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: 'power', state_class: 'measurement'});
+                }
+
                 let key = firstExpose.name;
 
                 // Home Assistant uses a different voc device_class for µg/m³ versus ppb or ppm.
