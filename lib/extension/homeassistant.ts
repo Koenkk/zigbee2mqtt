@@ -1019,6 +1019,14 @@ export default class HomeAssistant extends Extension {
                 if (firstExpose.unit && ['Wh', 'kWh'].includes(firstExpose.unit)) {
                     Object.assign(extraAttrs, {device_class: 'energy', state_class: 'total_increasing'});
                 }
+                // If a variable includes A or mA, mark it as current
+                else if (firstExpose.unit && ['A', 'mA'].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: 'current', state_class: 'measurement'});
+                }
+                // If a variable includes mW, W, kW mark it as power
+                else if (firstExpose.unit && ['mW', 'W', 'kW'].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: 'power', state_class: 'measurement'});
+                }
 
                 let key = firstExpose.name;
 
