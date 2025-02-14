@@ -1,0 +1,22 @@
+Please add support for this device
+
+Aqara lumi.light.agl003
+
+-> external_definition <-
+
+const m = require('zigbee-herdsman-converters/lib/modernExtend');
+
+const definition = {
+    zigbeeModel: ['lumi.light.agl003'],
+    model: 'lumi.light.agl003',
+    vendor: 'Aqara',
+    description: 'Automatically generated definition',
+    extend: [m.deviceEndpoints({"endpoints":{"1":1,"21":21}}), m.light({"colorTemp":{"range":[111,500]},"color":true}), m.electricityMeter()],
+    meta: {"multiEndpoint":true},
+};
+
+module.exports = definition;
+
+-> DB entry <-
+{"id":200,"type":"Router","ieeeAddr":"0x54ef4410010fc4b5","nwkAddr":6142,"manufId":4447,"manufName":"Aqara","powerSource":"DC Source","modelId":"lumi.light.agl003","epList":[1,21],"endpoints":{"1":{"profId":260,"epId":1,"devId":258,"inClusterList":[5,4,3,0,768,8,6,2820,1794,64704],"outClusterList":[25,10],"clusters":{"genBasic":{"attributes":{"modelId":"lumi.light.agl003","manufacturerName":"Aqara","powerSource":4,"zclVersion":3,"appVersion":27,"stackVersion":27,"hwVersion":1,"dateCode":"20250113"}}},"binds":[],"configuredReportings":[],"meta":{}},"21":{"profId":260,"epId":21,"devId":0,"inClusterList":[12],"outClusterList":[],"clusters":{},"binds":[],"configuredReportings":[],"meta":{}}},"appVersion":27,"stackVersion":27,"hwVersion":1,"dateCode":"20250113","zclVersion":3,"interviewCompleted":true,"meta":{},"lastSeen":1739524122424}
+
