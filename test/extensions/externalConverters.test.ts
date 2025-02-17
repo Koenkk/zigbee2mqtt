@@ -28,7 +28,7 @@ describe('Extension: ExternalConverters', () => {
     const rmSyncSpy = vi.spyOn(fs, 'rmSync');
     const writeFileSyncSpy = vi.spyOn(fs, 'writeFileSync');
 
-    const zhcaddExternalDefinitionSpy = vi.spyOn(zhc, 'addExternalDefinition');
+    const zhcAddExternalDefinitionSpy = vi.spyOn(zhc, 'addExternalDefinition');
     const zhcRemoveExternalDefinitionsSpy = vi.spyOn(zhc, 'removeExternalDefinitions');
 
     const mocksClear = [
@@ -43,7 +43,7 @@ describe('Extension: ExternalConverters', () => {
         mkdirSyncSpy,
         rmSyncSpy,
         writeFileSyncSpy,
-        zhcaddExternalDefinitionSpy,
+        zhcAddExternalDefinitionSpy,
         zhcRemoveExternalDefinitionsSpy,
     ];
 
@@ -129,7 +129,7 @@ describe('Extension: ExternalConverters', () => {
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, 'mock-external-converter-multiple.js');
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, 'mock-external-converter.js');
-            expect(zhcaddExternalDefinitionSpy).toHaveBeenNthCalledWith(
+            expect(zhcAddExternalDefinitionSpy).toHaveBeenNthCalledWith(
                 1,
                 expect.objectContaining({
                     mock: 1,
@@ -139,7 +139,7 @@ describe('Extension: ExternalConverters', () => {
                     description: 'external_1',
                 }),
             );
-            expect(zhcaddExternalDefinitionSpy).toHaveBeenNthCalledWith(
+            expect(zhcAddExternalDefinitionSpy).toHaveBeenNthCalledWith(
                 2,
                 expect.objectContaining({
                     mock: 2,
@@ -149,7 +149,7 @@ describe('Extension: ExternalConverters', () => {
                     description: 'external_2',
                 }),
             );
-            expect(zhcaddExternalDefinitionSpy).toHaveBeenNthCalledWith(
+            expect(zhcAddExternalDefinitionSpy).toHaveBeenNthCalledWith(
                 3,
                 expect.objectContaining({
                     mock: true,
@@ -206,7 +206,7 @@ describe('Extension: ExternalConverters', () => {
             expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(1);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, converterName);
-            expect(zhcaddExternalDefinitionSpy).toHaveBeenCalledWith(
+            expect(zhcAddExternalDefinitionSpy).toHaveBeenCalledWith(
                 expect.objectContaining({
                     mock: true,
                     zigbeeModel: ['external_converter_device'],
@@ -288,7 +288,7 @@ describe('Extension: ExternalConverters', () => {
 
         const errorMsg = `Invalid definition`;
 
-        zhcaddExternalDefinitionSpy.mockImplementationOnce(() => {
+        zhcAddExternalDefinitionSpy.mockImplementationOnce(() => {
             throw new Error(errorMsg);
         });
 
