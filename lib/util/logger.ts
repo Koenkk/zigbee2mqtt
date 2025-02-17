@@ -232,7 +232,7 @@ class Logger {
             });
 
             directories.sort((a: KeyValue, b: KeyValue) => b.birth - a.birth);
-            directories = directories.slice(10, directories.length);
+            directories = directories.slice(settings.get().advanced.log_directories_to_keep, directories.length);
             directories.forEach((dir) => {
                 this.debug(`Removing old log directory '${dir.path}'`);
                 rimrafSync(dir.path);

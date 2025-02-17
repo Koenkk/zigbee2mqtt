@@ -46,7 +46,7 @@ describe('Logger', () => {
         expect(dirs.length).toBe(1);
     });
 
-    it('Should cleanup', () => {
+    it('Should cleanup (default setting)', () => {
         for (const d of fs.readdirSync(dir.name)) {
             rimrafSync(path.join(dir.name, d));
         }
@@ -58,6 +58,21 @@ describe('Logger', () => {
         expect(fs.readdirSync(dir.name).length).toBe(20);
         logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(10);
+    });
+
+    it('Should cleanup (15 folders setting)', () => {
+        for (const d of fs.readdirSync(dir.name)) {
+            rimrafSync(path.join(dir.name, d));
+        }
+
+        for (let i = 0; i < 20; i++) {
+            fs.mkdirSync(path.join(dir.name, `log_${i}`));
+        }
+
+        settings.set(['advanced', 'log_directories_to_keep'], 15);
+        expect(fs.readdirSync(dir.name).length).toBe(20);
+        logger.init();
+        expect(fs.readdirSync(dir.name).length).toBe(15);
     });
 
     it('Should not cleanup when there is no timestamp set', () => {

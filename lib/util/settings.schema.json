@@ -525,6 +525,14 @@
                     "default": "",
                     "examples": ["^zhc:legacy:fz:(tuya|moes)", "^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller"]
                 },
+                "log_directories_to_keep": {
+                    "type": "number",
+                    "title": "Number of past log folders to keep",
+                    "description": "Number of log directories to keep before deleting the oldest one",
+                    "default": 10,
+                    "minimum": 5,
+                    "maximum": 1000
+                },
                 "log_syslog": {
                     "requiresRestart": true,
                     "oneOf": [

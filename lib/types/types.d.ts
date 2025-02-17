@@ -178,6 +178,7 @@ declare global {
             log_syslog: KeyValue;
             log_debug_to_mqtt_frontend: boolean;
             log_debug_namespace_ignore: string;
+            log_directories_to_keep: number;
             pan_id: number | 'GENERATE';
             ext_pan_id: number[] | 'GENERATE';
             channel: number;
