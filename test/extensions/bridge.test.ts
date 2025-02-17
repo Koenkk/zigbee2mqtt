@@ -122,7 +122,7 @@ describe('Extension: Bridge', () => {
                         log_rotation: true,
                         log_symlink_current: false,
                         log_syslog: {},
-                        log_folders_to_keep: 10,
+                        log_directories_to_keep: 10,
                         output: 'json',
                         pan_id: 6754,
                         timestamp_format: 'YYYY-MM-DD HH:mm:ss',

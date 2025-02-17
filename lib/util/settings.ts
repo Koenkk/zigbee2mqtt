@@ -96,7 +96,7 @@ export const defaults: RecursivePartial<Settings> = {
         log_syslog: {},
         log_debug_to_mqtt_frontend: false,
         log_debug_namespace_ignore: '',
-        log_folders_to_keep: 10,
+        log_directories_to_keep: 10,
         pan_id: 0x1a62,
         ext_pan_id: [0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd],
         channel: 11,

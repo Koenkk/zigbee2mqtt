@@ -69,7 +69,7 @@ describe('Logger', () => {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
-        settings.set(['advanced', 'log_folders_to_keep'], 15);
+        settings.set(['advanced', 'log_directories_to_keep'], 15);
         expect(fs.readdirSync(dir.name).length).toBe(20);
         logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(15);
