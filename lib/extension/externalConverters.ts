@@ -1,6 +1,6 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
-import {addDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
+import {addExternalDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import ExternalJSExtension from './externalJS';
@@ -46,7 +46,7 @@ export default class ExternalConverters extends ExternalJSExtension<ModuleExport
             for (const definition of this.getDefinitions(module)) {
                 definition.externalConverterName = name;
 
-                addDefinition(definition);
+                addExternalDefinition(definition);
                 logger.info(`Loaded external converter '${name}'.`);
             }
 
