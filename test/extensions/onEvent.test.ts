@@ -11,8 +11,6 @@ import * as settings from '../../lib/util/settings';
 
 const mockOnEvent = vi.fn();
 const mockLivoloOnEvent = vi.fn();
-const mappedLivolo = zhc.findByModel('TI0001')!;
-mappedLivolo.onEvent = mockLivoloOnEvent;
 // @ts-expect-error mock
 zhc.onEvent = mockOnEvent;
 
@@ -20,6 +18,14 @@ const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
 describe('Extension: OnEvent', () => {
     let controller: Controller;
+
+    beforeAll(async () => {
+        const mappedLivolo = (await zhc.findByDevice(
+            // @ts-expect-error mock
+            {modelID: 'TI0001'},
+        ))!;
+        mappedLivolo.onEvent = mockLivoloOnEvent;
+    });
 
     beforeEach(async () => {
         vi.useFakeTimers();
