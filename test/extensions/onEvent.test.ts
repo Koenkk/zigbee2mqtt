@@ -20,10 +20,7 @@ describe('Extension: OnEvent', () => {
     let controller: Controller;
 
     beforeAll(async () => {
-        const mappedLivolo = (await zhc.findByDevice(
-            // @ts-expect-error mock
-            {modelID: 'TI0001'},
-        ))!;
+        const mappedLivolo = (await zhc.findByDevice(devices.LIVOLO))!;
         mappedLivolo.onEvent = mockLivoloOnEvent;
     });
 
