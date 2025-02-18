@@ -1,11 +1,11 @@
 import type * as zhc from 'zigbee-herdsman-converters';
 
-import {addDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
+import {addExternalDefinition, removeExternalDefinitions} from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import ExternalJSExtension from './externalJS';
 
-type ModuleExports = zhc.Definition | zhc.Definition[];
+type ModuleExports = zhc.ExternalDefinitionWithExtend | zhc.ExternalDefinitionWithExtend[];
 
 export default class ExternalConverters extends ExternalJSExtension<ModuleExports> {
     constructor(
@@ -43,10 +43,11 @@ export default class ExternalConverters extends ExternalJSExtension<ModuleExport
         try {
             removeExternalDefinitions(name);
 
-            for (const definition of this.getDefinitions(module)) {
+            const definitions = Array.isArray(module) ? module : [module];
+            for (const definition of definitions) {
                 definition.externalConverterName = name;
 
-                addDefinition(definition);
+                addExternalDefinition(definition);
                 logger.info(`Loaded external converter '${name}'.`);
             }
 
@@ -60,9 +61,5 @@ export default class ExternalConverters extends ExternalJSExtension<ModuleExport
 
             throw error;
         }
-    }
-
-    private getDefinitions(module: ModuleExports): zhc.Definition[] {
-        return Array.isArray(module) ? module : [module];
     }
 }

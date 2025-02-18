@@ -9,6 +9,9 @@ import assert from 'node:assert';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 
+import * as zhc from 'zigbee-herdsman-converters';
+import {KeyValueAny} from 'zigbee-herdsman-converters/lib/types';
+
 import {Controller} from '../../lib/controller';
 import HomeAssistant from '../../lib/extension/homeassistant';
 import * as settings from '../../lib/util/settings';
@@ -79,7 +82,12 @@ describe('Extension: HomeAssistant', () => {
 
     it('Should not have duplicate type/object_ids in a mapping', async () => {
         const duplicated: string[] = [];
-        (await import('zigbee-herdsman-converters')).definitions.forEach((d) => {
+
+        (await import('zigbee-herdsman-converters/devices/index')).default.forEach((baseDefinition) => {
+            const d = zhc.prepareDefinition(
+                // @ts-expect-error inferred type is wrong
+                baseDefinition,
+            );
             const exposes = typeof d.exposes == 'function' ? d.exposes(undefined, undefined) : d.exposes;
             const device = {
                 definition: d,
@@ -2256,7 +2264,7 @@ describe('Extension: HomeAssistant', () => {
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
-        let payload = {
+        let payload: KeyValueAny = {
             name: 'Chill scene',
             command_topic: 'zigbee2mqtt/bulb_color_2/set',
             payload_on: '{ "scene_recall": 1 }',
