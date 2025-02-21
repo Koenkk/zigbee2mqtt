@@ -205,6 +205,10 @@ export const DEFAULT_CONFIGURATION = {
         '0x000b57cdfec6a5b3': {
             friendly_name: 'hue_twilight',
         },
+        '0x00124b00cfcf3298': {
+            friendly_name: 'fanbee',
+            retain: true,
+        },
     },
     groups: {
         1: {
