@@ -1,5 +1,4 @@
 import type {IClientPublishOptions} from 'mqtt';
-import type * as SdNotify from 'sd-notify';
 
 import type {Zigbee2MQTTAPI} from './types/api';
 
@@ -30,11 +29,10 @@ import ExtensionReceive from './extension/receive';
 import MQTT from './mqtt';
 import State from './state';
 import logger from './util/logger';
+import * as sdNotify from './util/sd-notify';
 import * as settings from './util/settings';
 import utils from './util/utils';
 import Zigbee from './zigbee';
-
-type SdNotifyType = typeof SdNotify;
 
 const AllExtensions = [
     ExtensionPublish,
@@ -73,7 +71,6 @@ export class Controller {
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
-    private sdNotify: SdNotifyType | undefined;
 
     constructor(restartCallback: () => Promise<void>, exitCallback: (code: number, restart: boolean) => Promise<void>) {
         logger.init();
@@ -129,11 +126,13 @@ export class Controller {
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
 
         try {
-            this.sdNotify = process.env.NOTIFY_SOCKET ? await import('sd-notify') : undefined;
+            await sdNotify.init();
             logger.debug('sd-notify loaded');
             /* v8 ignore start */
         } catch {
-            logger.debug('sd-notify is not installed');
+            logger.error('sd-notify is not available, but service was started with Type=notify');
+            logger.error('Either make sure sd-notify is available, or switch service to Type=simple');
+            await this.exit(1);
         }
         /* v8 ignore stop */
 
@@ -198,11 +197,7 @@ export class Controller {
 
         logger.info(`Zigbee2MQTT started!`);
 
-        const watchdogInterval = this.sdNotify?.watchdogInterval() || 0;
-        if (watchdogInterval > 0) {
-            this.sdNotify?.startWatchdogMode(Math.floor(watchdogInterval / 2));
-        }
-        this.sdNotify?.ready();
+        sdNotify.started();
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -227,7 +222,7 @@ export class Controller {
     }
 
     async stop(restart = false): Promise<void> {
-        this.sdNotify?.stopping(process.pid);
+        sdNotify.stopping();
 
         // Call extensions
         await this.callExtensions('stop', this.extensions);
@@ -246,7 +241,7 @@ export class Controller {
             code = 1;
         }
 
-        this.sdNotify?.stopWatchdogMode();
+        sdNotify.stopped();
         return await this.exit(code, restart);
     }
 

@@ -24,16 +24,7 @@ import {Controller as ZHController} from 'zigbee-herdsman';
 import {Controller} from '../lib/controller';
 import * as settings from '../lib/util/settings';
 
-process.env.NOTIFY_SOCKET = 'mocked';
 const LOG_MQTT_NS = 'z2m:mqtt';
-
-vi.mock('sd-notify', () => ({
-    watchdogInterval: vi.fn(() => 3000),
-    startWatchdogMode: vi.fn(),
-    stopWatchdogMode: vi.fn(),
-    ready: vi.fn(),
-    stopping: vi.fn(),
-}));
 
 const mocksClear = [
     mockZHController.stop,
