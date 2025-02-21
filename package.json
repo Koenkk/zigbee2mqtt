@@ -76,7 +76,6 @@
         "@types/node": "^22.13.5",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.18",
-        "@types/sd-notify": "^2.8.2",
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.5.14",
         "@vitest/coverage-v8": "^3.0.7",
@@ -97,6 +96,6 @@
         "zigbee2mqtt": "cli.js"
     },
     "optionalDependencies": {
-        "sd-notify": "^2.8.0"
+        "unix-dgram": "^2.0.6"
     }
 }
