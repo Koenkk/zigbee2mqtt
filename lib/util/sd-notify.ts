@@ -9,8 +9,12 @@ let socket: UnixDgramSocket | undefined;
 let watchdog: NodeJS.Timeout | undefined;
 
 function sendToSystemd(msg: string): void {
-    if (!socket) return;
+    if (!socket) {
+        return;
+    }
+
     const buffer = Buffer.from(msg);
+
     socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err: Error | undefined) => {
         /* v8 ignore start */
         if (err) {
@@ -21,7 +25,10 @@ function sendToSystemd(msg: string): void {
 }
 
 export async function init(): Promise<void> {
-    if (!process.env.NOTIFY_SOCKET) return;
+    if (!process.env.NOTIFY_SOCKET) {
+        return;
+    }
+
     try {
         const {createSocket} = await import('unix-dgram');
         socket = createSocket('unix_dgram');
@@ -38,12 +45,18 @@ export async function init(): Promise<void> {
 
 export function started(): void {
     sendToSystemd('READY=1');
-    if (!socket || !process.env.WATCHDOG_USEC || watchdog) return;
+
+    if (!socket || !process.env.WATCHDOG_USEC || watchdog) {
+        return;
+    }
+
     const num = Math.max(0, parseInt(process.env.WATCHDOG_USEC, 10));
+
     if (!num) {
         logger.warning(`WATCHDOG_USEC invalid: "${process.env.WATCHDOG_USEC}", parsed to "${num}"`);
         return;
     }
+
     // Convert us to ms, send twice as frequently as the timeout
     const interval = num / 1000 / 2;
     watchdog = setInterval(() => sendToSystemd('WATCHDOG=1'), interval);
@@ -54,7 +67,11 @@ export function stopping(): void {
 }
 
 export function stopped(): void {
-    if (!watchdog) return;
+    if (!watchdog) {
+        return;
+    }
+
     clearInterval(watchdog);
+
     watchdog = undefined;
 }
