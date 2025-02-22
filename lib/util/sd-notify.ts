@@ -1,77 +1,59 @@
-import type {UnixDgramSocket} from 'unix-dgram';
+import {platform} from 'node:os';
 
 import logger from './logger';
 
-// Handle sd_notify protocol, see https://www.freedesktop.org/software/systemd/man/latest/sd_notify.html
-// All methods in here will be no-ops if run on unsupported platforms or without Type=notify
-
-let socket: UnixDgramSocket | undefined;
-let watchdog: NodeJS.Timeout | undefined;
-
-function sendToSystemd(msg: string): void {
-    if (!socket) {
-        return;
-    }
-
-    const buffer = Buffer.from(msg);
-
-    socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err: Error | undefined) => {
-        /* v8 ignore start */
-        if (err) {
-            logger.warning(`Failed to send "${msg}" to systemd: ${err.message}`);
-        }
-        /* v8 ignore stop */
-    });
-}
-
-export async function init(): Promise<void> {
+/**
+ * Handle sd_notify protocol, @see https://www.freedesktop.org/software/systemd/man/latest/sd_notify.html
+ * No-op if running on unsupported platforms or without Type=notify
+ */
+export async function initSdNotify(): Promise<{stopping: () => void; stop: () => void} | undefined> {
     if (!process.env.NOTIFY_SOCKET) {
         return;
     }
 
     try {
         const {createSocket} = await import('unix-dgram');
-        socket = createSocket('unix_dgram');
-        /* v8 ignore start */
+        const socket = createSocket('unix_dgram');
+        const sendToSystemd = (msg: string): void => {
+            const buffer = Buffer.from(msg);
+
+            socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err) => {
+                if (err) {
+                    logger.warning(`Failed to send "${msg}" to systemd: ${err.message}`);
+                }
+            });
+        };
+        const stopping = (): void => sendToSystemd('STOPPING=1');
+
+        sendToSystemd('READY=1');
+
+        const wdUSec = process.env.WATCHDOG_USEC !== undefined ? Math.max(0, parseInt(process.env.WATCHDOG_USEC, 10)) : -1;
+
+        if (wdUSec > 0) {
+            // Convert us to ms, send twice as frequently as the timeout
+            const watchdogInterval = setInterval(() => sendToSystemd('WATCHDOG=1'), wdUSec / 1000 / 2);
+
+            return {
+                stopping,
+                stop: (): void => clearInterval(watchdogInterval),
+            };
+        }
+
+        if (wdUSec !== -1) {
+            logger.warning(`WATCHDOG_USEC invalid: "${process.env.WATCHDOG_USEC}", parsed to "${wdUSec}"`);
+        }
+
+        return {
+            stopping,
+            stop: (): void => {},
+        };
     } catch (error) {
-        // Ignore error on Windows if not running on WSL, as UNIX sockets don't exist
-        // on Windows. Unlikely that NOTIFY_SOCKET is set anyways but better be safe.
-        if (process.platform === 'win32' && !process.env.WSL_DISTRO_NAME) return;
-        // Otherwise, pass on exception, so main process can bail out immediately
-        throw error;
+        console.log('1');
+        // Ignore error on Windows if not running on WSL, as UNIX sockets don't exist on Windows.
+        // Unlikely that NOTIFY_SOCKET is set anyways but better be safe.
+        if (platform() !== 'win32' || process.env.WSL_DISTRO_NAME) {
+            console.log('2');
+            throw error;
+        }
     }
-    /* v8 ignore start */
-}
-
-export function started(): void {
-    sendToSystemd('READY=1');
-
-    if (!socket || !process.env.WATCHDOG_USEC || watchdog) {
-        return;
-    }
-
-    const num = Math.max(0, parseInt(process.env.WATCHDOG_USEC, 10));
-
-    if (!num) {
-        logger.warning(`WATCHDOG_USEC invalid: "${process.env.WATCHDOG_USEC}", parsed to "${num}"`);
-        return;
-    }
-
-    // Convert us to ms, send twice as frequently as the timeout
-    const interval = num / 1000 / 2;
-    watchdog = setInterval(() => sendToSystemd('WATCHDOG=1'), interval);
-}
-
-export function stopping(): void {
-    sendToSystemd('STOPPING=1');
-}
-
-export function stopped(): void {
-    if (!watchdog) {
-        return;
-    }
-
-    clearInterval(watchdog);
-
-    watchdog = undefined;
 }

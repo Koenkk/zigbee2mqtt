@@ -14,6 +14,7 @@ import {devices, mockController as mockZHController, events as mockZHEvents, ret
 import type {Mock, MockInstance} from 'vitest';
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -25,6 +26,12 @@ import {Controller} from '../lib/controller';
 import * as settings from '../lib/util/settings';
 
 const LOG_MQTT_NS = 'z2m:mqtt';
+
+const mockUnixDgramSend = vi.fn();
+
+vi.mock('unix-dgram', () => ({
+    createSocket: vi.fn(() => ({send: mockUnixDgramSend})),
+}));
 
 const mocksClear = [
     mockZHController.stop,
@@ -40,6 +47,7 @@ const mocksClear = [
     mockLogger.debug,
     mockLogger.info,
     mockLogger.error,
+    mockUnixDgramSend,
 ];
 
 describe('Controller', () => {
@@ -329,7 +337,7 @@ describe('Controller', () => {
         expect(mockExit).toHaveBeenCalledWith(0, true);
     });
 
-    it('Start controller and stop', async () => {
+    it('Start controller and stop without SdNotify', async () => {
         mockZHController.stop.mockRejectedValueOnce('failed');
         await controller.start();
         await controller.stop();
@@ -337,6 +345,24 @@ describe('Controller', () => {
         expect(mockZHController.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
+        expect(mockUnixDgramSend).toHaveBeenCalledTimes(0);
+    });
+
+    it('Start controller and stop with SdNotify', async () => {
+        vi.spyOn(os, 'platform').mockImplementationOnce(() => 'linux');
+
+        process.env.NOTIFY_SOCKET = 'mocked'; // coverage
+
+        mockZHController.stop.mockRejectedValueOnce('failed');
+        await controller.start();
+        await controller.stop();
+        expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
+        expect(mockZHController.stop).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
+        expect(mockUnixDgramSend).toHaveBeenCalledTimes(2);
+
+        delete process.env.NOTIFY_SOCKET;
     });
 
     it('Start controller adapter disconnects', async () => {

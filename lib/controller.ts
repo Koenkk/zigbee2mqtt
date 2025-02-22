@@ -29,7 +29,7 @@ import ExtensionReceive from './extension/receive';
 import MQTT from './mqtt';
 import State from './state';
 import logger from './util/logger';
-import * as sdNotify from './util/sd-notify';
+import {initSdNotify} from './util/sd-notify';
 import * as settings from './util/settings';
 import utils from './util/utils';
 import Zigbee from './zigbee';
@@ -71,6 +71,7 @@ export class Controller {
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
     private extensions: Extension[];
     private extensionArgs: ExtensionArgs;
+    private sdNotify: Awaited<ReturnType<typeof initSdNotify>>;
 
     constructor(restartCallback: () => Promise<void>, exitCallback: (code: number, restart: boolean) => Promise<void>) {
         logger.init();
@@ -124,17 +125,6 @@ export class Controller {
 
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
-
-        try {
-            await sdNotify.init();
-            logger.debug('sd-notify loaded');
-            /* v8 ignore start */
-        } catch {
-            logger.error('sd-notify is not available, but service was started with Type=notify');
-            logger.error('Either make sure sd-notify is available, or switch service to Type=simple');
-            await this.exit(1);
-        }
-        /* v8 ignore stop */
 
         // Start zigbee
         try {
@@ -197,7 +187,7 @@ export class Controller {
 
         logger.info(`Zigbee2MQTT started!`);
 
-        sdNotify.started();
+        this.sdNotify = await initSdNotify();
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -222,7 +212,7 @@ export class Controller {
     }
 
     async stop(restart = false): Promise<void> {
-        sdNotify.stopping();
+        this.sdNotify?.stopping();
 
         // Call extensions
         await this.callExtensions('stop', this.extensions);
@@ -241,7 +231,7 @@ export class Controller {
             code = 1;
         }
 
-        sdNotify.stopped();
+        this.sdNotify?.stop();
         return await this.exit(code, restart);
     }
 
