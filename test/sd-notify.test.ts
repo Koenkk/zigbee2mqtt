@@ -2,12 +2,17 @@ import {mockLogger} from './mocks/logger';
 
 import {initSdNotify} from '../lib/util/sd-notify';
 
-let supported = true;
+const mockPlatform = vi.fn(() => 'linux');
+
+vi.mock('node:os', () => ({
+    platform: vi.fn(() => mockPlatform()),
+}));
+
 const mockUnixDgramSocket = {
     send: vi.fn(),
 };
 const mockCreateSocket = vi.fn(() => {
-    if (supported) {
+    if (mockPlatform() !== 'win32') {
         return mockUnixDgramSocket;
     }
 
@@ -16,12 +21,6 @@ const mockCreateSocket = vi.fn(() => {
 
 vi.mock('unix-dgram', () => ({
     createSocket: mockCreateSocket,
-}));
-
-const mockPlatform = vi.fn(() => 'linux');
-
-vi.mock('node:os', () => ({
-    platform: vi.fn(() => mockPlatform()),
 }));
 
 const mocksClear = [
@@ -53,7 +52,6 @@ describe('sd-notify', () => {
         delete process.env.NOTIFY_SOCKET;
         delete process.env.WATCHDOG_USEC;
         delete process.env.WSL_DISTRO_NAME;
-        supported = true;
     });
 
     it('No socket', async () => {
@@ -65,26 +63,31 @@ describe('sd-notify', () => {
     });
 
     it('Error on unsupported platform', async () => {
-        mockPlatform.mockImplementationOnce(() => 'win32');
+        // also called by `mockCreateSocket`
+        mockPlatform.mockImplementationOnce(() => 'win32').mockImplementationOnce(() => 'win32');
 
         process.env.NOTIFY_SOCKET = 'mocked';
-        supported = false;
         const res = await initSdNotify();
 
         expect(mockCreateSocket).toHaveBeenCalledTimes(1);
         expect(res).toBeUndefined();
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(0);
+        expect(mockLogger.warning).toHaveBeenCalledWith(`NOTIFY_SOCKET env is set: Unix datagrams not available on this platform`);
     });
 
     it('Error on supported platform', async () => {
+        // NOTE: `import('unix-dgram')` can also fail in similar way when bindings are missing (not compiled)
         mockCreateSocket.mockImplementationOnce(() => {
             throw new Error('Error create socket');
         });
 
         process.env.NOTIFY_SOCKET = 'mocked';
+        const res = await initSdNotify();
 
-        await expect(initSdNotify()).rejects.toThrow('Error create socket');
         expect(mockCreateSocket).toHaveBeenCalledTimes(1);
+        expect(res).toBeUndefined();
+        expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(0);
+        expect(mockLogger.error).toHaveBeenCalledWith('Could not init sd_notify: Error create socket');
     });
 
     it('Socket only', async () => {
