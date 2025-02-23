@@ -97,7 +97,7 @@ describe('sd-notify', () => {
 
         await vi.advanceTimersByTimeAsync(7500);
 
-        res!.stopping();
+        res!.notifyStopping();
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(2);
         expectSocketNthSend(2, 'STOPPING=1');
 
@@ -116,7 +116,7 @@ describe('sd-notify', () => {
 
         await vi.advanceTimersByTimeAsync(7500);
 
-        res!.stopping();
+        res!.notifyStopping();
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(2);
         expectSocketNthSend(2, 'STOPPING=1');
 
@@ -137,7 +137,7 @@ describe('sd-notify', () => {
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(2);
         expectSocketNthSend(2, 'WATCHDOG=1');
 
-        res!.stopping();
+        res!.notifyStopping();
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(3);
         expectSocketNthSend(3, 'STOPPING=1');
 

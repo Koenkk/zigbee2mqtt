@@ -212,7 +212,7 @@ export class Controller {
     }
 
     async stop(restart = false): Promise<void> {
-        this.sdNotify?.stopping();
+        this.sdNotify?.notifyStopping();
 
         // Call extensions
         await this.callExtensions('stop', this.extensions);
