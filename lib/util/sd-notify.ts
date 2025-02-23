@@ -6,7 +6,7 @@ import logger from './logger';
  * Handle sd_notify protocol, @see https://www.freedesktop.org/software/systemd/man/latest/sd_notify.html
  * No-op if running on unsupported platforms or without Type=notify
  */
-export async function initSdNotify(): Promise<{stopping: () => void; stop: () => void} | undefined> {
+export async function initSdNotify(): Promise<{notifyStopping: () => void; stop: () => void} | undefined> {
     if (!process.env.NOTIFY_SOCKET) {
         return;
     }
@@ -23,7 +23,7 @@ export async function initSdNotify(): Promise<{stopping: () => void; stop: () =>
                 }
             });
         };
-        const stopping = (): void => sendToSystemd('STOPPING=1');
+        const notifyStopping = (): void => sendToSystemd('STOPPING=1');
 
         sendToSystemd('READY=1');
 
@@ -34,7 +34,7 @@ export async function initSdNotify(): Promise<{stopping: () => void; stop: () =>
             const watchdogInterval = setInterval(() => sendToSystemd('WATCHDOG=1'), wdUSec / 1000 / 2);
 
             return {
-                stopping,
+                notifyStopping,
                 stop: (): void => clearInterval(watchdogInterval),
             };
         }
@@ -44,15 +44,13 @@ export async function initSdNotify(): Promise<{stopping: () => void; stop: () =>
         }
 
         return {
-            stopping,
+            notifyStopping,
             stop: (): void => {},
         };
     } catch (error) {
-        console.log('1');
         // Ignore error on Windows if not running on WSL, as UNIX sockets don't exist on Windows.
         // Unlikely that NOTIFY_SOCKET is set anyways but better be safe.
         if (platform() !== 'win32' || process.env.WSL_DISTRO_NAME) {
-            console.log('2');
             throw error;
         }
     }
