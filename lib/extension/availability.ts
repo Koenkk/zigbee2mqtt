@@ -243,6 +243,7 @@ export default class Availability extends Extension {
                         options,
                         state,
                         device: device.zh,
+                        publish: (payload: KeyValue) => this.publishEntityState(devicez payload),
                     };
 
                     try {

@@ -231,6 +231,7 @@ export default class Publish extends Extension {
                 state: entityState,
                 membersState,
                 mapped: definition,
+                publish: (payload: KeyValue) => this.publishEntityState(re, payload),
             };
 
             // Strip endpoint name from meta.message properties.
