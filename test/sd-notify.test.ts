@@ -91,7 +91,7 @@ describe('sd-notify', () => {
         process.env.NOTIFY_SOCKET = 'mocked';
         const res = await initSdNotify();
 
-        expect(res).toStrictEqual({stopping: expect.any(Function), stop: expect.any(Function)});
+        expect(res).toStrictEqual({notifyStopping: expect.any(Function), stop: expect.any(Function)});
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(1);
         expectSocketNthSend(1, 'READY=1');
 
@@ -110,7 +110,7 @@ describe('sd-notify', () => {
         process.env.WATCHDOG_USEC = 'mocked';
         const res = await initSdNotify();
 
-        expect(res).toStrictEqual({stopping: expect.any(Function), stop: expect.any(Function)});
+        expect(res).toStrictEqual({notifyStopping: expect.any(Function), stop: expect.any(Function)});
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(1);
         expectSocketNthSend(1, 'READY=1');
 
@@ -129,7 +129,7 @@ describe('sd-notify', () => {
         process.env.WATCHDOG_USEC = '10000000';
         const res = await initSdNotify();
 
-        expect(res).toStrictEqual({stopping: expect.any(Function), stop: expect.any(Function)});
+        expect(res).toStrictEqual({notifyStopping: expect.any(Function), stop: expect.any(Function)});
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(1);
         expectSocketNthSend(1, 'READY=1');
 
@@ -163,7 +163,7 @@ describe('sd-notify', () => {
         process.env.NOTIFY_SOCKET = 'mocked';
         const res = await initSdNotify();
 
-        expect(res).toStrictEqual({stopping: expect.any(Function), stop: expect.any(Function)});
+        expect(res).toStrictEqual({notifyStopping: expect.any(Function), stop: expect.any(Function)});
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(1);
         expectSocketNthSend(1, 'READY=1');
 
