@@ -189,7 +189,7 @@ jobs:
 
             - name: Install dependencies
               # --ignore-scripts prevents the serialport build which often fails on Windows
-              run: pnpm i --frozen-lockfile --ignore-scripts
+              run: pnpm i --frozen-lockfile
 
             - name: Build
               run: pnpm run build
