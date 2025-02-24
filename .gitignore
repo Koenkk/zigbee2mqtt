@@ -45,6 +45,9 @@ typings/
 # Optional npm cache directory
 .npm
 
+# Optional pnpm cache directory
+.pnpm-store
+
 # Optional eslint cache
 .eslintcache
 
@@ -68,6 +71,7 @@ tsconfig.tsbuildinfo
 
 # IDE specific folders
 .idea
+.*.swp
 
 # Ignore config
 data/*
