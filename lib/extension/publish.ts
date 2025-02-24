@@ -231,6 +231,7 @@ export default class Publish extends Extension {
                 state: entityState,
                 membersState,
                 mapped: definition,
+				/* v8 ignore next */
                 publish: (payload: KeyValue) => this.publishEntityState(re, payload),
             };
 
