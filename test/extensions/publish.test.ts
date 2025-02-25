@@ -8,6 +8,7 @@ import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {toZigbee} from 'zigbee-herdsman-converters';
+import * as zhcGlobalStore from 'zigbee-herdsman-converters/lib/store';
 
 import {Controller} from '../../lib/controller';
 import {loadTopicGetSetRegex} from '../../lib/extension/publish';
@@ -58,7 +59,7 @@ describe('Extension: Publish', () => {
             g.command.mockClear();
         });
 
-        toZigbee.__clearStore__();
+        zhcGlobalStore.clear();
     });
 
     afterAll(async () => {
@@ -1511,7 +1512,7 @@ describe('Extension: Publish', () => {
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
         await flushPromises();
 
-        toZigbee.__clearStore__();
+        zhcGlobalStore.clear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', transition: 1.0}));
         await flushPromises();
