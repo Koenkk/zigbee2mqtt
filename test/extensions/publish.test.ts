@@ -7,7 +7,6 @@ import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 
-import {toZigbee} from 'zigbee-herdsman-converters';
 import * as zhcGlobalStore from 'zigbee-herdsman-converters/lib/store';
 
 import {Controller} from '../../lib/controller';
