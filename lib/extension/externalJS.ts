@@ -2,7 +2,6 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from '../types/api';
 
 import fs from 'node:fs';
 import path from 'node:path';
-import {Context, runInNewContext} from 'node:vm';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -64,7 +63,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         for (const fileName of fs.readdirSync(this.basePath)) {
-            if (fileName.endsWith('.js')) {
+            if (fileName.endsWith('.js') || fileName.endsWith('.cjs') || fileName.endsWith('.mjs')) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
             }
         }
@@ -100,9 +99,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
     }
 
-    protected abstract removeJS(name: string, module: M): Promise<void>;
+    protected abstract removeJS(name: string, mod: M): Promise<void>;
 
-    protected abstract loadJS(name: string, module: M): Promise<void>;
+    protected abstract loadJS(name: string, mod: M, newName?: string): Promise<void>;
 
     @bind private async remove(
         message: Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
@@ -115,8 +114,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const toBeRemoved = this.getFilePath(name);
 
         if (fs.existsSync(toBeRemoved)) {
-            await this.removeJS(name, this.loadModuleFromText(this.getFileCode(name), name));
+            const mod = await import(toBeRemoved);
 
+            await this.removeJS(name, mod.default);
             fs.rmSync(toBeRemoved, {force: true});
             logger.info(`${name} (${toBeRemoved}) removed.`);
             await this.publishExternalJS();
@@ -135,25 +135,47 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         const {name, code} = message;
+        const filePath = this.getFilePath(name, true);
+        let newFilePath = filePath;
+        let newName = name;
+
+        if (fs.existsSync(filePath)) {
+            // if file already exist, version it to bypass node module caching
+            const versionMatch = name.match(/\.(\d+)\.(c|m)?js$/);
+
+            if (versionMatch) {
+                const version = parseInt(versionMatch[1], 10);
+                newName = name.replace(`.${version}.`, `.${version + 1}.`);
+            } else {
+                const ext = path.extname(name);
+                newName = name.replace(ext, `.1${ext}`);
+            }
+
+            newFilePath = this.getFilePath(newName, true);
+        }
 
         try {
-            await this.loadJS(name, this.loadModuleFromText(code, name));
+            fs.writeFileSync(newFilePath, code, 'utf8');
 
-            const filePath = this.getFilePath(name, true);
+            const mod = await import(newFilePath);
 
-            fs.writeFileSync(filePath, code, 'utf8');
-            logger.info(`${name} loaded. Contents written to '${filePath}'.`);
+            await this.loadJS(name, mod.default, newName);
+            logger.info(`${newName} loaded. Contents written to '${newFilePath}'.`);
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
         } catch (error) {
-            return utils.getResponse(message, {}, `${name} contains invalid code: ${(error as Error).message}`);
+            fs.rmSync(newFilePath, {force: true});
+
+            return utils.getResponse(message, {}, `${newName} contains invalid code: ${(error as Error).message}`);
         }
     }
 
     private async loadFiles(): Promise<void> {
         for (const extension of this.getFiles()) {
-            await this.loadJS(extension.name, this.loadModuleFromText(extension.code, extension.name));
+            const mod = await import(path.join(this.basePath, extension.name));
+
+            await this.loadJS(extension.name, mod.default);
         }
     }
 
@@ -168,24 +190,5 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             settings.get().mqtt.base_topic,
             true,
         );
-    }
-
-    private loadModuleFromText(moduleCode: string, name: string): M {
-        const moduleFakePath = path.join(__dirname, '..', '..', 'data', 'extension', name);
-        const sandbox: Context = {
-            require: require,
-            module: {},
-            console,
-            setTimeout,
-            clearTimeout,
-            setInterval,
-            clearInterval,
-            setImmediate,
-            clearImmediate,
-        };
-
-        runInNewContext(moduleCode, sandbox, moduleFakePath);
-
-        return sandbox.module.exports;
     }
 }
