@@ -257,7 +257,7 @@ describe('Extension: ExternalConverters', () => {
 
         it('updates after edit from MQTT', async () => {
             const converterName = 'mock-external-converter.js';
-            let converterCode = getFileCode('cjs', 'mock-external-converter.js');
+            let converterCode = getFileCode('cjs', converterName);
 
             useAssets('cjs');
             await controller.start();
@@ -273,7 +273,7 @@ describe('Extension: ExternalConverters', () => {
                 'zigbee2mqtt/bridge/converters',
                 stringify([
                     {name: 'mock-external-converter-multiple.js', code: getFileCode('cjs', 'mock-external-converter-multiple.js')},
-                    {name: converterName, code: getFileCode('cjs', converterName)},
+                    {name: converterName, code: converterCode},
                 ]),
                 {retain: true, qos: 0},
             );
@@ -291,6 +291,14 @@ describe('Extension: ExternalConverters', () => {
                 vendor: 'external',
                 zigbeeModel: ['external_converter_device'],
             });
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/converters',
+                stringify([
+                    {name: 'mock-external-converter-multiple.js', code: getFileCode('cjs', 'mock-external-converter-multiple.js')},
+                    {name: 'mock-external-converter.1.js', code: converterCode},
+                ]),
+                {retain: true, qos: 0},
+            );
             expect(zhcAddExternalDefinitionSpy).toHaveBeenLastCalledWith(
                 expect.objectContaining({
                     mock: true,
@@ -315,6 +323,14 @@ describe('Extension: ExternalConverters', () => {
                 vendor: 'external',
                 zigbeeModel: ['external_converter_device'],
             });
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/converters',
+                stringify([
+                    {name: 'mock-external-converter-multiple.js', code: getFileCode('cjs', 'mock-external-converter-multiple.js')},
+                    {name: 'mock-external-converter.2.js', code: converterCode},
+                ]),
+                {retain: true, qos: 0},
+            );
             expect(zhcAddExternalDefinitionSpy).toHaveBeenLastCalledWith(
                 expect.objectContaining({
                     mock: true,

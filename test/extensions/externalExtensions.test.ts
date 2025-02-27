@@ -137,7 +137,7 @@ describe('Extension: ExternalExtensions', () => {
 
         it('updates after edit from MQTT', async () => {
             const extensionName = 'exampleExtension.js';
-            let extensionCode = getFileCode('cjs', 'exampleExtension.js');
+            let extensionCode = getFileCode('cjs', extensionName);
 
             useAssets('cjs');
             await controller.start();
@@ -151,7 +151,7 @@ describe('Extension: ExternalExtensions', () => {
                 'zigbee2mqtt/bridge/extensions',
                 stringify([
                     {name: 'example2Extension.js', code: getFileCode('cjs', 'example2Extension.js')},
-                    {name: extensionName, code: getFileCode('cjs', extensionName)},
+                    {name: extensionName, code: extensionCode},
                 ]),
                 {retain: true, qos: 0},
             );
@@ -165,6 +165,14 @@ describe('Extension: ExternalExtensions', () => {
             });
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start - edited', {retain: false, qos: 0});
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/extensions',
+                stringify([
+                    {name: 'example2Extension.js', code: getFileCode('cjs', 'example2Extension.js')},
+                    {name: 'exampleExtension.1.js', code: extensionCode},
+                ]),
+                {retain: true, qos: 0},
+            );
 
             extensionCode = extensionCode.replace("'call from start - edited'", "'call from start'");
 
@@ -175,6 +183,14 @@ describe('Extension: ExternalExtensions', () => {
             });
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/extensions',
+                stringify([
+                    {name: 'example2Extension.js', code: getFileCode('cjs', 'example2Extension.js')},
+                    {name: 'exampleExtension.2.js', code: extensionCode},
+                ]),
+                {retain: true, qos: 0},
+            );
         });
     });
 
