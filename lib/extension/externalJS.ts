@@ -13,6 +13,7 @@ import utils from '../util/utils';
 import Extension from './extension';
 
 const SUPPORTED_OPERATIONS = ['save', 'remove'];
+const BACKUP_DIR = 'old';
 
 export default abstract class ExternalJSExtension<M> extends Extension {
     protected mqttTopic: string;
@@ -45,12 +46,12 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         await this.publishExternalJS();
     }
 
-    private getFilePath(name: string, mkBasePath: boolean = false): string {
-        if (mkBasePath && !fs.existsSync(this.basePath)) {
-            fs.mkdirSync(this.basePath, {recursive: true});
+    private getFilePath(name: string, mkBasePath: boolean = false, backup: boolean = false): string {
+        if (mkBasePath && !fs.existsSync(backup ? path.join(this.basePath, BACKUP_DIR) : this.basePath)) {
+            fs.mkdirSync(backup ? path.join(this.basePath, BACKUP_DIR) : this.basePath, {recursive: true});
         }
 
-        return path.join(this.basePath, name);
+        return backup ? path.join(this.basePath, BACKUP_DIR, name) : path.join(this.basePath, name);
     }
 
     protected getFileCode(name: string): string {
@@ -152,6 +153,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             }
 
             newFilePath = this.getFilePath(newName, true);
+
+            // move previous version to backup dir
+            fs.renameSync(filePath, this.getFilePath(name, true, true));
         }
 
         try {
