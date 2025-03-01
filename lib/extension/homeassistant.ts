@@ -170,7 +170,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     eco2: {device_class: 'carbon_dioxide', state_class: 'measurement'},
     eco_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
     energy: {device_class: 'energy', state_class: 'total_increasing'},
-    external_temperature_input: {icon: 'mdi:thermometer'},
+    external_temperature_input: {device_class: 'temperature', icon: 'mdi:thermometer'},
     formaldehyd: {state_class: 'measurement'},
     flow: {device_class: 'volume_flow_rate', state_class: 'measurement'},
     gas_density: {icon: 'mdi:google-circles-communities', state_class: 'measurement'},
