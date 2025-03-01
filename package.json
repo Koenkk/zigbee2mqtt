@@ -94,7 +94,6 @@
         "onlyBuiltDependencies": [
             "@serialport/bindings-cpp",
             "esbuild",
-            "sd-notify",
             "unix-dgram"
         ]
     },
