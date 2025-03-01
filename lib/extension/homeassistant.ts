@@ -536,15 +536,12 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                const colorModes = [
+                discoveryEntry.discovery_payload.supported_color_modes = [
+                    'brightness',
                     hasColorXY && !preferHS ? 'xy' : null,
                     (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                     hasColorTemp ? 'color_temp' : null,
                 ].filter((c) => c);
-
-                if (colorModes.length) {
-                    discoveryEntry.discovery_payload.supported_color_modes = colorModes;
-                }
 
                 if (hasColorTemp) {
                     const colorTemps = (exposes as zhc.Light[])
