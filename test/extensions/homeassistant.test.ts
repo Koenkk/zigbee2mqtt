@@ -117,7 +117,7 @@ describe('Extension: HomeAssistant', () => {
         expect(duplicated).toHaveLength(0);
     });
 
-    it('onlythis Should discover devices and groups', async () => {
+    it('Should discover devices and groups', async () => {
         settings.set(['homeassistant', 'experimental_event_entities'], true);
         await resetExtension();
 
