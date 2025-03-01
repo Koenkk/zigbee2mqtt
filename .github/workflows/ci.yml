@@ -188,8 +188,8 @@ jobs:
                   cache: pnpm
 
             - name: Install dependencies
-              # --ignore-scripts prevents the serialport build which often fails on Windows
-              run: pnpm i --frozen-lockfile --ignore-scripts
+              # --ignore-scripts prevents build on Windows (only for unix-dgram, so doesn't matter, others have pre-builds)
+              run: pnpm i --frozen-lockfile ${{ matrix.os == 'windows-latest' && '--ignore-scripts' || '' }}
 
             - name: Build
               run: pnpm run build
