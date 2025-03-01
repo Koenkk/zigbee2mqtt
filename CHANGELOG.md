@@ -1,5 +1,42 @@
 # Changelog
 
+## [2.1.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.1...2.1.2) (2025-03-01)
+
+
+### Bug Fixes
+
+* Add Home Assistant device class to external_temperature_input entity ([#26535](https://github.com/Koenkk/zigbee2mqtt/issues/26535)) ([e8031ef](https://github.com/Koenkk/zigbee2mqtt/commit/e8031efd2d95658c5f3fe72ee6e2f95dd584b5e8))
+* Allow configuring number of folders of old logs to keep ([#26398](https://github.com/Koenkk/zigbee2mqtt/issues/26398)) ([845e03e](https://github.com/Koenkk/zigbee2mqtt/commit/845e03e48acf1367feadeaae986f3c987bbc164d))
+* Fix Docker build hanging ([#26547](https://github.com/Koenkk/zigbee2mqtt/issues/26547)) ([e050e20](https://github.com/Koenkk/zigbee2mqtt/commit/e050e209b0d273cad6ad0efcf20761f33963da7b))
+* Fix HA MQTT dict entry indicating that an update is progress ([#26267](https://github.com/Koenkk/zigbee2mqtt/issues/26267)) ([b35cdc3](https://github.com/Koenkk/zigbee2mqtt/commit/b35cdc347423b219722c9f9dd0d2a82ded8eb24f))
+* Home Assistant: add `brightness` to `supported_color_modes` ([#26545](https://github.com/Koenkk/zigbee2mqtt/issues/26545)) ([063aba1](https://github.com/Koenkk/zigbee2mqtt/commit/063aba1b6c72901ed2d51a367485092691c358da))
+* Home Assistant: add `is_updating` attribute ([#26231](https://github.com/Koenkk/zigbee2mqtt/issues/26231)) ([1eda69a](https://github.com/Koenkk/zigbee2mqtt/commit/1eda69a50a8f92c3471acdbdc82b41055d5992f2))
+* Home Assistant: add missing `device_class` for some `current` and `power` entities ([#26324](https://github.com/Koenkk/zigbee2mqtt/issues/26324)) ([1e656c2](https://github.com/Koenkk/zigbee2mqtt/commit/1e656c2114d58b96fd7b7750e2e7d255a9175653))
+* Home Assistant: support speed-controlled fans  ([#24483](https://github.com/Koenkk/zigbee2mqtt/issues/24483)) ([7ce5b58](https://github.com/Koenkk/zigbee2mqtt/commit/7ce5b581aa57d828043a1ca75ef7efe7b7bf1619))
+* **ignore:** Add `publish` to `meta` of toZigbee converters ([#26490](https://github.com/Koenkk/zigbee2mqtt/issues/26490)) ([07145ac](https://github.com/Koenkk/zigbee2mqtt/commit/07145accbae6c481f6d6740e66e27ab1baf5eb6d))
+* **ignore:** remove obsolete @types/eslint__js ([d522d2c](https://github.com/Koenkk/zigbee2mqtt/commit/d522d2cd18b8cb77fa50cd457823cfa573622cb7))
+* **ignore:** update dependencies ([#26266](https://github.com/Koenkk/zigbee2mqtt/issues/26266)) ([3e3ceff](https://github.com/Koenkk/zigbee2mqtt/commit/3e3cefff1b7f85f59b6bf529f6593339498561a1))
+* **ignore:** update dependencies ([#26383](https://github.com/Koenkk/zigbee2mqtt/issues/26383)) ([758c566](https://github.com/Koenkk/zigbee2mqtt/commit/758c56647d353e81ea22a34c2fa2665ed76dc149))
+* **ignore:** update dependencies ([#26478](https://github.com/Koenkk/zigbee2mqtt/issues/26478)) ([d2166f2](https://github.com/Koenkk/zigbee2mqtt/commit/d2166f2f4fa1e1e286face994ec4825a70144908))
+* **ignore:** update zigbee-herdsman to 3.2.6 ([#26303](https://github.com/Koenkk/zigbee2mqtt/issues/26303)) ([49fe147](https://github.com/Koenkk/zigbee2mqtt/commit/49fe1479213c928786c64adeb3031ca6fe91250d))
+* **ignore:** update zigbee-herdsman to 3.2.7 ([#26498](https://github.com/Koenkk/zigbee2mqtt/issues/26498)) ([4e650b7](https://github.com/Koenkk/zigbee2mqtt/commit/4e650b72cd187488893213018b619e933835a58e))
+* **ignore:** update zigbee-herdsman-converters to 21.32.0 ([#26245](https://github.com/Koenkk/zigbee2mqtt/issues/26245)) ([8542b35](https://github.com/Koenkk/zigbee2mqtt/commit/8542b35706cefc87c9ec9dccb2980302ea25f100))
+* **ignore:** update zigbee-herdsman-converters to 21.33.0 ([#26258](https://github.com/Koenkk/zigbee2mqtt/issues/26258)) ([97c7485](https://github.com/Koenkk/zigbee2mqtt/commit/97c74852c95536945e33d0388dc5fcd0b132cd7e))
+* **ignore:** update zigbee-herdsman-converters to 21.34.0 ([#26285](https://github.com/Koenkk/zigbee2mqtt/issues/26285)) ([7a0964e](https://github.com/Koenkk/zigbee2mqtt/commit/7a0964ebc905903b4ca5b168d9bd1041b004b4cf))
+* **ignore:** update zigbee-herdsman-converters to 21.35.0 ([#26305](https://github.com/Koenkk/zigbee2mqtt/issues/26305)) ([30d13d6](https://github.com/Koenkk/zigbee2mqtt/commit/30d13d6e5ee9678f7da812bd287128824a535d48))
+* **ignore:** update zigbee-herdsman-converters to 21.36.0 ([#26333](https://github.com/Koenkk/zigbee2mqtt/issues/26333)) ([ba76533](https://github.com/Koenkk/zigbee2mqtt/commit/ba76533c2f241c8362f43ad07d10b2fe084479a0))
+* **ignore:** update zigbee-herdsman-converters to 21.37.0 ([#26367](https://github.com/Koenkk/zigbee2mqtt/issues/26367)) ([dec5ca8](https://github.com/Koenkk/zigbee2mqtt/commit/dec5ca8b3a3703e6289652192657af9a035fe026))
+* **ignore:** update zigbee-herdsman-converters to 21.38.0 ([#26400](https://github.com/Koenkk/zigbee2mqtt/issues/26400)) ([93af062](https://github.com/Koenkk/zigbee2mqtt/commit/93af062a9b84358c866a5a1191ae5895fc6e866f))
+* **ignore:** update zigbee-herdsman-converters to 22.0.1 ([#26418](https://github.com/Koenkk/zigbee2mqtt/issues/26418)) ([7d63a9a](https://github.com/Koenkk/zigbee2mqtt/commit/7d63a9a0f29445044bcfe0f3a4b629266db37654))
+* **ignore:** update zigbee-herdsman-converters to 22.1.0 ([#26445](https://github.com/Koenkk/zigbee2mqtt/issues/26445)) ([40f4147](https://github.com/Koenkk/zigbee2mqtt/commit/40f41477e776b4e75434251d03bf2844fceb7b13))
+* **ignore:** update zigbee-herdsman-converters to 22.2.0 ([#26469](https://github.com/Koenkk/zigbee2mqtt/issues/26469)) ([67e1a02](https://github.com/Koenkk/zigbee2mqtt/commit/67e1a0252517da28629a4c97b4dd610624d451a1))
+* **ignore:** update zigbee-herdsman-converters to 23.0.0 ([44f9fe7](https://github.com/Koenkk/zigbee2mqtt/commit/44f9fe7a1494a9450e247ad353ce788c621f901c))
+* **ignore:** update zigbee-herdsman-converters to 23.1.0 ([#26509](https://github.com/Koenkk/zigbee2mqtt/issues/26509)) ([db7b51a](https://github.com/Koenkk/zigbee2mqtt/commit/db7b51ac801829801656d978aff2605d8bd7b56a))
+* **ignore:** update zigbee-herdsman-converters to 23.1.1 ([#26510](https://github.com/Koenkk/zigbee2mqtt/issues/26510)) ([102857a](https://github.com/Koenkk/zigbee2mqtt/commit/102857a7fec60e3f65887d92b6fe7a2d81add110))
+* **ignore:** update zigbee-herdsman-converters to 23.2.0 ([#26549](https://github.com/Koenkk/zigbee2mqtt/issues/26549)) ([9f72c5c](https://github.com/Koenkk/zigbee2mqtt/commit/9f72c5c4555bda5b347a6a5406f619b9668813ec))
+* Make compatible with pnpm 10 ([#26546](https://github.com/Koenkk/zigbee2mqtt/issues/26546)) ([29d25ae](https://github.com/Koenkk/zigbee2mqtt/commit/29d25aed66a66912fb55ede8751ba8056efb673f))
+* Support FreeBSD for `update.sh` ([#26261](https://github.com/Koenkk/zigbee2mqtt/issues/26261)) ([5e55ef0](https://github.com/Koenkk/zigbee2mqtt/commit/5e55ef045427f78b410e3d292387c3592366f698))
+
 ## [2.1.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.0...2.1.1) (2025-02-06)
 
 
