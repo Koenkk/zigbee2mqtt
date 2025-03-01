@@ -141,7 +141,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['xy', 'color_temp'],
+            supported_color_modes: ['brightness', 'xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -381,7 +381,7 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
-            supported_color_modes: ['color_temp'],
+            supported_color_modes: ['brightness', 'color_temp'],
             min_mireds: 250,
             max_mireds: 454,
             command_topic: 'zigbee2mqtt/bulb/set',
@@ -1633,7 +1633,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group_new',
-            supported_color_modes: ['xy', 'color_temp'],
+            supported_color_modes: ['brightness', 'xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2101,7 +2101,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['xy', 'color_temp'],
+            supported_color_modes: ['brightness', 'xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2145,7 +2145,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['xy', 'color_temp'],
+            supported_color_modes: ['brightness', 'xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2200,7 +2200,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/bulb',
-            supported_color_modes: ['color_temp'],
+            supported_color_modes: ['brightness', 'color_temp'],
             object_id: 'bulb',
             unique_id: '0x000b57fffec6a5b2_light_zigbee2mqtt',
             origin: origin,
