@@ -63,21 +63,21 @@ jobs:
                   platforms: all
 
             - name: Docker setup - Buildx
-              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+              # if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               id: buildx
               uses: docker/setup-buildx-action@v3
               with:
                   version: latest
 
             - name: dev - Docker build and push
-              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               uses: docker/build-push-action@v6
               with:
                   context: .
                   file: docker/Dockerfile
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
                   tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
-                  push: true
+                  push: false
                   build-args: |
                       COMMIT=${{ github.sha }}
                       VERSION=dev
