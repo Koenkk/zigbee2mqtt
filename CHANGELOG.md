@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.2...2.1.3) (2025-03-02)
+
+
+### Bug Fixes
+
+* Home Assistant: fix brightness only lights ([#26560](https://github.com/Koenkk/zigbee2mqtt/issues/26560)) ([7e7057e](https://github.com/Koenkk/zigbee2mqtt/commit/7e7057eccd1fe638dd73b4a4f303c6612b73c89d))
+
 ## [2.1.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.1...2.1.2) (2025-03-01)
 
 

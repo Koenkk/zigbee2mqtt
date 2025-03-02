@@ -536,12 +536,22 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                discoveryEntry.discovery_payload.supported_color_modes = [
-                    'brightness',
+                const colorModes = [
                     hasColorXY && !preferHS ? 'xy' : null,
                     (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                     hasColorTemp ? 'color_temp' : null,
                 ].filter((c) => c);
+
+                if (colorModes.length) {
+                    discoveryEntry.discovery_payload.supported_color_modes = colorModes;
+                } else {
+                    /**
+                     * All bulbs support brightness, note that `brightness` cannot be combined
+                     * with other color modes.
+                     * https://github.com/Koenkk/zigbee2mqtt/issues/26520#issuecomment-2692432058
+                     */
+                    discoveryEntry.discovery_payload.supported_color_modes = ['brightness'];
+                }
 
                 if (hasColorTemp) {
                     const colorTemps = (exposes as zhc.Light[])
@@ -1370,10 +1380,9 @@ export default class HomeAssistant extends Extension {
             const exposesByType: {[s: string]: zhc.Expose[]} = {};
             const allExposes: zhc.Expose[] = [];
 
-            entity.zh.members
-                .map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
-                .filter((d) => d.definition)
-                .forEach((device) => {
+            for (const member of entity.zh.members) {
+                const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
+                if (device.definition) {
                     const exposes = device.exposes();
                     allExposes.push(...exposes);
                     for (const expose of exposes.filter((e) => GROUP_SUPPORTED_TYPES.includes(e.type))) {
@@ -1389,7 +1398,8 @@ export default class HomeAssistant extends Extension {
                         if (!exposesByType[key]) exposesByType[key] = [];
                         exposesByType[key].push(expose);
                     }
-                });
+                }
+            }
 
             configs = ([] as DiscoveryEntry[]).concat(
                 ...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)),
