@@ -172,7 +172,7 @@ export class Controller {
         }
 
         // Call extensions
-        await this.callExtensions('start', [...this.extensions]);
+        await this.callExtensions('start', this.extensions);
 
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
