@@ -141,7 +141,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['brightness', 'xy', 'color_temp'],
+            supported_color_modes: ['xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -161,6 +161,33 @@ describe('Extension: HomeAssistant', () => {
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/light/1221051039810110150109113116116_9/light/config', stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
+        payload = {
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            brightness: true,
+            brightness_scale: 254,
+            command_topic: 'zigbee2mqtt/bulb_enddevice/set',
+            device: {
+                identifiers: ['zigbee2mqtt_0x0017880104e45553'],
+                manufacturer: 'Sengled',
+                model: 'Element classic (A19)',
+                model_id: 'E11-G13',
+                name: 'bulb_enddevice',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            name: null,
+            object_id: 'bulb_enddevice',
+            origin: origin,
+            schema: 'json',
+            state_topic: 'zigbee2mqtt/bulb_enddevice',
+            supported_color_modes: ['brightness'],
+            unique_id: '0x0017880104e45553_light_zigbee2mqtt',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/light/0x0017880104e45553/light/config', stringify(payload), {
             retain: true,
             qos: 1,
         });
@@ -381,7 +408,7 @@ describe('Extension: HomeAssistant', () => {
             availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
             brightness: true,
             brightness_scale: 254,
-            supported_color_modes: ['brightness', 'color_temp'],
+            supported_color_modes: ['color_temp'],
             min_mireds: 250,
             max_mireds: 454,
             command_topic: 'zigbee2mqtt/bulb/set',
@@ -1633,7 +1660,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group_new',
-            supported_color_modes: ['brightness', 'xy', 'color_temp'],
+            supported_color_modes: ['xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2101,7 +2128,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['brightness', 'xy', 'color_temp'],
+            supported_color_modes: ['xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2145,7 +2172,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/ha_discovery_group',
-            supported_color_modes: ['brightness', 'xy', 'color_temp'],
+            supported_color_modes: ['xy', 'color_temp'],
             effect: true,
             effect_list: [
                 'blink',
@@ -2200,7 +2227,7 @@ describe('Extension: HomeAssistant', () => {
             name: null,
             schema: 'json',
             state_topic: 'zigbee2mqtt/bulb',
-            supported_color_modes: ['brightness', 'color_temp'],
+            supported_color_modes: ['color_temp'],
             object_id: 'bulb',
             unique_id: '0x000b57fffec6a5b2_light_zigbee2mqtt',
             origin: origin,

@@ -536,12 +536,22 @@ export default class HomeAssistant extends Extension {
                     },
                 };
 
-                discoveryEntry.discovery_payload.supported_color_modes = [
-                    'brightness',
+                const colorModes = [
                     hasColorXY && !preferHS ? 'xy' : null,
                     (!hasColorXY || preferHS) && hasColorHS ? 'hs' : null,
                     hasColorTemp ? 'color_temp' : null,
                 ].filter((c) => c);
+
+                if (colorModes.length) {
+                    discoveryEntry.discovery_payload.supported_color_modes = colorModes;
+                } else {
+                    /**
+                     * All bulbs support brightness, note that `brightness` cannot be combined
+                     * with other color modes.
+                     * https://github.com/Koenkk/zigbee2mqtt/issues/26520#issuecomment-2692432058
+                     */
+                    discoveryEntry.discovery_payload.supported_color_modes = ['brightness'];
+                }
 
                 if (hasColorTemp) {
                     const colorTemps = (exposes as zhc.Light[])
