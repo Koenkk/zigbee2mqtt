@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.4](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.3...2.1.4) (2025-03-02)
+
+
+### Bug Fixes
+
+* Implement systemd-notify directly ([#26456](https://github.com/Koenkk/zigbee2mqtt/issues/26456)) ([bfeac07](https://github.com/Koenkk/zigbee2mqtt/commit/bfeac07c4c38fb55db99d5f8204e85ec54552564))
+
 ## [2.1.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.2...2.1.3) (2025-03-02)
 
 
