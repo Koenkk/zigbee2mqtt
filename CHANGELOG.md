@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.4](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.3...2.1.4) (2025-03-03)
+
+
+### Bug Fixes
+
+* General cleanup ([#26595](https://github.com/Koenkk/zigbee2mqtt/issues/26595)) ([8775ceb](https://github.com/Koenkk/zigbee2mqtt/commit/8775ceb0c1d2bac552a345751935d0191410bfa3))
+* **ignore:** Reduce chaining in `homeassistant.ts` ([#26582](https://github.com/Koenkk/zigbee2mqtt/issues/26582)) ([4fa794a](https://github.com/Koenkk/zigbee2mqtt/commit/4fa794a6392917d0140b94257bb7cd155fc25936))
+* **ignore:** Remove uncessary extensions spread ([#26581](https://github.com/Koenkk/zigbee2mqtt/issues/26581)) ([1fe2d8d](https://github.com/Koenkk/zigbee2mqtt/commit/1fe2d8dae6ace27c4b297b7943ac5501c096e8ab))
+* **ignore:** update dependencies ([#26554](https://github.com/Koenkk/zigbee2mqtt/issues/26554)) ([11fb858](https://github.com/Koenkk/zigbee2mqtt/commit/11fb858ff2819319f8aa4bd8a6b2f25944619a8e))
+* **ignore:** update zigbee-herdsman-converters to 23.3.0 ([#26598](https://github.com/Koenkk/zigbee2mqtt/issues/26598)) ([3941692](https://github.com/Koenkk/zigbee2mqtt/commit/3941692665d96fee575995bb6a372bfb92e0a466))
+* Implement systemd-notify directly ([#26456](https://github.com/Koenkk/zigbee2mqtt/issues/26456)) ([bfeac07](https://github.com/Koenkk/zigbee2mqtt/commit/bfeac07c4c38fb55db99d5f8204e85ec54552564))
+
 ## [2.1.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.2...2.1.3) (2025-03-02)
 
 
