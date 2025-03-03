@@ -125,41 +125,41 @@ async function start() {
     console.log(`Starting Zigbee2MQTT ${watchdog ? `with watchdog (${watchdogDelays})` : `without watchdog`}.`);
     await checkDist();
 
-    const version = engines.node;
-
-    if (!semver.satisfies(process.version, version)) {
-        console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
-    }
-
-    // Validate settings
-    const settings = require('./dist/util/settings');
-
-    settings.reRead();
-
     // gc
     {
+        const version = engines.node;
+
+        if (!semver.satisfies(process.version, version)) {
+            console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
+        }
+
+        // Validate settings
+        const settings = require('./dist/util/settings');
+
+        settings.reRead();
+
         const settingsMigration = require('./dist/util/settingsMigration');
 
         settingsMigration.migrateIfNecessary();
-    }
 
-    const errors = settings.validate();
+        const errors = settings.validate();
 
-    if (errors.length > 0) {
-        unsolicitedStop = false;
+        if (errors.length > 0) {
+            unsolicitedStop = false;
 
-        console.log(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-        console.log('            READ THIS CAREFULLY\n');
-        console.log(`Refusing to start because configuration is not valid, found the following errors:`);
+            console.log(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+            console.log('            READ THIS CAREFULLY\n');
+            console.log(`Refusing to start because configuration is not valid, found the following errors:`);
 
-        for (const error of errors) {
-            console.log(`- ${error}`);
+            for (const error of errors) {
+                console.log(`- ${error}`);
+            }
+
+            console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
+            console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
+
+            return exit(1);
         }
-
-        console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
-        console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
-
-        return exit(1);
     }
 
     const {Controller} = require('./dist/controller');
