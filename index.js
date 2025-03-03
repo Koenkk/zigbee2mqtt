@@ -16,7 +16,7 @@ let unsolicitedStop = false;
 let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
 if (watchdog && process.env.Z2M_WATCHDOG !== 'default') {
-    if (/^(?:(?:[0-9]*[.])?[0-9]+)+(?:,?(?:[0-9]*[.])?[0-9]+)*$/.test(process.env.Z2M_WATCHDOG)) {
+    if (/^\d+(.\d+)?(,\d+(.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
         watchdogDelays = process.env.Z2M_WATCHDOG.split(',').map((v) => parseFloat(v) * 60000);
     } else {
         console.log(`Invalid watchdog delays (must use number-only CSV format representing minutes, example: 'Z2M_WATCHDOG=1,5,15,30,60'.`);
@@ -58,10 +58,16 @@ async function exit(code, restart = false) {
 }
 
 async function currentHash() {
-    const git = require('git-last-commit');
+    return await new Promise((resolve) => {
+        exec('git rev-parse --short HEAD', (error, stdout) => {
+            const commitHash = stdout.trim();
 
-    return new Promise((resolve) => {
-        git.getLastCommit((err, commit) => (err ? resolve('unknown') : resolve(commit.shortHash)));
+            if (error || commitHash === '') {
+                resolve('unknown');
+            } else {
+                resolve(commitHash);
+            }
+        });
     });
 }
 
@@ -72,10 +78,10 @@ async function writeHash() {
 }
 
 async function build(reason) {
-    return new Promise((resolve, reject) => {
-        process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
-        rimrafSync('dist');
+    process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
+    rimrafSync('dist');
 
+    return await new Promise((resolve, reject) => {
         const env = {...process.env};
         const _600mb = 629145600;
 
@@ -107,8 +113,9 @@ async function checkDist() {
         await build('initial build');
     }
 
-    const distHash = fs.readFileSync(hashFile, 'utf-8');
+    const distHash = fs.readFileSync(hashFile, 'utf8');
     const hash = await currentHash();
+
     if (hash !== 'unknown' && distHash !== hash) {
         await build('hash changed');
     }

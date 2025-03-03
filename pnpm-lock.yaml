@@ -29,9 +29,6 @@ importers:
       finalhandler:
         specifier: ^1.3.1
         version: 1.3.1
-      git-last-commit:
-        specifier: ^1.0.1
-        version: 1.0.1
       humanize-duration:
         specifier: ^3.32.1
         version: 3.32.1
@@ -1061,9 +1058,6 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
-
-  git-last-commit@1.0.1:
-    resolution: {integrity: sha512-FDSgeMqa7GnJDxt/q0AbrxbfeTyxp4ImxEw1e4nw6NUHA5FMhFUq33dTXI4Xdgcj1VQ1q5QLWF6WxFrJ8KCBOg==}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -2729,8 +2723,6 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
-
-  git-last-commit@1.0.1: {}
 
   glob-parent@5.1.2:
     dependencies:
