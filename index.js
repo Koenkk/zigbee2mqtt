@@ -4,7 +4,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {exec} = require('child_process');
-const {rimrafSync} = require('rimraf');
 require('source-map-support').install();
 
 let controller;
@@ -79,7 +78,6 @@ async function writeHash() {
 
 async function build(reason) {
     process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
-    rimrafSync('dist');
 
     return await new Promise((resolve, reject) => {
         const env = {...process.env};
@@ -91,7 +89,8 @@ async function build(reason) {
             env.NODE_OPTIONS = '--max_old_space_size=256';
         }
 
-        exec('pnpm run build', {env, cwd: __dirname}, async (err, stdout, stderr) => {
+        // clean build, prevent failures due to tsc incremental building
+        exec('pnpm run prepack', {env, cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
 
@@ -158,7 +157,7 @@ async function start() {
             console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
             console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
 
-            return exit(1);
+            return await exit(1);
         }
     }
 
