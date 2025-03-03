@@ -60,7 +60,7 @@ async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitH
     }
 
     return await new Promise((resolve) => {
-        exec('git rev-parse --short HEAD', (error, stdout) => {
+        exec('git rev-parse --short=8 HEAD', (error, stdout) => {
             commitHash = stdout.trim();
 
             if (error || commitHash === '') {

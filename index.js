@@ -59,7 +59,7 @@ async function exit(code, restart = false) {
 
 async function currentHash() {
     return await new Promise((resolve) => {
-        exec('git rev-parse --short HEAD', (error, stdout) => {
+        exec('git rev-parse --short=8 HEAD', (error, stdout) => {
             const commitHash = stdout.trim();
 
             if (error || commitHash === '') {
