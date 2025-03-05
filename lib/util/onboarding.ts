@@ -54,7 +54,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
     let devicesSelect = '';
 
     if (devices.length > 0) {
-        devicesSelect += '<select id="found_device" name="found_device" onchange="setFoundDevice(this)">';
+        devicesSelect += '<select id="found_device" onchange="setFoundDevice(this)">';
         devicesSelect += '<option value="">Select a device</option>';
 
         for (const device of devices) {
@@ -70,6 +70,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
         devicesSelect = '<small>No device found</small>';
     }
 
+    /* v8 ignore start */
     return `
 <!doctype html>
 <html lang="en">
@@ -84,7 +85,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
         <h1>Zigbee2MQTT Onboarding</h1>
         <form method="post" action="/">
             <fieldset>
-                <label for="serial_port">Found Devices</label>
+                <label for="found_device">Found Devices</label>
                 ${devicesSelect}
             </fieldset>
             <fieldset>
@@ -213,6 +214,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
 </body>
 </html>
 `;
+    /* v8 ignore stop */
 }
 
 function generateHtmlError(errors: string): string {
@@ -252,10 +254,11 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
 
     const success = await new Promise<boolean>((resolve) => {
         server = createServer(async (req, res) => {
-            if (req.method == 'POST') {
+            if (req.method === 'POST') {
                 if (failed) {
-                    res.end();
-                    resolve(false);
+                    res.end(() => {
+                        resolve(false);
+                    });
                 } else {
                     let body = '';
 
@@ -310,18 +313,21 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             res.end(
                                 generateHtmlDone(
                                     redirect
-                                        ? `${protocol}://${currentSettings.frontend?.host ?? 'localhost'}:${currentSettings.frontend?.port ?? '8080'}${currentSettings.frontend?.base_url ?? '/'}`
+                                        ? /* v8 ignore next */ `${protocol}://${currentSettings.frontend?.host ?? 'localhost'}:${currentSettings.frontend?.port ?? '8080'}${currentSettings.frontend?.base_url ?? '/'}`
                                         : undefined,
                                 ),
+                                () => {
+                                    resolve(true);
+                                },
                             );
-                            resolve(true);
                         } catch (error) {
                             console.error(`Failed to apply configuration: ${(error as Error).message}`);
                             failed = true;
 
                             if (process.env.ONBOARDING_NO_FAILURE_PAGE) {
-                                res.end();
-                                resolve(false);
+                                res.end(() => {
+                                    resolve(false);
+                                });
                             } else {
                                 res.setHeader('Content-Type', 'text/html');
                                 res.writeHead(406);
@@ -353,9 +359,10 @@ async function startFailureServer(errors: string): Promise<void> {
 
     await new Promise<void>((resolve) => {
         server = createServer(async (req, res) => {
-            if (req.method == 'POST') {
-                res.end();
-                resolve();
+            if (req.method === 'POST') {
+                res.end(() => {
+                    resolve();
+                });
             } else {
                 res.setHeader('Content-Type', 'text/html');
                 res.writeHead(406);
