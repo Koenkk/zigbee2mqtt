@@ -146,6 +146,36 @@ function parseValueRef(text: string): {filename: string; key: string} | null {
     }
 }
 
+export function writeMinimalDefaults(): void {
+    const minimal: typeof defaults = {
+        version: CURRENT_VERSION,
+        mqtt: {
+            base_topic: defaults.mqtt!.base_topic,
+            server: 'mqtt://localhost:1883',
+        },
+        serial: {},
+        advanced: {
+            log_level: defaults.advanced!.log_level,
+            channel: defaults.advanced!.channel,
+            network_key: defaults.advanced!.network_key,
+            pan_id: defaults.advanced!.pan_id,
+            ext_pan_id: defaults.advanced!.ext_pan_id,
+        },
+        frontend: {
+            enabled: defaults.frontend!.enabled,
+        },
+        homeassistant: {
+            enabled: defaults.homeassistant!.enabled,
+        },
+    };
+
+    yaml.writeIfChanged(CONFIG_FILE_PATH, minimal);
+
+    _settings = read();
+
+    loadSettingsWithDefaults();
+}
+
 function write(): void {
     const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
