@@ -23,6 +23,10 @@ type OnboardSettings = {
     log_level: Settings['advanced']['log_level'];
 };
 
+function escapeHtml(s: string): string {
+    return s.replace(/[^0-9A-Za-z \-_.]/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
 function generateHtmlDone(frontendUrl: string | undefined): string {
     return `
 <!doctype html>
@@ -321,7 +325,7 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             } else {
                                 res.setHeader('Content-Type', 'text/html');
                                 res.writeHead(406);
-                                res.end(generateHtmlError(`<p>${(error as Error).message}</p>`));
+                                res.end(generateHtmlError(`<p>${escapeHtml((error as Error).message)}</p>`));
                             }
                         }
                     });
@@ -407,7 +411,7 @@ export async function onboard(): Promise<boolean> {
         for (const error of errors) {
             console.error(`- ${error}`);
 
-            pErrors += `<p>- ${error}</p>`;
+            pErrors += `<p>- ${escapeHtml(error)}</p>`;
         }
 
         console.error(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
