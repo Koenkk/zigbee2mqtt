@@ -1380,10 +1380,9 @@ export default class HomeAssistant extends Extension {
             const exposesByType: {[s: string]: zhc.Expose[]} = {};
             const allExposes: zhc.Expose[] = [];
 
-            entity.zh.members
-                .map((e) => this.zigbee.resolveEntity(e.getDevice()) as Device)
-                .filter((d) => d.definition)
-                .forEach((device) => {
+            for (const member of entity.zh.members) {
+                const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
+                if (device.definition) {
                     const exposes = device.exposes();
                     allExposes.push(...exposes);
                     for (const expose of exposes.filter((e) => GROUP_SUPPORTED_TYPES.includes(e.type))) {
@@ -1399,7 +1398,8 @@ export default class HomeAssistant extends Extension {
                         if (!exposesByType[key]) exposesByType[key] = [];
                         exposesByType[key].push(expose);
                     }
-                });
+                }
+            }
 
             configs = ([] as DiscoveryEntry[]).concat(
                 ...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, 'group', allExposes)),

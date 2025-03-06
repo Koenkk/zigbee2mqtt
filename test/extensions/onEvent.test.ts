@@ -4,24 +4,23 @@ import {mockMQTTPublishAsync} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
+import {MockInstance} from 'vitest';
+
 import * as zhc from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
 import * as settings from '../../lib/util/settings';
 
-const mockOnEvent = vi.fn();
-const mockLivoloOnEvent = vi.fn();
-// @ts-expect-error mock
-zhc.onEvent = mockOnEvent;
-
-const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
+const mockOnEvent = vi.spyOn(zhc, 'onEvent');
+const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug, mockOnEvent];
 
 describe('Extension: OnEvent', () => {
     let controller: Controller;
+    let mockLivoloOnEvent: MockInstance;
 
     beforeAll(async () => {
         const mappedLivolo = (await zhc.findByDevice(devices.LIVOLO))!;
-        mappedLivolo.onEvent = mockLivoloOnEvent;
+        mockLivoloOnEvent = vi.spyOn(mappedLivolo, 'onEvent');
     });
 
     beforeEach(async () => {
@@ -39,7 +38,6 @@ describe('Extension: OnEvent', () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
-        mockOnEvent.mockClear();
     });
 
     afterAll(async () => {

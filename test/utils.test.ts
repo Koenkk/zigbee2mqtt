@@ -1,13 +1,11 @@
+import {exec} from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
 import utils from '../lib/util/utils';
 
-const mockGetLastCommit = vi.fn<() => [boolean, {shortHash: string} | null]>(() => [false, {shortHash: '123'}]);
-
-vi.mock('git-last-commit', () => ({
-    getLastCommit: vi.fn((cb) => cb(...mockGetLastCommit())),
-}));
+// keep the implementations, just spy
+vi.mock('node:child_process', {spy: true});
 
 describe('Utils', () => {
     it('Object is empty', () => {
@@ -20,13 +18,44 @@ describe('Utils', () => {
         expect(utils.objectHasProperties({a: 1, b: 2, c: 3}, ['a', 'b', 'd'])).toBeFalsy();
     });
 
-    it('git last commit', async () => {
+    it('get Z2M version', async () => {
+        const readFileSyncSpy = vi.spyOn(fs, 'readFileSync');
         const version = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')).version;
 
-        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: '123', version: version});
+        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: expect.stringMatching(/^(?!unknown)[a-z0-9]{8}$/), version});
+        expect(exec).toHaveBeenCalledTimes(1);
 
-        mockGetLastCommit.mockReturnValueOnce([true, null]);
-        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: expect.any(String), version: version});
+        // @ts-expect-error mock spy
+        exec.mockImplementationOnce((cmd, cb) => {
+            cb(null, 'abcd1234');
+        });
+        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: 'abcd1234', version});
+
+        // @ts-expect-error mock spy
+        exec.mockImplementationOnce((cmd, cb) => {
+            cb(null, '');
+        });
+        // hash file may or may not be present during testing, don't failing matching if not
+        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: expect.stringMatching(/^(unknown|([a-z0-9]{8}))$/), version});
+
+        readFileSyncSpy.mockImplementationOnce(() => {
+            throw new Error('no hash file');
+        });
+        // @ts-expect-error mock spy
+        exec.mockImplementationOnce((cmd, cb) => {
+            cb(null, '');
+        });
+        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: 'unknown', version});
+
+        readFileSyncSpy.mockImplementationOnce(() => {
+            throw new Error('no hash file');
+        });
+        // @ts-expect-error mock spy
+        exec.mockImplementationOnce((cmd, cb) => {
+            cb(new Error('invalid'), '');
+        });
+        expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: 'unknown', version});
+        expect(exec).toHaveBeenCalledTimes(5);
     });
 
     it('Check dependency version', async () => {
