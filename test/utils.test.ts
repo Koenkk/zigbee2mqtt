@@ -121,4 +121,173 @@ describe('Utils', () => {
             },
         });
     });
+
+    it('isAvailabilityEnabledForEntity', () => {
+        interface MockSettings {
+            availability: {
+                enabled: boolean;
+            };
+        }
+
+        interface MockDevice {
+            isDevice: () => boolean;
+            isGroup: () => boolean;
+            options: {
+                disabled?: boolean;
+                availability?: boolean | {timeout: number};
+            };
+        }
+
+        interface MockGroup {
+            isDevice: () => boolean;
+            isGroup: () => boolean;
+            membersDevices: () => (MockDevice | MockGroup)[];
+        }
+
+        const mockSettingsEnabled: MockSettings = {
+            availability: {
+                enabled: true,
+            },
+        };
+
+        const mockSettingsDisabled: MockSettings = {
+            availability: {
+                enabled: false,
+            },
+        };
+
+        const disabledDevice: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: true,
+            },
+        };
+        expect(utils.isAvailabilityEnabledForEntity(disabledDevice, mockSettingsEnabled)).toBeFalsy();
+        expect(utils.isAvailabilityEnabledForEntity(disabledDevice, mockSettingsDisabled)).toBeFalsy();
+
+        const deviceWithAvailabilityTrue: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+                availability: true,
+            },
+        };
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityTrue, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityTrue, mockSettingsDisabled)).toBeTruthy();
+
+        const deviceWithAvailabilityFalse: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+                availability: false,
+            },
+        };
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityFalse, mockSettingsEnabled)).toBeFalsy();
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityFalse, mockSettingsDisabled)).toBeFalsy();
+
+        const deviceWithoutAvailability: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+            },
+        };
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithoutAvailability, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithoutAvailability, mockSettingsDisabled)).toBeFalsy();
+
+        const availableDevice: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+                availability: true,
+            },
+        };
+        const groupWithAvailableDevices: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): MockDevice[] => [availableDevice],
+        };
+        expect(utils.isAvailabilityEnabledForEntity(groupWithAvailableDevices, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(groupWithAvailableDevices, mockSettingsDisabled)).toBeTruthy();
+
+        const deviceWithoutAvailabilitySetting: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+            },
+        };
+        const groupWithDefaultDevices: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): MockDevice[] => [deviceWithoutAvailabilitySetting],
+        };
+        expect(utils.isAvailabilityEnabledForEntity(groupWithDefaultDevices, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(groupWithDefaultDevices, mockSettingsDisabled)).toBeFalsy();
+
+        const unavailableDevice: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: true,
+            },
+        };
+        const groupWithUnavailableDevice: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): MockDevice[] => [unavailableDevice],
+        };
+        expect(utils.isAvailabilityEnabledForEntity(groupWithUnavailableDevice, mockSettingsEnabled)).toBeFalsy();
+        expect(utils.isAvailabilityEnabledForEntity(groupWithUnavailableDevice, mockSettingsDisabled)).toBeFalsy();
+
+        const availableDeviceNested: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+            },
+        };
+        const unavailableDeviceNested: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: true,
+            },
+        };
+        const innerGroup: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): MockDevice[] => [availableDeviceNested],
+        };
+        const outerGroup: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): (MockDevice | MockGroup)[] => [innerGroup, unavailableDeviceNested],
+        };
+        expect(utils.isAvailabilityEnabledForEntity(outerGroup, mockSettingsEnabled)).toBeFalsy();
+        expect(utils.isAvailabilityEnabledForEntity(outerGroup, mockSettingsDisabled)).toBeFalsy();
+
+        const emptyGroup: MockGroup = {
+            isDevice: (): boolean => false,
+            isGroup: (): boolean => true,
+            membersDevices: (): MockDevice[] => [],
+        };
+        expect(utils.isAvailabilityEnabledForEntity(emptyGroup, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(emptyGroup, mockSettingsDisabled)).toBeTruthy();
+
+        const deviceWithAvailabilityObject: MockDevice = {
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {
+                disabled: false,
+                availability: {timeout: 60},
+            },
+        };
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityObject, mockSettingsEnabled)).toBeTruthy();
+        expect(utils.isAvailabilityEnabledForEntity(deviceWithAvailabilityObject, mockSettingsDisabled)).toBeTruthy();
+    });
 });
