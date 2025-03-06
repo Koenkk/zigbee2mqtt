@@ -7,7 +7,7 @@ import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 
-import * as zhcGlobalStore from 'zigbee-herdsman-converters/lib/store';
+import {clearGlobalStore} from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
 import {loadTopicGetSetRegex} from '../../lib/extension/publish';
@@ -58,7 +58,7 @@ describe('Extension: Publish', () => {
             g.command.mockClear();
         });
 
-        zhcGlobalStore.clear();
+        clearGlobalStore();
     });
 
     afterAll(async () => {
@@ -863,7 +863,7 @@ describe('Extension: Publish', () => {
         expect(endpoint.command.mock.calls[0]).toEqual(['genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 200}, {}]);
     });
 
-    it('Should turn bulb on with correct brightness when device is turned off twice and brightness is reported', async () => {
+    it('onlythisShould turn bulb on with correct brightness when device is turned off twice and brightness is reported', async () => {
         // Test case for: https://github.com/Koenkk/zigbee2mqtt/issues/5413
         const device = devices.bulb_color;
         const endpoint = device.getEndpoint(1)!;
@@ -914,10 +914,11 @@ describe('Extension: Publish', () => {
         expect(endpoint.command).toHaveBeenNthCalledWith(4, 'genLevelCtrl', 'moveToLevelWithOnOff', {level: 200, transtime: 0}, {});
     });
 
-    it('Should turn bulb on with full brightness when transition is used and no brightness is known', async () => {
+    it('onlythis Should turn bulb on with full brightness when transition is used and no brightness is known', async () => {
         // https://github.com/Koenkk/zigbee2mqtt/issues/3799
         const device = devices.bulb_color;
         const endpoint = device.getEndpoint(1)!;
+        console.log('========')
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF', transition: 0.5}));
         await flushPromises();
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', transition: 0.5}));
@@ -1511,7 +1512,7 @@ describe('Extension: Publish', () => {
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
         await flushPromises();
 
-        zhcGlobalStore.clear();
+        clearGlobalStore();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', transition: 1.0}));
         await flushPromises();
