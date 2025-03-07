@@ -10,6 +10,8 @@ import * as settings from './settings';
 type OnboardSettings = {
     mqtt_base_topic: string;
     mqtt_server: string;
+    mqtt_user: string;
+    mqtt_password: string;
     serial_port: string;
     serial_adapter: Settings['serial']['adapter'];
     serial_baudrate: string;
@@ -19,6 +21,7 @@ type OnboardSettings = {
     network_pan_id: string;
     network_ext_pan_id: string;
     frontend_enabled?: 'on';
+    frontend_port: string;
     homeassistant_enabled?: 'on';
     log_level: Settings['advanced']['log_level'];
 };
@@ -141,6 +144,12 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                 <input type="text" id="mqtt_base_topic" name="mqtt_base_topic" value="${currentSettings.mqtt?.base_topic ?? 'zigbee2mqtt'}" required>
                 <label for="mqtt_server">MQTT Server</label>
                 <input type="text" id="mqtt_server" name="mqtt_server" value="${currentSettings.mqtt?.server ?? 'mqtt://localhost:1883'}" required>
+                <label for="mqtt_user">MQTT User</label>
+                <input type="text" id="mqtt_user" name="mqtt_user" value="${currentSettings.mqtt?.user ?? ''}">
+                <small>Optional. Set only if using authentication.</small>
+                <label for="mqtt_password">MQTT Password</label>
+                <input type="password" id="mqtt_password" name="mqtt_password" value="${currentSettings.mqtt?.password ?? ''}">
+                <small>Optional. Set only if using authentication.</small>
             </fieldset>
             <small><a href="https://www.zigbee2mqtt.io/guide/configuration/mqtt.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/mqtt.html</a></small>
             <hr>
@@ -149,6 +158,8 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     <input type="checkbox" id="frontend_enabled" name="frontend_enabled" ${currentSettings.frontend?.enabled ? 'checked' : ''}>
                     Frontend enabled?
                 </label>
+                <label for="frontend_port">Frontend Port</label>
+                <input type="number" min="0" max="65535" id="frontend_port" name="frontend_port" value="${currentSettings.frontend?.port ?? '8080'}" required>
             </fieldset>
             <small><a href="https://www.zigbee2mqtt.io/guide/configuration/frontend.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/frontend.html</a></small>
             <fieldset>
@@ -244,7 +255,7 @@ function generateHtmlError(errors: string): string {
 }
 
 function getServerUrl(): URL {
-    return new URL(process.env.ONBOARDING_URL ?? 'http://localhost:8181');
+    return new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
 }
 
 async function startOnboardingServer(currentSettings: RecursivePartial<Settings>): Promise<boolean> {
@@ -273,6 +284,8 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             mqtt: {
                                 base_topic: result.mqtt_base_topic,
                                 server: result.mqtt_server,
+                                user: result.mqtt_user || undefined, // empty string => removed
+                                password: result.mqtt_password || undefined, // empty string => removed
                             },
                             serial: {
                                 port: result.serial_port,
@@ -295,6 +308,7 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             },
                             frontend: {
                                 enabled: frontendEnabled,
+                                port: parseInt(result.frontend_port, 10),
                             },
                             homeassistant: {
                                 enabled: result.homeassistant_enabled === 'on',
@@ -324,7 +338,7 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             console.error(`Failed to apply configuration: ${(error as Error).message}`);
                             failed = true;
 
-                            if (process.env.ONBOARDING_NO_FAILURE_PAGE) {
+                            if (process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
                                 res.end(() => {
                                     resolve(false);
                                 });
@@ -391,10 +405,12 @@ export async function onboard(): Promise<boolean> {
             checkMigration = false;
         }
 
-        const success = await startOnboardingServer(settings.get());
+        if (!process.env.Z2M_ONBOARD_NO_SERVER) {
+            const success = await startOnboardingServer(settings.get());
 
-        if (!success) {
-            return false;
+            if (!success) {
+                return false;
+            }
         }
     } else {
         settings.reRead();
@@ -424,7 +440,7 @@ export async function onboard(): Promise<boolean> {
         console.error(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
         console.error(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
 
-        if (!process.env.ONBOARDING_NO_FAILURE_PAGE) {
+        if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
             await startFailureServer(pErrors);
         }
 

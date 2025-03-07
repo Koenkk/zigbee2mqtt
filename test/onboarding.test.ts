@@ -54,12 +54,13 @@ const SETTINGS_MINIMAL_DEFAULTS = {
     advanced: {
         log_level: settings.defaults.advanced!.log_level,
         channel: settings.defaults.advanced!.channel,
-        network_key: settings.defaults.advanced!.network_key,
-        pan_id: settings.defaults.advanced!.pan_id,
-        ext_pan_id: settings.defaults.advanced!.ext_pan_id,
+        network_key: 'GENERATE',
+        pan_id: 'GENERATE',
+        ext_pan_id: 'GENERATE',
     },
     frontend: {
         enabled: settings.defaults.frontend!.enabled,
+        port: settings.defaults.frontend!.port,
     },
     homeassistant: {
         enabled: settings.defaults.homeassistant!.enabled,
@@ -87,6 +88,7 @@ const SAMPLE_SETTINGS_INIT = {
     },
     frontend: {
         enabled: false,
+        port: 8080,
     },
     homeassistant: {
         enabled: false,
@@ -114,6 +116,7 @@ const SAMPLE_SETTINGS_SAVE = {
     },
     frontend: {
         enabled: true,
+        port: 8080,
     },
     homeassistant: {
         enabled: true,
@@ -123,6 +126,8 @@ const SAMPLE_SETTINGS_SAVE = {
 const SAMPLE_SETTINGS_SAVE_PARAMS = {
     mqtt_base_topic: `zigbee2mqtt2`,
     mqtt_server: `mqtt://192.168.1.200:1883`,
+    mqtt_user: '',
+    mqtt_password: '',
     serial_port: `COM3`,
     serial_adapter: `ember`,
     serial_baudrate: `230400`,
@@ -133,6 +138,7 @@ const SAMPLE_SETTINGS_SAVE_PARAMS = {
     network_pan_id: `12345`,
     network_ext_pan_id: `8,7,6,5,4,3,2,1`,
     frontend_enabled: `on`,
+    frontend_port: '8080',
     homeassistant_enabled: `on`,
 };
 
@@ -146,8 +152,9 @@ describe('Onboarding', () => {
     });
 
     beforeEach(() => {
-        delete process.env.ONBOARDING_URL;
-        delete process.env.ONBOARDING_NO_FAILURE_PAGE;
+        delete process.env.Z2M_ONBOARD_NO_SERVER;
+        delete process.env.Z2M_ONBOARD_URL;
+        delete process.env.Z2M_ONBOARD_NO_FAILURE_PAGE;
 
         data.writeDefaultConfiguration(SAMPLE_SETTINGS_INIT);
         data.removeState();
@@ -237,7 +244,7 @@ describe('Onboarding', () => {
         await vi.advanceTimersByTimeAsync(100); // flush
 
         if (expectFailure) {
-            if (process.env.ONBOARDING_NO_FAILURE_PAGE) {
+            if (process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
                 expect(resEnd).toHaveBeenCalledTimes(2);
             } else {
                 mockHttpListener(
@@ -264,7 +271,7 @@ describe('Onboarding', () => {
             expect(resEnd).toHaveBeenCalledTimes(2);
         }
 
-        const serverUrl = new URL(process.env.ONBOARDING_URL ?? 'http://localhost:8181');
+        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
         expect(mockHttpListen).toHaveBeenCalledWith(parseInt(serverUrl.port), serverUrl.hostname, expect.any(Function));
 
         return [resEnd.mock.calls[0][0], resEnd.mock.calls[1][0]];
@@ -322,7 +329,7 @@ describe('Onboarding', () => {
 
         expect(resEnd).toHaveBeenCalledTimes(2);
 
-        const serverUrl = new URL(process.env.ONBOARDING_URL ?? 'http://localhost:8181');
+        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
         expect(mockHttpListen).toHaveBeenCalledWith(parseInt(serverUrl.port), serverUrl.hostname, expect.any(Function));
 
         return resEnd.mock.calls[0][0];
@@ -360,6 +367,8 @@ describe('Onboarding', () => {
                 resolve(
                     await runOnboarding(
                         Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {
+                            mqtt_user: 'abcd',
+                            mqtt_password: 'defg',
                             frontend_enabled: undefined,
                             network_key: 'GENERATE',
                             network_pan_id: 'GENERATE',
@@ -384,7 +393,16 @@ describe('Onboarding', () => {
                     pan_id: 'GENERATE',
                     ext_pan_id: 'GENERATE',
                 },
-                frontend: {enabled: false},
+                frontend: {
+                    enabled: false,
+                    port: SAMPLE_SETTINGS_SAVE.frontend.port,
+                },
+                mqtt: {
+                    base_topic: SAMPLE_SETTINGS_SAVE.mqtt.base_topic,
+                    server: SAMPLE_SETTINGS_SAVE.mqtt.server,
+                    user: 'abcd',
+                    password: 'defg',
+                },
             }),
         );
         expect(getHtml).toContain(`<option value="My Device, /dev/serial/by-id/my-device-001, ember">`);
@@ -408,7 +426,8 @@ describe('Onboarding', () => {
         expect(data.read()).toStrictEqual(
             Object.assign({}, SAMPLE_SETTINGS_SAVE, {
                 frontend: {
-                    enabled: true,
+                    enabled: SAMPLE_SETTINGS_SAVE.frontend.enabled,
+                    port: SAMPLE_SETTINGS_SAVE.frontend.port,
                     host: '/run/zigbee2mqtt/zigbee2mqtt.sock',
                 },
             }),
@@ -434,7 +453,8 @@ describe('Onboarding', () => {
         expect(data.read()).toStrictEqual(
             Object.assign({}, SAMPLE_SETTINGS_SAVE, {
                 frontend: {
-                    enabled: true,
+                    enabled: SAMPLE_SETTINGS_SAVE.frontend.enabled,
+                    port: SAMPLE_SETTINGS_SAVE.frontend.port,
                     ssl_cert: 'dummy',
                     ssl_key: 'dummy2',
                 },
@@ -463,8 +483,8 @@ describe('Onboarding', () => {
     it('handles configuring onboarding via ENV', async () => {
         data.removeConfiguration();
 
-        process.env.ONBOARDING_URL = 'http://192.168.1.123:8888';
-        process.env.ONBOARDING_NO_FAILURE_PAGE = '1';
+        process.env.Z2M_ONBOARD_URL = 'http://192.168.1.123:8888';
+        process.env.Z2M_ONBOARD_NO_FAILURE_PAGE = '1';
 
         let p;
 
@@ -477,6 +497,17 @@ describe('Onboarding', () => {
         });
 
         await expect(p).resolves.toStrictEqual(false);
+        expect(data.read()).toStrictEqual(SETTINGS_MINIMAL_DEFAULTS);
+    });
+
+    it('handles disabling onboarding server via ENV', async () => {
+        data.removeConfiguration();
+
+        process.env.Z2M_ONBOARD_NO_SERVER = '1';
+
+        const p = onboard();
+
+        await expect(p).resolves.toStrictEqual(true);
         expect(data.read()).toStrictEqual(SETTINGS_MINIMAL_DEFAULTS);
     });
 

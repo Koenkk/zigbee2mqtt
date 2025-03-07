@@ -157,12 +157,13 @@ export function writeMinimalDefaults(): void {
         advanced: {
             log_level: defaults.advanced!.log_level,
             channel: defaults.advanced!.channel,
-            network_key: defaults.advanced!.network_key,
-            pan_id: defaults.advanced!.pan_id,
-            ext_pan_id: defaults.advanced!.ext_pan_id,
+            network_key: 'GENERATE',
+            pan_id: 'GENERATE',
+            ext_pan_id: 'GENERATE',
         },
         frontend: {
             enabled: defaults.frontend!.enabled,
+            port: defaults.frontend!.port,
         },
         homeassistant: {
             enabled: defaults.homeassistant!.enabled,
