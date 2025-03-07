@@ -135,6 +135,7 @@ async function start() {
         // Validate settings
         const settings = require('./dist/util/settings');
 
+        settings.write(); // trigger initial writing of `ZIGBEE2MQTT_CONFIG_*` ENVs
         settings.reRead();
 
         const settingsMigration = require('./dist/util/settingsMigration');
