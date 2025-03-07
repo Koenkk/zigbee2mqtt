@@ -397,7 +397,8 @@ export async function onboard(): Promise<boolean> {
     let checkMigration = true;
 
     // use db file to detect "brand new install", but override if for some reason, configuration file is missing
-    if (!confExists || !existsSync(data.joinPath('database.db'))) {
+    // env allows to re-run onboard even with existing install
+    if (process.env.Z2M_ONBOARD_RERUN || !confExists || !existsSync(data.joinPath('database.db'))) {
         if (!confExists) {
             settings.writeMinimalDefaults();
 

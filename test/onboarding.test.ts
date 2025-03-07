@@ -153,6 +153,7 @@ describe('Onboarding', () => {
 
     beforeEach(() => {
         delete process.env.Z2M_ONBOARD_NO_SERVER;
+        delete process.env.Z2M_ONBOARD_RERUN;
         delete process.env.Z2M_ONBOARD_URL;
         delete process.env.Z2M_ONBOARD_NO_FAILURE_PAGE;
 
@@ -353,7 +354,7 @@ describe('Onboarding', () => {
         expect(postHtml).toContain('<a href="http://localhost:8080/">');
     });
 
-    it('creates config file and sets given settings with GENERATE', async () => {
+    it('creates config file and sets given unusual settings', async () => {
         data.removeConfiguration();
 
         mockFindAllDevices.mockResolvedValueOnce([
@@ -408,6 +409,27 @@ describe('Onboarding', () => {
         expect(getHtml).toContain(`<option value="My Device, /dev/serial/by-id/my-device-001, ember">`);
         expect(getHtml).toContain(`<option value="My Device 2, /dev/serial/by-id/my-device-002, unknown">`);
         expect(postHtml).toContain('You can close this page');
+    });
+
+    it('rerun onboard via ENV and sets given settings', async () => {
+        // data.removeConfiguration();
+        data.writeEmptyDatabase();
+
+        process.env.Z2M_ONBOARD_RERUN = '1';
+
+        let p;
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
+        expect(getHtml).toContain('No device found');
+        expect(postHtml).toContain('<a href="http://localhost:8080/">');
     });
 
     it('sets given settings - no frontend redirect', async () => {
