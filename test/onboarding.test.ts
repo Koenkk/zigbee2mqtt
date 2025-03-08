@@ -156,6 +156,7 @@ describe('Onboarding', () => {
         delete process.env.Z2M_ONBOARD_RERUN;
         delete process.env.Z2M_ONBOARD_URL;
         delete process.env.Z2M_ONBOARD_NO_FAILURE_PAGE;
+        delete process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER;
 
         data.writeDefaultConfiguration(SAMPLE_SETTINGS_INIT);
         data.removeState();
@@ -209,7 +210,13 @@ describe('Onboarding', () => {
         await vi.advanceTimersByTimeAsync(100); // flush
 
         if (expectWriteMinimal) {
-            expect(data.read()).toStrictEqual(SETTINGS_MINIMAL_DEFAULTS);
+            const minimal = process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER
+                ? Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
+                      mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+                  })
+                : SETTINGS_MINIMAL_DEFAULTS;
+
+            expect(data.read()).toStrictEqual(minimal);
         }
 
         expect(mockFindAllDevices).toHaveBeenCalledTimes(1);
@@ -357,6 +364,8 @@ describe('Onboarding', () => {
     it('creates config file and sets given unusual settings', async () => {
         data.removeConfiguration();
 
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = 'mqtt://core-mosquitto:1883';
+
         mockFindAllDevices.mockResolvedValueOnce([
             {name: 'My Device', path: '/dev/serial/by-id/my-device-001', adapter: 'ember'},
             {name: 'My Device 2', path: '/dev/serial/by-id/my-device-002', adapter: undefined},
@@ -400,7 +409,7 @@ describe('Onboarding', () => {
                 },
                 mqtt: {
                     base_topic: SAMPLE_SETTINGS_SAVE.mqtt.base_topic,
-                    server: SAMPLE_SETTINGS_SAVE.mqtt.server,
+                    server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER,
                     user: 'abcd',
                     password: 'defg',
                 },
@@ -408,6 +417,7 @@ describe('Onboarding', () => {
         );
         expect(getHtml).toContain(`<option value="My Device, /dev/serial/by-id/my-device-001, ember">`);
         expect(getHtml).toContain(`<option value="My Device 2, /dev/serial/by-id/my-device-002, unknown">`);
+        expect(getHtml).toContain(process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER);
         expect(postHtml).toContain('You can close this page');
     });
 
@@ -507,6 +517,7 @@ describe('Onboarding', () => {
 
         process.env.Z2M_ONBOARD_URL = 'http://192.168.1.123:8888';
         process.env.Z2M_ONBOARD_NO_FAILURE_PAGE = '1';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = 'mqtt://core-mosquitto:1883';
 
         let p;
 
@@ -519,18 +530,27 @@ describe('Onboarding', () => {
         });
 
         await expect(p).resolves.toStrictEqual(false);
-        expect(data.read()).toStrictEqual(SETTINGS_MINIMAL_DEFAULTS);
+        expect(data.read()).toStrictEqual(
+            Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
+                mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+            }),
+        );
     });
 
     it('handles disabling onboarding server via ENV', async () => {
         data.removeConfiguration();
 
         process.env.Z2M_ONBOARD_NO_SERVER = '1';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = 'mqtt://core-mosquitto:1883';
 
         const p = onboard();
 
         await expect(p).resolves.toStrictEqual(true);
-        expect(data.read()).toStrictEqual(SETTINGS_MINIMAL_DEFAULTS);
+        expect(data.read()).toStrictEqual(
+            Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
+                mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+            }),
+        );
     });
 
     it('runs migrations', async () => {

@@ -396,16 +396,19 @@ export async function onboard(): Promise<boolean> {
     const confExists = existsSync(data.joinPath('configuration.yaml'));
     let checkMigration = true;
 
+    if (!confExists) {
+        settings.writeMinimalDefaults();
+
+        // don't check for migration if conf was just written
+        checkMigration = false;
+    } else {
+        // trigger initial writing of `ZIGBEE2MQTT_CONFIG_*` ENVs
+        settings.write();
+    }
+
     // use db file to detect "brand new install", but override if for some reason, configuration file is missing
     // env allows to re-run onboard even with existing install
     if (process.env.Z2M_ONBOARD_RERUN || !confExists || !existsSync(data.joinPath('database.db'))) {
-        if (!confExists) {
-            settings.writeMinimalDefaults();
-
-            // don't check for migration if conf was just written
-            checkMigration = false;
-        }
-
         if (!process.env.Z2M_ONBOARD_NO_SERVER) {
             const success = await startOnboardingServer(settings.get());
 

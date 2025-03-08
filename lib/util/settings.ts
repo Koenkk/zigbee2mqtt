@@ -147,7 +147,7 @@ function parseValueRef(text: string): {filename: string; key: string} | null {
 }
 
 export function writeMinimalDefaults(): void {
-    const minimal: typeof defaults = {
+    const minimal = {
         version: CURRENT_VERSION,
         mqtt: {
             base_topic: defaults.mqtt!.base_topic,
@@ -168,8 +168,9 @@ export function writeMinimalDefaults(): void {
         homeassistant: {
             enabled: defaults.homeassistant!.enabled,
         },
-    };
+    } as Partial<Settings>;
 
+    applyEnvironmentVariables(minimal);
     yaml.writeIfChanged(CONFIG_FILE_PATH, minimal);
 
     _settings = read();
