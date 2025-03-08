@@ -177,9 +177,11 @@ export function writeMinimalDefaults(): void {
     loadSettingsWithDefaults();
 }
 
-function write(): void {
+export function write(): void {
     const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
+
+    applyEnvironmentVariables(toWrite);
 
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
@@ -308,7 +310,6 @@ export function validate(): string[] {
 
 function read(): Partial<Settings> {
     const s = yaml.read(CONFIG_FILE_PATH) as Partial<Settings>;
-    applyEnvironmentVariables(s);
 
     // Read !secret MQTT username and password if set
     const interpretValue = <T>(value: T): T => {
