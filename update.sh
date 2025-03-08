@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 
+NEW_COMMITS="$(git rev-list HEAD...origin/"$(git branch --show-current)" --count)"
+
+if [ "$NEW_COMMITS" -gt "0" ]; then
+    echo "Update available!"
+else
+    echo "No update available."
+    exit 0
+fi
+
 NEED_RESTART=0
 
 OSNAME="$(uname -s)"
