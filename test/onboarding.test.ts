@@ -347,9 +347,13 @@ describe('Onboarding', () => {
         data.removeConfiguration();
 
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, true, false));
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, true, false));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -372,22 +376,26 @@ describe('Onboarding', () => {
         ]);
 
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(
-                    await runOnboarding(
-                        Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {
-                            mqtt_user: 'abcd',
-                            mqtt_password: 'defg',
-                            frontend_enabled: undefined,
-                            network_key: 'GENERATE',
-                            network_pan_id: 'GENERATE',
-                            network_ext_pan_id: 'GENERATE',
-                        }),
-                        true,
-                        false,
-                    ),
-                );
+                try {
+                    resolve(
+                        await runOnboarding(
+                            Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {
+                                mqtt_user: 'abcd',
+                                mqtt_password: 'defg',
+                                frontend_enabled: undefined,
+                                network_key: 'GENERATE',
+                                network_pan_id: 'GENERATE',
+                                network_ext_pan_id: 'GENERATE',
+                            }),
+                            true,
+                            false,
+                        ),
+                    );
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -428,9 +436,13 @@ describe('Onboarding', () => {
         process.env.Z2M_ONBOARD_RERUN = '1';
 
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -446,9 +458,13 @@ describe('Onboarding', () => {
         settings.set(['frontend', 'host'], '/run/zigbee2mqtt/zigbee2mqtt.sock');
 
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -473,9 +489,13 @@ describe('Onboarding', () => {
         settings.set(['frontend', 'ssl_key'], 'dummy2');
 
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -498,9 +518,13 @@ describe('Onboarding', () => {
 
     it('handles saving errors', async () => {
         let p;
-        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve) => {
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {serial_adapter: 'emberz'}), false, true));
+                try {
+                    resolve(await runOnboarding(Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {serial_adapter: 'emberz'}), false, true));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -521,9 +545,13 @@ describe('Onboarding', () => {
 
         let p;
 
-        await new Promise<[string, string]>((resolve) => {
+        await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runOnboarding(Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {serial_adapter: 'emberz'}), true, true));
+                try {
+                    resolve(await runOnboarding(Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS, {serial_adapter: 'emberz'}), true, true));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();
@@ -553,6 +581,66 @@ describe('Onboarding', () => {
         );
     });
 
+    it('handles configuring onboarding with config ENV overrides', async () => {
+        process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE = '230400';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '20';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY = '[11,22,33,44,55,66,77,88,99,10,11,12,13,14,15,16]';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID = '1';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID = '[11,22,33,44,55,66,15,16]';
+        process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_PORT = '8282';
+
+        let p;
+
+        await new Promise<[string, string]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                const newSettings = Object.assign({}, SAMPLE_SETTINGS_SAVE_PARAMS);
+                // @ts-expect-error mock disabled field
+                delete newSettings.serial_baudrate;
+                // @ts-expect-error mock disabled field
+                delete newSettings.network_channel;
+                // @ts-expect-error mock disabled field
+                delete newSettings.network_key;
+                // @ts-expect-error mock disabled field
+                delete newSettings.network_pan_id;
+                // @ts-expect-error mock disabled field
+                delete newSettings.network_ext_pan_id;
+                // @ts-expect-error mock disabled field
+                delete newSettings.frontend_port;
+
+                try {
+                    resolve(await runOnboarding(newSettings, false, false));
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(
+            Object.assign({}, SAMPLE_SETTINGS_SAVE, {
+                serial: {
+                    port: SAMPLE_SETTINGS_SAVE.serial.port,
+                    adapter: SAMPLE_SETTINGS_SAVE.serial.adapter,
+                    baudrate: 230400,
+                    rtscts: SAMPLE_SETTINGS_SAVE.serial.rtscts,
+                },
+                advanced: {
+                    log_level: SAMPLE_SETTINGS_SAVE.advanced.log_level,
+                    channel: 20,
+                    network_key: [11, 22, 33, 44, 55, 66, 77, 88, 99, 10, 11, 12, 13, 14, 15, 16],
+                    pan_id: 1,
+                    ext_pan_id: [11, 22, 33, 44, 55, 66, 15, 16],
+                },
+                frontend: {
+                    enabled: SAMPLE_SETTINGS_SAVE.frontend.enabled,
+                    port: 8282,
+                },
+            }),
+        );
+    });
+
     it('runs migrations', async () => {
         data.writeEmptyDatabase();
 
@@ -570,9 +658,13 @@ describe('Onboarding', () => {
         settings.set(['serial', 'adapter'], 'emberz');
 
         let p;
-        const getHtml = await new Promise<string>((resolve) => {
+        const getHtml = await new Promise<string>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
-                resolve(await runFailure());
+                try {
+                    resolve(await runFailure());
+                } catch (error) {
+                    reject(error);
+                }
             });
 
             p = onboard();

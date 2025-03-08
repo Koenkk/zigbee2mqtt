@@ -8,22 +8,22 @@ import data from './data';
 import * as settings from './settings';
 
 type OnboardSettings = {
-    mqtt_base_topic: string;
-    mqtt_server: string;
-    mqtt_user: string;
-    mqtt_password: string;
-    serial_port: string;
-    serial_adapter: Settings['serial']['adapter'];
-    serial_baudrate: string;
+    mqtt_base_topic?: string;
+    mqtt_server?: string;
+    mqtt_user?: string;
+    mqtt_password?: string;
+    serial_port?: string;
+    serial_adapter?: Settings['serial']['adapter'];
+    serial_baudrate?: string;
     serial_rtscts?: 'on';
-    network_channel: string;
-    network_key: string;
-    network_pan_id: string;
-    network_ext_pan_id: string;
+    network_channel?: string;
+    network_key?: string;
+    network_pan_id?: string;
+    network_ext_pan_id?: string;
     frontend_enabled?: 'on';
-    frontend_port: string;
+    frontend_port?: string;
     homeassistant_enabled?: 'on';
-    log_level: Settings['advanced']['log_level'];
+    log_level?: Settings['advanced']['log_level'];
 };
 
 function escapeHtml(s: string): string {
@@ -86,16 +86,26 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
 <body>
     <main>
         <h1>Zigbee2MQTT Onboarding</h1>
+        <p>Set the base configuration to start Zigbee2MQTT.</p>
+        <p>Optional fields will either be ignored or fallback to defaults if not set (see appropriate documentation page for more details).</p>
+        <p>If a field is disabled, it means <a href="https://www.zigbee2mqtt.io/guide/configuration/#environment-variables" target="_blank">environment variables</a> are being used to override specific values (for example, through the Home Assistant add-on configuration page).</p>
+        <hr>
         <form method="post" action="/">
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL || process.env.ZIGBEE2MQTT_CONFIG_SERIAL_PORT || process.env.ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER ? 'disabled' : ''}>
                 <label for="found_device">Found Devices</label>
                 ${devicesSelect}
             </fieldset>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL ? 'disabled' : ''}>
                 <label for="serial_port">Coordinator Port/Path</label>
-                <input type="text" id="serial_port" name="serial_port" value="${currentSettings.serial?.port ?? ''}" required>
+                <input
+                    type="text"
+                    id="serial_port"
+                    name="serial_port"
+                    value="${currentSettings.serial?.port ?? ''}"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_PORT ? 'disabled' : ''}>
                 <label for="serial_adapter">Coordinator Stack</label>
-                <select id="serial_adapter" name="serial_adapter" required>
+                <select id="serial_adapter" name="serial_adapter" required ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER ? 'disabled' : ''}>
                     <option value="zstack" ${currentSettings.serial?.adapter === 'zstack' ? 'selected' : ''}>zstack</option>
                     <option value="ember" ${currentSettings.serial?.adapter === 'ember' ? 'selected' : ''}>ember</option>
                     <option value="deconz" ${currentSettings.serial?.adapter === 'deconz' ? 'selected' : ''}>deconz</option>
@@ -103,7 +113,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     <option value="zboss" ${currentSettings.serial?.adapter === 'zboss' ? 'selected' : ''}>zboss</option>
                 </select>
                 <label for="serial_baudrate">Coordinator Baudrate</label>
-                <select id="serial_baudrate" name="serial_baudrate">
+                <select id="serial_baudrate" name="serial_baudrate" ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE ? 'disabled' : ''}>
                     <option value="38400" ${currentSettings.serial?.baudrate === 38400 ? 'selected' : ''}>38400</option>
                     <option value="57600" ${currentSettings.serial?.baudrate === 57600 ? 'selected' : ''}>57600</option>
                     <option value="115200" ${!currentSettings.serial?.baudrate || currentSettings.serial?.baudrate === 115200 ? 'selected' : ''}>115200</option>
@@ -113,73 +123,165 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                 </select>
                 <small>Can be ignored for networked coordinators (TCP).</small>
                 <label for="serial_rtscts">Coordinator Hardware Flow Control ("rtscts: true")</label>
-                <input type="checkbox" id="serial_rtscts" name="serial_rtscts" ${currentSettings.serial?.rtscts ? 'checked' : ''} style="margin-bottom: 1rem;">
+                <input
+                    type="checkbox"
+                    id="serial_rtscts"
+                    name="serial_rtscts"
+                    ${currentSettings.serial?.rtscts ? 'checked' : ''}
+                    style="margin-bottom: 1rem;">
                 <small>Can be ignored for networked coordinators (TCP).</small>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/adapter-settings.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/adapter-settings.html</a></small>
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/adapter-settings.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/adapter-settings.html</a>
+            </small>
             <hr>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED ? 'disabled' : ''}>
                 <label for="closest_wifi_channel">Closest WiFi Channel</label>
-                <input type="number" min="0" max="14" id="closest_wifi_channel" value="0" onclick="setBestZigbeeChannel(this)">
+                <input
+                    type="number"
+                    min="0"
+                    max="14"
+                    id="closest_wifi_channel"
+                    value="0"
+                    onclick="setBestZigbeeChannel(this)"
+                    ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL ? 'disabled' : ''}>
                 <small>Optionally set to your closest WiFi channel to pick the best value for "Network channel" below.</small>
                 <label for="network_channel">Network Channel</label>
-                <input type="number" min="11" max="26" id="network_channel" name="network_channel" value="${currentSettings.advanced?.channel ?? '25'}" required>
+                <input
+                    type="number"
+                    min="11"
+                    max="26"
+                    id="network_channel"
+                    name="network_channel"
+                    value="${currentSettings.advanced?.channel ?? '25'}"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL ? 'disabled' : ''}>
             </fieldset>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED ? 'disabled' : ''}>
                 <label for="generate_network">
-                    <input type="checkbox" id="generate_network" onclick="setGenerate(this)">
+                    <input
+                        type="checkbox"
+                        id="generate_network"
+                        onclick="setGenerate(this)"
+                        ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID ? 'disabled' : ''}>
                     Generate network?
                 </label>
                 <label for="network_key">Network Key</label>
-                <input type="text" id="network_key" name="network_key" value="${currentSettings.advanced?.network_key ?? 'GENERATE'}" pattern="^([0-9]+(,[0-9]+){15})|GENERATE$" required>
+                <input
+                    type="text"
+                    id="network_key"
+                    name="network_key"
+                    value="${currentSettings.advanced?.network_key ?? 'GENERATE'}"
+                    pattern="^([0-9]+(,[0-9]+){15})|GENERATE$"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY ? 'disabled' : ''}>
                 <label for="network_pan_id">Network PAN ID</label>
-                <input type="text" id="network_pan_id" name="network_pan_id" value="${currentSettings.advanced?.pan_id ?? 'GENERATE'}" pattern="^([0-9]{1,5})|GENERATE$" required>
+                <input
+                    type="text"
+                    id="network_pan_id"
+                    name="network_pan_id"
+                    value="${currentSettings.advanced?.pan_id ?? 'GENERATE'}"
+                    pattern="^([0-9]{1,5})|GENERATE$"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID ? 'disabled' : ''}>
                 <label for="network_ext_pan_id">Network Extended PAN ID</label>
-                <input type="text" id="network_ext_pan_id" name="network_ext_pan_id" value="${currentSettings.advanced?.ext_pan_id ?? 'GENERATE'}" pattern="^([0-9]+(,[0-9]+){7})|GENERATE$" required>
+                <input
+                    type="text"
+                    id="network_ext_pan_id"
+                    name="network_ext_pan_id"
+                    value="${currentSettings.advanced?.ext_pan_id ?? 'GENERATE'}"
+                    pattern="^([0-9]+(,[0-9]+){7})|GENERATE$"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID ? 'disabled' : ''}>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/zigbee-network.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/zigbee-network.html</a></small>
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/zigbee-network.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/zigbee-network.html</a>
+            </small>
             <hr>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_MQTT ? 'disabled' : ''}>
                 <label for="mqtt_base_topic">MQTT Base Topic</label>
-                <input type="text" id="mqtt_base_topic" name="mqtt_base_topic" value="${currentSettings.mqtt?.base_topic ?? 'zigbee2mqtt'}" required>
+                <input
+                    type="text"
+                    id="mqtt_base_topic"
+                    name="mqtt_base_topic"
+                    value="${currentSettings.mqtt?.base_topic ?? 'zigbee2mqtt'}"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC ? 'disabled' : ''}>
                 <label for="mqtt_server">MQTT Server</label>
-                <input type="text" id="mqtt_server" name="mqtt_server" value="${currentSettings.mqtt?.server ?? 'mqtt://localhost:1883'}" required>
+                <input
+                    type="text"
+                    id="mqtt_server"
+                    name="mqtt_server"
+                    value="${currentSettings.mqtt?.server ?? 'mqtt://localhost:1883'}"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER ? 'disabled' : ''}>
                 <label for="mqtt_user">MQTT User</label>
-                <input type="text" id="mqtt_user" name="mqtt_user" value="${currentSettings.mqtt?.user ?? ''}">
+                <input
+                    type="text"
+                    id="mqtt_user"
+                    name="mqtt_user"
+                    value="${currentSettings.mqtt?.user ?? ''}"
+                    ${process.env.ZIGBEE2MQTT_CONFIG_MQTT_USER ? 'disabled' : ''}>
                 <small>Optional. Set only if using authentication.</small>
                 <label for="mqtt_password">MQTT Password</label>
-                <input type="password" id="mqtt_password" name="mqtt_password" value="${currentSettings.mqtt?.password ?? ''}">
+                <input
+                    type="password"
+                    id="mqtt_password"
+                    name="mqtt_password"
+                    value="${currentSettings.mqtt?.password ?? ''}"
+                    ${process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD ? 'disabled' : ''}>
                 <small>Optional. Set only if using authentication.</small>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/mqtt.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/mqtt.html</a></small>
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/mqtt.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/mqtt.html</a>
+            </small>
             <hr>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_FRONTEND ? 'disabled' : ''}>
                 <label for="frontend_enabled">
-                    <input type="checkbox" id="frontend_enabled" name="frontend_enabled" ${currentSettings.frontend?.enabled ? 'checked' : ''}>
+                    <input
+                        type="checkbox"
+                        id="frontend_enabled"
+                        name="frontend_enabled"
+                        ${currentSettings.frontend?.enabled ? 'checked' : ''}
+                        ${process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED ? 'disabled' : ''}>
                     Frontend enabled?
                 </label>
                 <label for="frontend_port">Frontend Port</label>
-                <input type="number" min="0" max="65535" id="frontend_port" name="frontend_port" value="${currentSettings.frontend?.port ?? '8080'}" required>
+                <input
+                    type="number"
+                    min="0"
+                    max="65535"
+                    id="frontend_port"
+                    name="frontend_port"
+                    value="${currentSettings.frontend?.port ?? '8080'}"
+                    required
+                    ${process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_PORT ? 'disabled' : ''}>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/frontend.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/frontend.html</a></small>
-            <fieldset>
-                <label for="homeassistant_enabled">
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/frontend.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/frontend.html</a>
+            </small>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT ? 'disabled' : ''}>
+                <label for="homeassistant_enabled" ${process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED ? 'disabled' : ''}>
                     <input type="checkbox" id="homeassistant_enabled" name="homeassistant_enabled" ${currentSettings.homeassistant?.enabled ? 'checked' : ''}>
                     Home Assistant enabled?
                 </label>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/homeassistant.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/homeassistant.html</a></small>
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/homeassistant.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/homeassistant.html</a>
+            </small>
             <hr>
-            <fieldset>
+            <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED ? 'disabled' : ''}>
                 <label for="log_level">Log Level</label>
-                <select id="log_level" name="log_level">
+                <select id="log_level" name="log_level" ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_LEVEL ? 'disabled' : ''}>
                     <option value="error" ${currentSettings.advanced?.log_level === 'error' ? 'selected' : ''}>error</option>
                     <option value="warning" ${currentSettings.advanced?.log_level === 'warning' ? 'selected' : ''}>warning</option>
                     <option value="info" ${!currentSettings.advanced?.log_level || currentSettings.advanced?.log_level === 'info' ? 'selected' : ''}>info</option>
                     <option value="debug" ${currentSettings.advanced?.log_level === 'debug' ? 'selected' : ''}>debug</option>
                 </select>
             </fieldset>
-            <small><a href="https://www.zigbee2mqtt.io/guide/configuration/logging.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/logging.html</a></small>
+            <small>
+                <a href="https://www.zigbee2mqtt.io/guide/configuration/logging.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/logging.html</a>
+            </small>
             <hr>
             <input type="submit" value="Submit">
         </form>
@@ -279,6 +381,8 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
 
                     req.on('end', () => {
                         const result = parse(body) as unknown as OnboardSettings;
+                        console.log(JSON.stringify(currentSettings));
+                        console.log(JSON.stringify(result));
                         const frontendEnabled = result.frontend_enabled === 'on';
                         const updatedSettings: RecursivePartial<Settings> = {
                             mqtt: {
@@ -290,25 +394,31 @@ async function startOnboardingServer(currentSettings: RecursivePartial<Settings>
                             serial: {
                                 port: result.serial_port,
                                 adapter: result.serial_adapter,
-                                baudrate: parseInt(result.serial_baudrate, 10),
+                                baudrate: result.serial_baudrate ? Number.parseInt(result.serial_baudrate, 10) : undefined,
                                 rtscts: result.serial_rtscts === 'on',
                             },
                             advanced: {
                                 log_level: result.log_level,
-                                channel: Number.parseInt(result.network_channel, 10),
-                                network_key:
-                                    result.network_key === 'GENERATE'
+                                channel: result.network_channel ? Number.parseInt(result.network_channel, 10) : undefined,
+                                network_key: result.network_key
+                                    ? result.network_key === 'GENERATE'
                                         ? result.network_key
-                                        : result.network_key.split(',').map((v) => Number.parseInt(v, 10)),
-                                pan_id: result.network_pan_id === 'GENERATE' ? result.network_pan_id : Number.parseInt(result.network_pan_id, 10),
-                                ext_pan_id:
-                                    result.network_ext_pan_id === 'GENERATE'
+                                        : result.network_key.split(',').map((v) => Number.parseInt(v, 10))
+                                    : undefined,
+                                pan_id: result.network_pan_id
+                                    ? result.network_pan_id === 'GENERATE'
+                                        ? result.network_pan_id
+                                        : Number.parseInt(result.network_pan_id, 10)
+                                    : undefined,
+                                ext_pan_id: result.network_ext_pan_id
+                                    ? result.network_ext_pan_id === 'GENERATE'
                                         ? result.network_ext_pan_id
-                                        : result.network_ext_pan_id.split(',').map((v) => Number.parseInt(v, 10)),
+                                        : result.network_ext_pan_id.split(',').map((v) => Number.parseInt(v, 10))
+                                    : undefined,
                             },
                             frontend: {
                                 enabled: frontendEnabled,
-                                port: parseInt(result.frontend_port, 10),
+                                port: result.frontend_port ? Number.parseInt(result.frontend_port, 10) : undefined,
                             },
                             homeassistant: {
                                 enabled: result.homeassistant_enabled === 'on',
