@@ -1,4 +1,4 @@
-import {existsSync} from 'node:fs';
+import {existsSync, mkdirSync} from 'node:fs';
 import {createServer} from 'node:http';
 import {parse} from 'node:querystring';
 
@@ -360,7 +360,8 @@ function getServerUrl(): URL {
     return new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
 }
 
-async function startOnboardingServer(currentSettings: RecursivePartial<Settings>): Promise<boolean> {
+async function startOnboardingServer(): Promise<boolean> {
+    const currentSettings = settings.get();
     const serverUrl = getServerUrl();
     let server: ReturnType<typeof createServer> | undefined;
     let failed = false;
@@ -503,6 +504,10 @@ async function startFailureServer(errors: string): Promise<void> {
 }
 
 export async function onboard(): Promise<boolean> {
+    if (!existsSync(data.getPath())) {
+        mkdirSync(data.getPath(), {recursive: true});
+    }
+
     const confExists = existsSync(data.joinPath('configuration.yaml'));
     let checkMigration = true;
 
@@ -516,11 +521,11 @@ export async function onboard(): Promise<boolean> {
         settings.write();
     }
 
-    // use db file to detect "brand new install", but override if for some reason, configuration file is missing
+    // use `configuration.yaml` file to detect "brand new install"
     // env allows to re-run onboard even with existing install
-    if (process.env.Z2M_ONBOARD_RERUN || !confExists || !existsSync(data.joinPath('database.db'))) {
+    if (process.env.Z2M_ONBOARD_FORCE_RUN || !confExists) {
         if (!process.env.Z2M_ONBOARD_NO_SERVER) {
-            const success = await startOnboardingServer(settings.get());
+            const success = await startOnboardingServer();
 
             if (!success) {
                 return false;

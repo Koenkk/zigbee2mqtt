@@ -2,6 +2,8 @@ import * as data from './mocks/data';
 
 import type {IncomingMessage, OutgoingHttpHeader, OutgoingHttpHeaders, RequestListener, Server, ServerResponse} from 'node:http';
 
+import {rmSync} from 'node:fs';
+
 import {findAllDevices} from 'zigbee-herdsman/dist/adapter/adapterDiscovery';
 
 import {onboard} from '../lib/util/onboarding';
@@ -153,10 +155,16 @@ describe('Onboarding', () => {
 
     beforeEach(() => {
         delete process.env.Z2M_ONBOARD_NO_SERVER;
-        delete process.env.Z2M_ONBOARD_RERUN;
+        delete process.env.Z2M_ONBOARD_FORCE_RUN;
         delete process.env.Z2M_ONBOARD_URL;
         delete process.env.Z2M_ONBOARD_NO_FAILURE_PAGE;
         delete process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER;
+        delete process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE;
+        delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL;
+        delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY;
+        delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID;
+        delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID;
+        delete process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_PORT;
 
         data.writeDefaultConfiguration(SAMPLE_SETTINGS_INIT);
         data.removeState();
@@ -431,9 +439,8 @@ describe('Onboarding', () => {
 
     it('rerun onboard via ENV and sets given settings', async () => {
         // data.removeConfiguration();
-        data.writeEmptyDatabase();
 
-        process.env.Z2M_ONBOARD_RERUN = '1';
+        process.env.Z2M_ONBOARD_FORCE_RUN = '1';
 
         let p;
         const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
@@ -455,7 +462,12 @@ describe('Onboarding', () => {
     });
 
     it('sets given settings - no frontend redirect', async () => {
-        settings.set(['frontend', 'host'], '/run/zigbee2mqtt/zigbee2mqtt.sock');
+        data.removeConfiguration();
+
+        vi.spyOn(settings, 'writeMinimalDefaults').mockImplementationOnce(() => {
+            settings.writeMinimalDefaults();
+            settings.set(['frontend', 'host'], '/run/zigbee2mqtt/zigbee2mqtt.sock');
+        });
 
         let p;
         const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
@@ -485,8 +497,13 @@ describe('Onboarding', () => {
     });
 
     it('sets given settings - frontend SSL redirect', async () => {
-        settings.set(['frontend', 'ssl_cert'], 'dummy');
-        settings.set(['frontend', 'ssl_key'], 'dummy2');
+        data.removeConfiguration();
+
+        vi.spyOn(settings, 'writeMinimalDefaults').mockImplementationOnce(() => {
+            settings.writeMinimalDefaults();
+            settings.set(['frontend', 'ssl_cert'], 'dummy');
+            settings.set(['frontend', 'ssl_key'], 'dummy2');
+        });
 
         let p;
         const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
@@ -517,6 +534,8 @@ describe('Onboarding', () => {
     });
 
     it('handles saving errors', async () => {
+        process.env.Z2M_ONBOARD_FORCE_RUN = '1';
+
         let p;
         const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
             mockHttpOnListen.mockImplementationOnce(async () => {
@@ -582,6 +601,7 @@ describe('Onboarding', () => {
     });
 
     it('handles configuring onboarding with config ENV overrides', async () => {
+        process.env.Z2M_ONBOARD_FORCE_RUN = '1';
         process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE = '230400';
         process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '20';
         process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY = '[11,22,33,44,55,66,77,88,99,10,11,12,13,14,15,16]';
@@ -642,8 +662,6 @@ describe('Onboarding', () => {
     });
 
     it('runs migrations', async () => {
-        data.writeEmptyDatabase();
-
         settings.set(['version'], settings.CURRENT_VERSION - 1);
 
         const p = onboard();
@@ -653,8 +671,6 @@ describe('Onboarding', () => {
     });
 
     it('handles validation failure', async () => {
-        data.writeEmptyDatabase();
-
         settings.set(['serial', 'adapter'], 'emberz');
 
         let p;
@@ -672,5 +688,25 @@ describe('Onboarding', () => {
 
         await expect(p).resolves.toStrictEqual(false);
         expect(getHtml).toContain('adapter must be equal to one of the allowed values');
+    });
+
+    it('handles creating data path', async () => {
+        rmSync(data.mockDir, {force: true, recursive: true});
+
+        let p;
+        await new Promise<[string, string]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, true, false));
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
     });
 });
