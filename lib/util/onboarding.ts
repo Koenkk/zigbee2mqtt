@@ -68,7 +68,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
         }
 
         devicesSelect += '</select>';
-        devicesSelect += '<small>Optionally allows to configure coordinator port and stack (if known) automatically.</small>';
+        devicesSelect += '<small>Optionally allows to configure coordinator port and type (if known) automatically.</small>';
     } else {
         devicesSelect = '<small>No device found</small>';
     }
@@ -96,7 +96,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                 ${devicesSelect}
             </fieldset>
             <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL ? 'disabled' : ''}>
-                <label for="serial_port">Coordinator Port/Path</label>
+                <label for="serial_port">Coordinator/Adapter Port/Path</label>
                 <input
                     type="text"
                     id="serial_port"
@@ -104,7 +104,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     value="${currentSettings.serial?.port ?? ''}"
                     required
                     ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_PORT ? 'disabled' : ''}>
-                <label for="serial_adapter">Coordinator Stack</label>
+                <label for="serial_adapter">Coordinator/Adapter Type/Stack/Driver</label>
                 <select id="serial_adapter" name="serial_adapter" required ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER ? 'disabled' : ''}>
                     <option value="zstack" ${currentSettings.serial?.adapter === 'zstack' ? 'selected' : ''}>zstack</option>
                     <option value="ember" ${currentSettings.serial?.adapter === 'ember' ? 'selected' : ''}>ember</option>
@@ -112,7 +112,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     <option value="zigate" ${currentSettings.serial?.adapter === 'zigate' ? 'selected' : ''}>zigate</option>
                     <option value="zboss" ${currentSettings.serial?.adapter === 'zboss' ? 'selected' : ''}>zboss</option>
                 </select>
-                <label for="serial_baudrate">Coordinator Baudrate</label>
+                <label for="serial_baudrate">Coordinator/Adapter Baudrate</label>
                 <select id="serial_baudrate" name="serial_baudrate" ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE ? 'disabled' : ''}>
                     <option value="38400" ${currentSettings.serial?.baudrate === 38400 ? 'selected' : ''}>38400</option>
                     <option value="57600" ${currentSettings.serial?.baudrate === 57600 ? 'selected' : ''}>57600</option>
@@ -122,7 +122,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     <option value="921600" ${currentSettings.serial?.baudrate === 921600 ? 'selected' : ''}>921600</option>
                 </select>
                 <small>Can be ignored for networked coordinators (TCP).</small>
-                <label for="serial_rtscts">Coordinator Hardware Flow Control ("rtscts: true")</label>
+                <label for="serial_rtscts">Coordinator/Adapter Hardware Flow Control ("rtscts: true")</label>
                 <input
                     type="checkbox"
                     id="serial_rtscts"
