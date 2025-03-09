@@ -1,0 +1,15 @@
+services:
+    zigbee2mqtt:
+        build:
+            context: ../
+            dockerfile: docker/Dockerfile.dev
+        volumes:
+            - ../:/app
+        #    devices:
+        #      - /dev/serial/by-id/<YOUR-DEVICE-ID>:/dev/ttyACM0
+        ports:
+            - 127.0.0.1:8080:8080
+    mqtt:
+        image: eclipse-mosquitto:2.0
+        container_name: mqtt
+        command: 'mosquitto -c /mosquitto-no-auth.conf'
