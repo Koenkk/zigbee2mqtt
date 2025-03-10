@@ -6,7 +6,7 @@ on:
             - master
 
 jobs:
-    fail_pr:
+    fail-pr-to-master:
         runs-on: ubuntu-latest
         steps:
             - name: Fail PR to master

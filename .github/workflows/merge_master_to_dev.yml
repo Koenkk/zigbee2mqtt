@@ -6,7 +6,7 @@ on:
             - master
 
 jobs:
-    merge_master_to_dev:
+    merge-master-to-dev:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4

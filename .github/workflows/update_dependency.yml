@@ -6,7 +6,7 @@ name: update-dep
 
 permissions: {}
 jobs:
-    update_dep:
+    update-dependency:
         permissions:
             contents: write
             pull-requests: write
