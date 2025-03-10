@@ -2,7 +2,7 @@ on:
     repository_dispatch:
         types: update_dep
 
-name: update-dep
+name: Update dependency
 
 permissions: {}
 jobs:

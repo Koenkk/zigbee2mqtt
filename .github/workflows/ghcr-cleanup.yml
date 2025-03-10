@@ -1,7 +1,7 @@
 on:
     workflow_dispatch:
 
-name: ghcr-cleanup
+name: GHCR cleanup
 
 permissions: {}
 jobs:

@@ -1,4 +1,5 @@
-name: deps-review
+name: Dependency review
+
 on: [pull_request]
 
 permissions:
