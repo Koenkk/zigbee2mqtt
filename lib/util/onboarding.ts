@@ -295,10 +295,12 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
             const [, path, adapter] = e.value.split(", ");
             const serialPortEl = document.querySelector("#serial_port");
             serialPortEl.value = path;
+            const serialAdapterEl = document.querySelector("#serial_adapter");
 
             if (['zstack', 'ember', 'deconz', 'zigate', 'zboss'].includes(adapter)) {
-                const serialAdapterEl = document.querySelector("#serial_adapter");
                 serialAdapterEl.value = adapter;
+            } else {
+                serialAdapterEl.value = '';
             }
         }
 
