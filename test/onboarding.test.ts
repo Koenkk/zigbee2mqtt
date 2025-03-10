@@ -158,6 +158,7 @@ describe('Onboarding', () => {
         delete process.env.Z2M_ONBOARD_FORCE_RUN;
         delete process.env.Z2M_ONBOARD_URL;
         delete process.env.Z2M_ONBOARD_NO_FAILURE_PAGE;
+        delete process.env.Z2M_ONBOARD_NO_REDIRECT;
         delete process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER;
         delete process.env.ZIGBEE2MQTT_CONFIG_SERIAL_BAUDRATE;
         delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL;
@@ -492,6 +493,30 @@ describe('Onboarding', () => {
                 },
             }),
         );
+        expect(getHtml).toContain('No device found');
+        expect(postHtml).toContain('You can close this page');
+    });
+
+    it('sets given settings - no frontend redirect via ENV', async () => {
+        data.removeConfiguration();
+
+        process.env.Z2M_ONBOARD_NO_REDIRECT = '1';
+
+        let p;
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
         expect(getHtml).toContain('No device found');
         expect(postHtml).toContain('You can close this page');
     });

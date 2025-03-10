@@ -432,7 +432,10 @@ async function startOnboardingServer(): Promise<boolean> {
                             settings.apply(updatedSettings);
 
                             // to redirect, make sure frontend "will be" enabled, and host isn't socket
-                            const redirect = frontendEnabled && (!currentSettings.frontend?.host || !currentSettings.frontend.host.startsWith('/'));
+                            const redirect =
+                                !process.env.Z2M_ONBOARD_NO_REDIRECT &&
+                                frontendEnabled &&
+                                (!currentSettings.frontend?.host || !currentSettings.frontend.host.startsWith('/'));
                             const protocol = currentSettings.frontend?.ssl_cert && currentSettings.frontend.ssl_key ? 'https' : 'http';
 
                             res.setHeader('Content-Type', 'text/html');
