@@ -7,7 +7,7 @@ permissions:
     contents: write
     pull-requests: write
 
-name: release-please
+name: Release Please
 
 jobs:
     release-please:
