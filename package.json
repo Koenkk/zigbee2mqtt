@@ -27,6 +27,7 @@
         "pretty:write": "prettier --write .",
         "pretty:check": "prettier --check .",
         "start": "node index.js",
+        "check": "pnpm run pretty:check && pnpm run eslint",
         "test": "vitest run --config ./test/vitest.config.mts",
         "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
         "test:watch": "vitest watch --config ./test/vitest.config.mts",

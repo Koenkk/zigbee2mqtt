@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on: [pull_request, push]
 
@@ -28,15 +28,13 @@ jobs:
                   cache: pnpm
 
             - name: Install dependencies
-              run: pnpm i --frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Build
               run: pnpm run build
 
-            - name: Lint
-              run: |
-                  pnpm run pretty:check
-                  pnpm run eslint
+            - name: Check
+              run: pnpm run check
 
             - name: Test
               run: pnpm run test:coverage
@@ -180,6 +178,7 @@ jobs:
         continue-on-error: true
         steps:
             - uses: actions/checkout@v4
+
             - uses: pnpm/action-setup@v4
 
             - uses: actions/setup-node@v4
