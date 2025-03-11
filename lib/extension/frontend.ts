@@ -124,7 +124,7 @@ export default class Frontend extends Extension {
     override async stop(): Promise<void> {
         await super.stop();
         this.wss?.clients.forEach((client) => {
-            client.send(stringify({topic: 'bridge/state', payload: { state: 'offline' }}));
+            client.send(stringify({topic: 'bridge/state', payload: {state: 'offline'}}));
             client.terminate();
         });
         this.wss?.close();
