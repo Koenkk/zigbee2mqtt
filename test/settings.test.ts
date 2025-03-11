@@ -38,7 +38,7 @@ describe('Settings', () => {
 
     const clearEnvironmentVariables = (): void => {
         for (const key in process.env) {
-            if (key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
+            if (key.startsWith('ZIGBEE2MQTT_CONFIG_')) {
                 delete process.env[key];
             }
         }
@@ -104,17 +104,16 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
-    it('Should apply environment variables', () => {
-        process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL'] = '15';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'attribute_and_json';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT'] = '["console"]';
-        process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] =
-            '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
-        process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
-        process.env['ZIGBEE2MQTT_CONFIG_MQTT_SERVER'] = 'testserver';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY'] = 'GENERATE';
-        process.env['ZIGBEE2MQTT_CONFIG_DEVICES'] = 'devices.yaml';
+    it('Should apply environment variables as overrides', () => {
+        process.env.ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED = 'true';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '15';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT = 'attribute_and_json';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT = '["console"]';
+        process.env.ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC = 'testtopic';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = 'testserver';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY = 'GENERATE';
+        process.env.ZIGBEE2MQTT_CONFIG_DEVICES = 'devices.yaml';
 
         const contentDevices = {
             '0x00158d00018255df': {
@@ -125,6 +124,7 @@ describe('Settings', () => {
 
         write(configurationFile, {});
         write(devicesFile, contentDevices);
+        expect(settings.write()); // trigger writing of ENVs
         expect(settings.validate()).toStrictEqual([]);
 
         const s = settings.get();
@@ -147,6 +147,11 @@ describe('Settings', () => {
         expected.advanced.network_key = 'GENERATE';
 
         expect(s).toStrictEqual(expected);
+
+        settings.set(['advanced', 'channel'], 25);
+
+        expect(settings.get().advanced.channel).toStrictEqual(15);
+        expect(read(configurationFile)).toMatchObject({advanced: {channel: 15}});
     });
 
     it('Should add devices', () => {
