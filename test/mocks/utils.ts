@@ -1,4 +1,4 @@
-import type { DefinitionWithExtend } from 'zigbee-herdsman-converters';
+import type {DefinitionWithExtend} from 'zigbee-herdsman-converters';
 
 export type EventHandler = (...args: unknown[]) => unknown;
 

@@ -2,9 +2,8 @@ import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
 import {events as mockMQTTEvents, mockMQTTPublishAsync, mockMQTTSubscribeAsync, mockMQTTUnsubscribeAsync} from '../mocks/mqtt';
 import * as mockSleep from '../mocks/sleep';
-import {flushPromises} from '../mocks/utils';
+import {flushPromises, getZhcBaseDefinitions} from '../mocks/utils';
 import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
-import { getZhcBaseDefinitions } from '../mocks/utils';
 
 import assert from 'node:assert';
 
