@@ -1,7 +1,7 @@
 import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
 import {mockMQTTPublishAsync} from '../mocks/mqtt';
-import {flushPromises} from '../mocks/utils';
+import {flushPromises, getZhcBaseDefinitions} from '../mocks/utils';
 import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
 import {MockInstance} from 'vitest';
@@ -19,8 +19,8 @@ describe('Extension: OnEvent', () => {
     let mockLivoloOnEvent: MockInstance;
 
     beforeAll(async () => {
-        const mappedLivolo = (await zhc.findByDevice(devices.LIVOLO))!;
-        mockLivoloOnEvent = vi.spyOn(mappedLivolo, 'onEvent');
+        const livoloDefinition = (await getZhcBaseDefinitions()).find((d) => d.zigbeeModel?.includes(devices.LIVOLO.modelID!))!;
+        mockLivoloOnEvent = vi.spyOn(livoloDefinition, 'onEvent');
     });
 
     beforeEach(async () => {
