@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 3.3.1
+  zigbee-herdsman: 3.3.2
 
 importers:
 
@@ -75,11 +75,11 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       zigbee-herdsman:
-        specifier: 3.3.1
-        version: 3.3.1
+        specifier: 3.3.2
+        version: 3.3.2
       zigbee-herdsman-converters:
-        specifier: 23.4.0
-        version: 23.4.0
+        specifier: 23.6.0
+        version: 23.6.0
       zigbee2mqtt-frontend:
         specifier: 0.9.4
         version: 0.9.4
@@ -1818,11 +1818,11 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zigbee-herdsman-converters@23.4.0:
-    resolution: {integrity: sha512-m2BSgnLCZV6Oa53JPlVWDQSB7WzO9mkT0WlNGWstTUiBqqwMHH8g8MuLVeYS4FiCKl7/4HSLNkH7qWKusH1dVw==}
+  zigbee-herdsman-converters@23.6.0:
+    resolution: {integrity: sha512-5ysM0Djgacm2kutwjuBA8/MMWEJq+HwAn80ef8S7bCFqk1UDLec5LtoUAlcbRRIzvslYM6lYgnJ6+XkwcTwlMw==}
 
-  zigbee-herdsman@3.3.1:
-    resolution: {integrity: sha512-lteKke6yvoEMd1hnehYFpdRNfaqxhqmJtAcMWH2B//nKaekZo6Aje970xYGWPyQIR2TYK5aVxIce2sMiB/Ue/Q==}
+  zigbee-herdsman@3.3.2:
+    resolution: {integrity: sha512-BTttXlK+vHI8KGhdh3bUSaDr2l+9A5ZcwMPSC8sDGucl5OcxKaDyY3ydJEIgnViW4iry8ntJujaojwYNNzQ/FA==}
 
   zigbee2mqtt-frontend@0.9.4:
     resolution: {integrity: sha512-JBs/JHDku6H5bi7Wiyce3qJrZsjCj3iso/YmgjumA+jhija6kpADwaV2CpJF3V8PloKj1PNgxnLOGnxolipTRg==}
@@ -3478,16 +3478,16 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zigbee-herdsman-converters@23.4.0:
+  zigbee-herdsman-converters@23.6.0:
     dependencies:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
       semver: 7.7.1
-      zigbee-herdsman: 3.3.1
+      zigbee-herdsman: 3.3.2
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@3.3.1:
+  zigbee-herdsman@3.3.2:
     dependencies:
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
