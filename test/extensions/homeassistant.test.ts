@@ -2,7 +2,7 @@ import * as data from '../mocks/data';
 import {mockLogger} from '../mocks/logger';
 import {events as mockMQTTEvents, mockMQTTPublishAsync, mockMQTTSubscribeAsync, mockMQTTUnsubscribeAsync} from '../mocks/mqtt';
 import * as mockSleep from '../mocks/sleep';
-import {flushPromises} from '../mocks/utils';
+import {flushPromises, getZhcBaseDefinitions} from '../mocks/utils';
 import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
 import assert from 'node:assert';
@@ -83,11 +83,8 @@ describe('Extension: HomeAssistant', () => {
     it('Should not have duplicate type/object_ids in a mapping', async () => {
         const duplicated: string[] = [];
 
-        (await import('zigbee-herdsman-converters/devices/index')).default.forEach((baseDefinition) => {
-            const d = zhc.prepareDefinition(
-                // @ts-expect-error inferred type is wrong
-                baseDefinition,
-            );
+        for (const baseDefinition of await getZhcBaseDefinitions()) {
+            const d = zhc.prepareDefinition(baseDefinition);
             const exposes = typeof d.exposes == 'function' ? d.exposes(undefined, undefined) : d.exposes;
             const device = {
                 definition: d,
@@ -112,7 +109,7 @@ describe('Extension: HomeAssistant', () => {
                     cfgTypeObjectIds.push(id);
                 }
             });
-        });
+        }
 
         expect(duplicated).toHaveLength(0);
     });
