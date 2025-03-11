@@ -541,7 +541,7 @@ export async function onboard(): Promise<boolean> {
     }
 
     if (checkMigration) {
-        const {migrateIfNecessary} = await import('./settingsMigration');
+        const {migrateIfNecessary} = await import('./settingsMigration.js');
 
         migrateIfNecessary();
     }
