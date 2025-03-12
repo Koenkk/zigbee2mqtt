@@ -51,7 +51,7 @@ function capitalize(s: string): string {
 }
 
 async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
-    const packageJSON = await import('../../package.json');
+    const packageJSON = (await import('../../package.json', {with: {type: 'json'}})).default;
     const version = packageJSON.version;
     let commitHash: string | undefined;
 

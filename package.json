@@ -22,7 +22,7 @@
     ],
     "scripts": {
         "build": "tsc && node index.js writehash",
-        "build-watch": "tsc --watch",
+        "build:watch": "tsc --watch",
         "eslint": "eslint --max-warnings=0",
         "pretty:write": "prettier --write .",
         "pretty:check": "prettier --check .",
