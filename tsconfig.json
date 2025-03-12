@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
         "allowSyntheticDefaultImports": true,
-        "module": "Node16",
+        "module": "commonjs",
         "esModuleInterop": true,
         "target": "ES2022",
         "lib": ["ES2022"],
         "strict": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
+        "moduleResolution": "node",
         "declaration": true,
         "declarationMap": true,
         "outDir": "dist",
