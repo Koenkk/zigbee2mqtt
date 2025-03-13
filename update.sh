@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 
-git fetch
-
-NEW_COMMITS="$(git rev-list HEAD...origin/"$(git branch --show-current)" --count)"
-
-if [ "$NEW_COMMITS" -gt "0" ]; then
-    echo "Update available!"
-else
-    echo "No update available."
-    exit 0
+if [ "$1" != "force" ]; then
+    git fetch
+    NEW_COMMITS="$(git rev-list HEAD...origin/"$(git branch --show-current)" --count)"
+    if [ "$NEW_COMMITS" -gt "0" ]; then
+        echo "Update available!"
+    else
+        echo "No update available. Use '$0 force' to skip the check."
+        exit 0
+    fi
 fi
 
 NEED_RESTART=0
