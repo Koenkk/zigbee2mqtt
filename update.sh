@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 
+git fetch
+
 NEW_COMMITS="$(git rev-list HEAD...origin/"$(git branch --show-current)" --count)"
 
 if [ "$NEW_COMMITS" -gt "0" ]; then
