@@ -14,6 +14,7 @@ import stringify from 'json-stable-stringify-without-jsonify';
 import * as zhc from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
+import ExternalConverters from '../../lib/extension/externalConverters';
 import * as settings from '../../lib/util/settings';
 
 const BASE_DIR = 'external_converters';
@@ -61,8 +62,8 @@ describe('Extension: ExternalConverters', () => {
     };
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'ExternalConverters');
-        await controller.enableDisableExtension(true, 'ExternalConverters');
+        await controller.removeExtension(controller.getExtension('ExternalConverters')!);
+        await controller.addExtension(new ExternalConverters(...controller.extensionArgs));
     };
 
     beforeAll(async () => {

@@ -7,8 +7,6 @@ import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, ev
 
 import type {Mock} from 'vitest';
 
-import type Bridge from '../../lib/extension/bridge';
-
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +14,7 @@ import path from 'node:path';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from '../../lib/controller';
+import Bridge from '../../lib/extension/bridge';
 import * as settings from '../../lib/util/settings';
 import utils from '../../lib/util/utils';
 
@@ -48,10 +47,9 @@ describe('Extension: Bridge', () => {
     let extension: Bridge;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Bridge');
-        await controller.enableDisableExtension(true, 'Bridge');
-        // @ts-expect-error private
-        extension = controller.extensions.find((e) => e.constructor.name === 'Bridge');
+        await controller.removeExtension(controller.getExtension('Bridge')!);
+        await controller.addExtension(new Bridge(...controller.extensionArgs));
+        extension = controller.getExtension('Bridge')! as Bridge;
     };
 
     beforeAll(async () => {
@@ -60,8 +58,7 @@ describe('Extension: Bridge', () => {
         controller = new Controller(mockRestart, vi.fn());
         await controller.start();
         await flushPromises();
-        // @ts-expect-error private
-        extension = controller.extensions.find((e) => e.constructor.name === 'Bridge');
+        extension = controller.getExtension('Bridge')! as Bridge;
     });
 
     beforeEach(async () => {
@@ -3759,14 +3756,12 @@ describe('Extension: Bridge', () => {
     });
 
     it('Change options and apply - homeassistant', async () => {
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
+        expect(controller.getExtension('HomeAssistant')).toBeUndefined();
+        await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
         // TODO: there appears to be a race condition somewhere in here, calls in `bridgeOptions` are not properly ordered when logged
         await vi.advanceTimersByTimeAsync(10000);
         await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
+        expect(controller.getExtension('HomeAssistant')).toBeDefined();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
@@ -3774,10 +3769,9 @@ describe('Extension: Bridge', () => {
             {retain: false, qos: 0},
         );
         // revert
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
+        await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
         await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
+        expect(controller.getExtension('HomeAssistant')).toBeUndefined();
     });
 
     it('Change options and apply - log_level', async () => {
@@ -3897,9 +3891,8 @@ describe('Extension: Bridge', () => {
     });
 
     it('Icon link handling', async () => {
-        // @ts-expect-error private
-        const bridge: Bridge = controller.extensions.find((e) => e.constructor.name === 'Bridge');
-        expect(bridge).not.toBeUndefined();
+        const bridge = controller.getExtension('Bridge')! as Bridge;
+        expect(bridge).toBeDefined();
 
         const definition = {
             fingerprint: [],

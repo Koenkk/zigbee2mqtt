@@ -8,11 +8,11 @@ import {devices, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 import path from 'node:path';
 
 import stringify from 'json-stable-stringify-without-jsonify';
-import OTAUpdate from 'lib/extension/otaUpdate';
 
 import * as zhc from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
+import OTAUpdate from '../../lib/extension/otaUpdate';
 import * as settings from '../../lib/util/settings';
 
 const mocksClear = [mockMQTTPublishAsync, devices.bulb.save, mockLogger.info];
@@ -29,8 +29,8 @@ describe('Extension: OTAUpdate', () => {
     const isUpdateAvailableSpy = vi.spyOn(zhc.ota, 'isUpdateAvailable');
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'OTAUpdate');
-        await controller.enableDisableExtension(true, 'OTAUpdate');
+        await controller.removeExtension(controller.getExtension('OTAUpdate')!);
+        await controller.addExtension(new OTAUpdate(...controller.extensionArgs));
     };
 
     beforeAll(async () => {
@@ -51,8 +51,7 @@ describe('Extension: OTAUpdate', () => {
 
     beforeEach(async () => {
         zhc.ota.setConfiguration(DEFAULT_CONFIG);
-        // @ts-expect-error private
-        const extension: OTAUpdate = controller.extensions.find((e) => e.constructor.name === 'OTAUpdate');
+        const extension = controller.getExtension('OTAUpdate')! as OTAUpdate;
         // @ts-expect-error private
         extension.lastChecked = {};
         // @ts-expect-error private

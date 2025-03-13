@@ -26,11 +26,10 @@ describe('Extension: HomeAssistant', () => {
     const origin = {name: 'Zigbee2MQTT', sw: '', url: 'https://www.zigbee2mqtt.io'};
 
     const resetExtension = async (runTimers = true): Promise<void> => {
-        await controller.enableDisableExtension(false, 'HomeAssistant');
+        await controller.removeExtension(controller.getExtension('HomeAssistant')!);
         mocksClear.forEach((m) => m.mockClear());
-        await controller.enableDisableExtension(true, 'HomeAssistant');
-        // @ts-expect-error private
-        extension = controller.extensions.find((e) => e.constructor.name === 'HomeAssistant');
+        await controller.addExtension(new HomeAssistant(...controller.extensionArgs));
+        extension = controller.getExtension('HomeAssistant')! as HomeAssistant;
 
         if (runTimers) {
             await vi.runOnlyPendingTimersAsync();
@@ -49,7 +48,7 @@ describe('Extension: HomeAssistant', () => {
     };
 
     beforeAll(async () => {
-        const {getZigbee2MQTTVersion} = (await import('../../lib/util/utils')).default;
+        const {getZigbee2MQTTVersion} = await import('../../lib/util/utils.js');
         z2m_version = (await getZigbee2MQTTVersion()).version;
         version = `Zigbee2MQTT ${z2m_version}`;
         origin.sw = z2m_version;
@@ -1207,16 +1206,20 @@ describe('Extension: HomeAssistant', () => {
     it('Should throw error when starting with attributes output', async () => {
         settings.set(['advanced', 'output'], 'attribute');
         settings.set(['homeassistant'], {enabled: true});
-        expect(() => {
-            new Controller(vi.fn(), vi.fn());
-        }).toThrow('Home Assistant integration is not possible with attribute output!');
+        const controller = new Controller(vi.fn(), vi.fn());
+
+        await expect(async () => {
+            await controller.start();
+        }).rejects.toThrow('Home Assistant integration is not possible with attribute output!');
     });
 
     it('Should throw error when homeassistant.discovery_topic equals the mqtt.base_topic', async () => {
         settings.set(['mqtt', 'base_topic'], 'homeassistant');
-        expect(() => {
-            new Controller(vi.fn(), vi.fn());
-        }).toThrow("'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got 'homeassistant')");
+        const controller = new Controller(vi.fn(), vi.fn());
+
+        await expect(async () => {
+            await controller.start();
+        }).rejects.toThrow("'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got 'homeassistant')");
     });
 
     it('Should warn when starting with cache_state false', async () => {
