@@ -2692,4 +2692,28 @@ describe('Extension: HomeAssistant', () => {
         expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual('homeassistant/device_automation/0x0017880104e45520/action_single/config');
         expect(mockMQTTPublishAsync.mock.calls[3][0]).toStrictEqual('zigbee2mqtt/button/action');
     });
+
+    it('prevents mismatching setting/extension state', async () => {
+        settings.set(['homeassistant', 'enabled'], true);
+        await resetExtension();
+
+        await expect(async () => {
+            await controller.enableDisableExtension(false, 'HomeAssistant');
+        }).rejects.toThrow('Tried to disable HomeAssistant extension enabled in settings');
+
+        await expect(async () => {
+            await controller.enableDisableExtension(true, 'HomeAssistant');
+        }).rejects.toThrow('Extension with name HomeAssistant already present');
+
+        settings.set(['homeassistant', 'enabled'], false);
+
+        await expect(async () => {
+            await controller.enableDisableExtension(true, 'HomeAssistant');
+        }).rejects.toThrow('Tried to enable HomeAssistant extension disabled in settings');
+
+        settings.set(['homeassistant', 'enabled'], false);
+        await controller.enableDisableExtension(false, 'HomeAssistant');
+
+        await vi.waitFor(() => controller.getExtension('HomeAssistant') === undefined);
+    });
 });

@@ -3758,10 +3758,7 @@ describe('Extension: Bridge', () => {
     it('Change options and apply - homeassistant', async () => {
         expect(controller.getExtension('HomeAssistant')).toBeUndefined();
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
-        // TODO: there appears to be a race condition somewhere in here, calls in `bridgeOptions` are not properly ordered when logged
-        await vi.advanceTimersByTimeAsync(10000);
-        await flushPromises();
-        expect(controller.getExtension('HomeAssistant')).toBeDefined();
+        await expect(vi.waitUntil(() => controller.getExtension('HomeAssistant'))).resolves.toBeDefined();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
@@ -3770,8 +3767,7 @@ describe('Extension: Bridge', () => {
         );
         // revert
         await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
-        await flushPromises();
-        expect(controller.getExtension('HomeAssistant')).toBeUndefined();
+        await vi.waitUntil(() => controller.getExtension('HomeAssistant') === undefined);
     });
 
     it('Change options and apply - log_level', async () => {

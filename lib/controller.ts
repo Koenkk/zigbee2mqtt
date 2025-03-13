@@ -172,11 +172,14 @@ export class Controller {
                         throw new Error('Tried to enable Frontend extension disabled in settings');
                     }
 
+                    // this is not actually used, not tested either
+                    /* v8 ignore start */
                     const {Frontend} = await import('./extension/frontend.js');
 
                     await this.addExtension(new Frontend(...this.extensionArgs));
 
                     break;
+                    /* v8 ignore stop */
                 }
                 case 'HomeAssistant': {
                     if (!settings.get().homeassistant.enabled) {
