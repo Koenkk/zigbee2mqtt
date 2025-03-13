@@ -1112,8 +1112,8 @@ describe('Controller', () => {
         await controller.start();
 
         await expect(async () => {
-            await controller.enableDisableExtension(true, 'DoesNotExist');
-        }).rejects.toThrow("Extension DoesNotExist does not exist or is not built-in (should be added with 'addExtension')");
+            await controller.enableDisableExtension(true, 'Fake');
+        }).rejects.toThrow("Extension Fake does not exist (should be added with 'addExtension') or is built-in that cannot be enabled at runtime");
 
         await expect(async () => {
             await controller.enableDisableExtension(false, 'Availability');

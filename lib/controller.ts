@@ -193,7 +193,9 @@ export class Controller {
                     break;
                 }
                 default: {
-                    throw new Error(`Extension ${name} does not exist or is not built-in (should be added with 'addExtension')`);
+                    throw new Error(
+                        `Extension ${name} does not exist (should be added with 'addExtension') or is built-in that cannot be enabled at runtime`,
+                    );
                 }
             }
         } else {
