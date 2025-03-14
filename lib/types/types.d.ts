@@ -120,7 +120,7 @@ declare global {
         serial: {
             disable_led: boolean;
             port?: string;
-            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss';
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss' | 'zoh';
             baudrate?: number;
             rtscts?: boolean;
         };
