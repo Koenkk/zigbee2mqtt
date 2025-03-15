@@ -1,5 +1,6 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from 'lib/types/api';
 import type * as zhc from 'zigbee-herdsman-converters';
+
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from '../types/api';
 
 import {exec} from 'child_process';
 import assert from 'node:assert';
@@ -50,9 +51,8 @@ function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
-    const packageJSON = await import('../../package.json');
-    // @ts-expect-error typing incorrect
+export async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
+    const packageJSON = (await import('../../package.json', {with: {type: 'json'}})).default;
     const version = packageJSON.version;
     let commitHash: string | undefined;
 

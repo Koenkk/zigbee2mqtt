@@ -383,7 +383,7 @@ class Bridge {
 /**
  * This extensions handles integration with HomeAssistant
  */
-export default class HomeAssistant extends Extension {
+export class HomeAssistant extends Extension {
     private discovered: {[s: string]: Discovered} = {};
     private discoveryTopic: string;
     private discoveryRegex: RegExp;
@@ -2150,3 +2150,5 @@ export default class HomeAssistant extends Extension {
         return value_template;
     }
 }
+
+export default HomeAssistant;

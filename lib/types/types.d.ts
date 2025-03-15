@@ -1,14 +1,15 @@
-import type TypeEventBus from 'lib/eventBus';
-import type TypeExtension from 'lib/extension/extension';
-import type TypeDevice from 'lib/model/device';
-import type TypeGroup from 'lib/model/group';
-import type TypeMQTT from 'lib/mqtt';
-import type TypeState from 'lib/state';
-import type TypeZigbee from 'lib/zigbee';
 import type {AdapterTypes as ZHAdapterTypes, Events as ZHEvents, Models as ZHModels} from 'zigbee-herdsman';
 import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
-import {LogLevel} from 'lib/util/settings';
+import type TypeEventBus from '../eventBus';
+import type TypeExtension from '../extension/extension';
+import type TypeDevice from '../model/device';
+import type TypeGroup from '../model/group';
+import type TypeMQTT from '../mqtt';
+import type TypeState from '../state';
+import type TypeZigbee from '../zigbee';
+
+import {LogLevel} from '../util/settings';
 
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -120,7 +121,7 @@ declare global {
         serial: {
             disable_led: boolean;
             port?: string;
-            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss';
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss' | 'zoh';
             baudrate?: number;
             rtscts?: boolean;
         };

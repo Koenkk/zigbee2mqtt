@@ -1,4 +1,4 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from 'lib/types/api';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from '../types/api';
 
 import fs from 'node:fs';
 import path from 'node:path';

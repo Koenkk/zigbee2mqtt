@@ -1,4 +1,4 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from 'lib/types/api';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from '../types/api';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';

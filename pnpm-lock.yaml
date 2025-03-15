@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 3.3.2
+  zigbee-herdsman: 3.4.0
 
 importers:
 
@@ -75,11 +75,11 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       zigbee-herdsman:
-        specifier: 3.3.2
-        version: 3.3.2
+        specifier: 3.4.0
+        version: 3.4.0
       zigbee-herdsman-converters:
-        specifier: 23.6.0
-        version: 23.6.0
+        specifier: 23.7.0
+        version: 23.7.0
       zigbee2mqtt-frontend:
         specifier: 0.9.4
         version: 0.9.4
@@ -1818,11 +1818,15 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zigbee-herdsman-converters@23.6.0:
-    resolution: {integrity: sha512-5ysM0Djgacm2kutwjuBA8/MMWEJq+HwAn80ef8S7bCFqk1UDLec5LtoUAlcbRRIzvslYM6lYgnJ6+XkwcTwlMw==}
+  zigbee-herdsman-converters@23.7.0:
+    resolution: {integrity: sha512-yHmuweeaRaRa2PHaDBorYun2U8amBJHAyCLhCVFiz9i+YtaqIlzbVvFIta30luE8CQyy7WqAtdbvXsRS+SJqcQ==}
 
-  zigbee-herdsman@3.3.2:
-    resolution: {integrity: sha512-BTttXlK+vHI8KGhdh3bUSaDr2l+9A5ZcwMPSC8sDGucl5OcxKaDyY3ydJEIgnViW4iry8ntJujaojwYNNzQ/FA==}
+  zigbee-herdsman@3.4.0:
+    resolution: {integrity: sha512-58WDYdSoTM6KLYERG6uPgbozT++O1NAgI6zzdTNi/WYgUr1NGjmmQgkjMz8N10aovpqtSE3Ev+X5ay35Xs4EDg==}
+
+  zigbee-on-host@0.1.0:
+    resolution: {integrity: sha512-0lUepIg+7Ikt8scRtcD4Y+NhQXydn+3J6caVc7aBz4XYA2ClSDNq8F3hJkFxWw3FD7ZPwpZnYfHa9tHb5pJWjw==}
+    engines: {node: '>=20.17.0'}
 
   zigbee2mqtt-frontend@0.9.4:
     resolution: {integrity: sha512-JBs/JHDku6H5bi7Wiyce3qJrZsjCj3iso/YmgjumA+jhija6kpADwaV2CpJF3V8PloKj1PNgxnLOGnxolipTRg==}
@@ -3478,16 +3482,16 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zigbee-herdsman-converters@23.6.0:
+  zigbee-herdsman-converters@23.7.0:
     dependencies:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
       semver: 7.7.1
-      zigbee-herdsman: 3.3.2
+      zigbee-herdsman: 3.4.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@3.3.2:
+  zigbee-herdsman@3.4.0:
     dependencies:
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
@@ -3497,7 +3501,10 @@ snapshots:
       fast-deep-equal: 3.1.3
       mixin-deep: 2.0.1
       slip: 1.0.2
+      zigbee-on-host: 0.1.0
     transitivePeerDependencies:
       - supports-color
+
+  zigbee-on-host@0.1.0: {}
 
   zigbee2mqtt-frontend@0.9.4: {}

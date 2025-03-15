@@ -10,6 +10,7 @@ import path from 'node:path';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from '../../lib/controller';
+import ExternalExtensions from '../../lib/extension/externalExtensions';
 import * as settings from '../../lib/util/settings';
 
 const BASE_DIR = 'external_extensions';
@@ -47,8 +48,8 @@ describe('Extension: ExternalExtensions', () => {
     };
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'ExternalExtensions');
-        await controller.enableDisableExtension(true, 'ExternalExtensions');
+        await controller.removeExtension(controller.getExtension('ExternalExtensions')!);
+        await controller.addExtension(new ExternalExtensions(...controller.extensionArgs));
     };
 
     beforeAll(async () => {
