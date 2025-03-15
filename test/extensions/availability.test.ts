@@ -32,8 +32,8 @@ describe('Extension: Availability', () => {
     let controller: Controller;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Availability');
-        await controller.enableDisableExtension(true, 'Availability');
+        await controller.removeExtension(controller.getExtension('Availability')!);
+        await controller.addExtension(new Availability(...controller.extensionArgs));
     };
 
     const setTimeAndAdvanceTimers = async (value: number): Promise<void> => {
@@ -362,8 +362,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should clear the ping queue on stop', async () => {
-        // @ts-expect-error private
-        const availability = controller.extensions.find((extension) => extension instanceof Availability)!;
+        const availability = controller.getExtension('Availability')! as Availability;
         // @ts-expect-error private
         const publishAvailabilitySpy = vi.spyOn(availability, 'publishAvailability');
 
@@ -384,8 +383,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should prevent instance restart', async () => {
-        // @ts-expect-error private
-        const availability = controller.extensions.find((extension) => extension instanceof Availability)!;
+        const availability = controller.getExtension('Availability')! as Availability;
 
         await availability.stop();
 

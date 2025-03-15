@@ -1,5 +1,6 @@
-import type {Zigbee2MQTTAPI} from 'lib/types/api';
 import type {Ota} from 'zigbee-herdsman-converters';
+
+import type {Zigbee2MQTTAPI} from '../types/api';
 
 import assert from 'node:assert';
 import path from 'node:path';

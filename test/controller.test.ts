@@ -1107,4 +1107,16 @@ describe('Controller', () => {
         expect(callback).toHaveBeenCalledTimes(1);
         expect(mockLogger.error).toHaveBeenCalledWith(`EventBus error 'Test/stateChange': Whoops!`);
     });
+
+    it('prevents interacting with invalid extensions', async () => {
+        await controller.start();
+
+        await expect(async () => {
+            await controller.enableDisableExtension(true, 'Fake');
+        }).rejects.toThrow("Extension Fake does not exist (should be added with 'addExtension') or is built-in that cannot be enabled at runtime");
+
+        await expect(async () => {
+            await controller.enableDisableExtension(false, 'Availability');
+        }).rejects.toThrow('Built-in extension Availability cannot be disabled at runtime');
+    });
 });
