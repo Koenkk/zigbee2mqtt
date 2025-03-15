@@ -4,7 +4,6 @@ import {mockMQTTEndAsync, mockMQTTPublishAsync} from '../mocks/mqtt';
 import {flushPromises} from '../mocks/utils';
 import {devices, mockController as mockZHController, returnDevices} from '../mocks/zigbeeHerdsman';
 
-import type ExternalConverters from '../../lib/extension/externalConverters';
 import type Device from '../../lib/model/device';
 
 import fs from 'node:fs';
@@ -48,11 +47,6 @@ describe('Extension: ExternalConverters', () => {
         zhcAddExternalDefinitionSpy,
         zhcRemoveExternalDefinitionsSpy,
     ];
-
-    const getExtension = (): ExternalConverters => {
-        // @ts-expect-error private
-        return controller.extensions.find((e) => e.constructor.name === 'ExternalConverters');
-    };
 
     const useAssets = (mtype: 'cjs' | 'mjs'): void => {
         fs.cpSync(path.join(__dirname, '..', 'assets', BASE_DIR, mtype), mockBasePath, {recursive: true});
@@ -280,7 +274,7 @@ describe('Extension: ExternalConverters', () => {
 
             converterCode = converterCode.replace("posix.join('external', 'converter')", "posix.join('external', 'converter', 'edited')");
 
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -312,7 +306,7 @@ describe('Extension: ExternalConverters', () => {
 
             converterCode = converterCode.replace("posix.join('external', 'converter', 'edited')", "posix.join('external', 'converter')");
 
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: 'mock-external-converter.1.js', code: converterCode},
             });
@@ -361,9 +355,7 @@ describe('Extension: ExternalConverters', () => {
             });
 
             //-- SAVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -397,9 +389,7 @@ describe('Extension: ExternalConverters', () => {
             );
 
             //-- REMOVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/remove',
                 message: {name: converterName},
             });
@@ -432,9 +422,7 @@ describe('Extension: ExternalConverters', () => {
             });
 
             //-- SAVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -468,9 +456,7 @@ describe('Extension: ExternalConverters', () => {
             );
 
             //-- REMOVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/remove',
                 message: {name: converterName},
             });
@@ -495,9 +481,7 @@ describe('Extension: ExternalConverters', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -518,9 +502,7 @@ describe('Extension: ExternalConverters', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/remove',
                 message: {name: converterName},
             });
@@ -547,9 +529,7 @@ describe('Extension: ExternalConverters', () => {
                 throw new Error(errorMsg);
             });
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -571,9 +551,7 @@ describe('Extension: ExternalConverters', () => {
             mocksClear.forEach((m) => m.mockClear());
 
             //-- SAVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: converterName, code: converterCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: converterName, code: converterCode},
             });
@@ -585,9 +563,7 @@ describe('Extension: ExternalConverters', () => {
             });
 
             //-- REMOVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({name: converterName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/remove',
                 message: {name: converterName},
             });
@@ -604,9 +580,7 @@ describe('Extension: ExternalConverters', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/save', stringify({name: 'foo5.js', transaction: 1 /* code */}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/save',
                 message: {name: 'foo5.js', transaction: 1 /* code */},
             });
@@ -617,9 +591,7 @@ describe('Extension: ExternalConverters', () => {
                 {retain: false, qos: 0},
             );
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/converter/remove', stringify({namex: 'foo5.js', transaction: 2}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalConverters')! as ExternalConverters).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/converter/remove',
                 message: {namex: 'foo5.js', transaction: 2},
             });

@@ -39,11 +39,6 @@ describe('Extension: ExternalExtensions', () => {
         writeFileSyncSpy,
     ];
 
-    const getExtension = (): ExternalExtensions => {
-        // @ts-expect-error private
-        return controller.extensions.find((e) => e.constructor.name === 'ExternalExtensions');
-    };
-
     const useAssets = (mtype: 'cjs' | 'mjs'): void => {
         fs.cpSync(path.join(__dirname, '..', 'assets', BASE_DIR, mtype), mockBasePath, {recursive: true});
     };
@@ -159,7 +154,7 @@ describe('Extension: ExternalExtensions', () => {
             extensionCode = extensionCode.replace("'call from start'", "'call from start - edited'");
 
             mockMQTTPublishAsync.mockClear();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: extensionName, code: extensionCode},
             });
@@ -177,7 +172,7 @@ describe('Extension: ExternalExtensions', () => {
             extensionCode = extensionCode.replace("'call from start - edited'", "'call from start'");
 
             mockMQTTPublishAsync.mockClear();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: 'exampleExtension.1.js', code: extensionCode},
             });
@@ -204,9 +199,7 @@ describe('Extension: ExternalExtensions', () => {
             mocksClear.forEach((m) => m.mockClear());
 
             //-- SAVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: extensionName, code: extensionCode},
             });
@@ -225,9 +218,7 @@ describe('Extension: ExternalExtensions', () => {
             );
 
             //-- REMOVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: extensionName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/remove',
                 message: {name: extensionName},
             });
@@ -246,9 +237,7 @@ describe('Extension: ExternalExtensions', () => {
             mocksClear.forEach((m) => m.mockClear());
 
             //-- SAVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: extensionName, code: extensionCode},
             });
@@ -267,9 +256,7 @@ describe('Extension: ExternalExtensions', () => {
             );
 
             //-- REMOVE
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: extensionName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/remove',
                 message: {name: extensionName},
             });
@@ -287,9 +274,7 @@ describe('Extension: ExternalExtensions', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: extensionName, code: extensionCode}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: extensionName, code: extensionCode},
             });
@@ -310,9 +295,7 @@ describe('Extension: ExternalExtensions', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({name: converterName}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/remove',
                 message: {name: extensionName},
             });
@@ -329,9 +312,7 @@ describe('Extension: ExternalExtensions', () => {
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/save', stringify({name: 'foo3.js', transaction: 1 /* code */}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/save',
                 message: {name: 'foo3.js', transaction: 1 /* code */},
             });
@@ -342,9 +323,7 @@ describe('Extension: ExternalExtensions', () => {
                 {retain: false, qos: 0},
             );
 
-            // await mockMQTTEvents.message('zigbee2mqtt/bridge/request/extension/remove', stringify({namex: 'foo3.js', transaction: 2}));
-            // await flushPromises();
-            await getExtension().onMQTTMessage({
+            await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
                 topic: 'zigbee2mqtt/bridge/request/extension/remove',
                 message: {namex: 'foo3.js', transaction: 2},
             });
