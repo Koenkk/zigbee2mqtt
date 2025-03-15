@@ -1,5 +1,6 @@
-import type {LogLevel} from 'lib/util/settings';
 import type Transport from 'winston-transport';
+
+import type {LogLevel} from '../../lib/util/settings';
 
 let level: LogLevel = 'info';
 let debugNamespaceIgnore: string = '';

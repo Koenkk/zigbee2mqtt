@@ -27,7 +27,7 @@ import Extension from './extension';
 /**
  * This extension servers the frontend
  */
-export default class Frontend extends Extension {
+export class Frontend extends Extension {
     private mqttBaseTopic: string;
     private host: string | undefined;
     private port: number;
@@ -225,3 +225,5 @@ export default class Frontend extends Extension {
         }
     }
 }
+
+export default Frontend;

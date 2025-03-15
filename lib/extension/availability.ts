@@ -1,4 +1,4 @@
-import type {Zigbee2MQTTAPI} from 'lib/types/api';
+import type {Zigbee2MQTTAPI} from '../types/api';
 
 import assert from 'node:assert';
 
