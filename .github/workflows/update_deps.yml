@@ -8,7 +8,8 @@ permissions:
     contents: read
 
 jobs:
-    update_deps:
+    update-dependencies:
+        if: github.repository == 'Koenkk/zigbee-herdsman'
         permissions:
             contents: write # for peter-evans/create-pull-request to create branch
             pull-requests: write # for peter-evans/create-pull-request to create a PR
