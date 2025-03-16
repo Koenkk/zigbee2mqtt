@@ -1261,7 +1261,6 @@ describe('Extension: Bridge', () => {
                             },
                             {
                                 access: 5,
-                                category: 'diagnostic',
                                 description: 'Instantaneous measured power',
                                 label: 'Power',
                                 name: 'power',
