@@ -84,7 +84,7 @@
         "prettier": "^3.5.3",
         "tmp": "^0.2.3",
         "typescript": "^5.8.2",
-        "typescript-eslint": "^8.26.0",
+        "typescript-eslint": "^8.26.1",
         "vitest": "^3.0.8"
     },
     "pnpm": {
