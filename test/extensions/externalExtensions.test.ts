@@ -130,6 +130,28 @@ describe('Extension: ExternalExtensions', () => {
             );
         });
 
+        it('loads all valid extensions, relocates & skips ones with errors', async () => {
+            useAssets('mjs');
+
+            const filepath = path.join(mockBasePath, 'invalid.mjs');
+
+            fs.writeFileSync(filepath, 'invalid js', 'utf8');
+
+            await controller.start();
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/extensions',
+                stringify([
+                    {name: 'example2Extension.mjs', code: getFileCode('mjs', 'example2Extension.mjs')},
+                    {name: 'exampleExtension.mjs', code: getFileCode('mjs', 'exampleExtension.mjs')},
+                ]),
+                {retain: true, qos: 0},
+            );
+            expect(fs.existsSync(filepath)).toStrictEqual(false);
+            expect(fs.existsSync(path.join(mockBasePath, 'old', 'invalid.mjs'))).toStrictEqual(true);
+        });
+
         it('updates after edit from MQTT', async () => {
             const extensionName = 'exampleExtension.js';
             let extensionCode = getFileCode('cjs', extensionName);

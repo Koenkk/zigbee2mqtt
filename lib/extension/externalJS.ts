@@ -177,9 +177,20 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private async loadFiles(): Promise<void> {
         for (const extension of this.getFiles()) {
-            const mod = await import(path.join(this.basePath, extension.name));
+            try {
+                const mod = await import(path.join(this.basePath, extension.name));
 
-            await this.loadJS(extension.name, mod.default);
+                await this.loadJS(extension.name, mod.default);
+            } catch (error) {
+                const destPath = this.getFilePath(extension.name, true, true);
+
+                fs.renameSync(this.getFilePath(extension.name), destPath);
+
+                logger.error(
+                    `Invalid external ${this.mqttTopic} '${extension.name}' was moved to '${destPath}' to prevent interference with Zigbee2MQTT.`,
+                );
+                logger.debug((error as Error).stack!);
+            }
         }
     }
 

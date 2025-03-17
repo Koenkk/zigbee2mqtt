@@ -336,6 +336,28 @@ describe('Extension: ExternalConverters', () => {
                 }),
             );
         });
+
+        it('loads all valid converters, relocates & skips ones with errors', async () => {
+            useAssets('mjs');
+
+            const filepath = path.join(mockBasePath, 'invalid.mjs');
+
+            fs.writeFileSync(filepath, 'invalid js', 'utf8');
+
+            await controller.start();
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                'zigbee2mqtt/bridge/converters',
+                stringify([
+                    {name: 'mock-external-converter-multiple.mjs', code: getFileCode('mjs', 'mock-external-converter-multiple.mjs')},
+                    {name: 'mock-external-converter.mjs', code: getFileCode('mjs', 'mock-external-converter.mjs')},
+                ]),
+                {retain: true, qos: 0},
+            );
+            expect(fs.existsSync(filepath)).toStrictEqual(false);
+            expect(fs.existsSync(path.join(mockBasePath, 'old', 'invalid.mjs'))).toStrictEqual(true);
+        });
     });
 
     describe('from MQTT', () => {

@@ -36,25 +36,35 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
     }
 
     protected async loadJS(name: string, mod: TModule, newName?: string): Promise<void> {
-        // stop if already started
-        await this.enableDisableExtension(false, mod.name);
-        await this.addExtension(
-            new mod(
-                this.zigbee,
-                this.mqtt,
-                this.state,
-                this.publishEntityState,
-                this.eventBus,
-                this.enableDisableExtension,
-                this.restartCallback,
-                this.addExtension,
-                // @ts-expect-error additional params that don't fit the internal `Extension` type
-                settings,
-                logger,
-            ),
-        );
+        try {
+            // stop if already started
+            await this.enableDisableExtension(false, mod.name);
+            await this.addExtension(
+                new mod(
+                    this.zigbee,
+                    this.mqtt,
+                    this.state,
+                    this.publishEntityState,
+                    this.eventBus,
+                    this.enableDisableExtension,
+                    this.restartCallback,
+                    this.addExtension,
+                    // @ts-expect-error additional params that don't fit the internal `Extension` type
+                    settings,
+                    logger,
+                ),
+            );
 
-        /* v8 ignore next */
-        logger.info(`Loaded external extension '${newName ?? name}'.`);
+            /* v8 ignore start */
+            logger.info(`Loaded external extension '${newName ?? name}'.`);
+        } catch (error) {
+            logger.error(
+                /* v8 ignore next */
+                `Failed to load external extension '${newName ?? name}'. Check the code for syntax error and make sure it is up to date with the current Zigbee2MQTT version.`,
+            );
+
+            throw error;
+        }
+        /* v8 ignore stop */
     }
 }

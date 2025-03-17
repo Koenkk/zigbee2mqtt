@@ -54,10 +54,11 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
 
             await this.zigbee.resolveDevicesDefinitions(true);
         } catch (error) {
-            /* v8 ignore next */
-            logger.error(`Failed to load external converter '${newName ?? name}'`);
-            logger.error(`Check the code for syntax error and make sure it is up to date with the current Zigbee2MQTT version.`);
             logger.error(
+                /* v8 ignore next */
+                `Failed to load external converter '${newName ?? name}'. Check the code for syntax error and make sure it is up to date with the current Zigbee2MQTT version.`,
+            );
+            logger.warning(
                 `External converters are not meant for long term usage, but for local testing after which a pull request should be created to add out-of-the-box support for the device`,
             );
 
