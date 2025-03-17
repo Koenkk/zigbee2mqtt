@@ -2,9 +2,10 @@
 cd "$(dirname "$0")"
 
 if [ "$1" != "force" ]; then
-    git fetch
-    NEW_COMMITS="$(git rev-list HEAD...origin/"$(git branch --show-current)" --count)"
-    if [ "$NEW_COMMITS" -gt "0" ]; then
+    echo "Checking for updates..."
+    git fetch -q
+    NEW_COMMITS="$(git rev-list HEAD...@{upstream} --count)"
+    if [ "$NEW_COMMITS" -gt 0 ]; then
         echo "Update available!"
     else
         echo "No update available. Use '$0 force' to skip the check."
