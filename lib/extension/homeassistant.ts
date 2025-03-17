@@ -108,7 +108,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     window_open: {device_class: 'window'},
 } as const;
 const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
-    ac_frequency: {device_class: 'frequency', enabled_by_default: false, entity_category: 'diagnostic', state_class: 'measurement'},
+    ac_frequency: {device_class: 'frequency', state_class: 'measurement'},
     action_duration: {icon: 'mdi:timer', device_class: 'duration'},
     alarm_humidity_max: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-plus'},
     alarm_humidity_min: {device_class: 'humidity', entity_category: 'config', icon: 'mdi:water-minus'},
@@ -140,24 +140,9 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         state_class: 'measurement',
     },
     cube_side: {icon: 'mdi:cube'},
-    current: {
-        device_class: 'current',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
-    current_phase_b: {
-        device_class: 'current',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
-    current_phase_c: {
-        device_class: 'current',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
+    current: {device_class: 'current', state_class: 'measurement'},
+    current_phase_b: {device_class: 'current', state_class: 'measurement'},
+    current_phase_c: {device_class: 'current', state_class: 'measurement'},
     deadzone_temperature: {entity_category: 'config', icon: 'mdi:thermometer'},
     detection_interval: {icon: 'mdi:timer'},
     device_temperature: {
@@ -244,24 +229,9 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     voc_index: {state_class: 'measurement', icon: 'mdi:molecule'},
     voc_parts: {device_class: 'volatile_organic_compounds_parts', state_class: 'measurement'},
     vibration_timeout: {entity_category: 'config', icon: 'mdi:timer'},
-    voltage: {
-        device_class: 'voltage',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
-    voltage_phase_b: {
-        device_class: 'voltage',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
-    voltage_phase_c: {
-        device_class: 'voltage',
-        enabled_by_default: false,
-        entity_category: 'diagnostic',
-        state_class: 'measurement',
-    },
+    voltage: {device_class: 'voltage', state_class: 'measurement'},
+    voltage_phase_b: {device_class: 'voltage', state_class: 'measurement'},
+    voltage_phase_c: {device_class: 'voltage', state_class: 'measurement'},
     water_consumed: {
         device_class: 'water',
         state_class: 'total_increasing',
