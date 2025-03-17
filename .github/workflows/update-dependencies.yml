@@ -11,6 +11,7 @@ permissions:
 
 jobs:
     update-dependencies:
+        if: github.repository == 'Koenkk/zigbee-herdsman'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4

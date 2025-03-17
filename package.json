@@ -62,8 +62,8 @@
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
         "ws": "^8.18.1",
-        "zigbee-herdsman": "3.4.0",
-        "zigbee-herdsman-converters": "23.7.0",
+        "zigbee-herdsman": "3.4.1",
+        "zigbee-herdsman-converters": "23.8.0",
         "zigbee2mqtt-frontend": "0.9.4"
     },
     "devDependencies": {
@@ -84,7 +84,7 @@
         "prettier": "^3.5.3",
         "tmp": "^0.2.3",
         "typescript": "^5.8.2",
-        "typescript-eslint": "^8.26.0",
+        "typescript-eslint": "^8.26.1",
         "vitest": "^3.0.8"
     },
     "pnpm": {
