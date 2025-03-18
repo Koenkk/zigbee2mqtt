@@ -102,7 +102,6 @@ jobs:
               with:
                   context: .
                   file: docker/Dockerfile
-                  provenance: false
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
                   tags: ${{ steps.meta.outputs.tags }}
                   push: true
