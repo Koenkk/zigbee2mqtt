@@ -124,6 +124,8 @@ describe('Extension: NetworkMap', () => {
     afterAll(async () => {
         mockSleep.restore();
         fs.rmSync(path.join(data.mockDir, 'external_converters'), {recursive: true});
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 

@@ -33,6 +33,8 @@ describe('Extension: Groups', () => {
     });
 
     afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 

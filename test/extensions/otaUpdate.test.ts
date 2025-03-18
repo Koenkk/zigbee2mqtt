@@ -46,6 +46,8 @@ describe('Extension: OTAUpdate', () => {
 
     afterAll(async () => {
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 

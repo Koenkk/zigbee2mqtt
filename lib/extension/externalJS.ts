@@ -40,7 +40,12 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         this.requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/${mqttTopic}/(save|remove)`);
         this.basePath = data.joinPath(folderName);
         // 1-up from this file
-        this.srcBasePath = path.join(__dirname, '..', folderName);
+        this.srcBasePath = path.join(
+            __dirname,
+            '..',
+            // prevent race in vitest with files being manipulated from same location
+            process.env.VITEST_WORKER_ID ? /* v8 ignore next */ `${folderName}_${Math.floor(Math.random() * 10000)}` : folderName,
+        );
     }
 
     override async start(): Promise<void> {

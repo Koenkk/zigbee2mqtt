@@ -63,8 +63,10 @@ describe('Extension: Publish', () => {
 
     afterAll(async () => {
         await vi.runOnlyPendingTimersAsync();
-        vi.useRealTimers();
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
     });
 
     it('Should publish messages to zigbee devices', async () => {
