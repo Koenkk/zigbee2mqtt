@@ -23,9 +23,6 @@ describe('Extension: ExternalConverters', () => {
     const mockBasePath = path.join(data.mockDir, BASE_DIR);
     let controller: Controller;
 
-    const existsSyncSpy = vi.spyOn(fs, 'existsSync');
-    const readdirSyncSpy = vi.spyOn(fs, 'readdirSync');
-    const mkdirSyncSpy = vi.spyOn(fs, 'mkdirSync');
     const rmSyncSpy = vi.spyOn(fs, 'rmSync');
     const writeFileSyncSpy = vi.spyOn(fs, 'writeFileSync');
 
@@ -39,9 +36,6 @@ describe('Extension: ExternalConverters', () => {
         mockLogger.error,
         mockZHController.stop,
         devices.bulb.save,
-        existsSyncSpy,
-        readdirSyncSpy,
-        mkdirSyncSpy,
         rmSyncSpy,
         writeFileSyncSpy,
         zhcAddExternalDefinitionSpy,
@@ -93,6 +87,7 @@ describe('Extension: ExternalConverters', () => {
         fs.rmSync(mockBasePath, {recursive: true, force: true});
 
         await controller?.stop();
+        await flushPromises();
     });
 
     describe('from folder', () => {
@@ -104,8 +99,6 @@ describe('Extension: ExternalConverters', () => {
             await controller.start();
             await flushPromises();
 
-            expect(existsSyncSpy).toHaveBeenCalledWith(mockBasePath);
-            expect(readdirSyncSpy).not.toHaveBeenCalledWith(mockBasePath);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
         });
 
@@ -356,7 +349,7 @@ describe('Extension: ExternalConverters', () => {
                 {retain: true, qos: 0},
             );
             expect(fs.existsSync(filepath)).toStrictEqual(false);
-            expect(fs.existsSync(path.join(mockBasePath, 'old', 'invalid.mjs'))).toStrictEqual(true);
+            expect(fs.existsSync(path.join(mockBasePath, 'invalid.mjs.invalid'))).toStrictEqual(true);
         });
     });
 
@@ -364,7 +357,6 @@ describe('Extension: ExternalConverters', () => {
         it('CJS: saves and removes', async () => {
             const converterName = 'foo.js';
             const converterCode = getFileCode('cjs', 'mock-external-converter.js');
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -388,8 +380,7 @@ describe('Extension: ExternalConverters', () => {
                 vendor: 'external',
                 zigbeeModel: ['external_converter_device'],
             });
-            expect(mkdirSyncSpy).toHaveBeenCalledWith(mockBasePath, {recursive: true});
-            expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
+            expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, 'utf8');
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(1);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, converterName);
             expect(zhcAddExternalDefinitionSpy).toHaveBeenCalledWith(
@@ -422,7 +413,7 @@ describe('Extension: ExternalConverters', () => {
                 vendor: '',
                 zigbeeModel: ['external_converter_device'],
             });
-            expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
@@ -431,7 +422,6 @@ describe('Extension: ExternalConverters', () => {
         it('MJS: saves and removes', async () => {
             const converterName = 'foo.mjs';
             const converterCode = getFileCode('mjs', 'mock-external-converter.mjs');
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -455,8 +445,7 @@ describe('Extension: ExternalConverters', () => {
                 vendor: 'external',
                 zigbeeModel: ['external_converter_device'],
             });
-            expect(mkdirSyncSpy).toHaveBeenCalledWith(mockBasePath, {recursive: true});
-            expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
+            expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, 'utf8');
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(1);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, converterName);
             expect(zhcAddExternalDefinitionSpy).toHaveBeenCalledWith(
@@ -489,7 +478,7 @@ describe('Extension: ExternalConverters', () => {
                 vendor: '',
                 zigbeeModel: ['external_converter_device'],
             });
-            expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/converters', stringify([]), {retain: true, qos: 0});
@@ -498,7 +487,6 @@ describe('Extension: ExternalConverters', () => {
         it('returns error on invalid code', async () => {
             const converterName = 'foo1.js';
             const converterCode = 'definetly not a correct javascript code';
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -513,13 +501,12 @@ describe('Extension: ExternalConverters', () => {
                 expect.stringContaining(`"error":"${converterName} contains invalid code`),
                 {retain: false, qos: 0},
             );
-            expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
-            expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, 'utf8');
+            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it('returns error on invalid removal', async () => {
             const converterName = 'foo2.js';
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -531,16 +518,15 @@ describe('Extension: ExternalConverters', () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 'zigbee2mqtt/bridge/response/converter/remove',
-                stringify({data: {}, status: 'error', error: `${converterName} (${converterFilePath}) doesn't exists`}),
+                expect.stringContaining("doesn't exists"),
                 {retain: false, qos: 0},
             );
-            expect(rmSyncSpy).not.toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(rmSyncSpy).not.toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it('returns error on invalid definition', async () => {
             const converterName = 'foo3.js';
             const converterCode = getFileCode('cjs', 'mock-external-converter.js');
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -560,14 +546,13 @@ describe('Extension: ExternalConverters', () => {
                 retain: false,
                 qos: 0,
             });
-            expect(writeFileSyncSpy).toHaveBeenCalledWith(converterFilePath, converterCode, 'utf8');
-            expect(rmSyncSpy).toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, 'utf8');
+            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it('returns error on failed removal', async () => {
             const converterName = 'foo4.js';
             const converterCode = getFileCode('cjs', 'mock-external-converter.js');
-            const converterFilePath = path.join(mockBasePath, converterName);
 
             await resetExtension();
             mocksClear.forEach((m) => m.mockClear());
@@ -595,7 +580,7 @@ describe('Extension: ExternalConverters', () => {
                 stringify({data: {}, status: 'error', error: errorMsg}),
                 {retain: false, qos: 0},
             );
-            expect(rmSyncSpy).not.toHaveBeenCalledWith(converterFilePath, {force: true});
+            expect(rmSyncSpy).not.toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it('handles invalid payloads', async () => {

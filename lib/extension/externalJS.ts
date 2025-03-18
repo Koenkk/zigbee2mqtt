@@ -13,12 +13,13 @@ import utils from '../util/utils';
 import Extension from './extension';
 
 const SUPPORTED_OPERATIONS = ['save', 'remove'];
-const BACKUP_DIR = 'old';
 
 export default abstract class ExternalJSExtension<M> extends Extension {
+    protected folderName: string;
     protected mqttTopic: string;
     protected requestRegex: RegExp;
     protected basePath: string;
+    protected srcBasePath: string;
 
     constructor(
         zigbee: Zigbee,
@@ -34,9 +35,12 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     ) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
 
+        this.folderName = folderName;
         this.mqttTopic = mqttTopic;
         this.requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/${mqttTopic}/(save|remove)`);
         this.basePath = data.joinPath(folderName);
+        // 1-up from this file
+        this.srcBasePath = path.join(__dirname, '..', folderName);
     }
 
     override async start(): Promise<void> {
@@ -46,24 +50,34 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         await this.publishExternalJS();
     }
 
-    private getFilePath(name: string, mkBasePath: boolean = false, backup: boolean = false): string {
-        if (mkBasePath && !fs.existsSync(backup ? path.join(this.basePath, BACKUP_DIR) : this.basePath)) {
-            fs.mkdirSync(backup ? path.join(this.basePath, BACKUP_DIR) : this.basePath, {recursive: true});
+    override async stop(): Promise<void> {
+        // remove src base path on stop to ensure always back to default
+        fs.rmSync(this.srcBasePath, {force: true, recursive: true});
+        await super.stop();
+    }
+
+    private getFilePath(name: string, mkBasePath = false, inSource = false): string {
+        const basePath = inSource ? this.srcBasePath : this.basePath;
+
+        if (mkBasePath && !fs.existsSync(basePath)) {
+            fs.mkdirSync(basePath, {recursive: true});
         }
 
-        return backup ? path.join(this.basePath, BACKUP_DIR, name) : path.join(this.basePath, name);
+        return path.join(basePath, name);
     }
 
     protected getFileCode(name: string): string {
-        return fs.readFileSync(path.join(this.basePath, name), 'utf8');
+        return fs.readFileSync(this.getFilePath(name), 'utf8');
     }
 
-    protected *getFiles(): Generator<{name: string; code: string}> {
-        if (!fs.existsSync(this.basePath)) {
+    protected *getFiles(inSource = false): Generator<{name: string; code: string}> {
+        const basePath = inSource ? this.srcBasePath : this.basePath;
+
+        if (!fs.existsSync(basePath)) {
             return;
         }
 
-        for (const fileName of fs.readdirSync(this.basePath)) {
+        for (const fileName of fs.readdirSync(basePath)) {
             if (fileName.endsWith('.js') || fileName.endsWith('.cjs') || fileName.endsWith('.mjs')) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
             }
@@ -112,19 +126,21 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         const {name} = message;
+        const srcToBeRemoved = this.getFilePath(name, false, true);
         const toBeRemoved = this.getFilePath(name);
 
-        if (fs.existsSync(toBeRemoved)) {
-            const mod = await import(toBeRemoved);
+        if (fs.existsSync(srcToBeRemoved)) {
+            const mod = await import(this.getImportPath(srcToBeRemoved));
 
             await this.removeJS(name, mod.default);
+            fs.rmSync(srcToBeRemoved, {force: true});
             fs.rmSync(toBeRemoved, {force: true});
             logger.info(`${name} (${toBeRemoved}) removed.`);
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
         } else {
-            return utils.getResponse(message, {}, `${name} (${toBeRemoved}) doesn't exists`);
+            return utils.getResponse(message, {}, `${name} (${srcToBeRemoved}) doesn't exists`);
         }
     }
 
@@ -136,11 +152,10 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         const {name, code} = message;
-        const filePath = this.getFilePath(name, true);
-        let newFilePath = filePath;
+        const srcFilePath = this.getFilePath(name, true, true);
         let newName = name;
 
-        if (fs.existsSync(filePath)) {
+        if (fs.existsSync(srcFilePath)) {
             // if file already exist, version it to bypass node module caching
             const versionMatch = name.match(/\.(\d+)\.(c|m)?js$/);
 
@@ -152,24 +167,28 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 newName = name.replace(ext, `.1${ext}`);
             }
 
-            newFilePath = this.getFilePath(newName, true);
-
-            // move previous version to backup dir
-            fs.renameSync(filePath, this.getFilePath(name, true, true));
+            // remove previous version
+            fs.rmSync(srcFilePath, {force: true});
+            fs.rmSync(this.getFilePath(name, true, false), {force: true});
         }
 
-        try {
-            fs.writeFileSync(newFilePath, code, 'utf8');
+        const newSrcFilePath = this.getFilePath(newName, false /* already created above if needed */, true);
 
-            const mod = await import(newFilePath);
+        try {
+            fs.writeFileSync(newSrcFilePath, code, 'utf8');
+
+            const mod = await import(this.getImportPath(newSrcFilePath));
 
             await this.loadJS(name, mod.default, newName);
-            logger.info(`${newName} loaded. Contents written to '${newFilePath}'.`);
+            logger.info(`${newName} loaded. Contents written to '${newSrcFilePath}'.`);
+            // keep original in data folder synced
+            fs.writeFileSync(this.getFilePath(newName, true, false), code, 'utf8');
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
         } catch (error) {
-            fs.rmSync(newFilePath, {force: true});
+            fs.rmSync(newSrcFilePath, {force: true});
+            // NOTE: original in data folder doesn't get written if invalid
 
             return utils.getResponse(message, {}, `${newName} contains invalid code: ${(error as Error).message}`);
         }
@@ -177,17 +196,22 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private async loadFiles(): Promise<void> {
         for (const extension of this.getFiles()) {
+            const srcFilePath = this.getFilePath(extension.name, true, true);
+            const filePath = this.getFilePath(extension.name);
+
             try {
-                const mod = await import(path.join(this.basePath, extension.name));
+                fs.copyFileSync(filePath, srcFilePath);
+
+                const mod = await import(this.getImportPath(srcFilePath));
 
                 await this.loadJS(extension.name, mod.default);
             } catch (error) {
-                const destPath = this.getFilePath(extension.name, true, true);
-
-                fs.renameSync(this.getFilePath(extension.name), destPath);
+                // change ext so Z2M doesn't try to load it again and again
+                fs.renameSync(filePath, `${filePath}.invalid`);
+                fs.rmSync(srcFilePath, {force: true});
 
                 logger.error(
-                    `Invalid external ${this.mqttTopic} '${extension.name}' was moved to '${destPath}' to prevent interference with Zigbee2MQTT.`,
+                    `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT.`,
                 );
                 logger.debug((error as Error).stack!);
             }
@@ -197,7 +221,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     private async publishExternalJS(): Promise<void> {
         await this.mqtt.publish(
             `bridge/${this.mqttTopic}s`,
-            stringify(Array.from(this.getFiles())),
+            stringify(Array.from(this.getFiles(true))),
             {
                 retain: true,
                 qos: 0,
@@ -205,5 +229,10 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             settings.get().mqtt.base_topic,
             true,
         );
+    }
+
+    private getImportPath(filePath: string): string {
+        // prevent issues on Windows
+        return path.relative(__dirname, filePath).replaceAll('\\', '/');
     }
 }
