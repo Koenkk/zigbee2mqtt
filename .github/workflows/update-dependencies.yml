@@ -23,7 +23,9 @@ jobs:
                   node-version: 22
                   cache: pnpm
             - run: |
-                  pnpm self-update
+                  # Disable for now as pnpm updates through corepack
+                  # don't work well yet for bare-metal installations.
+                  # pnpm self-update
                   pnpm up --latest
             - uses: peter-evans/create-pull-request@v7
               id: cpr
