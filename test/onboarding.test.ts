@@ -371,6 +371,7 @@ describe('Onboarding', () => {
         await expect(p).resolves.toStrictEqual(true);
         expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
         expect(getHtml).toContain('No device found');
+        expect(getHtml).not.toContain('generate_network');
         expect(postHtml).toContain('<a href="http://localhost:8080/">');
     });
 
@@ -459,6 +460,7 @@ describe('Onboarding', () => {
         await expect(p).resolves.toStrictEqual(true);
         expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
         expect(getHtml).toContain('No device found');
+        expect(getHtml).toContain('generate_network');
         expect(postHtml).toContain('<a href="http://localhost:8080/">');
     });
 

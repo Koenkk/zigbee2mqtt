@@ -73,6 +73,25 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
         devicesSelect = '<small>No device found</small>';
     }
 
+    let generateCheckbox = '';
+
+    if (
+        Array.isArray(currentSettings.advanced?.network_key) ||
+        typeof currentSettings.advanced?.pan_id === 'number' ||
+        Array.isArray(currentSettings.advanced?.ext_pan_id)
+    ) {
+        generateCheckbox = `
+<label for="generate_network">
+    <input
+        type="checkbox"
+        id="generate_network"
+        onclick="setGenerate(this)"
+        ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID ? 'disabled' : ''}>
+    Generate network?
+</label>
+`;
+    }
+
     /* v8 ignore start */
     return `
 <!doctype html>
@@ -158,14 +177,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL ? 'disabled' : ''}>
             </fieldset>
             <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED ? 'disabled' : ''}>
-                <label for="generate_network">
-                    <input
-                        type="checkbox"
-                        id="generate_network"
-                        onclick="setGenerate(this)"
-                        ${process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID || process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID ? 'disabled' : ''}>
-                    Generate network?
-                </label>
+                ${generateCheckbox}
                 <label for="network_key">Network Key</label>
                 <input
                     type="text"
