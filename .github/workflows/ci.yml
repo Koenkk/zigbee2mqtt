@@ -9,6 +9,8 @@ permissions:
 jobs:
     ci:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
         steps:
             - uses: actions/checkout@v4
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
