@@ -98,7 +98,12 @@ declare global {
         };
         availability: {
             enabled: boolean;
-            active: {timeout: number; max_jitter: number};
+            active: {
+                timeout: number;
+                max_jitter: number;
+                backoff: boolean;
+                pause_on_backoff_gt: number;
+            };
             passive: {timeout: number};
         };
         mqtt: {

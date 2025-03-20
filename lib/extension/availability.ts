@@ -25,6 +25,8 @@ export default class Availability extends Extension {
     private readonly lastPublishedAvailabilities: Map<string | number, boolean> = new Map();
     /** Mapped by IEEE address */
     private readonly pingBackoffs: Map<string, number> = new Map();
+    /** IEEE addresses, waiting for last seen changes to take them out of "availability sleep" */
+    private readonly backoffPausedDevices: Set<string> = new Set();
     /** Mapped by IEEE address */
     private readonly retrieveStateDebouncers: Map<string, () => void> = new Map();
     private pingQueue: Device[] = [];
@@ -62,20 +64,32 @@ export default class Availability extends Extension {
         }
     }
 
-    private resetTimer(device: Device): void {
+    private resetTimer(device: Device, resetBackoff = false): void {
         clearTimeout(this.timers.get(device.ieeeAddr));
         this.removeFromPingQueue(device);
 
         // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
         if (this.isActiveDevice(device)) {
-            // If device did not check in, ping it, if that fails it will be marked as offline
-            this.timers.set(
-                device.ieeeAddr,
-                setTimeout(
-                    this.addToPingQueue.bind(this, device),
-                    this.getTimeout(device) + utils.seconds(1) + Math.random() * settings.get().availability.active.max_jitter,
-                ),
-            );
+            const backoffEnabled = settings.get().availability.active.backoff;
+            const jitter = Math.random() * settings.get().availability.active.max_jitter;
+            let backoff = 1;
+
+            if (resetBackoff) {
+                // always cleanup even if backoff disabled (ensures proper state if changed at runtime)
+                this.backoffPausedDevices.delete(device.ieeeAddr);
+                this.pingBackoffs.delete(device.ieeeAddr);
+            } else if (backoffEnabled) {
+                backoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
+            }
+
+            // never paused if was reset (just deleted) or backoff disabled, might as well skip the Set lookup
+            if (!backoffEnabled || resetBackoff || !this.backoffPausedDevices.has(device.ieeeAddr)) {
+                // If device did not check in, ping it, if that fails it will be marked as offline
+                this.timers.set(
+                    device.ieeeAddr,
+                    setTimeout(this.addToPingQueue.bind(this, device), (this.getTimeout(device) + utils.seconds(1) + jitter) * backoff),
+                );
+            }
         } else {
             this.timers.set(
                 device.ieeeAddr,
@@ -136,8 +150,21 @@ export default class Availability extends Extension {
             return;
         }
 
+        if (!pingSuccess && settings.get().availability.active.backoff) {
+            const currentBackoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
+            // setting is "greater than" but since we already did the ping, we use ">=" for comparison below (pause next)
+            const pauseOnBackoff = settings.get().availability.active.pause_on_backoff_gt;
+
+            if (pauseOnBackoff > 0 && currentBackoff >= pauseOnBackoff) {
+                this.backoffPausedDevices.add(device.ieeeAddr);
+            } else {
+                // results in backoffs: *1.5, *3, *6, *12... (with default timeout: 10, 15, 30, 60, 120)
+                this.pingBackoffs.set(device.ieeeAddr, currentBackoff * (available ? 1.5 : 2));
+            }
+        }
+
         await this.publishAvailability(device, !pingSuccess);
-        this.resetTimer(device);
+        this.resetTimer(device, pingSuccess);
         this.removeFromPingQueue(device);
 
         // Sleep 2 seconds before executing next ping
@@ -229,7 +256,7 @@ export default class Availability extends Extension {
         if (utils.isAvailabilityEnabledForEntity(data.device, settings.get())) {
             // Remove from ping queue, not necessary anymore since we know the device is online.
             this.removeFromPingQueue(data.device);
-            this.resetTimer(data.device);
+            this.resetTimer(data.device, true);
             await this.publishAvailability(data.device, false);
         }
     }
