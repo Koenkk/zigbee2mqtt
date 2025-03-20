@@ -26,8 +26,10 @@ export default class Group {
         return !!device.zh.endpoints.find((e) => this.zh.members.includes(e));
     }
 
-    membersDevices(): Device[] {
-        return this.zh.members.map((d) => this.resolveDevice(d.getDevice().ieeeAddr)!);
+    *membersDevices(): Generator<Device> {
+        for (const member of this.zh.members) {
+            yield this.resolveDevice(member.deviceIeeeAddress)!;
+        }
     }
 
     membersDefinitions(): zhc.Definition[] {

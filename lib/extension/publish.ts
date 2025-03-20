@@ -134,9 +134,7 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? Object.fromEntries(
-                      re.zh.members.map((e) => [e.getDevice().ieeeAddr, this.state.get(this.zigbee.resolveEntity(e.getDevice().ieeeAddr)!)]),
-                  )
+                ? Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
