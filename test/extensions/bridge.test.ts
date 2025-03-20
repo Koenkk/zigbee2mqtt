@@ -3181,7 +3181,7 @@ describe('Extension: Bridge', () => {
                         "    description: 'Automatically generated definition',\n" +
                         '    extend: [m.onOff({"powerOnBehavior":false})],\n' +
                         '    meta: {},\n' +
-                        '};\n'
+                        '};\n',
                 },
                 status: 'ok',
             }),
