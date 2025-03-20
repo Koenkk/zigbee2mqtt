@@ -33,8 +33,10 @@ describe('Extension: Receive', () => {
     });
 
     afterAll(async () => {
-        vi.useRealTimers();
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
     });
 
     it('Should handle a zigbee message', async () => {

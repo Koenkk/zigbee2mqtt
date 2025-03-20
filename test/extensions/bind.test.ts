@@ -54,6 +54,8 @@ describe('Extension: Bind', () => {
     });
 
     afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
