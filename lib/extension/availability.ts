@@ -20,11 +20,13 @@ const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyVa
 
 export default class Availability extends Extension {
     /** Mapped by IEEE address */
-    private timers: Map<string, NodeJS.Timeout> = new Map();
+    private readonly timers: Map<string, NodeJS.Timeout> = new Map();
     /** Mapped by IEEE address or Group ID */
-    private availabilityCache: Map<string | number, boolean> = new Map();
+    private readonly lastPublishedAvailabilities: Map<string | number, boolean> = new Map();
     /** Mapped by IEEE address */
-    private retrieveStateDebouncers: Map<string, () => void> = new Map();
+    private readonly pingBackoffs: Map<string, number> = new Map();
+    /** Mapped by IEEE address */
+    private readonly retrieveStateDebouncers: Map<string, () => void> = new Map();
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -51,7 +53,7 @@ export default class Availability extends Extension {
             );
         } else {
             for (const memberDevice of entity.membersDevices()) {
-                if (this.availabilityCache.get(memberDevice.ieeeAddr) === true) {
+                if (this.lastPublishedAvailabilities.get(memberDevice.ieeeAddr) === true) {
                     return true;
                 }
             }
@@ -106,8 +108,8 @@ export default class Availability extends Extension {
 
         this.pingQueueExecuting = true;
         const device = this.pingQueue[0];
-        let pingedSuccessfully = false;
-        const available = this.availabilityCache.get(device.ieeeAddr) || this.isAvailable(device);
+        let pingSuccess = false;
+        const available = this.lastPublishedAvailabilities.get(device.ieeeAddr) || this.isAvailable(device);
         const attempts = available ? 2 : 1;
 
         for (let i = 1; i <= attempts; i++) {
@@ -115,7 +117,7 @@ export default class Availability extends Extension {
                 // Enable recovery if device is marked as available and first ping fails.
                 await device.zh.ping(!available || i !== 2);
 
-                pingedSuccessfully = true;
+                pingSuccess = true;
 
                 logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`);
                 break;
@@ -134,7 +136,7 @@ export default class Availability extends Extension {
             return;
         }
 
-        await this.publishAvailability(device, !pingedSuccessfully);
+        await this.publishAvailability(device, !pingSuccess);
         this.resetTimer(device);
         this.removeFromPingQueue(device);
 
@@ -200,18 +202,18 @@ export default class Availability extends Extension {
 
         const available = this.isAvailable(entity);
 
-        if (!forcePublish && this.availabilityCache.get(entity.ID) === available) {
+        if (!forcePublish && this.lastPublishedAvailabilities.get(entity.ID) === available) {
             return;
         }
 
-        if (entity.isDevice() && available && this.availabilityCache.get(entity.ieeeAddr) === false) {
+        if (entity.isDevice() && available && this.lastPublishedAvailabilities.get(entity.ieeeAddr) === false) {
             logger.debug(`Device '${entity.name}' reconnected`);
             this.retrieveState(entity);
         }
 
         const topic = `${entity.name}/availability`;
         const payload: Zigbee2MQTTAPI['{friendlyName}/availability'] = {state: available ? 'online' : 'offline'};
-        this.availabilityCache.set(entity.ID, available);
+        this.lastPublishedAvailabilities.set(entity.ID, available);
         await this.mqtt.publish(topic, JSON.stringify(payload), {retain: true, qos: 1});
 
         if (!skipGroups && entity.isDevice()) {
