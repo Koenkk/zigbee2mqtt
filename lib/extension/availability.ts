@@ -46,7 +46,9 @@ export default class Availability extends Extension {
 
     private isAvailable(entity: Device | Group): boolean {
         if (entity.isDevice()) {
-            return Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0) < this.getTimeout(entity);
+            return (
+                Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0) < this.getTimeout(entity) + settings.get().availability.active.max_jitter
+            );
         } else {
             for (const memberDevice of entity.membersDevices()) {
                 if (this.availabilityCache.get(memberDevice.ieeeAddr) === true) {
@@ -65,7 +67,13 @@ export default class Availability extends Extension {
         // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
         if (this.isActiveDevice(device)) {
             // If device did not check in, ping it, if that fails it will be marked as offline
-            this.timers.set(device.ieeeAddr, setTimeout(this.addToPingQueue.bind(this, device), this.getTimeout(device) + utils.seconds(1)));
+            this.timers.set(
+                device.ieeeAddr,
+                setTimeout(
+                    this.addToPingQueue.bind(this, device),
+                    this.getTimeout(device) + utils.seconds(1) + Math.random() * settings.get().availability.active.max_jitter,
+                ),
+            );
         } else {
             this.timers.set(
                 device.ieeeAddr,

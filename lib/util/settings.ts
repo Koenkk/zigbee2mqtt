@@ -38,7 +38,7 @@ export const defaults: RecursivePartial<Settings> = {
     },
     availability: {
         enabled: false,
-        active: {timeout: 10},
+        active: {timeout: 10, max_jitter: 30000},
         passive: {timeout: 1500},
     },
     frontend: {

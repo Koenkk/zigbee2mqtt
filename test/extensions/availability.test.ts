@@ -137,7 +137,7 @@ describe('Extension: Availability', () => {
     it('Should reset ping timer when device last seen changes for active device', async () => {
         mockMQTTPublishAsync.mockClear();
 
-        await setTimeAndAdvanceTimers(utils.minutes(5));
+        await setTimeAndAdvanceTimers(utils.minutes(6));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
@@ -389,5 +389,65 @@ describe('Extension: Availability', () => {
         await availability.stop();
 
         await expect(() => availability.start()).rejects.toThrow();
+    });
+
+    it('jitters pings', async () => {
+        const devicesPings = [
+            devices.bulb_color.ping,
+            devices.TS0601_thermostat.ping,
+            devices.bulb_2.ping,
+            devices.ZNCZ02LM.ping,
+            devices.GLEDOPTO_2ID.ping,
+            devices.QBKG03LM.ping,
+            devices.hue_twilight.ping,
+        ];
+        let called = 0;
+        let lastCalled = 0;
+
+        await setTimeAndAdvanceTimers(utils.minutes(10));
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toStrictEqual(0);
+
+        lastCalled = called;
+        called = 0;
+
+        await setTimeAndAdvanceTimers(utils.seconds(10)); // 10:10
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toBeGreaterThanOrEqual(0);
+        expect(called).toBeLessThan(7);
+        expect(called).toBeGreaterThanOrEqual(lastCalled);
+
+        lastCalled = called;
+        called = 0;
+
+        await setTimeAndAdvanceTimers(utils.seconds(20)); // 10:20
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toBeGreaterThanOrEqual(lastCalled);
+
+        lastCalled = called;
+        called = 0;
+        await setTimeAndAdvanceTimers(utils.seconds(35)); // 10:35
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toStrictEqual(7);
+
+        for (const p of devicesPings) {
+            expect(p).toHaveBeenCalledTimes(1);
+        }
     });
 });

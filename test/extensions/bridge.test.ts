@@ -258,7 +258,7 @@ describe('Extension: Bridge', () => {
                     },
                     availability: {
                         enabled: false,
-                        active: {timeout: 10},
+                        active: {timeout: 10, max_jitter: 30000},
                         passive: {timeout: 1500},
                     },
                     frontend: {

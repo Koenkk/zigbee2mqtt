@@ -68,9 +68,16 @@
                             "requiresRestart": true,
                             "default": 10,
                             "description": "Time after which an active device will be marked as offline in minutes"
+                        },
+                        "max_jitter": {
+                            "type": "number",
+                            "title": "Max Jitter",
+                            "default": 30000,
+                            "minimum": 1000,
+                            "description": "Maximum jitter (in msec) allowed on timeout to avoid availability pings trying to trigger around the same time"
                         }
                     },
-                    "required": ["timeout"]
+                    "required": ["timeout", "max_jitter"]
                 },
                 "passive": {
                     "type": "object",
