@@ -3172,18 +3172,16 @@ describe('Extension: Bridge', () => {
                 data: {
                     id: '0x0017880104e45524',
                     source:
-                        "const m = require('zigbee-herdsman-converters/lib/modernExtend');\n" +
+                        "import * as m from 'zigbee-herdsman-converters/lib/modernExtend';\n" +
                         '\n' +
-                        'const definition = {\n' +
+                        'export default {\n' +
                         "    zigbeeModel: ['lumi.plug'],\n" +
                         "    model: 'lumi.plug',\n" +
                         "    vendor: '',\n" +
                         "    description: 'Automatically generated definition',\n" +
                         '    extend: [m.onOff({"powerOnBehavior":false})],\n' +
                         '    meta: {},\n' +
-                        '};\n' +
-                        '\n' +
-                        'module.exports = definition;',
+                        '};\n'
                 },
                 status: 'ok',
             }),
