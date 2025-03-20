@@ -163,6 +163,7 @@ declare global {
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
+            notification_filter?: string[];
         };
         devices: {[s: string]: DeviceOptions};
         groups: {[s: string]: Omit<GroupOptions, 'ID'>};

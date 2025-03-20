@@ -410,6 +410,14 @@
                     "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
                     "default": "/",
                     "requiresRestart": true
+                },
+                "notification_filter": {
+                    "title": "Notification Filter",
+                    "description": "Hide frontend notifications matching specified regex strings. Example: 'z2m: Failed to ping.*'",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
             "required": []
