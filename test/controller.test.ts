@@ -75,6 +75,7 @@ describe('Controller', () => {
 
     afterEach(async () => {
         await controller?.stop();
+        await flushPromises();
     });
 
     it('Start controller', async () => {

@@ -64,8 +64,10 @@ describe('Extension: HomeAssistant', () => {
     });
 
     afterAll(async () => {
-        vi.useRealTimers();
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
     });
 
     beforeEach(async () => {

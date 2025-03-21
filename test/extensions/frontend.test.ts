@@ -154,6 +154,8 @@ describe('Extension: Frontend', () => {
 
     afterEach(async () => {
         delete devices.bulb.linkquality;
+        await controller?.stop();
+        await flushPromises();
     });
 
     it('Start/stop with defaults', async () => {

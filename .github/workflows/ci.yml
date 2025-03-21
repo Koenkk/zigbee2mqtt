@@ -9,6 +9,8 @@ permissions:
 jobs:
     ci:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
         steps:
             - uses: actions/checkout@v4
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
@@ -100,7 +102,6 @@ jobs:
               with:
                   context: .
                   file: docker/Dockerfile
-                  provenance: false
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
                   tags: ${{ steps.meta.outputs.tags }}
                   push: true
@@ -114,6 +115,7 @@ jobs:
               run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: true
 
             - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'

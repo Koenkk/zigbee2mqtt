@@ -66,7 +66,8 @@ describe('Extension: Availability', () => {
     afterEach(async () => {});
 
     afterAll(async () => {
-        await controller.stop();
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
