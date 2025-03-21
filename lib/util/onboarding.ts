@@ -540,17 +540,15 @@ export async function onboard(): Promise<boolean> {
 
     // use `configuration.yaml` file to detect "brand new install"
     // env allows to re-run onboard even with existing install
-    if (process.env.Z2M_ONBOARD_FORCE_RUN || !confExists) {
-        if (!process.env.Z2M_ONBOARD_NO_SERVER) {
-            const success = await startOnboardingServer();
+    if (!process.env.Z2M_ONBOARD_NO_SERVER && (process.env.Z2M_ONBOARD_FORCE_RUN || !confExists)) {
+        const success = await startOnboardingServer();
 
-            if (!success) {
-                return false;
-            }
+        if (!success) {
+            return false;
         }
-    } else {
-        settings.reRead();
     }
+
+    settings.reRead();
 
     if (checkMigration) {
         const {migrateIfNecessary} = await import('./settingsMigration.js');
