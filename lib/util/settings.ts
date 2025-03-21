@@ -11,7 +11,6 @@ import yaml, {YAMLFileException} from './yaml';
 export {schemaJson};
 // When updating also update:
 // - https://github.com/Koenkk/zigbee2mqtt/blob/dev/data/configuration.example.yaml#L2
-// - https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/blob/master/common/rootfs/docker-entrypoint.sh#L54
 export const CURRENT_VERSION = 4;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ['error', 'warning', 'info', 'debug'] as const;
@@ -144,6 +143,38 @@ function parseValueRef(text: string): {filename: string; key: string} | null {
     } else {
         return null;
     }
+}
+
+export function writeMinimalDefaults(): void {
+    const minimal = {
+        version: CURRENT_VERSION,
+        mqtt: {
+            base_topic: defaults.mqtt!.base_topic,
+            server: 'mqtt://localhost:1883',
+        },
+        serial: {},
+        advanced: {
+            log_level: defaults.advanced!.log_level,
+            channel: defaults.advanced!.channel,
+            network_key: 'GENERATE',
+            pan_id: 'GENERATE',
+            ext_pan_id: 'GENERATE',
+        },
+        frontend: {
+            enabled: defaults.frontend!.enabled,
+            port: defaults.frontend!.port,
+        },
+        homeassistant: {
+            enabled: defaults.homeassistant!.enabled,
+        },
+    } as Partial<Settings>;
+
+    applyEnvironmentVariables(minimal);
+    yaml.writeIfChanged(CONFIG_FILE_PATH, minimal);
+
+    _settings = read();
+
+    loadSettingsWithDefaults();
 }
 
 export function write(): void {

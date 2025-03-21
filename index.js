@@ -132,31 +132,12 @@ async function start() {
             console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
         }
 
-        // Validate settings
-        const settings = require('./dist/util/settings');
+        const {onboard} = require('./dist/util/onboarding');
 
-        settings.write(); // trigger initial writing of `ZIGBEE2MQTT_CONFIG_*` ENVs
-        settings.reRead();
+        const success = await onboard();
 
-        const settingsMigration = require('./dist/util/settingsMigration');
-
-        settingsMigration.migrateIfNecessary();
-
-        const errors = settings.validate();
-
-        if (errors.length > 0) {
+        if (!success) {
             unsolicitedStop = false;
-
-            console.log(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-            console.log('            READ THIS CAREFULLY\n');
-            console.log(`Refusing to start because configuration is not valid, found the following errors:`);
-
-            for (const error of errors) {
-                console.log(`- ${error}`);
-            }
-
-            console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
-            console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
 
             return await exit(1);
         }
