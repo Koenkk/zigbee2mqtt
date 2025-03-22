@@ -83,6 +83,12 @@ export default class OTAUpdate extends Extension {
             return;
         }
 
+        // `commandQueryNextImageRequest` check above should ensures this is valid but...
+        assert(
+            data.meta.zclTransactionSequenceNumber !== undefined,
+            "Missing 'queryNextImageRequest' transaction sequence number (cannot match reply)",
+        );
+
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
         const automaticOTACheckDisabled = settings.get().ota.disable_automatic_update_check;
