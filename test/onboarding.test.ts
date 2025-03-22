@@ -288,7 +288,7 @@ describe('Onboarding', () => {
             expect(resEnd).toHaveBeenCalledTimes(2);
         }
 
-        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
+        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://0.0.0.0:8080');
         expect(mockHttpListen).toHaveBeenCalledWith(parseInt(serverUrl.port), serverUrl.hostname, expect.any(Function));
 
         return [resEnd.mock.calls[0][0], resEnd.mock.calls[1][0]];
@@ -346,7 +346,7 @@ describe('Onboarding', () => {
 
         expect(resEnd).toHaveBeenCalledTimes(2);
 
-        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
+        const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? 'http://0.0.0.0:8080');
         expect(mockHttpListen).toHaveBeenCalledWith(parseInt(serverUrl.port), serverUrl.hostname, expect.any(Function));
 
         return resEnd.mock.calls[0][0];
