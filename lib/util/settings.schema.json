@@ -90,7 +90,7 @@
                             "description": "Pause availability pings when backoff reaches over this limit (until device updates its 'last seen'). A value of zero disables pausing."
                         }
                     },
-                    "required": ["timeout", "max_jitter", "pause_on_backoff_gt"]
+                    "required": ["timeout"]
                 },
                 "passive": {
                     "type": "object",
