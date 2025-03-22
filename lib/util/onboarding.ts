@@ -371,7 +371,7 @@ function generateHtmlError(errors: string): string {
 }
 
 function getServerUrl(): URL {
-    return new URL(process.env.Z2M_ONBOARD_URL ?? 'http://localhost:8080');
+    return new URL(process.env.Z2M_ONBOARD_URL ?? 'http://0.0.0.0:8080');
 }
 
 async function startOnboardingServer(): Promise<boolean> {
