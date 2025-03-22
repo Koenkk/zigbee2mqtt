@@ -260,11 +260,7 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
         return !!entity.options.availability;
     }
 
-    if (!settings.availability.enabled) {
-        return false;
-    }
-
-    return true;
+    return settings.availability.enabled;
 }
 
 function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
