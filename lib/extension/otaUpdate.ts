@@ -34,7 +34,8 @@ const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request
 export default class OTAUpdate extends Extension {
     private inProgress = new Set<string>();
     private lastChecked = new Map<string, number>();
-    private scheduledUpdates = new Set<string>();
+    private scheduledUpgrades = new Set<string>();
+    private scheduledDowngrades = new Set<string>();
 
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -94,7 +95,7 @@ export default class OTAUpdate extends Extension {
         const automaticOTACheckDisabled = settings.get().ota.disable_automatic_update_check;
 
         if (data.device.definition.ota && !automaticOTACheckDisabled) {
-            if (this.scheduledUpdates.has(data.device.ieeeAddr)) {
+            if (this.scheduledUpgrades.has(data.device.ieeeAddr) || this.scheduledDowngrades.has(data.device.ieeeAddr)) {
                 this.inProgress.add(data.device.ieeeAddr);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
@@ -105,7 +106,7 @@ export default class OTAUpdate extends Extension {
                     const fileVersion = await ota.update(
                         data.device.zh,
                         data.device.otaExtraMetas,
-                        false,
+                        this.scheduledDowngrades.has(data.device.ieeeAddr),
                         async (progress, remaining) => {
                             let msg = `Update of '${data.device.name}' at ${progress.toFixed(2)}%`;
 
@@ -124,8 +125,14 @@ export default class OTAUpdate extends Extension {
                         data.meta.zclTransactionSequenceNumber,
                     );
 
-                    // remove right away on update success in case any of the below calls fail
-                    this.scheduledUpdates.delete(data.device.ieeeAddr);
+                    // remove right away on update success (or no image) in case any of the below calls fail
+                    this.scheduledUpgrades.delete(data.device.ieeeAddr);
+                    this.scheduledDowngrades.delete(data.device.ieeeAddr);
+
+                    if (fileVersion === undefined) {
+                        throw new Error('No image currently available');
+                    }
+
                     logger.info(`Finished update of '${data.device.name}'`);
 
                     this.removeProgressAndRemainingFromState(data.device);
@@ -262,6 +269,7 @@ export default class OTAUpdate extends Extension {
         } else if (!device.definition || !device.definition.ota) {
             error = `Device '${device.name}' does not support OTA updates`;
         } else if (this.inProgress.has(device.ieeeAddr)) {
+            // also guards against scheduling while check/update op in progress that could result in undesired OTA state
             error = `Update or check for update already in progress for '${device.name}'`;
         } else {
             switch (type) {
@@ -311,6 +319,10 @@ export default class OTAUpdate extends Extension {
                             await this.publishEntityState(device, this.getEntityPublishPayload(device, 'updating', progress, remaining ?? undefined));
                         });
 
+                        if (fileVersion === undefined) {
+                            throw new Error('No image currently available');
+                        }
+
                         logger.info(`Finished update of '${device.name}'`);
                         this.removeProgressAndRemainingFromState(device);
                         await this.publishEntityState(
@@ -349,7 +361,20 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case 'schedule': {
-                    this.scheduledUpdates.add(device.ieeeAddr);
+                    // ensure only one type scheduled by deleting from the other if necessary
+                    if (downgrade) {
+                        if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
+                            logger.info(`Previously scheduled '${device.name}' upgrade was cancelled in favor of new downgrade request`);
+                        }
+
+                        this.scheduledDowngrades.add(device.ieeeAddr);
+                    } else {
+                        if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
+                            logger.info(`Previously scheduled '${device.name}' downgrade was cancelled in favor of new upgrade request`);
+                        }
+
+                        this.scheduledUpgrades.add(device.ieeeAddr);
+                    }
 
                     logger.info(`Scheduled '${device.name}' to update firmware on next request from device`);
 
