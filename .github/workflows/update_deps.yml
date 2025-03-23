@@ -9,7 +9,7 @@ permissions:
 
 jobs:
     update-dependencies:
-        if: github.repository == 'Koenkk/zigbee-herdsman'
+        if: github.repository == 'Koenkk/zigbee2mqtt'
         permissions:
             contents: write # for peter-evans/create-pull-request to create branch
             pull-requests: write # for peter-evans/create-pull-request to create a PR
