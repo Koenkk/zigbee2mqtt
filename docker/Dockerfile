@@ -43,6 +43,9 @@ LABEL org.opencontainers.image.version=${VERSION}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY dist ./dist
+# To prevent `Error: EACCES: permission denied, mkdir '/app/dist/external_converters'`
+# when running rootless.
+RUN chmod -R 777 ./dist
 COPY package.json LICENSE index.js data/configuration.example.yaml ./
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
