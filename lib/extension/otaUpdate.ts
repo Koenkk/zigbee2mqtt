@@ -303,6 +303,14 @@ export default class OTAUpdate extends Extension {
                 case 'update': {
                     this.inProgress.add(device.ieeeAddr);
 
+                    if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
+                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled in favor of immediate downgrade`);
+                    }
+
+                    if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
+                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled in favor of immediate upgrade`);
+                    }
+
                     logger.info(`Updating '${device.name}' to ${downgrade ? 'previous' : 'latest'} firmware`);
 
                     try {
