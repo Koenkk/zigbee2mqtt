@@ -109,7 +109,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
         <p>Optional fields will either be ignored or fallback to defaults if not set (see appropriate documentation page for more details).</p>
         <p>If a field is disabled, it means <a href="https://www.zigbee2mqtt.io/guide/configuration/#environment-variables" target="_blank">environment variables</a> are being used to override specific values (for example, through the Home Assistant add-on configuration page).</p>
         <hr>
-        <form method="post" action="/">
+        <form method="post">
             <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL || process.env.ZIGBEE2MQTT_CONFIG_SERIAL_PORT || process.env.ZIGBEE2MQTT_CONFIG_SERIAL_ADAPTER ? 'disabled' : ''}>
                 <label for="found_device">Found Devices</label>
                 ${devicesSelect}
