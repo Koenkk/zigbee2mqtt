@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 3.4.7
+  zigbee-herdsman: 3.4.8
 
 importers:
 
@@ -75,8 +75,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       zigbee-herdsman:
-        specifier: 3.4.7
-        version: 3.4.7
+        specifier: 3.4.8
+        version: 3.4.8
       zigbee-herdsman-converters:
         specifier: 23.13.0
         version: 23.13.0
@@ -1826,11 +1826,11 @@ packages:
   zigbee-herdsman-converters@23.13.0:
     resolution: {integrity: sha512-KSu48PcsXlPGdAyKSaBs8YsYRy9P8nT+yGxbtRBTH+lH5Vlif6uUi5OBr1Hr403hF2wB3HbeYgr9oTzRw7ZmpQ==}
 
-  zigbee-herdsman@3.4.7:
-    resolution: {integrity: sha512-I3iHrGeRWsI1uL8qVtsJlOKyMT8oVqDaObdlxozuzMRftfy4OatSB6giO+wrNF+8/D7IvCFyR2poRagu9TW1qA==}
+  zigbee-herdsman@3.4.8:
+    resolution: {integrity: sha512-XrGe6WIOR92O2fXZzxD5mlOadYKsGSAKRQmGW8BjYzcaTomXdZ8H/+EdlRpmP7usxzktxuDEWBlBgmTqp6FPWQ==}
 
-  zigbee-on-host@0.1.8:
-    resolution: {integrity: sha512-fNp/NchmESg1EDD8jfgZ2N5yOTg/LphbsaAUOc3YnSdnAdyRmwRlw46dvla4VpkocTJzhQdzT56bZVhq3dZD3Q==}
+  zigbee-on-host@0.1.9:
+    resolution: {integrity: sha512-/6X8uUYUu+XpVVwRGpJz5YQi2mTx3o707cUWp5tdAw6zuZjqB7Xe2cpVZHRfM7GnNa41p4tUHdbIcVDQHaZOww==}
     engines: {node: '>=20.17.0'}
 
   zigbee2mqtt-frontend@0.9.5:
@@ -3496,11 +3496,11 @@ snapshots:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
       semver: 7.7.1
-      zigbee-herdsman: 3.4.7
+      zigbee-herdsman: 3.4.8
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@3.4.7:
+  zigbee-herdsman@3.4.8:
     dependencies:
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
@@ -3510,10 +3510,10 @@ snapshots:
       fast-deep-equal: 3.1.3
       mixin-deep: 2.0.1
       slip: 1.0.2
-      zigbee-on-host: 0.1.8
+      zigbee-on-host: 0.1.9
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-on-host@0.1.8: {}
+  zigbee-on-host@0.1.9: {}
 
   zigbee2mqtt-frontend@0.9.5: {}
