@@ -101,8 +101,6 @@ export default class OTAUpdate extends Extension {
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
 
                 try {
-                    // XXX: don't think we can send anything but the response right away (sleepy)
-                    // const firmwareFrom = await this.readSoftwareBuildIDAndDateCode(data.device, 'immediate');
                     const fileVersion = await ota.update(
                         data.device.zh,
                         data.device.otaExtraMetas,
@@ -134,6 +132,7 @@ export default class OTAUpdate extends Extension {
 
                         this.removeProgressAndRemainingFromState(data.device);
                         await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'idle'));
+                        this.inProgress.delete(data.device.ieeeAddr);
 
                         return;
                     }
@@ -163,36 +162,39 @@ export default class OTAUpdate extends Extension {
                     await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'scheduled'));
                 }
 
-                return; // don't want to be sending `queryNextImageResponse` here
-            } else {
-                // When a device does a next image request, it will usually do it a few times after each other
-                // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
-                // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
-                const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-                const check = this.lastChecked.has(data.device.ieeeAddr)
-                    ? Date.now() - this.lastChecked.get(data.device.ieeeAddr)! > updateCheckInterval
-                    : true;
+                this.inProgress.delete(data.device.ieeeAddr);
 
-                if (!check) {
-                    return;
-                }
+                return; // we're done
+            }
 
-                this.lastChecked.set(data.device.ieeeAddr, Date.now());
-                let availableResult: Ota.UpdateAvailableResult | undefined;
+            // When a device does a next image request, it will usually do it a few times after each other
+            // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
+            // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
+            const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
+            const check = this.lastChecked.has(data.device.ieeeAddr)
+                ? Date.now() - this.lastChecked.get(data.device.ieeeAddr)! > updateCheckInterval
+                : true;
 
-                try {
-                    // never use 'previous' when responding to device request
-                    availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
-                } catch (error) {
-                    logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
-                }
+            if (!check) {
+                return;
+            }
 
-                await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? 'idle'));
+            this.inProgress.add(data.device.ieeeAddr);
+            this.lastChecked.set(data.device.ieeeAddr, Date.now());
+            let availableResult: Ota.UpdateAvailableResult | undefined;
 
-                if (availableResult?.available) {
-                    const message = `Update available for '${data.device.name}'`;
-                    logger.info(message);
-                }
+            try {
+                // never use 'previous' when responding to device request
+                availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
+            } catch (error) {
+                logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
+            }
+
+            await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? 'idle'));
+
+            if (availableResult?.available) {
+                const message = `Update available for '${data.device.name}'`;
+                logger.info(message);
             }
         }
 
@@ -206,6 +208,7 @@ export default class OTAUpdate extends Extension {
             data.meta.zclTransactionSequenceNumber,
         );
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
+        this.inProgress.delete(data.device.ieeeAddr);
     }
 
     private async readSoftwareBuildIDAndDateCode(
