@@ -628,7 +628,7 @@ describe('Extension: Publish', () => {
         mockLogger.error.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/0x0017880104e45542/get', stringify({state_center: '', state_right: ''}));
         await flushPromises();
-        expect(mockLogger.error).toHaveBeenCalledWith(`No converter available for 'state_center' ("")`);
+        expect(mockLogger.error).toHaveBeenCalledWith(`No converter available for 'state_center' on 'wall_switch_double': ("")`);
         expect(endpoint2.read).toHaveBeenCalledTimes(0);
         expect(endpoint3.read).toHaveBeenCalledTimes(1);
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
