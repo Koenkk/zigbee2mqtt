@@ -125,12 +125,17 @@ export default class OTAUpdate extends Extension {
                         data.meta.zclTransactionSequenceNumber,
                     );
 
-                    // remove right away on update success (or no image) in case any of the below calls fail
+                    // remove right away on update success or no image in case any of the below calls fail
                     this.scheduledUpgrades.delete(data.device.ieeeAddr);
                     this.scheduledDowngrades.delete(data.device.ieeeAddr);
 
                     if (fileVersion === undefined) {
-                        throw new Error('No image currently available');
+                        logger.info(`No image currently available for '${data.device.name}'. Unscheduling.`);
+
+                        this.removeProgressAndRemainingFromState(data.device);
+                        await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'idle'));
+
+                        return;
                     }
 
                     logger.info(`Finished update of '${data.device.name}'`);
@@ -155,7 +160,7 @@ export default class OTAUpdate extends Extension {
                     logger.debug(`Update of '${data.device.name}' failed (${e}). Retry scheduled for next request.`);
 
                     this.removeProgressAndRemainingFromState(data.device);
-                    await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'available'));
+                    await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'scheduled'));
                 }
 
                 return; // don't want to be sending `queryNextImageResponse` here
