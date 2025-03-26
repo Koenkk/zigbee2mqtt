@@ -18,7 +18,7 @@ import * as settings from '../util/settings';
 import utils from '../util/utils';
 import Extension from './extension';
 
-type UpdateState = 'updating' | 'idle' | 'available';
+type UpdateState = 'updating' | 'idle' | 'available' | 'scheduled';
 interface UpdatePayload {
     update: {
         progress?: number;
@@ -385,6 +385,8 @@ export default class OTAUpdate extends Extension {
                     }
 
                     logger.info(`Scheduled '${device.name}' to update firmware on next request from device`);
+
+                    await this.publishEntityState(device, this.getEntityPublishPayload(device, 'scheduled', undefined, undefined));
 
                     const response = utils.getResponse<'bridge/response/device/ota_update/schedule'>(message, {
                         id: ID,
