@@ -212,7 +212,7 @@ export default class Publish extends Extension {
             }
 
             if (!converter) {
-                logger.error(`No converter available for '${key}' (${stringify(message[key])})`);
+                logger.error(`No converter available for '${key}' on '${re.name}': (${stringify(message[key])})`);
                 continue;
             }
 
