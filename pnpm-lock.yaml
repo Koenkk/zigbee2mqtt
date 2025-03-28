@@ -78,8 +78,8 @@ importers:
         specifier: 3.4.9
         version: 3.4.9
       zigbee-herdsman-converters:
-        specifier: 23.14.0
-        version: 23.14.0
+        specifier: 23.15.0
+        version: 23.15.0
       zigbee2mqtt-frontend:
         specifier: 0.9.5
         version: 0.9.5
@@ -1823,8 +1823,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zigbee-herdsman-converters@23.14.0:
-    resolution: {integrity: sha512-SyhEsNNMULNXHzOveBZK7FdSuyYi4vnCN48nHZXyaLCFMkmwtFnFtE6T1Kqt811ADnrfbWs8IYZGv5KYS3840Q==}
+  zigbee-herdsman-converters@23.15.0:
+    resolution: {integrity: sha512-vwnoafiq9mhmimnoO+uRp/rPj5JCX+RvLoMFwvBcHC/T2Mvlq7AzeLvh1ZTWAbCpCWnouzRQgzCHQt+YItbYrQ==}
 
   zigbee-herdsman@3.4.9:
     resolution: {integrity: sha512-uHSrnSTFlmCsvIB+R2Z27+Zb2eLdI34Jlvp9Tyk2NbRMHed4HjLPvc+UZCD4euQIr1wJ2I/fCbP/2gkYyOWzYg==}
@@ -3491,7 +3491,7 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zigbee-herdsman-converters@23.14.0:
+  zigbee-herdsman-converters@23.15.0:
     dependencies:
       buffer-crc32: 1.0.0
       iconv-lite: 0.6.3
