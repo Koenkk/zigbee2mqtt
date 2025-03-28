@@ -1141,7 +1141,7 @@ export const devices = {
         '0x00124b00cfcf3298',
         18129,
         0xfff1,
-        [new Endpoint(8, [0, 3, 4, 5, 6, 8], []), new Endpoint(242, [], [33])],
+        [new Endpoint(8, [0, 3, 4, 5, 6, 8], [], '0x00124b00cfcf3298'), new Endpoint(242, [], [33], '0x00124b00cfcf3298')],
         true,
         'DC Source',
         'FanBee1',
@@ -1169,7 +1169,8 @@ export const mockController = {
         (): Promise<AdapterTypes.CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     ),
     getNetworkParameters: vi.fn(
-        (): Promise<AdapterTypes.NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
+        (): Promise<AdapterTypes.NetworkParameters> =>
+            Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15, nwkUpdateID: 0}),
     ),
     getDevices: vi.fn((): Device[] => []),
     getDevicesIterator: vi.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {
