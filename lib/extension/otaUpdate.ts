@@ -267,7 +267,8 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/update']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/update/downgrade']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule']
-            | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule/downgrade'];
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule/downgrade']
+            | Zigbee2MQTTAPI['bridge/request/device/ota_update/unschedule'];
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1] as 'check' | 'update' | 'schedule' | 'unschedule';
