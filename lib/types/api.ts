@@ -399,6 +399,14 @@ export interface Zigbee2MQTTAPI {
         id: string;
     };
 
+    'bridge/request/device/ota_update/unschedule': {
+        id: string;
+    };
+
+    'bridge/response/device/ota_update/unschedule': {
+        id: string;
+    };
+
     'bridge/request/device/interview': {
         id: string | number;
     };
@@ -662,6 +670,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | 'bridge/response/device/ota_update/check'
     | 'bridge/response/device/ota_update/update'
     | 'bridge/response/device/ota_update/schedule'
+    | 'bridge/response/device/ota_update/unschedule'
     | 'bridge/response/device/interview'
     | 'bridge/response/device/generate_external_definition'
     | 'bridge/response/device/options'

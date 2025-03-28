@@ -29,7 +29,10 @@ interface UpdatePayload {
     };
 }
 
-const topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule)/?(downgrade)?`, 'i');
+const topicRegex = new RegExp(
+    `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade)?`,
+    'i',
+);
 
 export default class OTAUpdate extends Extension {
     private inProgress = new Set<string>();
@@ -267,8 +270,8 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule/downgrade'];
         const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
-        const type = topicMatch[1] as 'check' | 'update' | 'schedule';
-        const downgrade = Boolean(topicMatch[2]);
+        const type = topicMatch[1] as 'check' | 'update' | 'schedule' | 'unschedule';
+        const downgrade = topicMatch[2] === 'downgrade';
         let error: string | undefined;
         let errorStack: string | undefined;
 
@@ -392,7 +395,7 @@ export default class OTAUpdate extends Extension {
                         this.scheduledUpgrades.add(device.ieeeAddr);
                     }
 
-                    logger.info(`Scheduled '${device.name}' to update firmware on next request from device`);
+                    logger.info(`Scheduled '${device.name}' to ${downgrade ? 'downgrade' : 'upgrade'} firmware on next request from device`);
 
                     await this.publishEntityState(device, this.getEntityPublishPayload(device, 'scheduled', undefined, undefined));
 
@@ -401,6 +404,24 @@ export default class OTAUpdate extends Extension {
                     });
 
                     await this.mqtt.publish(`bridge/response/device/ota_update/schedule`, stringify(response));
+
+                    break;
+                }
+
+                case 'unschedule': {
+                    if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
+                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled`);
+                    } else if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
+                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled`);
+                    }
+
+                    await this.publishEntityState(device, this.getEntityPublishPayload(device, 'idle', undefined, undefined));
+
+                    const response = utils.getResponse<'bridge/response/device/ota_update/unschedule'>(message, {
+                        id: ID,
+                    });
+
+                    await this.mqtt.publish(`bridge/response/device/ota_update/unschedule`, stringify(response));
 
                     break;
                 }
