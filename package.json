@@ -73,7 +73,7 @@
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^22.13.11",
+        "@types/node": "^22.13.14",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.18",
         "@types/serve-static": "^1.15.7",
@@ -84,7 +84,7 @@
         "prettier": "^3.5.3",
         "tmp": "^0.2.3",
         "typescript": "^5.8.2",
-        "typescript-eslint": "^8.27.0",
+        "typescript-eslint": "^8.28.0",
         "vitest": "^3.0.9"
     },
     "pnpm": {
