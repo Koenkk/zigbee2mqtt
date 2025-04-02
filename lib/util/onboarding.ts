@@ -526,14 +526,14 @@ export async function onboard(): Promise<boolean> {
     }
 
     const confExists = existsSync(data.joinPath('configuration.yaml'));
-    let checkMigration = true;
 
     if (!confExists) {
         settings.writeMinimalDefaults();
-
-        // don't check for migration if conf was just written
-        checkMigration = false;
     } else {
+        // migrate first
+        const {migrateIfNecessary} = await import('./settingsMigration.js');
+
+        migrateIfNecessary();
         // trigger initial writing of `ZIGBEE2MQTT_CONFIG_*` ENVs
         settings.write();
     }
@@ -549,12 +549,6 @@ export async function onboard(): Promise<boolean> {
     }
 
     settings.reRead();
-
-    if (checkMigration) {
-        const {migrateIfNecessary} = await import('./settingsMigration.js');
-
-        migrateIfNecessary();
-    }
 
     const errors = settings.validate();
 

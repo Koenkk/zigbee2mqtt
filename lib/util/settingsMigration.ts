@@ -491,7 +491,7 @@ function migrateToFour(
  * Should allow the most flexibility whenever combination of migrations is necessary (e.g. Transfer + Change)
  */
 export function migrateIfNecessary(): void {
-    let currentSettings = settings.getPersistedSettings();
+    const currentSettings = settings.getPersistedSettings();
 
     if (!SUPPORTED_VERSIONS.includes(currentSettings.version)) {
         throw new Error(
@@ -502,7 +502,11 @@ export function migrateIfNecessary(): void {
     /* v8 ignore next */
     const finalVersion = process.env.VITEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
 
-    // when same version as current, nothing left to do
+    if (currentSettings.version === finalVersion) {
+        // when same version as current, nothing to do
+        return;
+    }
+
     while (currentSettings.version !== finalVersion) {
         let migrationNotesFileName: string | undefined;
         // don't duplicate outputs
@@ -577,10 +581,9 @@ export function migrateIfNecessary(): void {
 
             console.log(`Migration notes written in ${migrationNotesFilePath}`);
         }
-
-        // don't throw to allow stepping through versions (validates against current schema)
-        settings.apply(currentSettings as unknown as Record<string, unknown>, false);
-        settings.reRead();
-        currentSettings = settings.getPersistedSettings();
     }
+
+    // don't throw, onboarding will validate at end of process
+    settings.apply(currentSettings as unknown as Record<string, unknown>, false);
+    settings.reRead();
 }

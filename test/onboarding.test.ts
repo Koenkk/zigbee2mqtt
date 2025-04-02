@@ -166,6 +166,8 @@ describe('Onboarding', () => {
         delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_PAN_ID;
         delete process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_EXT_PAN_ID;
         delete process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_PORT;
+        delete process.env.ZIGBEE2MQTT_CONFIG_FRONTEND;
+        delete process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED;
 
         data.writeDefaultConfiguration(SAMPLE_SETTINGS_INIT);
         data.removeState();
@@ -697,6 +699,30 @@ describe('Onboarding', () => {
         expect(settings.get().version).toStrictEqual(settings.CURRENT_VERSION);
     });
 
+    it('runs 1.x.x conflict migrations', async () => {
+        data.writeDefaultConfiguration({
+            mqtt: {
+                server: 'mqtt://core-mosquitto:1883',
+            },
+            homeassistant: true,
+            advanced: {
+                network_key: 'GENERATE',
+                pan_id: 'GENERATE',
+                ext_pan_id: 'GENERATE',
+            },
+        });
+        settings.reRead();
+        process.env.ZIGBEE2MQTT_CONFIG_FRONTEND = '{"enabled":true,"port": 8099}';
+        process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED = 'true';
+
+        const p = onboard();
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(settings.get().version).toStrictEqual(settings.CURRENT_VERSION);
+        expect(settings.get().homeassistant).toMatchObject({enabled: true});
+        expect(settings.get().frontend).toMatchObject({enabled: true, port: 8099});
+    });
+
     it('handles validation failure', async () => {
         settings.set(['serial', 'adapter'], 'emberz');
 
@@ -719,6 +745,7 @@ describe('Onboarding', () => {
 
     it('handles creating data path', async () => {
         rmSync(data.mockDir, {force: true, recursive: true});
+        settings.testing.clear();
 
         let p;
         await new Promise<[string, string]>((resolve, reject) => {
