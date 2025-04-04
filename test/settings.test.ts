@@ -146,7 +146,7 @@ describe('Settings', () => {
         write(configurationFile, {mqtt: {password: 'config-password'}});
         write(devicesFile, contentDevices);
 
-        const writeAndCheck = () => {
+        const writeAndCheck = (): void => {
             expect(settings.write()); // trigger writing of ENVs
             expect(settings.validate()).toStrictEqual([]);
             expect(settings.get()).toStrictEqual(expected);
@@ -169,11 +169,11 @@ describe('Settings', () => {
         write(configurationFile, {mqtt: {password: '!secret password', server: 'server'}});
         process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = 'password-in-env-var';
 
-        const writeAndCheck = () => {
+        const writeAndCheck = (): void => {
             expect(settings.write()); // trigger writing of ENVs
             expect(settings.validate()).toStrictEqual([]);
 
-            let s = settings.get();
+            const s = settings.get();
             // @ts-expect-error workaround
             const expected = objectAssignDeep.noMutate({groups: {}, devices: {}}, settings.testing.defaults);
             expected.mqtt.password = 'password-in-env-var';
