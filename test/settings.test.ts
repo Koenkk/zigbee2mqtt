@@ -159,7 +159,8 @@ describe('Settings', () => {
             expect(read(configurationFile)).toHaveProperty('mqtt.password', '!secret.yaml password');
         };
 
-        // Write twice to ensure there are no side effects.
+        // Write trice to ensure there are no side effects.
+        writeAndCheck();
         writeAndCheck();
         writeAndCheck();
     });
@@ -183,7 +184,8 @@ describe('Settings', () => {
             expect(read(configurationFile)).toMatchObject({mqtt: {password: 'password-in-env-var', server: 'server'}});
         };
 
-        // Write twice to ensure there are no side effects.
+        // Write trice to ensure there are no side effects.
+        writeAndCheck();
         writeAndCheck();
         writeAndCheck();
     });
