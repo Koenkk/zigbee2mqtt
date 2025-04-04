@@ -104,7 +104,7 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
-    it('onlythis Should apply environment variables as overrides', () => {
+    it('Should apply environment variables as overrides', () => {
         fs.writeFileSync(secretFile, 'password: the-password');
         process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = '!secret.yaml password';
         process.env.ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED = 'true';
