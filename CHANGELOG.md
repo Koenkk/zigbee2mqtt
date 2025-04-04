@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.2.0...2.2.1) (2025-04-04)
+
+
+### Bug Fixes
+
+* Fix issue with some settings when migrating from 1.x.x to 2.2.x ([#26947](https://github.com/Koenkk/zigbee2mqtt/issues/26947)) ([9e481fe](https://github.com/Koenkk/zigbee2mqtt/commit/9e481fe5e57a8e664dd58cff7765b5365630c7c1))
+* Fix settings being overwriting when env var is set to a ref ([#26988](https://github.com/Koenkk/zigbee2mqtt/issues/26988)) ([d6a5128](https://github.com/Koenkk/zigbee2mqtt/commit/d6a5128aa819a85e2a06e57307329d2b35938397))
+* **ignore:** update zigbee-herdsman-converters to 23.19.0 ([#26938](https://github.com/Koenkk/zigbee2mqtt/issues/26938)) ([0b7d003](https://github.com/Koenkk/zigbee2mqtt/commit/0b7d0039f709215ac1a4895f15f06db41b4d4998))
+* **ignore:** update zigbee-herdsman-converters to 23.19.1 ([#26961](https://github.com/Koenkk/zigbee2mqtt/issues/26961)) ([e90afb2](https://github.com/Koenkk/zigbee2mqtt/commit/e90afb286a15c5416fd1126864acdfc4c03c3a64))
+* **ignore:** update zigbee-herdsman-converters to 23.20.0 ([#26978](https://github.com/Koenkk/zigbee2mqtt/issues/26978)) ([37927e6](https://github.com/Koenkk/zigbee2mqtt/commit/37927e698abcb242965423e9ee37623255feadab))
+* **ignore:** update zigbee-herdsman-converters to 23.20.1 ([#26989](https://github.com/Koenkk/zigbee2mqtt/issues/26989)) ([9d0ee03](https://github.com/Koenkk/zigbee2mqtt/commit/9d0ee03f38ee6881dce3b17c219a6580303607ef))
+* **ignore:** update zigbee2mqtt-frontend to 0.9.6 ([#26959](https://github.com/Koenkk/zigbee2mqtt/issues/26959)) ([fb4d01e](https://github.com/Koenkk/zigbee2mqtt/commit/fb4d01ebced7046919d6657c7609a196d39a1a6c))
+* **ignore:** update zigbee2mqtt-frontend to 0.9.7 ([#26976](https://github.com/Koenkk/zigbee2mqtt/issues/26976)) ([89cdb1f](https://github.com/Koenkk/zigbee2mqtt/commit/89cdb1f180bb343b56a50c94dc6a23dda1345582))
+
 ## [2.2.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.1.3...2.2.0) (2025-04-01)
 
 
