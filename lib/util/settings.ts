@@ -181,8 +181,6 @@ export function write(): void {
     const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
 
-    applyEnvironmentVariables(toWrite);
-
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
 
@@ -202,6 +200,8 @@ export function write(): void {
             }
         }
     }
+
+    applyEnvironmentVariables(toWrite);
 
     // Write devices/groups to separate file if required.
     const writeDevicesOrGroups = (type: 'devices' | 'groups'): void => {

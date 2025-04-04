@@ -104,7 +104,9 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
-    it('Should apply environment variables as overrides', () => {
+    it('onlythis Should apply environment variables as overrides', () => {
+        fs.writeFileSync(secretFile, 'password: the-password');
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = '!secret.yaml password';
         process.env.ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED = 'true';
         process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '15';
         process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT = 'attribute_and_json';
@@ -127,7 +129,7 @@ describe('Settings', () => {
         expect(settings.write()); // trigger writing of ENVs
         expect(settings.validate()).toStrictEqual([]);
 
-        const s = settings.get();
+        let s = settings.get();
         // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {
@@ -144,6 +146,7 @@ describe('Settings', () => {
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
         expected.mqtt.server = 'testserver';
+        expected.mqtt.password = 'the-password'
         expected.advanced.network_key = 'GENERATE';
 
         expect(s).toStrictEqual(expected);
@@ -152,6 +155,14 @@ describe('Settings', () => {
 
         expect(settings.get().advanced.channel).toStrictEqual(15);
         expect(read(configurationFile)).toMatchObject({advanced: {channel: 15}});
+        expect(read(secretFile)).toMatchObject({password: 'the-password'})
+
+        // Write again, check if it doesn't have any side effects
+        expect(settings.write()); // trigger writing of ENVs
+        expect(settings.validate()).toStrictEqual([]);
+        s = settings.get();
+        expect(s).toStrictEqual(expected);
+        expect(read(secretFile)).toMatchObject({password: 'the-password'})
     });
 
     it('Should add devices', () => {
