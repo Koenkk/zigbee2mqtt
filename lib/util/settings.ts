@@ -181,24 +181,22 @@ export function write(): void {
     const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);
 
-    applyEnvironmentVariables(toWrite);
-
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
 
     // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
-    for (const path of [
+    for (const [ns, key] of [
         ['mqtt', 'server'],
         ['mqtt', 'user'],
         ['mqtt', 'password'],
         ['advanced', 'network_key'],
         ['frontend', 'auth_token'],
     ]) {
-        if (actual[path[0]] && actual[path[0]][path[1]]) {
-            const ref = parseValueRef(actual[path[0]][path[1]]);
+        if (actual[ns] && actual[ns][key]) {
+            const ref = parseValueRef(actual[ns][key]);
             if (ref) {
-                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[path[0]][path[1]]);
-                toWrite[path[0]][path[1]] = actual[path[0]][path[1]];
+                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[ns][key]);
+                toWrite[ns][key] = actual[ns][key];
             }
         }
     }
@@ -226,6 +224,9 @@ export function write(): void {
 
     writeDevicesOrGroups('devices');
     writeDevicesOrGroups('groups');
+
+    applyEnvironmentVariables(toWrite);
+
     yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
     _settings = read();
