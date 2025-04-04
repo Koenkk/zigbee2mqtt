@@ -105,7 +105,7 @@ describe('Settings', () => {
     });
 
     it('Should apply environment variables as overrides', () => {
-        fs.writeFileSync(secretFile, 'password: the-password');
+        write(secretFile, {password: 'the-password'}, false);
         process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = '!secret.yaml password';
         process.env.ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED = 'true';
         process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '15';
@@ -124,12 +124,6 @@ describe('Settings', () => {
             },
         };
 
-        write(configurationFile, {});
-        write(devicesFile, contentDevices);
-        expect(settings.write()); // trigger writing of ENVs
-        expect(settings.validate()).toStrictEqual([]);
-
-        let s = settings.get();
         // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {
@@ -146,23 +140,52 @@ describe('Settings', () => {
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
         expected.mqtt.server = 'testserver';
-        expected.mqtt.password = 'the-password'
+        expected.mqtt.password = 'the-password';
         expected.advanced.network_key = 'GENERATE';
 
-        expect(s).toStrictEqual(expected);
+        write(configurationFile, {mqtt: {password: 'config-password'}});
+        write(devicesFile, contentDevices);
 
-        settings.set(['advanced', 'channel'], 25);
+        const writeAndCheck = () => {
+            expect(settings.write()); // trigger writing of ENVs
+            expect(settings.validate()).toStrictEqual([]);
+            expect(settings.get()).toStrictEqual(expected);
 
-        expect(settings.get().advanced.channel).toStrictEqual(15);
-        expect(read(configurationFile)).toMatchObject({advanced: {channel: 15}});
-        expect(read(secretFile)).toMatchObject({password: 'the-password'})
+            settings.set(['advanced', 'channel'], 25);
+            expect(settings.get().advanced.channel).toStrictEqual(15);
+            expect(read(configurationFile)).toMatchObject({advanced: {channel: 15}});
 
-        // Write again, check if it doesn't have any side effects
-        expect(settings.write()); // trigger writing of ENVs
-        expect(settings.validate()).toStrictEqual([]);
-        s = settings.get();
-        expect(s).toStrictEqual(expected);
-        expect(read(secretFile)).toMatchObject({password: 'the-password'})
+            expect(read(secretFile)).toMatchObject({password: 'the-password'});
+            expect(read(configurationFile)).toHaveProperty('mqtt.password', '!secret.yaml password');
+        };
+
+        // Write twice to ensure there are no side effects.
+        writeAndCheck();
+        writeAndCheck();
+    });
+
+    it('Should write environment variables as overrides to configuration.yaml, not in the ref file', () => {
+        write(secretFile, {password: 'password-in-secret-file'}, false);
+        write(configurationFile, {mqtt: {password: '!secret password', server: 'server'}});
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = 'password-in-env-var';
+
+        const writeAndCheck = () => {
+            expect(settings.write()); // trigger writing of ENVs
+            expect(settings.validate()).toStrictEqual([]);
+
+            let s = settings.get();
+            // @ts-expect-error workaround
+            const expected = objectAssignDeep.noMutate({groups: {}, devices: {}}, settings.testing.defaults);
+            expected.mqtt.password = 'password-in-env-var';
+            expected.mqtt.server = 'server';
+            expect(s).toStrictEqual(expected);
+            expect(read(secretFile)).toMatchObject({password: 'password-in-secret-file'});
+            expect(read(configurationFile)).toMatchObject({mqtt: {password: 'password-in-env-var', server: 'server'}});
+        };
+
+        // Write twice to ensure there are no side effects.
+        writeAndCheck();
+        writeAndCheck();
     });
 
     it('Should add devices', () => {

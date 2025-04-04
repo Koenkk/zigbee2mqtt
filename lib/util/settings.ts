@@ -201,8 +201,6 @@ export function write(): void {
         }
     }
 
-    applyEnvironmentVariables(toWrite);
-
     // Write devices/groups to separate file if required.
     const writeDevicesOrGroups = (type: 'devices' | 'groups'): void => {
         if (typeof actual[type] === 'string' || (Array.isArray(actual[type]) && actual[type].length > 0)) {
@@ -226,6 +224,9 @@ export function write(): void {
 
     writeDevicesOrGroups('devices');
     writeDevicesOrGroups('groups');
+
+    applyEnvironmentVariables(toWrite);
+
     yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
     _settings = read();
