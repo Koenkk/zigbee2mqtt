@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.2.1...2.2.2) (2025-04-05)
+
+
+### Bug Fixes
+
+* **ignore:** update zigbee-herdsman to 3.5.0 ([#27000](https://github.com/Koenkk/zigbee2mqtt/issues/27000)) ([23e71aa](https://github.com/Koenkk/zigbee2mqtt/commit/23e71aab14536f4f38f12c3c8cb96eb1cd7ccb60))
+* **ignore:** update zigbee-herdsman-converters to 23.21.0 ([#27001](https://github.com/Koenkk/zigbee2mqtt/issues/27001)) ([20be405](https://github.com/Koenkk/zigbee2mqtt/commit/20be4054c163c0b8fe420de606c163076be8c926))
+
 ## [2.2.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.2.0...2.2.1) (2025-04-04)
 
 
