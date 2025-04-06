@@ -287,9 +287,13 @@ describe('Controller', () => {
         await controller.start();
         await flushPromises();
         // @ts-expect-error private
-        await expect(controller.mqtt.publish('z2m/#/status', 'empty')).rejects.toThrow("Topic 'z2m/#/status' includes wildcard characters, this is not allowed.")
+        await expect(controller.mqtt.publish('z2m/#/status', 'empty')).rejects.toThrow(
+            "Topic 'z2m/#/status' includes wildcard characters, this is not allowed.",
+        );
         // @ts-expect-error private
-        await expect(controller.mqtt.publish('z2m/+/status', 'empty')).rejects.toThrow("Topic 'z2m/+/status' includes wildcard characters, this is not allowed.")
+        await expect(controller.mqtt.publish('z2m/+/status', 'empty')).rejects.toThrow(
+            "Topic 'z2m/+/status' includes wildcard characters, this is not allowed.",
+        );
     });
 
     it('Load empty state when state file does not exist', async () => {
