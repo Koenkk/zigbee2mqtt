@@ -16,6 +16,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
+                  ref: dev
                   token: ${{ secrets.GH_TOKEN }}
             - uses: pnpm/action-setup@v4
             - uses: actions/setup-node@v4
