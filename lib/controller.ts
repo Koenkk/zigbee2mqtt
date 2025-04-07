@@ -144,7 +144,8 @@ export class Controller {
             return await this.exit(1);
         }
 
-        for (const extension of this.extensions) {
+        // copy current Set of extensions to ignore possible external extensions added while looping
+        for (const extension of new Set(this.extensions)) {
             await this.startExtension(extension);
         }
 

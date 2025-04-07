@@ -126,6 +126,16 @@ describe('Extension: ExternalExtensions', () => {
             );
         });
 
+        it('starts extensions only once', async () => {
+            useAssets('mjs');
+
+            await controller.start();
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension/counter', 'start 0', {retain: false, qos: 0});
+            expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith('zigbee2mqtt/example/extension/counter', 'start 1', {retain: false, qos: 0});
+        });
+
         it('loads all valid extensions, relocates & skips ones with errors', async () => {
             useAssets('mjs');
 
@@ -169,7 +179,9 @@ describe('Extension: ExternalExtensions', () => {
                 {retain: true, qos: 0},
             );
 
-            extensionCode = extensionCode.replace("'call from start'", "'call from start - edited'");
+            extensionCode = extensionCode
+                .replace("'call from start'", "'call from start - edited'")
+                .replace("'call from stop'", "'call from stop - edited'");
 
             mockMQTTPublishAsync.mockClear();
             await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
@@ -177,6 +189,7 @@ describe('Extension: ExternalExtensions', () => {
                 message: {name: extensionName, code: extensionCode},
             });
 
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from stop', {retain: false, qos: 0});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start - edited', {retain: false, qos: 0});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 'zigbee2mqtt/bridge/extensions',
@@ -187,7 +200,9 @@ describe('Extension: ExternalExtensions', () => {
                 {retain: true, qos: 0},
             );
 
-            extensionCode = extensionCode.replace("'call from start - edited'", "'call from start'");
+            extensionCode = extensionCode
+                .replace("'call from start - edited'", "'call from start'")
+                .replace("'call from stop - edited'", "'call from stop'");
 
             mockMQTTPublishAsync.mockClear();
             await (controller.getExtension('ExternalExtensions')! as ExternalExtensions).onMQTTMessage({
@@ -195,6 +210,7 @@ describe('Extension: ExternalExtensions', () => {
                 message: {name: 'exampleExtension.1.js', code: extensionCode},
             });
 
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from stop - edited', {retain: false, qos: 0});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/example/extension', 'call from start', {retain: false, qos: 0});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 'zigbee2mqtt/bridge/extensions',
