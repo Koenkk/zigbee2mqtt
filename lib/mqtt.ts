@@ -176,6 +176,12 @@ export default class MQTT {
         skipLog = false,
         skipReceive = true,
     ): Promise<void> {
+        if (topic.includes('+') || topic.includes('#')) {
+            // https://github.com/Koenkk/zigbee2mqtt/issues/26939#issuecomment-2772309646
+            logger.error(`Topic '${topic}' includes wildcard characters, skipping publish.`);
+            return;
+        }
+
         const defaultOptions = {qos: 0 as const, retain: false};
         topic = `${base}/${topic}`;
 
