@@ -286,14 +286,15 @@ describe('Controller', () => {
     it('Should not allow publishing wildcard characters in topic', async () => {
         await controller.start();
         await flushPromises();
+        mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
-        await expect(controller.mqtt.publish('z2m/#/status', 'empty')).rejects.toThrow(
-            "Topic 'z2m/#/status' includes wildcard characters, this is not allowed.",
-        );
+        await controller.mqtt.publish('z2m/#/status', 'empty');
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+        expect(mockLogger.error).toHaveBeenCalledWith(`Topic 'z2m/#/status' includes wildcard characters, skipping publish.`);
         // @ts-expect-error private
-        await expect(controller.mqtt.publish('z2m/+/status', 'empty')).rejects.toThrow(
-            "Topic 'z2m/+/status' includes wildcard characters, this is not allowed.",
-        );
+        await controller.mqtt.publish('z2m/+/status', 'empty');
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+        expect(mockLogger.error).toHaveBeenCalledWith(`Topic 'z2m/+/status' includes wildcard characters, skipping publish.`);
     });
 
     it('Load empty state when state file does not exist', async () => {
