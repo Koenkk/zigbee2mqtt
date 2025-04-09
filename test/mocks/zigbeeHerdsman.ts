@@ -236,7 +236,7 @@ export class Device {
     interview: Mock;
     interviewing: boolean;
     meta: Record<string, unknown>;
-    ping: Mock;
+    ping: Mock<(disableRecovery?: boolean) => Promise<void>>;
     removeFromNetwork: Mock;
     removeFromDatabase: Mock;
     customClusters: Record<string, unknown>;
