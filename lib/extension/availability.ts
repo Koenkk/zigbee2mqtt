@@ -1,11 +1,11 @@
+import type * as zhc from 'zigbee-herdsman-converters';
+
 import type {Zigbee2MQTTAPI} from '../types/api';
 
 import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import debounce from 'debounce';
-
-import * as zhc from 'zigbee-herdsman-converters';
 
 import logger from '../util/logger';
 import * as settings from '../util/settings';
@@ -41,6 +41,30 @@ export default class Availability extends Extension {
         return utils.minutes(this.isActiveDevice(device) ? settings.get().availability.active.timeout : settings.get().availability.passive.timeout);
     }
 
+    private getMaxJitter(device: Device): number {
+        if (typeof device.options.availability === 'object' && device.options.availability?.max_jitter != null) {
+            return device.options.availability.max_jitter;
+        }
+
+        return settings.get().availability.active.max_jitter;
+    }
+
+    private getBackoff(device: Device): boolean {
+        if (typeof device.options.availability === 'object' && device.options.availability?.backoff != null) {
+            return device.options.availability.backoff;
+        }
+
+        return settings.get().availability.active.backoff;
+    }
+
+    private getPauseOnBackoffGt(device: Device): number {
+        if (typeof device.options.availability === 'object' && device.options.availability?.pause_on_backoff_gt != null) {
+            return device.options.availability.pause_on_backoff_gt;
+        }
+
+        return settings.get().availability.active.pause_on_backoff_gt;
+    }
+
     private isActiveDevice(device: Device): boolean {
         return (
             (device.zh.type === 'Router' && device.zh.powerSource !== 'Battery') ||
@@ -50,18 +74,18 @@ export default class Availability extends Extension {
 
     private isAvailable(entity: Device | Group): boolean {
         if (entity.isDevice()) {
-            return (
-                Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0) < this.getTimeout(entity) + settings.get().availability.active.max_jitter
-            );
-        } else {
-            for (const memberDevice of entity.membersDevices()) {
-                if (this.lastPublishedAvailabilities.get(memberDevice.ieeeAddr) === true) {
-                    return true;
-                }
-            }
+            const lastSeen = entity.zh.lastSeen ?? /* v8 ignore next */ 0;
 
-            return false;
+            return Date.now() - lastSeen < this.getTimeout(entity) + this.getMaxJitter(entity);
         }
+
+        for (const memberDevice of entity.membersDevices()) {
+            if (this.lastPublishedAvailabilities.get(memberDevice.ieeeAddr) === true) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private resetTimer(device: Device, resetBackoff = false): void {
@@ -70,8 +94,8 @@ export default class Availability extends Extension {
 
         // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
         if (this.isActiveDevice(device)) {
-            const backoffEnabled = settings.get().availability.active.backoff;
-            const jitter = Math.random() * settings.get().availability.active.max_jitter;
+            const backoffEnabled = this.getBackoff(device);
+            const jitter = Math.random() * this.getMaxJitter(device);
             let backoff = 1;
 
             if (resetBackoff) {
@@ -110,7 +134,7 @@ export default class Availability extends Extension {
 
     private removeFromPingQueue(device: Device): void {
         const index = this.pingQueue.findIndex((d) => d.ieeeAddr === device.ieeeAddr);
-        if (index != -1) {
+        if (index !== -1) {
             this.pingQueue.splice(index, 1);
         }
     }
@@ -150,10 +174,10 @@ export default class Availability extends Extension {
             return;
         }
 
-        if (!pingSuccess && settings.get().availability.active.backoff) {
+        if (!pingSuccess && this.getBackoff(device)) {
             const currentBackoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
             // setting is "greater than" but since we already did the ping, we use ">=" for comparison below (pause next)
-            const pauseOnBackoff = settings.get().availability.active.pause_on_backoff_gt;
+            const pauseOnBackoff = this.getPauseOnBackoffGt(device);
 
             if (pauseOnBackoff > 0 && currentBackoff >= pauseOnBackoff) {
                 this.backoffPausedDevices.add(device.ieeeAddr);
@@ -186,7 +210,7 @@ export default class Availability extends Extension {
                 await this.publishAvailability(data.entity, false, true);
             }
         });
-        this.eventBus.onEntityRemoved(this, (data) => data.type == 'device' && this.clearTimer(data.id));
+        this.eventBus.onEntityRemoved(this, (data) => data.type === 'device' && this.clearTimer(data.id));
         this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);

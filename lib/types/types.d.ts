@@ -205,7 +205,14 @@ declare global {
     interface DeviceOptions {
         disabled?: boolean;
         retention?: number;
-        availability?: boolean | {timeout: number};
+        availability?:
+            | boolean
+            | {
+                  timeout: number;
+                  max_jitter?: number;
+                  backoff?: boolean;
+                  pause_on_backoff_gt?: number;
+              };
         optimistic?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
