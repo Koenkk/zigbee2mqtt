@@ -71,7 +71,7 @@ declare global {
         type EntityOptionsChanged = {entity: Device | Group; from: KeyValue; to: KeyValue};
         type ExposesChanged = {device: Device};
         type Reconfigure = {device: Device};
-        type DeviceLeave = {ieeeAddr: string; name: string};
+        type DeviceLeave = {ieeeAddr: string; name: string; device?: Device};
         type GroupMembersChanged = {group: Group; action: 'remove' | 'add' | 'remove_all'; endpoint: zh.Endpoint; skipDisableReporting: boolean};
         type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason?: StateChangeReason; payload: KeyValue};
         type DeviceMessage = {
@@ -79,7 +79,7 @@ declare global {
             device: Device;
             endpoint: zh.Endpoint;
             linkquality: number;
-            groupID: number;
+            groupID: number; // XXX: should this be `?`
             cluster: string | number;
             data: KeyValue | Array<string | number>;
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl};

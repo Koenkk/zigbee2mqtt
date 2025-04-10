@@ -575,12 +575,14 @@ export default class Bind extends Extension {
                 }
             }
 
-            // If message is published to a group, add members of the group
-            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
+            if (data.groupID && data.groupID !== 0) {
+                // If message is published to a group, add members of the group
+                const group = this.zigbee.groupByID(data.groupID);
 
-            if (group) {
-                for (const member of group.zh.members) {
-                    toPoll.add(member);
+                if (group) {
+                    for (const member of group.zh.members) {
+                        toPoll.add(member);
+                    }
                 }
             }
 
