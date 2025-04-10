@@ -1,4 +1,5 @@
 import type {Events as ZHEvents} from 'zigbee-herdsman';
+import type {StartResult} from 'zigbee-herdsman/dist/adapter/tstype';
 
 import {randomInt} from 'node:crypto';
 
@@ -14,20 +15,20 @@ import logger from './util/logger';
 import * as settings from './util/settings';
 import utils from './util/utils';
 
-const entityIDRegex = new RegExp(`^(.+?)(?:/([^/]+))?$`);
+const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
 
 export default class Zigbee {
     // @ts-expect-error initialized in start
     private herdsman: Controller;
     private eventBus: EventBus;
-    private groupLookup: {[s: number]: Group} = {};
-    private deviceLookup: {[s: string]: Device} = {};
+    private groupLookup: Map<number /* group ID */, Group> = new Map();
+    private deviceLookup: Map<string /* IEEE address */, Device> = new Map();
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
     }
 
-    async start(): Promise<'reset' | 'resumed' | 'restored'> {
+    async start(): Promise<StartResult> {
         const infoHerdsman = await utils.getDependencyVersion('zigbee-herdsman');
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
         const panId = settings.get().advanced.pan_id;
@@ -63,12 +64,12 @@ export default class Zigbee {
                 `Using zigbee-herdsman with settings: '${stringify(JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"'))}'`,
         );
 
-        let startResult;
+        let startResult: StartResult;
         try {
             this.herdsman = new Controller(herdsmanSettings);
             startResult = await this.herdsman.start();
         } catch (error) {
-            logger.error(`Error while starting zigbee-herdsman`);
+            logger.error('Error while starting zigbee-herdsman');
             throw error;
         }
 
@@ -109,18 +110,17 @@ export default class Zigbee {
         this.herdsman.on('deviceLeave', (data: ZHEvents.DeviceLeavePayload) => {
             const name = settings.getDevice(data.ieeeAddr)?.friendly_name || data.ieeeAddr;
             logger.warning(`Device '${name}' left the network`);
-            this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name});
+            this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name, device: this.deviceLookup.get(data.ieeeAddr)});
         });
         this.herdsman.on('message', async (data: ZHEvents.MessagePayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
-            logger.debug(
-                () =>
-                    `Received Zigbee message from '${device.name}', type '${data.type}', ` +
-                    `cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}` +
-                    (data['groupID'] !== undefined ? ` with groupID ${data.groupID}` : ``) +
-                    (device.zh.type === 'Coordinator' ? `, ignoring since it is from coordinator` : ``),
-            );
+            logger.debug(() => {
+                const groupId = data.groupID !== undefined ? ` with groupID ${data.groupID}` : '';
+                const fromCoord = device.zh.type === 'Coordinator' ? ', ignoring since it is from coordinator' : '';
+
+                return `Received Zigbee message from '${device.name}', type '${data.type}', cluster '${data.cluster}', data '${stringify(data.data)}' from endpoint ${data.endpoint.ID}${groupId}${fromCoord}`;
+            });
             if (device.zh.type === 'Coordinator') return;
             this.eventBus.emitDeviceMessage({...data, device});
         });
@@ -165,9 +165,7 @@ export default class Zigbee {
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {
                 logger.warning(
-                    `Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name ` +
-                        `'${data.device.zh.manufacturerName}' is NOT supported, ` +
-                        `please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`,
+                    `Device '${name}' with Zigbee model '${data.device.zh.modelID}' and manufacturer name '${data.device.zh.manufacturerName}' is NOT supported, please follow https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html`,
                 );
             }
         } else if (data.status === 'failed') {
@@ -241,55 +239,57 @@ export default class Zigbee {
         await this.herdsman.permitJoin(time, device?.zh);
     }
 
-    async resolveDevicesDefinitions(ignoreCache: boolean = false): Promise<void> {
+    async resolveDevicesDefinitions(ignoreCache = false): Promise<void> {
         for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             await device.resolveDefinition(ignoreCache);
         }
     }
 
     @bind private resolveDevice(ieeeAddr: string): Device | undefined {
-        if (!this.deviceLookup[ieeeAddr]) {
+        if (!this.deviceLookup.has(ieeeAddr)) {
             const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
             if (device) {
-                this.deviceLookup[ieeeAddr] = new Device(device);
+                this.deviceLookup.set(ieeeAddr, new Device(device));
             }
         }
 
-        const device = this.deviceLookup[ieeeAddr];
+        const device = this.deviceLookup.get(ieeeAddr);
         if (device && !device.zh.isDeleted) {
             device.ensureInSettings();
             return device;
         }
     }
 
-    private resolveGroup(groupID: number): Group {
+    private resolveGroup(groupID: number): Group | undefined {
         const group = this.herdsman.getGroupByID(Number(groupID));
-        if (group && !this.groupLookup[groupID]) {
-            this.groupLookup[groupID] = new Group(group, this.resolveDevice);
+        if (group && !this.groupLookup.has(groupID)) {
+            this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
         }
 
-        return this.groupLookup[groupID];
+        return this.groupLookup.get(groupID);
     }
 
     resolveEntity(key: string | number | zh.Device): Device | Group | undefined {
         if (typeof key === 'object') {
             return this.resolveDevice(key.ieeeAddr);
-        } else if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
+        }
+
+        if (typeof key === 'string' && key.toLowerCase() === 'coordinator') {
             return this.resolveDevice(this.herdsman.getDevicesByType('Coordinator')[0].ieeeAddr);
-        } else {
-            const settingsDevice = settings.getDevice(key.toString());
+        }
 
-            if (settingsDevice) {
-                return this.resolveDevice(settingsDevice.ID);
-            }
+        const settingsDevice = settings.getDevice(key.toString());
 
-            const groupSettings = settings.getGroup(key);
+        if (settingsDevice) {
+            return this.resolveDevice(settingsDevice.ID);
+        }
 
-            if (groupSettings) {
-                const group = this.resolveGroup(groupSettings.ID);
-                // If group does not exist, create it (since it's already in configuration.yaml)
-                return group ? group : this.createGroup(groupSettings.ID);
-            }
+        const groupSettings = settings.getGroup(key);
+
+        if (groupSettings) {
+            const group = this.resolveGroup(groupSettings.ID);
+            // If group does not exist, create it (since it's already in configuration.yaml)
+            return group ? group : this.createGroup(groupSettings.ID);
         }
     }
 
@@ -339,13 +339,13 @@ export default class Zigbee {
         }
 
         for (const group of this.herdsman.getGroupsIterator(groupPredicate)) {
-            yield this.resolveGroup(group.groupID);
+            yield this.resolveGroup(group.groupID)!;
         }
     }
 
     *groupsIterator(predicate?: (value: zh.Group) => boolean): Generator<Group> {
         for (const group of this.herdsman.getGroupsIterator(predicate)) {
-            yield this.resolveGroup(group.groupID);
+            yield this.resolveGroup(group.groupID)!;
         }
     }
 
@@ -363,21 +363,22 @@ export default class Zigbee {
             if (passlist.includes(ieeeAddr)) {
                 logger.info(`Accepting joining device which is on passlist '${ieeeAddr}'`);
                 return true;
-            } else {
-                logger.info(`Rejecting joining not in passlist device '${ieeeAddr}'`);
-                return false;
             }
-        } else if (blocklist.length > 0) {
+
+            logger.info(`Rejecting joining not in passlist device '${ieeeAddr}'`);
+            return false;
+        }
+
+        if (blocklist.length > 0) {
             if (blocklist.includes(ieeeAddr)) {
                 logger.info(`Rejecting joining device which is on blocklist '${ieeeAddr}'`);
                 return false;
-            } else {
-                logger.info(`Accepting joining not in blocklist device '${ieeeAddr}'`);
-                return true;
             }
-        } else {
-            return true;
+
+            logger.info(`Accepting joining not in blocklist device '${ieeeAddr}'`);
         }
+
+        return true;
     }
 
     async touchlinkFactoryResetFirst(): Promise<boolean> {
@@ -402,7 +403,7 @@ export default class Zigbee {
 
     createGroup(ID: number): Group {
         this.herdsman.createGroup(ID);
-        return this.resolveGroup(ID);
+        return this.resolveGroup(ID)!;
     }
 
     deviceByNetworkAddress(networkAddress: number): Device | undefined {
@@ -410,7 +411,7 @@ export default class Zigbee {
         return device && this.resolveDevice(device.ieeeAddr);
     }
 
-    groupByID(ID: number): Group {
+    groupByID(ID: number): Group | undefined {
         return this.resolveGroup(ID);
     }
 }
