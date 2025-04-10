@@ -1,6 +1,8 @@
+import type {ValidateFunction} from 'ajv';
+
 import path from 'node:path';
 
-import Ajv, {ValidateFunction} from 'ajv';
+import Ajv from 'ajv';
 import objectAssignDeep from 'object-assign-deep';
 
 import data from './data';
@@ -140,9 +142,9 @@ function parseValueRef(text: string): {filename: string; key: string} | null {
             filename += '.yaml';
         }
         return {filename, key: match[2]};
-    } else {
-        return null;
     }
+
+    return null;
 }
 
 export function writeMinimalDefaults(): void {
@@ -192,7 +194,7 @@ export function write(): void {
         ['advanced', 'network_key'],
         ['frontend', 'auth_token'],
     ]) {
-        if (actual[ns] && actual[ns][key]) {
+        if (actual[ns]?.[key]) {
             const ref = parseValueRef(actual[ns][key]);
             if (ref) {
                 yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[ns][key]);
@@ -252,30 +254,15 @@ export function validate(): string[] {
 
     const errors = [];
 
-    if (
-        _settings.advanced &&
-        _settings.advanced.network_key &&
-        typeof _settings.advanced.network_key === 'string' &&
-        _settings.advanced.network_key !== 'GENERATE'
-    ) {
+    if (_settings.advanced?.network_key && typeof _settings.advanced.network_key === 'string' && _settings.advanced.network_key !== 'GENERATE') {
         errors.push(`advanced.network_key: should be array or 'GENERATE' (is '${_settings.advanced.network_key}')`);
     }
 
-    if (
-        _settings.advanced &&
-        _settings.advanced.pan_id &&
-        typeof _settings.advanced.pan_id === 'string' &&
-        _settings.advanced.pan_id !== 'GENERATE'
-    ) {
+    if (_settings.advanced?.pan_id && typeof _settings.advanced.pan_id === 'string' && _settings.advanced.pan_id !== 'GENERATE') {
         errors.push(`advanced.pan_id: should be number or 'GENERATE' (is '${_settings.advanced.pan_id}')`);
     }
 
-    if (
-        _settings.advanced &&
-        _settings.advanced.ext_pan_id &&
-        typeof _settings.advanced.ext_pan_id === 'string' &&
-        _settings.advanced.ext_pan_id !== 'GENERATE'
-    ) {
+    if (_settings.advanced?.ext_pan_id && typeof _settings.advanced.ext_pan_id === 'string' && _settings.advanced.ext_pan_id !== 'GENERATE') {
         errors.push(`advanced.ext_pan_id: should be array or 'GENERATE' (is '${_settings.advanced.ext_pan_id}')`);
     }
 
@@ -295,8 +282,13 @@ export function validate(): string[] {
 
     const settingsWithDefaults = get();
 
-    Object.values(settingsWithDefaults.devices).forEach((d) => check(d));
-    Object.values(settingsWithDefaults.groups).forEach((g) => check(g));
+    for (const key in settingsWithDefaults.devices) {
+        check(settingsWithDefaults.devices[key]);
+    }
+
+    for (const key in settingsWithDefaults.groups) {
+        check(settingsWithDefaults.groups[key]);
+    }
 
     if (settingsWithDefaults.mqtt.version !== 5) {
         for (const device of Object.values(settingsWithDefaults.devices)) {
@@ -459,7 +451,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
     write();
 }
 
-export function apply(settings: Record<string, unknown>, throwOnError: boolean = true): boolean {
+export function apply(settings: Record<string, unknown>, throwOnError = true): boolean {
     getPersistedSettings(); // Ensure _settings is initialized.
     // @ts-expect-error noMutate not typed properly
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
@@ -468,7 +460,7 @@ export function apply(settings: Record<string, unknown>, throwOnError: boolean =
     ajvSetting(newSettings);
 
     if (throwOnError) {
-        const errors = ajvSetting.errors && ajvSetting.errors.filter((e) => e.keyword !== 'required');
+        const errors = ajvSetting.errors?.filter((e) => e.keyword !== 'required');
 
         if (errors?.length) {
             const error = errors[0];
@@ -585,7 +577,7 @@ export function addGroup(name: string, ID?: string): GroupOptions {
         settings.groups = {};
     }
 
-    if (ID == undefined) {
+    if (ID == null) {
         // look for free ID
         ID = '1';
 

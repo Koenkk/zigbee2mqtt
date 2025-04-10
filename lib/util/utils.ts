@@ -2,8 +2,8 @@ import type * as zhc from 'zigbee-herdsman-converters';
 
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from '../types/api';
 
-import {exec} from 'child_process';
 import assert from 'node:assert';
+import {exec} from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,39 +13,7 @@ import humanizeDuration from 'humanize-duration';
 
 import data from './data';
 
-const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.+)`);
-
-function pad(num: number): string {
-    const norm = Math.floor(Math.abs(num));
-    return (norm < 10 ? '0' : '') + norm;
-}
-
-// construct a local ISO8601 string (instead of UTC-based)
-// Example:
-//  - ISO8601 (UTC) = 2019-03-01T15:32:45.941+0000
-//  - ISO8601 (local) = 2019-03-01T16:32:45.941+0100 (for timezone GMT+1)
-function toLocalISOString(date: Date): string {
-    const tzOffset = -date.getTimezoneOffset();
-    const plusOrMinus = tzOffset >= 0 ? '+' : '-';
-
-    return (
-        date.getFullYear() +
-        '-' +
-        pad(date.getMonth() + 1) +
-        '-' +
-        pad(date.getDate()) +
-        'T' +
-        pad(date.getHours()) +
-        ':' +
-        pad(date.getMinutes()) +
-        ':' +
-        pad(date.getSeconds()) +
-        plusOrMinus +
-        pad(tzOffset / 60) +
-        ':' +
-        pad(tzOffset % 60)
-    );
-}
+const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
 
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
@@ -84,13 +52,23 @@ async function getDependencyVersion(depend: string): Promise<{version: string}> 
 }
 
 function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' | 'relative'): string | number {
-    if (type === 'ISO_8601') return new Date(time).toISOString();
-    else if (type === 'ISO_8601_local') return toLocalISOString(new Date(time));
-    else if (type === 'epoch') return time;
-    else {
-        // relative
-        return humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true}) + ' ago';
+    if (type === 'ISO_8601') {
+        // ISO8601 (UTC) = 2019-03-01T15:32:45.941Z
+        return new Date(time).toISOString();
     }
+
+    if (type === 'ISO_8601_local') {
+        // ISO8601 (local) = 2019-03-01T16:32:45.941+01:00 (for timezone GMT+1)
+        // using 'sv' since Sweden uses ISO8601 format
+        return new Date(time).toLocaleString('sv', {timeZoneName: 'longOffset'}).replace(' ', 'T').replace(' GMT', '');
+    }
+
+    if (type === 'epoch') {
+        return time;
+    }
+
+    // relative
+    return `${humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true})} ago`;
 }
 
 function objectIsEmpty(object: object): boolean {
@@ -140,18 +118,18 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
         }
 
         return response;
-    } else {
-        const response: Zigbee2MQTTResponse<T> = {
-            data, // valid from error check
-            status: 'ok',
-        };
-
-        if (typeof request === 'object' && request.transaction !== undefined) {
-            response.transaction = request.transaction;
-        }
-
-        return response;
     }
+
+    const response: Zigbee2MQTTResponse<T> = {
+        data, // valid from error check
+        status: 'ok',
+    };
+
+    if (typeof request === 'object' && request.transaction !== undefined) {
+        response.transaction = request.transaction;
+    }
+
+    return response;
 }
 
 function parseJSON(value: string, fallback: string): KeyValue | string {
@@ -225,9 +203,9 @@ function getAllFiles(path_: string): string[] {
 function validateFriendlyName(name: string, throwFirstError = false): string[] {
     const errors = [];
 
-    if (name.length === 0) errors.push(`friendly_name must be at least 1 char long`);
-    if (name.endsWith('/') || name.startsWith('/')) errors.push(`friendly_name is not allowed to end or start with /`);
-    if (containsControlCharacter(name)) errors.push(`friendly_name is not allowed to contain control char`);
+    if (name.length === 0) errors.push('friendly_name must be at least 1 char long');
+    if (name.endsWith('/') || name.startsWith('/')) errors.push('friendly_name is not allowed to end or start with /');
+    if (containsControlCharacter(name)) errors.push('friendly_name is not allowed to contain control char');
     if (name.match(/.*\/\d*$/)) errors.push(`Friendly name cannot end with a "/DIGIT" ('${name}')`);
     if (name.includes('#') || name.includes('+')) {
         errors.push(`MQTT wildcard (+ and #) not allowed in friendly_name ('${name}')`);
@@ -245,10 +223,7 @@ function sleep(seconds: number): Promise<void> {
 }
 
 function sanitizeImageParameter(parameter: string): string {
-    const replaceByDash = [/\?/g, /&/g, /[^a-z\d\- _./:]/gi];
-    let sanitized = parameter;
-    replaceByDash.forEach((r) => (sanitized = sanitized.replace(r, '-')));
-    return sanitized;
+    return parameter.replace(/\?|&|[^a-z\d\- _./:]/gi, '-');
 }
 
 function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settings): boolean {
@@ -356,8 +331,8 @@ function getScenes(entity: zh.Endpoint | zh.Group): Zigbee2MQTTScene[] {
     for (const endpoint of endpoints) {
         for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
             const split = key.split('_');
-            const sceneID = parseInt(split[0], 10);
-            const sceneGroupID = parseInt(split[1], 10);
+            const sceneID = Number.parseInt(split[0], 10);
+            const sceneGroupID = Number.parseInt(split[1], 10);
             if (sceneGroupID === groupID) {
                 scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
             }

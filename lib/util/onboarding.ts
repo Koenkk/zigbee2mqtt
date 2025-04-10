@@ -485,7 +485,7 @@ async function startOnboardingServer(): Promise<boolean> {
             }
         });
 
-        server.listen(parseInt(serverUrl.port), serverUrl.hostname, () => {
+        server.listen(Number.parseInt(serverUrl.port), serverUrl.hostname, () => {
             console.log(`Onboarding page is available at ${serverUrl.href}`);
         });
     });
@@ -512,7 +512,7 @@ async function startFailureServer(errors: string): Promise<void> {
             }
         });
 
-        server.listen(parseInt(serverUrl.port), serverUrl.hostname, () => {
+        server.listen(Number.parseInt(serverUrl.port), serverUrl.hostname, () => {
             console.error(`Failure page is available at ${serverUrl.href}`);
         });
     });
@@ -553,11 +553,11 @@ export async function onboard(): Promise<boolean> {
     const errors = settings.validate();
 
     if (errors.length > 0) {
-        let pErrors: string = '';
+        let pErrors = '';
 
-        console.error(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+        console.error('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
         console.error('            READ THIS CAREFULLY\n');
-        console.error(`Refusing to start because configuration is not valid, found the following errors:`);
+        console.error('Refusing to start because configuration is not valid, found the following errors:');
 
         for (const error of errors) {
             console.error(`- ${error}`);
@@ -565,8 +565,8 @@ export async function onboard(): Promise<boolean> {
             pErrors += `<p>- ${escapeHtml(error)}</p>`;
         }
 
-        console.error(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
-        console.error(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
+        console.error("\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration");
+        console.error('\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n');
 
         if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
             await startFailureServer(pErrors);

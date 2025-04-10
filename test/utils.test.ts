@@ -71,11 +71,14 @@ describe('Utils', () => {
 
     it('To local iso string', async () => {
         const date = new Date('August 19, 1975 23:15:30 UTC+00:00').getTime();
-        const getTzOffsetSpy = vi.spyOn(Date.prototype, 'getTimezoneOffset');
-        getTzOffsetSpy.mockReturnValueOnce(60);
-        expect(utils.formatDate(date, 'ISO_8601_local').toString().endsWith('-01:00')).toBeTruthy();
-        getTzOffsetSpy.mockReturnValueOnce(-60);
-        expect(utils.formatDate(date, 'ISO_8601_local').toString().endsWith('+01:00')).toBeTruthy();
+
+        vi.stubEnv('TZ', 'GMT-1');
+        expect(utils.formatDate(date, 'ISO_8601_local')).toStrictEqual('1975-08-19T22:15:30−01:00');
+
+        vi.stubEnv('TZ', 'GMT+1');
+        expect(utils.formatDate(date, 'ISO_8601_local')).toStrictEqual('1975-08-20T00:15:30+01:00');
+
+        vi.unstubAllEnvs();
     });
 
     it('Removes null properties from object', () => {
