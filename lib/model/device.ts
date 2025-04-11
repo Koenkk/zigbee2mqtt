@@ -1,8 +1,9 @@
+import type {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
 import assert from 'node:assert';
 
 import * as zhc from 'zigbee-herdsman-converters';
 import {access, Numeric} from 'zigbee-herdsman-converters';
-import {CustomClusters} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import * as settings from '../util/settings';
 
@@ -48,7 +49,7 @@ export default class Device {
     exposes(): zhc.Expose[] {
         const exposes: zhc.Expose[] = [];
         assert(this.definition, 'Cannot retreive exposes before definition is resolved');
-        if (typeof this.definition.exposes == 'function') {
+        if (typeof this.definition.exposes === 'function') {
             const options: KeyValue = this.options;
             exposes.push(...this.definition.exposes(this.zh, options));
         } else {
@@ -58,7 +59,7 @@ export default class Device {
         return exposes;
     }
 
-    async resolveDefinition(ignoreCache: boolean = false): Promise<void> {
+    async resolveDefinition(ignoreCache = false): Promise<void> {
         if (!this.zh.interviewing && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
@@ -74,11 +75,11 @@ export default class Device {
     endpoint(key?: string | number): zh.Endpoint | undefined {
         let endpoint: zh.Endpoint | undefined;
 
-        if (key == null || key == '') {
+        if (!key) {
             key = 'default';
         }
 
-        if (!isNaN(Number(key))) {
+        if (!Number.isNaN(Number(key))) {
             endpoint = this.zh.getEndpoint(Number(key));
         } else if (this.definition?.endpoint) {
             const ID = this.definition?.endpoint?.(this.zh)[key];
@@ -107,7 +108,7 @@ export default class Device {
         if (this.definition?.endpoint) {
             const mapping = this.definition?.endpoint(this.zh);
             for (const [name, id] of Object.entries(mapping)) {
-                if (id == endpoint.ID) {
+                if (id === endpoint.ID) {
                     epName = name;
                 }
             }

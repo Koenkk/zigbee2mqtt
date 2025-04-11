@@ -45,7 +45,7 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
 
     sendToSystemd('READY=1');
 
-    const wdUSec = process.env.WATCHDOG_USEC !== undefined ? Math.max(0, parseInt(process.env.WATCHDOG_USEC, 10)) : -1;
+    const wdUSec = process.env.WATCHDOG_USEC !== undefined ? Math.max(0, Number.parseInt(process.env.WATCHDOG_USEC, 10)) : -1;
 
     if (wdUSec > 0) {
         // Convert us to ms, send twice as frequently as the timeout

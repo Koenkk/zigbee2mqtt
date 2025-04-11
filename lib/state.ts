@@ -53,9 +53,12 @@ class State {
 
     stop(): void {
         // Remove any invalid states (ie when the device has left the network) when the system is stopped
-        Object.keys(this.state)
-            .filter((k) => typeof k === 'string' && !this.zigbee.resolveEntity(k)) // string key = ieeeAddr
-            .forEach((k) => delete this.state[k]);
+        for (const key in this.state) {
+            if (typeof key === 'string' && !this.zigbee.resolveEntity(key)) {
+                // string key = ieeeAddr
+                delete this.state[key];
+            }
+        }
 
         clearTimeout(this.timer);
         this.save();
@@ -84,7 +87,7 @@ class State {
                 logger.error(`Failed to write state to '${this.file}' (${error})`);
             }
         } else {
-            logger.debug(`Not saving state`);
+            logger.debug('Not saving state');
         }
     }
 

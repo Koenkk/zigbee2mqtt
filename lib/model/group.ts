@@ -1,4 +1,4 @@
-import * as zhc from 'zigbee-herdsman-converters';
+import type * as zhc from 'zigbee-herdsman-converters';
 
 import * as settings from '../util/settings';
 
