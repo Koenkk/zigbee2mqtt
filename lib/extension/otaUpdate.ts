@@ -40,6 +40,7 @@ export default class OTAUpdate extends Extension {
     private scheduledUpgrades = new Set<string>();
     private scheduledDowngrades = new Set<string>();
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
@@ -133,6 +134,7 @@ export default class OTAUpdate extends Extension {
                     if (fileVersion === undefined) {
                         logger.info(`No image currently available for '${data.device.name}'. Unscheduling.`);
 
+                        // XXX: superfluous?
                         this.removeProgressAndRemainingFromState(data.device);
                         await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, 'idle'));
                         this.inProgress.delete(data.device.ieeeAddr);
@@ -269,7 +271,7 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/schedule/downgrade']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/unschedule'];
-        const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
+        const ID = (typeof message === 'object' && message.id !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1] as 'check' | 'update' | 'schedule' | 'unschedule';
         const downgrade = topicMatch[2] === 'downgrade';
@@ -303,7 +305,7 @@ export default class OTAUpdate extends Extension {
                             update_available: availableResult.available,
                         });
 
-                        await this.mqtt.publish(`bridge/response/device/ota_update/check`, stringify(response));
+                        await this.mqtt.publish('bridge/response/device/ota_update/check', stringify(response));
                     } catch (e) {
                         error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
                         errorStack = (e as Error).stack;
@@ -316,11 +318,9 @@ export default class OTAUpdate extends Extension {
                     this.inProgress.add(device.ieeeAddr);
 
                     if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled in favor of immediate downgrade`);
-                    }
-
-                    if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled in favor of immediate upgrade`);
+                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled by manual update`);
+                    } else if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
+                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled by manual update`);
                     }
 
                     logger.info(`Updating '${device.name}' to ${downgrade ? 'previous' : 'latest'} firmware`);
@@ -367,7 +367,7 @@ export default class OTAUpdate extends Extension {
                             to: firmwareTo ? {software_build_id: firmwareTo.softwareBuildID, date_code: firmwareTo.dateCode} : undefined,
                         });
 
-                        await this.mqtt.publish(`bridge/response/device/ota_update/update`, stringify(response));
+                        await this.mqtt.publish('bridge/response/device/ota_update/update', stringify(response));
                     } catch (e) {
                         logger.debug(`Update of '${device.name}' failed (${e})`);
                         error = `Update of '${device.name}' failed (${(e as Error).message})`;
@@ -404,7 +404,7 @@ export default class OTAUpdate extends Extension {
                         id: ID,
                     });
 
-                    await this.mqtt.publish(`bridge/response/device/ota_update/schedule`, stringify(response));
+                    await this.mqtt.publish('bridge/response/device/ota_update/schedule', stringify(response));
 
                     break;
                 }
@@ -422,7 +422,7 @@ export default class OTAUpdate extends Extension {
                         id: ID,
                     });
 
-                    await this.mqtt.publish(`bridge/response/device/ota_update/unschedule`, stringify(response));
+                    await this.mqtt.publish('bridge/response/device/ota_update/unschedule', stringify(response));
 
                     break;
                 }
