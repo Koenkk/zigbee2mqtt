@@ -14,18 +14,22 @@ import humanizeDuration from 'humanize-duration';
 import data from './data';
 
 const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
-/** Using 'sv' since Sweden uses ISO 8601 format  */
-const ISO_8601_LOCAL = new Intl.DateTimeFormat('sv', {
-    hourCycle: 'h23',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    fractionalSecondDigits: 3,
-    timeZoneName: 'longOffset',
-});
+
+function pad(num: number): string {
+    const norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+}
+
+// construct a local ISO8601 string (instead of UTC-based)
+// Example:
+//  - ISO8601 (UTC) = 2019-03-01T15:32:45.941+0000
+//  - ISO8601 (local) = 2019-03-01T16:32:45.941+0100 (for timezone GMT+1)
+function toLocalISOString(date: Date): string {
+    const tzOffset = -date.getTimezoneOffset();
+    const plusOrMinus = tzOffset >= 0 ? '+' : '-';
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${plusOrMinus}${pad(tzOffset / 60)}:${pad(tzOffset % 60)}`;
+}
 
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
@@ -71,7 +75,7 @@ function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' 
 
         case 'ISO_8601_local':
             // ISO8601 (local) = 2019-03-01T16:32:45.941+01:00 (for timezone GMT+1)
-            return ISO_8601_LOCAL.format(time).replace(' ', 'T').replace(',', '.').replace(' GMT', '');
+            return toLocalISOString(new Date(time));
 
         case 'epoch':
             return time;
