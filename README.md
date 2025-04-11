@@ -109,6 +109,34 @@ Zigbee2MQTT uses TypeScript (partially for now). Therefore after making changes 
 Before running any of the commands, you'll first need to run `pnpm install --include=dev`.
 Before submitting changes run `pnpm run test:coverage`, `pnpm run pretty:check` and `pnpm run eslint`
 
+#### Developing in docker
+
+You can use the development container with the corresponding `compose.dev.yml` to quickly spin up your development environment.
+
+Before starting you need to run `docker compose -f docker/compose.dev.yml run zigbee2mqtt pnpm install --include=dev` to get the node_modules.
+
+Also make sure to create your `configuration.yaml` under `data/configuration.yaml`
+
+Then run `docker compose -f docker/compose.dev.yml up -d` from the repository-root to start zigbee2mqtt, it will then be accessible from `http://localhost:8080`.
+
+Any commands can be prefixed with `docker compose -f docker/compose.dev.yml run zigbee2mqtt` to automatically run inside the container. For example to run the prettier linter:
+
+```shell
+docker compose -f docker/compose.dev.yml run zigbee2mqtt pnpm pretty:write
+```
+
+##### To add adapter
+
+Open and edit the `compose.dev.yml` and input your device to map.
+
+```yaml
+services:
+    zigbee2mqtt:
+        # Other fields not shown
+        devices:
+            - /dev/serial/by-id/usb-ZEPHYR_Zigbee_NCP_DEADBEEF0000-if0:/dev/ttyACM0 # Note that you need to add /dev/ttyACM0 to config
+```
+
 ## Supported devices
 
 See [Supported devices](https://www.zigbee2mqtt.io/supported-devices) to check whether your device is supported. There is quite an extensive list, including devices from vendors like [Xiaomi](https://www.zigbee2mqtt.io/supported-devices/#v=Xiaomi), [Ikea](https://www.zigbee2mqtt.io/supported-devices/#v=IKEA), [Philips](https://www.zigbee2mqtt.io/supported-devices/#v=Philips), [OSRAM](https://www.zigbee2mqtt.io/supported-devices/#v=OSRAM) and more.
