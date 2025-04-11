@@ -7,9 +7,8 @@ import type TypeDevice from '../model/device';
 import type TypeGroup from '../model/group';
 import type TypeMQTT from '../mqtt';
 import type TypeState from '../state';
+import type {LogLevel} from '../util/settings';
 import type TypeZigbee from '../zigbee';
-
-import {LogLevel} from '../util/settings';
 
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -49,7 +48,7 @@ declare global {
 
     namespace eventdata {
         type EntityRenamed = {entity: Device | Group; homeAssisantRename: boolean; from: string; to: string};
-        type EntityRemoved = {id: number | string; name: string; type: 'device' | 'group'};
+        type EntityRemoved = {id: string; name: string; type: 'device'} | {id: number; name: string; type: 'group'};
         type MQTTMessage = {topic: string; message: string};
         type MQTTMessagePublished = {topic: string; payload: string; options: {retain: boolean; qos: number}};
         type StateChange = {
@@ -99,7 +98,12 @@ declare global {
         };
         availability: {
             enabled: boolean;
-            active: {timeout: number};
+            active: {
+                timeout: number;
+                max_jitter: number;
+                backoff: boolean;
+                pause_on_backoff_gt: number;
+            };
             passive: {timeout: number};
         };
         mqtt: {
@@ -201,7 +205,14 @@ declare global {
     interface DeviceOptions {
         disabled?: boolean;
         retention?: number;
-        availability?: boolean | {timeout: number};
+        availability?:
+            | boolean
+            | {
+                  timeout: number;
+                  max_jitter?: number;
+                  backoff?: boolean;
+                  pause_on_backoff_gt?: number;
+              };
         optimistic?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
