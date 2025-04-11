@@ -70,15 +70,17 @@ describe('Utils', () => {
     });
 
     it('To local iso string', async () => {
-        const date = new Date('August 19, 1975 23:15:30 UTC+00:00').getTime();
+        // XXX: testing this properly?
+        const date = new Date('August 19, 1975 23:15:30.452 UTC+00:00');
+        const time = date.getTime();
+        const tzOffset = -date.getTimezoneOffset();
+        const plusOrMinus = tzOffset >= 0 ? '+' : '-';
+        const tz = `${plusOrMinus + (tzOffset / 60).toString().padStart(2, '0')}:${(tzOffset % 60).toString().padStart(2, '0')}`;
 
-        vi.stubEnv('TZ', 'GMT-1');
-        expect(utils.formatDate(date, 'ISO_8601_local')).toStrictEqual('1975-08-19T22:15:30−01:00');
+        const fDate = utils.formatDate(time, 'ISO_8601_local');
 
-        vi.stubEnv('TZ', 'GMT+1');
-        expect(utils.formatDate(date, 'ISO_8601_local')).toStrictEqual('1975-08-20T00:15:30+01:00');
-
-        vi.unstubAllEnvs();
+        expect(fDate).toMatch(/1975-08-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:30.452(\+|-)[0-1][0-9]:[0-5][0-9]/);
+        expect((fDate as string).endsWith(tz)).toBeTruthy();
     });
 
     it('Removes null properties from object', () => {

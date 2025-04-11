@@ -14,6 +14,18 @@ import humanizeDuration from 'humanize-duration';
 import data from './data';
 
 const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
+/** Using 'sv' since Sweden uses ISO 8601 format  */
+const ISO_8601_LOCAL = new Intl.DateTimeFormat('sv', {
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3,
+    timeZoneName: 'longOffset',
+});
 
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
@@ -52,23 +64,22 @@ async function getDependencyVersion(depend: string): Promise<{version: string}> 
 }
 
 function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' | 'relative'): string | number {
-    if (type === 'ISO_8601') {
-        // ISO8601 (UTC) = 2019-03-01T15:32:45.941Z
-        return new Date(time).toISOString();
-    }
+    switch (type) {
+        case 'ISO_8601':
+            // ISO8601 (UTC) = 2019-03-01T15:32:45.941Z
+            return new Date(time).toISOString();
 
-    if (type === 'ISO_8601_local') {
-        // ISO8601 (local) = 2019-03-01T16:32:45.941+01:00 (for timezone GMT+1)
-        // using 'sv' since Sweden uses ISO8601 format
-        return new Date(time).toLocaleString('sv', {timeZoneName: 'longOffset'}).replace(' ', 'T').replace(' GMT', '');
-    }
+        case 'ISO_8601_local':
+            // ISO8601 (local) = 2019-03-01T16:32:45.941+01:00 (for timezone GMT+1)
+            return ISO_8601_LOCAL.format(time).replace(' ', 'T').replace(',', '.').replace(' GMT', '');
 
-    if (type === 'epoch') {
-        return time;
-    }
+        case 'epoch':
+            return time;
 
-    // relative
-    return `${humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true})} ago`;
+        default:
+            // relative
+            return `${humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true})} ago`;
+    }
 }
 
 function objectIsEmpty(object: object): boolean {
