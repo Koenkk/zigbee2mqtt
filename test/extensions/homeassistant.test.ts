@@ -5,6 +5,12 @@ import * as mockSleep from '../mocks/sleep';
 import {flushPromises, getZhcBaseDefinitions} from '../mocks/utils';
 import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
+import type {MockInstance} from 'vitest';
+
+import type Device from '../../lib/model/device';
+import type Group from '../../lib/model/group';
+import type {Device as ZhDevice} from '../mocks/zigbeeHerdsman';
+
 import assert from 'node:assert';
 
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -45,6 +51,11 @@ describe('Extension: HomeAssistant', () => {
     const clearDiscoveredTrigger = (id: string): void => {
         // @ts-expect-error private
         extension.discovered[id].triggers = new Set();
+    };
+
+    const getZ2MEntity = (zhDeviceOrGroup: string | number | ZhDevice): Device | Group => {
+        // @ts-expect-error private
+        return controller.zigbee.resolveEntity(zhDeviceOrGroup)!;
     };
 
     beforeAll(async () => {
@@ -1032,6 +1043,61 @@ describe('Extension: HomeAssistant', () => {
         });
     });
 
+    it('does not throw when discovery payload override throws', async () => {
+        const bosch = getZ2MEntity(devices['RBSH-TRV0-ZB-EU']) as Device;
+        assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === 'function');
+        const overrideSpy = vi.spyOn(bosch.definition.meta, 'overrideHaDiscoveryPayload') as MockInstance;
+
+        overrideSpy.mockImplementation((payload) => {
+            if (payload.mode_command_topic?.endsWith('/system_mode')) {
+                throw new Error('Failed');
+            }
+        });
+
+        await resetExtension();
+
+        const payload = {
+            action_template:
+                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
+            action_topic: 'zigbee2mqtt/bosch_radiator',
+            availability: [{topic: 'zigbee2mqtt/bridge/state', value_template: '{{ value_json.state }}'}],
+            current_temperature_template: '{{ value_json.local_temperature }}',
+            current_temperature_topic: 'zigbee2mqtt/bosch_radiator',
+            device: {
+                identifiers: ['zigbee2mqtt_0x18fc2600000d7ae2'],
+                manufacturer: 'Bosch',
+                model: 'Radiator thermostat II',
+                model_id: 'BTH-RA',
+                name: 'bosch_radiator',
+                sw_version: '3.05.09',
+                via_device: 'zigbee2mqtt_bridge_0x00124b00120144ae',
+            },
+            max_temp: '30',
+            min_temp: '5',
+            mode_command_topic: 'zigbee2mqtt/bosch_radiator/set/system_mode',
+            mode_state_template: '{{ value_json.system_mode }}',
+            mode_state_topic: 'zigbee2mqtt/bosch_radiator',
+            modes: ['heat'],
+            name: null,
+            object_id: 'bosch_radiator',
+            origin: origin,
+            temp_step: 0.5,
+            temperature_command_topic: 'zigbee2mqtt/bosch_radiator/set/occupied_heating_setpoint',
+            temperature_state_template: '{{ value_json.occupied_heating_setpoint }}',
+            temperature_state_topic: 'zigbee2mqtt/bosch_radiator',
+            temperature_unit: 'C',
+            unique_id: '0x18fc2600000d7ae2_climate_zigbee2mqtt',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('homeassistant/climate/0x18fc2600000d7ae2/climate/config', stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Failed to override HA discovery payload'));
+
+        overrideSpy.mockRestore();
+    });
+
     it('Should discover devices with cover_position', async () => {
         let payload;
 
@@ -1393,8 +1459,7 @@ describe('Extension: HomeAssistant', () => {
     });
 
     it('Should discover when options change', async () => {
-        // @ts-expect-error private
-        const device = controller.zigbee.resolveEntity(devices.bulb)!;
+        const device = getZ2MEntity(devices.bulb)! as Device;
         assert('ieeeAddr' in device);
         resetDiscoveryPayloads(device.ieeeAddr);
         mockMQTTPublishAsync.mockClear();
@@ -2314,8 +2379,7 @@ describe('Extension: HomeAssistant', () => {
 
     it('Should rediscover scenes when a scene is changed', async () => {
         // Device/endpoint scenes.
-        // @ts-expect-error private
-        const device = controller.zigbee.resolveEntity(devices.bulb_color_2)!;
+        const device = getZ2MEntity(devices.bulb_color_2)! as Device;
         assert('ieeeAddr' in device);
         resetDiscoveryPayloads(device.ieeeAddr);
 
@@ -2353,8 +2417,7 @@ describe('Extension: HomeAssistant', () => {
         });
 
         // Group scenes.
-        // @ts-expect-error private
-        const group = controller.zigbee.resolveEntity('ha_discovery_group');
+        const group = getZ2MEntity('ha_discovery_group') as Group;
         resetDiscoveryPayloads('9');
 
         mockMQTTPublishAsync.mockClear();

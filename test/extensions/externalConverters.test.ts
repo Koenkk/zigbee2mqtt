@@ -5,6 +5,7 @@ import {flushPromises} from '../mocks/utils';
 import {devices, mockController as mockZHController, returnDevices} from '../mocks/zigbeeHerdsman';
 
 import type Device from '../../lib/model/device';
+import type {Device as ZhDevice} from '../mocks/zigbeeHerdsman';
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -50,7 +51,7 @@ describe('Extension: ExternalConverters', () => {
         return fs.readFileSync(path.join(__dirname, '..', 'assets', BASE_DIR, mtype, fileName), 'utf8');
     };
 
-    const getZ2MDevice = (zhDevice: unknown): Device => {
+    const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
         // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };

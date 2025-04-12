@@ -283,8 +283,15 @@ export class Controller {
     async stop(restart = false): Promise<void> {
         this.sdNotify?.notifyStopping();
 
+        let code = 0;
+
         for (const extension of this.extensions) {
-            await this.stopExtension(extension);
+            try {
+                await extension.stop();
+            } catch (error) {
+                logger.error(`Failed to stop '${extension.constructor.name}' (${(error as Error).stack})`);
+                code = 1;
+            }
         }
 
         this.eventBus.removeListeners(this);
@@ -292,13 +299,12 @@ export class Controller {
         // Wrap-up
         this.state.stop();
         await this.mqtt.disconnect();
-        let code = 0;
 
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
         } catch (error) {
-            logger.error(`Failed to stop Zigbee2MQTT (${(error as Error).message})`);
+            logger.error(`Failed to stop Zigbee2MQTT (${(error as Error).stack})`);
             code = 1;
         }
 
