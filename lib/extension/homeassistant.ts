@@ -293,9 +293,9 @@ const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
 const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     if (feature.endpoint) {
         return feature.property.slice(0, -1 + -1 * feature.endpoint.length);
-    } else {
-        return feature.property;
     }
+
+    return feature.property;
 };
 
 /**
@@ -337,7 +337,7 @@ class Bridge {
         this.options = {
             ID: `bridge_${ieeeAdress}`,
             homeassistant: {
-                name: `Zigbee2MQTT Bridge`,
+                name: 'Zigbee2MQTT Bridge',
             },
         };
     }
@@ -357,7 +357,7 @@ export class HomeAssistant extends Extension {
     private discovered: {[s: string]: Discovered} = {};
     private discoveryTopic: string;
     private discoveryRegex: RegExp;
-    private discoveryRegexWoTopic = new RegExp(`(.*)/(.*)/(.*)/config`);
+    private discoveryRegexWoTopic = /(.*)\/(.*)\/(.*)\/config/;
     private statusTopic: string;
     private legacyActionSensor: boolean;
     private experimentalEventEntities: boolean;
@@ -442,7 +442,7 @@ export class HomeAssistant extends Extension {
         await this.mqtt.subscribe(`${this.discoveryTopic}/#`);
         setTimeout(async () => {
             await this.mqtt.unsubscribe(`${this.discoveryTopic}/#`);
-            logger.debug(`Discovering entities to Home Assistant`);
+            logger.debug('Discovering entities to Home Assistant');
 
             await this.discover(this.bridge);
 
@@ -630,10 +630,7 @@ export class HomeAssistant extends Extension {
                 if (state) {
                     discoveryEntry.mockProperties.push({property: state.property, value: null});
                     discoveryEntry.discovery_payload.action_topic = true;
-                    discoveryEntry.discovery_payload.action_template =
-                        `{% set values = ` +
-                        `{None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'}` +
-                        ` %}{{ values[value_json.${state.property}] }}`;
+                    discoveryEntry.discovery_payload.action_template = `{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.${state.property}] }}`;
                 }
 
                 const coolingSetpoint = (firstExpose as zhc.Climate).features.find((f) => f.name === 'occupied_cooling_setpoint');
@@ -780,10 +777,7 @@ export class HomeAssistant extends Extension {
                 // The movement direction is calculated (assumed) in this case.
                 if (running) {
                     assert(position, `Cover must have 'position' when it has 'running'`);
-                    discoveryEntry.discovery_payload.value_template =
-                        `{% if "${featurePropertyWithoutEndpoint(running)}" in value_json ` +
-                        `and value_json.${featurePropertyWithoutEndpoint(running)} %} {% if value_json.${featurePropertyWithoutEndpoint(position)} > 0 %} closing ` +
-                        `{% else %} opening {% endif %} {% else %} stopped {% endif %}`;
+                    discoveryEntry.discovery_payload.value_template = `{% if "${featurePropertyWithoutEndpoint(running)}" in value_json and value_json.${featurePropertyWithoutEndpoint(running)} %} {% if value_json.${featurePropertyWithoutEndpoint(position)} > 0 %} closing {% else %} opening {% endif %} {% else %} stopped {% endif %}`;
                 }
 
                 // If curtains have `motor_state` or `moving` property, lookup for possible
@@ -797,10 +791,7 @@ export class HomeAssistant extends Extension {
                         discoveryEntry.discovery_payload.state_opening = openingState;
                         discoveryEntry.discovery_payload.state_closing = closingState;
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                        discoveryEntry.discovery_payload.value_template =
-                            `{% if "${featurePropertyWithoutEndpoint(motorState)}" in value_json ` +
-                            `and value_json.${featurePropertyWithoutEndpoint(motorState)} %} {{ value_json.${featurePropertyWithoutEndpoint(motorState)} }} {% else %} ` +
-                            `${stoppedState} {% endif %}`;
+                        discoveryEntry.discovery_payload.value_template = `{% if "${featurePropertyWithoutEndpoint(motorState)}" in value_json and value_json.${featurePropertyWithoutEndpoint(motorState)} %} {{ value_json.${featurePropertyWithoutEndpoint(motorState)} }} {% else %} ${stoppedState} {% endif %}`;
                     }
                 }
 
@@ -841,7 +832,7 @@ export class HomeAssistant extends Extension {
                 break;
             }
             case 'fan': {
-                assert(!endpoint, `Endpoint not supported for fan type`);
+                assert(!endpoint, 'Endpoint not supported for fan type');
                 const discoveryEntry: DiscoveryEntry = {
                     type: 'fan',
                     object_id: 'fan',
@@ -857,7 +848,7 @@ export class HomeAssistant extends Extension {
                 const nativeSpeed = (firstExpose as zhc.Fan).features.filter(isNumericExpose).find((e) => e.name === 'speed');
 
                 // Exactly one mode needs to be active (logical xor)
-                assert(!modeEmulatedSpeed != !nativeSpeed, 'Fans need to be either mode- or speed-controlled');
+                assert(!modeEmulatedSpeed !== !nativeSpeed, 'Fans need to be either mode- or speed-controlled');
 
                 if (modeEmulatedSpeed) {
                     // A fan entity in Home Assistant 2021.3 and above may have a speed,
@@ -887,7 +878,11 @@ export class HomeAssistant extends Extension {
                     }
 
                     const allowed = [...speeds, ...presets];
-                    modeEmulatedSpeed.values.forEach((s) => assert(allowed.includes(s.toString())));
+
+                    for (const val of modeEmulatedSpeed.values) {
+                        assert(allowed.includes(val.toString()));
+                    }
+
                     const percentValues = speeds.map((s, i) => `'${s}':${i}`).join(', ');
                     const percentCommands = speeds.map((s, i) => `${i}:'${s}'`).join(', ');
                     const presetList = presets.map((s) => `'${s}'`).join(', ');
@@ -1069,7 +1064,7 @@ export class HomeAssistant extends Extension {
                         this.experimentalEventEntities &&
                         firstExpose.access & ACCESS_STATE &&
                         !(firstExpose.access & ACCESS_SET) &&
-                        firstExpose.property == 'action'
+                        firstExpose.property === 'action'
                     ) {
                         discoveryEntries.push({
                             type: 'event',
@@ -1196,30 +1191,30 @@ export class HomeAssistant extends Extension {
 
         // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
         // This takes precedence over definitions in this file.
-        if (firstExpose.category === 'config') {
-            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'config'));
-        } else if (firstExpose.category === 'diagnostic') {
-            discoveryEntries.forEach((d) => (d.discovery_payload.entity_category = 'diagnostic'));
+        if (firstExpose.category === 'config' || firstExpose.category === 'diagnostic') {
+            for (const entry of discoveryEntries) {
+                entry.discovery_payload.entity_category = firstExpose.category;
+            }
         }
 
-        discoveryEntries.forEach((d) => {
+        for (const entry of discoveryEntries) {
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
             // https://github.com/Koenkk/zigbee2mqtt/pull/19474
-            if (['binary_sensor', 'sensor'].includes(d.type) && d.discovery_payload.entity_category === 'config') {
-                d.discovery_payload.entity_category = 'diagnostic';
+            if (['binary_sensor', 'sensor'].includes(entry.type) && entry.discovery_payload.entity_category === 'config') {
+                entry.discovery_payload.entity_category = 'diagnostic';
             }
 
             // Event entities cannot have an entity_category set.
-            if (d.type === 'event' && d.discovery_payload.entity_category) {
-                delete d.discovery_payload.entity_category;
+            if (entry.type === 'event' && entry.discovery_payload.entity_category) {
+                delete entry.discovery_payload.entity_category;
             }
 
             // Let Home Assistant generate entity name when device_class is present
-            if (d.discovery_payload.device_class) {
-                delete d.discovery_payload.name;
+            if (entry.discovery_payload.device_class) {
+                delete entry.discovery_payload.name;
             }
-        });
+        }
 
         return discoveryEntries;
     }
@@ -1298,7 +1293,7 @@ export class HomeAssistant extends Extension {
          * and republish it to zigbee2mqtt/my_device/action
          */
         if (settings.get().advanced.output === 'json' && entity.isDevice() && entity.definition && data.message.action) {
-            const value = data.message['action'].toString();
+            const value = data.message.action.toString();
             await this.publishDeviceTriggerDiscover(entity, 'action', value);
             await this.mqtt.publish(`${data.entity.name}/action`, value, {});
         }
@@ -1420,9 +1415,8 @@ export class HomeAssistant extends Extension {
         }
 
         // Discover scenes.
-        const endpointsOrGroups = isDevice ? entity.zh.endpoints : isGroup ? [entity.zh] : [];
-        endpointsOrGroups.forEach((endpointOrGroup) => {
-            utils.getScenes(endpointOrGroup).forEach((scene) => {
+        for (const endpointOrGroup of isDevice ? entity.zh.endpoints : isGroup ? [entity.zh] : []) {
+            for (const scene of utils.getScenes(endpointOrGroup)) {
                 const sceneEntry: DiscoveryEntry = {
                     type: 'scene',
                     object_id: `scene_${scene.id}`,
@@ -1437,8 +1431,8 @@ export class HomeAssistant extends Extension {
                 };
 
                 configs.push(sceneEntry);
-            });
-        });
+            }
+        }
 
         // deep clone of the config objects
         configs = JSON.parse(JSON.stringify(configs));
@@ -1446,26 +1440,29 @@ export class HomeAssistant extends Extension {
         if (entity.options.homeassistant) {
             const s = entity.options.homeassistant;
             configs = configs.filter((config) => s[config.object_id] === undefined || s[config.object_id] != null);
-            configs.forEach((config) => {
+
+            for (const config of configs) {
                 const configOverride = s[config.object_id];
                 if (configOverride) {
                     config.object_id = configOverride.object_id || config.object_id;
                     config.type = configOverride.type || config.type;
                 }
-            });
+            }
         }
 
         return configs;
     }
 
-    private async discover(entity: Device | Group | Bridge, publish: boolean = true): Promise<void> {
+    private async discover(entity: Device | Group | Bridge, publish = true): Promise<void> {
         // Handle type differences.
         const isDevice = entity.isDevice();
         const isGroup = entity.isGroup();
 
         if (isGroup && entity.zh.members.length === 0) {
             return;
-        } else if (
+        }
+
+        if (
             isDevice &&
             (!entity.definition || entity.zh.interviewing || (entity.options.homeassistant !== undefined && !entity.options.homeassistant))
         ) {
@@ -1540,9 +1537,13 @@ export class HomeAssistant extends Extension {
 
                 if (isDevice && entity.options.disabled) {
                     // Mark disabled device always as unavailable
-                    payload.availability.forEach((a: KeyValue) => (a.value_template = '{{ "offline" }}'));
+                    for (const entry of payload.availability) {
+                        entry.value_template = '{{ "offline" }}';
+                    }
                 } else {
-                    payload.availability.forEach((a: KeyValue) => (a.value_template = '{{ value_json.state }}'));
+                    for (const entry of payload.availability) {
+                        entry.value_template = '{{ value_json.state }}';
+                    }
                 }
             } else {
                 delete payload.availability;
@@ -1631,7 +1632,7 @@ export class HomeAssistant extends Extension {
             }
 
             if (payload.preset_mode_command_topic) {
-                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/` + payload.preset_mode_command_topic;
+                payload.preset_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/${payload.preset_mode_command_topic}`;
             }
 
             if (payload.action_topic) {
@@ -1639,28 +1640,32 @@ export class HomeAssistant extends Extension {
             }
 
             // Override configuration with user settings.
-            if (entity.options.homeassistant != undefined) {
+            if (entity.options.homeassistant != null) {
                 const add = (obj: KeyValue, ignoreName: boolean): void => {
-                    Object.keys(obj).forEach((key) => {
-                        if (['type', 'object_id'].includes(key)) {
-                            return;
-                        } else if (ignoreName && key === 'name') {
-                            return;
-                        } else if (['number', 'string', 'boolean'].includes(typeof obj[key]) || Array.isArray(obj[key])) {
+                    for (const key in obj) {
+                        if (key === 'type' || key === 'object_id') {
+                            continue;
+                        }
+
+                        if (ignoreName && key === 'name') {
+                            continue;
+                        }
+
+                        if (['number', 'string', 'boolean'].includes(typeof obj[key]) || Array.isArray(obj[key])) {
                             payload[key] = obj[key];
                         } else if (obj[key] === null) {
                             delete payload[key];
                         } else if (key === 'device' && typeof obj[key] === 'object') {
-                            Object.keys(obj['device']).forEach((key) => {
-                                payload['device'][key] = obj['device'][key];
-                            });
+                            for (const devKey in obj.device) {
+                                payload.device[devKey] = obj.device[devKey];
+                            }
                         }
-                    });
+                    }
                 };
 
                 add(entity.options.homeassistant, true);
 
-                if (entity.options.homeassistant[config.object_id] != undefined) {
+                if (entity.options.homeassistant[config.object_id] != null) {
                     add(entity.options.homeassistant[config.object_id], false);
                 }
             }
@@ -1683,7 +1688,12 @@ export class HomeAssistant extends Extension {
             } else {
                 logger.debug(`Skipping discovery of '${topic}', already discovered`);
             }
-            config.mockProperties?.forEach((mockProperty) => discovered.mockProperties.add(mockProperty));
+
+            if (config.mockProperties) {
+                for (const mockProperty of config.mockProperties) {
+                    discovered.mockProperties.add(mockProperty);
+                }
+            }
         }
 
         for (const topic of lastDiscoveredTopics) {
@@ -1703,7 +1713,7 @@ export class HomeAssistant extends Extension {
 
             try {
                 message = JSON.parse(data.message);
-                const baseTopic = settings.get().mqtt.base_topic + '/';
+                const baseTopic = `${settings.get().mqtt.base_topic}/`;
                 if (isDeviceAutomation && (!message.topic || !message.topic.startsWith(baseTopic))) {
                     return;
                 }
@@ -1779,11 +1789,11 @@ export class HomeAssistant extends Extension {
 
         // Make sure Home Assistant deletes the old entity first otherwise another one (_2) is created
         // https://github.com/Koenkk/zigbee2mqtt/issues/12610
-        logger.debug(`Finished clearing scene discovery topics, waiting for Home Assistant.`);
+        logger.debug('Finished clearing scene discovery topics, waiting for Home Assistant.');
         await utils.sleep(2);
 
         // Re-discover entity (including any new scenes).
-        logger.debug(`Re-discovering entities with their scenes.`);
+        logger.debug('Re-discovering entities with their scenes.');
         await this.discover(data.entity);
     }
 
@@ -1836,11 +1846,11 @@ export class HomeAssistant extends Extension {
     }
 
     override adjustMessageBeforePublish(entity: Device | Group | Bridge, message: KeyValue): void {
-        this.getDiscovered(entity).mockProperties.forEach((mockProperty) => {
+        for (const mockProperty of this.getDiscovered(entity).mockProperties) {
             if (message[mockProperty.property] === undefined) {
                 message[mockProperty.property] = mockProperty.value;
             }
-        });
+        }
 
         // Copy hue -> h, saturation -> s to make homeassistant happy
         if (message.color !== undefined) {
@@ -2059,13 +2069,13 @@ export class HomeAssistant extends Extension {
         // Handle wildcard actions.
         let m = action.match(/^(?<action>recall|scene)_\*(?:_(?<endpoint>e1|e2|s1|s2))?$/);
         if (m?.groups?.action) {
-            logger.debug('Found scene wildcard action ' + m.groups.action);
+            logger.debug(`Found scene wildcard action ${m.groups.action}`);
             return this.buildAction(m.groups, {scene: 'wildcard'});
         }
 
         m = action.match(/^(?<actionPrefix>region_)\*_(?<action>enter|leave|occupied|unoccupied)$/);
         if (m?.groups?.action) {
-            logger.debug('Found region wildcard action ' + m.groups.action);
+            logger.debug(`Found region wildcard action ${m.groups.action}`);
             return this.buildAction(m.groups, {region: 'wildcard'});
         }
 
@@ -2100,22 +2110,21 @@ export class HomeAssistant extends Extension {
                 .join(', ')}]}`;
         }).join(',\n');
 
-        const value_template =
-            `{% set patterns = [\n${patterns}\n] %}\n` +
-            `{% set action_value = value_json.action|default('') %}\n` +
-            `{% set ns = namespace(r=[('action', action_value)]) %}\n` +
-            `{% for p in patterns %}\n` +
-            `  {% set m = action_value|regex_findall(p.pattern) %}\n` +
-            `  {% if m[0] is undefined %}{% continue %}{% endif %}\n` +
-            `  {% for key, value in zip(p.groups, m[0]) %}\n` +
-            `    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n` +
-            `  {% endfor %}\n` +
-            `{% endfor %}\n` +
-            `{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n` +
-            `  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{% endif %}\n` +
-            `{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n` +
-            `{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
+        const value_template = `{% set patterns = [\n${patterns}\n] %}
+{% set action_value = value_json.action|default('') %}
+{% set ns = namespace(r=[('action', action_value)]) %}
+{% for p in patterns %}
+  {% set m = action_value|regex_findall(p.pattern) %}
+  {% if m[0] is undefined %}{% continue %}{% endif %}
+  {% for key, value in zip(p.groups, m[0]) %}
+    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}
+  {% endfor %}
+{% endfor %}
+{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}
+  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}
+{% endif %}
+{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}
+{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}`;
 
         return value_template;
     }

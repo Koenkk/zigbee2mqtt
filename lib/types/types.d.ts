@@ -7,9 +7,8 @@ import type TypeDevice from '../model/device';
 import type TypeGroup from '../model/group';
 import type TypeMQTT from '../mqtt';
 import type TypeState from '../state';
+import type {LogLevel} from '../util/settings';
 import type TypeZigbee from '../zigbee';
-
-import {LogLevel} from '../util/settings';
 
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

@@ -176,7 +176,7 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/check/downgrade']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/update']
             | Zigbee2MQTTAPI['bridge/request/device/ota_update/update/downgrade'];
-        const ID = (typeof message === 'object' && message['id'] !== undefined ? message.id : message) as string;
+        const ID = (typeof message === 'object' && message.id !== undefined ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1];
         const downgrade = Boolean(topicMatch[2]);
@@ -209,7 +209,7 @@ export default class OTAUpdate extends Extension {
                         update_available: availableResult.available,
                     });
 
-                    await this.mqtt.publish(`bridge/response/device/ota_update/check`, stringify(response));
+                    await this.mqtt.publish('bridge/response/device/ota_update/check', stringify(response));
                 } catch (e) {
                     error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
                     errorStack = (e as Error).stack;
@@ -257,7 +257,7 @@ export default class OTAUpdate extends Extension {
                         to: firmwareTo ? {software_build_id: firmwareTo.softwareBuildID, date_code: firmwareTo.dateCode} : undefined,
                     });
 
-                    await this.mqtt.publish(`bridge/response/device/ota_update/update`, stringify(response));
+                    await this.mqtt.publish('bridge/response/device/ota_update/update', stringify(response));
                 } catch (e) {
                     logger.debug(`Update of '${device.name}' failed (${e})`);
                     error = `Update of '${device.name}' failed (${(e as Error).message})`;

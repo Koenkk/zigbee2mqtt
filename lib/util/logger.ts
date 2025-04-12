@@ -76,7 +76,7 @@ class Logger {
 
             if (settings.get().advanced.log_symlink_current) {
                 const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
-                const actual = './' + timestamp;
+                const actual = `./${timestamp}`;
 
                 /* v8 ignore start */
                 if (fs.existsSync(current)) {
@@ -109,7 +109,7 @@ class Logger {
 
         /* v8 ignore start */
         if (this.output.includes('syslog')) {
-            logging += `, syslog`;
+            logging += ', syslog';
             // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require('winston-syslog').Syslog;
 
@@ -119,7 +119,7 @@ class Logger {
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options['type'] !== undefined) {
+            if (options.type !== undefined) {
                 options.type = options.type.toString();
             }
 
@@ -150,7 +150,7 @@ class Logger {
     }
 
     public setDebugNamespaceIgnore(value: string): void {
-        this.debugNamespaceIgnoreRegex = value != '' ? new RegExp(value) : undefined;
+        this.debugNamespaceIgnoreRegex = value !== '' ? new RegExp(value) : undefined;
     }
 
     public getLevel(): settings.LogLevel {
@@ -178,11 +178,13 @@ class Logger {
     private cacheNamespacedLevel(namespace: string): string {
         let cached = namespace;
 
-        while (this.cachedNamespacedLevels[namespace] == undefined) {
+        while (this.cachedNamespacedLevels[namespace] === undefined) {
             const sep = cached.lastIndexOf(NAMESPACE_SEPARATOR);
 
             if (sep === -1) {
-                return (this.cachedNamespacedLevels[namespace] = this.level);
+                this.cachedNamespacedLevels[namespace] = this.level;
+
+                return this.level;
             }
 
             cached = cached.slice(0, sep);
@@ -201,19 +203,19 @@ class Logger {
         }
     }
 
-    public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public error(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('error', messageOrLambda, namespace);
     }
 
-    public warning(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public warning(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('warning', messageOrLambda, namespace);
     }
 
-    public info(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public info(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('info', messageOrLambda, namespace);
     }
 
-    public debug(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public debug(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
@@ -233,10 +235,11 @@ class Logger {
 
             directories.sort((a: KeyValue, b: KeyValue) => b.birth - a.birth);
             directories = directories.slice(settings.get().advanced.log_directories_to_keep, directories.length);
-            directories.forEach((dir) => {
+
+            for (const dir of directories) {
                 this.debug(`Removing old log directory '${dir.path}'`);
                 rimrafSync(dir.path);
-            });
+            }
         }
     }
 
