@@ -87,7 +87,7 @@
                             "title": "Pause on backoff greater than",
                             "default": 0,
                             "minimum": 0,
-                            "description": "Pause availability pings when backoff reaches over this limit (until device updates its 'last seen'). A value of zero disables pausing."
+                            "description": "Pause availability pings when backoff reaches over this limit until a new Zigbee message is received from the device. A value of zero disables pausing."
                         }
                     },
                     "required": ["timeout"]
