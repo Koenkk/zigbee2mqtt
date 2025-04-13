@@ -8,6 +8,7 @@ import type {MockInstance} from 'vitest';
 import type {OnEvent as DefinitionOnEvent} from 'zigbee-herdsman-converters/lib/types';
 
 import type Device from '../../lib/model/device';
+import type {Device as ZhDevice} from '../mocks/zigbeeHerdsman';
 
 import * as zhc from 'zigbee-herdsman-converters';
 
@@ -24,7 +25,7 @@ describe('Extension: OnEvent', () => {
     let onEventSpy: MockInstance<typeof zhc.onEvent>;
     let deviceOnEventSpy: MockInstance<DefinitionOnEvent>;
 
-    const getZ2MDevice = (zhDevice: unknown): Device => {
+    const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
         // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };

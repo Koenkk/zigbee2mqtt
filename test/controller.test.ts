@@ -391,6 +391,26 @@ describe('Controller', () => {
         expect(mockExit).toHaveBeenCalledWith(1, false);
     });
 
+    it('does not throw when extension fails to stop on controller stop', async () => {
+        vi.spyOn(Array.from(controller.extensions)[0], 'stop').mockRejectedValueOnce(new Error('failed'));
+        await controller.start();
+        await flushPromises();
+        await controller.stop();
+        await flushPromises();
+        expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
+    });
+
+    it('does not throw when extension stop throws', async () => {
+        const ext = Array.from(controller.extensions)[0];
+        vi.spyOn(ext, 'stop').mockRejectedValueOnce(new Error('failed'));
+        await controller.start();
+        await flushPromises();
+        await controller.removeExtension(ext);
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Failed to stop'));
+    });
+
     it('Handles reconnecting to MQTT', async () => {
         await controller.start();
         await flushPromises();

@@ -68,6 +68,26 @@
                             "requiresRestart": true,
                             "default": 10,
                             "description": "Time after which an active device will be marked as offline in minutes"
+                        },
+                        "max_jitter": {
+                            "type": "number",
+                            "title": "Max jitter",
+                            "default": 30000,
+                            "minimum": 1000,
+                            "description": "Maximum jitter (in msec) allowed on timeout to avoid availability pings trying to trigger around the same time"
+                        },
+                        "backoff": {
+                            "type": "boolean",
+                            "title": "Enabled",
+                            "description": "Enable timeout backoff on failed availability pings (x1.5, x3, x6, x12...)",
+                            "default": true
+                        },
+                        "pause_on_backoff_gt": {
+                            "type": "number",
+                            "title": "Pause on backoff greater than",
+                            "default": 0,
+                            "minimum": 0,
+                            "description": "Pause availability pings when backoff reaches over this limit until a new Zigbee message is received from the device. A value of zero disables pausing."
                         }
                     },
                     "required": ["timeout"]

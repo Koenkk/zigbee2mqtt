@@ -592,9 +592,8 @@ export default class Bridge extends Extension {
     ): Promise<Zigbee2MQTTResponse<T extends 'device' ? 'bridge/response/device/remove' : 'bridge/response/group/remove'>> {
         const ID = typeof message === 'object' ? message.id : message.trim();
         const entity = this.getEntity(entityType, ID);
+        // note: entity.name is dynamically retrieved, will change once device is removed (friendly => ieee)
         const friendlyName = entity.name;
-        const entityID = entity.ID;
-
         let block = false;
         let force = false;
         let blockForceLog = '';
@@ -609,8 +608,7 @@ export default class Bridge extends Extension {
         }
 
         try {
-            logger.info(`Removing ${entityType} '${entity.name}'${blockForceLog}`);
-            const name = entity.name;
+            logger.info(`Removing ${entityType} '${friendlyName}'${blockForceLog}`);
 
             if (entity instanceof Device) {
                 if (block) {
@@ -623,8 +621,8 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'device'});
-                settings.removeDevice(entityID as string);
+                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: 'device'});
+                settings.removeDevice(entity.ID as string);
             } else {
                 if (force) {
                     entity.zh.removeFromDatabase();
@@ -632,12 +630,12 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entityID, name, type: 'group'});
-                settings.removeGroup(entityID);
+                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: 'group'});
+                settings.removeGroup(entity.ID);
             }
 
             // Remove from state
-            this.state.remove(entityID);
+            this.state.remove(entity.ID);
 
             // Clear any retained messages
             await this.mqtt.publish(friendlyName, '', {retain: true});
@@ -694,7 +692,7 @@ export default class Bridge extends Extension {
             zigbee_herdsman_converters: this.zigbeeHerdsmanConvertersVersion,
             zigbee_herdsman: this.zigbeeHerdsmanVersion,
             coordinator: {
-                ieee_address: this.zigbee.firstCoordinatorEndpoint().getDevice().ieeeAddr,
+                ieee_address: this.zigbee.firstCoordinatorEndpoint().deviceIeeeAddress,
                 ...this.coordinatorVersion,
             },
             network: {
@@ -732,7 +730,7 @@ export default class Bridge extends Extension {
 
                 for (const bind of endpoint.binds) {
                     const target = utils.isZHEndpoint(bind.target)
-                        ? {type: 'endpoint', ieee_address: bind.target.getDevice().ieeeAddr, endpoint: bind.target.ID}
+                        ? {type: 'endpoint', ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
                         : {type: 'group', id: bind.target.groupID};
                     data.bindings.push({cluster: bind.cluster.name, target});
                 }
@@ -780,7 +778,7 @@ export default class Bridge extends Extension {
             const members = [];
 
             for (const member of group.zh.members) {
-                members.push({ieee_address: member.getDevice().ieeeAddr, endpoint: member.ID});
+                members.push({ieee_address: member.deviceIeeeAddress, endpoint: member.ID});
             }
 
             groups.push({

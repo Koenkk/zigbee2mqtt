@@ -1,13 +1,13 @@
 version: 2
 updates:
-    - package-ecosystem: 'github-actions'
-      directory: '/'
+    - package-ecosystem: npm
+      directory: /
       schedule:
-          interval: 'daily'
+          interval: weekly
       target-branch: dev
-
-    - package-ecosystem: 'docker'
-      directory: '/docker'
-      schedule:
-          interval: 'daily'
-      target-branch: dev
+      groups:
+          minor-patch:
+              applies-to: version-updates
+              update-types:
+                  - minor
+                  - patch
