@@ -247,18 +247,20 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     }
 
     if (entity.isGroup()) {
-        return !entity.membersDevices().some((d) => !isAvailabilityEnabledForEntity(d, settings));
+        for (const memberDevice of entity.membersDevices()) {
+            if (!isAvailabilityEnabledForEntity(memberDevice, settings)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     if (entity.options.availability != null) {
         return !!entity.options.availability;
     }
 
-    if (!settings.availability.enabled) {
-        return false;
-    }
-
-    return true;
+    return settings.availability.enabled;
 }
 
 function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
