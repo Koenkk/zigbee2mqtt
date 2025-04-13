@@ -36,7 +36,7 @@ export default class MQTT {
             will: {
                 topic: `${settings.get().mqtt.base_topic}/bridge/state`,
                 payload: Buffer.from(JSON.stringify({state: 'offline'})),
-                retain: settings.get().mqtt.force_disable_retain ? false : true,
+                retain: !settings.get().mqtt.force_disable_retain,
                 qos: 1,
             },
             properties: {maximumPacketSize: mqttSettings.maximum_packet_size},
@@ -71,7 +71,7 @@ export default class MQTT {
             logger.debug(`Using MQTT login with username only: ${mqttSettings.user}`);
             options.username = mqttSettings.user;
         } else {
-            logger.debug(`Using MQTT anonymous login`);
+            logger.debug('Using MQTT anonymous login');
         }
 
         if (mqttSettings.client_id) {
@@ -80,7 +80,7 @@ export default class MQTT {
         }
 
         if (mqttSettings.reject_unauthorized !== undefined && !mqttSettings.reject_unauthorized) {
-            logger.debug(`MQTT reject_unauthorized set false, ignoring certificate warnings.`);
+            logger.debug('MQTT reject_unauthorized set false, ignoring certificate warnings.');
             options.rejectUnauthorized = false;
         }
 
@@ -93,7 +93,7 @@ export default class MQTT {
             logger.error(`MQTT error: ${err.message}`);
         });
 
-        if (mqttSettings.version != undefined && mqttSettings.version >= 5) {
+        if (mqttSettings.version != null && mqttSettings.version >= 5) {
             this.client.on('disconnect', (packet) => {
                 logger.error(`MQTT disconnect: reason ${packet.reasonCode} (${packet.properties?.reasonString})`);
             });
@@ -201,7 +201,7 @@ export default class MQTT {
 
         if (!this.isConnected()) {
             if (!skipLog) {
-                logger.error(`Not connected to MQTT server!`);
+                logger.error('Not connected to MQTT server!');
                 logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
             }
 

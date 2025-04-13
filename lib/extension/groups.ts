@@ -1,3 +1,5 @@
+import type * as zhc from 'zigbee-herdsman-converters';
+
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from '../types/api';
 
 import assert from 'node:assert';
@@ -5,8 +7,6 @@ import assert from 'node:assert';
 import bind from 'bind-decorator';
 import equals from 'fast-deep-equal/es6';
 import stringify from 'json-stable-stringify-without-jsonify';
-
-import * as zhc from 'zigbee-herdsman-converters';
 
 import Device from '../model/device';
 import Group from '../model/group';
@@ -81,7 +81,7 @@ export default class Groups extends Extension {
             const groups = [];
 
             for (const group of this.zigbee.groupsIterator()) {
-                if (group.options && (group.options.optimistic == undefined || group.options.optimistic)) {
+                if (group.options && (group.options.optimistic == null || group.options.optimistic)) {
                     groups.push(group);
                 }
             }
@@ -191,30 +191,32 @@ export default class Groups extends Extension {
 
         if (topicRegexMatch) {
             const type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
-            let resolvedGroup;
-            let groupKey;
+            let resolvedGroup: Group | undefined;
+            let groupKey: string | undefined;
             let skipDisableReporting = false;
             const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/group/members/add'];
 
-            if (typeof message !== 'object' || message.device == undefined) {
+            if (typeof message !== 'object' || message.device == null) {
                 return [message, {type, skipDisableReporting}, 'Invalid payload'];
             }
 
             const deviceKey = message.device;
-            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
+            skipDisableReporting = message.skip_disable_reporting != null ? message.skip_disable_reporting : false;
 
             if (type !== 'remove_all') {
                 groupKey = message.group;
 
-                if (message.group == undefined) {
-                    return [message, {type, skipDisableReporting}, `Invalid payload`];
+                if (message.group == null) {
+                    return [message, {type, skipDisableReporting}, 'Invalid payload'];
                 }
 
-                resolvedGroup = this.zigbee.resolveEntity(message.group);
+                const group = this.zigbee.resolveEntity(message.group);
 
-                if (!resolvedGroup || !(resolvedGroup instanceof Group)) {
+                if (!group || !(group instanceof Group)) {
                     return [message, {type, skipDisableReporting}, `Group '${message.group}' does not exist`];
                 }
+
+                resolvedGroup = group;
             }
 
             const resolvedDevice = this.zigbee.resolveEntity(message.device);
@@ -244,9 +246,9 @@ export default class Groups extends Extension {
                 },
                 undefined,
             ];
-        } else {
-            return [undefined, undefined, undefined];
         }
+
+        return [undefined, undefined, undefined];
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {

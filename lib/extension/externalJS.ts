@@ -96,7 +96,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const message = utils.parseJSON(data.message, data.message);
 
             try {
-                let response;
+                let response: Awaited<ReturnType<typeof this.save | typeof this.remove>>;
 
                 if (match[1].toLowerCase() === 'save') {
                     response = await this.save(
@@ -127,7 +127,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         message: Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
     ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/remove' | 'bridge/response/extension/remove'>> {
         if (!message.name) {
-            return utils.getResponse(message, {}, `Invalid payload`);
+            return utils.getResponse(message, {}, 'Invalid payload');
         }
 
         const {name} = message;
@@ -144,16 +144,16 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
-        } else {
-            return utils.getResponse(message, {}, `${name} (${srcToBeRemoved}) doesn't exists`);
         }
+
+        return utils.getResponse(message, {}, `${name} (${srcToBeRemoved}) doesn't exists`);
     }
 
     @bind private async save(
         message: Zigbee2MQTTAPI['bridge/request/converter/save'] | Zigbee2MQTTAPI['bridge/request/extension/save'],
     ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/save' | 'bridge/response/extension/save'>> {
         if (!message.name || !message.code) {
-            return utils.getResponse(message, {}, `Invalid payload`);
+            return utils.getResponse(message, {}, 'Invalid payload');
         }
 
         const {name, code} = message;
@@ -165,7 +165,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const versionMatch = name.match(/\.(\d+)\.(c|m)?js$/);
 
             if (versionMatch) {
-                const version = parseInt(versionMatch[1], 10);
+                const version = Number.parseInt(versionMatch[1], 10);
                 newName = name.replace(`.${version}.`, `.${version + 1}.`);
             } else {
                 const ext = path.extname(name);

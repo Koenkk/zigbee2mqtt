@@ -1,6 +1,5 @@
 declare module 'unix-dgram' {
-    import {EventEmitter} from 'events';
-    import {Buffer} from 'buffer';
+    import {EventEmitter} from 'node:events';
 
     export class UnixDgramSocket extends EventEmitter {
         send(buf: Buffer, callback?: (err?: Error) => void): void;
