@@ -96,9 +96,7 @@ export default class OTAUpdate extends Extension {
 
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
-        const automaticOTACheckDisabled = settings.get().ota.disable_automatic_update_check;
-
-        if (data.device.definition.ota && !automaticOTACheckDisabled) {
+        if (data.device.definition.ota) {
             if (this.scheduledUpgrades.has(data.device.ieeeAddr) || this.scheduledDowngrades.has(data.device.ieeeAddr)) {
                 this.inProgress.add(data.device.ieeeAddr);
 
@@ -172,34 +170,36 @@ export default class OTAUpdate extends Extension {
                 return; // we're done
             }
 
-            // When a device does a next image request, it will usually do it a few times after each other
-            // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
-            // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
-            const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-            const check = this.lastChecked.has(data.device.ieeeAddr)
-                ? Date.now() - this.lastChecked.get(data.device.ieeeAddr)! > updateCheckInterval
-                : true;
+            if (!settings.get().ota.disable_automatic_update_check) {
+                // When a device does a next image request, it will usually do it a few times after each other
+                // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
+                // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
+                const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
+                const check = this.lastChecked.has(data.device.ieeeAddr)
+                    ? Date.now() - this.lastChecked.get(data.device.ieeeAddr)! > updateCheckInterval
+                    : true;
 
-            if (!check) {
-                return;
-            }
+                if (!check) {
+                    return;
+                }
 
-            this.inProgress.add(data.device.ieeeAddr);
-            this.lastChecked.set(data.device.ieeeAddr, Date.now());
-            let availableResult: Ota.UpdateAvailableResult | undefined;
+                this.inProgress.add(data.device.ieeeAddr);
+                this.lastChecked.set(data.device.ieeeAddr, Date.now());
+                let availableResult: Ota.UpdateAvailableResult | undefined;
 
-            try {
-                // never use 'previous' when responding to device request
-                availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
-            } catch (error) {
-                logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
-            }
+                try {
+                    // never use 'previous' when responding to device request
+                    availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
+                } catch (error) {
+                    logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
+                }
 
-            await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? 'idle'));
+                await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? 'idle'));
 
-            if (availableResult?.available) {
-                const message = `Update available for '${data.device.name}'`;
-                logger.info(message);
+                if (availableResult?.available) {
+                    const message = `Update available for '${data.device.name}'`;
+                    logger.info(message);
+                }
             }
         }
 

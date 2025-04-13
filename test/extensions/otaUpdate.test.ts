@@ -462,6 +462,10 @@ describe('Extension: OTAUpdate', () => {
     it.each(['schedule', 'schedule/downgrade'])('schedules and performs an update with topic %s', async (type) => {
         const downgrade = type === 'schedule/downgrade';
 
+        if (downgrade) {
+            settings.set(['ota', 'disable_automatic_update_check'], true); // coverage, scheduling not affected by this
+        }
+
         updateSpy.mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
             expect(previous).toStrictEqual(downgrade);
 
