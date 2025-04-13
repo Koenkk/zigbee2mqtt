@@ -38,7 +38,6 @@ describe('Extension: OTAUpdate', () => {
         mockSleep.mock();
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.reRead();
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         await flushPromises();
@@ -51,14 +50,22 @@ describe('Extension: OTAUpdate', () => {
         vi.useRealTimers();
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         zhc.ota.setConfiguration(DEFAULT_CONFIG);
         const extension = controller.getExtension('OTAUpdate')! as OTAUpdate;
         // @ts-expect-error private
-        extension.lastChecked = {};
+        extension.lastChecked = new Map();
         // @ts-expect-error private
         extension.inProgress = new Set();
-        mocksClear.forEach((m) => m.mockClear());
+        // @ts-expect-error private
+        extension.scheduledUpgrades = new Set();
+        // @ts-expect-error private
+        extension.scheduledDowngrades = new Set();
+
+        for (const mock of mocksClear) {
+            mock.mockClear();
+        }
+
         devices.bulb.mockClear();
         updateSpy.mockClear();
         isUpdateAvailableSpy.mockClear();
@@ -66,11 +73,11 @@ describe('Extension: OTAUpdate', () => {
         controller.state.state = {};
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         settings.set(['ota', 'disable_automatic_update_check'], false);
     });
 
-    it.each(['update', 'update/downgrade'])('Should OTA update a device with topic %s', async (type) => {
+    it.each(['update', 'update/downgrade'])('updates a device with topic %s', async (type) => {
         const downgrade = type === 'update/downgrade';
         let count = 10;
         devices.bulb.endpoints[0].read.mockImplementation(() => {
@@ -87,7 +94,7 @@ describe('Extension: OTAUpdate', () => {
 
             onProgress(0, undefined);
             onProgress(10, 3600.2123);
-            return 90;
+            return await Promise.resolve(90);
         });
 
         mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, 'bulb');
@@ -141,7 +148,7 @@ describe('Extension: OTAUpdate', () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/devices', expect.any(String), {retain: true, qos: 0});
     });
 
-    it('Should handle when OTA update fails', async () => {
+    it('handles when OTA update fails', async () => {
         devices.bulb.endpoints[0].read.mockImplementation(() => {
             return {swBuildId: 1, dateCode: '2019010'};
         });
@@ -158,7 +165,24 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should be able to check if OTA update is available', async () => {
+    it('handles when OTA update returns no image available', async () => {
+        devices.bulb.endpoints[0].read.mockImplementation(() => {
+            return {swBuildId: 1, dateCode: '2019010'};
+        });
+        devices.bulb.save.mockClear();
+        updateSpy.mockResolvedValueOnce(undefined);
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', stringify({id: 'bulb'}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'available'}}), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            'zigbee2mqtt/bridge/response/device/ota_update/update',
+            stringify({data: {}, status: 'error', error: "Update of 'bulb' failed (No image currently available)"}),
+            {retain: false, qos: 0},
+        );
+    });
+
+    it('is able to check if OTA update is available', async () => {
         isUpdateAvailableSpy.mockResolvedValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
         await flushPromises();
@@ -216,7 +240,7 @@ describe('Extension: OTAUpdate', () => {
         device.definition = originalDefinition;
     });
 
-    it('Should handle if OTA update check fails', async () => {
+    it('handles if OTA update check fails', async () => {
         isUpdateAvailableSpy.mockRejectedValueOnce(new Error('RF signals disturbed because of dogs barking'));
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
@@ -234,7 +258,7 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should fail when device does not exist', async () => {
+    it('fails when device does not exist', async () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'not_existing_deviceooo');
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -244,7 +268,7 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should not check for OTA when device does not support it', async () => {
+    it('does not check for OTA when device does not support it', async () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'dimmer_wall_switch');
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -254,32 +278,54 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should refuse to check/update when already in progress', async () => {
-        isUpdateAvailableSpy.mockImplementationOnce(
-            // @ts-expect-error mocked as needed
-            async () => {
-                await new Promise<void>((resolve) => {
-                    setTimeout(() => resolve(), 99999);
+    it.each(['check', 'check/downgrade', 'update', 'update/downgrade', 'schedule', 'schedule/downgrade', 'unschedule'])(
+        'refuses to %s when already in progress',
+        async (type) => {
+            if (type.includes('schedule') || type.includes('check')) {
+                isUpdateAvailableSpy.mockImplementationOnce(async () => {
+                    return await new Promise((resolve) => {
+                        setTimeout(
+                            () =>
+                                resolve({
+                                    available: false,
+                                    currentFileVersion: 1,
+                                    otaFileVersion: 1,
+                                }),
+                            99999,
+                        );
+                    });
                 });
-            },
-        );
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
-        await flushPromises();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/check', 'bulb');
-        await flushPromises();
-        expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(1);
-        vi.runOnlyPendingTimers();
-        await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            'zigbee2mqtt/bridge/response/device/ota_update/check',
-            stringify({data: {}, status: 'error', error: `Update or check for update already in progress for 'bulb'`}),
-            {retain: false, qos: 0},
-        );
-    });
+            } else {
+                updateSpy.mockImplementationOnce(async () => {
+                    return await new Promise((resolve) => {
+                        setTimeout(() => resolve(1), 99999);
+                    });
+                });
+            }
 
-    it('Shouldnt crash when read modelID before/after OTA update fails', async () => {
+            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type.includes('schedule') ? 'check' : type}`, 'bulb');
+            await flushPromises();
+            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, 'bulb');
+            await flushPromises();
+
+            if (type.includes('schedule') || type.includes('check')) {
+                expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(1);
+            } else {
+                expect(updateSpy).toHaveBeenCalledTimes(1);
+            }
+
+            await vi.runOnlyPendingTimersAsync();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                `zigbee2mqtt/bridge/response/device/ota_update/${type.replace('/downgrade', '')}`,
+                stringify({data: {}, status: 'error', error: `Update or check for update already in progress for 'bulb'`}),
+                {retain: false, qos: 0},
+            );
+        },
+    );
+
+    it('does not crash when read modelID before/after OTA update fails', async () => {
         devices.bulb.endpoints[0].read.mockRejectedValueOnce('Failed from').mockRejectedValueOnce('Failed to');
-        updateSpy.mockImplementationOnce(vi.fn());
+        updateSpy.mockResolvedValueOnce(1);
 
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
         await flushPromises();
@@ -290,7 +336,29 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should check for update when device requests it', async () => {
+    it('cancels scheduled when direct update requested', async () => {
+        updateSpy.mockResolvedValueOnce(1);
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/schedule', 'bulb');
+        await flushPromises();
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
+        await flushPromises();
+
+        expect(mockLogger.info).toHaveBeenCalledWith("Previously scheduled 'bulb' upgrade was cancelled by manual update");
+
+        updateSpy.mockResolvedValueOnce(1);
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/schedule/downgrade', 'bulb');
+        await flushPromises();
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/update', 'bulb');
+        await flushPromises();
+
+        expect(mockLogger.info).toHaveBeenCalledWith("Previously scheduled 'bulb' downgrade was cancelled by manual update");
+    });
+
+    it('checks for update when device requests it', async () => {
         const data = {imageType: 12382};
         isUpdateAvailableSpy.mockResolvedValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 12});
         const payload = {
@@ -327,7 +395,7 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should respond with NO_IMAGE_AVAILABLE when update available request fails', async () => {
+    it('responds with NO_IMAGE_AVAILABLE when update available request fails', async () => {
         const data = {imageType: 12382};
         isUpdateAvailableSpy.mockRejectedValueOnce('Nothing to find here');
         const payload = {
@@ -348,7 +416,7 @@ describe('Extension: OTAUpdate', () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bulb', stringify({update: {state: 'idle'}}), {retain: true, qos: 0});
     });
 
-    it('Should check for update when device requests it and it is not available', async () => {
+    it('checks for update when device requests it and it is not available', async () => {
         const data = {imageType: 12382};
         isUpdateAvailableSpy.mockResolvedValueOnce({available: false, currentFileVersion: 13, otaFileVersion: 13});
         const payload = {
@@ -373,7 +441,7 @@ describe('Extension: OTAUpdate', () => {
         );
     });
 
-    it('Should not check for update when device requests it and disable_automatic_update_check is set to true', async () => {
+    it('does not check for update when device requests it and disable_automatic_update_check is set to true', async () => {
         settings.set(['ota', 'disable_automatic_update_check'], true);
         const data = {imageType: 12382};
         isUpdateAvailableSpy.mockResolvedValueOnce({available: true, currentFileVersion: 10, otaFileVersion: 13});
@@ -391,7 +459,233 @@ describe('Extension: OTAUpdate', () => {
         expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
+    it.each(['schedule', 'schedule/downgrade'])('schedules and performs an update with topic %s', async (type) => {
+        const downgrade = type === 'schedule/downgrade';
+
+        if (downgrade) {
+            settings.set(['ota', 'disable_automatic_update_check'], true); // coverage, scheduling not affected by this
+        }
+
+        updateSpy.mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
+            expect(previous).toStrictEqual(downgrade);
+
+            onProgress(0, undefined);
+            onProgress(10, 3600.2123);
+            return await Promise.resolve(2);
+        });
+
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, 'bulb');
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+            stringify({data: {id: 'bulb'}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+
+        const data = {imageType: 12382};
+        const payload = {
+            data,
+            cluster: 'genOta',
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: 'commandQueryNextImageRequest',
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 10},
+        };
+
+        await mockZHEvents.message(payload);
+        await flushPromises();
+
+        expect(updateSpy).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb', stringify({update: {state: 'updating', progress: 0}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            4,
+            'zigbee2mqtt/bulb',
+            stringify({update: {state: 'updating', progress: 10, remaining: 3600}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            5,
+            'zigbee2mqtt/bulb',
+            stringify({update: {state: 'idle', installed_version: 2, latest_version: 2}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(6, 'zigbee2mqtt/bridge/devices', expect.any(String), {retain: true, qos: 0});
+    });
+
+    it('schedules and cancels an update when no image available', async () => {
+        updateSpy.mockResolvedValueOnce(undefined);
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/schedule', 'bulb');
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+            stringify({data: {id: 'bulb'}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+
+        const data = {imageType: 12382};
+        const payload = {
+            data,
+            cluster: 'genOta',
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: 'commandQueryNextImageRequest',
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 10},
+        };
+
+        await mockZHEvents.message(payload);
+        await flushPromises();
+
+        expect(updateSpy).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb', stringify({update: {state: 'idle'}}), {retain: true, qos: 0});
+    });
+
+    it('schedules and re-schedules an update when failed', async () => {
+        updateSpy.mockRejectedValueOnce('Update failed').mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
+            onProgress(0, undefined);
+            onProgress(10, 3600.2123);
+            return await Promise.resolve(2);
+        });
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/schedule', 'bulb');
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+            stringify({data: {id: 'bulb'}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+
+        const data = {imageType: 12382};
+        const payload = {
+            data,
+            cluster: 'genOta',
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: 'commandQueryNextImageRequest',
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 10},
+        };
+
+        await mockZHEvents.message(payload);
+        await flushPromises();
+
+        expect(updateSpy).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+            retain: true,
+            qos: 0,
+        });
+
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        console.log(mockMQTTPublishAsync.mock.calls.map((c) => c[0]));
+
+        expect(updateSpy).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(4, 'zigbee2mqtt/bulb', stringify({update: {state: 'updating', progress: 0}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            5,
+            'zigbee2mqtt/bulb',
+            stringify({update: {state: 'updating', progress: 10, remaining: 3600}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            6,
+            'zigbee2mqtt/bulb',
+            stringify({update: {state: 'idle', installed_version: 2, latest_version: 2}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(7, 'zigbee2mqtt/bridge/devices', expect.any(String), {retain: true, qos: 0});
+    });
+
+    it('overwrites current schedule on re-schedule', async () => {
+        for (const [type, overwriteType] of [
+            ['schedule', 'schedule/downgrade'],
+            ['schedule/downgrade', 'schedule'],
+        ]) {
+            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, 'bulb');
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+                retain: true,
+                qos: 0,
+            });
+            expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+                2,
+                'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+                stringify({data: {id: 'bulb'}, status: 'ok'}),
+                {retain: false, qos: 0},
+            );
+
+            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${overwriteType}`, 'bulb');
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+                retain: true,
+                qos: 0,
+            });
+            expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+                4,
+                'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+                stringify({data: {id: 'bulb'}, status: 'ok'}),
+                {retain: false, qos: 0},
+            );
+        }
+    });
+
+    it.each(['schedule', 'schedule/downgrade'])('unschedules', async (type) => {
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, 'bulb');
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, 'zigbee2mqtt/bulb', stringify({update: {state: 'scheduled'}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            'zigbee2mqtt/bridge/response/device/ota_update/schedule',
+            stringify({data: {id: 'bulb'}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+
+        mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/ota_update/unschedule', 'bulb');
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, 'zigbee2mqtt/bulb', stringify({update: {state: 'idle'}}), {retain: true, qos: 0});
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            4,
+            'zigbee2mqtt/bridge/response/device/ota_update/unschedule',
+            stringify({data: {id: 'bulb'}, status: 'ok'}),
+            {retain: false, qos: 0},
+        );
+    });
+
+    it('responds with NO_IMAGE_AVAILABLE when not supporting OTA', async () => {
         const device = devices.HGZB04D;
         const data = {imageType: 12382};
         const payload = {
@@ -409,7 +703,7 @@ describe('Extension: OTAUpdate', () => {
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith('genOta', 'queryNextImageResponse', {status: 152}, undefined, 10);
     });
 
-    it('Should respond with NO_IMAGE_AVAILABLE when not supporting OTA and device has no OTA endpoint to standard endpoint', async () => {
+    it('responds with NO_IMAGE_AVAILABLE when not supporting OTA and device has no OTA endpoint to standard endpoint', async () => {
         const device = devices.SV01;
         const data = {imageType: 12382};
         const payload = {
@@ -427,7 +721,7 @@ describe('Extension: OTAUpdate', () => {
         expect(device.endpoints[0].commandResponse).toHaveBeenCalledWith('genOta', 'queryNextImageResponse', {status: 152}, undefined, 10);
     });
 
-    it('Sets given configuration', async () => {
+    it('sets given configuration', async () => {
         const setConfiguration = vi.spyOn(zhc.ota, 'setConfiguration');
         settings.set(['ota', 'zigbee_ota_override_index_location'], 'local.index.json');
         settings.set(['ota', 'image_block_response_delay'], 10000);
@@ -454,7 +748,7 @@ describe('Extension: OTAUpdate', () => {
         setConfiguration.mockClear();
     });
 
-    it('Clear update state on startup', async () => {
+    it('clear update state on startup', async () => {
         // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         // @ts-expect-error private
