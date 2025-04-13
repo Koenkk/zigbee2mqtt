@@ -1671,7 +1671,11 @@ export class HomeAssistant extends Extension {
             }
 
             if (entity.isDevice()) {
-                entity.definition?.meta?.overrideHaDiscoveryPayload?.(payload);
+                try {
+                    entity.definition?.meta?.overrideHaDiscoveryPayload?.(payload);
+                } catch (error) {
+                    logger.error(`Failed to override HA discovery payload (${(error as Error).stack})`);
+                }
             }
 
             const topic = this.getDiscoveryTopic(config, entity);
