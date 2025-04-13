@@ -43,7 +43,7 @@ describe('Extension: Publish', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
         settings.reRead();
         loadTopicGetSetRegex();
         mocksClear.forEach((m) => m.mockClear());

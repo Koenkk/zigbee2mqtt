@@ -70,7 +70,7 @@ describe('Extension: OTAUpdate', () => {
         updateSpy.mockClear();
         isUpdateAvailableSpy.mockClear();
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
     });
 
     afterEach(() => {

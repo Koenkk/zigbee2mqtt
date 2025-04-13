@@ -567,7 +567,7 @@ export default class Bind extends Extension {
         );
 
         if (polls.length) {
-            const toPoll: Set<zh.Endpoint> = new Set();
+            const toPoll = new Set<zh.Endpoint>();
 
             // Add bound devices
             for (const endpoint of data.device.zh.endpoints) {

@@ -46,7 +46,7 @@ describe('Extension: Groups', () => {
         groups.gledopto_group.command.mockClear();
         zhcGlobalStore.clear();
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
     });
 
     it('Should publish group state change when a device in it changes state', async () => {
@@ -461,7 +461,7 @@ describe('Extension: Groups', () => {
         await flushPromises();
         mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'OFF'}));
         await flushPromises();

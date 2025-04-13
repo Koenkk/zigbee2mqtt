@@ -21,8 +21,8 @@ export default class Zigbee {
     // @ts-expect-error initialized in start
     private herdsman: Controller;
     private eventBus: EventBus;
-    private groupLookup: Map<number /* group ID */, Group> = new Map();
-    private deviceLookup: Map<string /* IEEE address */, Device> = new Map();
+    private groupLookup = new Map<number /* group ID */, Group>();
+    private deviceLookup = new Map<string /* IEEE address */, Device>();
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;

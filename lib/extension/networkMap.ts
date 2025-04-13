@@ -185,9 +185,9 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Zigbee2MQTTNetworkMap> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const lqis: Map<Device, zh.LQI> = new Map();
-        const routingTables: Map<Device, zh.RoutingTable> = new Map();
-        const failed: Map<Device, string[]> = new Map();
+        const lqis = new Map<Device, zh.LQI>();
+        const routingTables = new Map<Device, zh.RoutingTable>();
+        const failed = new Map<Device, string[]>();
         const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
             try {
                 const result = await request();

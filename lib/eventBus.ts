@@ -35,7 +35,7 @@ type EventBusListener<K> = K extends keyof EventBusMap
     : never;
 
 export default class EventBus {
-    private callbacksByExtension: Map<string, {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]> = new Map();
+    private callbacksByExtension = new Map<string, {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]>();
     private emitter = new events.EventEmitter<EventBusMap>();
 
     constructor() {
