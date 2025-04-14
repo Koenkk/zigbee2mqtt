@@ -106,7 +106,7 @@ export default class Groups extends Extension {
                 // Invalidate the last optimistic group state when group state is changed directly.
                 delete this.lastOptimisticState[entity.ID];
 
-                const groupsToPublish: Set<Group> = new Set();
+                const groupsToPublish = new Set<Group>();
 
                 for (const member of entity.zh.members) {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;

@@ -510,7 +510,7 @@ export function migrateIfNecessary(): void {
     while (currentSettings.version !== finalVersion) {
         let migrationNotesFileName: string | undefined;
         // don't duplicate outputs
-        const migrationNotes: Set<string> = new Set();
+        const migrationNotes = new Set<string>();
         const transfers: SettingsTransfer[] = [];
         const changes: SettingsChange[] = [];
         const additions: SettingsAdd[] = [];

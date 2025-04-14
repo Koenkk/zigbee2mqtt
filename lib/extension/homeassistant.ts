@@ -1472,7 +1472,7 @@ export class HomeAssistant extends Extension {
         const discovered = this.getDiscovered(entity);
         discovered.discovered = true;
         const lastDiscoveredTopics = Object.keys(discovered.messages);
-        const newDiscoveredTopics: Set<string> = new Set();
+        const newDiscoveredTopics = new Set<string>();
 
         for (const config of this.getConfigs(entity)) {
             const payload = {...config.discovery_payload};

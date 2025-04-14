@@ -25,7 +25,7 @@ describe('Extension: Receive', () => {
 
     beforeEach(async () => {
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());

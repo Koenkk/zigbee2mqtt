@@ -20,15 +20,15 @@ const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyVa
 
 export default class Availability extends Extension {
     /** Mapped by IEEE address */
-    private readonly timers: Map<string, NodeJS.Timeout> = new Map();
+    private readonly timers = new Map<string, NodeJS.Timeout>();
     /** Mapped by IEEE address or Group ID */
-    private readonly lastPublishedAvailabilities: Map<string | number, boolean> = new Map();
+    private readonly lastPublishedAvailabilities = new Map<string | number, boolean>();
     /** Mapped by IEEE address */
-    private readonly pingBackoffs: Map<string, number> = new Map();
+    private readonly pingBackoffs = new Map<string, number>();
     /** IEEE addresses, waiting for last seen changes to take them out of "availability sleep" */
-    private readonly backoffPausedDevices: Set<string> = new Set();
+    private readonly backoffPausedDevices = new Set<string>();
     /** Mapped by IEEE address */
-    private readonly retrieveStateDebouncers: Map<string, () => void> = new Map();
+    private readonly retrieveStateDebouncers = new Map<string, () => void>();
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;

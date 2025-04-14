@@ -78,7 +78,7 @@ describe('Extension: Bridge', () => {
         // @ts-expect-error private
         extension.restartRequired = false;
         // @ts-expect-error private
-        controller.state.state = {[devices.bulb.ieeeAddr]: {brightness: 50}};
+        controller.state.state = new Map([[devices.bulb.ieeeAddr, {brightness: 50}]]);
         fs.rmSync(deviceIconsDir, {force: true, recursive: true});
     });
 
@@ -2809,7 +2809,7 @@ describe('Extension: Bridge', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/remove', 'bulb');
         await flushPromises();
         // @ts-expect-error private
-        expect(controller.state[device.ieeeAddr]).toBeUndefined();
+        expect(controller.state.state.get(device.ieeeAddr)).toBeUndefined();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(device.removeFromDatabase).not.toHaveBeenCalled();
         expect(settings.getDevice('bulb')).toBeUndefined();
