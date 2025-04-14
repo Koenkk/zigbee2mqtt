@@ -516,6 +516,17 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
+                            },
+                            {
+                                access: 2,
+                                description:
                                     'When enabled colors will be synced, e.g. if the light supports both color x/y and color temperature a conversion from color x/y to color temperature will be done when setting the x/y color (default true).',
                                 label: 'Color sync',
                                 name: 'color_sync',
@@ -2072,6 +2083,17 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
+                            },
+                            {
+                                access: 2,
+                                description:
                                     'When enabled colors will be synced, e.g. if the light supports both color x/y and color temperature a conversion from color x/y to color temperature will be done when setting the x/y color (default true).',
                                 label: 'Color sync',
                                 name: 'color_sync',
@@ -2311,7 +2333,7 @@ describe('Extension: Bridge', () => {
         await mockZHEvents.deviceInterview({device: devices.unsupported, status: 'successful'});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(7);
-        // console.log(mockMQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'));
+        // console.log(mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({
@@ -2490,6 +2512,17 @@ describe('Extension: Bridge', () => {
                                 property: 'transition',
                                 type: 'numeric',
                                 value_min: 0,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
                             },
                             {
                                 access: 2,
