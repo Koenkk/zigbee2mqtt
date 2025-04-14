@@ -81,8 +81,8 @@ importers:
         specifier: 23.26.0
         version: 23.26.0
       zigbee2mqtt-frontend:
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.9
+        version: 0.9.9
     devDependencies:
       '@eslint/core':
         specifier: ^0.13.0
@@ -1855,8 +1855,8 @@ packages:
     resolution: {integrity: sha512-RP1LNZynW4C2y79W5qihw5/NNV8lVmmu4wAr7Kitj3isDFOAt7RXX2eiDrz98wiLmbFwBIOhfArrG/Pb/jaZIA==}
     engines: {node: '>=20.17.0'}
 
-  zigbee2mqtt-frontend@0.9.8:
-    resolution: {integrity: sha512-EbS0Hx5bcbNGpfNzjtemMgLPvk47rv4zTCiS616/c/I5KD/uBaEmCMeIG/MXdtvLZ+FTtkGl957923c2Jit3QA==}
+  zigbee2mqtt-frontend@0.9.9:
+    resolution: {integrity: sha512-kvm+VTg2+tn+lyS+H794SGGq0ufUg7cwpKGoS1/TF23Po7RsOnPCk3PYcbRg/j6yU5mYUn02VIo7McSywC/kXA==}
     engines: {node: '>=20.11'}
 
 snapshots:
@@ -3559,4 +3559,4 @@ snapshots:
 
   zigbee-on-host@0.1.10: {}
 
-  zigbee2mqtt-frontend@0.9.8: {}
+  zigbee2mqtt-frontend@0.9.9: {}
