@@ -104,7 +104,7 @@ describe('Extension: NetworkMap', () => {
         data.writeEmptyState();
         fs.mkdirSync(path.join(data.mockDir, 'external_converters'));
         fs.copyFileSync(
-            path.join(__dirname, '..', 'assets', 'external_converters', 'mock-external-converter.js'),
+            path.join(__dirname, '..', 'assets', 'external_converters', 'cjs', 'mock-external-converter.js'),
             path.join(data.mockDir, 'external_converters', 'mock-external-converter.js'),
         );
         controller = new Controller(vi.fn(), vi.fn());
@@ -124,6 +124,8 @@ describe('Extension: NetworkMap', () => {
     afterAll(async () => {
         mockSleep.restore();
         fs.rmSync(path.join(data.mockDir, 'external_converters'), {recursive: true});
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
@@ -302,7 +304,12 @@ describe('Extension: NetworkMap', () => {
                             type: 'Router',
                         },
                         {
-                            definition: {description: 'external', model: 'external_converter_device', supports: 'linkquality', vendor: 'external'},
+                            definition: {
+                                description: 'external/converter',
+                                model: 'external_converter_device',
+                                supports: 'linkquality',
+                                vendor: 'external',
+                            },
                             friendlyName: '0x0017880104e45511',
                             ieeeAddr: '0x0017880104e45511',
                             lastSeen: 1000,
@@ -345,7 +352,7 @@ describe('Extension: NetworkMap', () => {
               "0x0017880104e45525" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{0x0017880104e45525|0x0017880104e45525 (0x1988)failed: lqi,routingTable|Boef Automatically generated definition (notSupportedModelID)|9 seconds ago}"];
               "0x0017880104e45559" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{cc2530_router|0x0017880104e45559 (0x198c)|Custom devices (DiY) CC2530 router (CC2530.ROUTER)|9 seconds ago}"];
               "0x0017880104e45559" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="100"]
-              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external (external_converter_device)|9 seconds ago}"];
+              "0x0017880104e45511" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{0x0017880104e45511|0x0017880104e45511 (0x045a)|external external/converter (external_converter_device)|9 seconds ago}"];
               "0x0017880104e45511" -> "0x00124b00120144ae" [penwidth=1, weight=0, color="#994444", label="92"]
             }`;
 
@@ -378,7 +385,7 @@ describe('Extension: NetworkMap', () => {
         ---
         0x0017880104e45511 (0x045a)
         ---
-        external external (external_converter_device)
+        external external/converter (external_converter_device)
         ---
         9 seconds ago
         ]
@@ -604,7 +611,12 @@ describe('Extension: NetworkMap', () => {
                             type: 'Router',
                         },
                         {
-                            definition: {description: 'external', model: 'external_converter_device', supports: 'linkquality', vendor: 'external'},
+                            definition: {
+                                description: 'external/converter',
+                                model: 'external_converter_device',
+                                supports: 'linkquality',
+                                vendor: 'external',
+                            },
                             friendlyName: '0x0017880104e45511',
                             ieeeAddr: '0x0017880104e45511',
                             lastSeen: 1000,
@@ -756,7 +768,12 @@ describe('Extension: NetworkMap', () => {
                             type: 'Router',
                         },
                         {
-                            definition: {description: 'external', model: 'external_converter_device', supports: 'linkquality', vendor: 'external'},
+                            definition: {
+                                description: 'external/converter',
+                                model: 'external_converter_device',
+                                supports: 'linkquality',
+                                vendor: 'external',
+                            },
                             friendlyName: '0x0017880104e45511',
                             ieeeAddr: '0x0017880104e45511',
                             lastSeen: 1000,

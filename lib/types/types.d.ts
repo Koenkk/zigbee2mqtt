@@ -1,14 +1,14 @@
-import type TypeEventBus from 'lib/eventBus';
-import type TypeExtension from 'lib/extension/extension';
-import type TypeDevice from 'lib/model/device';
-import type TypeGroup from 'lib/model/group';
-import type TypeMQTT from 'lib/mqtt';
-import type TypeState from 'lib/state';
-import type TypeZigbee from 'lib/zigbee';
 import type {AdapterTypes as ZHAdapterTypes, Events as ZHEvents, Models as ZHModels} from 'zigbee-herdsman';
 import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
-import {LogLevel} from 'lib/util/settings';
+import type TypeEventBus from '../eventBus';
+import type TypeExtension from '../extension/extension';
+import type TypeDevice from '../model/device';
+import type TypeGroup from '../model/group';
+import type TypeMQTT from '../mqtt';
+import type TypeState from '../state';
+import type {LogLevel} from '../util/settings';
+import type TypeZigbee from '../zigbee';
 
 type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
@@ -48,7 +48,7 @@ declare global {
 
     namespace eventdata {
         type EntityRenamed = {entity: Device | Group; homeAssisantRename: boolean; from: string; to: string};
-        type EntityRemoved = {id: number | string; name: string; type: 'device' | 'group'};
+        type EntityRemoved = {id: string; name: string; type: 'device'} | {id: number; name: string; type: 'group'};
         type MQTTMessage = {topic: string; message: string};
         type MQTTMessagePublished = {topic: string; payload: string; options: {retain: boolean; qos: number}};
         type StateChange = {
@@ -70,7 +70,7 @@ declare global {
         type EntityOptionsChanged = {entity: Device | Group; from: KeyValue; to: KeyValue};
         type ExposesChanged = {device: Device};
         type Reconfigure = {device: Device};
-        type DeviceLeave = {ieeeAddr: string; name: string};
+        type DeviceLeave = {ieeeAddr: string; name: string; device?: Device};
         type GroupMembersChanged = {group: Group; action: 'remove' | 'add' | 'remove_all'; endpoint: zh.Endpoint; skipDisableReporting: boolean};
         type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason?: StateChangeReason; payload: KeyValue};
         type DeviceMessage = {
@@ -78,7 +78,7 @@ declare global {
             device: Device;
             endpoint: zh.Endpoint;
             linkquality: number;
-            groupID: number;
+            groupID: number; // XXX: should this be `?`
             cluster: string | number;
             data: KeyValue | Array<string | number>;
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl};
@@ -98,7 +98,12 @@ declare global {
         };
         availability: {
             enabled: boolean;
-            active: {timeout: number};
+            active: {
+                timeout: number;
+                max_jitter: number;
+                backoff: boolean;
+                pause_on_backoff_gt: number;
+            };
             passive: {timeout: number};
         };
         mqtt: {
@@ -120,7 +125,7 @@ declare global {
         serial: {
             disable_led: boolean;
             port?: string;
-            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember';
+            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss' | 'zoh';
             baudrate?: number;
             rtscts?: boolean;
         };
@@ -162,12 +167,14 @@ declare global {
             url?: string;
             ssl_cert?: string;
             ssl_key?: string;
+            notification_filter?: string[];
         };
         devices: {[s: string]: DeviceOptions};
         groups: {[s: string]: Omit<GroupOptions, 'ID'>};
         device_options: KeyValue;
         advanced: {
             log_rotation: boolean;
+            log_console_json: boolean;
             log_symlink_current: boolean;
             log_output: ('console' | 'file' | 'syslog')[];
             log_directory: string;
@@ -177,6 +184,7 @@ declare global {
             log_syslog: KeyValue;
             log_debug_to_mqtt_frontend: boolean;
             log_debug_namespace_ignore: string;
+            log_directories_to_keep: number;
             pan_id: number | 'GENERATE';
             ext_pan_id: number[] | 'GENERATE';
             channel: number;
@@ -197,7 +205,14 @@ declare global {
     interface DeviceOptions {
         disabled?: boolean;
         retention?: number;
-        availability?: boolean | {timeout: number};
+        availability?:
+            | boolean
+            | {
+                  timeout: number;
+                  max_jitter?: number;
+                  backoff?: boolean;
+                  pause_on_backoff_gt?: number;
+              };
         optimistic?: boolean;
         debounce?: number;
         debounce_ignore?: string[];

@@ -7,7 +7,9 @@ import tmp from 'tmp';
 import yaml from '../../lib/util/yaml';
 
 export const mockDir: string = tmp.dirSync().name;
+const configFile = path.join(mockDir, 'configuration.yaml');
 const stateFile = path.join(mockDir, 'state.json');
+const databaseFile = path.join(mockDir, 'database.db');
 
 export const DEFAULT_CONFIGURATION = {
     homeassistant: {enabled: false},
@@ -205,6 +207,10 @@ export const DEFAULT_CONFIGURATION = {
         '0x000b57cdfec6a5b3': {
             friendly_name: 'hue_twilight',
         },
+        '0x00124b00cfcf3298': {
+            friendly_name: 'fanbee',
+            retain: true,
+        },
     },
     groups: {
         1: {
@@ -246,7 +252,15 @@ export const DEFAULT_CONFIGURATION = {
 export function writeDefaultConfiguration(config: unknown = undefined): void {
     config = config || DEFAULT_CONFIGURATION;
 
-    yaml.writeIfChanged(path.join(mockDir, 'configuration.yaml'), config);
+    yaml.writeIfChanged(configFile, config);
+}
+
+export function read(): ReturnType<typeof yaml.read> {
+    return yaml.read(configFile);
+}
+
+export function removeConfiguration(): void {
+    fs.rmSync(configFile, {force: true});
 }
 
 export function writeEmptyState(): void {
@@ -254,9 +268,7 @@ export function writeEmptyState(): void {
 }
 
 export function removeState(): void {
-    if (stateExists()) {
-        fs.unlinkSync(stateFile);
-    }
+    fs.rmSync(stateFile, {force: true});
 }
 
 export function stateExists(): boolean {
@@ -286,8 +298,12 @@ export function writeDefaultState(): void {
     fs.writeFileSync(path.join(mockDir, 'state.json'), stringify(defaultState));
 }
 
-export function read(): ReturnType<typeof yaml.read> {
-    return yaml.read(path.join(mockDir, 'configuration.yaml'));
+export function writeEmptyDatabase(): void {
+    fs.writeFileSync(databaseFile, '');
+}
+
+export function removeDatabase(): void {
+    fs.rmSync(databaseFile, {force: true});
 }
 
 vi.mock('../../lib/util/data', async () => {

@@ -1,7 +1,9 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from 'lib/types/api';
 import type * as zhc from 'zigbee-herdsman-converters';
 
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from '../types/api';
+
 import assert from 'node:assert';
+import {exec} from 'node:child_process';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +13,7 @@ import humanizeDuration from 'humanize-duration';
 
 import data from './data';
 
-const BASE64_IMAGE_REGEX = new RegExp(`data:image/(?<extension>.+);base64,(?<data>.+)`);
+const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
 
 function pad(num: number): string {
     const norm = Math.floor(Math.abs(num));
@@ -26,56 +28,34 @@ function toLocalISOString(date: Date): string {
     const tzOffset = -date.getTimezoneOffset();
     const plusOrMinus = tzOffset >= 0 ? '+' : '-';
 
-    return (
-        date.getFullYear() +
-        '-' +
-        pad(date.getMonth() + 1) +
-        '-' +
-        pad(date.getDate()) +
-        'T' +
-        pad(date.getHours()) +
-        ':' +
-        pad(date.getMinutes()) +
-        ':' +
-        pad(date.getSeconds()) +
-        plusOrMinus +
-        pad(tzOffset / 60) +
-        ':' +
-        pad(tzOffset % 60)
-    );
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${plusOrMinus}${pad(tzOffset / 60)}:${pad(tzOffset % 60)}`;
 }
 
 function capitalize(s: string): string {
     return s[0].toUpperCase() + s.slice(1);
 }
 
-async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
-    const git = await import('git-last-commit');
-    const packageJSON = await import('../..' + '/package.json');
+export async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{commitHash?: string; version: string}> {
+    const packageJSON = (await import('../../package.json', {with: {type: 'json'}})).default;
+    const version = packageJSON.version;
+    let commitHash: string | undefined;
 
     if (!includeCommitHash) {
-        return {version: packageJSON.version, commitHash: undefined};
+        return {version, commitHash};
     }
 
     return await new Promise((resolve) => {
-        const version = packageJSON.version;
+        exec('git rev-parse --short=8 HEAD', (error, stdout) => {
+            commitHash = stdout.trim();
 
-        git.getLastCommit((err: Error, commit: {shortHash: string}) => {
-            let commitHash = undefined;
-
-            if (err) {
+            if (error || commitHash === '') {
                 try {
                     commitHash = fs.readFileSync(path.join(__dirname, '..', '..', 'dist', '.hash'), 'utf-8');
-                    /* v8 ignore start */
                 } catch {
                     commitHash = 'unknown';
                 }
-                /* v8 ignore stop */
-            } else {
-                commitHash = commit.shortHash;
             }
 
-            commitHash = commitHash.trim();
             resolve({commitHash, version});
         });
     });
@@ -88,12 +68,21 @@ async function getDependencyVersion(depend: string): Promise<{version: string}> 
 }
 
 function formatDate(time: number, type: 'ISO_8601' | 'ISO_8601_local' | 'epoch' | 'relative'): string | number {
-    if (type === 'ISO_8601') return new Date(time).toISOString();
-    else if (type === 'ISO_8601_local') return toLocalISOString(new Date(time));
-    else if (type === 'epoch') return time;
-    else {
-        // relative
-        return humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true}) + ' ago';
+    switch (type) {
+        case 'ISO_8601':
+            // ISO8601 (UTC) = 2019-03-01T15:32:45.941Z
+            return new Date(time).toISOString();
+
+        case 'ISO_8601_local':
+            // ISO8601 (local) = 2019-03-01T16:32:45.941+01:00 (for timezone GMT+1)
+            return toLocalISOString(new Date(time));
+
+        case 'epoch':
+            return time;
+
+        default:
+            // relative
+            return `${humanizeDuration(Date.now() - time, {language: 'en', largest: 2, round: true})} ago`;
     }
 }
 
@@ -144,18 +133,18 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
         }
 
         return response;
-    } else {
-        const response: Zigbee2MQTTResponse<T> = {
-            data, // valid from error check
-            status: 'ok',
-        };
-
-        if (typeof request === 'object' && request.transaction !== undefined) {
-            response.transaction = request.transaction;
-        }
-
-        return response;
     }
+
+    const response: Zigbee2MQTTResponse<T> = {
+        data, // valid from error check
+        status: 'ok',
+    };
+
+    if (typeof request === 'object' && request.transaction !== undefined) {
+        response.transaction = request.transaction;
+    }
+
+    return response;
 }
 
 function parseJSON(value: string, fallback: string): KeyValue | string {
@@ -229,9 +218,9 @@ function getAllFiles(path_: string): string[] {
 function validateFriendlyName(name: string, throwFirstError = false): string[] {
     const errors = [];
 
-    if (name.length === 0) errors.push(`friendly_name must be at least 1 char long`);
-    if (name.endsWith('/') || name.startsWith('/')) errors.push(`friendly_name is not allowed to end or start with /`);
-    if (containsControlCharacter(name)) errors.push(`friendly_name is not allowed to contain control char`);
+    if (name.length === 0) errors.push('friendly_name must be at least 1 char long');
+    if (name.endsWith('/') || name.startsWith('/')) errors.push('friendly_name is not allowed to end or start with /');
+    if (containsControlCharacter(name)) errors.push('friendly_name is not allowed to contain control char');
     if (name.match(/.*\/\d*$/)) errors.push(`Friendly name cannot end with a "/DIGIT" ('${name}')`);
     if (name.includes('#') || name.includes('+')) {
         errors.push(`MQTT wildcard (+ and #) not allowed in friendly_name ('${name}')`);
@@ -249,10 +238,7 @@ function sleep(seconds: number): Promise<void> {
 }
 
 function sanitizeImageParameter(parameter: string): string {
-    const replaceByDash = [/\?/g, /&/g, /[^a-z\d\- _./:]/gi];
-    let sanitized = parameter;
-    replaceByDash.forEach((r) => (sanitized = sanitized.replace(r, '-')));
-    return sanitized;
+    return parameter.replace(/\?|&|[^a-z\d\- _./:]/gi, '-');
 }
 
 function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settings): boolean {
@@ -261,18 +247,20 @@ function isAvailabilityEnabledForEntity(entity: Device | Group, settings: Settin
     }
 
     if (entity.isGroup()) {
-        return !entity.membersDevices().some((d) => !isAvailabilityEnabledForEntity(d, settings));
+        for (const memberDevice of entity.membersDevices()) {
+            if (!isAvailabilityEnabledForEntity(memberDevice, settings)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     if (entity.options.availability != null) {
         return !!entity.options.availability;
     }
 
-    if (!settings.availability.enabled) {
-        return false;
-    }
-
-    return true;
+    return settings.availability.enabled;
 }
 
 function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
@@ -360,8 +348,8 @@ function getScenes(entity: zh.Endpoint | zh.Group): Zigbee2MQTTScene[] {
     for (const endpoint of endpoints) {
         for (const [key, data] of Object.entries(endpoint.meta?.scenes || {})) {
             const split = key.split('_');
-            const sceneID = parseInt(split[0], 10);
-            const sceneGroupID = parseInt(split[1], 10);
+            const sceneID = Number.parseInt(split[0], 10);
+            const sceneGroupID = Number.parseInt(split[1], 10);
             if (sceneGroupID === groupID) {
                 scenes[sceneID] = {id: sceneID, name: (data as KeyValue).name || `Scene ${sceneID}`};
             }

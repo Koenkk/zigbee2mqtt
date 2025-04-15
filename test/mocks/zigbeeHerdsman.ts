@@ -236,7 +236,7 @@ export class Device {
     interview: Mock;
     interviewing: boolean;
     meta: Record<string, unknown>;
-    ping: Mock;
+    ping: Mock<(disableRecovery?: boolean) => Promise<void>>;
     removeFromNetwork: Mock;
     removeFromDatabase: Mock;
     customClusters: Record<string, unknown>;
@@ -1117,6 +1117,35 @@ export const devices = {
         undefined,
         CUSTOM_CLUSTERS,
     ),
+    InovelliVZM31SN: new Device(
+        'Router',
+        '0xb43a31fffe2f1f6a',
+        59545,
+        4655,
+        [
+            new Endpoint(1, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {multiEndpointSkip: ['state', 'power', 'energy', 'brightness']}),
+            new Endpoint(2, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {multiEndpointSkip: ['state', 'power', 'energy', 'brightness']}),
+            new Endpoint(3, [], [], '0xb43a31fffe2f1f6a', [], {}, [], 1, 1, {multiEndpointSkip: ['state', 'power', 'energy', 'brightness']}),
+        ],
+        true,
+        'Mains (single phase)',
+        'VZM31-SN',
+        false,
+        undefined,
+        undefined,
+        undefined,
+        CUSTOM_CLUSTERS,
+    ),
+    fanbee: new Device(
+        'Router',
+        '0x00124b00cfcf3298',
+        18129,
+        0xfff1,
+        [new Endpoint(8, [0, 3, 4, 5, 6, 8], [], '0x00124b00cfcf3298'), new Endpoint(242, [], [33], '0x00124b00cfcf3298')],
+        true,
+        'DC Source',
+        'FanBee1',
+    ),
 };
 
 export const mockController = {
@@ -1140,7 +1169,8 @@ export const mockController = {
         (): Promise<AdapterTypes.CoordinatorVersion> => Promise.resolve({type: 'z-Stack', meta: {version: 1, revision: 20190425}}),
     ),
     getNetworkParameters: vi.fn(
-        (): Promise<AdapterTypes.NetworkParameters> => Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15}),
+        (): Promise<AdapterTypes.NetworkParameters> =>
+            Promise.resolve({panID: 0x162a, extendedPanID: '0x64c5fd698daf0c00', channel: 15, nwkUpdateID: 0}),
     ),
     getDevices: vi.fn((): Device[] => []),
     getDevicesIterator: vi.fn(function* (predicate?: (value: Device) => boolean): Generator<Device> {

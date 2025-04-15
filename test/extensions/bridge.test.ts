@@ -7,8 +7,6 @@ import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, ev
 
 import type {Mock} from 'vitest';
 
-import type Bridge from '../../lib/extension/bridge';
-
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +14,7 @@ import path from 'node:path';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from '../../lib/controller';
+import Bridge from '../../lib/extension/bridge';
 import * as settings from '../../lib/util/settings';
 import utils from '../../lib/util/utils';
 
@@ -48,10 +47,9 @@ describe('Extension: Bridge', () => {
     let extension: Bridge;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Bridge');
-        await controller.enableDisableExtension(true, 'Bridge');
-        // @ts-expect-error private
-        extension = controller.extensions.find((e) => e.constructor.name === 'Bridge');
+        await controller.removeExtension(controller.getExtension('Bridge')!);
+        await controller.addExtension(new Bridge(...controller.extensionArgs));
+        extension = controller.getExtension('Bridge')! as Bridge;
     };
 
     beforeAll(async () => {
@@ -60,8 +58,7 @@ describe('Extension: Bridge', () => {
         controller = new Controller(mockRestart, vi.fn());
         await controller.start();
         await flushPromises();
-        // @ts-expect-error private
-        extension = controller.extensions.find((e) => e.constructor.name === 'Bridge');
+        extension = controller.getExtension('Bridge')! as Bridge;
     });
 
     beforeEach(async () => {
@@ -81,11 +78,13 @@ describe('Extension: Bridge', () => {
         // @ts-expect-error private
         extension.restartRequired = false;
         // @ts-expect-error private
-        controller.state.state = {[devices.bulb.ieeeAddr]: {brightness: 50}};
+        controller.state.state = new Map([[devices.bulb.ieeeAddr, {brightness: 50}]]);
         fs.rmSync(deviceIconsDir, {force: true, recursive: true});
     });
 
     afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
@@ -118,9 +117,11 @@ describe('Extension: Bridge', () => {
                         log_level: 'info',
                         log_namespaced_levels: {},
                         log_output: ['console', 'file'],
+                        log_console_json: false,
                         log_rotation: true,
                         log_symlink_current: false,
                         log_syslog: {},
+                        log_directories_to_keep: 10,
                         output: 'json',
                         pan_id: 6754,
                         timestamp_format: 'YYYY-MM-DD HH:mm:ss',
@@ -140,6 +141,7 @@ describe('Extension: Bridge', () => {
                             retain: false,
                         },
                         '0x000b57fffec6a5b7': {friendly_name: 'bulb_2', retain: false},
+                        '0x00124b00cfcf3298': {friendly_name: 'fanbee', retain: true},
                         '0x0017880104a44559': {friendly_name: 'J1_cover'},
                         '0x0017880104e43559': {friendly_name: 'U202DST600ZB'},
                         '0x0017880104e44559': {friendly_name: '3157100_thermostat'},
@@ -256,7 +258,12 @@ describe('Extension: Bridge', () => {
                     },
                     availability: {
                         enabled: false,
-                        active: {timeout: 10},
+                        active: {
+                            timeout: 10,
+                            max_jitter: 30000,
+                            backoff: true,
+                            pause_on_backoff_gt: 0,
+                        },
                         passive: {timeout: 1500},
                     },
                     frontend: {
@@ -314,28 +321,22 @@ describe('Extension: Bridge', () => {
 
     it('Should publish devices on startup', async () => {
         await resetExtension();
-        // console.log(mockMQTT.publish.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/devices',
             stringify([
                 {
-                    date_code: undefined,
-                    // definition: undefined,
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: [], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: [], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'Coordinator',
                     ieee_address: '0x00124b00120144ae',
                     interview_completed: false,
                     interviewing: false,
-                    model_id: undefined,
                     network_address: 0,
-                    power_source: undefined,
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Coordinator',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                         exposes: [
@@ -515,6 +516,17 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
+                            },
+                            {
+                                access: 2,
+                                description:
                                     'When enabled colors will be synced, e.g. if the light supports both color x/y and color temperature a conversion from color x/y to color temperature will be done when setting the x/y color (default true).',
                                 label: 'Color sync',
                                 name: 'color_sync',
@@ -551,7 +563,7 @@ describe('Extension: Bridge', () => {
                     description: 'this is my bulb',
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -576,7 +588,6 @@ describe('Extension: Bridge', () => {
                     model_id: 'TRADFRI bulb E27 WS opal 980lm',
                     network_address: 40369,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
@@ -753,7 +764,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -776,7 +787,6 @@ describe('Extension: Bridge', () => {
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Hue dimmer switch',
                         exposes: [
@@ -880,7 +890,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [
                                 {cluster: 'genLevelCtrl', target: {endpoint: 1, ieee_address: '0x000b57fffec6a5b3', type: 'endpoint'}},
                                 {cluster: 'genOnOff', target: {endpoint: 1, ieee_address: '0x000b57fffec6a5b3', type: 'endpoint'}},
@@ -892,7 +902,7 @@ describe('Extension: Bridge', () => {
                             configured_reportings: [],
                             scenes: [],
                         },
-                        2: {bindings: [], clusters: {input: ['genBasic'], output: ['genOta', 'genOnOff']}, configured_reportings: [], scenes: []},
+                        '2': {bindings: [], clusters: {input: ['genBasic'], output: ['genOta', 'genOnOff']}, configured_reportings: [], scenes: []},
                     },
                     friendly_name: 'remote',
                     ieee_address: '0x0017880104e45517',
@@ -901,12 +911,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'RWL021',
                     network_address: 6535,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Automatically generated definition',
                         exposes: [
@@ -981,7 +989,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {input: ['genBasic'], output: ['genBasic', 'genOnOff', 'genLevelCtrl', 'genScenes']},
                             configured_reportings: [],
@@ -996,12 +1004,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'notSupportedModelID',
                     network_address: 6536,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: false,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Wireless mini switch',
                         exposes: [
@@ -1085,7 +1091,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {input: ['genBasic'], output: ['genBasic', 'genOnOff', 'genLevelCtrl', 'genScenes']},
                             configured_reportings: [
@@ -1107,12 +1113,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.sensor_switch.aq2',
                     network_address: 6537,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Temperature and humidity sensor',
                         exposes: [
@@ -1242,7 +1246,7 @@ describe('Extension: Bridge', () => {
                         vendor: 'Aqara',
                     },
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: ['genBasic'], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: ['genBasic'], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'weather_sensor',
                     ieee_address: '0x0017880104e45522',
                     interview_completed: true,
@@ -1250,12 +1254,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.weather',
                     network_address: 6539,
                     power_source: 'Battery',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'EndDevice',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'Mi smart plug',
                         exposes: [
@@ -1277,7 +1279,6 @@ describe('Extension: Bridge', () => {
                             },
                             {
                                 access: 5,
-                                category: 'diagnostic',
                                 description: 'Instantaneous measured power',
                                 label: 'Power',
                                 name: 'power',
@@ -1391,7 +1392,7 @@ describe('Extension: Bridge', () => {
                         vendor: 'Xiaomi',
                     },
                     disabled: false,
-                    endpoints: {1: {bindings: [], clusters: {input: ['genBasic', 'genOnOff'], output: []}, configured_reportings: [], scenes: []}},
+                    endpoints: {'1': {bindings: [], clusters: {input: ['genBasic', 'genOnOff'], output: []}, configured_reportings: [], scenes: []}},
                     friendly_name: 'power_plug',
                     ieee_address: '0x0017880104e45524',
                     interview_completed: true,
@@ -1399,12 +1400,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'lumi.plug',
                     network_address: 6540,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'zigfred plus smart in-wall switch',
                         exposes: [
@@ -1434,18 +1433,6 @@ describe('Extension: Bridge', () => {
                                     'button_4_hold',
                                     'button_4_release',
                                 ],
-                            },
-                            {
-                                access: 1,
-                                category: 'diagnostic',
-                                description: 'Link quality (signal strength)',
-                                label: 'Linkquality',
-                                name: 'linkquality',
-                                property: 'linkquality',
-                                type: 'numeric',
-                                unit: 'lqi',
-                                value_max: 255,
-                                value_min: 0,
                             },
                             {
                                 endpoint: 'l1',
@@ -1683,6 +1670,18 @@ describe('Extension: Bridge', () => {
                                 ],
                                 type: 'cover',
                             },
+                            {
+                                access: 1,
+                                category: 'diagnostic',
+                                description: 'Link quality (signal strength)',
+                                label: 'Linkquality',
+                                name: 'linkquality',
+                                property: 'linkquality',
+                                type: 'numeric',
+                                unit: 'lqi',
+                                value_max: 255,
+                                value_min: 0,
+                            },
                         ],
                         model: 'ZFP-1A-CH',
                         options: [
@@ -1850,43 +1849,43 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        10: {
+                        '10': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        11: {
+                        '11': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'closuresWindowCovering'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        12: {
+                        '12': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'closuresWindowCovering'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        5: {
+                        '5': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        7: {
+                        '7': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        8: {
+                        '8': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
-                        9: {
+                        '9': {
                             bindings: [],
                             clusters: {input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl'], output: []},
                             configured_reportings: [],
@@ -1901,12 +1900,10 @@ describe('Extension: Bridge', () => {
                     model_id: 'zigfred plus',
                     network_address: 6589,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
                 {
-                    date_code: undefined,
                     definition: {
                         description: 'TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm',
                         exposes: [
@@ -2086,6 +2083,17 @@ describe('Extension: Bridge', () => {
                             {
                                 access: 2,
                                 description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
+                            },
+                            {
+                                access: 2,
+                                description:
                                     'When enabled colors will be synced, e.g. if the light supports both color x/y and color temperature a conversion from color x/y to color temperature will be done when setting the x/y color (default true).',
                                 label: 'Color sync',
                                 name: 'color_sync',
@@ -2121,7 +2129,7 @@ describe('Extension: Bridge', () => {
                     },
                     disabled: false,
                     endpoints: {
-                        1: {
+                        '1': {
                             bindings: [],
                             clusters: {
                                 input: ['genBasic', 'genScenes', 'genOnOff', 'genLevelCtrl', 'lightingColorCtrl'],
@@ -2135,11 +2143,9 @@ describe('Extension: Bridge', () => {
                     ieee_address: '0x000b57fffec6a5c2',
                     interview_completed: true,
                     interviewing: false,
-                    manufacturer: undefined,
                     model_id: 'TRADFRI bulb E27 WS opal 980lm',
                     network_address: 40369,
                     power_source: 'Mains (single phase)',
-                    software_build_id: undefined,
                     supported: true,
                     type: 'Router',
                 },
@@ -2327,7 +2333,7 @@ describe('Extension: Bridge', () => {
         await mockZHEvents.deviceInterview({device: devices.unsupported, status: 'successful'});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(7);
-        // console.log(mockMQTT.publish.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'));
+        // console.log(mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === 'zigbee2mqtt/bridge/event'));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/event',
             stringify({
@@ -2506,6 +2512,17 @@ describe('Extension: Bridge', () => {
                                 property: 'transition',
                                 type: 'numeric',
                                 value_min: 0,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    'Whether to unfreeze IKEA lights (that are known to be frozen) before issuing a command, false: no unfreeze support, true: unfreeze support (default true).',
+                                label: 'Unfreeze support',
+                                name: 'unfreeze_support',
+                                property: 'unfreeze_support',
+                                type: 'binary',
+                                value_off: false,
+                                value_on: true,
                             },
                             {
                                 access: 2,
@@ -2825,7 +2842,7 @@ describe('Extension: Bridge', () => {
         mockMQTTEvents.message('zigbee2mqtt/bridge/request/device/remove', 'bulb');
         await flushPromises();
         // @ts-expect-error private
-        expect(controller.state[device.ieeeAddr]).toBeUndefined();
+        expect(controller.state.state.get(device.ieeeAddr)).toBeUndefined();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(device.removeFromDatabase).not.toHaveBeenCalled();
         expect(settings.getDevice('bulb')).toBeUndefined();
@@ -3193,18 +3210,16 @@ describe('Extension: Bridge', () => {
                 data: {
                     id: '0x0017880104e45524',
                     source:
-                        "const {onOff} = require('zigbee-herdsman-converters/lib/modernExtend');\n" +
+                        "import * as m from 'zigbee-herdsman-converters/lib/modernExtend';\n" +
                         '\n' +
-                        'const definition = {\n' +
+                        'export default {\n' +
                         "    zigbeeModel: ['lumi.plug'],\n" +
                         "    model: 'lumi.plug',\n" +
                         "    vendor: '',\n" +
                         "    description: 'Automatically generated definition',\n" +
-                        '    extend: [onOff({"powerOnBehavior":false})],\n' +
+                        '    extend: [m.onOff({"powerOnBehavior":false})],\n' +
                         '    meta: {},\n' +
-                        '};\n' +
-                        '\n' +
-                        'module.exports = definition;',
+                        '};\n',
                 },
                 status: 'ok',
             }),
@@ -3778,14 +3793,9 @@ describe('Extension: Bridge', () => {
     });
 
     it('Change options and apply - homeassistant', async () => {
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
-        // TODO: there appears to be a race condition somewhere in here, calls in `bridgeOptions` are not properly ordered when logged
-        await vi.advanceTimersByTimeAsync(10000);
-        await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).not.toBeUndefined();
+        expect(controller.getExtension('HomeAssistant')).toBeUndefined();
+        await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: true}}}));
+        await expect(vi.waitUntil(() => controller.getExtension('HomeAssistant'))).resolves.toBeDefined();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith('zigbee2mqtt/bridge/info', expect.any(String), {retain: true, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             'zigbee2mqtt/bridge/response/options',
@@ -3793,10 +3803,8 @@ describe('Extension: Bridge', () => {
             {retain: false, qos: 0},
         );
         // revert
-        mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
-        await flushPromises();
-        // @ts-expect-error private
-        expect(controller.extensions.find((e) => e.constructor.name === 'HomeAssistant')).toBeUndefined();
+        await mockMQTTEvents.message('zigbee2mqtt/bridge/request/options', stringify({options: {homeassistant: {enabled: false}}}));
+        await vi.waitUntil(() => controller.getExtension('HomeAssistant') === undefined);
     });
 
     it('Change options and apply - log_level', async () => {
@@ -3916,9 +3924,8 @@ describe('Extension: Bridge', () => {
     });
 
     it('Icon link handling', async () => {
-        // @ts-expect-error private
-        const bridge: Bridge = controller.extensions.find((e) => e.constructor.name === 'Bridge');
-        expect(bridge).not.toBeUndefined();
+        const bridge = controller.getExtension('Bridge')! as Bridge;
+        expect(bridge).toBeDefined();
 
         const definition = {
             fingerprint: [],

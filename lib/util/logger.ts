@@ -56,13 +56,15 @@ class Logger {
         this.logger.add(
             new winston.transports.Console({
                 silent: consoleSilenced,
-                // winston.config.syslog.levels sets 'warning' as 'red'
-                format: winston.format.combine(
-                    winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
-                    winston.format.printf((info) => {
-                        return `[${info.timestamp}] ${info.level}: \t${info.message}`;
-                    }),
-                ),
+                format: settings.get().advanced.log_console_json
+                    ? winston.format.json()
+                    : winston.format.combine(
+                          // winston.config.syslog.levels sets 'warning' as 'red'
+                          winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
+                          winston.format.printf((info) => {
+                              return `[${info.timestamp}] ${info.level}: \t${info.message}`;
+                          }),
+                      ),
             }),
         );
 
@@ -74,7 +76,7 @@ class Logger {
 
             if (settings.get().advanced.log_symlink_current) {
                 const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
-                const actual = './' + timestamp;
+                const actual = `./${timestamp}`;
 
                 /* v8 ignore start */
                 if (fs.existsSync(current)) {
@@ -107,7 +109,7 @@ class Logger {
 
         /* v8 ignore start */
         if (this.output.includes('syslog')) {
-            logging += `, syslog`;
+            logging += ', syslog';
             // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require('winston-syslog').Syslog;
 
@@ -117,7 +119,7 @@ class Logger {
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options['type'] !== undefined) {
+            if (options.type !== undefined) {
                 options.type = options.type.toString();
             }
 
@@ -148,7 +150,7 @@ class Logger {
     }
 
     public setDebugNamespaceIgnore(value: string): void {
-        this.debugNamespaceIgnoreRegex = value != '' ? new RegExp(value) : undefined;
+        this.debugNamespaceIgnoreRegex = value !== '' ? new RegExp(value) : undefined;
     }
 
     public getLevel(): settings.LogLevel {
@@ -176,11 +178,13 @@ class Logger {
     private cacheNamespacedLevel(namespace: string): string {
         let cached = namespace;
 
-        while (this.cachedNamespacedLevels[namespace] == undefined) {
+        while (this.cachedNamespacedLevels[namespace] === undefined) {
             const sep = cached.lastIndexOf(NAMESPACE_SEPARATOR);
 
             if (sep === -1) {
-                return (this.cachedNamespacedLevels[namespace] = this.level);
+                this.cachedNamespacedLevels[namespace] = this.level;
+
+                return this.level;
             }
 
             cached = cached.slice(0, sep);
@@ -199,19 +203,19 @@ class Logger {
         }
     }
 
-    public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public error(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('error', messageOrLambda, namespace);
     }
 
-    public warning(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public warning(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('warning', messageOrLambda, namespace);
     }
 
-    public info(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public info(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         this.log('info', messageOrLambda, namespace);
     }
 
-    public debug(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public debug(messageOrLambda: string | (() => string), namespace = 'z2m'): void {
         if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
@@ -230,11 +234,12 @@ class Logger {
             });
 
             directories.sort((a: KeyValue, b: KeyValue) => b.birth - a.birth);
-            directories = directories.slice(10, directories.length);
-            directories.forEach((dir) => {
+            directories = directories.slice(settings.get().advanced.log_directories_to_keep, directories.length);
+
+            for (const dir of directories) {
                 this.debug(`Removing old log directory '${dir.path}'`);
                 rimrafSync(dir.path);
-            });
+            }
         }
     }
 
@@ -242,12 +247,11 @@ class Logger {
     // https://github.com/Koenkk/zigbee2mqtt/pull/10905
     /* v8 ignore start */
     public async end(): Promise<void> {
-        this.logger.end();
-
-        await new Promise<void>((resolve) => {
-            if (!this.fileTransport) {
-                process.nextTick(resolve);
-            } else {
+        // Only flush the file transport, don't end logger itself as log() might still be called
+        // causing a UnhandledPromiseRejection (`Error: write after end`). Flushing the file transport
+        // ensures the log files are written before stopping.
+        if (this.fileTransport) {
+            await new Promise<void>((resolve) => {
                 // @ts-expect-error workaround
                 if (this.fileTransport._dest) {
                     // @ts-expect-error workaround
@@ -256,8 +260,9 @@ class Logger {
                     // @ts-expect-error workaround
                     this.fileTransport.on('open', () => this.fileTransport._dest.on('finish', resolve));
                 }
-            }
-        });
+                this.fileTransport.end();
+            });
+        }
     }
     /* v8 ignore stop */
 }

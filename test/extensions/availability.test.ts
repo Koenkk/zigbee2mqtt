@@ -32,8 +32,8 @@ describe('Extension: Availability', () => {
     let controller: Controller;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Availability');
-        await controller.enableDisableExtension(true, 'Availability');
+        await controller.removeExtension(controller.getExtension('Availability')!);
+        await controller.addExtension(new Availability(...controller.extensionArgs));
     };
 
     const setTimeAndAdvanceTimers = async (value: number): Promise<void> => {
@@ -57,6 +57,9 @@ describe('Extension: Availability', () => {
         settings.reRead();
         settings.set(['availability'], {enabled: true});
         settings.set(['devices', devices.bulb_color_2.ieeeAddr, 'availability'], false);
+        settings.set(['devices', devices.hue_twilight.ieeeAddr, 'availability'], {max_jitter: 1000});
+        settings.set(['devices', devices.GLEDOPTO_2ID.ieeeAddr, 'availability'], {backoff: false});
+        settings.set(['devices', devices.QBKG03LM.ieeeAddr, 'availability'], {pause_on_backoff_gt: 1.5});
         Object.values(devices).forEach((d) => (d.lastSeen = utils.minutes(1)));
         mocksClear.forEach((m) => m.mockClear());
         await resetExtension();
@@ -66,7 +69,8 @@ describe('Extension: Availability', () => {
     afterEach(async () => {});
 
     afterAll(async () => {
-        await controller.stop();
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
@@ -136,7 +140,7 @@ describe('Extension: Availability', () => {
     it('Should reset ping timer when device last seen changes for active device', async () => {
         mockMQTTPublishAsync.mockClear();
 
-        await setTimeAndAdvanceTimers(utils.minutes(5));
+        await setTimeAndAdvanceTimers(utils.minutes(6));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
 
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
@@ -362,8 +366,7 @@ describe('Extension: Availability', () => {
     });
 
     it('Should clear the ping queue on stop', async () => {
-        // @ts-expect-error private
-        const availability = controller.extensions.find((extension) => extension instanceof Availability)!;
+        const availability = controller.getExtension('Availability')! as Availability;
         // @ts-expect-error private
         const publishAvailabilitySpy = vi.spyOn(availability, 'publishAvailability');
 
@@ -384,11 +387,295 @@ describe('Extension: Availability', () => {
     });
 
     it('Should prevent instance restart', async () => {
-        // @ts-expect-error private
-        const availability = controller.extensions.find((extension) => extension instanceof Availability)!;
+        const availability = controller.getExtension('Availability')! as Availability;
 
         await availability.stop();
 
         await expect(() => availability.start()).rejects.toThrow();
+    });
+
+    it('jitters pings', async () => {
+        const devicesPings = [
+            devices.bulb_color.ping,
+            devices.TS0601_thermostat.ping,
+            devices.bulb_2.ping,
+            devices.ZNCZ02LM.ping,
+            devices.GLEDOPTO_2ID.ping,
+            devices.QBKG03LM.ping,
+            devices.hue_twilight.ping,
+        ];
+        let called = 0;
+        let lastCalled = 0;
+
+        await setTimeAndAdvanceTimers(utils.minutes(10));
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toStrictEqual(0);
+
+        lastCalled = called;
+        called = 0;
+
+        await setTimeAndAdvanceTimers(utils.seconds(2)); // 10:02
+
+        expect(devices.hue_twilight.ping).toHaveBeenCalledTimes(1); // max_jitter: 1000
+
+        await setTimeAndAdvanceTimers(utils.seconds(8)); // 10:10
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toBeGreaterThanOrEqual(0);
+        expect(called).toBeLessThan(7);
+        expect(called).toBeGreaterThanOrEqual(lastCalled);
+
+        lastCalled = called;
+        called = 0;
+
+        await setTimeAndAdvanceTimers(utils.seconds(20)); // 10:20
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toBeGreaterThanOrEqual(lastCalled);
+
+        lastCalled = called;
+        called = 0;
+        await setTimeAndAdvanceTimers(utils.seconds(35)); // 10:35
+
+        for (const p of devicesPings) {
+            called += p.mock.calls.length;
+        }
+
+        expect(called).toStrictEqual(7);
+
+        for (const p of devicesPings) {
+            expect(p).toHaveBeenCalledTimes(1);
+        }
+    });
+
+    it('does not trigger backoff on ping success', async () => {
+        settings.set(['availability', 'active', 'max_jitter'], 0); // easier testing
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 10:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 21:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+    });
+
+    it('triggers backoff on successive ping failures', async () => {
+        settings.set(['availability', 'active', 'max_jitter'], 0); // easier testing
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await mockZHEvents.lastSeenChanged({device: devices.GLEDOPTO_2ID}); // backoff: false
+
+        devices.bulb_color.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+        devices.GLEDOPTO_2ID.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 10:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(2, false);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(2);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenNthCalledWith(2, false);
+
+        await setTimeAndAdvanceTimers(utils.minutes(14.5)); // 25:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 25:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(29.5)); // 55:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(6);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 55:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(6);
+
+        await setTimeAndAdvanceTimers(utils.minutes(59.5)); // 115:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(12);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 115:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(5);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(12);
+
+        // backoff was reset (4 mocks done)
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 126:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(6);
+        expect(devices.GLEDOPTO_2ID.ping).toHaveBeenCalledTimes(13);
+    });
+
+    it('resets backoff on last seen', async () => {
+        settings.set(['availability', 'active', 'max_jitter'], 0); // easier testing
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        devices.bulb_color.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 10:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(2, false);
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 21:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+    });
+
+    it('pauses when backoff reaches configured value and unpauses on last seen', async () => {
+        settings.set(['availability', 'active', 'max_jitter'], 0); // easier testing
+        settings.set(['availability', 'active', 'pause_on_backoff_gt'], 3);
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await mockZHEvents.lastSeenChanged({device: devices.QBKG03LM}); // pause_on_backoff_gt: 1.5
+
+        devices.bulb_color.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+        devices.QBKG03LM.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 10:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(2, false);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(2);
+        expect(devices.QBKG03LM.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.QBKG03LM.ping).toHaveBeenNthCalledWith(2, false);
+
+        await setTimeAndAdvanceTimers(utils.minutes(14.5)); // 25:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(2);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 25:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(29.5)); // 55:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 55:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(100));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(100));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(3);
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await mockZHEvents.lastSeenChanged({device: devices.QBKG03LM});
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(5);
+        expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(4);
+    });
+
+    it('allows to disable backoff', async () => {
+        settings.set(['availability', 'active', 'max_jitter'], 0); // easier testing
+        settings.set(['availability', 'active', 'backoff'], false);
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        devices.bulb_color.ping
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            })
+            .mockImplementationOnce(() => {
+                throw new Error('failed');
+            });
+
+        await setTimeAndAdvanceTimers(utils.minutes(10.5)); // 10:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(1, true);
+        expect(devices.bulb_color.ping).toHaveBeenNthCalledWith(2, false);
+
+        await setTimeAndAdvanceTimers(utils.minutes(9.5)); // 20:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 20:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(9.5)); // 30:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(3);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 30:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+
+        await setTimeAndAdvanceTimers(utils.minutes(9.5)); // 40:00
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(4);
+
+        await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 40:30
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(5);
     });
 });

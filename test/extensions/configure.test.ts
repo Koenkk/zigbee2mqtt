@@ -7,6 +7,7 @@ import {Device, devices, Endpoint, events as mockZHEvents} from '../mocks/zigbee
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from '../../lib/controller';
+import Configure from '../../lib/extension/configure';
 import * as settings from '../../lib/util/settings';
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
@@ -16,8 +17,8 @@ describe('Extension: Configure', () => {
     let coordinatorEndpoint: Endpoint;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Configure');
-        await controller.enableDisableExtension(true, 'Configure');
+        await controller.removeExtension(controller.getExtension('Configure')!);
+        await controller.addExtension(new Configure(...controller.extensionArgs));
     };
 
     const mockClear = (device: Device): void => {
@@ -81,6 +82,8 @@ describe('Extension: Configure', () => {
     });
 
     afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 
@@ -227,7 +230,7 @@ describe('Extension: Configure', () => {
 
     it('Should configure max 3 times when fails', async () => {
         // @ts-expect-error private
-        controller.extensions.find((e) => e.constructor.name === 'Configure').attempts = {};
+        (controller.getExtension('Configure')! as Configure).attempts = {};
         const device = devices.remote;
         delete device.meta.configured;
         const endpoint = device.getEndpoint(1)!;

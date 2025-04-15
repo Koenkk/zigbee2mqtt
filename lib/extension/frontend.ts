@@ -27,7 +27,7 @@ import Extension from './extension';
 /**
  * This extension servers the frontend
  */
-export default class Frontend extends Extension {
+export class Frontend extends Extension {
     private mqttBaseTopic: string;
     private host: string | undefined;
     private port: number;
@@ -123,13 +123,17 @@ export default class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss?.clients.forEach((client) => {
-            client.send(stringify({topic: 'bridge/state', payload: 'offline'}));
-            client.terminate();
-        });
-        this.wss?.close();
 
-        await new Promise((resolve) => this.server.close(resolve));
+        if (this.wss) {
+            for (const client of this.wss.clients) {
+                client.send(stringify({topic: 'bridge/state', payload: {state: 'offline'}}));
+                client.terminate();
+            }
+
+            this.wss.close();
+        }
+
+        await new Promise((resolve) => this.server?.close(resolve));
     }
 
     @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
@@ -138,13 +142,15 @@ export default class Frontend extends Extension {
 
         // The request url is not within the frontend base url, so the relative path starts with '..'
         if (newUrl.startsWith('.')) {
-            return fin();
+            fin();
+
+            return;
         }
 
         // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
         // This is necessary for the browser to resolve relative assets paths correctly.
         request.originalUrl = request.url;
-        request.url = '/' + newUrl;
+        request.url = `/${newUrl}`;
         request.path = request.url;
 
         if (newUrl.startsWith('device_icons/')) {
@@ -225,3 +231,5 @@ export default class Frontend extends Extension {
         }
     }
 }
+
+export default Frontend;

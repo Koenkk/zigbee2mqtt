@@ -1,4 +1,6 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from 'lib/types/api';
+import type {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from '../types/api';
 
 import assert from 'node:assert';
 
@@ -7,7 +9,6 @@ import debounce from 'debounce';
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Zcl} from 'zigbee-herdsman';
-import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
 
 import Device from '../model/device';
 import Group from '../model/group';
@@ -224,8 +225,8 @@ export default class Bind extends Extension {
             let skipDisableReporting = false;
             const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/device/bind'];
 
-            if (typeof message !== 'object' || message.from == undefined || message.to == undefined) {
-                return [message, {type, skipDisableReporting}, `Invalid payload`];
+            if (typeof message !== 'object' || message.from == null || message.to == null) {
+                return [message, {type, skipDisableReporting}, 'Invalid payload'];
             }
 
             const sourceKey = message.from;
@@ -233,7 +234,7 @@ export default class Bind extends Extension {
             const targetKey = message.to;
             const targetEndpointKey = message.to_endpoint;
             const clusters = message.clusters;
-            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
+            skipDisableReporting = message.skip_disable_reporting != null ? message.skip_disable_reporting : false;
             const resolvedSource = this.zigbee.resolveEntity(message.from) as Device;
 
             if (!resolvedSource || !(resolvedSource instanceof Device)) {
@@ -289,9 +290,9 @@ export default class Bind extends Extension {
                 },
                 undefined,
             ];
-        } else {
-            return [undefined, undefined, undefined];
         }
+
+        return [undefined, undefined, undefined];
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -323,7 +324,7 @@ export default class Bind extends Extension {
         assert(resolvedSource, '`resolvedSource` is missing');
         assert(resolvedTarget, '`resolvedTarget` is missing');
         assert(resolvedSourceEndpoint, '`resolvedSourceEndpoint` is missing');
-        assert(resolvedBindTarget != undefined, '`resolvedBindTarget` is missing');
+        assert(resolvedBindTarget !== undefined, '`resolvedBindTarget` is missing');
 
         const successfulClusters: string[] = [];
         const failedClusters = [];
@@ -374,7 +375,9 @@ export default class Bind extends Extension {
             logger.error(`Nothing to ${type} from '${resolvedSource.name}' to '${resolvedTarget.name}'`);
             await this.publishResponse(parsed.type, raw, {}, `Nothing to ${type}`);
             return;
-        } else if (failedClusters.length === attemptedClusters.length) {
+        }
+
+        if (failedClusters.length === attemptedClusters.length) {
             await this.publishResponse(parsed.type, raw, {}, `Failed to ${type}`);
             return;
         }
@@ -564,7 +567,7 @@ export default class Bind extends Extension {
         );
 
         if (polls.length) {
-            const toPoll: Set<zh.Endpoint> = new Set();
+            const toPoll = new Set<zh.Endpoint>();
 
             // Add bound devices
             for (const endpoint of data.device.zh.endpoints) {
@@ -575,12 +578,14 @@ export default class Bind extends Extension {
                 }
             }
 
-            // If message is published to a group, add members of the group
-            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
+            if (data.groupID && data.groupID !== 0) {
+                // If message is published to a group, add members of the group
+                const group = this.zigbee.groupByID(data.groupID);
 
-            if (group) {
-                for (const member of group.zh.members) {
-                    toPoll.add(member);
+                if (group) {
+                    for (const member of group.zh.members) {
+                        toPoll.add(member);
+                    }
                 }
             }
 

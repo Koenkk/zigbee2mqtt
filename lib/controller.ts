@@ -1,9 +1,7 @@
 import type {IClientPublishOptions} from 'mqtt';
-import type * as SdNotify from 'sd-notify';
 
+import type Extension from './extension/extension';
 import type {Zigbee2MQTTAPI} from './types/api';
-
-import assert from 'node:assert';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -12,16 +10,14 @@ import {setLogger as zhSetLogger} from 'zigbee-herdsman';
 import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
 
 import EventBus from './eventBus';
+// Extensions
 import ExtensionAvailability from './extension/availability';
 import ExtensionBind from './extension/bind';
 import ExtensionBridge from './extension/bridge';
 import ExtensionConfigure from './extension/configure';
 import ExtensionExternalConverters from './extension/externalConverters';
 import ExtensionExternalExtensions from './extension/externalExtensions';
-// Extensions
-import ExtensionFrontend from './extension/frontend';
 import ExtensionGroups from './extension/groups';
-import ExtensionHomeAssistant from './extension/homeassistant';
 import ExtensionNetworkMap from './extension/networkMap';
 import ExtensionOnEvent from './extension/onEvent';
 import ExtensionOTAUpdate from './extension/otaUpdate';
@@ -30,39 +26,10 @@ import ExtensionReceive from './extension/receive';
 import MQTT from './mqtt';
 import State from './state';
 import logger from './util/logger';
+import {initSdNotify} from './util/sd-notify';
 import * as settings from './util/settings';
 import utils from './util/utils';
 import Zigbee from './zigbee';
-
-type SdNotifyType = typeof SdNotify;
-
-const AllExtensions = [
-    ExtensionPublish,
-    ExtensionReceive,
-    ExtensionNetworkMap,
-    ExtensionHomeAssistant,
-    ExtensionConfigure,
-    ExtensionBridge,
-    ExtensionGroups,
-    ExtensionBind,
-    ExtensionOnEvent,
-    ExtensionOTAUpdate,
-    ExtensionExternalConverters,
-    ExtensionFrontend,
-    ExtensionExternalExtensions,
-    ExtensionAvailability,
-];
-
-type ExtensionArgs = [
-    Zigbee,
-    MQTT,
-    State,
-    PublishEntityState,
-    EventBus,
-    enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
-    restartCallback: () => Promise<void>,
-    addExtension: (extension: Extension) => Promise<void>,
-];
 
 export class Controller {
     private eventBus: EventBus;
@@ -71,9 +38,9 @@ export class Controller {
     private mqtt: MQTT;
     private restartCallback: () => Promise<void>;
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
-    private extensions: Extension[];
-    private extensionArgs: ExtensionArgs;
-    private sdNotify: SdNotifyType | undefined;
+    public readonly extensions: Set<Extension>;
+    public readonly extensionArgs: ConstructorParameters<typeof Extension>;
+    private sdNotify: Awaited<ReturnType<typeof initSdNotify>>;
 
     constructor(restartCallback: () => Promise<void>, exitCallback: (code: number, restart: boolean) => Promise<void>) {
         logger.init();
@@ -98,7 +65,7 @@ export class Controller {
             this.addExtension,
         ];
 
-        this.extensions = [
+        this.extensions = new Set([
             new ExtensionExternalConverters(...this.extensionArgs),
             new ExtensionOnEvent(...this.extensionArgs),
             new ExtensionBridge(...this.extensionArgs),
@@ -111,31 +78,26 @@ export class Controller {
             new ExtensionOTAUpdate(...this.extensionArgs),
             new ExtensionExternalExtensions(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
-        ];
-
-        if (settings.get().frontend.enabled) {
-            this.extensions.push(new ExtensionFrontend(...this.extensionArgs));
-        }
-
-        if (settings.get().homeassistant.enabled) {
-            this.extensions.push(new ExtensionHomeAssistant(...this.extensionArgs));
-        }
+        ]);
     }
 
     async start(): Promise<void> {
+        if (settings.get().frontend.enabled) {
+            const {Frontend} = await import('./extension/frontend.js');
+
+            this.extensions.add(new Frontend(...this.extensionArgs));
+        }
+
+        if (settings.get().homeassistant.enabled) {
+            const {HomeAssistant} = await import('./extension/homeassistant.js');
+
+            this.extensions.add(new HomeAssistant(...this.extensionArgs));
+        }
+
         this.state.start();
 
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
-
-        try {
-            this.sdNotify = process.env.NOTIFY_SOCKET ? await import('sd-notify') : undefined;
-            logger.debug('sd-notify loaded');
-            /* v8 ignore start */
-        } catch {
-            logger.debug('sd-notify is not installed');
-        }
-        /* v8 ignore stop */
 
         // Start zigbee
         try {
@@ -182,8 +144,10 @@ export class Controller {
             return await this.exit(1);
         }
 
-        // Call extensions
-        await this.callExtensions('start', [...this.extensions]);
+        // copy current Set of extensions to ignore possible external extensions added while looping
+        for (const extension of new Set(this.extensions)) {
+            await this.startExtension(extension);
+        }
 
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
@@ -196,57 +160,155 @@ export class Controller {
 
         this.eventBus.onLastSeenChanged(this, (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
 
-        logger.info(`Zigbee2MQTT started!`);
+        logger.info('Zigbee2MQTT started!');
 
-        const watchdogInterval = this.sdNotify?.watchdogInterval() || 0;
-        if (watchdogInterval > 0) {
-            this.sdNotify?.startWatchdogMode(Math.floor(watchdogInterval / 2));
-        }
-        this.sdNotify?.ready();
+        this.sdNotify = await initSdNotify();
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
-        if (!enable) {
-            const extension = this.extensions.find((e) => e.constructor.name === name);
-            if (extension) {
-                await this.callExtensions('stop', [extension]);
-                this.extensions.splice(this.extensions.indexOf(extension), 1);
+        if (enable) {
+            switch (name) {
+                case 'Frontend': {
+                    if (!settings.get().frontend.enabled) {
+                        throw new Error('Tried to enable Frontend extension disabled in settings');
+                    }
+
+                    // this is not actually used, not tested either
+                    /* v8 ignore start */
+                    const {Frontend} = await import('./extension/frontend.js');
+
+                    await this.addExtension(new Frontend(...this.extensionArgs));
+
+                    break;
+                    /* v8 ignore stop */
+                }
+                case 'HomeAssistant': {
+                    if (!settings.get().homeassistant.enabled) {
+                        throw new Error('Tried to enable HomeAssistant extension disabled in settings');
+                    }
+
+                    const {HomeAssistant} = await import('./extension/homeassistant.js');
+
+                    await this.addExtension(new HomeAssistant(...this.extensionArgs));
+
+                    break;
+                }
+                default: {
+                    throw new Error(
+                        `Extension ${name} does not exist (should be added with 'addExtension') or is built-in that cannot be enabled at runtime`,
+                    );
+                }
             }
         } else {
-            const Extension = AllExtensions.find((e) => e.name === name);
-            assert(Extension, `Extension '${name}' does not exist`);
-            const extension = new Extension(...this.extensionArgs);
-            this.extensions.push(extension);
-            await this.callExtensions('start', [extension]);
+            switch (name) {
+                case 'Frontend': {
+                    if (settings.get().frontend.enabled) {
+                        throw new Error('Tried to disable Frontend extension enabled in settings');
+                    }
+
+                    break;
+                }
+                case 'HomeAssistant': {
+                    if (settings.get().homeassistant.enabled) {
+                        throw new Error('Tried to disable HomeAssistant extension enabled in settings');
+                    }
+
+                    break;
+                }
+                case 'Availability':
+                case 'Bind':
+                case 'Bridge':
+                case 'Configure':
+                case 'ExternalConverters':
+                case 'ExternalExtensions':
+                case 'Groups':
+                case 'NetworkMap':
+                case 'OnEvent':
+                case 'OTAUpdate':
+                case 'Publish':
+                case 'Receive': {
+                    throw new Error(`Built-in extension ${name} cannot be disabled at runtime`);
+                }
+            }
+
+            const extension = this.getExtension(name);
+
+            if (extension) {
+                await this.removeExtension(extension);
+            }
+        }
+    }
+
+    public getExtension(name: string): Extension | undefined {
+        for (const extension of this.extensions) {
+            if (extension.constructor.name === name) {
+                return extension;
+            }
         }
     }
 
     @bind async addExtension(extension: Extension): Promise<void> {
-        this.extensions.push(extension);
-        await this.callExtensions('start', [extension]);
+        for (const ext of this.extensions) {
+            if (ext.constructor.name === extension.constructor.name) {
+                throw new Error(`Extension with name ${ext.constructor.name} already present`);
+            }
+        }
+
+        this.extensions.add(extension);
+        await this.startExtension(extension);
+    }
+
+    async removeExtension(extension: Extension): Promise<void> {
+        if (this.extensions.delete(extension)) {
+            await this.stopExtension(extension);
+        }
+    }
+
+    private async startExtension(extension: Extension): Promise<void> {
+        try {
+            await extension.start();
+        } catch (error) {
+            logger.error(`Failed to start '${extension.constructor.name}' (${(error as Error).stack})`);
+        }
+    }
+
+    private async stopExtension(extension: Extension): Promise<void> {
+        try {
+            await extension.stop();
+        } catch (error) {
+            logger.error(`Failed to stop '${extension.constructor.name}' (${(error as Error).stack})`);
+        }
     }
 
     async stop(restart = false): Promise<void> {
-        this.sdNotify?.stopping(process.pid);
+        this.sdNotify?.notifyStopping();
 
-        // Call extensions
-        await this.callExtensions('stop', this.extensions);
+        let code = 0;
+
+        for (const extension of this.extensions) {
+            try {
+                await extension.stop();
+            } catch (error) {
+                logger.error(`Failed to stop '${extension.constructor.name}' (${(error as Error).stack})`);
+                code = 1;
+            }
+        }
+
         this.eventBus.removeListeners(this);
 
         // Wrap-up
         this.state.stop();
         await this.mqtt.disconnect();
-        let code = 0;
 
         try {
             await this.zigbee.stop();
             logger.info('Stopped Zigbee2MQTT');
         } catch (error) {
-            logger.error(`Failed to stop Zigbee2MQTT (${(error as Error).message})`);
+            logger.error(`Failed to stop Zigbee2MQTT (${(error as Error).stack})`);
             code = 1;
         }
 
-        this.sdNotify?.stopWatchdogMode();
+        this.sdNotify?.stop();
         return await this.exit(code, restart);
     }
 
@@ -358,16 +420,6 @@ export class Controller {
 
             if (message !== null) {
                 await this.mqtt.publish(`${topicRoot}${key}`, message, options);
-            }
-        }
-    }
-
-    private async callExtensions(method: 'start' | 'stop', extensions: Extension[]): Promise<void> {
-        for (const extension of extensions) {
-            try {
-                await extension[method]?.();
-            } catch (error) {
-                logger.error(`Failed to call '${extension.constructor.name}' '${method}' (${(error as Error).stack})`);
             }
         }
     }

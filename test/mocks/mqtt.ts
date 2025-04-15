@@ -20,9 +20,9 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
     endAsync: mockMQTTEndAsync,
     subscribeAsync: mockMQTTSubscribeAsync,
     unsubscribeAsync: mockMQTTUnsubscribeAsync,
-    on: vi.fn((type, handler) => {
+    on: vi.fn(async (type, handler) => {
         if (type === 'connect') {
-            handler();
+            await handler();
         }
 
         events[type] = handler;

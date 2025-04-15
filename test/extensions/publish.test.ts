@@ -7,7 +7,7 @@ import {devices, groups, events as mockZHEvents} from '../mocks/zigbeeHerdsman';
 
 import stringify from 'json-stable-stringify-without-jsonify';
 
-import {toZigbee} from 'zigbee-herdsman-converters';
+import {clearGlobalStore} from 'zigbee-herdsman-converters';
 
 import {Controller} from '../../lib/controller';
 import {loadTopicGetSetRegex} from '../../lib/extension/publish';
@@ -43,7 +43,7 @@ describe('Extension: Publish', () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
         settings.reRead();
         loadTopicGetSetRegex();
         mocksClear.forEach((m) => m.mockClear());
@@ -58,13 +58,15 @@ describe('Extension: Publish', () => {
             g.command.mockClear();
         });
 
-        toZigbee.__clearStore__();
+        clearGlobalStore();
     });
 
     afterAll(async () => {
         await vi.runOnlyPendingTimersAsync();
-        vi.useRealTimers();
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
     });
 
     it('Should publish messages to zigbee devices', async () => {
@@ -626,7 +628,7 @@ describe('Extension: Publish', () => {
         mockLogger.error.mockClear();
         await mockMQTTEvents.message('zigbee2mqtt/0x0017880104e45542/get', stringify({state_center: '', state_right: ''}));
         await flushPromises();
-        expect(mockLogger.error).toHaveBeenCalledWith(`No converter available for 'state_center' ("")`);
+        expect(mockLogger.error).toHaveBeenCalledWith(`No converter available for 'state_center' on 'wall_switch_double': ("")`);
         expect(endpoint2.read).toHaveBeenCalledTimes(0);
         expect(endpoint3.read).toHaveBeenCalledTimes(1);
         expect(endpoint3.read).toHaveBeenCalledWith('genOnOff', ['onOff']);
@@ -965,18 +967,20 @@ describe('Extension: Publish', () => {
         const payload = {state: 'ON', brightness: 20, color_temp: 200, transition: 20};
         await mockMQTTEvents.message('zigbee2mqtt/bulb/set', stringify(payload));
         await flushPromises();
-        expect(endpoint.command).toHaveBeenCalledTimes(2);
+        expect(endpoint.command).toHaveBeenCalledTimes(3);
         expect(endpoint.command.mock.calls[0]).toEqual(['genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 0}, {}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(['lightingColorCtrl', 'moveToColorTemp', {colortemp: 200, transtime: 200}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(['genLevelCtrl', 'stop', {}, {}]); // unfreeze
+        expect(endpoint.command.mock.calls[2]).toEqual(['lightingColorCtrl', 'moveToColorTemp', {colortemp: 200, transtime: 200}, {}]);
     });
 
     it('Should use transition only once when setting brightness and color temperature for group which contains TRADFRI', async () => {
         const group = groups.group_with_tradfri;
         await mockMQTTEvents.message('zigbee2mqtt/group_with_tradfri/set', stringify({state: 'ON', transition: 60, brightness: 20, color_temp: 400}));
         await flushPromises();
-        expect(group.command).toHaveBeenCalledTimes(2);
+        expect(group.command).toHaveBeenCalledTimes(3);
         expect(group.command.mock.calls[0]).toEqual(['genLevelCtrl', 'moveToLevelWithOnOff', {level: 20, transtime: 0}, {}]);
-        expect(group.command.mock.calls[1]).toEqual(['lightingColorCtrl', 'moveToColorTemp', {colortemp: 400, transtime: 600}, {}]);
+        expect(group.command.mock.calls[1]).toEqual(['genLevelCtrl', 'stop', {}, {}]); // unfreeze
+        expect(group.command.mock.calls[2]).toEqual(['lightingColorCtrl', 'moveToColorTemp', {colortemp: 400, transtime: 600}, {}]);
     });
 
     it('Message transition should overrule options transition', async () => {
@@ -1511,7 +1515,7 @@ describe('Extension: Publish', () => {
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', brightness: 20, transition: 0.0}));
         await flushPromises();
 
-        toZigbee.__clearStore__();
+        clearGlobalStore();
 
         await mockMQTTEvents.message('zigbee2mqtt/bulb_color/set', stringify({state: 'ON', transition: 1.0}));
         await flushPromises();

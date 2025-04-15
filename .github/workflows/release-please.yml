@@ -7,7 +7,7 @@ permissions:
     contents: write
     pull-requests: write
 
-name: release-please
+name: Release Please
 
 jobs:
     release-please:
@@ -22,7 +22,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
 
             - uses: googleapis/release-please-action@v4
               id: release

@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on: [pull_request, push]
 
@@ -9,6 +9,8 @@ permissions:
 jobs:
     ci:
         runs-on: ubuntu-latest
+        permissions:
+            id-token: write
         steps:
             - uses: actions/checkout@v4
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
@@ -20,25 +22,21 @@ jobs:
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
 
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   registry-url: https://registry.npmjs.org/
                   cache: pnpm
 
             - name: Install dependencies
-              run: pnpm i --frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
             - name: Build
               run: pnpm run build
 
-            - name: Lint
-              run: |
-                  pnpm run pretty:check
-                  pnpm run eslint
+            - name: Check
+              run: pnpm run check
 
             - name: Test
               run: pnpm run test:coverage
@@ -85,15 +83,27 @@ jobs:
                       VERSION=dev
                       DATE=${{ github.event.repository.updated_at }}
 
+            - name: release - Docker meta
+              if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
+              uses: docker/metadata-action@v5
+              id: meta
+              with:
+                  images: |
+                      koenkk/zigbee2mqtt
+                      ghcr.io/koenkk/zigbee2mqtt
+                  tags: |
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+                      type=semver,pattern={{major}}
+
             - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               uses: docker/build-push-action@v6
               with:
                   context: .
                   file: docker/Dockerfile
-                  provenance: false
                   platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
-                  tags: koenkk/zigbee2mqtt:latest,ghcr.io/koenkk/zigbee2mqtt:latest,koenkk/zigbee2mqtt:${{ github.ref_name }},ghcr.io/koenkk/zigbee2mqtt:${{ github.ref_name }}
+                  tags: ${{ steps.meta.outputs.tags }}
                   push: true
                   build-args: |
                       COMMIT=${{ github.sha }}
@@ -105,6 +115,7 @@ jobs:
               run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: true
 
             - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
@@ -155,9 +166,7 @@ jobs:
                   git push origin master
                   git checkout dev
                   jq --indent 4 ".version = \"$TAG-dev\"" package.json > package.json.tmp
-                  jq --indent 4 ".version = \"$TAG-dev\"" package-lock.json > package-lock.json.tmp
                   mv package.json.tmp package.json
-                  mv package-lock.json.tmp package-lock.json
                   git add -A
                   git commit -m "chore: promote to dev"
                   git push origin dev
@@ -171,9 +180,8 @@ jobs:
         continue-on-error: true
         steps:
             - uses: actions/checkout@v4
+
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
 
             - uses: actions/setup-node@v4
               with:
@@ -181,8 +189,8 @@ jobs:
                   cache: pnpm
 
             - name: Install dependencies
-              # --ignore-scripts prevents the serialport build which often fails on Windows
-              run: pnpm i --frozen-lockfile --ignore-scripts
+              # --ignore-scripts prevents build on Windows (only for unix-dgram, so doesn't matter, others have pre-builds)
+              run: pnpm i --frozen-lockfile ${{ matrix.os == 'windows-latest' && '--ignore-scripts' || '' }}
 
             - name: Build
               run: pnpm run build

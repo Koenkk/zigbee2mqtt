@@ -2,11 +2,11 @@ on:
     repository_dispatch:
         types: update_dep
 
-name: update-dep
+name: Update dependency
 
 permissions: {}
 jobs:
-    update_dep:
+    update-dependency:
         permissions:
             contents: write
             pull-requests: write
@@ -18,11 +18,9 @@ jobs:
                   ref: dev
                   token: ${{ secrets.GH_TOKEN }}
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: pnpm
             - run: |
                   pnpm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
@@ -32,7 +30,7 @@ jobs:
               with:
                   commit-message: 'fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}'
                   branch: 'deps/${{ github.event.client_payload.package }}'
-                  title: Update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}
+                  title: 'fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}'
                   token: ${{ secrets.GH_TOKEN }}
             - run: sleep 5 # Otherwise pull request may not exist yet causing automerge to fail
             - run: gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"

@@ -4,7 +4,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {exec} = require('child_process');
-const {rimrafSync} = require('rimraf');
 require('source-map-support').install();
 
 let controller;
@@ -16,7 +15,7 @@ let unsolicitedStop = false;
 let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
 if (watchdog && process.env.Z2M_WATCHDOG !== 'default') {
-    if (/^(?:(?:[0-9]*[.])?[0-9]+)+(?:,?(?:[0-9]*[.])?[0-9]+)*$/.test(process.env.Z2M_WATCHDOG)) {
+    if (/^\d+(.\d+)?(,\d+(.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
         watchdogDelays = process.env.Z2M_WATCHDOG.split(',').map((v) => parseFloat(v) * 60000);
     } else {
         console.log(`Invalid watchdog delays (must use number-only CSV format representing minutes, example: 'Z2M_WATCHDOG=1,5,15,30,60'.`);
@@ -58,10 +57,16 @@ async function exit(code, restart = false) {
 }
 
 async function currentHash() {
-    const git = require('git-last-commit');
+    return await new Promise((resolve) => {
+        exec('git rev-parse --short=8 HEAD', (error, stdout) => {
+            const commitHash = stdout.trim();
 
-    return new Promise((resolve) => {
-        git.getLastCommit((err, commit) => (err ? resolve('unknown') : resolve(commit.shortHash)));
+            if (error || commitHash === '') {
+                resolve('unknown');
+            } else {
+                resolve(commitHash);
+            }
+        });
     });
 }
 
@@ -72,10 +77,9 @@ async function writeHash() {
 }
 
 async function build(reason) {
-    return new Promise((resolve, reject) => {
-        process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
-        rimrafSync('dist');
+    process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
 
+    return await new Promise((resolve, reject) => {
         const env = {...process.env};
         const _600mb = 629145600;
 
@@ -85,7 +89,8 @@ async function build(reason) {
             env.NODE_OPTIONS = '--max_old_space_size=256';
         }
 
-        exec('pnpm run build', {env, cwd: __dirname}, async (err, stdout, stderr) => {
+        // clean build, prevent failures due to tsc incremental building
+        exec('pnpm run prepack', {env, cwd: __dirname}, async (err, stdout, stderr) => {
             if (err) {
                 process.stdout.write(', failed\n');
 
@@ -107,8 +112,9 @@ async function checkDist() {
         await build('initial build');
     }
 
-    const distHash = fs.readFileSync(hashFile, 'utf-8');
+    const distHash = fs.readFileSync(hashFile, 'utf8');
     const hash = await currentHash();
+
     if (hash !== 'unknown' && distHash !== hash) {
         await build('hash changed');
     }
@@ -118,41 +124,23 @@ async function start() {
     console.log(`Starting Zigbee2MQTT ${watchdog ? `with watchdog (${watchdogDelays})` : `without watchdog`}.`);
     await checkDist();
 
-    const version = engines.node;
-
-    if (!semver.satisfies(process.version, version)) {
-        console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
-    }
-
-    // Validate settings
-    const settings = require('./dist/util/settings');
-
-    settings.reRead();
-
     // gc
     {
-        const settingsMigration = require('./dist/util/settingsMigration');
+        const version = engines.node;
 
-        settingsMigration.migrateIfNecessary();
-    }
-
-    const errors = settings.validate();
-
-    if (errors.length > 0) {
-        unsolicitedStop = false;
-
-        console.log(`\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-        console.log('            READ THIS CAREFULLY\n');
-        console.log(`Refusing to start because configuration is not valid, found the following errors:`);
-
-        for (const error of errors) {
-            console.log(`- ${error}`);
+        if (!semver.satisfies(process.version, version)) {
+            console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
         }
 
-        console.log(`\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration`);
-        console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n`);
+        const {onboard} = require('./dist/util/onboarding');
 
-        return exit(1);
+        const success = await onboard();
+
+        if (!success) {
+            unsolicitedStop = false;
+
+            return await exit(1);
+        }
     }
 
     const {Controller} = require('./dist/controller');

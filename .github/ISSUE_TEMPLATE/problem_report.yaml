@@ -6,9 +6,10 @@ body:
       attributes:
           value: |
               **IMPORTANT:** Before submitting:
+              - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html)
+                - Raspberry Pi users? Make sure to check [this]((https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html#raspberry-pi-users-use-a-good-power-supply))
               - You read the [FAQ](https://www.zigbee2mqtt.io/guide/faq/)
               - Are you using an EZSP adapter (e.g. Dongle-E/SkyConnect)? Try the [new driver](https://github.com/Koenkk/zigbee2mqtt/discussions/21462) 
-              - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html)
               - Make sure the bug also occurs in the [dev branch](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html)
               - Make sure you are using the [latest firmware](https://www.zigbee2mqtt.io/guide/adapters/#recommended) on your adapter
               - The issue has not been [reported already](https://github.com/Koenkk/zigbee2mqtt/issues)
@@ -58,11 +59,13 @@ body:
           placeholder: Electrolama zig-a-zig-ah! (zzh!), Slaesh's CC2652RB stick, ...
       validations:
           required: true
-    - type: input
+    - type: textarea
       id: setup
       attributes:
           label: Setup
-          description: How do you run Z2M (plain, add-on...) and on what machine (Pi, x86-64, containerized...)?
+          description: |-
+              How do you run Z2M (plain, add-on...) and on what machine (Pi, x86-64, containerized...)?
+              When running on Linux also include output of: `uname -a && cat /etc/issue.net`
           placeholder: Add-on on Home Assistant OS on Intel NUC, Plain on Docker container, ...
       validations:
           required: true

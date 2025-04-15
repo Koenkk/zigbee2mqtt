@@ -1,4 +1,4 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from 'lib/types/api';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from '../types/api';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -67,7 +67,7 @@ export default class NetworkMap extends Extension {
         let text = 'digraph G {\nnode[shape=record];\n';
         let style = '';
 
-        topology.nodes.forEach((node) => {
+        for (const node of topology.nodes) {
             const labels = [];
 
             // Add friendly name
@@ -75,8 +75,7 @@ export default class NetworkMap extends Extension {
 
             // Add the device short network address, ieeaddr and scan note (if any)
             labels.push(
-                `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})` +
-                    (node.failed && node.failed.length ? `failed: ${node.failed.join(',')}` : ''),
+                `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})${node.failed?.length ? `failed: ${node.failed.join(',')}` : ''}`,
             );
 
             // Add the device model
@@ -94,9 +93,9 @@ export default class NetworkMap extends Extension {
             labels.push(lastSeen);
 
             // Shape the record according to device type
-            if (node.type == 'Coordinator') {
+            if (node.type === 'Coordinator') {
                 style = `style="bold, filled", fillcolor="${colors.fill.coordinator}", fontcolor="${colors.font.coordinator}"`;
-            } else if (node.type == 'Router') {
+            } else if (node.type === 'Router') {
                 style = `style="rounded, filled", fillcolor="${colors.fill.router}", fontcolor="${colors.font.router}"`;
             } else {
                 style = `style="rounded, dashed, filled", fillcolor="${colors.fill.enddevice}", fontcolor="${colors.font.enddevice}"`;
@@ -110,17 +109,21 @@ export default class NetworkMap extends Extension {
              * NOTE: There are situations where a device is NOT in the topology, this can be e.g.
              * due to not responded to the lqi scan. In that case we do not add an edge for this device.
              */
-            topology.links
-                .filter((e) => e.source.ieeeAddr === node.ieeeAddr)
-                .forEach((e) => {
-                    const lineStyle = node.type == 'EndDevice' ? 'penwidth=1, ' : !e.routes.length ? 'penwidth=0.5, ' : 'penwidth=2, ';
-                    const lineWeight = !e.routes.length ? `weight=0, color="${colors.line.inactive}", ` : `weight=1, color="${colors.line.active}", `;
-                    const textRoutes = e.routes.map((r) => utils.toNetworkAddressHex(r.destinationAddress));
-                    const lineLabels = !e.routes.length ? `label="${e.linkquality}"` : `label="${e.linkquality} (routes: ${textRoutes.join(',')})"`;
-                    text += `  "${node.ieeeAddr}" -> "${e.target.ieeeAddr}"`;
+            for (const link of topology.links) {
+                if (link.source.ieeeAddr === node.ieeeAddr) {
+                    const lineStyle = node.type === 'EndDevice' ? 'penwidth=1, ' : !link.routes.length ? 'penwidth=0.5, ' : 'penwidth=2, ';
+                    const lineWeight = !link.routes.length
+                        ? `weight=0, color="${colors.line.inactive}", `
+                        : `weight=1, color="${colors.line.active}", `;
+                    const textRoutes = link.routes.map((r) => utils.toNetworkAddressHex(r.destinationAddress));
+                    const lineLabels = !link.routes.length
+                        ? `label="${link.linkquality}"`
+                        : `label="${link.linkquality} (routes: ${textRoutes.join(',')})"`;
+                    text += `  "${node.ieeeAddr}" -> "${link.target.ieeeAddr}"`;
                     text += ` [${lineStyle}${lineWeight}${lineLabels}]\n`;
-                });
-        });
+                }
+            }
+        }
 
         text += '}';
 
@@ -131,62 +134,60 @@ export default class NetworkMap extends Extension {
         const text = [];
 
         text.push(`' paste into: https://www.planttext.com/`);
-        text.push(``);
+        text.push('');
         text.push('@startuml');
 
-        topology.nodes
-            .sort((a, b) => a.friendlyName.localeCompare(b.friendlyName))
-            .forEach((node) => {
-                // Add friendly name
-                text.push(`card ${node.ieeeAddr} [`);
-                text.push(`${node.friendlyName}`);
-                text.push(`---`);
+        for (const node of topology.nodes.sort((a, b) => a.friendlyName.localeCompare(b.friendlyName))) {
+            // Add friendly name
+            text.push(`card ${node.ieeeAddr} [`);
+            text.push(`${node.friendlyName}`);
+            text.push('---');
 
-                // Add the device short network address, ieeaddr and scan note (if any)
-                text.push(
-                    `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})` +
-                        (node.failed && node.failed.length ? ` failed: ${node.failed.join(',')}` : ''),
-                );
+            // Add the device short network address, ieeaddr and scan note (if any)
+            text.push(
+                `${node.ieeeAddr} (${utils.toNetworkAddressHex(node.networkAddress)})${node.failed?.length ? ` failed: ${node.failed.join(',')}` : ''}`,
+            );
 
-                // Add the device model
-                if (node.type !== 'Coordinator') {
-                    text.push(`---`);
-                    const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
-                    text.push(`${definition?.vendor} ${definition?.description} (${definition?.model})`);
-                }
+            // Add the device model
+            if (node.type !== 'Coordinator') {
+                text.push('---');
+                const definition = (this.zigbee.resolveEntity(node.ieeeAddr) as Device).definition;
+                text.push(`${definition?.vendor} ${definition?.description} (${definition?.model})`);
+            }
 
-                // Add the device last_seen timestamp
-                let lastSeen = 'unknown';
-                const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
-                if (date) {
-                    lastSeen = utils.formatDate(date, 'relative') as string;
-                }
-                text.push(`---`);
-                text.push(lastSeen);
-                text.push(`]`);
-                text.push(``);
-            });
+            // Add the device last_seen timestamp
+            let lastSeen = 'unknown';
+            const date = node.type === 'Coordinator' ? Date.now() : node.lastSeen;
+            if (date) {
+                lastSeen = utils.formatDate(date, 'relative') as string;
+            }
+            text.push('---');
+            text.push(lastSeen);
+            text.push(']');
+            text.push('');
+        }
 
         /**
          * Add edges between the devices
          * NOTE: There are situations where a device is NOT in the topology, this can be e.g.
          * due to not responded to the lqi scan. In that case we do not add an edge for this device.
          */
-        topology.links.forEach((link) => {
+        for (const link of topology.links) {
             text.push(`${link.sourceIeeeAddr} --> ${link.targetIeeeAddr}: ${link.lqi}`);
-        });
+        }
+
         text.push('');
 
-        text.push(`@enduml`);
+        text.push('@enduml');
 
-        return text.join(`\n`);
+        return text.join('\n');
     }
 
     async networkScan(includeRoutes: boolean): Promise<Zigbee2MQTTNetworkMap> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const lqis: Map<Device, zh.LQI> = new Map();
-        const routingTables: Map<Device, zh.RoutingTable> = new Map();
-        const failed: Map<Device, string[]> = new Map();
+        const lqis = new Map<Device, zh.LQI>();
+        const routingTables = new Map<Device, zh.RoutingTable>();
+        const failed = new Map<Device, string[]>();
         const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
             try {
                 const result = await request();
@@ -230,7 +231,7 @@ export default class NetworkMap extends Extension {
             }
         }
 
-        logger.info(`Network scan finished`);
+        logger.info('Network scan finished');
 
         const topology: Zigbee2MQTTNetworkMap = {nodes: [], links: []};
 

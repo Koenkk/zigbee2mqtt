@@ -8,6 +8,7 @@ import {Device, devices, groups, events as mockZHEvents} from '../mocks/zigbeeHe
 import stringify from 'json-stable-stringify-without-jsonify';
 
 import {Controller} from '../../lib/controller';
+import Bind from '../../lib/extension/bind';
 import * as settings from '../../lib/util/settings';
 
 const mocksClear = [
@@ -22,8 +23,8 @@ describe('Extension: Bind', () => {
     let controller: Controller;
 
     const resetExtension = async (): Promise<void> => {
-        await controller.enableDisableExtension(false, 'Bind');
-        await controller.enableDisableExtension(true, 'Bind');
+        await controller.removeExtension(controller.getExtension('Bind')!);
+        await controller.addExtension(new Bind(...controller.extensionArgs));
     };
 
     const mockClear = (device: Device): void => {
@@ -53,6 +54,8 @@ describe('Extension: Bind', () => {
     });
 
     afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
         vi.useRealTimers();
     });
 

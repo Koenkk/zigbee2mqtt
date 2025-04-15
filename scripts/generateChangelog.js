@@ -49,7 +49,8 @@ if (fs.existsSync(commitUserFile)) {
     commitUserLookup = JSON.parse(fs.readFileSync(commitUserFile, 'utf8'));
 }
 
-const whiteLabels = zhc.definitions.filter((d) => d.whiteLabel).flatMap((d) => d.whiteLabel);
+const definitions = require('zigbee-herdsman-converters/devices/index').default.map((d) => zhc.prepareDefinition(d));
+const whiteLabels = definitions.filter((d) => d.whiteLabel).flatMap((d) => d.whiteLabel);
 const capitalizeFirstChar = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 for (const changelog of changelogs) {
@@ -97,7 +98,7 @@ for (const changelog of changelogs) {
 
                 if (localContext === 'add') {
                     for (const model of message.split(',')) {
-                        const definition = zhc.definitions.find((d) => d.model === model.trim());
+                        const definition = definitions.find((d) => d.model === model.trim());
                         const whiteLabel = whiteLabels.find((d) => d.model === model.trim());
                         const match = definition || whiteLabel;
                         if (match) {

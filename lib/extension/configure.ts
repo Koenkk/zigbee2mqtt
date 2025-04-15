@@ -1,4 +1,4 @@
-import type {Zigbee2MQTTAPI} from 'lib/types/api';
+import type {Zigbee2MQTTAPI} from '../types/api';
 
 import bind from 'bind-decorator';
 import stringify from 'json-stable-stringify-without-jsonify';
@@ -36,7 +36,7 @@ export default class Configure extends Extension {
             let error: string | undefined;
 
             if (ID === undefined) {
-                error = `Invalid payload`;
+                error = 'Invalid payload';
             } else {
                 const device = this.zigbee.resolveEntity(ID);
 
@@ -55,7 +55,7 @@ export default class Configure extends Extension {
 
             const response = utils.getResponse<'bridge/response/device/configure'>(message, {id: ID}, error);
 
-            await this.mqtt.publish(`bridge/response/device/configure`, stringify(response));
+            await this.mqtt.publish('bridge/response/device/configure', stringify(response));
         }
     }
 

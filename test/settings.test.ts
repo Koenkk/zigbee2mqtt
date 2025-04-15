@@ -38,7 +38,7 @@ describe('Settings', () => {
 
     const clearEnvironmentVariables = (): void => {
         for (const key in process.env) {
-            if (key.indexOf('ZIGBEE2MQTT_CONFIG_') >= 0) {
+            if (key.startsWith('ZIGBEE2MQTT_CONFIG_')) {
                 delete process.env[key];
             }
         }
@@ -50,6 +50,37 @@ describe('Settings', () => {
         remove(devicesFile);
         remove(groupsFile);
         clearEnvironmentVariables();
+    });
+
+    it('Ensures configuration.example.yaml is never out of sync with settings', () => {
+        let path = './data/configuration.example.yaml';
+
+        // allow running in single-test mode
+        if (!fs.existsSync('./data')) {
+            path = '../data/configuration.example.yaml';
+        }
+
+        const exampleYaml = read(path) as Record<string, unknown>;
+
+        // force keeping an eye on example yaml whenever CURRENT_VERSION changes
+        expect(exampleYaml).toStrictEqual({
+            version: settings.CURRENT_VERSION,
+            homeassistant: {
+                enabled: false,
+            },
+            frontend: {
+                enabled: true,
+            },
+            mqtt: {
+                base_topic: 'zigbee2mqtt',
+                server: 'mqtt://localhost',
+            },
+            advanced: {
+                network_key: 'GENERATE',
+                pan_id: 'GENERATE',
+                ext_pan_id: 'GENERATE',
+            },
+        });
     });
 
     it('Should return default settings', () => {
@@ -73,17 +104,18 @@ describe('Settings', () => {
         expect(s).toStrictEqual(expected);
     });
 
-    it('Should apply environment variables', () => {
-        process.env['ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED'] = 'true';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL'] = '15';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT'] = 'attribute_and_json';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT'] = '["console"]';
-        process.env['ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL'] =
-            '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
-        process.env['ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC'] = 'testtopic';
-        process.env['ZIGBEE2MQTT_CONFIG_MQTT_SERVER'] = 'testserver';
-        process.env['ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY'] = 'GENERATE';
-        process.env['ZIGBEE2MQTT_CONFIG_DEVICES'] = 'devices.yaml';
+    it('Should apply environment variables as overrides', () => {
+        write(secretFile, {password: 'the-password'}, false);
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = '!secret.yaml password';
+        process.env.ZIGBEE2MQTT_CONFIG_SERIAL_DISABLE_LED = 'true';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_CHANNEL = '15';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_OUTPUT = 'attribute_and_json';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_LOG_OUTPUT = '["console"]';
+        process.env.ZIGBEE2MQTT_CONFIG_MAP_OPTIONS_GRAPHVIZ_COLORS_FILL = '{"enddevice": "#ff0000", "coordinator": "#00ff00", "router": "#0000ff"}';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_BASE_TOPIC = 'testtopic';
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = 'testserver';
+        process.env.ZIGBEE2MQTT_CONFIG_ADVANCED_NETWORK_KEY = 'GENERATE';
+        process.env.ZIGBEE2MQTT_CONFIG_DEVICES = 'devices.yaml';
 
         const contentDevices = {
             '0x00158d00018255df': {
@@ -92,11 +124,6 @@ describe('Settings', () => {
             },
         };
 
-        write(configurationFile, {});
-        write(devicesFile, contentDevices);
-        expect(settings.validate()).toStrictEqual([]);
-
-        const s = settings.get();
         // @ts-expect-error workaround
         const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
         expected.devices = {
@@ -113,9 +140,54 @@ describe('Settings', () => {
         expected.map_options.graphviz.colors.fill = {enddevice: '#ff0000', coordinator: '#00ff00', router: '#0000ff'};
         expected.mqtt.base_topic = 'testtopic';
         expected.mqtt.server = 'testserver';
+        expected.mqtt.password = 'the-password';
         expected.advanced.network_key = 'GENERATE';
 
-        expect(s).toStrictEqual(expected);
+        write(configurationFile, {mqtt: {password: 'config-password'}});
+        write(devicesFile, contentDevices);
+
+        const writeAndCheck = (): void => {
+            expect(settings.write()); // trigger writing of ENVs
+            expect(settings.validate()).toStrictEqual([]);
+            expect(settings.get()).toStrictEqual(expected);
+
+            settings.set(['advanced', 'channel'], 25);
+            expect(settings.get().advanced.channel).toStrictEqual(15);
+            expect(read(configurationFile)).toMatchObject({advanced: {channel: 15}});
+
+            expect(read(secretFile)).toMatchObject({password: 'the-password'});
+            expect(read(configurationFile)).toHaveProperty('mqtt.password', '!secret.yaml password');
+        };
+
+        // Write trice to ensure there are no side effects.
+        writeAndCheck();
+        writeAndCheck();
+        writeAndCheck();
+    });
+
+    it('Should write environment variables as overrides to configuration.yaml, not in the ref file', () => {
+        write(secretFile, {password: 'password-in-secret-file'}, false);
+        write(configurationFile, {mqtt: {password: '!secret password', server: 'server'}});
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = 'password-in-env-var';
+
+        const writeAndCheck = (): void => {
+            expect(settings.write()); // trigger writing of ENVs
+            expect(settings.validate()).toStrictEqual([]);
+
+            const s = settings.get();
+            // @ts-expect-error workaround
+            const expected = objectAssignDeep.noMutate({groups: {}, devices: {}}, settings.testing.defaults);
+            expected.mqtt.password = 'password-in-env-var';
+            expected.mqtt.server = 'server';
+            expect(s).toStrictEqual(expected);
+            expect(read(secretFile)).toMatchObject({password: 'password-in-secret-file'});
+            expect(read(configurationFile)).toMatchObject({mqtt: {password: 'password-in-env-var', server: 'server'}});
+        };
+
+        // Write trice to ensure there are no side effects.
+        writeAndCheck();
+        writeAndCheck();
+        writeAndCheck();
     });
 
     it('Should add devices', () => {
@@ -552,6 +624,25 @@ describe('Settings', () => {
         };
 
         expect(settings.get().groups).toStrictEqual(expected);
+    });
+
+    it('Should allow username without password', () => {
+        const contentConfiguration = {
+            mqtt: {
+                server: 'my.mqtt.server',
+                user: 'myusername',
+            },
+        };
+        const expected = {
+            base_topic: 'zigbee2mqtt',
+            include_device_information: false,
+            maximum_packet_size: 1048576,
+            force_disable_retain: false,
+            server: 'my.mqtt.server',
+            user: 'myusername',
+        };
+        write(configurationFile, contentConfiguration);
+        expect(settings.get().mqtt).toStrictEqual(expected);
     });
 
     it('Should add groups with specific ID', () => {

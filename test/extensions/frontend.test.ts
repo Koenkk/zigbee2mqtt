@@ -154,6 +154,8 @@ describe('Extension: Frontend', () => {
 
     afterEach(async () => {
         delete devices.bulb.linkquality;
+        await controller?.stop();
+        await flushPromises();
     });
 
     it('Start/stop with defaults', async () => {
@@ -433,5 +435,33 @@ describe('Extension: Frontend', () => {
         mockHTTPOnRequest({url: '/z/file.txt'}, 2);
         expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
         expect(mockFinalHandler).toHaveBeenCalled();
+    });
+
+    it('prevents mismatching setting/extension state', async () => {
+        settings.set(['frontend', 'enabled'], false);
+
+        controller = new Controller(vi.fn(), vi.fn());
+        await controller.start();
+
+        await expect(async () => {
+            await controller.enableDisableExtension(true, 'Frontend');
+        }).rejects.toThrow('Tried to enable Frontend extension disabled in settings');
+
+        settings.set(['frontend', 'enabled'], true);
+
+        await expect(async () => {
+            await controller.enableDisableExtension(false, 'Frontend');
+        }).rejects.toThrow('Tried to disable Frontend extension enabled in settings');
+
+        await controller.enableDisableExtension(true, 'Frontend');
+
+        await expect(async () => {
+            await controller.enableDisableExtension(true, 'Frontend');
+        }).rejects.toThrow('Extension with name Frontend already present');
+
+        settings.set(['frontend', 'enabled'], false);
+        await controller.enableDisableExtension(false, 'Frontend');
+
+        await vi.waitFor(() => controller.getExtension('Frontend') === undefined);
     });
 });

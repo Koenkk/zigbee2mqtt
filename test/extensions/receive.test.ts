@@ -25,7 +25,7 @@ describe('Extension: Receive', () => {
 
     beforeEach(async () => {
         // @ts-expect-error private
-        controller.state.state = {};
+        controller.state.clear();
         data.writeDefaultConfiguration();
         settings.reRead();
         mocksClear.forEach((m) => m.mockClear());
@@ -33,8 +33,10 @@ describe('Extension: Receive', () => {
     });
 
     afterAll(async () => {
-        vi.useRealTimers();
         mockSleep.restore();
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
     });
 
     it('Should handle a zigbee message', async () => {

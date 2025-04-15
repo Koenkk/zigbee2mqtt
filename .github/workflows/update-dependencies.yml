@@ -1,17 +1,17 @@
 name: Update dependencies
+
 on:
     workflow_dispatch:
     schedule:
         - cron: '0 0 * * 0'
 
 permissions:
-    contents: read
+    contents: write
+    pull-requests: write
 
 jobs:
-    update_deps:
-        permissions:
-            contents: write # for peter-evans/create-pull-request to create branch
-            pull-requests: write # for peter-evans/create-pull-request to create a PR
+    update-dependencies:
+        if: github.repository == 'Koenkk/zigbee2mqtt'
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -19,17 +19,24 @@ jobs:
                   ref: dev
                   token: ${{ secrets.GH_TOKEN }}
             - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
             - uses: actions/setup-node@v4
               with:
-                  node-version: 20
+                  node-version: 22
                   cache: pnpm
             - run: |
+                  # Disable for now as pnpm updates through corepack
+                  # don't work well yet for bare-metal installations.
+                  # pnpm self-update
                   pnpm up --latest
             - uses: peter-evans/create-pull-request@v7
+              id: cpr
               with:
                   commit-message: 'fix(ignore): update dependencies'
                   branch: 'deps/all'
                   title: 'fix(ignore): update dependencies'
                   token: ${{ secrets.GH_TOKEN }}
+            - uses: peter-evans/create-or-update-comment@v4
+              if: ${{ steps.cpr.outputs.pull-request-number }}
+              with:
+                  issue-number: ${{ steps.cpr.outputs.pull-request-number }}
+                  body: 'CC: @Koenkk'

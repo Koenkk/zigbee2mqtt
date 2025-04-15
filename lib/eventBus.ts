@@ -35,7 +35,7 @@ type EventBusListener<K> = K extends keyof EventBusMap
     : never;
 
 export default class EventBus {
-    private callbacksByExtension: {[s: string]: {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]} = {};
+    private callbacksByExtension = new Map<string, {event: keyof EventBusMap; callback: EventBusListener<keyof EventBusMap>}[]>();
     private emitter = new events.EventEmitter<EventBusMap>();
 
     constructor() {
@@ -195,8 +195,8 @@ export default class EventBus {
     }
 
     private on<K extends keyof EventBusMap>(event: K, callback: EventBusListener<K>, key: ListenerKey): void {
-        if (!this.callbacksByExtension[key.constructor.name]) {
-            this.callbacksByExtension[key.constructor.name] = [];
+        if (!this.callbacksByExtension.has(key.constructor.name)) {
+            this.callbacksByExtension.set(key.constructor.name, []);
         }
 
         const wrappedCallback = async (...args: never[]): Promise<void> => {
@@ -208,11 +208,17 @@ export default class EventBus {
             }
         };
 
-        this.callbacksByExtension[key.constructor.name].push({event, callback: wrappedCallback});
+        this.callbacksByExtension.get(key.constructor.name)!.push({event, callback: wrappedCallback});
         this.emitter.on(event, wrappedCallback as EventBusListener<K>);
     }
 
     public removeListeners(key: ListenerKey): void {
-        this.callbacksByExtension[key.constructor.name]?.forEach((e) => this.emitter.removeListener(e.event, e.callback));
+        const callbacks = this.callbacksByExtension.get(key.constructor.name);
+
+        if (callbacks) {
+            for (const cb of callbacks) {
+                this.emitter.removeListener(cb.event, cb.callback);
+            }
+        }
     }
 }

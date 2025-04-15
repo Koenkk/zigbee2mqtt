@@ -68,6 +68,26 @@
                             "requiresRestart": true,
                             "default": 10,
                             "description": "Time after which an active device will be marked as offline in minutes"
+                        },
+                        "max_jitter": {
+                            "type": "number",
+                            "title": "Max jitter",
+                            "default": 30000,
+                            "minimum": 1000,
+                            "description": "Maximum jitter (in msec) allowed on timeout to avoid availability pings trying to trigger around the same time"
+                        },
+                        "backoff": {
+                            "type": "boolean",
+                            "title": "Enabled",
+                            "description": "Enable timeout backoff on failed availability pings (x1.5, x3, x6, x12...)",
+                            "default": true
+                        },
+                        "pause_on_backoff_gt": {
+                            "type": "number",
+                            "title": "Pause on backoff greater than",
+                            "default": 0,
+                            "minimum": 0,
+                            "description": "Pause availability pings when backoff reaches over this limit until a new Zigbee message is received from the device. A value of zero disables pausing."
                         }
                     },
                     "required": ["timeout"]
@@ -219,9 +239,8 @@
                 },
                 "adapter": {
                     "type": ["string"],
-                    "enum": ["deconz", "zstack", "zigate", "ezsp", "auto", "ember", "zboss"],
+                    "enum": ["deconz", "zstack", "zigate", "ezsp", "ember", "zboss", "zoh"],
                     "title": "Adapter",
-                    "default": "auto",
                     "requiresRestart": true,
                     "description": "Adapter type, not needed unless you are experiencing problems"
                 },
@@ -411,6 +430,14 @@
                     "description": "Base URL for the frontend. If hosted under a subpath, e.g. 'http://localhost:8080/z2m', set this to '/z2m'",
                     "default": "/",
                     "requiresRestart": true
+                },
+                "notification_filter": {
+                    "title": "Notification Filter",
+                    "description": "Hide frontend notifications matching specified regex strings. Example: 'z2m: Failed to ping.*'",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             },
             "required": []
@@ -452,6 +479,13 @@
                     "description": "Log rotation",
                     "default": true
                 },
+                "log_console_json": {
+                    "type": "boolean",
+                    "title": "Console json log",
+                    "requiresRestart": true,
+                    "description": "Console json log",
+                    "default": false
+                },
                 "log_symlink_current": {
                     "type": "boolean",
                     "title": "Log symlink current",
@@ -486,7 +520,7 @@
                 },
                 "log_level": {
                     "type": "string",
-                    "enum": ["error", "warning", "info", "debug", "warn"],
+                    "enum": ["error", "warning", "info", "debug"],
                     "title": "Log level",
                     "description": "Logging level",
                     "default": "info"
@@ -518,6 +552,14 @@
                     "description": "Do not log these namespaces (regex-based) for debug level",
                     "default": "",
                     "examples": ["^zhc:legacy:fz:(tuya|moes)", "^zhc:legacy:fz:(tuya|moes)|^zh:ember:uart:|^zh:controller"]
+                },
+                "log_directories_to_keep": {
+                    "type": "number",
+                    "title": "Number of past log folders to keep",
+                    "description": "Number of log directories to keep before deleting the oldest one",
+                    "default": 10,
+                    "minimum": 5,
+                    "maximum": 1000
                 },
                 "log_syslog": {
                     "requiresRestart": true,
@@ -754,10 +796,17 @@
                     "title": "QoS",
                     "description": "QoS level for MQTT messages of this device"
                 },
+                "throttle": {
+                    "type": "number",
+                    "title": "Throttle",
+                    "description": "The minimum time between payloads in seconds. Payloads received whilst the device is being throttled will be discarded",
+                    "requiresRestart": true
+                },
                 "debounce": {
                     "type": "number",
                     "title": "Debounce",
-                    "description": "Debounces messages of this device"
+                    "description": "Debounces messages of this device",
+                    "requiresRestart": true
                 },
                 "debounce_ignore": {
                     "type": "array",
