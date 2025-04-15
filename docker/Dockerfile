@@ -1,14 +1,6 @@
 ARG TARGETPLATFORM
 
-# Need to use Alpine 3.18.4 which uses Node 18 for arm/v6 and arm/v7, otherwise the build hangs.
-# See https://github.com/nodejs/docker-node/issues/2077
-FROM alpine:3.18.4 AS linux-arm-alpine
-FROM alpine:3.21 AS linux-arm64-alpine
-FROM alpine:3.21 AS linux-amd64-alpine
-FROM alpine:3.21 AS linux-riscv64-alpine
-FROM alpine:3.21 AS linux-386-alpine
-
-FROM linux-${TARGETARCH}-alpine AS base
+FROM alpine:3.21 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
