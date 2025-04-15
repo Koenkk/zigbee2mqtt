@@ -75,7 +75,7 @@ jobs:
               with:
                   context: .
                   file: docker/Dockerfile
-                  platforms: linux/arm/v6
+                  platforms: linux/arm/v6,linux/arm/v7
                   tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
                   push: false
                   build-args: |
