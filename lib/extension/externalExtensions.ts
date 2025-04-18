@@ -1,15 +1,15 @@
-import type Extension from './extension';
+import type Extension from "./extension";
 
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import ExternalJSExtension from './externalJS';
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import ExternalJSExtension from "./externalJS";
 
 type TModule = new (...args: ConstructorParameters<typeof Extension>) => Extension;
 
 export default class ExternalExtensions extends ExternalJSExtension<TModule> {
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -26,12 +26,12 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
             enableDisableExtension,
             restartCallback,
             addExtension,
-            'extension',
-            'external_extensions',
+            "extension",
+            "external_extensions",
         );
     }
 
-    protected async removeJS(name: string, mod: TModule): Promise<void> {
+    protected async removeJS(_name: string, mod: TModule): Promise<void> {
         await this.enableDisableExtension(false, mod.name);
     }
 

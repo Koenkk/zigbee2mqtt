@@ -11,23 +11,13 @@
     "engines": {
         "node": "^18 || ^20 || ^22 || ^23"
     },
-    "keywords": [
-        "xiaomi",
-        "tradfri",
-        "hue",
-        "bridge",
-        "zigbee",
-        "mqtt",
-        "cc2531"
-    ],
+    "keywords": ["xiaomi", "tradfri", "hue", "bridge", "zigbee", "mqtt", "cc2531"],
     "scripts": {
         "build": "tsc && node index.js writehash",
         "build:watch": "tsc --watch",
-        "eslint": "eslint --max-warnings=0",
-        "pretty:write": "prettier --write .",
-        "pretty:check": "prettier --check .",
+        "check": "biome check",
+        "check:w": "biome check --write",
         "start": "node index.js",
-        "check": "pnpm run pretty:check && pnpm run eslint",
         "test": "vitest run --config ./test/vitest.config.mts",
         "test:coverage": "vitest run --config ./test/vitest.config.mts --coverage",
         "test:watch": "vitest watch --config ./test/vitest.config.mts",
@@ -67,9 +57,7 @@
         "zigbee2mqtt-frontend": "0.9.9"
     },
     "devDependencies": {
-        "@eslint/core": "^0.13.0",
-        "@eslint/js": "^9.24.0",
-        "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
+        "@biomejs/biome": "^1.9.4",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
@@ -79,23 +67,15 @@
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
-        "eslint": "^9.24.0",
-        "eslint-config-prettier": "^10.1.2",
-        "prettier": "^3.5.3",
         "tmp": "^0.2.3",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.29.1",
         "vitest": "^3.1.1"
     },
     "pnpm": {
         "overrides": {
             "zigbee-herdsman": "$zigbee-herdsman"
         },
-        "onlyBuiltDependencies": [
-            "@serialport/bindings-cpp",
-            "esbuild",
-            "unix-dgram"
-        ]
+        "onlyBuiltDependencies": ["@biomejs/biome", "@serialport/bindings-cpp", "esbuild", "unix-dgram"]
     },
     "bin": {
         "zigbee2mqtt": "cli.js"

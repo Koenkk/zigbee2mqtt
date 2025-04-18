@@ -1,21 +1,21 @@
-import type * as zhc from 'zigbee-herdsman-converters';
+import type * as zhc from "zigbee-herdsman-converters";
 
-import type {Zigbee2MQTTAPI} from '../types/api';
+import type {Zigbee2MQTTAPI} from "../types/api";
 
-import assert from 'node:assert';
+import assert from "node:assert";
 
-import bind from 'bind-decorator';
-import debounce from 'debounce';
+import bind from "bind-decorator";
+import debounce from "debounce";
 
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
-    {keys: ['state']},
-    {keys: ['brightness'], condition: (state: KeyValue): boolean => state.state === 'ON'},
-    {keys: ['color', 'color_temp'], condition: (state: KeyValue): boolean => state.state === 'ON'},
+    {keys: ["state"]},
+    {keys: ["brightness"], condition: (state: KeyValue): boolean => state.state === "ON"},
+    {keys: ["color", "color_temp"], condition: (state: KeyValue): boolean => state.state === "ON"},
 ];
 
 export default class Availability extends Extension {
@@ -34,7 +34,7 @@ export default class Availability extends Extension {
     private stopped = false;
 
     private getTimeout(device: Device): number {
-        if (typeof device.options.availability === 'object' && device.options.availability?.timeout != null) {
+        if (typeof device.options.availability === "object" && device.options.availability?.timeout != null) {
             return utils.minutes(device.options.availability.timeout);
         }
 
@@ -42,7 +42,7 @@ export default class Availability extends Extension {
     }
 
     private getMaxJitter(device: Device): number {
-        if (typeof device.options.availability === 'object' && device.options.availability?.max_jitter != null) {
+        if (typeof device.options.availability === "object" && device.options.availability?.max_jitter != null) {
             return device.options.availability.max_jitter;
         }
 
@@ -50,7 +50,7 @@ export default class Availability extends Extension {
     }
 
     private getBackoff(device: Device): boolean {
-        if (typeof device.options.availability === 'object' && device.options.availability?.backoff != null) {
+        if (typeof device.options.availability === "object" && device.options.availability?.backoff != null) {
             return device.options.availability.backoff;
         }
 
@@ -58,7 +58,7 @@ export default class Availability extends Extension {
     }
 
     private getPauseOnBackoffGt(device: Device): number {
-        if (typeof device.options.availability === 'object' && device.options.availability?.pause_on_backoff_gt != null) {
+        if (typeof device.options.availability === "object" && device.options.availability?.pause_on_backoff_gt != null) {
             return device.options.availability.pause_on_backoff_gt;
         }
 
@@ -67,8 +67,8 @@ export default class Availability extends Extension {
 
     private isActiveDevice(device: Device): boolean {
         return (
-            (device.zh.type === 'Router' && device.zh.powerSource !== 'Battery') ||
-            (device.zh.powerSource !== undefined && device.zh.powerSource !== 'Unknown' && device.zh.powerSource !== 'Battery')
+            (device.zh.type === "Router" && device.zh.powerSource !== "Battery") ||
+            (device.zh.powerSource !== undefined && device.zh.powerSource !== "Unknown" && device.zh.powerSource !== "Battery")
         );
     }
 
@@ -201,16 +201,16 @@ export default class Availability extends Extension {
 
     override async start(): Promise<void> {
         if (this.stopped) {
-            throw new Error('This extension cannot be restarted.');
+            throw new Error("This extension cannot be restarted.");
         }
 
         this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                await this.mqtt.publish(`${data.from}/availability`, '', {retain: true, qos: 1});
+                await this.mqtt.publish(`${data.from}/availability`, "", {retain: true, qos: 1});
                 await this.publishAvailability(data.entity, false, true);
             }
         });
-        this.eventBus.onEntityRemoved(this, (data) => data.type === 'device' && this.clearTimer(data.id));
+        this.eventBus.onEntityRemoved(this, (data) => data.type === "device" && this.clearTimer(data.id));
         this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
@@ -263,7 +263,7 @@ export default class Availability extends Extension {
         }
 
         const topic = `${entity.name}/availability`;
-        const payload: Zigbee2MQTTAPI['{friendlyName}/availability'] = {state: available ? 'online' : 'offline'};
+        const payload: Zigbee2MQTTAPI["{friendlyName}/availability"] = {state: available ? "online" : "offline"};
         this.lastPublishedAvailabilities.set(entity.ID, available);
         await this.mqtt.publish(topic, JSON.stringify(payload), {retain: true, qos: 1});
 
@@ -313,11 +313,13 @@ export default class Availability extends Extension {
                             continue;
                         }
 
+                        // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
                         const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
                         const options: KeyValue = device.options;
                         const state = this.state.get(device);
                         const meta: zhc.Tz.Meta = {
                             message: this.state.get(device),
+                            // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
                             mapped: device.definition!,
                             endpoint_name: undefined,
                             options,

@@ -1,6 +1,6 @@
 abstract class Extension {
     protected zigbee: Zigbee;
-    protected mqtt: MQTT;
+    protected mqtt: Mqtt;
     protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
@@ -12,7 +12,7 @@ abstract class Extension {
      * Besides initializing variables, the constructor should do nothing!
      *
      * @param {Zigbee} zigbee Zigbee controller
-     * @param {MQTT} mqtt MQTT controller
+     * @param {Mqtt} mqtt MQTT controller
      * @param {State} state State controller
      * @param {Function} publishEntityState Method to publish device state to MQTT.
      * @param {EventBus} eventBus The event bus
@@ -22,7 +22,7 @@ abstract class Extension {
      */
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -48,12 +48,13 @@ abstract class Extension {
     /**
      * Is called once the extension has to stop
      */
+
+    // biome-ignore lint/suspicious/useAwait: API
     async stop(): Promise<void> {
         this.eventBus.removeListeners(this);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public adjustMessageBeforePublish(entity: Group | Device, message: KeyValue): void {}
+    public adjustMessageBeforePublish(_entity: Group | Device, _message: KeyValue): void {}
 }
 
 export default Extension;

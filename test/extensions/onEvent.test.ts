@@ -1,26 +1,26 @@
-import * as data from '../mocks/data';
-import {mockLogger} from '../mocks/logger';
-import {mockMQTTPublishAsync} from '../mocks/mqtt';
-import {flushPromises} from '../mocks/utils';
-import {devices, events as mockZHEvents, returnDevices} from '../mocks/zigbeeHerdsman';
+import * as data from "../mocks/data";
+import {mockLogger} from "../mocks/logger";
+import {mockMQTTPublishAsync} from "../mocks/mqtt";
+import {flushPromises} from "../mocks/utils";
+import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
-import type {MockInstance} from 'vitest';
-import type {OnEvent as DefinitionOnEvent} from 'zigbee-herdsman-converters/lib/types';
+import type {MockInstance} from "vitest";
+import type {OnEvent as DefinitionOnEvent} from "zigbee-herdsman-converters/lib/types";
 
-import type Device from '../../lib/model/device';
-import type {Device as ZhDevice} from '../mocks/zigbeeHerdsman';
+import type Device from "../../lib/model/device";
+import type {Device as ZhDevice} from "../mocks/zigbeeHerdsman";
 
-import * as zhc from 'zigbee-herdsman-converters';
+import * as zhc from "zigbee-herdsman-converters";
 
-import {Controller} from '../../lib/controller';
-import OnEvent from '../../lib/extension/onEvent';
-import * as settings from '../../lib/util/settings';
+import {Controller} from "../../lib/controller";
+import OnEvent from "../../lib/extension/onEvent";
+import * as settings from "../../lib/util/settings";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
 returnDevices.push(devices.bulb.ieeeAddr, devices.LIVOLO.ieeeAddr);
 
-describe('Extension: OnEvent', () => {
+describe("Extension: OnEvent", () => {
     let controller: Controller;
     let onEventSpy: MockInstance<typeof zhc.onEvent>;
     let deviceOnEventSpy: MockInstance<DefinitionOnEvent>;
@@ -44,8 +44,8 @@ describe('Extension: OnEvent', () => {
         await controller.start();
         await flushPromises();
 
-        onEventSpy = vi.spyOn(zhc, 'onEvent');
-        deviceOnEventSpy = vi.spyOn(getZ2MDevice(devices.LIVOLO).definition!, 'onEvent');
+        onEventSpy = vi.spyOn(zhc, "onEvent");
+        deviceOnEventSpy = vi.spyOn(getZ2MDevice(devices.LIVOLO).definition!, "onEvent");
     });
 
     beforeEach(async () => {
@@ -53,7 +53,7 @@ describe('Extension: OnEvent', () => {
             mock.mockClear();
         }
 
-        await controller.removeExtension(controller.getExtension('OnEvent')!);
+        await controller.removeExtension(controller.getExtension("OnEvent")!);
         clearOnEventSpies();
         await controller.addExtension(new OnEvent(...controller.extensionArgs));
     });
@@ -64,12 +64,12 @@ describe('Extension: OnEvent', () => {
         vi.useRealTimers();
     });
 
-    it('starts & stops', async () => {
+    it("starts & stops", async () => {
         expect(onEventSpy).toHaveBeenCalledTimes(2);
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
         expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
             1,
-            'start',
+            "start",
             {},
             devices.LIVOLO,
             settings.getDevice(devices.LIVOLO.ieeeAddr),
@@ -83,7 +83,7 @@ describe('Extension: OnEvent', () => {
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
         expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
             2,
-            'stop',
+            "stop",
             {},
             devices.LIVOLO,
             settings.getDevice(devices.LIVOLO.ieeeAddr),
@@ -92,7 +92,7 @@ describe('Extension: OnEvent', () => {
         );
     });
 
-    it('calls on device events', async () => {
+    it("calls on device events", async () => {
         clearOnEventSpies();
         await mockZHEvents.deviceAnnounce({device: devices.LIVOLO});
         await flushPromises();
@@ -100,7 +100,7 @@ describe('Extension: OnEvent', () => {
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
         expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
             1,
-            'deviceAnnounce',
+            "deviceAnnounce",
             {},
             devices.LIVOLO,
             settings.getDevice(devices.LIVOLO.ieeeAddr),
@@ -110,8 +110,8 @@ describe('Extension: OnEvent', () => {
 
         const emitExposesAndDevicesChangedSpy = vi.spyOn(
             // @ts-expect-error protected
-            controller.getExtension('OnEvent')!.eventBus,
-            'emitExposesAndDevicesChanged',
+            controller.getExtension("OnEvent")!.eventBus,
+            "emitExposesAndDevicesChanged",
         );
 
         deviceOnEventSpy.mock.calls[0][5]!.deviceExposesChanged();
@@ -125,7 +125,7 @@ describe('Extension: OnEvent', () => {
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
         expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
             2,
-            'stop',
+            "stop",
             {},
             devices.LIVOLO,
             settings.getDevice(devices.LIVOLO.ieeeAddr),
@@ -134,16 +134,16 @@ describe('Extension: OnEvent', () => {
         );
     });
 
-    it('calls on device message', async () => {
+    it("calls on device message", async () => {
         clearOnEventSpies();
 
         await mockZHEvents.message({
-            type: 'attributeReport',
+            type: "attributeReport",
             device: devices.LIVOLO,
             endpoint: devices.LIVOLO.endpoints[0],
             linkquality: 213,
             groupID: 0,
-            cluster: 'genBasic',
+            cluster: "genBasic",
             data: {zclVersion: 8},
             meta: {zclTransactionSequenceNumber: 1, manufacturerCode: devices.LIVOLO.manufacturerID},
         });
@@ -151,11 +151,11 @@ describe('Extension: OnEvent', () => {
 
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
         expect(deviceOnEventSpy).toHaveBeenCalledWith(
-            'message',
+            "message",
             {
-                type: 'attributeReport',
+                type: "attributeReport",
                 endpoint: devices.LIVOLO.endpoints[0],
-                cluster: 'genBasic',
+                cluster: "genBasic",
                 data: {zclVersion: 8},
                 meta: {zclTransactionSequenceNumber: 1, manufacturerCode: devices.LIVOLO.manufacturerID},
             },
@@ -166,12 +166,12 @@ describe('Extension: OnEvent', () => {
         );
     });
 
-    it('does not block startup on failure', async () => {
-        await controller.removeExtension(controller.getExtension('OnEvent')!);
+    it("does not block startup on failure", async () => {
+        await controller.removeExtension(controller.getExtension("OnEvent")!);
         clearOnEventSpies();
         deviceOnEventSpy.mockImplementationOnce(async () => {
             await new Promise((resolve) => setTimeout(resolve, 10000));
-            throw new Error('Failed');
+            throw new Error("Failed");
         });
         await controller.addExtension(new OnEvent(...controller.extensionArgs));
 

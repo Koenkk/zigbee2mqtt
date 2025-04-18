@@ -1,14 +1,14 @@
-import type * as zhc from 'zigbee-herdsman-converters';
+import type * as zhc from "zigbee-herdsman-converters";
 
-import bind from 'bind-decorator';
-import stringify from 'json-stable-stringify-without-jsonify';
+import bind from "bind-decorator";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import Device from '../model/device';
-import Group from '../model/group';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import Device from "../model/device";
+import Group from "../model/group";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 let topicGetSetRegex: RegExp;
 // Used by `publish.test.js` to reload regex when changing `mqtt.base_topic`.
@@ -17,17 +17,18 @@ export const loadTopicGetSetRegex = (): void => {
 };
 loadTopicGetSetRegex();
 
-const STATE_VALUES: ReadonlyArray<string> = ['on', 'off', 'toggle', 'open', 'close', 'stop', 'lock', 'unlock'];
-const SCENE_CONVERTER_KEYS: ReadonlyArray<string> = ['scene_store', 'scene_add', 'scene_remove', 'scene_remove_all', 'scene_rename'];
+const STATE_VALUES: ReadonlyArray<string> = ["on", "off", "toggle", "open", "close", "stop", "lock", "unlock"];
+const SCENE_CONVERTER_KEYS: ReadonlyArray<string> = ["scene_store", "scene_add", "scene_remove", "scene_remove_all", "scene_rename"];
 
 interface ParsedTopic {
     ID: string;
     endpoint: string | undefined;
     attribute: string;
-    type: 'get' | 'set';
+    type: "get" | "set";
 }
 
 export default class Publish extends Extension {
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
@@ -53,7 +54,7 @@ export default class Publish extends Extension {
 
         // Now parse the device/group name, and endpoint name
         const entity = this.zigbee.resolveEntityAndEndpoint(deviceNameAndEndpoint);
-        return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as 'get' | 'set', attribute: attribute};
+        return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as "get" | "set", attribute: attribute};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | undefined {
@@ -82,9 +83,9 @@ export default class Publish extends Extension {
             const hasColorTemp = message.color_temp !== undefined;
             const hasColor = message.color !== undefined;
             const hasBrightness = message.brightness !== undefined;
-            if (entityState.state === 'ON' && (hasColorTemp || hasColor) && !hasBrightness) {
+            if (entityState.state === "ON" && (hasColorTemp || hasColor) && !hasBrightness) {
                 delete message.state;
-                logger.debug('Skipping state because of Home Assistant');
+                logger.debug("Skipping state because of Home Assistant");
             }
         }
     }
@@ -134,7 +135,8 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
+                ? // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: might be a bit much assumed here?
+                  Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
@@ -150,8 +152,8 @@ export default class Publish extends Extension {
          * bulb off => move state & brightness to the front
          */
         const entries = Object.entries(message);
-        const sorter = typeof message.state === 'string' && message.state.toLowerCase() === 'off' ? 1 : -1;
-        entries.sort((a) => (['state', 'brightness', 'brightness_percent'].includes(a[0]) ? sorter : sorter * -1));
+        const sorter = typeof message.state === "string" && message.state.toLowerCase() === "off" ? 1 : -1;
+        entries.sort((a) => (["state", "brightness", "brightness_percent"].includes(a[0]) ? sorter : sorter * -1));
 
         // For each attribute call the corresponding converter
         const usedConverters: {[s: number]: zhc.Tz.Converter[]} = {};
@@ -169,7 +171,7 @@ export default class Publish extends Extension {
         };
 
         const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
-        const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join('|')})$`);
+        const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join("|")})$`);
         let scenesChanged = false;
 
         for (const entry of entries) {
@@ -185,8 +187,7 @@ export default class Publish extends Extension {
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
-                // endpointName is always matched to an existing endpoint of the device
-                // since `propertyEndpointRegex` only contains valid endpoints for this device.
+                // biome-ignore lint/style/noNonNullAssertion: endpointName is always matched to an existing endpoint of the device since `propertyEndpointRegex` only contains valid endpoints for this device
                 localTarget = re.endpoint(endpointName)!;
                 endpointOrGroupID = localTarget.ID;
             }
@@ -198,7 +199,7 @@ export default class Publish extends Extension {
                     (!c.key || c.key.includes(key)) && (re instanceof Group || !c.endpoints || (endpointName && c.endpoints.includes(endpointName))),
             );
 
-            if (parsedTopic.type === 'set' && converter && usedConverters[endpointOrGroupID].includes(converter)) {
+            if (parsedTopic.type === "set" && converter && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
                 // (e.g. light_onoff_brightness converters can convert state and brightness)
                 continue;
@@ -240,7 +241,7 @@ export default class Publish extends Extension {
             }
 
             try {
-                if (parsedTopic.type === 'set' && converter.convertSet) {
+                if (parsedTopic.type === "set" && converter.convertSet) {
                     logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     const result = await converter.convertSet(localTarget, key, value, meta);
                     const optimistic = entitySettings.optimistic === undefined || entitySettings.optimistic;
@@ -263,10 +264,11 @@ export default class Publish extends Extension {
 
                     if (result?.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
+                            // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
                             addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
                         }
                     }
-                } else if (parsedTopic.type === 'get' && converter.convertGet) {
+                } else if (parsedTopic.type === "get" && converter.convertGet) {
                     logger.debug(`Publishing get '${parsedTopic.type}' '${key}' to '${re.name}'`);
                     await converter.convertGet(localTarget, key, meta);
                 } else {
@@ -276,6 +278,7 @@ export default class Publish extends Extension {
             } catch (error) {
                 const message = `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
 
