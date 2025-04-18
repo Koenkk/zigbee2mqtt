@@ -1,8 +1,8 @@
-import type Extension from './extension';
+import type Extension from "./extension";
 
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import ExternalJSExtension from './externalJS';
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import ExternalJSExtension from "./externalJS";
 
 type TModule = new (...args: ConstructorParameters<typeof Extension>) => Extension;
 
@@ -26,8 +26,8 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
             enableDisableExtension,
             restartCallback,
             addExtension,
-            'extension',
-            'external_extensions',
+            "extension",
+            "external_extensions",
         );
     }
 

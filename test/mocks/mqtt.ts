@@ -1,6 +1,6 @@
-import type {IClientPublishOptions} from 'mqtt';
+import type {IClientPublishOptions} from "mqtt";
 
-import {EventHandler} from './utils';
+import type {EventHandler} from "./utils";
 
 export const events: Record<string, EventHandler> = {};
 
@@ -21,7 +21,7 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
     subscribeAsync: mockMQTTSubscribeAsync,
     unsubscribeAsync: mockMQTTUnsubscribeAsync,
     on: vi.fn(async (type, handler) => {
-        if (type === 'connect') {
+        if (type === "connect") {
             await handler();
         }
 
@@ -30,6 +30,6 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
     stream: {setMaxListeners: vi.fn()},
 }));
 
-vi.mock('mqtt', () => ({
+vi.mock("mqtt", () => ({
     connectAsync: mockMQTTConnectAsync,
 }));

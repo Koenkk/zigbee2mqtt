@@ -8,7 +8,7 @@ require('source-map-support').install();
 
 let controller;
 let stopping = false;
-let watchdog = process.env.Z2M_WATCHDOG != undefined;
+const watchdog = process.env.Z2M_WATCHDOG != undefined;
 let watchdogCount = 0;
 let unsolicitedStop = false;
 // csv in minutes, default: 1min, 5min, 15min, 30min, 60min
@@ -16,7 +16,7 @@ let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
 if (watchdog && process.env.Z2M_WATCHDOG !== 'default') {
     if (/^\d+(.\d+)?(,\d+(.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
-        watchdogDelays = process.env.Z2M_WATCHDOG.split(',').map((v) => parseFloat(v) * 60000);
+        watchdogDelays = process.env.Z2M_WATCHDOG.split(',').map((v) => Number.parseFloat(v) * 60000);
     } else {
         console.log(`Invalid watchdog delays (must use number-only CSV format representing minutes, example: 'Z2M_WATCHDOG=1,5,15,30,60'.`);
         process.exit(1);
@@ -81,9 +81,9 @@ async function build(reason) {
 
     return await new Promise((resolve, reject) => {
         const env = {...process.env};
-        const _600mb = 629145600;
+        const 600mb = 629145600;
 
-        if (_600mb > os.totalmem() && !env.NODE_OPTIONS) {
+        if (600mb > os.totalmem() && !env.NODE_OPTIONS) {
             // Prevent OOM on tsc compile for system with low memory
             // https://github.com/Koenkk/zigbee2mqtt/issues/12034
             env.NODE_OPTIONS = '--max_old_space_size=256';

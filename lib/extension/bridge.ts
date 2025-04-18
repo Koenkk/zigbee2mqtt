@@ -1,25 +1,25 @@
-import type winston from 'winston';
+import type winston from "winston";
 
-import type Group from '../model/group';
-import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from '../types/api';
+import type Group from "../model/group";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from "../types/api";
 
-import fs from 'node:fs';
+import fs from "node:fs";
 
-import bind from 'bind-decorator';
-import stringify from 'json-stable-stringify-without-jsonify';
-import JSZip from 'jszip';
-import objectAssignDeep from 'object-assign-deep';
-import Transport from 'winston-transport';
+import bind from "bind-decorator";
+import stringify from "json-stable-stringify-without-jsonify";
+import JSZip from "jszip";
+import objectAssignDeep from "object-assign-deep";
+import Transport from "winston-transport";
 
-import {Zcl} from 'zigbee-herdsman';
-import * as zhc from 'zigbee-herdsman-converters';
+import {Zcl} from "zigbee-herdsman";
+import * as zhc from "zigbee-herdsman-converters";
 
-import Device from '../model/device';
-import data from '../util/data';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import Device from "../model/device";
+import data from "../util/data";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
@@ -33,23 +33,23 @@ export default class Bridge extends Extension {
     private lastBridgeLoggingPayload?: string;
     private logTransport!: winston.transport;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<Zigbee2MQTTResponse<Zigbee2MQTTResponseEndpoints>>} = {
-        'device/options': this.deviceOptions,
-        'device/configure_reporting': this.deviceConfigureReporting,
-        'device/remove': this.deviceRemove,
-        'device/interview': this.deviceInterview,
-        'device/generate_external_definition': this.deviceGenerateExternalDefinition,
-        'device/rename': this.deviceRename,
-        'group/add': this.groupAdd,
-        'group/options': this.groupOptions,
-        'group/remove': this.groupRemove,
-        'group/rename': this.groupRename,
+        "device/options": this.deviceOptions,
+        "device/configure_reporting": this.deviceConfigureReporting,
+        "device/remove": this.deviceRemove,
+        "device/interview": this.deviceInterview,
+        "device/generate_external_definition": this.deviceGenerateExternalDefinition,
+        "device/rename": this.deviceRename,
+        "group/add": this.groupAdd,
+        "group/options": this.groupOptions,
+        "group/remove": this.groupRemove,
+        "group/rename": this.groupRename,
         permit_join: this.permitJoin,
         restart: this.restart,
         backup: this.backup,
-        'touchlink/factory_reset': this.touchlinkFactoryReset,
-        'touchlink/identify': this.touchlinkIdentify,
-        'install_code/add': this.installCodeAdd,
-        'touchlink/scan': this.touchlinkScan,
+        "touchlink/factory_reset": this.touchlinkFactoryReset,
+        "touchlink/identify": this.touchlinkIdentify,
+        "install_code/add": this.installCodeAdd,
+        "touchlink/scan": this.touchlinkScan,
         health_check: this.healthCheck,
         coordinator_check: this.coordinatorCheck,
         options: this.bridgeOptions,
@@ -64,7 +64,7 @@ export default class Bridge extends Extension {
 
             if (payload !== this.lastBridgeLoggingPayload) {
                 this.lastBridgeLoggingPayload = payload;
-                void this.mqtt.publish('bridge/logging', payload, {}, baseTopic, true);
+                void this.mqtt.publish("bridge/logging", payload, {}, baseTopic, true);
             }
         };
 
@@ -80,7 +80,7 @@ export default class Bridge extends Extension {
         } else {
             class EventTransport extends Transport {
                 override log(info: {message: string; level: string; namespace: string}, next: () => void): void {
-                    if (info.level !== 'debug') {
+                    if (info.level !== "debug") {
                         bridgeLogging(info.message, info.level, info.namespace);
                     }
                     next();
@@ -93,8 +93,8 @@ export default class Bridge extends Extension {
         logger.addTransport(this.logTransport);
 
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
-        this.zigbeeHerdsmanVersion = await utils.getDependencyVersion('zigbee-herdsman');
-        this.zigbeeHerdsmanConvertersVersion = await utils.getDependencyVersion('zigbee-herdsman-converters');
+        this.zigbeeHerdsmanVersion = await utils.getDependencyVersion("zigbee-herdsman");
+        this.zigbeeHerdsmanConvertersVersion = await utils.getDependencyVersion("zigbee-herdsman-converters");
         this.coordinatorVersion = await this.zigbee.getCoordinatorVersion();
 
         this.eventBus.onEntityRenamed(this, async () => {
@@ -123,20 +123,20 @@ export default class Bridge extends Extension {
             this.lastJoinedDeviceIeeeAddr = data.device.ieeeAddr;
             await this.publishDevices();
 
-            const payload: Zigbee2MQTTAPI['bridge/event'] = {
-                type: 'device_joined',
+            const payload: Zigbee2MQTTAPI["bridge/event"] = {
+                type: "device_joined",
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish('bridge/event', stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
             await this.publishDevices();
             await this.publishDefinitions();
 
-            const payload: Zigbee2MQTTAPI['bridge/event'] = {type: 'device_leave', data: {ieee_address: data.ieeeAddr, friendly_name: data.name}};
+            const payload: Zigbee2MQTTAPI["bridge/event"] = {type: "device_leave", data: {ieee_address: data.ieeeAddr, friendly_name: data.name}};
 
-            await this.mqtt.publish('bridge/event', stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, async () => {
             await this.publishDevices();
@@ -144,11 +144,11 @@ export default class Bridge extends Extension {
         this.eventBus.onDeviceInterview(this, async (data) => {
             await this.publishDevices();
 
-            let payload: Zigbee2MQTTAPI['bridge/event'];
+            let payload: Zigbee2MQTTAPI["bridge/event"];
 
-            if (data.status === 'successful') {
+            if (data.status === "successful") {
                 payload = {
-                    type: 'device_interview',
+                    type: "device_interview",
                     data: {
                         friendly_name: data.device.name,
                         status: data.status,
@@ -159,22 +159,22 @@ export default class Bridge extends Extension {
                 };
             } else {
                 payload = {
-                    type: 'device_interview',
+                    type: "device_interview",
                     data: {friendly_name: data.device.name, status: data.status, ieee_address: data.device.ieeeAddr},
                 };
             }
 
-            await this.mqtt.publish('bridge/event', stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
         });
         this.eventBus.onDeviceAnnounce(this, async (data) => {
             await this.publishDevices();
 
-            const payload: Zigbee2MQTTAPI['bridge/event'] = {
-                type: 'device_announce',
+            const payload: Zigbee2MQTTAPI["bridge/event"] = {
+                type: "device_announce",
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish('bridge/event', stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
         });
 
         await this.publishInfo();
@@ -218,17 +218,17 @@ export default class Bridge extends Extension {
      * Requests
      */
 
-    @bind async deviceOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/device/options'>> {
-        return await this.changeEntityOptions('device', message);
+    @bind async deviceOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/device/options">> {
+        return await this.changeEntityOptions("device", message);
     }
 
-    @bind async groupOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/group/options'>> {
-        return await this.changeEntityOptions('group', message);
+    @bind async groupOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/group/options">> {
+        return await this.changeEntityOptions("group", message);
     }
 
-    @bind async bridgeOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/options'>> {
-        if (typeof message !== 'object' || typeof message.options !== 'object') {
-            throw new Error('Invalid payload');
+    @bind async bridgeOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/options">> {
+        if (typeof message !== "object" || typeof message.options !== "object") {
+            throw new Error("Invalid payload");
         }
 
         const newSettings = message.options as Partial<Settings>;
@@ -236,7 +236,7 @@ export default class Bridge extends Extension {
 
         // Apply some settings on-the-fly.
         if (newSettings.homeassistant) {
-            await this.enableDisableExtension(settings.get().homeassistant.enabled, 'HomeAssistant');
+            await this.enableDisableExtension(settings.get().homeassistant.enabled, "HomeAssistant");
         }
 
         if (newSettings.advanced?.log_level != null) {
@@ -251,24 +251,24 @@ export default class Bridge extends Extension {
             logger.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
         }
 
-        logger.info('Successfully changed options');
+        logger.info("Successfully changed options");
         await this.publishInfo();
         return utils.getResponse(message, {restart_required: this.restartRequired});
     }
 
-    @bind async deviceRemove(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/device/remove'>> {
-        return await this.removeEntity('device', message);
+    @bind async deviceRemove(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/remove">> {
+        return await this.removeEntity("device", message);
     }
 
-    @bind async groupRemove(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/group/remove'>> {
-        return await this.removeEntity('group', message);
+    @bind async groupRemove(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/group/remove">> {
+        return await this.removeEntity("group", message);
     }
 
-    @bind async healthCheck(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/health_check'>> {
+    @bind async healthCheck(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/health_check">> {
         return utils.getResponse(message, {healthy: true});
     }
 
-    @bind async coordinatorCheck(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/coordinator_check'>> {
+    @bind async coordinatorCheck(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/coordinator_check">> {
         const result = await this.zigbee.coordinatorCheck();
         const missingRouters = result.missingRouters.map((d) => {
             return {ieee_address: d.ieeeAddr, friendly_name: d.name};
@@ -276,69 +276,69 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {missing_routers: missingRouters});
     }
 
-    @bind async groupAdd(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/group/add'>> {
-        if (typeof message === 'object' && message.friendly_name === undefined) {
-            throw new Error('Invalid payload');
+    @bind async groupAdd(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/group/add">> {
+        if (typeof message === "object" && message.friendly_name === undefined) {
+            throw new Error("Invalid payload");
         }
 
-        const friendlyName = typeof message === 'object' ? message.friendly_name : message;
-        const ID = typeof message === 'object' && message.id !== undefined ? message.id : null;
+        const friendlyName = typeof message === "object" ? message.friendly_name : message;
+        const ID = typeof message === "object" && message.id !== undefined ? message.id : null;
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         await this.publishGroups();
         return utils.getResponse(message, {friendly_name: group.friendly_name, id: group.ID});
     }
 
-    @bind async deviceRename(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/device/rename'>> {
-        return await this.renameEntity('device', message);
+    @bind async deviceRename(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/rename">> {
+        return await this.renameEntity("device", message);
     }
 
-    @bind async groupRename(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/group/rename'>> {
-        return await this.renameEntity('group', message);
+    @bind async groupRename(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/group/rename">> {
+        return await this.renameEntity("group", message);
     }
 
-    @bind async restart(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/restart'>> {
+    @bind async restart(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/restart">> {
         // Wait 500 ms before restarting so response can be send.
         setTimeout(this.restartCallback, 500);
-        logger.info('Restarting Zigbee2MQTT');
+        logger.info("Restarting Zigbee2MQTT");
         return utils.getResponse(message, {});
     }
 
-    @bind async backup(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/backup'>> {
+    @bind async backup(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/backup">> {
         await this.zigbee.backup();
         const dataPath = data.getPath();
         const files = utils
             .getAllFiles(dataPath)
             .map((f) => [f, f.substring(dataPath.length + 1)])
-            .filter((f) => !f[1].startsWith('log'));
+            .filter((f) => !f[1].startsWith("log"));
         const zip = new JSZip();
 
         for (const f of files) {
             zip.file(f[1], fs.readFileSync(f[0]));
         }
 
-        const base64Zip = await zip.generateAsync({type: 'base64'});
+        const base64Zip = await zip.generateAsync({type: "base64"});
         return utils.getResponse(message, {zip: base64Zip});
     }
 
-    @bind async installCodeAdd(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/install_code/add'>> {
-        if (typeof message === 'object' && message.value === undefined) {
-            throw new Error('Invalid payload');
+    @bind async installCodeAdd(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/install_code/add">> {
+        if (typeof message === "object" && message.value === undefined) {
+            throw new Error("Invalid payload");
         }
 
-        const value = typeof message === 'object' ? message.value : message;
+        const value = typeof message === "object" ? message.value : message;
         await this.zigbee.addInstallCode(value);
-        logger.info('Successfully added new install code');
+        logger.info("Successfully added new install code");
         return utils.getResponse(message, {value});
     }
 
-    @bind async permitJoin(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/permit_join'>> {
+    @bind async permitJoin(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/permit_join">> {
         let time: number | undefined;
         let device: Device | undefined;
 
-        if (typeof message === 'object') {
+        if (typeof message === "object") {
             if (message.time === undefined) {
-                throw new Error('Invalid payload');
+                throw new Error("Invalid payload");
             }
 
             time = Number.parseInt(message.time, 10);
@@ -367,9 +367,9 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, response);
     }
 
-    @bind async touchlinkIdentify(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/touchlink/identify'>> {
-        if (typeof message !== 'object' || message.ieee_address === undefined || message.channel === undefined) {
-            throw new Error('Invalid payload');
+    @bind async touchlinkIdentify(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/touchlink/identify">> {
+        if (typeof message !== "object" || message.ieee_address === undefined || message.channel === undefined) {
+            throw new Error("Invalid payload");
         }
 
         logger.info(`Start Touchlink identify of '${message.ieee_address}' on channel ${message.channel}`);
@@ -377,11 +377,11 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {ieee_address: message.ieee_address, channel: message.channel});
     }
 
-    @bind async touchlinkFactoryReset(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/touchlink/factory_reset'>> {
+    @bind async touchlinkFactoryReset(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/touchlink/factory_reset">> {
         let result = false;
-        let payload: Zigbee2MQTTAPI['bridge/response/touchlink/factory_reset'] = {};
+        let payload: Zigbee2MQTTAPI["bridge/response/touchlink/factory_reset"] = {};
 
-        if (typeof message === 'object' && message.ieee_address !== undefined && message.channel !== undefined) {
+        if (typeof message === "object" && message.ieee_address !== undefined && message.channel !== undefined) {
             logger.info(`Start Touchlink factory reset of '${message.ieee_address}' on channel ${message.channel}`);
 
             result = await this.zigbee.touchlinkFactoryReset(message.ieee_address, message.channel);
@@ -390,26 +390,26 @@ export default class Bridge extends Extension {
                 channel: message.channel,
             };
         } else {
-            logger.info('Start Touchlink factory reset of first found device');
+            logger.info("Start Touchlink factory reset of first found device");
             result = await this.zigbee.touchlinkFactoryResetFirst();
         }
 
         if (result) {
-            logger.info('Successfully factory reset device through Touchlink');
+            logger.info("Successfully factory reset device through Touchlink");
             return utils.getResponse(message, payload);
         }
 
-        logger.error('Failed to factory reset device through Touchlink');
-        throw new Error('Failed to factory reset device through Touchlink');
+        logger.error("Failed to factory reset device through Touchlink");
+        throw new Error("Failed to factory reset device through Touchlink");
     }
 
-    @bind async touchlinkScan(message: KeyValue | string): Promise<Zigbee2MQTTResponse<'bridge/response/touchlink/scan'>> {
-        logger.info('Start Touchlink scan');
+    @bind async touchlinkScan(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/touchlink/scan">> {
+        logger.info("Start Touchlink scan");
         const result = await this.zigbee.touchlinkScan();
         const found = result.map((r) => {
             return {ieee_address: r.ieeeAddr, channel: r.channel};
         });
-        logger.info('Finished Touchlink scan');
+        logger.info("Finished Touchlink scan");
         return utils.getResponse(message, {found});
     }
 
@@ -417,12 +417,12 @@ export default class Bridge extends Extension {
      * Utils
      */
 
-    async changeEntityOptions<T extends 'device' | 'group'>(
+    async changeEntityOptions<T extends "device" | "group">(
         entityType: T,
         message: KeyValue | string,
-    ): Promise<Zigbee2MQTTResponse<T extends 'device' ? 'bridge/response/device/options' : 'bridge/response/group/options'>> {
-        if (typeof message !== 'object' || message.id === undefined || message.options === undefined) {
-            throw new Error('Invalid payload');
+    ): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/options" : "bridge/response/group/options">> {
+        if (typeof message !== "object" || message.id === undefined || message.options === undefined) {
+            throw new Error("Invalid payload");
         }
 
         const cleanup = (o: KeyValue): KeyValue => {
@@ -458,9 +458,9 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID, restart_required: this.restartRequired});
     }
 
-    @bind async deviceConfigureReporting(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/device/configure_reporting'>> {
+    @bind async deviceConfigureReporting(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/configure_reporting">> {
         if (
-            typeof message !== 'object' ||
+            typeof message !== "object" ||
             message.id === undefined ||
             message.endpoint === undefined ||
             message.cluster === undefined ||
@@ -469,10 +469,10 @@ export default class Bridge extends Extension {
             message.reportable_change === undefined ||
             message.attribute === undefined
         ) {
-            throw new Error('Invalid payload');
+            throw new Error("Invalid payload");
         }
 
-        const device = this.getEntity('device', message.id);
+        const device = this.getEntity("device", message.id);
         const endpoint = device.endpoint(message.endpoint);
 
         if (!endpoint) {
@@ -510,12 +510,12 @@ export default class Bridge extends Extension {
         });
     }
 
-    @bind async deviceInterview(message: string | KeyValue): Promise<Zigbee2MQTTResponse<'bridge/response/device/interview'>> {
-        if (typeof message !== 'object' || message.id === undefined) {
-            throw new Error('Invalid payload');
+    @bind async deviceInterview(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/interview">> {
+        if (typeof message !== "object" || message.id === undefined) {
+            throw new Error("Invalid payload");
         }
 
-        const device = this.getEntity('device', message.id);
+        const device = this.getEntity("device", message.id);
         logger.info(`Interviewing '${device.name}'`);
 
         try {
@@ -535,29 +535,29 @@ export default class Bridge extends Extension {
 
     @bind async deviceGenerateExternalDefinition(
         message: string | KeyValue,
-    ): Promise<Zigbee2MQTTResponse<'bridge/response/device/generate_external_definition'>> {
-        if (typeof message !== 'object' || message.id === undefined) {
-            throw new Error('Invalid payload');
+    ): Promise<Zigbee2MQTTResponse<"bridge/response/device/generate_external_definition">> {
+        if (typeof message !== "object" || message.id === undefined) {
+            throw new Error("Invalid payload");
         }
 
-        const device = this.getEntity('device', message.id);
+        const device = this.getEntity("device", message.id);
         const source = await zhc.generateExternalDefinitionSource(device.zh);
 
         return utils.getResponse(message, {id: message.id, source});
     }
 
-    async renameEntity<T extends 'device' | 'group'>(
+    async renameEntity<T extends "device" | "group">(
         entityType: T,
         message: string | KeyValue,
-    ): Promise<Zigbee2MQTTResponse<T extends 'device' ? 'bridge/response/device/rename' : 'bridge/response/group/rename'>> {
-        const deviceAndHasLast = entityType === 'device' && typeof message === 'object' && message.last === true;
+    ): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/rename" : "bridge/response/group/rename">> {
+        const deviceAndHasLast = entityType === "device" && typeof message === "object" && message.last === true;
 
-        if (typeof message !== 'object' || (message.from === undefined && !deviceAndHasLast) || message.to === undefined) {
-            throw new Error('Invalid payload');
+        if (typeof message !== "object" || (message.from === undefined && !deviceAndHasLast) || message.to === undefined) {
+            throw new Error("Invalid payload");
         }
 
         if (deviceAndHasLast && !this.lastJoinedDeviceIeeeAddr) {
-            throw new Error('No device has joined since start');
+            throw new Error("No device has joined since start");
         }
 
         const from = deviceAndHasLast ? this.lastJoinedDeviceIeeeAddr : message.from;
@@ -569,7 +569,7 @@ export default class Bridge extends Extension {
         settings.changeFriendlyName(from, to);
 
         // Clear retained messages
-        await this.mqtt.publish(oldFriendlyName, '', {retain: true});
+        await this.mqtt.publish(oldFriendlyName, "", {retain: true});
 
         this.eventBus.emitEntityRenamed({entity: entity, homeAssisantRename, from: oldFriendlyName, to});
 
@@ -586,23 +586,23 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {from: oldFriendlyName, to, homeassistant_rename: homeAssisantRename});
     }
 
-    async removeEntity<T extends 'device' | 'group'>(
+    async removeEntity<T extends "device" | "group">(
         entityType: T,
         message: string | KeyValue,
-    ): Promise<Zigbee2MQTTResponse<T extends 'device' ? 'bridge/response/device/remove' : 'bridge/response/group/remove'>> {
-        const ID = typeof message === 'object' ? message.id : message.trim();
+    ): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/remove" : "bridge/response/group/remove">> {
+        const ID = typeof message === "object" ? message.id : message.trim();
         const entity = this.getEntity(entityType, ID);
         // note: entity.name is dynamically retrieved, will change once device is removed (friendly => ieee)
         const friendlyName = entity.name;
         let block = false;
         let force = false;
-        let blockForceLog = '';
+        let blockForceLog = "";
 
-        if (entityType === 'device' && typeof message === 'object') {
+        if (entityType === "device" && typeof message === "object") {
             block = !!message.block;
             force = !!message.force;
             blockForceLog = ` (block: ${block}, force: ${force})`;
-        } else if (entityType === 'group' && typeof message === 'object') {
+        } else if (entityType === "group" && typeof message === "object") {
             force = !!message.force;
             blockForceLog = ` (force: ${force})`;
         }
@@ -621,7 +621,7 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: 'device'});
+                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: "device"});
                 settings.removeDevice(entity.ID as string);
             } else {
                 if (force) {
@@ -630,7 +630,7 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: 'group'});
+                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: "group"});
                 settings.removeGroup(entity.ID);
             }
 
@@ -638,7 +638,7 @@ export default class Bridge extends Extension {
             this.state.remove(entity.ID);
 
             // Clear any retained messages
-            await this.mqtt.publish(friendlyName, '', {retain: true});
+            await this.mqtt.publish(friendlyName, "", {retain: true});
 
             logger.info(`Successfully removed ${entityType} '${friendlyName}'${blockForceLog}`);
 
@@ -648,14 +648,14 @@ export default class Bridge extends Extension {
                 // Refresh Cluster definition
                 await this.publishDefinitions();
 
-                const responseData: Zigbee2MQTTAPI['bridge/response/device/remove'] = {id: ID, block, force};
+                const responseData: Zigbee2MQTTAPI["bridge/response/device/remove"] = {id: ID, block, force};
 
                 return utils.getResponse(message, responseData);
             }
 
             await this.publishGroups();
 
-            const responseData: Zigbee2MQTTAPI['bridge/response/group/remove'] = {id: ID, force};
+            const responseData: Zigbee2MQTTAPI["bridge/response/group/remove"] = {id: ID, force};
 
             return utils.getResponse(
                 message,
@@ -667,13 +667,13 @@ export default class Bridge extends Extension {
         }
     }
 
-    getEntity(type: 'group', ID: string): Group;
-    getEntity(type: 'device', ID: string): Device;
-    getEntity(type: 'group' | 'device', ID: string): Device | Group;
-    getEntity(type: 'group' | 'device', ID: string): Device | Group {
-        const entity = this.zigbee.resolveEntity(ID);
+    getEntity(type: "group", id: string): Group;
+    getEntity(type: "device", id: string): Device;
+    getEntity(type: "group" | "device", id: string): Device | Group;
+    getEntity(type: "group" | "device", id: string): Device | Group {
+        const entity = this.zigbee.resolveEntity(id);
         if (!entity || entity.constructor.name.toLowerCase() !== type) {
-            throw new Error(`${utils.capitalize(type)} '${ID}' does not exist`);
+            throw new Error(`${utils.capitalize(type)} '${id}' does not exist`);
         }
         return entity;
     }
@@ -686,7 +686,7 @@ export default class Bridge extends Extension {
         delete config.frontend.auth_token;
 
         const networkParams = await this.zigbee.getNetworkParameters();
-        const payload: Zigbee2MQTTAPI['bridge/info'] = {
+        const payload: Zigbee2MQTTAPI["bridge/info"] = {
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,
             zigbee_herdsman_converters: this.zigbeeHerdsmanConvertersVersion,
@@ -708,14 +708,14 @@ export default class Bridge extends Extension {
             config_schema: settings.schemaJson,
         };
 
-        await this.mqtt.publish('bridge/info', stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/info", stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
     async publishDevices(): Promise<void> {
-        const devices: Zigbee2MQTTAPI['bridge/devices'] = [];
+        const devices: Zigbee2MQTTAPI["bridge/devices"] = [];
 
         for (const device of this.zigbee.devicesIterator()) {
-            const endpoints: (typeof devices)[number]['endpoints'] = {};
+            const endpoints: (typeof devices)[number]["endpoints"] = {};
 
             for (const endpoint of device.zh.endpoints) {
                 const data: (typeof endpoints)[keyof typeof endpoints] = {
@@ -730,8 +730,8 @@ export default class Bridge extends Extension {
 
                 for (const bind of endpoint.binds) {
                     const target = utils.isZHEndpoint(bind.target)
-                        ? {type: 'endpoint', ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
-                        : {type: 'group', id: bind.target.groupID};
+                        ? {type: "endpoint", ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
+                        : {type: "group", id: bind.target.groupID};
                     data.bindings.push({cluster: bind.cluster.name, target});
                 }
 
@@ -768,11 +768,11 @@ export default class Bridge extends Extension {
             });
         }
 
-        await this.mqtt.publish('bridge/devices', stringify(devices), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/devices", stringify(devices), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
     async publishGroups(): Promise<void> {
-        const groups: Zigbee2MQTTAPI['bridge/groups'] = [];
+        const groups: Zigbee2MQTTAPI["bridge/groups"] = [];
 
         for (const group of this.zigbee.groupsIterator()) {
             const members = [];
@@ -783,18 +783,18 @@ export default class Bridge extends Extension {
 
             groups.push({
                 id: group.ID,
-                friendly_name: group.ID === 901 ? 'default_bind_group' : group.name,
+                friendly_name: group.ID === 901 ? "default_bind_group" : group.name,
                 description: group.options.description,
                 scenes: utils.getScenes(group.zh),
                 members,
             });
         }
 
-        await this.mqtt.publish('bridge/groups', stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/groups", stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
     async publishDefinitions(): Promise<void> {
-        const data: Zigbee2MQTTAPI['bridge/definition'] = {
+        const data: Zigbee2MQTTAPI["bridge/definition"] = {
             clusters: Zcl.Clusters,
             custom_clusters: {},
         };
@@ -803,10 +803,10 @@ export default class Bridge extends Extension {
             data.custom_clusters[device.ieeeAddr] = device.customClusters;
         }
 
-        await this.mqtt.publish('bridge/definitions', stringify(data), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/definitions", stringify(data), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
     }
 
-    getDefinitionPayload(device: Device): Zigbee2MQTTDevice['definition'] | undefined {
+    getDefinitionPayload(device: Device): Zigbee2MQTTDevice["definition"] | undefined {
         if (!device.definition) {
             return undefined;
         }
@@ -818,11 +818,11 @@ export default class Bridge extends Extension {
 
         if (icon) {
             /* v8 ignore next */
-            icon = icon.replace('${zigbeeModel}', utils.sanitizeImageParameter(device.zh.modelID ?? ''));
-            icon = icon.replace('${model}', utils.sanitizeImageParameter(device.definition.model));
+            icon = icon.replace("${zigbeeModel}", utils.sanitizeImageParameter(device.zh.modelID ?? ""));
+            icon = icon.replace("${model}", utils.sanitizeImageParameter(device.definition.model));
         }
 
-        const payload: Zigbee2MQTTDevice['definition'] = {
+        const payload: Zigbee2MQTTDevice["definition"] = {
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,

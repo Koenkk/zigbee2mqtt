@@ -1,7 +1,7 @@
-const {ZnpCommandStatus, NvSystemIds} = require('zigbee-herdsman/dist/adapter/z-stack/constants/common');
-const {ZnpVersion} = require('zigbee-herdsman/dist/adapter/z-stack/adapter/tstype');
-const {Subsystem} = require('zigbee-herdsman/dist/adapter/z-stack/unpi/constants');
-const {Znp} = require('zigbee-herdsman/dist/adapter/z-stack/znp');
+const {ZnpCommandStatus, NvSystemIds} = require("zigbee-herdsman/dist/adapter/z-stack/constants/common");
+const {ZnpVersion} = require("zigbee-herdsman/dist/adapter/z-stack/adapter/tstype");
+const {Subsystem} = require("zigbee-herdsman/dist/adapter/z-stack/unpi/constants");
+const {Znp} = require("zigbee-herdsman/dist/adapter/z-stack/znp");
 
 class ZStackNvMemEraser {
     constructor(device) {
@@ -13,7 +13,7 @@ class ZStackNvMemEraser {
         const attempts = 3;
         for (let i = 0; i < attempts; i++) {
             try {
-                await this.znp.request(Subsystem.SYS, 'ping', {capabilities: 1});
+                await this.znp.request(Subsystem.SYS, "ping", {capabilities: 1});
                 break;
             } catch (e) {
                 if (attempts - 1 === i) {
@@ -23,10 +23,10 @@ class ZStackNvMemEraser {
         }
         // Old firmware did not support version, assume it's Z-Stack 1.2 for now.
         try {
-            this.version = (await this.znp.request(Subsystem.SYS, 'version', {})).payload;
+            this.version = (await this.znp.request(Subsystem.SYS, "version", {})).payload;
         } catch (e) {
             console.log(`Failed to get zStack version, assuming 1.2`);
-            this.version = {transportrev: 2, product: 0, majorrel: 2, minorrel: 0, maintrel: 0, revision: ''};
+            this.version = {transportrev: 2, product: 0, majorrel: 2, minorrel: 0, maintrel: 0, revision: ""};
         }
 
         console.log(`Detected znp version '${ZnpVersion[this.version.product]}' (${JSON.stringify(this.version)})`);
@@ -56,21 +56,21 @@ class ZStackNvMemEraser {
             let len;
             const needOsal = !(this.version.product == ZnpVersion.zStack3x0 && id <= 7);
             if (needOsal) {
-                const lengthRes = await this.znp.request(Subsystem.SYS, 'osalNvLength', {id: id});
-                len = lengthRes.payload['length'];
+                const lengthRes = await this.znp.request(Subsystem.SYS, "osalNvLength", {id: id});
+                len = lengthRes.payload["length"];
             } else {
-                const lengthRes = await this.znp.request(Subsystem.SYS, 'nvLength', {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0});
-                len = lengthRes.payload['len'];
+                const lengthRes = await this.znp.request(Subsystem.SYS, "nvLength", {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0});
+                len = lengthRes.payload["len"];
             }
             if (len != 0) {
                 console.log(`NVMEM item #${id} - deleting, size: ${len}`);
                 if (needOsal) {
-                    await this.znp.request(Subsystem.SYS, 'osalNvDelete', {id: id, len: len}, undefined, undefined, [
+                    await this.znp.request(Subsystem.SYS, "osalNvDelete", {id: id, len: len}, undefined, undefined, [
                         ZnpCommandStatus.SUCCESS,
                         ZnpCommandStatus.NV_ITEM_INITIALIZED,
                     ]);
                 } else {
-                    await this.znp.request(Subsystem.SYS, 'nvDelete', {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0}, undefined, undefined, [
+                    await this.znp.request(Subsystem.SYS, "nvDelete", {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0}, undefined, undefined, [
                         ZnpCommandStatus.SUCCESS,
                         ZnpCommandStatus.NV_ITEM_INITIALIZED,
                     ]);
@@ -83,9 +83,9 @@ class ZStackNvMemEraser {
 }
 const processArgs = process.argv.slice(2);
 if (processArgs.length != 1) {
-    console.log('ZStack NVMEM eraser.');
-    console.log('Usage:');
-    console.log('   node zStackEraseAllNvMem.js <SERIAL_PORT>');
+    console.log("ZStack NVMEM eraser.");
+    console.log("Usage:");
+    console.log("   node zStackEraseAllNvMem.js <SERIAL_PORT>");
     process.exit(1);
 }
 

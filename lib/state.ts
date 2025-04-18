@@ -1,38 +1,38 @@
-import {existsSync, readFileSync, writeFileSync} from 'node:fs';
+import {existsSync, readFileSync, writeFileSync} from "node:fs";
 
-import objectAssignDeep from 'object-assign-deep';
+import objectAssignDeep from "object-assign-deep";
 
-import data from './util/data';
-import logger from './util/logger';
-import * as settings from './util/settings';
-import utils from './util/utils';
+import data from "./util/data";
+import logger from "./util/logger";
+import * as settings from "./util/settings";
+import utils from "./util/utils";
 
 const SAVE_INTERVAL = 1000 * 60 * 5; // 5 minutes
 const CACHE_IGNORE_PROPERTIES = [
-    'action',
-    'action_.*',
-    'button',
-    'button_left',
-    'button_right',
-    'forgotten',
-    'keyerror',
-    'step_size',
-    'transition_time',
-    'group_list',
-    'group_capacity',
-    'no_occupancy_since',
-    'step_mode',
-    'transition_time',
-    'duration',
-    'elapsed',
-    'from_side',
-    'to_side',
-    'illuminance_lux', // removed in z2m 2.0.0
+    "action",
+    "action_.*",
+    "button",
+    "button_left",
+    "button_right",
+    "forgotten",
+    "keyerror",
+    "step_size",
+    "transition_time",
+    "group_list",
+    "group_capacity",
+    "no_occupancy_since",
+    "step_mode",
+    "transition_time",
+    "duration",
+    "elapsed",
+    "from_side",
+    "to_side",
+    "illuminance_lux", // removed in z2m 2.0.0
 ];
 
 class State {
     private readonly state = new Map<string | number, KeyValue>();
-    private readonly file = data.joinPath('state.json');
+    private readonly file = data.joinPath("state.json");
     private timer?: NodeJS.Timeout;
 
     constructor(
@@ -53,7 +53,7 @@ class State {
     stop(): void {
         // Remove any invalid states (ie when the device has left the network) when the system is stopped
         for (const [key] of this.state) {
-            if (typeof key === 'string' && key.startsWith('0x') && !this.zigbee.resolveEntity(key)) {
+            if (typeof key === "string" && key.startsWith("0x") && !this.zigbee.resolveEntity(key)) {
                 // string key = ieeeAddr
                 this.state.delete(key);
             }
@@ -72,10 +72,10 @@ class State {
 
         if (existsSync(this.file)) {
             try {
-                const stateObj = JSON.parse(readFileSync(this.file, 'utf8')) as KeyValue;
+                const stateObj = JSON.parse(readFileSync(this.file, "utf8")) as KeyValue;
 
                 for (const key in stateObj) {
-                    this.state.set(key.startsWith('0x') ? key : Number.parseInt(key, 10), stateObj[key]);
+                    this.state.set(key.startsWith("0x") ? key : Number.parseInt(key, 10), stateObj[key]);
                 }
 
                 logger.debug(`Loaded state from file ${this.file}`);
@@ -94,12 +94,12 @@ class State {
             const json = JSON.stringify(Object.fromEntries(this.state), null, 4);
 
             try {
-                writeFileSync(this.file, json, 'utf8');
+                writeFileSync(this.file, json, "utf8");
             } catch (error) {
                 logger.error(`Failed to write state to '${this.file}' (${error})`);
             }
         } else {
-            logger.debug('Not saving state');
+            logger.debug("Not saving state");
         }
     }
 
@@ -124,8 +124,8 @@ class State {
         return toState;
     }
 
-    remove(ID: string | number): boolean {
-        return this.state.delete(ID);
+    remove(id: string | number): boolean {
+        return this.state.delete(id);
     }
 }
 

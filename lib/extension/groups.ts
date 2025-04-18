@@ -1,37 +1,37 @@
-import type * as zhc from 'zigbee-herdsman-converters';
+import type * as zhc from "zigbee-herdsman-converters";
 
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from '../types/api';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 
-import assert from 'node:assert';
+import assert from "node:assert";
 
-import bind from 'bind-decorator';
-import equals from 'fast-deep-equal/es6';
-import stringify from 'json-stable-stringify-without-jsonify';
+import bind from "bind-decorator";
+import equals from "fast-deep-equal/es6";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import Device from '../model/device';
-import Group from '../model/group';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils, {isLightExpose} from '../util/utils';
-import Extension from './extension';
+import Device from "../model/device";
+import Group from "../model/group";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils, {isLightExpose} from "../util/utils";
+import Extension from "./extension";
 
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
 
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     state: () => true,
-    brightness: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === 'brightness')),
-    color_temp: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === 'color_temp')),
-    color: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === 'color_xy' || f.name === 'color_hs')),
+    brightness: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
+    color_temp: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_temp")),
+    color: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_xy" || f.name === "color_hs")),
     color_mode: (value, exposes) =>
         exposes.some(
             (e) =>
                 isLightExpose(e) &&
-                (e.features.some((f) => f.name === `color_${value}`) || (value === 'color_temp' && e.features.some((f) => f.name === 'color_temp'))),
+                (e.features.some((f) => f.name === `color_${value}`) || (value === "color_temp" && e.features.some((f) => f.name === "color_temp"))),
         ),
 };
 
 interface ParsedMQTTMessage {
-    type: 'remove' | 'add' | 'remove_all';
+    type: "remove" | "add" | "remove_all";
     resolvedGroup?: Group;
     resolvedDevice?: Device;
     resolvedEndpoint?: zh.Endpoint;
@@ -50,9 +50,9 @@ export default class Groups extends Extension {
     }
 
     @bind async onStateChange(data: eventdata.StateChange): Promise<void> {
-        const reason = 'groupOptimistic';
+        const reason = "groupOptimistic";
 
-        if (data.reason === reason || data.reason === 'publishCached') {
+        if (data.reason === reason || data.reason === "publishCached") {
             return;
         }
 
@@ -153,9 +153,9 @@ export default class Groups extends Extension {
 
     private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
         return (
-            group.options.off_state === 'last_member_state' ||
+            group.options.off_state === "last_member_state" ||
             !payload ||
-            (payload.state !== 'OFF' && payload.state !== 'CLOSE') ||
+            (payload.state !== "OFF" && payload.state !== "CLOSE") ||
             this.areAllMembersOffOrClosed(group)
         );
     }
@@ -171,11 +171,11 @@ export default class Groups extends Extension {
                     endpointNames &&
                     endpointNames.length >= member.ID &&
                     device.definition?.meta?.multiEndpoint &&
-                    (!device.definition.meta.multiEndpointSkip || !device.definition.meta.multiEndpointSkip.includes('state'))
+                    (!device.definition.meta.multiEndpointSkip || !device.definition.meta.multiEndpointSkip.includes("state"))
                         ? `state_${endpointNames[member.ID - 1]}`
-                        : 'state';
+                        : "state";
 
-                if (state[stateKey] === 'ON' || state[stateKey] === 'OPEN') {
+                if (state[stateKey] === "ON" || state[stateKey] === "OPEN") {
                     return false;
                 }
             }
@@ -190,24 +190,24 @@ export default class Groups extends Extension {
         const topicRegexMatch = data.topic.match(TOPIC_REGEX);
 
         if (topicRegexMatch) {
-            const type = topicRegexMatch[1] as 'remove' | 'add' | 'remove_all';
+            const type = topicRegexMatch[1] as "remove" | "add" | "remove_all";
             let resolvedGroup: Group | undefined;
             let groupKey: string | undefined;
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/group/members/add'];
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/group/members/add"];
 
-            if (typeof message !== 'object' || message.device == null) {
-                return [message, {type, skipDisableReporting}, 'Invalid payload'];
+            if (typeof message !== "object" || message.device == null) {
+                return [message, {type, skipDisableReporting}, "Invalid payload"];
             }
 
             const deviceKey = message.device;
             skipDisableReporting = message.skip_disable_reporting != null ? message.skip_disable_reporting : false;
 
-            if (type !== 'remove_all') {
+            if (type !== "remove_all") {
                 groupKey = message.group;
 
                 if (message.group == null) {
-                    return [message, {type, skipDisableReporting}, 'Invalid payload'];
+                    return [message, {type, skipDisableReporting}, "Invalid payload"];
                 }
 
                 const group = this.zigbee.resolveEntity(message.group);
@@ -225,7 +225,7 @@ export default class Groups extends Extension {
                 return [message, {type, skipDisableReporting}, `Device '${message.device}' does not exist`];
             }
 
-            const endpointKey = message.endpoint ?? 'default';
+            const endpointKey = message.endpoint ?? "default";
             const resolvedEndpoint = resolvedDevice.endpoint(message.endpoint);
 
             if (!resolvedEndpoint) {
@@ -266,26 +266,26 @@ export default class Groups extends Extension {
         const {resolvedGroup, resolvedDevice, resolvedEndpoint, type, groupKey, deviceKey, endpointKey, skipDisableReporting} = parsed;
         const changedGroups: Group[] = [];
 
-        assert(resolvedDevice, '`resolvedDevice` is missing');
-        assert(resolvedEndpoint, '`resolvedEndpoint` is missing');
+        assert(resolvedDevice, "`resolvedDevice` is missing");
+        assert(resolvedEndpoint, "`resolvedEndpoint` is missing");
 
         try {
-            if (type === 'add') {
-                assert(resolvedGroup, '`resolvedGroup` is missing');
+            if (type === "add") {
+                assert(resolvedGroup, "`resolvedGroup` is missing");
                 logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
                 await resolvedEndpoint.addToGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
-                await this.publishResponse<'bridge/response/group/members/add'>(parsed.type, raw, {
+                await this.publishResponse<"bridge/response/group/members/add">(parsed.type, raw, {
                     device: deviceKey!, // valid from resolved asserts
                     endpoint: endpointKey!, // valid from resolved asserts
                     group: groupKey!, // valid from resolved asserts
                 });
-            } else if (type === 'remove') {
-                assert(resolvedGroup, '`resolvedGroup` is missing');
+            } else if (type === "remove") {
+                assert(resolvedGroup, "`resolvedGroup` is missing");
                 logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
                 await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
-                await this.publishResponse<'bridge/response/group/members/remove'>(parsed.type, raw, {
+                await this.publishResponse<"bridge/response/group/members/remove">(parsed.type, raw, {
                     device: deviceKey!, // valid from resolved asserts
                     endpoint: endpointKey!, // valid from resolved asserts
                     group: groupKey!, // valid from resolved asserts
@@ -299,7 +299,7 @@ export default class Groups extends Extension {
                 }
 
                 await resolvedEndpoint.removeFromAllGroups();
-                await this.publishResponse<'bridge/response/group/members/remove_all'>(parsed.type, raw, {
+                await this.publishResponse<"bridge/response/group/members/remove_all">(parsed.type, raw, {
                     device: deviceKey!, // valid from resolved asserts
                     endpoint: endpointKey!, // valid from resolved asserts
                 });
@@ -317,7 +317,7 @@ export default class Groups extends Extension {
     }
 
     private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
-        type: ParsedMQTTMessage['type'],
+        type: ParsedMQTTMessage["type"],
         request: KeyValue,
         data: Zigbee2MQTTAPI[T],
         error?: string,

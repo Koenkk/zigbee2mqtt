@@ -11,15 +11,7 @@
     "engines": {
         "node": "^18 || ^20 || ^22 || ^23"
     },
-    "keywords": [
-        "xiaomi",
-        "tradfri",
-        "hue",
-        "bridge",
-        "zigbee",
-        "mqtt",
-        "cc2531"
-    ],
+    "keywords": ["xiaomi", "tradfri", "hue", "bridge", "zigbee", "mqtt", "cc2531"],
     "scripts": {
         "build": "tsc && node index.js writehash",
         "build:watch": "tsc --watch",
@@ -83,12 +75,7 @@
         "overrides": {
             "zigbee-herdsman": "$zigbee-herdsman"
         },
-        "onlyBuiltDependencies": [
-            "@biomejs/biome",
-            "@serialport/bindings-cpp",
-            "esbuild",
-            "unix-dgram"
-        ]
+        "onlyBuiltDependencies": ["@biomejs/biome", "@serialport/bindings-cpp", "esbuild", "unix-dgram"]
     },
     "bin": {
         "zigbee2mqtt": "cli.js"

@@ -1,35 +1,35 @@
-import type {IClientPublishOptions} from 'mqtt';
+import type {IClientPublishOptions} from "mqtt";
 
-import type Extension from './extension/extension';
-import type {Zigbee2MQTTAPI} from './types/api';
+import type Extension from "./extension/extension";
+import type {Zigbee2MQTTAPI} from "./types/api";
 
-import bind from 'bind-decorator';
-import stringify from 'json-stable-stringify-without-jsonify';
+import bind from "bind-decorator";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import {setLogger as zhSetLogger} from 'zigbee-herdsman';
-import {setLogger as zhcSetLogger} from 'zigbee-herdsman-converters';
+import {setLogger as zhSetLogger} from "zigbee-herdsman";
+import {setLogger as zhcSetLogger} from "zigbee-herdsman-converters";
 
-import EventBus from './eventBus';
+import EventBus from "./eventBus";
 // Extensions
-import ExtensionAvailability from './extension/availability';
-import ExtensionBind from './extension/bind';
-import ExtensionBridge from './extension/bridge';
-import ExtensionConfigure from './extension/configure';
-import ExtensionExternalConverters from './extension/externalConverters';
-import ExtensionExternalExtensions from './extension/externalExtensions';
-import ExtensionGroups from './extension/groups';
-import ExtensionNetworkMap from './extension/networkMap';
-import ExtensionOnEvent from './extension/onEvent';
-import ExtensionOTAUpdate from './extension/otaUpdate';
-import ExtensionPublish from './extension/publish';
-import ExtensionReceive from './extension/receive';
-import MQTT from './mqtt';
-import State from './state';
-import logger from './util/logger';
-import {initSdNotify} from './util/sd-notify';
-import * as settings from './util/settings';
-import utils from './util/utils';
-import Zigbee from './zigbee';
+import ExtensionAvailability from "./extension/availability";
+import ExtensionBind from "./extension/bind";
+import ExtensionBridge from "./extension/bridge";
+import ExtensionConfigure from "./extension/configure";
+import ExtensionExternalConverters from "./extension/externalConverters";
+import ExtensionExternalExtensions from "./extension/externalExtensions";
+import ExtensionGroups from "./extension/groups";
+import ExtensionNetworkMap from "./extension/networkMap";
+import ExtensionOnEvent from "./extension/onEvent";
+import ExtensionOTAUpdate from "./extension/otaUpdate";
+import ExtensionPublish from "./extension/publish";
+import ExtensionReceive from "./extension/receive";
+import MQTT from "./mqtt";
+import State from "./state";
+import logger from "./util/logger";
+import {initSdNotify} from "./util/sd-notify";
+import * as settings from "./util/settings";
+import utils from "./util/utils";
+import Zigbee from "./zigbee";
 
 export class Controller {
     private eventBus: EventBus;
@@ -83,13 +83,13 @@ export class Controller {
 
     async start(): Promise<void> {
         if (settings.get().frontend.enabled) {
-            const {Frontend} = await import('./extension/frontend.js');
+            const {Frontend} = await import("./extension/frontend.js");
 
             this.extensions.add(new Frontend(...this.extensionArgs));
         }
 
         if (settings.get().homeassistant.enabled) {
-            const {HomeAssistant} = await import('./extension/homeassistant.js');
+            const {HomeAssistant} = await import("./extension/homeassistant.js");
 
             this.extensions.add(new HomeAssistant(...this.extensionArgs));
         }
@@ -104,16 +104,16 @@ export class Controller {
             await this.zigbee.start();
             this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
         } catch (error) {
-            logger.error('Failed to start zigbee-herdsman');
+            logger.error("Failed to start zigbee-herdsman");
             logger.error(
-                'Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions',
+                "Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions",
             );
-            logger.error('Exiting...');
+            logger.error("Exiting...");
             logger.error((error as Error).stack!);
 
             /* v8 ignore start */
-            if ((error as Error).message.includes('USB adapter discovery error (No valid USB adapter found)')) {
-                logger.error('If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364');
+            if ((error as Error).message.includes("USB adapter discovery error (No valid USB adapter found)")) {
+                logger.error("If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364");
             }
             /* v8 ignore stop */
 
@@ -127,7 +127,7 @@ export class Controller {
             // `definition` validated by `isSupported`
             const model = device.isSupported
                 ? `${device.definition!.model} - ${device.definition!.vendor} ${device.definition!.description}`
-                : 'Not supported';
+                : "Not supported";
             logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
 
             deviceCount++;
@@ -153,14 +153,14 @@ export class Controller {
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const entity of this.zigbee.devicesAndGroupsIterator()) {
                 if (this.state.exists(entity)) {
-                    await this.publishEntityState(entity, this.state.get(entity), 'publishCached');
+                    await this.publishEntityState(entity, this.state.get(entity), "publishCached");
                 }
             }
         }
 
         this.eventBus.onLastSeenChanged(this, (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
 
-        logger.info('Zigbee2MQTT started!');
+        logger.info("Zigbee2MQTT started!");
 
         this.sdNotify = await initSdNotify();
     }
@@ -168,26 +168,26 @@ export class Controller {
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
         if (enable) {
             switch (name) {
-                case 'Frontend': {
+                case "Frontend": {
                     if (!settings.get().frontend.enabled) {
-                        throw new Error('Tried to enable Frontend extension disabled in settings');
+                        throw new Error("Tried to enable Frontend extension disabled in settings");
                     }
 
                     // this is not actually used, not tested either
                     /* v8 ignore start */
-                    const {Frontend} = await import('./extension/frontend.js');
+                    const {Frontend} = await import("./extension/frontend.js");
 
                     await this.addExtension(new Frontend(...this.extensionArgs));
 
                     break;
                     /* v8 ignore stop */
                 }
-                case 'HomeAssistant': {
+                case "HomeAssistant": {
                     if (!settings.get().homeassistant.enabled) {
-                        throw new Error('Tried to enable HomeAssistant extension disabled in settings');
+                        throw new Error("Tried to enable HomeAssistant extension disabled in settings");
                     }
 
-                    const {HomeAssistant} = await import('./extension/homeassistant.js');
+                    const {HomeAssistant} = await import("./extension/homeassistant.js");
 
                     await this.addExtension(new HomeAssistant(...this.extensionArgs));
 
@@ -201,32 +201,32 @@ export class Controller {
             }
         } else {
             switch (name) {
-                case 'Frontend': {
+                case "Frontend": {
                     if (settings.get().frontend.enabled) {
-                        throw new Error('Tried to disable Frontend extension enabled in settings');
+                        throw new Error("Tried to disable Frontend extension enabled in settings");
                     }
 
                     break;
                 }
-                case 'HomeAssistant': {
+                case "HomeAssistant": {
                     if (settings.get().homeassistant.enabled) {
-                        throw new Error('Tried to disable HomeAssistant extension enabled in settings');
+                        throw new Error("Tried to disable HomeAssistant extension enabled in settings");
                     }
 
                     break;
                 }
-                case 'Availability':
-                case 'Bind':
-                case 'Bridge':
-                case 'Configure':
-                case 'ExternalConverters':
-                case 'ExternalExtensions':
-                case 'Groups':
-                case 'NetworkMap':
-                case 'OnEvent':
-                case 'OTAUpdate':
-                case 'Publish':
-                case 'Receive': {
+                case "Availability":
+                case "Bind":
+                case "Bridge":
+                case "Configure":
+                case "ExternalConverters":
+                case "ExternalExtensions":
+                case "Groups":
+                case "NetworkMap":
+                case "OnEvent":
+                case "OTAUpdate":
+                case "Publish":
+                case "Receive": {
                     throw new Error(`Built-in extension ${name} cannot be disabled at runtime`);
                 }
             }
@@ -302,7 +302,7 @@ export class Controller {
 
         try {
             await this.zigbee.stop();
-            logger.info('Stopped Zigbee2MQTT');
+            logger.info("Stopped Zigbee2MQTT");
         } catch (error) {
             logger.error(`Failed to stop Zigbee2MQTT (${(error as Error).stack})`);
             code = 1;
@@ -318,12 +318,12 @@ export class Controller {
     }
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {
-        logger.error('Adapter disconnected, stopping');
+        logger.error("Adapter disconnected, stopping");
         await this.stop();
     }
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {
-        let message: Zigbee2MQTTAPI['{friendlyName}'] = {...payload};
+        let message: Zigbee2MQTTAPI["{friendlyName}"] = {...payload};
 
         // Update state cache with new state.
         const newState = this.state.set(entity, payload, stateChangeReason);
@@ -334,10 +334,10 @@ export class Controller {
         }
 
         const options: IClientPublishOptions = {
-            retain: utils.getObjectProperty(entity.options, 'retain', false),
-            qos: utils.getObjectProperty(entity.options, 'qos', 0),
+            retain: utils.getObjectProperty(entity.options, "retain", false),
+            qos: utils.getObjectProperty(entity.options, "qos", 0),
         };
-        const retention = utils.getObjectProperty<number | false>(entity.options, 'retention', false);
+        const retention = utils.getObjectProperty<number | false>(entity.options, "retention", false);
 
         if (retention !== false) {
             options.properties = {messageExpiryInterval: retention};
@@ -361,13 +361,13 @@ export class Controller {
                 // Manufacturer name can contain \u0000, remove this.
                 // https://github.com/home-assistant/core/issues/85691
                 /* v8 ignore next */
-                manufacturerName: entity.zh.manufacturerName?.split('\u0000')[0],
+                manufacturerName: entity.zh.manufacturerName?.split("\u0000")[0],
             };
         }
 
         // Add lastseen
         const lastSeen = settings.get().advanced.last_seen;
-        if (entity.isDevice() && lastSeen !== 'disable' && entity.zh.lastSeen) {
+        if (entity.isDevice() && lastSeen !== "disable" && entity.zh.lastSeen) {
             message.last_seen = utils.formatDate(entity.zh.lastSeen, lastSeen);
         }
 
@@ -385,11 +385,11 @@ export class Controller {
 
         if (!utils.objectIsEmpty(message)) {
             const output = settings.get().advanced.output;
-            if (output === 'attribute_and_json' || output === 'json') {
+            if (output === "attribute_and_json" || output === "json") {
                 await this.mqtt.publish(entity.name, stringify(message), options);
             }
 
-            if (output === 'attribute_and_json' || output === 'attribute') {
+            if (output === "attribute_and_json" || output === "attribute") {
                 await this.iteratePayloadAttributeOutput(`${entity.name}/`, message, options);
             }
         }
@@ -403,19 +403,19 @@ export class Controller {
             let message = null;
 
             // Special cases
-            if (key === 'color' && utils.objectHasProperties(subPayload, ['r', 'g', 'b'])) {
+            if (key === "color" && utils.objectHasProperties(subPayload, ["r", "g", "b"])) {
                 subPayload = [subPayload.r, subPayload.g, subPayload.b];
             }
 
             // Check Array first, since it is also an Object
             if (subPayload === null || subPayload === undefined) {
-                message = '';
+                message = "";
             } else if (Array.isArray(subPayload)) {
-                message = subPayload.map((x) => `${x}`).join(',');
-            } else if (typeof subPayload === 'object') {
+                message = subPayload.map((x) => `${x}`).join(",");
+            } else if (typeof subPayload === "object") {
                 await this.iteratePayloadAttributeOutput(`${topicRoot}${key}-`, subPayload, options);
             } else {
-                message = typeof subPayload === 'string' ? subPayload : stringify(subPayload);
+                message = typeof subPayload === "string" ? subPayload : stringify(subPayload);
             }
 
             if (message !== null) {
