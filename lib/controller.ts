@@ -23,7 +23,7 @@ import ExtensionOnEvent from "./extension/onEvent";
 import ExtensionOTAUpdate from "./extension/otaUpdate";
 import ExtensionPublish from "./extension/publish";
 import ExtensionReceive from "./extension/receive";
-import MQTT from "./mqtt";
+import Mqtt from "./mqtt";
 import State from "./state";
 import logger from "./util/logger";
 import {initSdNotify} from "./util/sd-notify";
@@ -35,7 +35,7 @@ export class Controller {
     private eventBus: EventBus;
     private zigbee: Zigbee;
     private state: State;
-    private mqtt: MQTT;
+    private mqtt: Mqtt;
     private restartCallback: () => Promise<void>;
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
     public readonly extensions: Set<Extension>;
@@ -48,7 +48,7 @@ export class Controller {
         zhcSetLogger(logger);
         this.eventBus = new EventBus();
         this.zigbee = new Zigbee(this.eventBus);
-        this.mqtt = new MQTT(this.eventBus);
+        this.mqtt = new Mqtt(this.eventBus);
         this.state = new State(this.eventBus, this.zigbee);
         this.restartCallback = restartCallback;
         this.exitCallback = exitCallback;
@@ -109,6 +109,7 @@ export class Controller {
                 "Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions",
             );
             logger.error("Exiting...");
+            // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.error((error as Error).stack!);
 
             /* v8 ignore start */
@@ -126,7 +127,8 @@ export class Controller {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             // `definition` validated by `isSupported`
             const model = device.isSupported
-                ? `${device.definition!.model} - ${device.definition!.vendor} ${device.definition!.description}`
+                ? // biome-ignore lint/style/noNonNullAssertion: valid from `isSupported`
+                  `${device.definition!.model} - ${device.definition!.vendor} ${device.definition!.description}`
                 : "Not supported";
             logger.info(`${device.name} (${device.ieeeAddr}): ${model} (${device.zh.type})`);
 

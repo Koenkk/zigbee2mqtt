@@ -16,6 +16,7 @@ const SUPPORTED_FORMATS = ["raw", "graphviz", "plantuml"];
 export default class NetworkMap extends Extension {
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
@@ -205,7 +206,8 @@ export default class NetworkMap extends Extension {
                 continue;
             }
 
-            failed.set(device, []);
+            const deviceFailures: string[] = [];
+            failed.set(device, deviceFailures);
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
             try {
@@ -213,8 +215,9 @@ export default class NetworkMap extends Extension {
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
-                failed.get(device)!.push("lqi"); // set above
+                deviceFailures.push("lqi"); // set above
                 logger.error(`Failed to execute LQI for '${device.name}'`);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
 
@@ -224,8 +227,9 @@ export default class NetworkMap extends Extension {
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
-                    failed.get(device)!.push("routingTable"); // set above
+                    deviceFailures.push("routingTable"); // set above
                     logger.error(`Failed to execute routing table for '${device.name}'`);
+                    // biome-ignore lint/style/noNonNullAssertion: always Error
                     logger.debug((error as Error).stack!);
                 }
             }
@@ -264,6 +268,7 @@ export default class NetworkMap extends Extension {
                 networkAddress: device.zh.networkAddress,
                 manufacturerName: device.zh.manufacturerName,
                 modelID: device.zh.modelID,
+                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: wrong typing? will be undefined if type=EndDevice?
                 failed: failed.get(device)!,
                 lastSeen: device.zh.lastSeen,
                 definition,

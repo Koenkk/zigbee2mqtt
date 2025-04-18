@@ -60,10 +60,10 @@ describe("Extension: Availability", () => {
         settings.set(["devices", devices.hue_twilight.ieeeAddr, "availability"], {max_jitter: 1000});
         settings.set(["devices", devices.GLEDOPTO_2ID.ieeeAddr, "availability"], {backoff: false});
         settings.set(["devices", devices.QBKG03LM.ieeeAddr, "availability"], {pause_on_backoff_gt: 1.5});
-        Object.values(devices).forEach((d) => (d.lastSeen = utils.minutes(1)));
-        mocksClear.forEach((m) => m.mockClear());
+        for (const key in devices) devices[key as keyof typeof devices].lastSeen = utils.minutes(1);
+        for (const mock of mocksClear) mock.mockClear();
         await resetExtension();
-        Object.values(devices).forEach((d) => d.ping.mockClear());
+        for (const key in devices) devices[key as keyof typeof devices].ping.mockClear();
     });
 
     afterEach(async () => {});
@@ -74,7 +74,7 @@ describe("Extension: Availability", () => {
         vi.useRealTimers();
     });
 
-    it("Should publish availability on startup for device where it is enabled for", async () => {
+    it("Should publish availability on startup for device where it is enabled for", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb_color/availability", stringify({state: "online"}), {
             retain: true,
             qos: 1,

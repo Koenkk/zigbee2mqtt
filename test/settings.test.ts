@@ -788,7 +788,7 @@ describe("Settings", () => {
 
         settings.reRead();
 
-        const error = `advanced must be object`;
+        const error = "advanced must be object";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
@@ -816,10 +816,10 @@ describe("Settings", () => {
 
     it("Should throw error when yaml file does not exist", () => {
         settings.testing.clear();
-        expect(settings.validate()[0]).toContain(`ENOENT: no such file or directory, open `);
+        expect(settings.validate()[0]).toContain("ENOENT: no such file or directory, open ");
     });
 
-    it("Configuration shouldnt be valid when invalid QOS value is used", async () => {
+    it("Configuration shouldnt be valid when invalid QOS value is used", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "myname", retain: false, qos: 3}},
@@ -831,7 +831,7 @@ describe("Settings", () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration shouldnt be valid when duplicate friendly_name are used", async () => {
+    it("Configuration shouldnt be valid when duplicate friendly_name are used", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "myname", retain: false}},
@@ -864,7 +864,7 @@ describe("Settings", () => {
         }
     });
 
-    it("Configuration friendly name cannot be empty", async () => {
+    it("Configuration friendly name cannot be empty", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "", retain: false}},
@@ -872,11 +872,11 @@ describe("Settings", () => {
 
         settings.reRead();
 
-        const error = `friendly_name must be at least 1 char long`;
+        const error = "friendly_name must be at least 1 char long";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration friendly name cannot end with /", async () => {
+    it("Configuration friendly name cannot end with /", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "blaa/", retain: false}},
@@ -884,11 +884,11 @@ describe("Settings", () => {
 
         settings.reRead();
 
-        const error = `friendly_name is not allowed to end or start with /`;
+        const error = "friendly_name is not allowed to end or start with /";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration friendly name cannot contain control char", async () => {
+    it("Configuration friendly name cannot contain control char", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "blaa/blaa\u009f", retain: false}},
@@ -896,11 +896,11 @@ describe("Settings", () => {
 
         settings.reRead();
 
-        const error = `friendly_name is not allowed to contain control char`;
+        const error = "friendly_name is not allowed to contain control char";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration shouldnt be valid when friendly_name ends with /DIGIT", async () => {
+    it("Configuration shouldnt be valid when friendly_name ends with /DIGIT", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "myname/123", retain: false}},
@@ -912,7 +912,7 @@ describe("Settings", () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration shouldnt be valid when friendly_name contains a MQTT wildcard", async () => {
+    it("Configuration shouldnt be valid when friendly_name contains a MQTT wildcard", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "myname#", retain: false}},
@@ -997,7 +997,7 @@ describe("Settings", () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    it("Should keep homeassistant null properties on apply", async () => {
+    it("Should keep homeassistant null properties on apply", () => {
         write(configurationFile, {
             device_options: {
                 homeassistant: {temperature: null},

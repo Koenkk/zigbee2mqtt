@@ -42,7 +42,7 @@ export class Frontend extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -97,10 +97,8 @@ export class Frontend extends Extension {
         this.wss.on("connection", this.onWebSocketConnection);
 
         if (this.isHttpsConfigured()) {
-            const serverOptions = {
-                key: readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
-                cert: readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
-            };
+            // biome-ignore lint/style/noNonNullAssertion: valid from `isHttpsConfigured`
+            const serverOptions = {key: readFileSync(this.sslKey!), cert: readFileSync(this.sslCert!)};
             this.server = createSecureServer(serverOptions, this.onRequest);
         } else {
             this.server = createServer(this.onRequest);
@@ -138,6 +136,7 @@ export class Frontend extends Extension {
 
     @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
         const fin = finalhandler(request, response);
+        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
         const newUrl = posix.relative(this.baseUrl, request.url!);
 
         // The request url is not within the frontend base url, so the relative path starts with '..'
@@ -163,6 +162,7 @@ export class Frontend extends Extension {
     }
 
     private authenticate(request: IncomingMessage, cb: (authenticate: boolean) => void): void {
+        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
         const {query} = parse(request.url!, true);
         cb(!this.authToken || this.authToken === query.token);
     }

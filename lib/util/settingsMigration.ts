@@ -46,7 +46,7 @@ function backupSettings(version: number): void {
  * @param createPathIfNotExist
  * @returns Returns true if value was set, false if not.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: auto-parsing
 function setValue(currentSettings: any, path: string[], value: unknown, createPathIfNotExist = false): boolean {
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
@@ -82,7 +82,7 @@ function setValue(currentSettings: any, path: string[], value: unknown, createPa
  *   - true if path was valid
  *   - the value at path
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: auto-parsing
 function getValue(currentSettings: any, path: string[]): [validPath: boolean, value: unknown] {
     for (let i = 0; i < path.length; i++) {
         const key = path[i];
@@ -391,7 +391,7 @@ function migrateToTwo(
 }
 
 function migrateToThree(
-    currentSettings: Partial<Settings>,
+    _currentSettings: Partial<Settings>,
     transfers: SettingsTransfer[],
     changes: SettingsChange[],
     additions: SettingsAdd[],
@@ -441,7 +441,7 @@ function migrateToThree(
 }
 
 function migrateToFour(
-    currentSettings: Partial<Settings>,
+    _currentSettings: Partial<Settings>,
     transfers: SettingsTransfer[],
     changes: SettingsChange[],
     additions: SettingsAdd[],

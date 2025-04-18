@@ -39,16 +39,16 @@ describe("sd-notify", () => {
         expect(mockUnixDgramSocket.send).toHaveBeenNthCalledWith(nth, Buffer.from(message), 0, expect.any(Number), "mocked", expect.any(Function));
     };
 
-    beforeAll(async () => {
+    beforeAll(() => {
         vi.useFakeTimers();
     });
 
-    afterAll(async () => {
+    afterAll(() => {
         vi.useRealTimers();
     });
 
     beforeEach(() => {
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         delete process.env.NOTIFY_SOCKET;
         delete process.env.WATCHDOG_USEC;
         delete process.env.WSL_DISTRO_NAME;
@@ -72,7 +72,7 @@ describe("sd-notify", () => {
         expect(mockCreateSocket).toHaveBeenCalledTimes(1);
         expect(res).toBeUndefined();
         expect(mockUnixDgramSocket.send).toHaveBeenCalledTimes(0);
-        expect(mockLogger.warning).toHaveBeenCalledWith(`NOTIFY_SOCKET env is set: Unix datagrams not available on this platform`);
+        expect(mockLogger.warning).toHaveBeenCalledWith("NOTIFY_SOCKET env is set: Unix datagrams not available on this platform");
     });
 
     it("Error on supported platform", async () => {
@@ -158,7 +158,7 @@ describe("sd-notify", () => {
 
     it("Fails to send", async () => {
         mockUnixDgramSocket.send.mockImplementationOnce(
-            (buf: Buffer, offset: number, length: number, path: string, callback?: (err?: Error) => void) => {
+            (_buf: Buffer, _offset: number, _length: number, _path: string, callback?: (err?: Error) => void) => {
                 callback!(new Error("Failure"));
             },
         );

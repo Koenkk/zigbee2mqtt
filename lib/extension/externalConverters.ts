@@ -10,7 +10,7 @@ type TModule = ExternalDefinitionWithExtend | ExternalDefinitionWithExtend[];
 export default class ExternalConverters extends ExternalJSExtension<TModule> {
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -32,8 +32,7 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected async removeJS(name: string, mod: TModule): Promise<void> {
+    protected async removeJS(name: string, _mod: TModule): Promise<void> {
         removeExternalDefinitions(name);
 
         await this.zigbee.resolveDevicesDefinitions(true);

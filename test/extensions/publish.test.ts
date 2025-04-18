@@ -19,16 +19,16 @@ describe("Extension: Publish", () => {
     let controller: Controller;
 
     const expectNothingPublished = (): void => {
-        Object.values(devices).forEach((d) => {
-            d.endpoints.forEach((e) => {
-                expect(e.command).toHaveBeenCalledTimes(0);
-                expect(e.read).toHaveBeenCalledTimes(0);
-                expect(e.write).toHaveBeenCalledTimes(0);
-            });
-        });
-        Object.values(groups).forEach((g) => {
-            expect(g.command).toHaveBeenCalledTimes(0);
-        });
+        for (const key in devices) {
+            for (const ep of devices[key as keyof typeof devices].endpoints) {
+                expect(ep.command).toHaveBeenCalledTimes(0);
+                expect(ep.read).toHaveBeenCalledTimes(0);
+                expect(ep.write).toHaveBeenCalledTimes(0);
+            }
+        }
+        for (const key in groups) {
+            expect(groups[key as keyof typeof groups].command).toHaveBeenCalledTimes(0);
+        }
     };
 
     beforeAll(async () => {
@@ -40,23 +40,23 @@ describe("Extension: Publish", () => {
         await flushPromises();
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         data.writeDefaultConfiguration();
         // @ts-expect-error private
         controller.state.clear();
         settings.reRead();
         loadTopicGetSetRegex();
-        mocksClear.forEach((m) => m.mockClear());
-        Object.values(devices).forEach((d) => {
-            d.endpoints.forEach((e) => {
-                e.command.mockClear();
-                e.read.mockClear();
-                e.write.mockClear();
-            });
-        });
-        Object.values(groups).forEach((g) => {
-            g.command.mockClear();
-        });
+        for (const mock of mocksClear) mock.mockClear();
+        for (const key in devices) {
+            for (const ep of devices[key as keyof typeof devices].endpoints) {
+                ep.command.mockClear();
+                ep.read.mockClear();
+                ep.write.mockClear();
+            }
+        }
+        for (const key in groups) {
+            groups[key as keyof typeof groups].command.mockClear();
+        }
 
         clearGlobalStore();
     });

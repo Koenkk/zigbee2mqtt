@@ -62,9 +62,8 @@ export async function getZigbee2MQTTVersion(includeCommitHash = true): Promise<{
 }
 
 async function getDependencyVersion(depend: string): Promise<{version: string}> {
-    const packageJsonPath = require.resolve(`${depend}/package.json`);
-    const version = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")).version;
-    return {version};
+    const packageJSON = (await import(`${depend}/package.json`, {with: {type: "json"}})).default;
+    return {version: packageJSON.version};
 }
 
 function formatDate(time: number, type: "ISO_8601" | "ISO_8601_local" | "epoch" | "relative"): string | number {
@@ -88,7 +87,8 @@ function formatDate(time: number, type: "ISO_8601" | "ISO_8601_local" | "epoch" 
 
 function objectIsEmpty(object: object): boolean {
     // much faster than checking `Object.keys(object).length`
-    for (const k in object) return false;
+    // biome-ignore lint/style/useNamingConvention: bad detection
+    for (const _k in object) return false;
     return true;
 }
 

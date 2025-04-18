@@ -151,7 +151,7 @@ export class Endpoint {
         });
         this.removeFromGroup = vi.fn((group: Group) => {
             const index = group.members.indexOf(this);
-            if (index != -1) {
+            if (index !== -1) {
                 group.members.splice(index, 1);
             }
         });
@@ -204,7 +204,9 @@ export class Endpoint {
     }
 
     removeFromAllGroups(): void {
-        Object.values(groups).forEach((g) => this.removeFromGroup(g));
+        for (const key in groups) {
+            this.removeFromGroup(groups[key as keyof typeof groups]);
+        }
     }
 
     mockClear(): void {
@@ -305,7 +307,9 @@ export class Device {
         this.routingTable.mockClear();
         this.meta = {};
 
-        this.endpoints.forEach((e) => e.mockClear());
+        for (const ep of this.endpoints) {
+            ep.mockClear();
+        }
     }
 }
 

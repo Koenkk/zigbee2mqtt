@@ -5,17 +5,15 @@ import type TypeEventBus from "../eventBus";
 import type TypeExtension from "../extension/extension";
 import type TypeDevice from "../model/device";
 import type TypeGroup from "../model/group";
-import type TypeMQTT from "../mqtt";
+import type TypeMqtt from "../mqtt";
 import type TypeState from "../state";
 import type {LogLevel} from "../util/settings";
 import type TypeZigbee from "../zigbee";
 
-type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-
 declare global {
     // Define some class types as global
     type EventBus = TypeEventBus;
-    type MQTT = TypeMQTT;
+    type Mqtt = TypeMqtt;
     type Zigbee = TypeZigbee;
     type Group = TypeGroup;
     type Device = TypeDevice;
@@ -27,7 +25,7 @@ declare global {
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
     interface KeyValue {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: API
         [s: string]: any;
     }
 
@@ -36,6 +34,7 @@ declare global {
         type Endpoint = ZHModels.Endpoint;
         type Device = ZHModels.Device;
         type Group = ZHModels.Group;
+        // biome-ignore lint/style/useNamingConvention: API
         type LQI = ZHAdapterTypes.LQI;
         type RoutingTable = ZHAdapterTypes.RoutingTable;
         type CoordinatorVersion = ZHAdapterTypes.CoordinatorVersion;

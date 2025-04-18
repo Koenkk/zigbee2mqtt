@@ -4,13 +4,10 @@ import type {EventHandler} from "./utils";
 
 export const events: Record<string, EventHandler> = {};
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTPublishAsync = vi.fn(async (topic: string, message: string, opts?: IClientPublishOptions): Promise<void> => {});
+export const mockMQTTPublishAsync = vi.fn(async (_topic: string, _message: string, _opts?: IClientPublishOptions): Promise<void> => {});
 export const mockMQTTEndAsync = vi.fn(async (): Promise<void> => {});
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTSubscribeAsync = vi.fn(async (topicObject: string): Promise<void> => {});
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTUnsubscribeAsync = vi.fn(async (topic: string): Promise<void> => {});
+export const mockMQTTSubscribeAsync = vi.fn(async (_topicObject: string): Promise<void> => {});
+export const mockMQTTUnsubscribeAsync = vi.fn(async (_topic: string): Promise<void> => {});
 
 export const mockMQTTConnectAsync = vi.fn(() => ({
     reconnecting: false,

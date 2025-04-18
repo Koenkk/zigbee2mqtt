@@ -175,9 +175,8 @@ export default class OTAUpdate extends Extension {
                 // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
                 // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
                 const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-                const check = this.lastChecked.has(data.device.ieeeAddr)
-                    ? Date.now() - this.lastChecked.get(data.device.ieeeAddr)! > updateCheckInterval
-                    : true;
+                const deviceLastChecked = this.lastChecked.get(data.device.ieeeAddr);
+                const check = deviceLastChecked !== undefined ? Date.now() - deviceLastChecked > updateCheckInterval : true;
 
                 if (!check) {
                     return;

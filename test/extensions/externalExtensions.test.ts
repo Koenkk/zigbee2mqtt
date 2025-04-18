@@ -55,12 +55,12 @@ describe("Extension: ExternalExtensions", () => {
         await flushPromises();
     });
 
-    afterAll(async () => {
+    afterAll(() => {
         vi.useRealTimers();
     });
 
-    beforeEach(async () => {
-        mocksClear.forEach((m) => m.mockClear());
+    beforeEach(() => {
+        for (const mock of mocksClear) mock.mockClear();
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
@@ -75,7 +75,7 @@ describe("Extension: ExternalExtensions", () => {
     });
 
     describe("from folder", () => {
-        beforeEach(async () => {
+        beforeEach(() => {
             controller = new Controller(vi.fn(), vi.fn());
         });
 
@@ -180,8 +180,8 @@ describe("Extension: ExternalExtensions", () => {
             );
 
             extensionCode = extensionCode
-                .replace("'call from start'", "'call from start - edited'")
-                .replace("'call from stop'", "'call from stop - edited'");
+                .replace('"call from start"', '"call from start - edited"')
+                .replace('"call from stop"', '"call from stop - edited"');
 
             mockMQTTPublishAsync.mockClear();
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
@@ -201,8 +201,8 @@ describe("Extension: ExternalExtensions", () => {
             );
 
             extensionCode = extensionCode
-                .replace("'call from start - edited'", "'call from start'")
-                .replace("'call from stop - edited'", "'call from stop'");
+                .replace('"call from start - edited"', '"call from start"')
+                .replace('"call from stop - edited"', '"call from stop"');
 
             mockMQTTPublishAsync.mockClear();
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
@@ -229,7 +229,7 @@ describe("Extension: ExternalExtensions", () => {
             const extensionCode = getFileCode("cjs", "exampleExtension.js");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             //-- SAVE
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
@@ -265,7 +265,7 @@ describe("Extension: ExternalExtensions", () => {
             const extensionCode = getFileCode("mjs", "exampleExtension.mjs");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             //-- SAVE
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
@@ -301,7 +301,7 @@ describe("Extension: ExternalExtensions", () => {
             const extensionCode = "definetly not a correct javascript code";
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/extension/save",
@@ -321,7 +321,7 @@ describe("Extension: ExternalExtensions", () => {
             const extensionName = "foo2.js";
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/extension/remove",
@@ -338,7 +338,7 @@ describe("Extension: ExternalExtensions", () => {
 
         it("handles invalid payloads", async () => {
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/extension/save",
@@ -347,7 +347,7 @@ describe("Extension: ExternalExtensions", () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/extension/save",
-                stringify({data: {}, status: "error", error: `Invalid payload`, transaction: 1}),
+                stringify({data: {}, status: "error", error: "Invalid payload", transaction: 1}),
                 {retain: false, qos: 0},
             );
 
@@ -358,7 +358,7 @@ describe("Extension: ExternalExtensions", () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/extension/remove",
-                stringify({data: {}, status: "error", error: `Invalid payload`, transaction: 2}),
+                stringify({data: {}, status: "error", error: "Invalid payload", transaction: 2}),
                 {retain: false, qos: 0},
             );
         });

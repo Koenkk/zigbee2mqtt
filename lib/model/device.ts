@@ -22,6 +22,7 @@ export default class Device {
     get ieeeAddr(): string {
         return this.zh.ieeeAddr;
     }
+    // biome-ignore lint/style/useNamingConvention: API
     get ID(): string {
         return this.zh.ieeeAddr;
     }

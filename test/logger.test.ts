@@ -31,10 +31,10 @@ describe("Logger", () => {
         consoleWriteSpy.mockRestore();
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(["advanced", "log_directory"], dir.name + "/%TIMESTAMP%");
+        settings.set(["advanced", "log_directory"], `${dir.name}/%TIMESTAMP%`);
         logger.init();
         consoleWriteSpy.mockClear();
     });
@@ -84,7 +84,7 @@ describe("Logger", () => {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
-        settings.set(["advanced", "log_directory"], dir.name + "/bla");
+        settings.set(["advanced", "log_directory"], `${dir.name}/bla`);
         expect(fs.readdirSync(dir.name).length).toBe(20);
         logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(21);
@@ -313,10 +313,10 @@ describe("Logger", () => {
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, "z2m:mqtt");
         expect(logSpy).toHaveBeenCalledTimes(0);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(0);
-        logger.error(`Not connected to MQTT server!`, "z2m:mqtt");
+        logger.error("Not connected to MQTT server!", "z2m:mqtt");
         expect(logSpy).toHaveBeenCalledTimes(1);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-        logger.info(`Just another info message`, "z2m:notmqtt");
+        logger.info("Just another info message", "z2m:notmqtt");
         expect(logSpy).toHaveBeenCalledTimes(2);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
     });
@@ -334,13 +334,13 @@ describe("Logger", () => {
         logger.info(`MQTT publish: topic 'abcd/efgh', payload '{"my": {"payload": "injson"}}'`, "z2m:mqtt");
         expect(logSpy).toHaveBeenCalledTimes(1);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-        logger.error(`Not connected to MQTT server!`, "z2m:mqtt");
+        logger.error("Not connected to MQTT server!", "z2m:mqtt");
         expect(logSpy).toHaveBeenCalledTimes(2);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
-        logger.info(`Just another info message`, "z2m:notmqtt");
+        logger.info("Just another info message", "z2m:notmqtt");
         expect(logSpy).toHaveBeenCalledTimes(2);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
-        logger.warning(`Just another warning message`, "z2m:notmqtt");
+        logger.warning("Just another warning message", "z2m:notmqtt");
         expect(logSpy).toHaveBeenCalledTimes(3);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
     });
@@ -353,46 +353,48 @@ describe("Logger", () => {
         logger.setLevel("warning");
 
         consoleWriteSpy.mockClear();
-        logger.debug(`--- parseNext [] debug picked from hierarchy`, "zh:zstack:unpi:parser");
+        logger.debug("--- parseNext [] debug picked from hierarchy", "zh:zstack:unpi:parser");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi:parser": "debug"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-        logger.warning(`--> frame [36,15] warning explicitely supressed`, "zh:zstack:unpi:writer");
+        logger.warning("--> frame [36,15] warning explicitely supressed", "zh:zstack:unpi:writer");
         expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-        logger.warning(`Another supressed warning message in a sub namespace`, "zh:zstack:unpi:writer:sub:ns");
+        logger.warning("Another supressed warning message in a sub namespace", "zh:zstack:unpi:writer:sub:ns");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi:writer:sub:ns": "error"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(1);
-        logger.error(`but error should go through`, "zh:zstack:unpi:writer:another:sub:ns");
+        logger.error("but error should go through", "zh:zstack:unpi:writer:another:sub:ns");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi:writer:another:sub:ns": "error"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(2);
-        logger.warning(`new unconfigured namespace warning`, "z2m:mqtt");
+        logger.warning("new unconfigured namespace warning", "z2m:mqtt");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"z2m:mqtt": "warning"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
-        logger.info(`cached unconfigured namespace info should be supressed`, "z2m:mqtt");
+        logger.info("cached unconfigured namespace info should be supressed", "z2m:mqtt");
         expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
         expect(consoleWriteSpy).toHaveBeenCalledTimes(3);
 
         logger.setLevel("info");
-        expect(getCachedNamespacedLevels()).toStrictEqual((cachedNSLevels = Object.assign({}, nsLevels)));
-        logger.info(`unconfigured namespace info should now pass after default level change and cache reset`, "z2m:mqtt");
+        cachedNSLevels = Object.assign({}, nsLevels);
+        expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
+        logger.info("unconfigured namespace info should now pass after default level change and cache reset", "z2m:mqtt");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"z2m:mqtt": "info"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(4);
-        logger.error(`configured namespace hierachy should still work after the cache reset`, "zh:zstack:unpi:writer:another:sub:ns");
+        logger.error("configured namespace hierachy should still work after the cache reset", "zh:zstack:unpi:writer:another:sub:ns");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi:writer:another:sub:ns": "error"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(5);
 
         logger.setNamespacedLevels({"zh:zstack": "warning"});
-        expect(getCachedNamespacedLevels()).toStrictEqual((cachedNSLevels = {"zh:zstack": "warning"}));
-        logger.error(`error logged`, "zh:zstack:unpi:writer");
+        cachedNSLevels = {"zh:zstack": "warning"};
+        expect(getCachedNamespacedLevels()).toStrictEqual(cachedNSLevels);
+        logger.error("error logged", "zh:zstack:unpi:writer");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi:writer": "warning"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
-        logger.debug(`debug suppressed`, "zh:zstack:unpi");
+        logger.debug("debug suppressed", "zh:zstack:unpi");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack:unpi": "warning"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(6);
-        logger.warning(`warning logged`, "zh:zstack");
+        logger.warning("warning logged", "zh:zstack");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"zh:zstack": "warning"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(7);
-        logger.info(`unconfigured namespace`, "z2m:mqtt");
+        logger.info("unconfigured namespace", "z2m:mqtt");
         expect(getCachedNamespacedLevels()).toStrictEqual(Object.assign(cachedNSLevels, {"z2m:mqtt": "info"}));
         expect(consoleWriteSpy).toHaveBeenCalledTimes(8);
     });
@@ -418,7 +420,7 @@ describe("Logger", () => {
         logger.init();
 
         consoleWriteSpy.mockClear();
-        logger.info(`Test JSON message`, "z2m");
+        logger.info("Test JSON message", "z2m");
 
         const outputJSON = JSON.parse(consoleWriteSpy.mock.calls[0][0]);
         expect(outputJSON).toStrictEqual({
@@ -431,7 +433,7 @@ describe("Logger", () => {
         logger.init();
 
         consoleWriteSpy.mockClear();
-        logger.info(`Test JSON message`, "z2m");
+        logger.info("Test JSON message", "z2m");
 
         const outputStr: string = consoleWriteSpy.mock.calls[0][0];
         expect(outputStr.trim().endsWith("\u001b[32minfo\u001b[39m: \tz2m: Test JSON message")).toStrictEqual(true);

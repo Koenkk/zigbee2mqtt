@@ -13,7 +13,7 @@ import utils from "./util/utils";
 
 const NS = "z2m:mqtt";
 
-export default class MQTT {
+export default class Mqtt {
     private publishedTopics = new Set<string>();
     private connectionTimer?: NodeJS.Timeout;
     private client!: MqttClient;

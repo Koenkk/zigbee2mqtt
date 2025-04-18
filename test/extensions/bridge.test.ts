@@ -61,7 +61,7 @@ describe("Extension: Bridge", () => {
         extension = controller.getExtension("Bridge")! as Bridge;
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         // @ts-expect-error private
         controller.mqtt.client.reconnecting = false;
         // @ts-expect-error private
@@ -71,7 +71,7 @@ describe("Extension: Bridge", () => {
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultState();
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         mockLogger.setTransportsEnabled(false);
         // @ts-expect-error private
         extension.lastJoinedDeviceIeeeAddr = undefined;
@@ -2162,7 +2162,7 @@ describe("Extension: Bridge", () => {
         });
     });
 
-    it("Should log to MQTT", async () => {
+    it("Should log to MQTT", () => {
         mockLogger.setTransportsEnabled(true);
         mockMQTTPublishAsync.mockClear();
         mockLogger.info.mockClear();
@@ -2206,7 +2206,7 @@ describe("Extension: Bridge", () => {
         settings.reRead();
     });
 
-    it("Shouldnt log to MQTT when not connected", async () => {
+    it("Shouldnt log to MQTT when not connected", () => {
         mockLogger.setTransportsEnabled(true);
         // @ts-expect-error private
         controller.mqtt.client.reconnecting = true;
@@ -3944,35 +3944,35 @@ describe("Extension: Bridge", () => {
         // @ts-expect-error bare minimum mock
         let payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe(icon_link);
 
         definition.icon = icon_link;
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {icon: svg_icon}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe(svg_icon);
 
         definition.icon = "_${model}_";
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe("_lumi.plug_");
 
         definition.icon = "_${model}_${zigbeeModel}_";
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe("_lumi.plug_lumi.plug_");
 
         definition.icon = svg_icon;
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe(svg_icon);
 
         device.modelID = "?._Z\\NC+Z02*LM";
@@ -3981,7 +3981,7 @@ describe("Extension: Bridge", () => {
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
-        expect(payload["icon"]).not.toBeUndefined();
+        expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe("_------_-._Z-NC-Z02-LM_");
     });
 

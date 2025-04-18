@@ -33,7 +33,7 @@ describe("Extension: HomeAssistant", () => {
 
     const resetExtension = async (runTimers = true): Promise<void> => {
         await controller.removeExtension(controller.getExtension("HomeAssistant")!);
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         await controller.addExtension(new HomeAssistant(...controller.extensionArgs));
         extension = controller.getExtension("HomeAssistant")! as HomeAssistant;
 
@@ -45,7 +45,11 @@ describe("Extension: HomeAssistant", () => {
     const resetDiscoveryPayloads = (id: string): void => {
         // Change discovered payload, otherwise it's not re-published because it's the same.
         // @ts-expect-error private
-        Object.values(extension.discovered[id].messages).forEach((m) => (m.payload = "changed"));
+        const messages = extension.discovered[id].messages;
+
+        for (const key in messages) {
+            messages[key].payload = "changed";
+        }
     };
 
     const clearDiscoveredTrigger = (id: string): void => {
@@ -97,7 +101,7 @@ describe("Extension: HomeAssistant", () => {
 
         for (const baseDefinition of await getZhcBaseDefinitions()) {
             const d = zhc.prepareDefinition(baseDefinition);
-            const exposes = typeof d.exposes == "function" ? d.exposes(undefined, undefined) : d.exposes;
+            const exposes = typeof d.exposes === "function" ? d.exposes(undefined, undefined) : d.exposes;
             const device = {
                 definition: d,
                 isDevice: (): boolean => true,
@@ -110,17 +114,17 @@ describe("Extension: HomeAssistant", () => {
             const configs = extension.getConfigs(device);
             const cfgTypeObjectIds: string[] = [];
 
-            configs.forEach((c) => {
-                const id = c["type"] + "/" + c["object_id"];
+            for (const config of configs) {
+                const id = `${config.type}/${config.object_id}`;
                 if (cfgTypeObjectIds.includes(id)) {
                     // A dynamic function must exposes all possible attributes for the docs
-                    if (typeof d.exposes != "function") {
+                    if (typeof d.exposes !== "function") {
                         duplicated.push(d.model);
                     }
                 } else {
                     cfgTypeObjectIds.push(id);
                 }
-            });
+            }
         }
 
         expect(duplicated).toHaveLength(0);
@@ -541,7 +545,7 @@ describe("Extension: HomeAssistant", () => {
         });
 
         // Should subscribe to `homeassistant/#` to find out what devices are already discovered.
-        expect(mockMQTTSubscribeAsync).toHaveBeenCalledWith(`homeassistant/#`);
+        expect(mockMQTTSubscribeAsync).toHaveBeenCalledWith("homeassistant/#");
 
         // Retained Home Assistant discovery message arrives
         await mockMQTTEvents.message(topic1, payload1);
@@ -550,7 +554,7 @@ describe("Extension: HomeAssistant", () => {
         await vi.runOnlyPendingTimersAsync();
 
         // Should unsubscribe to not receive all messages that are going to be published to `homeassistant/#` again.
-        expect(mockMQTTUnsubscribeAsync).toHaveBeenCalledWith(`homeassistant/#`);
+        expect(mockMQTTUnsubscribeAsync).toHaveBeenCalledWith("homeassistant/#");
 
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith(topic1, expect.anything(), expect.any(Object));
         // Device automation should not be cleared
@@ -881,7 +885,7 @@ describe("Extension: HomeAssistant", () => {
         expect(topics).toContain("homeassistant/sensor/0x0017880104e45522/temperature/config");
     });
 
-    it("Should discover devices with fan", async () => {
+    it("Should discover devices with fan", () => {
         const payload = {
             state_topic: "zigbee2mqtt/fan",
             state_value_template: "{{ value_json.fan_state }}",
@@ -953,7 +957,7 @@ describe("Extension: HomeAssistant", () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[idx][1])).toStrictEqual(payload);
     });
 
-    it("Should discover thermostat devices", async () => {
+    it("Should discover thermostat devices", () => {
         const payload = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
@@ -1001,7 +1005,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should discover Bosch BTH-RA with a compatibility mapping", async () => {
+    it("Should discover Bosch BTH-RA with a compatibility mapping", () => {
         const payload = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
@@ -1098,7 +1102,7 @@ describe("Extension: HomeAssistant", () => {
         overrideSpy.mockRestore();
     });
 
-    it("Should discover devices with cover_position", async () => {
+    it("Should discover devices with cover_position", () => {
         let payload;
 
         payload = {
@@ -1108,7 +1112,7 @@ describe("Extension: HomeAssistant", () => {
             set_position_template: '{ "position": {{ position }} }',
             position_template: "{{ value_json.position }}",
             state_topic: "zigbee2mqtt/smart vent",
-            value_template: `{{ value_json.state }}`,
+            value_template: "{{ value_json.state }}",
             state_open: "OPEN",
             state_closed: "CLOSE",
             state_stopped: "STOP",
@@ -1167,7 +1171,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should discover dual cover devices", async () => {
+    it("Should discover dual cover devices", () => {
         const payload_left = {
             availability: [
                 {
@@ -1797,7 +1801,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should discover update when device supports it", async () => {
+    it("Should discover update when device supports it", () => {
         const payload = {
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
             command_topic: "zigbee2mqtt/bridge/request/device/ota_update/update",
@@ -2220,7 +2224,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should discover with json availability payload value_template", async () => {
+    it("Should discover with json availability payload value_template", () => {
         const payload = {
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
             brightness: true,
@@ -2389,7 +2393,7 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(`homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`, "", {retain: true, qos: 1});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/scene/0x000b57fffec6a5b4/scene_1/config", "", {retain: true, qos: 1});
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
 
@@ -2411,7 +2415,7 @@ describe("Extension: HomeAssistant", () => {
             origin: origin,
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
         };
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(`homeassistant/scene/0x000b57fffec6a5b4/scene_1/config`, stringify(payload), {
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/scene/0x000b57fffec6a5b4/scene_1/config", stringify(payload), {
             retain: true,
             qos: 1,
         });
@@ -2426,7 +2430,7 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
 
         // Discovery messages for scenes have been purged.
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(`homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`, "", {
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/scene/1221051039810110150109113116116_9/scene_4/config", "", {
             retain: true,
             qos: 1,
         });
@@ -2451,7 +2455,7 @@ describe("Extension: HomeAssistant", () => {
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
         };
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            `homeassistant/scene/1221051039810110150109113116116_9/scene_4/config`,
+            "homeassistant/scene/1221051039810110150109113116116_9/scene_4/config",
             stringify(payload),
             {retain: true, qos: 1},
         );
@@ -2492,7 +2496,7 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith(topic, "", {retain: true, qos: 1});
     });
 
-    it("Should discover bridge entities", async () => {
+    it("Should discover bridge entities", () => {
         const devicePayload = {
             name: "Zigbee2MQTT Bridge",
             identifiers: ["zigbee2mqtt_bridge_0x00124b00120144ae"],

@@ -19,9 +19,9 @@ const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/reques
 
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     state: () => true,
-    brightness: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
-    color_temp: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_temp")),
-    color: (value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_xy" || f.name === "color_hs")),
+    brightness: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
+    color_temp: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_temp")),
+    color: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_xy" || f.name === "color_hs")),
     color_mode: (value, exposes) =>
         exposes.some(
             (e) =>
@@ -44,6 +44,7 @@ interface ParsedMQTTMessage {
 export default class Groups extends Extension {
     private lastOptimisticState: {[s: string]: KeyValue} = {};
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onStateChange(this, this.onStateChange);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -162,6 +163,7 @@ export default class Groups extends Extension {
 
     private areAllMembersOffOrClosed(group: Group): boolean {
         for (const member of group.zh.members) {
+            // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: valid from loop?
             const device = this.zigbee.resolveEntity(member.getDevice())!;
 
             if (this.state.exists(device)) {
@@ -275,21 +277,17 @@ export default class Groups extends Extension {
                 logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
                 await resolvedEndpoint.addToGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
-                await this.publishResponse<"bridge/response/group/members/add">(parsed.type, raw, {
-                    device: deviceKey!, // valid from resolved asserts
-                    endpoint: endpointKey!, // valid from resolved asserts
-                    group: groupKey!, // valid from resolved asserts
-                });
+                // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
+                const respPayload = {device: deviceKey!, endpoint: endpointKey!, group: groupKey!};
+                await this.publishResponse<"bridge/response/group/members/add">(parsed.type, raw, respPayload);
             } else if (type === "remove") {
                 assert(resolvedGroup, "`resolvedGroup` is missing");
                 logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
                 await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
-                await this.publishResponse<"bridge/response/group/members/remove">(parsed.type, raw, {
-                    device: deviceKey!, // valid from resolved asserts
-                    endpoint: endpointKey!, // valid from resolved asserts
-                    group: groupKey!, // valid from resolved asserts
-                });
+                // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
+                const respPayload = {device: deviceKey!, endpoint: endpointKey!, group: groupKey!};
+                await this.publishResponse<"bridge/response/group/members/remove">(parsed.type, raw, respPayload);
             } else {
                 // remove_all
                 logger.info(`Removing '${resolvedDevice.name}' from all groups`);
@@ -299,14 +297,14 @@ export default class Groups extends Extension {
                 }
 
                 await resolvedEndpoint.removeFromAllGroups();
-                await this.publishResponse<"bridge/response/group/members/remove_all">(parsed.type, raw, {
-                    device: deviceKey!, // valid from resolved asserts
-                    endpoint: endpointKey!, // valid from resolved asserts
-                });
+                // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
+                const respPayload = {device: deviceKey!, endpoint: endpointKey!};
+                await this.publishResponse<"bridge/response/group/members/remove_all">(parsed.type, raw, respPayload);
             }
         } catch (e) {
             const errorMsg = `Failed to ${type} from group (${(e as Error).message})`;
             await this.publishResponse(parsed.type, raw, {}, errorMsg);
+            // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.debug((e as Error).stack!);
             return;
         }

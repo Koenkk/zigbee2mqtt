@@ -69,7 +69,7 @@ describe("Extension: ExternalConverters", () => {
         await flushPromises();
     });
 
-    afterAll(async () => {
+    afterAll(() => {
         vi.useRealTimers();
     });
 
@@ -77,7 +77,7 @@ describe("Extension: ExternalConverters", () => {
         zhc.removeExternalDefinitions(); // remove all external converters
         // @ts-expect-error private - clear cached
         await controller.zigbee.resolveDevicesDefinitions(true);
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
@@ -92,7 +92,7 @@ describe("Extension: ExternalConverters", () => {
     });
 
     describe("from folder", () => {
-        beforeEach(async () => {
+        beforeEach(() => {
             controller = new Controller(vi.fn(), vi.fn());
         });
 
@@ -266,7 +266,7 @@ describe("Extension: ExternalConverters", () => {
                 {retain: true, qos: 0},
             );
 
-            converterCode = converterCode.replace("posix.join('external', 'converter')", "posix.join('external', 'converter', 'edited')");
+            converterCode = converterCode.replace('posix.join("external", "converter")', 'posix.join("external", "converter", "edited")');
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/save",
@@ -298,7 +298,7 @@ describe("Extension: ExternalConverters", () => {
                 }),
             );
 
-            converterCode = converterCode.replace("posix.join('external', 'converter', 'edited')", "posix.join('external', 'converter')");
+            converterCode = converterCode.replace('posix.join("external", "converter", "edited")', 'posix.join("external", "converter")');
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/save",
@@ -360,7 +360,7 @@ describe("Extension: ExternalConverters", () => {
             const converterCode = getFileCode("cjs", "mock-external-converter.js");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
                 description: "Automatically generated definition",
@@ -425,7 +425,7 @@ describe("Extension: ExternalConverters", () => {
             const converterCode = getFileCode("mjs", "mock-external-converter.mjs");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
                 description: "Automatically generated definition",
@@ -490,7 +490,7 @@ describe("Extension: ExternalConverters", () => {
             const converterCode = "definetly not a correct javascript code";
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/save",
@@ -510,7 +510,7 @@ describe("Extension: ExternalConverters", () => {
             const converterName = "foo2.js";
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/remove",
@@ -530,9 +530,9 @@ describe("Extension: ExternalConverters", () => {
             const converterCode = getFileCode("cjs", "mock-external-converter.js");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
-            const errorMsg = `Invalid definition`;
+            const errorMsg = "Invalid definition";
 
             zhcAddExternalDefinitionSpy.mockImplementationOnce(() => {
                 throw new Error(errorMsg);
@@ -556,7 +556,7 @@ describe("Extension: ExternalConverters", () => {
             const converterCode = getFileCode("cjs", "mock-external-converter.js");
 
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             //-- SAVE
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
@@ -564,7 +564,7 @@ describe("Extension: ExternalConverters", () => {
                 message: {name: converterName, code: converterCode},
             });
 
-            const errorMsg = `Failed to remove definition`;
+            const errorMsg = "Failed to remove definition";
 
             zhcRemoveExternalDefinitionsSpy.mockImplementationOnce(() => {
                 throw new Error(errorMsg);
@@ -586,7 +586,7 @@ describe("Extension: ExternalConverters", () => {
 
         it("handles invalid payloads", async () => {
             await resetExtension();
-            mocksClear.forEach((m) => m.mockClear());
+            for (const mock of mocksClear) mock.mockClear();
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/save",
@@ -595,7 +595,7 @@ describe("Extension: ExternalConverters", () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/save",
-                stringify({data: {}, status: "error", error: `Invalid payload`, transaction: 1}),
+                stringify({data: {}, status: "error", error: "Invalid payload", transaction: 1}),
                 {retain: false, qos: 0},
             );
 
@@ -606,7 +606,7 @@ describe("Extension: ExternalConverters", () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/remove",
-                stringify({data: {}, status: "error", error: `Invalid payload`, transaction: 2}),
+                stringify({data: {}, status: "error", error: "Invalid payload", transaction: 2}),
                 {retain: false, qos: 0},
             );
         });

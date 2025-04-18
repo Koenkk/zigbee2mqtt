@@ -50,7 +50,7 @@ describe("Extension: Bind", () => {
         settings.reRead();
         groups.group_1.members = [];
         await resetExtension();
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
     });
 
     afterAll(async () => {

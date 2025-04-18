@@ -1,5 +1,5 @@
 export default class Example {
-    constructor(zigbee, mqtt, state, publishEntityState, eventBus) {
+    constructor(_zigbee, mqtt, _state, _publishEntityState, _eventBus) {
         this.mqtt = mqtt;
         this.mqtt.publish("example/extension", "call from constructor");
         this.counter = 0;

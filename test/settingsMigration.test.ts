@@ -34,13 +34,13 @@ describe("Settings Migration", () => {
         settings.set(["version"], 0);
 
         expect(() => settingsMigration.migrateIfNecessary()).toThrow(
-            `Your configuration.yaml has an unsupported version 0, expected one of undefined,2`,
+            "Your configuration.yaml has an unsupported version 0, expected one of undefined,2",
         );
 
         settings.set(["version"], 99999);
 
         expect(() => settingsMigration.migrateIfNecessary()).toThrow(
-            `Your configuration.yaml has an unsupported version 99999, expected one of undefined,2`,
+            "Your configuration.yaml has an unsupported version 99999, expected one of undefined,2",
         );
     });
 
@@ -634,18 +634,18 @@ describe("Settings Migration", () => {
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, "utf8");
             expect(migrationNotesContent).toContain(
-                `HA discovery_topic was moved from advanced.homeassistant_discovery_topic to homeassistant.discovery_topic.`,
+                "HA discovery_topic was moved from advanced.homeassistant_discovery_topic to homeassistant.discovery_topic.",
             );
             expect(migrationNotesContent).toContain(
-                `HA status_topic was moved from advanced.homeassistant_status_topic to homeassistant.status_topic.`,
+                "HA status_topic was moved from advanced.homeassistant_status_topic to homeassistant.status_topic.",
             );
-            expect(migrationNotesContent).toContain(`Baudrate was moved from advanced.baudrate to serial.baudrate.`);
-            expect(migrationNotesContent).toContain(`RTSCTS was moved from advanced.rtscts to serial.rtscts.`);
-            expect(migrationNotesContent).toContain(`Transmit power was moved from experimental.transmit_power to advanced.transmit_power.`);
-            expect(migrationNotesContent).toContain(`Output was moved from experimental.output to advanced.output.`);
-            expect(migrationNotesContent).toContain(`ban was renamed to passlist.`);
-            expect(migrationNotesContent).toContain(`whitelist was renamed to passlist.`);
-            expect(migrationNotesContent).toContain(`The entire experimental section was removed.`);
+            expect(migrationNotesContent).toContain("Baudrate was moved from advanced.baudrate to serial.baudrate.");
+            expect(migrationNotesContent).toContain("RTSCTS was moved from advanced.rtscts to serial.rtscts.");
+            expect(migrationNotesContent).toContain("Transmit power was moved from experimental.transmit_power to advanced.transmit_power.");
+            expect(migrationNotesContent).toContain("Output was moved from experimental.output to advanced.output.");
+            expect(migrationNotesContent).toContain("ban was renamed to passlist.");
+            expect(migrationNotesContent).toContain("whitelist was renamed to passlist.");
+            expect(migrationNotesContent).toContain("The entire experimental section was removed.");
         });
 
         it("transfer partial", () => {
@@ -698,9 +698,9 @@ describe("Settings Migration", () => {
             const migrationNotes = mockedData.joinPath("migration-1-to-2.log");
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, "utf8");
-            expect(migrationNotesContent).toContain(`[TRANSFER] Baudrate was moved from advanced.baudrate to serial.baudrate.`);
-            expect(migrationNotesContent).toContain(`[REMOVAL] RTSCTS was moved from advanced.rtscts to serial.rtscts.`);
-            expect(migrationNotesContent).toContain(`[TRANSFER] ban was renamed to passlist.`);
+            expect(migrationNotesContent).toContain("[TRANSFER] Baudrate was moved from advanced.baudrate to serial.baudrate.");
+            expect(migrationNotesContent).toContain("[REMOVAL] RTSCTS was moved from advanced.rtscts to serial.rtscts.");
+            expect(migrationNotesContent).toContain("[TRANSFER] ban was renamed to passlist.");
         });
     });
 
@@ -914,7 +914,7 @@ describe("Settings Migration", () => {
             const migrationNotes = mockedData.joinPath("migration-3-to-4.log");
             expect(existsSync(migrationNotes)).toStrictEqual(true);
             const migrationNotesContent = readFileSync(migrationNotes, "utf8");
-            expect(migrationNotesContent).toContain(`[SPECIAL] Device icons are now saved as images.`);
+            expect(migrationNotesContent).toContain("[SPECIAL] Device icons are now saved as images.");
         });
     });
 });

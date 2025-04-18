@@ -110,7 +110,6 @@ class Logger {
         /* v8 ignore start */
         if (this.output.includes("syslog")) {
             logging += ", syslog";
-            // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
             require("winston-syslog").Syslog;
 
             const options: KeyValue = {

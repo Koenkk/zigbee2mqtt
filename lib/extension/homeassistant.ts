@@ -312,6 +312,7 @@ class Bridge {
         homeassistant?: KeyValue;
     };
 
+    // biome-ignore lint/style/useNamingConvention: API
     get ID(): string {
         return this.coordinatorIeeeAddress;
     }
@@ -373,7 +374,7 @@ export class HomeAssistant extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -868,7 +869,7 @@ export class HomeAssistant extends Extension {
                     );
                     let presets = ["on", "auto", "smart"].filter((s) => modeEmulatedSpeed.values.includes(s));
 
-                    if (["99432"].includes(definition!.model)) {
+                    if (definition?.model === "99432") {
                         // The Hampton Bay 99432 fan implements 4 speeds using the ZCL
                         // hvacFanCtrl values `low`, `medium`, `high`, and `on`, and
                         // 1 preset called "Comfort Breeze" using the ZCL value `smart`.
@@ -1243,6 +1244,7 @@ export class HomeAssistant extends Extension {
          * Here we retrieve all the attributes with the _l1 values and republish them on
          * zigbee2mqtt/mydevice/l1.
          */
+        // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: should this be validated instead?
         const entity = this.zigbee.resolveEntity(data.entity.name)!;
 
         if (entity.isDevice()) {

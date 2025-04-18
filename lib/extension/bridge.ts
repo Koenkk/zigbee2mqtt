@@ -207,6 +207,7 @@ export default class Bridge extends Extension {
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
             } catch (error) {
                 logger.error(`Request '${data.topic}' failed with error: '${(error as Error).message}'`);
+                // biome-ignore lint/style/noNonNullAssertion: always using Error
                 logger.debug((error as Error).stack!);
                 const response = utils.getResponse(message, {}, (error as Error).message);
                 await this.mqtt.publish(`bridge/response/${match[1]}`, stringify(response));
@@ -264,6 +265,7 @@ export default class Bridge extends Extension {
         return await this.removeEntity("group", message);
     }
 
+    // biome-ignore lint/suspicious/useAwait: API
     @bind async healthCheck(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/health_check">> {
         return utils.getResponse(message, {healthy: true});
     }
@@ -297,6 +299,7 @@ export default class Bridge extends Extension {
         return await this.renameEntity("group", message);
     }
 
+    // biome-ignore lint/suspicious/useAwait: API
     @bind async restart(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/restart">> {
         // Wait 500 ms before restarting so response can be send.
         setTimeout(this.restartCallback, 500);

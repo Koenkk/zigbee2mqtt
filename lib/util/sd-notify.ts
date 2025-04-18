@@ -23,6 +23,7 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
         if (platform() !== "win32" || process.env.WSL_DISTRO_NAME) {
             // not on plain Windows
             logger.error(`Could not init sd_notify: ${(error as Error).message}`);
+            // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.debug((error as Error).stack!);
         } else {
             // this should not happen
@@ -35,6 +36,7 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
     const sendToSystemd = (msg: string): void => {
         const buffer = Buffer.from(msg);
 
+        // biome-ignore lint/style/noNonNullAssertion: valid from start of function
         socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err) => {
             if (err) {
                 logger.warning(`Failed to send "${msg}" to systemd: ${err.message}`);

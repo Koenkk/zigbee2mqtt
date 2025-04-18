@@ -26,13 +26,13 @@ describe("Utils", () => {
         expect(exec).toHaveBeenCalledTimes(1);
 
         // @ts-expect-error mock spy
-        exec.mockImplementationOnce((cmd, cb) => {
+        exec.mockImplementationOnce((_cmd, cb) => {
             cb(null, "abcd1234");
         });
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: "abcd1234", version});
 
         // @ts-expect-error mock spy
-        exec.mockImplementationOnce((cmd, cb) => {
+        exec.mockImplementationOnce((_cmd, cb) => {
             cb(null, "");
         });
         // hash file may or may not be present during testing, don't failing matching if not
@@ -42,7 +42,7 @@ describe("Utils", () => {
             throw new Error("no hash file");
         });
         // @ts-expect-error mock spy
-        exec.mockImplementationOnce((cmd, cb) => {
+        exec.mockImplementationOnce((_cmd, cb) => {
             cb(null, "");
         });
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: "unknown", version});
@@ -51,7 +51,7 @@ describe("Utils", () => {
             throw new Error("no hash file");
         });
         // @ts-expect-error mock spy
-        exec.mockImplementationOnce((cmd, cb) => {
+        exec.mockImplementationOnce((_cmd, cb) => {
             cb(new Error("invalid"), "");
         });
         expect(await utils.getZigbee2MQTTVersion()).toStrictEqual({commitHash: "unknown", version});
@@ -69,7 +69,7 @@ describe("Utils", () => {
         expect(await utils.getDependencyVersion("zigbee-herdsman-converters")).toStrictEqual({version: versionHerdsmanConverters});
     });
 
-    it("To local iso string", async () => {
+    it("To local iso string", () => {
         const date = new Date("August 19, 1975 23:15:30 UTC+00:00").getTime();
         const getTzOffsetSpy = vi.spyOn(Date.prototype, "getTimezoneOffset");
         getTzOffsetSpy.mockReturnValueOnce(60);

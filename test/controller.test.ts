@@ -62,7 +62,7 @@ describe("Controller", () => {
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };
 
-    beforeAll(async () => {
+    beforeAll(() => {
         vi.useFakeTimers();
     });
 
@@ -77,7 +77,7 @@ describe("Controller", () => {
         data.writeDefaultState();
     });
 
-    afterAll(async () => {
+    afterAll(() => {
         vi.useRealTimers();
     });
 
@@ -1122,12 +1122,23 @@ describe("Controller", () => {
         expect(controller.state.state.get(device.ieeeAddr)).toStrictEqual(undefined);
     });
 
-    it("EventBus should handle errors", async () => {
+    it("EventBus should handle sync errors", async () => {
         // @ts-expect-error private
         const eventbus = controller.eventBus;
-        const callback = vi.fn().mockImplementation(async () => {
+        const callback = vi.fn().mockImplementation(() => {
             throw new Error("Whoops!");
         });
+        eventbus.onStateChange({constructor: {name: "Test"}}, callback);
+        eventbus.emitStateChange({});
+        await flushPromises();
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(mockLogger.error).toHaveBeenCalledWith(`EventBus error 'Test/stateChange': Whoops!`);
+    });
+
+    it("EventBus should handle async errors", async () => {
+        // @ts-expect-error private
+        const eventbus = controller.eventBus;
+        const callback = vi.fn().mockRejectedValue(new Error("Whoops!"));
         eventbus.onStateChange({constructor: {name: "Test"}}, callback);
         eventbus.emitStateChange({});
         await flushPromises();

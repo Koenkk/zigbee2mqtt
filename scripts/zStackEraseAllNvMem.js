@@ -24,8 +24,8 @@ class ZStackNvMemEraser {
         // Old firmware did not support version, assume it's Z-Stack 1.2 for now.
         try {
             this.version = (await this.znp.request(Subsystem.SYS, "version", {})).payload;
-        } catch (e) {
-            console.log(`Failed to get zStack version, assuming 1.2`);
+        } catch {
+            console.log("Failed to get zStack version, assuming 1.2");
             this.version = {transportrev: 2, product: 0, majorrel: 2, minorrel: 0, maintrel: 0, revision: ""};
         }
 
@@ -54,15 +54,15 @@ class ZStackNvMemEraser {
         console.log(`Clearing all NVMEM items, from 0 to ${maxNvMemId}`);
         for (let id = 0; id <= maxNvMemId; id++) {
             let len;
-            const needOsal = !(this.version.product == ZnpVersion.zStack3x0 && id <= 7);
+            const needOsal = !(this.version.product === ZnpVersion.zStack3x0 && id <= 7);
             if (needOsal) {
                 const lengthRes = await this.znp.request(Subsystem.SYS, "osalNvLength", {id: id});
-                len = lengthRes.payload["length"];
+                len = lengthRes.payload.length;
             } else {
                 const lengthRes = await this.znp.request(Subsystem.SYS, "nvLength", {sysid: NvSystemIds.ZSTACK, itemid: id, subid: 0});
-                len = lengthRes.payload["len"];
+                len = lengthRes.payload.len;
             }
-            if (len != 0) {
+            if (len !== 0) {
                 console.log(`NVMEM item #${id} - deleting, size: ${len}`);
                 if (needOsal) {
                     await this.znp.request(Subsystem.SYS, "osalNvDelete", {id: id, len: len}, undefined, undefined, [
@@ -82,7 +82,7 @@ class ZStackNvMemEraser {
     }
 }
 const processArgs = process.argv.slice(2);
-if (processArgs.length != 1) {
+if (processArgs.length !== 1) {
     console.log("ZStack NVMEM eraser.");
     console.log("Usage:");
     console.log("   node zStackEraseAllNvMem.js <SERIAL_PORT>");

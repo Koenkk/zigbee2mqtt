@@ -204,10 +204,12 @@ export default class EventBus {
                 await callback(...args);
             } catch (error) {
                 logger.error(`EventBus error '${key.constructor.name}/${event}': ${(error as Error).message}`);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
         };
 
+        // biome-ignore lint/style/noNonNullAssertion: just created if wasn't valid
         this.callbacksByExtension.get(key.constructor.name)!.push({event, callback: wrappedCallback});
         this.emitter.on(event, wrappedCallback as EventBusListener<K>);
     }

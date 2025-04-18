@@ -7,6 +7,7 @@ import Extension from "./extension";
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
 export default class OnEvent extends Extension {
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             // don't await, in case of repeated failures this would hold startup

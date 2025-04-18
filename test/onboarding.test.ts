@@ -13,7 +13,7 @@ const mockHttpOnListen = vi.fn(() => Promise.resolve());
 const mockHttpListener = vi.fn<RequestListener<typeof IncomingMessage, typeof ServerResponse>>();
 const mockHttpListen = vi.fn<Server["listen"]>(
     // @ts-expect-error mocked for used definition
-    async (port, host, listeningListener) => {
+    async (_port, _host, listeningListener) => {
         if (typeof listeningListener === "function") {
             listeningListener();
         }
@@ -126,22 +126,22 @@ const SAMPLE_SETTINGS_SAVE = {
 };
 
 const SAMPLE_SETTINGS_SAVE_PARAMS = {
-    mqtt_base_topic: `zigbee2mqtt2`,
-    mqtt_server: `mqtt://192.168.1.200:1883`,
+    mqtt_base_topic: "zigbee2mqtt2",
+    mqtt_server: "mqtt://192.168.1.200:1883",
     mqtt_user: "",
     mqtt_password: "",
-    serial_port: `COM3`,
-    serial_adapter: `ember`,
-    serial_baudrate: `230400`,
-    serial_rtscts: `on`,
-    log_level: `debug`,
-    network_channel: `25`,
-    network_key: `1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16`,
-    network_pan_id: `12345`,
-    network_ext_pan_id: `8,7,6,5,4,3,2,1`,
-    frontend_enabled: `on`,
+    serial_port: "COM3",
+    serial_adapter: "ember",
+    serial_baudrate: "230400",
+    serial_rtscts: "on",
+    log_level: "debug",
+    network_channel: "25",
+    network_key: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16",
+    network_pan_id: "12345",
+    network_ext_pan_id: "8,7,6,5,4,3,2,1",
+    frontend_enabled: "on",
     frontend_port: "8080",
-    homeassistant_enabled: `on`,
+    homeassistant_enabled: "on",
 };
 
 describe("Onboarding", () => {
@@ -186,10 +186,10 @@ describe("Onboarding", () => {
         expectWriteMinimal: boolean,
         expectFailure: boolean,
     ): Promise<[getHtml: string, postHtml: string]> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         const reqDataListener = vi.fn<(chunk: any) => void>();
         const reqEndListener = vi.fn<() => void>();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         const resEnd = vi.fn<(chunk: any | (() => void), cb?: () => void) => ServerResponse<IncomingMessage>>(
             // @ts-expect-error return not used
             (chunk, cb) => {
@@ -297,7 +297,7 @@ describe("Onboarding", () => {
     };
 
     const runFailure = async (): Promise<string> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         const resEnd = vi.fn<(chunk: any | (() => void), cb?: () => void) => ServerResponse<IncomingMessage>>(
             // @ts-expect-error return not used
             (chunk, cb) => {

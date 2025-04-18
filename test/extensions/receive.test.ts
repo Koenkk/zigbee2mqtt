@@ -23,12 +23,12 @@ describe("Extension: Receive", () => {
         await vi.runOnlyPendingTimersAsync();
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         // @ts-expect-error private
         controller.state.clear();
         data.writeDefaultConfiguration();
         settings.reRead();
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         delete devices.WXKG11LM.linkquality;
     });
 
@@ -193,7 +193,7 @@ describe("Extension: Receive", () => {
         const device = devices.WSDCGQ11LM;
         settings.set(["device_options", "debounce"], 0.1);
         settings.set(["device_options", "retain"], true);
-        delete settings.get().devices["0x0017880104e45522"]["retain"];
+        delete settings.get().devices["0x0017880104e45522"].retain;
         const data1 = {measuredValue: 8};
         const payload1 = {
             data: data1,
@@ -631,7 +631,7 @@ describe("Extension: Receive", () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
-        expect(mockLogger.debug).toHaveBeenCalledWith(`Skipping message, still interviewing`);
+        expect(mockLogger.debug).toHaveBeenCalledWith("Skipping message, still interviewing");
     });
 
     it("Should handle a command", async () => {

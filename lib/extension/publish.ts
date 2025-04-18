@@ -28,6 +28,7 @@ interface ParsedTopic {
 }
 
 export default class Publish extends Extension {
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
@@ -134,7 +135,8 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
+                ? // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: might be a bit much assumed here?
+                  Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
@@ -185,8 +187,7 @@ export default class Publish extends Extension {
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
-                // endpointName is always matched to an existing endpoint of the device
-                // since `propertyEndpointRegex` only contains valid endpoints for this device.
+                // biome-ignore lint/style/noNonNullAssertion: endpointName is always matched to an existing endpoint of the device since `propertyEndpointRegex` only contains valid endpoints for this device
                 localTarget = re.endpoint(endpointName)!;
                 endpointOrGroupID = localTarget.ID;
             }
@@ -263,6 +264,7 @@ export default class Publish extends Extension {
 
                     if (result?.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
+                            // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
                             addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
                         }
                     }
@@ -276,6 +278,7 @@ export default class Publish extends Extension {
             } catch (error) {
                 const message = `Publish '${parsedTopic.type}' '${key}' to '${re.name}' failed: '${error}'`;
                 logger.error(message);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
 

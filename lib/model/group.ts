@@ -6,11 +6,12 @@ export default class Group {
     public zh: zh.Group;
     private resolveDevice: (ieeeAddr: string) => Device | undefined;
 
+    // biome-ignore lint/style/useNamingConvention: API
     get ID(): number {
         return this.zh.groupID;
     }
     get options(): GroupOptions {
-        // XXX: Group always exists in settings
+        // biome-ignore lint/style/noNonNullAssertion: Group always exists in settings
         return {...settings.getGroup(this.ID)!};
     }
     get name(): string {
@@ -28,7 +29,11 @@ export default class Group {
 
     *membersDevices(): Generator<Device> {
         for (const member of this.zh.members) {
-            yield this.resolveDevice(member.deviceIeeeAddress)!;
+            const resolvedDevice = this.resolveDevice(member.deviceIeeeAddress);
+
+            if (resolvedDevice) {
+                yield resolvedDevice;
+            }
         }
     }
 

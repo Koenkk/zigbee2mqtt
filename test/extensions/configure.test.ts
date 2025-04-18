@@ -75,7 +75,7 @@ describe("Extension: Configure", () => {
     beforeEach(async () => {
         data.writeDefaultConfiguration();
         settings.reRead();
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         coordinatorEndpoint = devices.coordinator.getEndpoint(1)!;
         await resetExtension();
         await vi.runOnlyPendingTimersAsync();
@@ -87,11 +87,11 @@ describe("Extension: Configure", () => {
         vi.useRealTimers();
     });
 
-    it("Should configure Router on startup", async () => {
+    it("Should configure Router on startup", () => {
         expectBulbConfigured();
     });
 
-    it("Should not configure EndDevice on startup", async () => {
+    it("Should not configure EndDevice on startup", () => {
         expectRemoteNotConfigured();
     });
 
@@ -171,9 +171,7 @@ describe("Extension: Configure", () => {
     });
 
     it("Fail to configure via MQTT when configure fails", async () => {
-        devices.remote.getEndpoint(1)!.bind.mockImplementationOnce(async () => {
-            throw new Error("Bind timeout after 10s");
-        });
+        devices.remote.getEndpoint(1)!.bind.mockRejectedValueOnce(new Error("Bind timeout after 10s"));
         await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: "remote"}));
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -235,29 +233,19 @@ describe("Extension: Configure", () => {
         delete device.meta.configured;
         const endpoint = device.getEndpoint(1)!;
         mockClear(device);
-        endpoint.bind.mockImplementationOnce(async () => {
-            throw new Error("BLA");
-        });
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockImplementationOnce(async () => {
-            throw new Error("BLA");
-        });
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockImplementationOnce(async () => {
-            throw new Error("BLA");
-        });
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockImplementationOnce(async () => {
-            throw new Error("BLA");
-        });
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockImplementationOnce(async () => {
-            throw new Error("BLA");
-        });
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(3);

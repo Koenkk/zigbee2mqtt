@@ -313,11 +313,13 @@ export default class Availability extends Extension {
                             continue;
                         }
 
+                        // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
                         const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
                         const options: KeyValue = device.options;
                         const state = this.state.get(device);
                         const meta: zhc.Tz.Meta = {
                             message: this.state.get(device),
+                            // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
                             mapped: device.definition!,
                             endpoint_name: undefined,
                             options,

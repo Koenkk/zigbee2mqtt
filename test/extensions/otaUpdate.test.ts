@@ -89,7 +89,7 @@ describe("Extension: OTAUpdate", () => {
 
             return {swBuildId: count, dateCode: `201901${count}`};
         });
-        updateSpy.mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
+        updateSpy.mockImplementationOnce(async (_device, _extraMetas, previous, onProgress) => {
             expect(previous).toStrictEqual(downgrade);
 
             onProgress(0, undefined);
@@ -466,7 +466,7 @@ describe("Extension: OTAUpdate", () => {
             settings.set(["ota", "disable_automatic_update_check"], true); // coverage, scheduling not affected by this
         }
 
-        updateSpy.mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
+        updateSpy.mockImplementationOnce(async (_device, _extraMetas, previous, onProgress) => {
             expect(previous).toStrictEqual(downgrade);
 
             onProgress(0, undefined);
@@ -558,7 +558,7 @@ describe("Extension: OTAUpdate", () => {
     });
 
     it("schedules and re-schedules an update when failed", async () => {
-        updateSpy.mockRejectedValueOnce("Update failed").mockImplementationOnce(async (device, extraMetas, previous, onProgress) => {
+        updateSpy.mockRejectedValueOnce("Update failed").mockImplementationOnce(async (_device, _extraMetas, _previous, onProgress) => {
             onProgress(0, undefined);
             onProgress(10, 3600.2123);
             return await Promise.resolve(2);

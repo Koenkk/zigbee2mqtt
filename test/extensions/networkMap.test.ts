@@ -112,7 +112,7 @@ describe("Extension: NetworkMap", () => {
     });
 
     beforeEach(async () => {
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         await flushPromises();
         const device = devices.bulb_color;
         device.lastSeen = 1000;

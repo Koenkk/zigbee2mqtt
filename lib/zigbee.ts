@@ -77,17 +77,20 @@ export default class Zigbee {
 
         this.herdsman.on("adapterDisconnected", () => this.eventBus.emitAdapterDisconnected());
         this.herdsman.on("lastSeenChanged", (data: ZHEvents.LastSeenChangedPayload) => {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr)!, reason: data.reason});
         });
         this.herdsman.on("permitJoinChanged", (data: ZHEvents.PermitJoinChangedPayload) => {
             this.eventBus.emitPermitJoinChanged(data);
         });
         this.herdsman.on("deviceNetworkAddressChanged", (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' changed network address`);
             this.eventBus.emitDeviceNetworkAddressChanged({device});
         });
         this.herdsman.on("deviceAnnounce", (data: ZHEvents.DeviceAnnouncePayload) => {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' announced itself`);
             this.eventBus.emitDeviceAnnounce({device});
@@ -113,6 +116,7 @@ export default class Zigbee {
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name, device: this.deviceLookup.get(data.ieeeAddr)});
         });
         this.herdsman.on("message", async (data: ZHEvents.MessagePayload) => {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
             logger.debug(() => {
@@ -161,6 +165,7 @@ export default class Zigbee {
             logger.info(`Successfully interviewed '${name}', device has successfully been paired`);
 
             if (data.device.isSupported) {
+                // biome-ignore lint/style/noNonNullAssertion: valid from `isSupported`
                 const {vendor, description, model} = data.device.definition!;
                 logger.info(`Device '${name}' is supported, identified as: ${vendor} ${description} (${model})`);
             } else {
@@ -208,6 +213,7 @@ export default class Zigbee {
 
     async coordinatorCheck(): Promise<{missingRouters: Device[]}> {
         const check = await this.herdsman.coordinatorCheck();
+        // biome-ignore lint/style/noNonNullAssertion: assumed valid
         return {missingRouters: check.missingRouters.map((d) => this.resolveDevice(d.ieeeAddr)!)};
     }
 
@@ -335,26 +341,31 @@ export default class Zigbee {
         groupPredicate?: (value: zh.Group) => boolean,
     ): Generator<Device | Group> {
         for (const device of this.herdsman.getDevicesIterator(devicePredicate)) {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveDevice(device.ieeeAddr)!;
         }
 
         for (const group of this.herdsman.getGroupsIterator(groupPredicate)) {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveGroup(group.groupID)!;
         }
     }
 
     *groupsIterator(predicate?: (value: zh.Group) => boolean): Generator<Group> {
         for (const group of this.herdsman.getGroupsIterator(predicate)) {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveGroup(group.groupID)!;
         }
     }
 
     *devicesIterator(predicate?: (value: zh.Device) => boolean): Generator<Device> {
         for (const device of this.herdsman.getDevicesIterator(predicate)) {
+            // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveDevice(device.ieeeAddr)!;
         }
     }
 
+    // biome-ignore lint/suspicious/useAwait: API
     @bind private async acceptJoiningDeviceHandler(ieeeAddr: string): Promise<boolean> {
         // If passlist is set, all devices not on passlist will be rejected to join the network
         const passlist = settings.get().passlist;
@@ -403,6 +414,7 @@ export default class Zigbee {
 
     createGroup(id: number): Group {
         this.herdsman.createGroup(id);
+        // biome-ignore lint/style/noNonNullAssertion: just created
         return this.resolveGroup(id)!;
     }
 

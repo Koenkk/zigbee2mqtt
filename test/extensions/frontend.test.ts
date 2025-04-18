@@ -23,7 +23,6 @@ const mockHTTP = {
     close: vi.fn<(cb: (err?: Error) => void) => void>((cb) => cb()),
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let mockHTTPSOnRequest: (request: {url: string}, response: number) => void;
 const mockHTTPSEvents: Record<string, EventHandler> = {};
 const mockHTTPS = {
@@ -54,10 +53,10 @@ const mockWS = {
     on: (event: string, handler: EventHandler): void => {
         mockWSEvents[event] = handler;
     },
-    handleUpgrade: vi.fn().mockImplementation((request, socket, head, cb) => {
+    handleUpgrade: vi.fn().mockImplementation((_request, _socket, _head, cb) => {
         cb(mockWSocket);
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     emit: vi.fn<(eventName: string, ...args: any[]) => void>(),
     close: vi.fn<(code?: number, data?: string | Buffer) => void>(),
 };
@@ -131,11 +130,11 @@ const mocksClear = [
 describe("Extension: Frontend", () => {
     let controller: Controller;
 
-    beforeAll(async () => {
+    beforeAll(() => {
         vi.useFakeTimers();
     });
 
-    beforeEach(async () => {
+    beforeEach(() => {
         mockNodeStatic = {};
         mockWS.clients = [];
         data.writeDefaultConfiguration();
@@ -144,11 +143,11 @@ describe("Extension: Frontend", () => {
         settings.set(["frontend"], {enabled: true, port: 8081, host: "127.0.0.1"});
         settings.set(["homeassistant"], {enabled: true});
         devices.bulb.linkquality = 10;
-        mocksClear.forEach((m) => m.mockClear());
+        for (const mock of mocksClear) mock.mockClear();
         mockWSClient.readyState = "close";
     });
 
-    afterAll(async () => {
+    afterAll(() => {
         vi.useRealTimers();
     });
 

@@ -23,7 +23,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -218,6 +218,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 logger.error(
                     `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT.`,
                 );
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
         }

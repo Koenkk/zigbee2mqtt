@@ -211,6 +211,7 @@ interface ParsedMQTTMessage {
 export default class Bind extends Extension {
     private pollDebouncers: {[s: string]: () => void} = {};
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onDeviceMessage(this, this.poll);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -383,9 +384,12 @@ export default class Bind extends Extension {
         }
 
         const responseData: Zigbee2MQTTAPI["bridge/response/device/bind"] | Zigbee2MQTTAPI["bridge/response/device/unbind"] = {
-            from: sourceKey!, // valid with assert above on `resolvedSource`
-            from_endpoint: sourceEndpointKey!, // valid with assert above on `resolvedSourceEndpoint`
-            to: targetKey!, // valid with assert above on `resolvedTarget`
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedSource`
+            from: sourceKey!,
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedSourceEndpoint`
+            from_endpoint: sourceEndpointKey!,
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedTarget`
+            to: targetKey!,
             to_endpoint: targetEndpointKey,
             clusters: successfulClusters,
             failed: failedClusters,
@@ -468,13 +472,16 @@ export default class Bind extends Extension {
         for (const bind of binds) {
             if (bind.cluster.name in REPORT_CLUSTERS) {
                 for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
-                    const entity = `${this.zigbee.resolveEntity(endpoint.getDevice())!.name}/${endpoint.ID}`;
+                    // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                    const resolvedDevice = this.zigbee.resolveEntity(endpoint.getDevice())!;
+                    const entity = `${resolvedDevice.name}/${endpoint.ID}`;
 
                     try {
                         await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
 
                         const items = [];
 
+                        // biome-ignore lint/style/noNonNullAssertion: valid from outer `if`
                         for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]!) {
                             if (!c.condition || (await c.condition(endpoint))) {
                                 const i = {...c};
@@ -533,6 +540,7 @@ export default class Bind extends Extension {
 
                     const items = [];
 
+                    // biome-ignore lint/style/noNonNullAssertion: valid from loop (pushed to array only if in)
                     for (const item of REPORT_CLUSTERS[cluster as ClusterName]!) {
                         if (!item.condition || (await item.condition(endpoint))) {
                             const i = {...item};
@@ -592,8 +600,8 @@ export default class Bind extends Extension {
             for (const endpoint of toPoll) {
                 const device = endpoint.getDevice();
                 for (const poll of polls) {
-                    // XXX: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                     if (
+                        // biome-ignore lint/style/noNonNullAssertion: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                         (!poll.manufacturerIDs.includes(device.manufacturerID!) && !poll.manufacturerNames.includes(device.manufacturerName!)) ||
                         !endpoint.supportsInputCluster(poll.read.cluster)
                     ) {
@@ -614,9 +622,9 @@ export default class Bind extends Extension {
                             try {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
-                                logger.error(
-                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(device)!.name} (${(error as Error).message})`,
-                                );
+                                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                                const resolvedDevice = this.zigbee.resolveEntity(device)!;
+                                logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${(error as Error).message})`);
                             }
                         }, 1000);
                     }

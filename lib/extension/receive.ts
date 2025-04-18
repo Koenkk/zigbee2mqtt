@@ -15,16 +15,18 @@ import Extension from "./extension";
 type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 
 export default class Receive extends Extension {
+    // TODO: move all to `Map`
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
     private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
+    @bind onPublishEntityState(data: eventdata.PublishEntityState): void {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
@@ -173,6 +175,7 @@ export default class Receive extends Extension {
                 /* v8 ignore start */
             } catch (error) {
                 logger.error(`Exception while calling fromZigbee converter: ${(error as Error).message}}`);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
             /* v8 ignore stop */

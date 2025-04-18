@@ -9,7 +9,7 @@ type TModule = new (...args: ConstructorParameters<typeof Extension>) => Extensi
 export default class ExternalExtensions extends ExternalJSExtension<TModule> {
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -31,7 +31,7 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
         );
     }
 
-    protected async removeJS(name: string, mod: TModule): Promise<void> {
+    protected async removeJS(_name: string, mod: TModule): Promise<void> {
         await this.enableDisableExtension(false, mod.name);
     }
 

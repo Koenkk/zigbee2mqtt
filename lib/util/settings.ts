@@ -28,7 +28,7 @@ const ajvRestartRequiredDeviceOptions = new Ajv({allErrors: true})
 const ajvRestartRequiredGroupOptions = new Ajv({allErrors: true})
     .addKeyword({keyword: "requiresRestart", validate: (s: unknown) => !s})
     .compile(schemaJson.definitions.group);
-export const defaults: RecursivePartial<Settings> = {
+export const defaults = {
     homeassistant: {
         enabled: false,
         discovery_topic: "homeassistant",
@@ -112,7 +112,7 @@ export const defaults: RecursivePartial<Settings> = {
         timestamp_format: "YYYY-MM-DD HH:mm:ss",
         output: "json",
     },
-};
+} satisfies RecursivePartial<Settings>;
 
 let _settings: Partial<Settings> | undefined;
 let _settingsWithDefaults: Settings | undefined;
@@ -151,23 +151,23 @@ export function writeMinimalDefaults(): void {
     const minimal = {
         version: CURRENT_VERSION,
         mqtt: {
-            base_topic: defaults.mqtt!.base_topic,
+            base_topic: defaults.mqtt.base_topic,
             server: "mqtt://localhost:1883",
         },
         serial: {},
         advanced: {
-            log_level: defaults.advanced!.log_level,
-            channel: defaults.advanced!.channel,
+            log_level: defaults.advanced.log_level,
+            channel: defaults.advanced.channel,
             network_key: "GENERATE",
             pan_id: "GENERATE",
             ext_pan_id: "GENERATE",
         },
         frontend: {
-            enabled: defaults.frontend!.enabled,
-            port: defaults.frontend!.port,
+            enabled: defaults.frontend.enabled,
+            port: defaults.frontend.port,
         },
         homeassistant: {
-            enabled: defaults.homeassistant!.enabled,
+            enabled: defaults.homeassistant.enabled,
         },
     } as Partial<Settings>;
 
@@ -248,7 +248,7 @@ export function validate(): string[] {
     }
 
     if (!ajvSetting(_settings)) {
-        // When `ajvSetting()` return false it always has `errors`.
+        // biome-ignore lint/style/noNonNullAssertion: When `ajvSetting()` return false it always has `errors`
         return ajvSetting.errors!.map((v) => `${v.instancePath.substring(1)} ${v.message}`);
     }
 
@@ -376,18 +376,18 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                             try {
                                 setting[key as keyof Settings] = JSON.parse(envVariable);
                             } catch {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                                 setting[key as keyof Settings] = envVariable as any;
                             }
                         } else if (type.indexOf("number") >= 0) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                             setting[key as keyof Settings] = ((envVariable as unknown as number) * 1) as any;
                         } else if (type.indexOf("boolean") >= 0) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                             setting[key as keyof Settings] = (envVariable.toLowerCase() === "true") as any;
                         } else {
                             if (type.indexOf("string") >= 0) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                                 setting[key as keyof Settings] = envVariable as any;
                             }
                         }
@@ -428,11 +428,12 @@ export function get(): Settings {
         loadSettingsWithDefaults();
     }
 
+    // biome-ignore lint/style/noNonNullAssertion: just loaded
     return _settingsWithDefaults!;
 }
 
 export function set(path: string[], value: string | number | boolean | KeyValue): void {
-    /* eslint-disable-next-line */
+    // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
     let settings: any = getPersistedSettings();
 
     for (let i = 0; i < path.length; i++) {
@@ -545,7 +546,8 @@ export function addDevice(id: string): DeviceOptionsWithId {
     settings.devices[id] = {friendly_name: id};
     write();
 
-    return getDevice(id)!; // valid from creation above
+    // biome-ignore lint/style/noNonNullAssertion: valid from creation above
+    return getDevice(id)!;
 }
 
 export function blockDevice(id: string): void {
@@ -596,13 +598,15 @@ export function addGroup(name: string, id?: string): GroupOptions {
     settings.groups[id] = {friendly_name: name};
     write();
 
-    return getGroup(id)!; // valid from creation above
+    // biome-ignore lint/style/noNonNullAssertion: valid from creation above
+    return getGroup(id)!;
 }
 
 export function removeGroup(IDorName: string | number): void {
-    const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID!;
+    const groupID = getGroupThrowIfNotExists(IDorName.toString()).ID;
     const settings = getPersistedSettings();
 
+    // biome-ignore lint/style/noNonNullAssertion: throwing above if not valid
     delete settings.groups![groupID];
     write();
 }
@@ -615,15 +619,19 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
     const device = getDevice(IDorName);
 
     if (device) {
-        objectAssignDeep(settings.devices![device.ID], newOptions);
-        utils.removeNullPropertiesFromObject(settings.devices![device.ID], NULLABLE_SETTINGS);
+        // biome-ignore lint/style/noNonNullAssertion: valid from above
+        const settingsDevice = settings.devices![device.ID];
+        objectAssignDeep(settingsDevice, newOptions);
+        utils.removeNullPropertiesFromObject(settingsDevice, NULLABLE_SETTINGS);
         validator = ajvRestartRequiredDeviceOptions;
     } else {
         const group = getGroup(IDorName);
 
         if (group) {
-            objectAssignDeep(settings.groups![group.ID], newOptions);
-            utils.removeNullPropertiesFromObject(settings.groups![group.ID], NULLABLE_SETTINGS);
+            // biome-ignore lint/style/noNonNullAssertion: valid from above
+            const settingsGroup = settings.groups![group.ID];
+            objectAssignDeep(settingsGroup, newOptions);
+            utils.removeNullPropertiesFromObject(settingsGroup, NULLABLE_SETTINGS);
             validator = ajvRestartRequiredGroupOptions;
         } else {
             throw new Error(`Device or group '${IDorName}' does not exist`);
@@ -648,11 +656,13 @@ export function changeFriendlyName(IDorName: string, newName: string): void {
     const device = getDevice(IDorName);
 
     if (device) {
+        // biome-ignore lint/style/noNonNullAssertion: valid from above
         settings.devices![device.ID].friendly_name = newName;
     } else {
         const group = getGroup(IDorName);
 
         if (group) {
+            // biome-ignore lint/style/noNonNullAssertion: valid from above
             settings.groups![group.ID].friendly_name = newName;
         } else {
             throw new Error(`Device or group '${IDorName}' does not exist`);
