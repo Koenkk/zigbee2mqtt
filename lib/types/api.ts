@@ -58,8 +58,9 @@ export interface Zigbee2MQTTDevice {
     software_build_id: zh.Device["softwareBuildID"];
     date_code: zh.Device["dateCode"];
     model_id: zh.Device["modelID"];
-    interviewing: zh.Device["interviewing"];
-    interview_completed: zh.Device["interviewCompleted"];
+    interviewing: boolean;
+    interview_completed: boolean;
+    interview_state: zh.Device["interviewState"];
     manufacturer: zh.Device["manufacturerName"];
     endpoints: Record<number, Zigbee2MQTTDeviceEndpoint>;
 }

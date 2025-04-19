@@ -95,7 +95,7 @@ export default class Configure extends Extension {
         }
 
         if (!force) {
-            if (device.options.disabled || !device.zh.interviewCompleted) {
+            if (device.options.disabled || !device.interviewed) {
                 return;
             }
 

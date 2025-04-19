@@ -4,6 +4,7 @@ import assert from "node:assert";
 
 import * as zhc from "zigbee-herdsman-converters";
 import {Numeric, access} from "zigbee-herdsman-converters";
+import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 
 import * as settings from "../util/settings";
 
@@ -42,6 +43,9 @@ export default class Device {
     get otaExtraMetas(): zhc.Ota.ExtraMetas {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
+    get interviewed(): boolean {
+        return this.zh.interviewState === InterviewState.SUCCESSFUL || this.zh.interviewState === InterviewState.FAILED;
+    }
 
     constructor(device: zh.Device) {
         this.zh = device;
@@ -61,7 +65,7 @@ export default class Device {
     }
 
     async resolveDefinition(ignoreCache = false): Promise<void> {
-        if (!this.zh.interviewing && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
+        if (this.interviewed && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
         }

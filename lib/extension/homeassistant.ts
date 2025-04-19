@@ -1466,7 +1466,7 @@ export class HomeAssistant extends Extension {
 
         if (
             isDevice &&
-            (!entity.definition || entity.zh.interviewing || (entity.options.homeassistant !== undefined && !entity.options.homeassistant))
+            (!entity.definition || !entity.interviewed || (entity.options.homeassistant !== undefined && !entity.options.homeassistant))
         ) {
             return;
         }

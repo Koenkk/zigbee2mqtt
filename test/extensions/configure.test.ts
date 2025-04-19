@@ -6,6 +6,8 @@ import {type Device, type Endpoint, devices, events as mockZHEvents} from "../mo
 
 import stringify from "json-stable-stringify-without-jsonify";
 
+import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+
 import {Controller} from "../../lib/controller";
 import Configure from "../../lib/extension/configure";
 import * as settings from "../../lib/util/settings";
@@ -204,12 +206,12 @@ describe("Extension: Configure", () => {
     it("Should not configure when interview not completed", async () => {
         const device = devices.remote;
         delete device.meta.configured;
-        device.interviewCompleted = false;
+        device.interviewState = InterviewState.PENDING;
         mockClear(device);
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expectRemoteNotConfigured();
-        device.interviewCompleted = true;
+        device.interviewState = InterviewState.SUCCESSFUL;
     });
 
     it("Should not configure when already configuring", async () => {
