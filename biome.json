@@ -11,6 +11,9 @@
         "lineWidth": 150,
         "bracketSpacing": false
     },
+    "files": {
+        "ignore": ["package.json"]
+    },
     "linter": {
         "ignore": [],
         "rules": {
