@@ -121,6 +121,13 @@ declare global {
             reject_unauthorized?: boolean;
             maximum_packet_size: number;
         };
+        health: {
+            enabled: boolean;
+            /** in minutes */
+            interval: number;
+            with_devices: boolean;
+            reset_on_check: boolean;
+        };
         serial: {
             disable_led: boolean;
             port?: string;
@@ -224,6 +231,7 @@ declare global {
         friendly_name: string;
         description?: string;
         qos?: 0 | 1 | 2;
+        health?: boolean;
     }
 
     interface DeviceOptionsWithId extends DeviceOptions {

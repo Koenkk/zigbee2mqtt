@@ -152,6 +152,16 @@ export interface Zigbee2MQTTAPI {
           };
 
     "bridge/info": {
+        os: {
+            version: string;
+            node_version: string;
+            cpus: string;
+            memory_mb: number;
+        };
+        mqtt: {
+            version: number | undefined;
+            server: string;
+        };
         version: string;
         commit: string | undefined;
         zigbee_herdsman_converters: {version: string};
@@ -175,6 +185,26 @@ export interface Zigbee2MQTTAPI {
         restart_required: boolean;
         config: Settings;
         config_schema: typeof schemaJson;
+    };
+
+    "bridge/health": {
+        timestamp: string;
+        response_time: string;
+        os: {
+            load_average: number[];
+            memory_used_mb: number;
+            memory_percent: number;
+        };
+        process: {
+            uptime_sec: number;
+            memory_used_mb: number;
+            memory_percent: number;
+        };
+        mqtt: {
+            connected: boolean;
+            queued: number;
+        };
+        devices?: Record<string /* friendlyName */, {messages: number; messages_per_sec: number; leave_count: number}>;
     };
 
     "bridge/devices": Zigbee2MQTTDevice[];

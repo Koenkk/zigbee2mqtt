@@ -762,6 +762,40 @@
                     "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
                 }
             }
+        },
+        "health": {
+            "title": "Health",
+            "description": "Periodically check the health of Zigbee2MQTT",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable health checking",
+                    "default": true,
+                    "requiresRestart": true
+                },
+                "interval": {
+                    "type": "number",
+                    "title": "Interval",
+                    "description": "Interval between checks in minutes",
+                    "default": 30,
+                    "requiresRestart": true
+                },
+                "with_devices": {
+                    "type": "boolean",
+                    "title": "With devices",
+                    "description": "Also run various checks on devices (like messages per second).",
+                    "default": false
+                },
+                "reset_on_check": {
+                    "type": "boolean",
+                    "title": "Reset on check",
+                    "description": "If true, will reset stats every time the health check is executed (only applicable to stats that can be reset).",
+                    "default": false
+                }
+            },
+            "required": []
         }
     },
     "required": ["mqtt"],

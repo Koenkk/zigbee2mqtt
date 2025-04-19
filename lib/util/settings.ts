@@ -112,6 +112,12 @@ export const defaults = {
         timestamp_format: "YYYY-MM-DD HH:mm:ss",
         output: "json",
     },
+    health: {
+        enabled: true,
+        interval: 10,
+        with_devices: false,
+        reset_on_check: false,
+    },
 } satisfies RecursivePartial<Settings>;
 
 let _settings: Partial<Settings> | undefined;

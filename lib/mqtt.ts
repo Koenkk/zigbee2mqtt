@@ -23,6 +23,20 @@ export default class Mqtt {
         [s: string]: {payload: string; options: IClientPublishOptions; skipLog: boolean; skipReceive: boolean; topic: string; base: string};
     } = {};
 
+    get info() {
+        return {
+            version: this.client.options.protocolVersion,
+            server: `${this.client.options.protocol}://${this.client.options.host}:${this.client.options.port}`,
+        };
+    }
+
+    get stats() {
+        return {
+            connected: this.isConnected(),
+            queued: this.client.queue.length,
+        };
+    }
+
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
     }

@@ -94,6 +94,12 @@ export class Controller {
             this.extensions.add(new HomeAssistant(...this.extensionArgs));
         }
 
+        if (settings.get().health.enabled) {
+            const {Health} = await import("./extension/health.js");
+
+            this.extensions.add(new Health(...this.extensionArgs));
+        }
+
         this.state.start();
 
         const info = await utils.getZigbee2MQTTVersion();
