@@ -765,7 +765,7 @@ export default class Bridge extends Extension {
                 software_build_id: device.zh.softwareBuildID,
                 date_code: device.zh.dateCode,
                 model_id: device.zh.modelID,
-                // DEPRECATED: interviewing and interview_completed are superceded by interview_state
+                /** @deprecated interviewing and interview_completed are superceded by interview_state */
                 interviewing: device.zh.interviewState === InterviewState.IN_PROGRESS,
                 interview_completed: device.zh.interviewState === InterviewState.SUCCESSFUL,
                 interview_state: device.zh.interviewState,
