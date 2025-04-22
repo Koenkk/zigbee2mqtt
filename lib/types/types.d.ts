@@ -35,7 +35,7 @@ declare global {
         type Device = ZHModels.Device;
         type Group = ZHModels.Group;
         // biome-ignore lint/style/useNamingConvention: API
-        type LQI = ZHAdapterTypes.LQI;
+        type LQI = ZHAdapterTypes.Lqi;
         type RoutingTable = ZHAdapterTypes.RoutingTable;
         type CoordinatorVersion = ZHAdapterTypes.CoordinatorVersion;
         type NetworkParameters = ZHAdapterTypes.NetworkParameters;

@@ -13,6 +13,7 @@ import Transport from "winston-transport";
 
 import {Zcl} from "zigbee-herdsman";
 import * as zhc from "zigbee-herdsman-converters";
+import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 
 import Device from "../model/device";
 import data from "../util/data";
@@ -764,8 +765,10 @@ export default class Bridge extends Extension {
                 software_build_id: device.zh.softwareBuildID,
                 date_code: device.zh.dateCode,
                 model_id: device.zh.modelID,
-                interviewing: device.zh.interviewing,
-                interview_completed: device.zh.interviewCompleted,
+                /** @deprecated interviewing and interview_completed are superceded by interview_state */
+                interviewing: device.zh.interviewState === InterviewState.InProgress,
+                interview_completed: device.zh.interviewState === InterviewState.Successful,
+                interview_state: device.zh.interviewState,
                 manufacturer: device.zh.manufacturerName,
                 endpoints,
             });

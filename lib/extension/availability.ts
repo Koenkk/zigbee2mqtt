@@ -301,7 +301,7 @@ export default class Availability extends Extension {
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (device.definition && !device.zh.interviewing && !this.retrieveStateDebouncers.get(device.ieeeAddr)) {
+        if (device.definition && device.interviewed && !this.retrieveStateDebouncers.get(device.ieeeAddr)) {
             this.retrieveStateDebouncers.set(
                 device.ieeeAddr,
                 debounce(async () => {
