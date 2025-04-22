@@ -44,7 +44,7 @@ export default class Device {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
     get interviewed(): boolean {
-        return this.zh.interviewState === InterviewState.SUCCESSFUL || this.zh.interviewState === InterviewState.FAILED;
+        return this.zh.interviewState === InterviewState.Successful || this.zh.interviewState === InterviewState.Failed;
     }
 
     constructor(device: zh.Device) {

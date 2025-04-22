@@ -206,12 +206,12 @@ describe("Extension: Configure", () => {
     it("Should not configure when interview not completed", async () => {
         const device = devices.remote;
         delete device.meta.configured;
-        device.interviewState = InterviewState.PENDING;
+        device.interviewState = InterviewState.Pending;
         mockClear(device);
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expectRemoteNotConfigured();
-        device.interviewState = InterviewState.SUCCESSFUL;
+        device.interviewState = InterviewState.Successful;
     });
 
     it("Should not configure when already configuring", async () => {
