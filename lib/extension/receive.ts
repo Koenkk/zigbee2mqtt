@@ -106,7 +106,7 @@ export default class Receive extends Extension {
         /* v8 ignore next */
         if (!data.device) return;
 
-        if (!data.device.definition || data.device.zh.interviewing) {
+        if (!data.device.definition || !data.device.interviewed) {
             logger.debug("Skipping message, still interviewing");
             await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
             return;
