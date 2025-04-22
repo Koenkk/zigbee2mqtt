@@ -81,8 +81,8 @@ importers:
         specifier: 23.32.0
         version: 23.32.0
       zigbee2mqtt-frontend:
-        specifier: 0.9.9
-        version: 0.9.9
+        specifier: 0.9.10
+        version: 0.9.10
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1467,8 +1467,8 @@ packages:
     resolution: {integrity: sha512-xtA5xlK6DyQtI/yH8P86W2X+RYh6hI9BtB7Eu/drwWGFMSbhHA28CQCbllUkX+j6puL0xJZoy8Qwi8f/i6a1LQ==}
     engines: {node: '>=20.17.0'}
 
-  zigbee2mqtt-frontend@0.9.9:
-    resolution: {integrity: sha512-kvm+VTg2+tn+lyS+H794SGGq0ufUg7cwpKGoS1/TF23Po7RsOnPCk3PYcbRg/j6yU5mYUn02VIo7McSywC/kXA==}
+  zigbee2mqtt-frontend@0.9.10:
+    resolution: {integrity: sha512-dydOEf+bvywVGyv7nwnY6QtUYFddj7vNSY+bX/M9Mw6XPqe1NTqnYySVJeS8wM1Mo7WjPAdYZjF6z+ffxH/Nwg==}
     engines: {node: '>=20.11'}
 
 snapshots:
@@ -2744,4 +2744,4 @@ snapshots:
 
   zigbee-on-host@0.1.11: {}
 
-  zigbee2mqtt-frontend@0.9.9: {}
+  zigbee2mqtt-frontend@0.9.10: {}
