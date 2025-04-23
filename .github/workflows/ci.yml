@@ -30,13 +30,13 @@ jobs:
                   cache: pnpm
 
             - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Build
-              run: pnpm run build
+              run: pnpm i --frozen-lockfile
 
             - name: Check
               run: pnpm run check
+
+            - name: Build
+              run: pnpm run build
 
             - name: Test
               run: pnpm run test:coverage

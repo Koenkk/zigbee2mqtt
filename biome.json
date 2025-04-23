@@ -1,0 +1,85 @@
+{
+    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "formatter": {
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 150,
+        "bracketSpacing": false
+    },
+    "files": {
+        "ignore": ["package.json"]
+    },
+    "linter": {
+        "ignore": [],
+        "rules": {
+            "correctness": {
+                "noUnusedImports": "error"
+            },
+            "style": {
+                "noParameterAssign": "off",
+                "useThrowNewError": "error",
+                "useThrowOnlyError": "error",
+                "useNamingConvention": {
+                    "level": "error",
+                    "options": {
+                        "strictCase": false,
+                        "conventions": [
+                            {
+                                "selector": {
+                                    "kind": "objectLiteralProperty"
+                                },
+                                "formats": ["snake_case", "camelCase", "CONSTANT_CASE", "PascalCase"]
+                            },
+                            {
+                                "selector": {
+                                    "kind": "const"
+                                },
+                                "formats": ["snake_case", "camelCase", "CONSTANT_CASE", "PascalCase"]
+                            },
+                            {
+                                "selector": {
+                                    "kind": "typeProperty"
+                                },
+                                "formats": ["snake_case", "camelCase", "CONSTANT_CASE", "PascalCase"]
+                            },
+                            {
+                                "selector": {
+                                    "kind": "enumMember"
+                                },
+                                "formats": ["CONSTANT_CASE", "PascalCase"]
+                            }
+                        ]
+                    }
+                }
+            },
+            "performance": {
+                "noDelete": "off"
+            },
+            "suspicious": {
+                "noConstEnum": "off",
+                "useAwait": "error"
+            }
+        }
+    },
+    "overrides": [
+        {
+            "include": ["test/**"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "noNonNullAssertion": "off",
+                        "useNamingConvention": "off"
+                    },
+                    "suspicious": {
+                        "noImplicitAnyLet": "off"
+                    }
+                }
+            }
+        }
+    ]
+}

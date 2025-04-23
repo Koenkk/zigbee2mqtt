@@ -1,18 +1,18 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from '../types/api';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from "../types/api";
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
-import bind from 'bind-decorator';
-import stringify from 'json-stable-stringify-without-jsonify';
+import bind from "bind-decorator";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import data from '../util/data';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import data from "../util/data";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
-const SUPPORTED_OPERATIONS = ['save', 'remove'];
+const SUPPORTED_OPERATIONS = ["save", "remove"];
 
 export default abstract class ExternalJSExtension<M> extends Extension {
     protected folderName: string;
@@ -23,7 +23,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -42,7 +42,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         // 1-up from this file
         this.srcBasePath = path.join(
             __dirname,
-            '..',
+            "..",
             // prevent race in vitest with files being manipulated from same location
             process.env.VITEST_WORKER_ID ? /* v8 ignore next */ `${folderName}_${Math.floor(Math.random() * 10000)}` : folderName,
         );
@@ -72,7 +72,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     }
 
     protected getFileCode(name: string): string {
-        return fs.readFileSync(this.getFilePath(name), 'utf8');
+        return fs.readFileSync(this.getFilePath(name), "utf8");
     }
 
     protected *getFiles(inSource = false): Generator<{name: string; code: string}> {
@@ -83,7 +83,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
 
         for (const fileName of fs.readdirSync(basePath)) {
-            if (fileName.endsWith('.js') || fileName.endsWith('.cjs') || fileName.endsWith('.mjs')) {
+            if (fileName.endsWith(".js") || fileName.endsWith(".cjs") || fileName.endsWith(".mjs")) {
                 yield {name: fileName, code: this.getFileCode(fileName)};
             }
         }
@@ -96,15 +96,15 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const message = utils.parseJSON(data.message, data.message);
 
             try {
-                let response;
+                let response: Awaited<ReturnType<typeof this.save | typeof this.remove>>;
 
-                if (match[1].toLowerCase() === 'save') {
+                if (match[1].toLowerCase() === "save") {
                     response = await this.save(
-                        message as Zigbee2MQTTAPI['bridge/request/converter/save'] | Zigbee2MQTTAPI['bridge/request/extension/save'],
+                        message as Zigbee2MQTTAPI["bridge/request/converter/save"] | Zigbee2MQTTAPI["bridge/request/extension/save"],
                     );
                 } else {
                     response = await this.remove(
-                        message as Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
+                        message as Zigbee2MQTTAPI["bridge/request/converter/remove"] | Zigbee2MQTTAPI["bridge/request/extension/remove"],
                     );
                 }
 
@@ -124,10 +124,10 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     protected abstract loadJS(name: string, mod: M, newName?: string): Promise<void>;
 
     @bind private async remove(
-        message: Zigbee2MQTTAPI['bridge/request/converter/remove'] | Zigbee2MQTTAPI['bridge/request/extension/remove'],
-    ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/remove' | 'bridge/response/extension/remove'>> {
+        message: Zigbee2MQTTAPI["bridge/request/converter/remove"] | Zigbee2MQTTAPI["bridge/request/extension/remove"],
+    ): Promise<Zigbee2MQTTResponse<"bridge/response/converter/remove" | "bridge/response/extension/remove">> {
         if (!message.name) {
-            return utils.getResponse(message, {}, `Invalid payload`);
+            return utils.getResponse(message, {}, "Invalid payload");
         }
 
         const {name} = message;
@@ -144,16 +144,16 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
-        } else {
-            return utils.getResponse(message, {}, `${name} (${srcToBeRemoved}) doesn't exists`);
         }
+
+        return utils.getResponse(message, {}, `${name} (${srcToBeRemoved}) doesn't exists`);
     }
 
     @bind private async save(
-        message: Zigbee2MQTTAPI['bridge/request/converter/save'] | Zigbee2MQTTAPI['bridge/request/extension/save'],
-    ): Promise<Zigbee2MQTTResponse<'bridge/response/converter/save' | 'bridge/response/extension/save'>> {
+        message: Zigbee2MQTTAPI["bridge/request/converter/save"] | Zigbee2MQTTAPI["bridge/request/extension/save"],
+    ): Promise<Zigbee2MQTTResponse<"bridge/response/converter/save" | "bridge/response/extension/save">> {
         if (!message.name || !message.code) {
-            return utils.getResponse(message, {}, `Invalid payload`);
+            return utils.getResponse(message, {}, "Invalid payload");
         }
 
         const {name, code} = message;
@@ -165,7 +165,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const versionMatch = name.match(/\.(\d+)\.(c|m)?js$/);
 
             if (versionMatch) {
-                const version = parseInt(versionMatch[1], 10);
+                const version = Number.parseInt(versionMatch[1], 10);
                 newName = name.replace(`.${version}.`, `.${version + 1}.`);
             } else {
                 const ext = path.extname(name);
@@ -180,14 +180,14 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const newSrcFilePath = this.getFilePath(newName, false /* already created above if needed */, true);
 
         try {
-            fs.writeFileSync(newSrcFilePath, code, 'utf8');
+            fs.writeFileSync(newSrcFilePath, code, "utf8");
 
             const mod = await import(this.getImportPath(newSrcFilePath));
 
             await this.loadJS(name, mod.default, newName);
             logger.info(`${newName} loaded. Contents written to '${newSrcFilePath}'.`);
             // keep original in data folder synced
-            fs.writeFileSync(this.getFilePath(newName, true, false), code, 'utf8');
+            fs.writeFileSync(this.getFilePath(newName, true, false), code, "utf8");
             await this.publishExternalJS();
 
             return utils.getResponse(message, {});
@@ -218,6 +218,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 logger.error(
                     `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT.`,
                 );
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
         }
@@ -238,6 +239,6 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private getImportPath(filePath: string): string {
         // prevent issues on Windows
-        return path.relative(__dirname, filePath).replaceAll('\\', '/');
+        return path.relative(__dirname, filePath).replaceAll("\\", "/");
     }
 }

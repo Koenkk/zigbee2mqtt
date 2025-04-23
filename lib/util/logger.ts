@@ -1,14 +1,14 @@
-import assert from 'node:assert';
-import fs from 'node:fs';
-import path from 'node:path';
+import assert from "node:assert";
+import fs from "node:fs";
+import path from "node:path";
 
-import moment from 'moment';
-import {rimrafSync} from 'rimraf';
-import winston from 'winston';
+import moment from "moment";
+import {rimrafSync} from "rimraf";
+import winston from "winston";
 
-import * as settings from './settings';
+import * as settings from "./settings";
 
-const NAMESPACE_SEPARATOR = ':';
+const NAMESPACE_SEPARATOR = ":";
 
 class Logger {
     // @ts-expect-error initalized in `init`
@@ -31,26 +31,26 @@ class Logger {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
         // Directory to log to
-        const timestamp = moment(Date.now()).format('YYYY-MM-DD.HH-mm-ss');
-        this.directory = settings.get().advanced.log_directory.replace('%TIMESTAMP%', timestamp);
-        const logFilename = settings.get().advanced.log_file.replace('%TIMESTAMP%', timestamp);
+        const timestamp = moment(Date.now()).format("YYYY-MM-DD.HH-mm-ss");
+        this.directory = settings.get().advanced.log_directory.replace("%TIMESTAMP%", timestamp);
+        const logFilename = settings.get().advanced.log_file.replace("%TIMESTAMP%", timestamp);
         this.level = settings.get().advanced.log_level;
         this.namespacedLevels = settings.get().advanced.log_namespaced_levels;
         this.cachedNamespacedLevels = Object.assign({}, this.namespacedLevels);
 
-        assert(settings.LOG_LEVELS.includes(this.level), `'${this.level}' is not valid log_level, use one of '${settings.LOG_LEVELS.join(', ')}'`);
+        assert(settings.LOG_LEVELS.includes(this.level), `'${this.level}' is not valid log_level, use one of '${settings.LOG_LEVELS.join(", ")}'`);
 
         const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
 
         this.logger = winston.createLogger({
-            level: 'debug',
+            level: "debug",
             format: winston.format.combine(winston.format.errors({stack: true}), winston.format.timestamp({format: timestampFormat})),
             levels: winston.config.syslog.levels,
         });
 
-        const consoleSilenced = !this.output.includes('console');
+        const consoleSilenced = !this.output.includes("console");
         // Print to user what logging is active
-        let logging = `Logging to console${consoleSilenced ? ' (silenced)' : ''}`;
+        let logging = `Logging to console${consoleSilenced ? " (silenced)" : ""}`;
 
         // Setup default console logger
         this.logger.add(
@@ -60,7 +60,7 @@ class Logger {
                     ? winston.format.json()
                     : winston.format.combine(
                           // winston.config.syslog.levels sets 'warning' as 'red'
-                          winston.format.colorize({colors: {debug: 'blue', info: 'green', warning: 'yellow', error: 'red'}}),
+                          winston.format.colorize({colors: {debug: "blue", info: "green", warning: "yellow", error: "red"}}),
                           winston.format.printf((info) => {
                               return `[${info.timestamp}] ${info.level}: \t${info.message}`;
                           }),
@@ -68,15 +68,15 @@ class Logger {
             }),
         );
 
-        if (this.output.includes('file')) {
+        if (this.output.includes("file")) {
             logging += `, file (filename: ${logFilename})`;
 
             // Make sure that log directory exists when not logging to stdout only
             fs.mkdirSync(this.directory, {recursive: true});
 
             if (settings.get().advanced.log_symlink_current) {
-                const current = settings.get().advanced.log_directory.replace('%TIMESTAMP%', 'current');
-                const actual = './' + timestamp;
+                const current = settings.get().advanced.log_directory.replace("%TIMESTAMP%", "current");
+                const actual = `./${timestamp}`;
 
                 /* v8 ignore start */
                 if (fs.existsSync(current)) {
@@ -108,18 +108,17 @@ class Logger {
         }
 
         /* v8 ignore start */
-        if (this.output.includes('syslog')) {
-            logging += `, syslog`;
-            // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-expressions
-            require('winston-syslog').Syslog;
+        if (this.output.includes("syslog")) {
+            logging += ", syslog";
+            require("winston-syslog").Syslog;
 
             const options: KeyValue = {
-                app_name: 'Zigbee2MQTT',
+                app_name: "Zigbee2MQTT",
                 format: winston.format.printf((info) => info.message as string),
                 ...settings.get().advanced.log_syslog,
             };
 
-            if (options['type'] !== undefined) {
+            if (options.type !== undefined) {
                 options.type = options.type.toString();
             }
 
@@ -146,11 +145,15 @@ class Logger {
     }
 
     public getDebugNamespaceIgnore(): string {
-        return this.debugNamespaceIgnoreRegex?.toString().slice(1, -1) /* remove slashes */ ?? '';
+        return (
+            this.debugNamespaceIgnoreRegex
+                ?.toString()
+                .slice(1, -1) /* remove slashes */ ?? ""
+        );
     }
 
     public setDebugNamespaceIgnore(value: string): void {
-        this.debugNamespaceIgnoreRegex = value != '' ? new RegExp(value) : undefined;
+        this.debugNamespaceIgnoreRegex = value !== "" ? new RegExp(value) : undefined;
     }
 
     public getLevel(): settings.LogLevel {
@@ -178,11 +181,13 @@ class Logger {
     private cacheNamespacedLevel(namespace: string): string {
         let cached = namespace;
 
-        while (this.cachedNamespacedLevels[namespace] == undefined) {
+        while (this.cachedNamespacedLevels[namespace] === undefined) {
             const sep = cached.lastIndexOf(NAMESPACE_SEPARATOR);
 
             if (sep === -1) {
-                return (this.cachedNamespacedLevels[namespace] = this.level);
+                this.cachedNamespacedLevels[namespace] = this.level;
+
+                return this.level;
             }
 
             cached = cached.slice(0, sep);
@@ -201,30 +206,30 @@ class Logger {
         }
     }
 
-    public error(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
-        this.log('error', messageOrLambda, namespace);
+    public error(messageOrLambda: string | (() => string), namespace = "z2m"): void {
+        this.log("error", messageOrLambda, namespace);
     }
 
-    public warning(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
-        this.log('warning', messageOrLambda, namespace);
+    public warning(messageOrLambda: string | (() => string), namespace = "z2m"): void {
+        this.log("warning", messageOrLambda, namespace);
     }
 
-    public info(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
-        this.log('info', messageOrLambda, namespace);
+    public info(messageOrLambda: string | (() => string), namespace = "z2m"): void {
+        this.log("info", messageOrLambda, namespace);
     }
 
-    public debug(messageOrLambda: string | (() => string), namespace: string = 'z2m'): void {
+    public debug(messageOrLambda: string | (() => string), namespace = "z2m"): void {
         if (this.debugNamespaceIgnoreRegex?.test(namespace)) {
             return;
         }
 
-        this.log('debug', messageOrLambda, namespace);
+        this.log("debug", messageOrLambda, namespace);
     }
 
     // Cleanup any old log directory.
     private cleanup(): void {
-        if (settings.get().advanced.log_directory.includes('%TIMESTAMP%')) {
-            const rootDirectory = path.join(this.directory, '..');
+        if (settings.get().advanced.log_directory.includes("%TIMESTAMP%")) {
+            const rootDirectory = path.join(this.directory, "..");
 
             let directories = fs.readdirSync(rootDirectory).map((d) => {
                 d = path.join(rootDirectory, d);
@@ -233,10 +238,11 @@ class Logger {
 
             directories.sort((a: KeyValue, b: KeyValue) => b.birth - a.birth);
             directories = directories.slice(settings.get().advanced.log_directories_to_keep, directories.length);
-            directories.forEach((dir) => {
+
+            for (const dir of directories) {
                 this.debug(`Removing old log directory '${dir.path}'`);
                 rimrafSync(dir.path);
-            });
+            }
         }
     }
 
@@ -252,10 +258,10 @@ class Logger {
                 // @ts-expect-error workaround
                 if (this.fileTransport._dest) {
                     // @ts-expect-error workaround
-                    this.fileTransport._dest.on('finish', resolve);
+                    this.fileTransport._dest.on("finish", resolve);
                 } else {
                     // @ts-expect-error workaround
-                    this.fileTransport.on('open', () => this.fileTransport._dest.on('finish', resolve));
+                    this.fileTransport.on("open", () => this.fileTransport._dest.on("finish", resolve));
                 }
                 this.fileTransport.end();
             });

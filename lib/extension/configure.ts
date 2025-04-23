@@ -1,15 +1,15 @@
-import type {Zigbee2MQTTAPI} from '../types/api';
+import type {Zigbee2MQTTAPI} from "../types/api";
 
-import bind from 'bind-decorator';
-import stringify from 'json-stable-stringify-without-jsonify';
+import bind from "bind-decorator";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import * as zhc from 'zigbee-herdsman-converters';
+import * as zhc from "zigbee-herdsman-converters";
 
-import Device from '../model/device';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import Device from "../model/device";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 /**
  * This extension calls the zigbee-herdsman-converters definition configure() method
@@ -26,17 +26,17 @@ export default class Configure extends Extension {
             data.device.zh.save();
         }
 
-        await this.configure(data.device, 'reporting_disabled');
+        await this.configure(data.device, "reporting_disabled");
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic === this.topic) {
-            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI['bridge/request/device/configure'];
-            const ID = typeof message === 'object' ? message.id : message;
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/configure"];
+            const ID = typeof message === "object" ? message.id : message;
             let error: string | undefined;
 
             if (ID === undefined) {
-                error = `Invalid payload`;
+                error = "Invalid payload";
             } else {
                 const device = this.zigbee.resolveEntity(ID);
 
@@ -46,16 +46,16 @@ export default class Configure extends Extension {
                     error = `Device '${device.name}' cannot be configured`;
                 } else {
                     try {
-                        await this.configure(device, 'mqtt_message', true, true);
+                        await this.configure(device, "mqtt_message", true, true);
                     } catch (e) {
                         error = `Failed to configure (${(e as Error).message})`;
                     }
                 }
             }
 
-            const response = utils.getResponse<'bridge/response/device/configure'>(message, {id: ID}, error);
+            const response = utils.getResponse<"bridge/response/device/configure">(message, {id: ID}, error);
 
-            await this.mqtt.publish(`bridge/response/device/configure`, stringify(response));
+            await this.mqtt.publish("bridge/response/device/configure", stringify(response));
         }
     }
 
@@ -63,10 +63,10 @@ export default class Configure extends Extension {
         setImmediate(async () => {
             // Only configure routers on startup, end devices are likely sleeping and
             // will reconfigure once they send a message
-            for (const device of this.zigbee.devicesIterator((d) => d.type === 'Router')) {
+            for (const device of this.zigbee.devicesIterator((d) => d.type === "Router")) {
                 // Sleep 10 seconds between configuring on startup to not DDoS the coordinator when many devices have to be configured.
                 await utils.sleep(10);
-                await this.configure(device, 'started');
+                await this.configure(device, "started");
             }
         });
 
@@ -76,17 +76,17 @@ export default class Configure extends Extension {
                 data.device.zh.save();
             }
 
-            await this.configure(data.device, 'zigbee_event');
+            await this.configure(data.device, "zigbee_event");
         });
-        this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, 'zigbee_event'));
-        this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, 'zigbee_event'));
+        this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, "zigbee_event"));
+        this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, "zigbee_event"));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onReconfigure(this, this.onReconfigure);
     }
 
     private async configure(
         device: Device,
-        event: 'started' | 'zigbee_event' | 'reporting_disabled' | 'mqtt_message',
+        event: "started" | "zigbee_event" | "reporting_disabled" | "mqtt_message",
         force = false,
         throwError = false,
     ): Promise<void> {
@@ -95,7 +95,7 @@ export default class Configure extends Extension {
         }
 
         if (!force) {
-            if (device.options.disabled || !device.zh.interviewCompleted) {
+            if (device.options.disabled || !device.interviewed) {
                 return;
             }
 
@@ -104,7 +104,7 @@ export default class Configure extends Extension {
             }
 
             // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
-            if (device.zh.type === 'EndDevice' && event !== 'zigbee_event') {
+            if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
                 return;
             }
         }

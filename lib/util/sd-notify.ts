@@ -1,8 +1,8 @@
-import type {UnixDgramSocket} from 'unix-dgram';
+import type {UnixDgramSocket} from "unix-dgram";
 
-import {platform} from 'node:os';
+import {platform} from "node:os";
 
-import logger from './logger';
+import logger from "./logger";
 
 /**
  * Handle sd_notify protocol, @see https://www.freedesktop.org/software/systemd/man/latest/sd_notify.html
@@ -17,12 +17,13 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
     let socket: UnixDgramSocket | undefined;
 
     try {
-        const {createSocket} = await import('unix-dgram');
-        socket = createSocket('unix_dgram');
+        const {createSocket} = await import("unix-dgram");
+        socket = createSocket("unix_dgram");
     } catch (error) {
-        if (platform() !== 'win32' || process.env.WSL_DISTRO_NAME) {
+        if (platform() !== "win32" || process.env.WSL_DISTRO_NAME) {
             // not on plain Windows
             logger.error(`Could not init sd_notify: ${(error as Error).message}`);
+            // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.debug((error as Error).stack!);
         } else {
             // this should not happen
@@ -35,21 +36,22 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
     const sendToSystemd = (msg: string): void => {
         const buffer = Buffer.from(msg);
 
+        // biome-ignore lint/style/noNonNullAssertion: valid from start of function
         socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err) => {
             if (err) {
                 logger.warning(`Failed to send "${msg}" to systemd: ${err.message}`);
             }
         });
     };
-    const notifyStopping = (): void => sendToSystemd('STOPPING=1');
+    const notifyStopping = (): void => sendToSystemd("STOPPING=1");
 
-    sendToSystemd('READY=1');
+    sendToSystemd("READY=1");
 
-    const wdUSec = process.env.WATCHDOG_USEC !== undefined ? Math.max(0, parseInt(process.env.WATCHDOG_USEC, 10)) : -1;
+    const wdUSec = process.env.WATCHDOG_USEC !== undefined ? Math.max(0, Number.parseInt(process.env.WATCHDOG_USEC, 10)) : -1;
 
     if (wdUSec > 0) {
         // Convert us to ms, send twice as frequently as the timeout
-        const watchdogInterval = setInterval(() => sendToSystemd('WATCHDOG=1'), wdUSec / 1000 / 2);
+        const watchdogInterval = setInterval(() => sendToSystemd("WATCHDOG=1"), wdUSec / 1000 / 2);
 
         return {
             notifyStopping,

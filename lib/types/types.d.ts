@@ -1,22 +1,19 @@
-import type {AdapterTypes as ZHAdapterTypes, Events as ZHEvents, Models as ZHModels} from 'zigbee-herdsman';
-import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import type {AdapterTypes as ZHAdapterTypes, Events as ZHEvents, Models as ZHModels} from "zigbee-herdsman";
+import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 
-import type TypeEventBus from '../eventBus';
-import type TypeExtension from '../extension/extension';
-import type TypeDevice from '../model/device';
-import type TypeGroup from '../model/group';
-import type TypeMQTT from '../mqtt';
-import type TypeState from '../state';
-import type TypeZigbee from '../zigbee';
-
-import {LogLevel} from '../util/settings';
-
-type OptionalProps<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+import type TypeEventBus from "../eventBus";
+import type TypeExtension from "../extension/extension";
+import type TypeDevice from "../model/device";
+import type TypeGroup from "../model/group";
+import type TypeMqtt from "../mqtt";
+import type TypeState from "../state";
+import type {LogLevel} from "../util/settings";
+import type TypeZigbee from "../zigbee";
 
 declare global {
     // Define some class types as global
     type EventBus = TypeEventBus;
-    type MQTT = TypeMQTT;
+    type Mqtt = TypeMqtt;
     type Zigbee = TypeZigbee;
     type Group = TypeGroup;
     type Device = TypeDevice;
@@ -24,11 +21,11 @@ declare global {
     type Extension = TypeExtension;
 
     // Types
-    type StateChangeReason = 'publishDebounce' | 'groupOptimistic' | 'lastSeenChanged' | 'publishCached' | 'publishThrottle';
+    type StateChangeReason = "publishDebounce" | "groupOptimistic" | "lastSeenChanged" | "publishCached" | "publishThrottle";
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
     interface KeyValue {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: API
         [s: string]: any;
     }
 
@@ -37,7 +34,8 @@ declare global {
         type Endpoint = ZHModels.Endpoint;
         type Device = ZHModels.Device;
         type Group = ZHModels.Group;
-        type LQI = ZHAdapterTypes.LQI;
+        // biome-ignore lint/style/useNamingConvention: API
+        type LQI = ZHAdapterTypes.Lqi;
         type RoutingTable = ZHAdapterTypes.RoutingTable;
         type CoordinatorVersion = ZHAdapterTypes.CoordinatorVersion;
         type NetworkParameters = ZHAdapterTypes.NetworkParameters;
@@ -49,7 +47,7 @@ declare global {
 
     namespace eventdata {
         type EntityRenamed = {entity: Device | Group; homeAssisantRename: boolean; from: string; to: string};
-        type EntityRemoved = {id: number | string; name: string; type: 'device' | 'group'};
+        type EntityRemoved = {id: string; name: string; type: "device"} | {id: number; name: string; type: "group"};
         type MQTTMessage = {topic: string; message: string};
         type MQTTMessagePublished = {topic: string; payload: string; options: {retain: boolean; qos: number}};
         type StateChange = {
@@ -62,24 +60,24 @@ declare global {
         type PermitJoinChanged = ZHEvents.PermitJoinChangedPayload;
         type LastSeenChanged = {
             device: Device;
-            reason: 'deviceAnnounce' | 'networkAddress' | 'deviceJoined' | 'messageEmitted' | 'messageNonEmitted';
+            reason: "deviceAnnounce" | "networkAddress" | "deviceJoined" | "messageEmitted" | "messageNonEmitted";
         };
         type DeviceNetworkAddressChanged = {device: Device};
         type DeviceAnnounce = {device: Device};
-        type DeviceInterview = {device: Device; status: 'started' | 'successful' | 'failed'};
+        type DeviceInterview = {device: Device; status: "started" | "successful" | "failed"};
         type DeviceJoined = {device: Device};
         type EntityOptionsChanged = {entity: Device | Group; from: KeyValue; to: KeyValue};
         type ExposesChanged = {device: Device};
         type Reconfigure = {device: Device};
-        type DeviceLeave = {ieeeAddr: string; name: string};
-        type GroupMembersChanged = {group: Group; action: 'remove' | 'add' | 'remove_all'; endpoint: zh.Endpoint; skipDisableReporting: boolean};
+        type DeviceLeave = {ieeeAddr: string; name: string; device?: Device};
+        type GroupMembersChanged = {group: Group; action: "remove" | "add" | "remove_all"; endpoint: zh.Endpoint; skipDisableReporting: boolean};
         type PublishEntityState = {entity: Group | Device; message: KeyValue; stateChangeReason?: StateChangeReason; payload: KeyValue};
         type DeviceMessage = {
             type: ZHEvents.MessagePayloadType;
             device: Device;
             endpoint: zh.Endpoint;
             linkquality: number;
-            groupID: number;
+            groupID: number; // XXX: should this be `?`
             cluster: string | number;
             data: KeyValue | Array<string | number>;
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl};
@@ -99,7 +97,12 @@ declare global {
         };
         availability: {
             enabled: boolean;
-            active: {timeout: number};
+            active: {
+                timeout: number;
+                max_jitter: number;
+                backoff: boolean;
+                pause_on_backoff_gt: number;
+            };
             passive: {timeout: number};
         };
         mqtt: {
@@ -121,7 +124,7 @@ declare global {
         serial: {
             disable_led: boolean;
             port?: string;
-            adapter?: 'deconz' | 'zstack' | 'ezsp' | 'zigate' | 'ember' | 'zboss' | 'zoh';
+            adapter?: "deconz" | "zstack" | "ezsp" | "zigate" | "ember" | "zboss" | "zoh";
             baudrate?: number;
             rtscts?: boolean;
         };
@@ -166,13 +169,13 @@ declare global {
             notification_filter?: string[];
         };
         devices: {[s: string]: DeviceOptions};
-        groups: {[s: string]: Omit<GroupOptions, 'ID'>};
+        groups: {[s: string]: Omit<GroupOptions, "ID">};
         device_options: KeyValue;
         advanced: {
             log_rotation: boolean;
             log_console_json: boolean;
             log_symlink_current: boolean;
-            log_output: ('console' | 'file' | 'syslog')[];
+            log_output: ("console" | "file" | "syslog")[];
             log_directory: string;
             log_file: string;
             log_level: LogLevel;
@@ -181,19 +184,19 @@ declare global {
             log_debug_to_mqtt_frontend: boolean;
             log_debug_namespace_ignore: string;
             log_directories_to_keep: number;
-            pan_id: number | 'GENERATE';
-            ext_pan_id: number[] | 'GENERATE';
+            pan_id: number | "GENERATE";
+            ext_pan_id: number[] | "GENERATE";
             channel: number;
             adapter_concurrent?: number;
             adapter_delay?: number;
             cache_state: boolean;
             cache_state_persistent: boolean;
             cache_state_send_on_startup: boolean;
-            last_seen: 'disable' | 'ISO_8601' | 'ISO_8601_local' | 'epoch';
+            last_seen: "disable" | "ISO_8601" | "ISO_8601_local" | "epoch";
             elapsed: boolean;
-            network_key: number[] | 'GENERATE';
+            network_key: number[] | "GENERATE";
             timestamp_format: string;
-            output: 'json' | 'attribute' | 'attribute_and_json';
+            output: "json" | "attribute" | "attribute_and_json";
             transmit_power?: number;
         };
     }
@@ -201,7 +204,14 @@ declare global {
     interface DeviceOptions {
         disabled?: boolean;
         retention?: number;
-        availability?: boolean | {timeout: number};
+        availability?:
+            | boolean
+            | {
+                  timeout: number;
+                  max_jitter?: number;
+                  backoff?: boolean;
+                  pause_on_backoff_gt?: number;
+              };
         optimistic?: boolean;
         debounce?: number;
         debounce_ignore?: string[];
@@ -223,7 +233,7 @@ declare global {
     interface GroupOptions {
         ID: number;
         optimistic?: boolean;
-        off_state?: 'all_members_off' | 'last_member_state';
+        off_state?: "all_members_off" | "last_member_state";
         filtered_attributes?: string[];
         filtered_cache?: string[];
         filtered_optimistic?: string[];

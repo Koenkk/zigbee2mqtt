@@ -1,16 +1,13 @@
-import type {IClientPublishOptions} from 'mqtt';
+import type {IClientPublishOptions} from "mqtt";
 
-import {EventHandler} from './utils';
+import type {EventHandler} from "./utils";
 
 export const events: Record<string, EventHandler> = {};
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTPublishAsync = vi.fn(async (topic: string, message: string, opts?: IClientPublishOptions): Promise<void> => {});
+export const mockMQTTPublishAsync = vi.fn(async (_topic: string, _message: string, _opts?: IClientPublishOptions): Promise<void> => {});
 export const mockMQTTEndAsync = vi.fn(async (): Promise<void> => {});
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTSubscribeAsync = vi.fn(async (topicObject: string): Promise<void> => {});
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const mockMQTTUnsubscribeAsync = vi.fn(async (topic: string): Promise<void> => {});
+export const mockMQTTSubscribeAsync = vi.fn(async (_topicObject: string): Promise<void> => {});
+export const mockMQTTUnsubscribeAsync = vi.fn(async (_topic: string): Promise<void> => {});
 
 export const mockMQTTConnectAsync = vi.fn(() => ({
     reconnecting: false,
@@ -21,7 +18,7 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
     subscribeAsync: mockMQTTSubscribeAsync,
     unsubscribeAsync: mockMQTTUnsubscribeAsync,
     on: vi.fn(async (type, handler) => {
-        if (type === 'connect') {
+        if (type === "connect") {
             await handler();
         }
 
@@ -30,6 +27,6 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
     stream: {setMaxListeners: vi.fn()},
 }));
 
-vi.mock('mqtt', () => ({
+vi.mock("mqtt", () => ({
     connectAsync: mockMQTTConnectAsync,
 }));

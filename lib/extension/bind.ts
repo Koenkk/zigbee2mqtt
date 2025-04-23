@@ -1,46 +1,47 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from '../types/api';
+import type {ClusterName} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 
-import assert from 'node:assert';
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 
-import bind from 'bind-decorator';
-import debounce from 'debounce';
-import stringify from 'json-stable-stringify-without-jsonify';
+import assert from "node:assert";
 
-import {Zcl} from 'zigbee-herdsman';
-import {ClusterName} from 'zigbee-herdsman/dist/zspec/zcl/definition/tstype';
+import bind from "bind-decorator";
+import debounce from "debounce";
+import stringify from "json-stable-stringify-without-jsonify";
 
-import Device from '../model/device';
-import Group from '../model/group';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import {Zcl} from "zigbee-herdsman";
+
+import Device from "../model/device";
+import Group from "../model/group";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
 const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
-    'genScenes',
-    'genOnOff',
-    'genLevelCtrl',
-    'lightingColorCtrl',
-    'closuresWindowCovering',
-    'hvacThermostat',
-    'msIlluminanceMeasurement',
-    'msTemperatureMeasurement',
-    'msRelativeHumidity',
-    'msSoilMoisture',
-    'msCO2',
+    "genScenes",
+    "genOnOff",
+    "genLevelCtrl",
+    "lightingColorCtrl",
+    "closuresWindowCovering",
+    "hvacThermostat",
+    "msIlluminanceMeasurement",
+    "msTemperatureMeasurement",
+    "msRelativeHumidity",
+    "msSoilMoisture",
+    "msCO2",
 ];
 
 // See zigbee-herdsman-converters
-const DEFAULT_BIND_GROUP = {type: 'group_number', ID: 901, name: 'default_bind_group'};
+const DEFAULT_BIND_GROUP = {type: "group_number", ID: 901, name: "default_bind_group"};
 const DEFAULT_REPORT_CONFIG = {minimumReportInterval: 5, maximumReportInterval: 3600, reportableChange: 1};
 
 const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean; colorXY: boolean}> => {
-    if (endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') == null) {
-        await endpoint.read('lightingColorCtrl', ['colorCapabilities']);
+    if (endpoint.getClusterAttributeValue("lightingColorCtrl", "colorCapabilities") == null) {
+        await endpoint.read("lightingColorCtrl", ["colorCapabilities"]);
     }
 
-    const value = endpoint.getClusterAttributeValue('lightingColorCtrl', 'colorCapabilities') as number;
+    const value = endpoint.getClusterAttributeValue("lightingColorCtrl", "colorCapabilities") as number;
 
     return {
         colorTemperature: (value & (1 << 4)) > 0,
@@ -62,28 +63,28 @@ const REPORT_CLUSTERS: Readonly<
         >
     >
 > = {
-    genOnOff: [{attribute: 'onOff', ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0}],
-    genLevelCtrl: [{attribute: 'currentLevel', ...DEFAULT_REPORT_CONFIG}],
+    genOnOff: [{attribute: "onOff", ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0}],
+    genLevelCtrl: [{attribute: "currentLevel", ...DEFAULT_REPORT_CONFIG}],
     lightingColorCtrl: [
         {
-            attribute: 'colorTemperature',
+            attribute: "colorTemperature",
             ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
         },
         {
-            attribute: 'currentX',
+            attribute: "currentX",
             ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
         {
-            attribute: 'currentY',
+            attribute: "currentY",
             ...DEFAULT_REPORT_CONFIG,
             condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
     ],
     closuresWindowCovering: [
-        {attribute: 'currentPositionLiftPercentage', ...DEFAULT_REPORT_CONFIG},
-        {attribute: 'currentPositionTiltPercentage', ...DEFAULT_REPORT_CONFIG},
+        {attribute: "currentPositionLiftPercentage", ...DEFAULT_REPORT_CONFIG},
+        {attribute: "currentPositionTiltPercentage", ...DEFAULT_REPORT_CONFIG},
     ],
 };
 
@@ -99,22 +100,22 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
         // On messages that have the cluster and type of below
         cluster: {
             manuSpecificPhilips: [
-                {type: 'commandHueNotification', data: {button: 2}},
-                {type: 'commandHueNotification', data: {button: 3}},
+                {type: "commandHueNotification", data: {button: 2}},
+                {type: "commandHueNotification", data: {button: 3}},
             ],
             genLevelCtrl: [
-                {type: 'commandStep', data: {}},
-                {type: 'commandStepWithOnOff', data: {}},
-                {type: 'commandStop', data: {}},
-                {type: 'commandMoveWithOnOff', data: {}},
-                {type: 'commandStopWithOnOff', data: {}},
-                {type: 'commandMove', data: {}},
-                {type: 'commandMoveToLevelWithOnOff', data: {}},
+                {type: "commandStep", data: {}},
+                {type: "commandStepWithOnOff", data: {}},
+                {type: "commandStop", data: {}},
+                {type: "commandMoveWithOnOff", data: {}},
+                {type: "commandStopWithOnOff", data: {}},
+                {type: "commandMove", data: {}},
+                {type: "commandMoveToLevelWithOnOff", data: {}},
             ],
-            genScenes: [{type: 'commandRecall', data: {}}],
+            genScenes: [{type: "commandRecall", data: {}}],
         },
         // Read the following attributes
-        read: {cluster: 'genLevelCtrl', attributes: ['currentLevel']},
+        read: {cluster: "genLevelCtrl", attributes: ["currentLevel"]},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
             Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
@@ -124,29 +125,29 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
-        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
+        manufacturerNames: ["GLEDOPTO", "Trust International B.V.\u0000"],
     },
     {
         cluster: {
             genLevelCtrl: [
-                {type: 'commandStepWithOnOff', data: {}},
-                {type: 'commandMoveWithOnOff', data: {}},
-                {type: 'commandStopWithOnOff', data: {}},
-                {type: 'commandMoveToLevelWithOnOff', data: {}},
+                {type: "commandStepWithOnOff", data: {}},
+                {type: "commandMoveWithOnOff", data: {}},
+                {type: "commandStopWithOnOff", data: {}},
+                {type: "commandMoveToLevelWithOnOff", data: {}},
             ],
             genOnOff: [
-                {type: 'commandOn', data: {}},
-                {type: 'commandOff', data: {}},
-                {type: 'commandOffWithEffect', data: {}},
-                {type: 'commandToggle', data: {}},
+                {type: "commandOn", data: {}},
+                {type: "commandOff", data: {}},
+                {type: "commandOffWithEffect", data: {}},
+                {type: "commandToggle", data: {}},
             ],
-            genScenes: [{type: 'commandRecall', data: {}}],
+            genScenes: [{type: "commandRecall", data: {}}],
             manuSpecificPhilips: [
-                {type: 'commandHueNotification', data: {button: 1}},
-                {type: 'commandHueNotification', data: {button: 4}},
+                {type: "commandHueNotification", data: {button: 1}},
+                {type: "commandHueNotification", data: {button: 4}},
             ],
         },
-        read: {cluster: 'genOnOff', attributes: ['onOff']},
+        read: {cluster: "genOnOff", attributes: ["onOff"]},
         manufacturerIDs: [
             Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             Zcl.ManufacturerCode.ATMEL,
@@ -155,14 +156,14 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             Zcl.ManufacturerCode.BUSCH_JAEGER_ELEKTRO,
         ],
-        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
+        manufacturerNames: ["GLEDOPTO", "Trust International B.V.\u0000"],
     },
     {
         cluster: {
-            genScenes: [{type: 'commandRecall', data: {}}],
+            genScenes: [{type: "commandRecall", data: {}}],
         },
         read: {
-            cluster: 'lightingColorCtrl',
+            cluster: "lightingColorCtrl",
             attributes: [] as string[],
             // Since not all devices support the same attributes they need to be calculated dynamically
             // depending on the capabilities of the endpoint.
@@ -171,11 +172,11 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
                 const readAttrs: string[] = [];
 
                 if (supportedAttrs.colorXY) {
-                    readAttrs.push('currentX', 'currentY');
+                    readAttrs.push("currentX", "currentY");
                 }
 
                 if (supportedAttrs.colorTemperature) {
-                    readAttrs.push('colorTemperature');
+                    readAttrs.push("colorTemperature");
                 }
 
                 return readAttrs;
@@ -189,12 +190,12 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             Zcl.ManufacturerCode.TELINK_MICRO,
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
-        manufacturerNames: ['GLEDOPTO', 'Trust International B.V.\u0000'],
+        manufacturerNames: ["GLEDOPTO", "Trust International B.V.\u0000"],
     },
 ];
 
 interface ParsedMQTTMessage {
-    type: 'bind' | 'unbind';
+    type: "bind" | "unbind";
     sourceKey?: string;
     sourceEndpointKey?: string | number;
     targetKey?: string;
@@ -210,6 +211,7 @@ interface ParsedMQTTMessage {
 export default class Bind extends Extension {
     private pollDebouncers: {[s: string]: () => void} = {};
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onDeviceMessage(this, this.poll);
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
@@ -220,20 +222,20 @@ export default class Bind extends Extension {
         data: eventdata.MQTTMessage,
     ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
         if (data.topic.match(TOPIC_REGEX)) {
-            const type = data.topic.endsWith('unbind') ? 'unbind' : 'bind';
+            const type = data.topic.endsWith("unbind") ? "unbind" : "bind";
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI['bridge/request/device/bind'];
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
 
-            if (typeof message !== 'object' || message.from == undefined || message.to == undefined) {
-                return [message, {type, skipDisableReporting}, `Invalid payload`];
+            if (typeof message !== "object" || message.from == null || message.to == null) {
+                return [message, {type, skipDisableReporting}, "Invalid payload"];
             }
 
             const sourceKey = message.from;
-            const sourceEndpointKey = message.from_endpoint ?? 'default';
+            const sourceEndpointKey = message.from_endpoint ?? "default";
             const targetKey = message.to;
             const targetEndpointKey = message.to_endpoint;
             const clusters = message.clusters;
-            skipDisableReporting = message.skip_disable_reporting != undefined ? message.skip_disable_reporting : false;
+            skipDisableReporting = message.skip_disable_reporting != null ? message.skip_disable_reporting : false;
             const resolvedSource = this.zigbee.resolveEntity(message.from) as Device;
 
             if (!resolvedSource || !(resolvedSource instanceof Device)) {
@@ -289,9 +291,9 @@ export default class Bind extends Extension {
                 },
                 undefined,
             ];
-        } else {
-            return [undefined, undefined, undefined];
         }
+
+        return [undefined, undefined, undefined];
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -320,10 +322,10 @@ export default class Bind extends Extension {
             resolvedBindTarget,
         } = parsed;
 
-        assert(resolvedSource, '`resolvedSource` is missing');
-        assert(resolvedTarget, '`resolvedTarget` is missing');
-        assert(resolvedSourceEndpoint, '`resolvedSourceEndpoint` is missing');
-        assert(resolvedBindTarget != undefined, '`resolvedBindTarget` is missing');
+        assert(resolvedSource, "`resolvedSource` is missing");
+        assert(resolvedTarget, "`resolvedTarget` is missing");
+        assert(resolvedSourceEndpoint, "`resolvedSourceEndpoint` is missing");
+        assert(resolvedBindTarget !== undefined, "`resolvedBindTarget` is missing");
 
         const successfulClusters: string[] = [];
         const failedClusters = [];
@@ -337,8 +339,8 @@ export default class Bind extends Extension {
 
             const anyClusterValid =
                 utils.isZHGroup(resolvedBindTarget) ||
-                typeof resolvedBindTarget === 'number' ||
-                (resolvedTarget instanceof Device && resolvedTarget.zh.type === 'Coordinator');
+                typeof resolvedBindTarget === "number" ||
+                (resolvedTarget instanceof Device && resolvedTarget.zh.type === "Coordinator");
 
             if (!anyClusterValid && utils.isZHEndpoint(resolvedBindTarget)) {
                 matchingClusters =
@@ -353,7 +355,7 @@ export default class Bind extends Extension {
                 attemptedClusters.push(cluster);
 
                 try {
-                    if (type === 'bind') {
+                    if (type === "bind") {
                         await resolvedSourceEndpoint.bind(cluster, resolvedBindTarget);
                     } else {
                         await resolvedSourceEndpoint.unbind(cluster, resolvedBindTarget);
@@ -361,7 +363,7 @@ export default class Bind extends Extension {
 
                     successfulClusters.push(cluster);
                     logger.info(
-                        `Successfully ${type === 'bind' ? 'bound' : 'unbound'} cluster '${cluster}' from '${resolvedSource.name}' to '${resolvedTarget.name}'`,
+                        `Successfully ${type === "bind" ? "bound" : "unbound"} cluster '${cluster}' from '${resolvedSource.name}' to '${resolvedTarget.name}'`,
                     );
                 } catch (error) {
                     failedClusters.push(cluster);
@@ -374,26 +376,31 @@ export default class Bind extends Extension {
             logger.error(`Nothing to ${type} from '${resolvedSource.name}' to '${resolvedTarget.name}'`);
             await this.publishResponse(parsed.type, raw, {}, `Nothing to ${type}`);
             return;
-        } else if (failedClusters.length === attemptedClusters.length) {
+        }
+
+        if (failedClusters.length === attemptedClusters.length) {
             await this.publishResponse(parsed.type, raw, {}, `Failed to ${type}`);
             return;
         }
 
-        const responseData: Zigbee2MQTTAPI['bridge/response/device/bind'] | Zigbee2MQTTAPI['bridge/response/device/unbind'] = {
-            from: sourceKey!, // valid with assert above on `resolvedSource`
-            from_endpoint: sourceEndpointKey!, // valid with assert above on `resolvedSourceEndpoint`
-            to: targetKey!, // valid with assert above on `resolvedTarget`
+        const responseData: Zigbee2MQTTAPI["bridge/response/device/bind"] | Zigbee2MQTTAPI["bridge/response/device/unbind"] = {
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedSource`
+            from: sourceKey!,
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedSourceEndpoint`
+            from_endpoint: sourceEndpointKey!,
+            // biome-ignore lint/style/noNonNullAssertion: valid with assert above on `resolvedTarget`
+            to: targetKey!,
             to_endpoint: targetEndpointKey,
             clusters: successfulClusters,
             failed: failedClusters,
         };
 
         if (successfulClusters.length !== 0) {
-            if (type === 'bind') {
+            if (type === "bind") {
                 await this.setupReporting(
                     resolvedSourceEndpoint.binds.filter((b) => successfulClusters.includes(b.cluster.name) && b.target === resolvedBindTarget),
                 );
-            } else if (typeof resolvedBindTarget !== 'number' && !skipDisableReporting) {
+            } else if (typeof resolvedBindTarget !== "number" && !skipDisableReporting) {
                 await this.disableUnnecessaryReportings(resolvedBindTarget);
             }
         }
@@ -403,7 +410,7 @@ export default class Bind extends Extension {
     }
 
     private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
-        type: ParsedMQTTMessage['type'],
+        type: ParsedMQTTMessage["type"],
         request: KeyValue,
         data: Zigbee2MQTTAPI[T],
         error?: string,
@@ -417,7 +424,7 @@ export default class Bind extends Extension {
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
-        if (data.action === 'add') {
+        if (data.action === "add") {
             const bindsToGroup: zh.Bind[] = [];
 
             for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -465,13 +472,16 @@ export default class Bind extends Extension {
         for (const bind of binds) {
             if (bind.cluster.name in REPORT_CLUSTERS) {
                 for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
-                    const entity = `${this.zigbee.resolveEntity(endpoint.getDevice())!.name}/${endpoint.ID}`;
+                    // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                    const resolvedDevice = this.zigbee.resolveEntity(endpoint.getDevice())!;
+                    const entity = `${resolvedDevice.name}/${endpoint.ID}`;
 
                     try {
                         await endpoint.bind(bind.cluster.name, coordinatorEndpoint);
 
                         const items = [];
 
+                        // biome-ignore lint/style/noNonNullAssertion: valid from outer `if`
                         for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]!) {
                             if (!c.condition || (await c.condition(endpoint))) {
                                 const i = {...c};
@@ -530,6 +540,7 @@ export default class Bind extends Extension {
 
                     const items = [];
 
+                    // biome-ignore lint/style/noNonNullAssertion: valid from loop (pushed to array only if in)
                     for (const item of REPORT_CLUSTERS[cluster as ClusterName]!) {
                         if (!item.condition || (await item.condition(endpoint))) {
                             const i = {...item};
@@ -564,31 +575,33 @@ export default class Bind extends Extension {
         );
 
         if (polls.length) {
-            const toPoll: Set<zh.Endpoint> = new Set();
+            const toPoll = new Set<zh.Endpoint>();
 
             // Add bound devices
             for (const endpoint of data.device.zh.endpoints) {
                 for (const bind of endpoint.binds) {
-                    if (utils.isZHEndpoint(bind.target) && bind.target.getDevice().type !== 'Coordinator') {
+                    if (utils.isZHEndpoint(bind.target) && bind.target.getDevice().type !== "Coordinator") {
                         toPoll.add(bind.target);
                     }
                 }
             }
 
-            // If message is published to a group, add members of the group
-            const group = data.groupID && data.groupID !== 0 && this.zigbee.groupByID(data.groupID);
+            if (data.groupID && data.groupID !== 0) {
+                // If message is published to a group, add members of the group
+                const group = this.zigbee.groupByID(data.groupID);
 
-            if (group) {
-                for (const member of group.zh.members) {
-                    toPoll.add(member);
+                if (group) {
+                    for (const member of group.zh.members) {
+                        toPoll.add(member);
+                    }
                 }
             }
 
             for (const endpoint of toPoll) {
                 const device = endpoint.getDevice();
                 for (const poll of polls) {
-                    // XXX: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                     if (
+                        // biome-ignore lint/style/noNonNullAssertion: manufacturerID/manufacturerName can be undefined and won't match `includes`, but TS enforces same-type
                         (!poll.manufacturerIDs.includes(device.manufacturerID!) && !poll.manufacturerNames.includes(device.manufacturerName!)) ||
                         !endpoint.supportsInputCluster(poll.read.cluster)
                     ) {
@@ -609,9 +622,9 @@ export default class Bind extends Extension {
                             try {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
-                                logger.error(
-                                    `Failed to poll ${readAttrs} from ${this.zigbee.resolveEntity(device)!.name} (${(error as Error).message})`,
-                                );
+                                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                                const resolvedDevice = this.zigbee.resolveEntity(device)!;
+                                logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${(error as Error).message})`);
                             }
                         }, 1000);
                     }

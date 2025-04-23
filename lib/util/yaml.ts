@@ -1,8 +1,8 @@
-import assert from 'node:assert';
-import fs from 'node:fs';
+import assert from "node:assert";
+import fs from "node:fs";
 
-import equals from 'fast-deep-equal/es6';
-import yaml, {YAMLException} from 'js-yaml';
+import equals from "fast-deep-equal/es6";
+import yaml, {YAMLException} from "js-yaml";
 
 export class YAMLFileException extends YAMLException {
     file: string;
@@ -10,7 +10,7 @@ export class YAMLFileException extends YAMLException {
     constructor(error: YAMLException, file: string) {
         super(error.reason, error.mark);
 
-        this.name = 'YAMLFileException';
+        this.name = "YAMLFileException";
         this.cause = error.cause;
         this.message = error.message;
         this.stack = error.stack;
@@ -20,7 +20,7 @@ export class YAMLFileException extends YAMLException {
 
 function read(file: string): KeyValue {
     try {
-        const result = yaml.load(fs.readFileSync(file, 'utf8'));
+        const result = yaml.load(fs.readFileSync(file, "utf8"));
         assert(result instanceof Object);
         return result as KeyValue;
     } catch (error) {

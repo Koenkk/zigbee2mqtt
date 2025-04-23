@@ -1,28 +1,28 @@
-import type {IncomingMessage, Server, ServerResponse} from 'node:http';
-import type {Socket} from 'node:net';
+import type {IncomingMessage, Server, ServerResponse} from "node:http";
+import type {Socket} from "node:net";
 
-import type {RequestHandler} from 'express-static-gzip';
+import type {RequestHandler} from "express-static-gzip";
 
-import assert from 'node:assert';
-import {existsSync, readFileSync} from 'node:fs';
-import {createServer} from 'node:http';
-import {createServer as createSecureServer} from 'node:https';
-import {posix} from 'node:path';
-import {parse} from 'node:url';
+import assert from "node:assert";
+import {existsSync, readFileSync} from "node:fs";
+import {createServer} from "node:http";
+import {createServer as createSecureServer} from "node:https";
+import {posix} from "node:path";
+import {parse} from "node:url";
 
-import bind from 'bind-decorator';
-import expressStaticGzip from 'express-static-gzip';
-import finalhandler from 'finalhandler';
-import stringify from 'json-stable-stringify-without-jsonify';
-import WebSocket from 'ws';
+import bind from "bind-decorator";
+import expressStaticGzip from "express-static-gzip";
+import finalhandler from "finalhandler";
+import stringify from "json-stable-stringify-without-jsonify";
+import WebSocket from "ws";
 
-import frontend from 'zigbee2mqtt-frontend';
+import frontend from "zigbee2mqtt-frontend";
 
-import data from '../util/data';
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import data from "../util/data";
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 /**
  * This extension servers the frontend
@@ -42,7 +42,7 @@ export class Frontend extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: MQTT,
+        mqtt: Mqtt,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
@@ -80,39 +80,37 @@ export class Frontend extends Extension {
             // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
             index: false,
             serveStatic: {
-                index: 'index.html',
+                index: "index.html",
                 /* v8 ignore start */
                 setHeaders: (res: ServerResponse, path: string): void => {
-                    if (path.endsWith('index.html')) {
-                        res.setHeader('Cache-Control', 'no-store');
+                    if (path.endsWith("index.html")) {
+                        res.setHeader("Cache-Control", "no-store");
                     }
                 },
                 /* v8 ignore stop */
             },
         };
         this.fileServer = expressStaticGzip(frontend.getPath(), options);
-        this.deviceIconsFileServer = expressStaticGzip(data.joinPath('device_icons'), options);
-        this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, 'api')});
+        this.deviceIconsFileServer = expressStaticGzip(data.joinPath("device_icons"), options);
+        this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
 
-        this.wss.on('connection', this.onWebSocketConnection);
+        this.wss.on("connection", this.onWebSocketConnection);
 
         if (this.isHttpsConfigured()) {
-            const serverOptions = {
-                key: readFileSync(this.sslKey!), // valid from `isHttpsConfigured`
-                cert: readFileSync(this.sslCert!), // valid from `isHttpsConfigured`
-            };
+            // biome-ignore lint/style/noNonNullAssertion: valid from `isHttpsConfigured`
+            const serverOptions = {key: readFileSync(this.sslKey!), cert: readFileSync(this.sslCert!)};
             this.server = createSecureServer(serverOptions, this.onRequest);
         } else {
             this.server = createServer(this.onRequest);
         }
 
-        this.server.on('upgrade', this.onUpgrade);
+        this.server.on("upgrade", this.onUpgrade);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
 
         if (!this.host) {
             this.server.listen(this.port);
             logger.info(`Started frontend on port ${this.port}`);
-        } else if (this.host.startsWith('/')) {
+        } else if (this.host.startsWith("/")) {
             this.server.listen(this.host);
             logger.info(`Started frontend on socket ${this.host}`);
         } else {
@@ -123,33 +121,40 @@ export class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
-        this.wss?.clients.forEach((client) => {
-            client.send(stringify({topic: 'bridge/state', payload: {state: 'offline'}}));
-            client.terminate();
-        });
-        this.wss?.close();
+
+        if (this.wss) {
+            for (const client of this.wss.clients) {
+                client.send(stringify({topic: "bridge/state", payload: {state: "offline"}}));
+                client.terminate();
+            }
+
+            this.wss.close();
+        }
 
         await new Promise((resolve) => this.server?.close(resolve));
     }
 
     @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
         const fin = finalhandler(request, response);
+        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
         const newUrl = posix.relative(this.baseUrl, request.url!);
 
         // The request url is not within the frontend base url, so the relative path starts with '..'
-        if (newUrl.startsWith('.')) {
-            return fin();
+        if (newUrl.startsWith(".")) {
+            fin();
+
+            return;
         }
 
         // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
         // This is necessary for the browser to resolve relative assets paths correctly.
         request.originalUrl = request.url;
-        request.url = '/' + newUrl;
+        request.url = `/${newUrl}`;
         request.path = request.url;
 
-        if (newUrl.startsWith('device_icons/')) {
-            request.path = request.path.replace('device_icons/', '');
-            request.url = request.url.replace('/device_icons', '');
+        if (newUrl.startsWith("device_icons/")) {
+            request.path = request.path.replace("device_icons/", "");
+            request.url = request.url.replace("/device_icons", "");
             this.deviceIconsFileServer(request, response, fin);
         } else {
             this.fileServer(request, response, fin);
@@ -157,6 +162,7 @@ export class Frontend extends Extension {
     }
 
     private authenticate(request: IncomingMessage, cb: (authenticate: boolean) => void): void {
+        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
         const {query} = parse(request.url!, true);
         cb(!this.authToken || this.authToken === query.token);
     }
@@ -165,17 +171,17 @@ export class Frontend extends Extension {
         this.wss.handleUpgrade(request, socket, head, (ws) => {
             this.authenticate(request, (isAuthenticated) => {
                 if (isAuthenticated) {
-                    this.wss.emit('connection', ws, request);
+                    this.wss.emit("connection", ws, request);
                 } else {
-                    ws.close(4401, 'Unauthorized');
+                    ws.close(4401, "Unauthorized");
                 }
             });
         });
     }
 
     @bind private onWebSocketConnection(ws: WebSocket): void {
-        ws.on('error', (msg) => logger.error(`WebSocket error: ${msg.message}`));
-        ws.on('message', (data: Buffer, isBinary: boolean) => {
+        ws.on("error", (msg) => logger.error(`WebSocket error: ${msg.message}`));
+        ws.on("message", (data: Buffer, isBinary: boolean) => {
             if (!isBinary && data) {
                 const message = data.toString();
                 const {topic, payload} = JSON.parse(message);
@@ -199,7 +205,7 @@ export class Frontend extends Extension {
             const payload = this.state.get(device);
             const lastSeen = settings.get().advanced.last_seen;
 
-            if (lastSeen !== 'disable') {
+            if (lastSeen !== "disable") {
                 payload.last_seen = utils.formatDate(device.zh.lastSeen ?? /* v8 ignore next */ 0, lastSeen);
             }
 

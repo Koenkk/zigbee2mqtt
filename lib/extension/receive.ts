@@ -1,30 +1,32 @@
-import assert from 'node:assert';
+import assert from "node:assert";
 
-import bind from 'bind-decorator';
-import debounce from 'debounce';
-import stringify from 'json-stable-stringify-without-jsonify';
-import throttle from 'throttleit';
+import bind from "bind-decorator";
+import debounce from "debounce";
+import stringify from "json-stable-stringify-without-jsonify";
+import throttle from "throttleit";
 
-import * as zhc from 'zigbee-herdsman-converters';
+import * as zhc from "zigbee-herdsman-converters";
 
-import logger from '../util/logger';
-import * as settings from '../util/settings';
-import utils from '../util/utils';
-import Extension from './extension';
+import logger from "../util/logger";
+import * as settings from "../util/settings";
+import utils from "../util/utils";
+import Extension from "./extension";
 
 type DebounceFunction = (() => void) & {clear(): void} & {flush(): void};
 
 export default class Receive extends Extension {
+    // TODO: move all to `Map`
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
     private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
 
+    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
     }
 
-    @bind async onPublishEntityState(data: eventdata.PublishEntityState): Promise<void> {
+    @bind onPublishEntityState(data: eventdata.PublishEntityState): void {
         /**
          * Prevent that outdated properties are being published.
          * In case that e.g. the state is currently held back by a debounce and a new state is published
@@ -33,8 +35,8 @@ export default class Receive extends Extension {
         if (
             data.entity.isDevice() &&
             this.debouncers[data.entity.ieeeAddr] &&
-            data.stateChangeReason !== 'publishDebounce' &&
-            data.stateChangeReason !== 'lastSeenChanged'
+            data.stateChangeReason !== "publishDebounce" &&
+            data.stateChangeReason !== "lastSeenChanged"
         ) {
             for (const key of Object.keys(data.payload)) {
                 delete this.debouncers[data.entity.ieeeAddr].payload[key];
@@ -47,7 +49,7 @@ export default class Receive extends Extension {
             this.debouncers[device.ieeeAddr] = {
                 payload: {},
                 publish: debounce(async () => {
-                    await this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, 'publishDebounce');
+                    await this.publishEntityState(device, this.debouncers[device.ieeeAddr].payload, "publishDebounce");
                     this.debouncers[device.ieeeAddr].payload = {};
                 }, time * 1000),
             };
@@ -81,7 +83,7 @@ export default class Receive extends Extension {
         // By updating cache we make sure that state cache is always up-to-date.
         this.state.set(device, payload);
 
-        await this.throttlers[device.ieeeAddr].publish(device, payload, 'publishThrottle');
+        await this.throttlers[device.ieeeAddr].publish(device, payload, "publishThrottle");
     }
 
     // if debounce_ignore are specified (Array of strings)
@@ -90,13 +92,12 @@ export default class Receive extends Extension {
     // otherwise payload is conflicted
     isPayloadConflicted(newPayload: KeyValue, oldPayload: KeyValue, debounceIgnore: string[] | undefined): boolean {
         let result = false;
-        Object.keys(oldPayload)
-            .filter((key) => (debounceIgnore || []).includes(key))
-            .forEach((key) => {
-                if (typeof newPayload[key] !== 'undefined' && newPayload[key] !== oldPayload[key]) {
-                    result = true;
-                }
-            });
+
+        for (const key in oldPayload) {
+            if (debounceIgnore?.includes(key) && typeof newPayload[key] !== "undefined" && newPayload[key] !== oldPayload[key]) {
+                result = true;
+            }
+        }
 
         return result;
     }
@@ -105,9 +106,9 @@ export default class Receive extends Extension {
         /* v8 ignore next */
         if (!data.device) return;
 
-        if (!data.device.definition || data.device.zh.interviewing) {
-            logger.debug(`Skipping message, still interviewing`);
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
+        if (!data.device.definition || !data.device.interviewed) {
+            logger.debug("Skipping message, still interviewing");
+            await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
             return;
         }
 
@@ -117,13 +118,13 @@ export default class Receive extends Extension {
         });
 
         // Check if there is an available converter, genOta messages are not interesting.
-        const ignoreClusters: (string | number)[] = ['genOta', 'genTime', 'genBasic', 'genPollCtrl'];
-        if (converters.length == 0 && !ignoreClusters.includes(data.cluster)) {
+        const ignoreClusters: (string | number)[] = ["genOta", "genTime", "genBasic", "genPollCtrl"];
+        if (converters.length === 0 && !ignoreClusters.includes(data.cluster)) {
             logger.debug(
                 `No converter available for '${data.device.definition.model}' with ` +
                     `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`,
             );
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
+            await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
             return;
         }
 
@@ -174,6 +175,7 @@ export default class Receive extends Extension {
                 /* v8 ignore start */
             } catch (error) {
                 logger.error(`Exception while calling fromZigbee converter: ${(error as Error).message}}`);
+                // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
             /* v8 ignore stop */
@@ -182,7 +184,7 @@ export default class Receive extends Extension {
         if (!utils.objectIsEmpty(payload)) {
             await publish(payload);
         } else {
-            await utils.publishLastSeen({device: data.device, reason: 'messageEmitted'}, settings.get(), true, this.publishEntityState);
+            await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
         }
     }
 }

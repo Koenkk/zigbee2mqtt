@@ -1,16 +1,17 @@
-import * as zhc from 'zigbee-herdsman-converters';
+import type * as zhc from "zigbee-herdsman-converters";
 
-import * as settings from '../util/settings';
+import * as settings from "../util/settings";
 
 export default class Group {
     public zh: zh.Group;
     private resolveDevice: (ieeeAddr: string) => Device | undefined;
 
+    // biome-ignore lint/style/useNamingConvention: API
     get ID(): number {
         return this.zh.groupID;
     }
     get options(): GroupOptions {
-        // XXX: Group always exists in settings
+        // biome-ignore lint/style/noNonNullAssertion: Group always exists in settings
         return {...settings.getGroup(this.ID)!};
     }
     get name(): string {
@@ -26,8 +27,14 @@ export default class Group {
         return !!device.zh.endpoints.find((e) => this.zh.members.includes(e));
     }
 
-    membersDevices(): Device[] {
-        return this.zh.members.map((d) => this.resolveDevice(d.getDevice().ieeeAddr)!);
+    *membersDevices(): Generator<Device> {
+        for (const member of this.zh.members) {
+            const resolvedDevice = this.resolveDevice(member.deviceIeeeAddress);
+
+            if (resolvedDevice) {
+                yield resolvedDevice;
+            }
+        }
     }
 
     membersDefinitions(): zhc.Definition[] {

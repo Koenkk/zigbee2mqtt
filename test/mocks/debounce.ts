@@ -1,5 +1,5 @@
 export const mockDebounce = vi.fn((fn) => fn);
 
-vi.mock('debounce', () => ({
+vi.mock("debounce", () => ({
     default: mockDebounce,
 }));
