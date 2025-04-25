@@ -3,6 +3,7 @@
     "version": "2.2.1-dev",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
+    "types": "dist/types/api.d.ts",
     "packageManager": "pnpm@10.4.1",
     "repository": {
         "type": "git",

@@ -1,33 +1,212 @@
-import type * as zhc from "zigbee-herdsman-converters";
+import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
+import type {Base} from "zigbee-herdsman-converters/lib/exposes";
+import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 
+export type * as ZSpec from "zigbee-herdsman/dist/zspec";
+export type * as Zcl from "zigbee-herdsman/dist/zspec/zcl";
+export type * as Zdo from "zigbee-herdsman/dist/zspec/zdo";
+
+export type Zigbee2MQTTFeatures = {
+    base: Base;
+    switch: zigbeeHerdsmanConverter.Switch;
+    lock: zigbeeHerdsmanConverter.Lock;
+    binary: zigbeeHerdsmanConverter.Binary;
+    list: zigbeeHerdsmanConverter.List;
+    numeric: zigbeeHerdsmanConverter.Numeric;
+    enum: zigbeeHerdsmanConverter.Enum;
+    text: zigbeeHerdsmanConverter.Text;
+    composite: zigbeeHerdsmanConverter.Composite;
+    light: zigbeeHerdsmanConverter.Light;
+    cover: zigbeeHerdsmanConverter.Cover;
+    fan: zigbeeHerdsmanConverter.Fan;
+    climate: zigbeeHerdsmanConverter.Climate;
+};
+
+import type {UpdatePayload} from "../extension/otaUpdate";
 import type {LogLevel, schemaJson} from "../util/settings";
+
+// biome-ignore lint/suspicious/noExplicitAny: API
+type KeyValue = Record<string, any>;
+
+export interface Zigbee2MQTTDeviceOptions {
+    disabled?: boolean;
+    retention?: number;
+    availability?:
+        | boolean
+        | {
+              timeout: number;
+              max_jitter?: number;
+              backoff?: boolean;
+              pause_on_backoff_gt?: number;
+          };
+    optimistic?: boolean;
+    debounce?: number;
+    debounce_ignore?: string[];
+    throttle?: number;
+    filtered_attributes?: string[];
+    filtered_cache?: string[];
+    filtered_optimistic?: string[];
+    icon?: string;
+    homeassistant?: KeyValue;
+    friendly_name: string;
+    description?: string;
+    qos?: 0 | 1 | 2;
+}
+
+export interface Zigbee2MQTTGroupOptions {
+    ID: number;
+    optimistic?: boolean;
+    off_state?: "all_members_off" | "last_member_state";
+    filtered_attributes?: string[];
+    filtered_cache?: string[];
+    filtered_optimistic?: string[];
+    homeassistant?: KeyValue;
+    friendly_name: string;
+    description?: string;
+    qos?: 0 | 1 | 2;
+}
+
+export interface Zigbee2MQTTSettings {
+    version?: number;
+    homeassistant: {
+        enabled: boolean;
+        discovery_topic: string;
+        status_topic: string;
+        experimental_event_entities: boolean;
+        legacy_action_sensor: boolean;
+    };
+    availability: {
+        enabled: boolean;
+        active: {
+            timeout: number;
+            max_jitter: number;
+            backoff: boolean;
+            pause_on_backoff_gt: number;
+        };
+        passive: {timeout: number};
+    };
+    mqtt: {
+        base_topic: string;
+        include_device_information: boolean;
+        force_disable_retain: boolean;
+        version?: 3 | 4 | 5;
+        user?: string;
+        password?: string;
+        server: string;
+        ca?: string;
+        keepalive?: number;
+        key?: string;
+        cert?: string;
+        client_id?: string;
+        reject_unauthorized?: boolean;
+        maximum_packet_size: number;
+    };
+    serial: {
+        disable_led: boolean;
+        port?: string;
+        adapter?: "deconz" | "zstack" | "ezsp" | "zigate" | "ember" | "zboss" | "zoh";
+        baudrate?: number;
+        rtscts?: boolean;
+    };
+    passlist: string[];
+    blocklist: string[];
+    map_options: {
+        graphviz: {
+            colors: {
+                fill: {
+                    enddevice: string;
+                    coordinator: string;
+                    router: string;
+                };
+                font: {
+                    coordinator: string;
+                    router: string;
+                    enddevice: string;
+                };
+                line: {
+                    active: string;
+                    inactive: string;
+                };
+            };
+        };
+    };
+    ota: {
+        update_check_interval: number;
+        disable_automatic_update_check: boolean;
+        zigbee_ota_override_index_location?: string;
+        image_block_response_delay?: number;
+        default_maximum_data_size?: number;
+    };
+    frontend: {
+        enabled: boolean;
+        auth_token?: string;
+        host?: string;
+        port: number;
+        base_url: string;
+        url?: string;
+        ssl_cert?: string;
+        ssl_key?: string;
+        notification_filter?: string[];
+    };
+    devices: {[s: string]: Zigbee2MQTTDeviceOptions};
+    groups: {[s: string]: Omit<Zigbee2MQTTGroupOptions, "ID">};
+    device_options: KeyValue;
+    advanced: {
+        log_rotation: boolean;
+        log_console_json: boolean;
+        log_symlink_current: boolean;
+        log_output: ("console" | "file" | "syslog")[];
+        log_directory: string;
+        log_file: string;
+        log_level: LogLevel;
+        log_namespaced_levels: Record<string, LogLevel>;
+        log_syslog: KeyValue;
+        log_debug_to_mqtt_frontend: boolean;
+        log_debug_namespace_ignore: string;
+        log_directories_to_keep: number;
+        pan_id: number | "GENERATE";
+        ext_pan_id: number[] | "GENERATE";
+        channel: number;
+        adapter_concurrent?: number;
+        adapter_delay?: number;
+        cache_state: boolean;
+        cache_state_persistent: boolean;
+        cache_state_send_on_startup: boolean;
+        last_seen: "disable" | "ISO_8601" | "ISO_8601_local" | "epoch";
+        elapsed: boolean;
+        network_key: number[] | "GENERATE";
+        timestamp_format: string;
+        output: "json" | "attribute" | "attribute_and_json";
+        transmit_power?: number;
+    };
+}
 
 export interface Zigbee2MQTTScene {
     id: number;
     name: string;
 }
 
-interface Zigbee2MQTTDeviceEndpoint {
+export interface Zigbee2MQTTDeviceEndpoint {
     bindings: Zigbee2MQTTDeviceEndpointBinding[];
     configured_reportings: Zigbee2MQTTDeviceEndpointConfiguredReporting[];
     clusters: {input: string[]; output: string[]};
     scenes: Zigbee2MQTTScene[];
 }
 
-interface Zigbee2MQTTDeviceEndpointBinding {
+export interface Zigbee2MQTTDeviceEndpointBinding {
     cluster: string;
     target: Zigbee2MQTTDeviceEndpointBindingTarget;
 }
 
-interface Zigbee2MQTTDeviceEndpointBindingTarget {
+export interface Zigbee2MQTTDeviceEndpointBindingTarget {
     type: string;
     endpoint?: number;
     ieee_address?: string;
     id?: number;
 }
 
-interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
+export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     cluster: string;
     attribute: string | number;
     minimum_report_interval: number;
@@ -35,38 +214,38 @@ interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     reportable_change: number;
 }
 
-interface Zigbee2MQTTDeviceDefinition {
+export interface Zigbee2MQTTDeviceDefinition {
     model: string;
     vendor: string;
     description: string;
-    exposes: zhc.Expose[];
+    exposes: zigbeeHerdsmanConverter.Expose[];
     supports_ota: boolean;
-    options: zhc.Option[];
+    options: zigbeeHerdsmanConverter.Option[];
     icon: string;
 }
 
 export interface Zigbee2MQTTDevice {
-    ieee_address: zh.Device["ieeeAddr"];
-    type: zh.Device["type"];
-    network_address: zh.Device["networkAddress"];
+    ieee_address: zigbeeHerdsman.Models.Device["ieeeAddr"];
+    type: zigbeeHerdsman.Models.Device["type"];
+    network_address: zigbeeHerdsman.Models.Device["networkAddress"];
     supported: boolean;
     friendly_name: string;
     disabled: boolean;
     description: string | undefined;
     definition: Zigbee2MQTTDeviceDefinition | undefined;
-    power_source: zh.Device["powerSource"];
-    software_build_id: zh.Device["softwareBuildID"];
-    date_code: zh.Device["dateCode"];
-    model_id: zh.Device["modelID"];
+    power_source: zigbeeHerdsman.Models.Device["powerSource"];
+    software_build_id: zigbeeHerdsman.Models.Device["softwareBuildID"];
+    date_code: zigbeeHerdsman.Models.Device["dateCode"];
+    model_id: zigbeeHerdsman.Models.Device["modelID"];
     interviewing: boolean;
     interview_completed: boolean;
-    interview_state: zh.Device["interviewState"];
-    manufacturer: zh.Device["manufacturerName"];
+    interview_state: zigbeeHerdsman.Models.Device["interviewState"];
+    manufacturer: zigbeeHerdsman.Models.Device["manufacturerName"];
     endpoints: Record<number, Zigbee2MQTTDeviceEndpoint>;
 }
 
 export interface Zigbee2MQTTGroupMember {
-    ieee_address: zh.Device["ieeeAddr"];
+    ieee_address: zigbeeHerdsman.Models.Device["ieeeAddr"];
     endpoint: number;
 }
 
@@ -174,13 +353,17 @@ export interface Zigbee2MQTTAPI {
         permit_join: boolean;
         permit_join_end: number | undefined;
         restart_required: boolean;
-        config: Settings;
+        config: Zigbee2MQTTSettings;
         config_schema: typeof schemaJson;
     };
 
     "bridge/devices": Zigbee2MQTTDevice[];
 
     "bridge/groups": Zigbee2MQTTGroup[];
+
+    "bridge/converters": {name: string; code: string}[];
+
+    "bridge/extensions": {name: string; code: string}[];
 
     "bridge/request/permit_join":
         | {
@@ -597,6 +780,7 @@ export interface Zigbee2MQTTAPI {
      */
     "{friendlyName}": {
         [key: string]: unknown;
+        update?: UpdatePayload["update"];
     };
 
     "{friendlyName}/availability": {
