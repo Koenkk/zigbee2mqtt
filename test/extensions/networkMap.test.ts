@@ -473,7 +473,7 @@ describe("Extension: NetworkMap", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/networkmap",
             stringify({data: {}, status: "error", error: "Type 'not_existing' not supported, allowed are: raw,graphviz,plantuml"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 

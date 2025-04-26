@@ -12,7 +12,6 @@ import * as settings from "./util/settings";
 import utils from "./util/utils";
 
 const NS = "z2m:mqtt";
-const DEFAULT_CLIENT_PUBLISH_OPTIONS: IClientPublishOptions = {qos: 0 as const, retain: false};
 
 export interface MqttPublishOptions {
     publishOptions: IClientPublishOptions;
@@ -142,7 +141,7 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "offline"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true, qos: 0}});
+        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true}});
         this.eventBus.removeListeners(this);
         logger.info("Disconnecting from MQTT server");
         await this.client?.endAsync();
@@ -161,7 +160,7 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "online"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true, qos: 0}});
+        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true}});
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
@@ -220,10 +219,9 @@ export default class Mqtt {
             logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
-        const publishOptions: IClientPublishOptions = {...DEFAULT_CLIENT_PUBLISH_OPTIONS, ...finalOptions.publishOptions};
-
+        let publishOptions: IClientPublishOptions = finalOptions.publishOptions;
         if (settings.get().mqtt.force_disable_retain) {
-            publishOptions.retain = false;
+            publishOptions = {...finalOptions.publishOptions, retain: false};
         }
 
         try {

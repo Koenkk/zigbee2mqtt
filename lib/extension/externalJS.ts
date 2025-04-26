@@ -226,7 +226,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private async publishExternalJS(): Promise<void> {
         await this.mqtt.publish(`bridge/${this.mqttTopic}s`, stringify(Array.from(this.getFiles(true))), {
-            publishOptions: {retain: true, qos: 0},
+            publishOptions: {retain: true},
             skipLog: true,
         });
     }
