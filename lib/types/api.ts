@@ -787,13 +787,45 @@ export interface Zigbee2MQTTAPI {
         state: "online" | "offline";
     };
 
+    /** entity set request (tries to match endpoint to definition, else uses "default") */
+    "{friendlyNameOrId}/set": {
+        attribute: string;
+        [key: string]: unknown;
+    };
+    /** entity set request (tries to match endpoint to definition, else uses "default") */
+    "{friendlyNameOrId}/set/{attribute}": {
+        attribute: never;
+        [key: string]: unknown;
+    };
     /** entity set request */
-    "{friendlyName}/set": {
+    "{friendlyNameOrId}/{endpoint}/set": {
+        attribute: string;
+        [key: string]: unknown;
+    };
+    /** entity set request */
+    "{friendlyNameOrId}/{endpoint}/set/{attribute}": {
+        attribute: never;
         [key: string]: unknown;
     };
 
+    /** entity get request (tries to match endpoint to definition, else uses "default") */
+    "{friendlyNameOrId}/get": {
+        attribute: string;
+        [key: string]: unknown;
+    };
+    /** entity get request (tries to match endpoint to definition, else uses "default") */
+    "{friendlyNameOrId}/get/{attribute}": {
+        attribute: never;
+        [key: string]: unknown;
+    };
     /** entity get request */
-    "{friendlyName}/get": {
+    "{friendlyNameOrId}/{endpoint}/get": {
+        attribute: string;
+        [key: string]: unknown;
+    };
+    /** entity get request */
+    "{friendlyNameOrId}/{endpoint}/get/{attribute}": {
+        attribute: never;
         [key: string]: unknown;
     };
 }

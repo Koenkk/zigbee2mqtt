@@ -35,7 +35,7 @@ export default class Publish extends Extension {
 
     parseTopic(topic: string): ParsedTopic | undefined {
         // The function supports the following topic formats (below are for 'set'. 'get' will look the same):
-        // - <base_topic>/device_name/set (endpoint and attribute is defined in the payload)
+        // - <base_topic>/device_name/set (auto-matches endpoint and attribute is defined in the payload)
         // - <base_topic>/device_name/set/attribute (default endpoint used)
         // - <base_topic>/device_name/endpoint/set (attribute is defined in the payload)
         // - <base_topic>/device_name/endpoint/set/attribute (payload is the value)
