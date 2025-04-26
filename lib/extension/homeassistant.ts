@@ -1184,10 +1184,6 @@ export class HomeAssistant extends Extension {
                 }
                 break;
             }
-            /* v8 ignore start */
-            default:
-                throw new Error(`Unsupported exposes type: '${firstExpose.type}'`);
-            /* v8 ignore stop */
         }
 
         // Exposes with category 'config' or 'diagnostic' are always added to the respective category.
