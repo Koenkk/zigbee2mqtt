@@ -1,6 +1,6 @@
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
-import {mockMQTTPublishAsync} from "../mocks/mqtt";
+import {mockMQTTPublishAsync, events as mockMQTTEvents} from "../mocks/mqtt";
 import {type EventHandler, flushPromises} from "../mocks/utils";
 import {devices} from "../mocks/zigbeeHerdsman";
 
@@ -268,13 +268,20 @@ describe("Extension: Frontend", () => {
         expect(mockWSClient.send).toHaveBeenCalledWith(
             stringify({
                 topic: "bulb_color",
-                payload: {
-                    state: "ON",
-                    effect: null,
-                    power_on_behavior: null,
-                    linkquality: null,
-                    update: {state: null, installed_version: -1, latest_version: -1},
-                },
+                payload: {state: "ON"},
+            }),
+        );
+
+        // Should send JSON state event when `output: attribute`
+        mockWSClient.send.mockClear();
+        settings.set(["advanced", "output"], "attribute");
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({brightness: 90}));
+        await flushPromises();
+        expect(mockWSClient.send).toHaveBeenCalledTimes(1);
+        expect(mockWSClient.send).toHaveBeenCalledWith(
+            stringify({
+                topic: "bulb_color",
+                payload: {state: "ON", brightness: 90},
             }),
         );
 

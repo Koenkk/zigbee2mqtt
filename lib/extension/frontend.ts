@@ -105,7 +105,8 @@ export class Frontend extends Extension {
         }
 
         this.server.on("upgrade", this.onUpgrade);
-        this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessage);
+        this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
+        this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
 
         if (!this.host) {
             this.server.listen(this.port);
@@ -217,16 +218,31 @@ export class Frontend extends Extension {
         }
     }
 
-    @bind private onMQTTPublishMessage(data: eventdata.MQTTMessagePublished): void {
-        if (data.topic.startsWith(`${this.mqttBaseTopic}/`)) {
-            // Send topic without base_topic
-            const topic = data.topic.substring(this.mqttBaseTopic.length + 1);
-            const payload = utils.parseJSON(data.payload, data.payload);
+    @bind private onMQTTPublishMessageOrEntityState(data: eventdata.MQTTMessagePublished | eventdata.PublishEntityState): void {
+        let topic: string;
+        let payload: KeyValue | string;
 
-            for (const client of this.wss.clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(stringify({topic, payload}));
-                }
+        if ("topic" in data) {
+            // MQTTMessagePublished
+            if (data.options.meta.isEntityState) {
+                // Don't send entity state to frontend on `MQTTMessagePublished` event, this is handled by
+                // `PublishEntityState` instead. Reason for this is to skip attribute messages when `output` is
+                // set to `attribute` or `attribute_and_json`, we only want to send JSON entity states to the
+                // frontend.
+                return;
+            }
+            // Send topic without base_topic
+            topic = data.topic.substring(this.mqttBaseTopic.length + 1);
+            payload = utils.parseJSON(data.payload, data.payload);
+        } else {
+            // PublishEntityState
+            topic = data.entity.name;
+            payload = data.payload;
+        }
+
+        for (const client of this.wss.clients) {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(stringify({topic, payload}));
             }
         }
     }

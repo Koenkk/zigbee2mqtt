@@ -9,6 +9,7 @@ import type TypeMqtt from "../mqtt";
 import type TypeState from "../state";
 import type {LogLevel} from "../util/settings";
 import type TypeZigbee from "../zigbee";
+import type {MqttPublishOptions} from "../mqtt";
 
 declare global {
     // Define some class types as global
@@ -24,6 +25,7 @@ declare global {
     type StateChangeReason = "publishDebounce" | "groupOptimistic" | "lastSeenChanged" | "publishCached" | "publishThrottle";
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
+    type MakePartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Pick<T, K>;
     interface KeyValue {
         // biome-ignore lint/suspicious/noExplicitAny: API
         [s: string]: any;
@@ -49,7 +51,7 @@ declare global {
         type EntityRenamed = {entity: Device | Group; homeAssisantRename: boolean; from: string; to: string};
         type EntityRemoved = {id: string; name: string; type: "device"} | {id: number; name: string; type: "group"};
         type MQTTMessage = {topic: string; message: string};
-        type MQTTMessagePublished = {topic: string; payload: string; options: {retain: boolean; qos: number}};
+        type MQTTMessagePublished = {topic: string; payload: string; options: MqttPublishOptions};
         type StateChange = {
             entity: Device | Group;
             from: KeyValue;
