@@ -14,7 +14,7 @@ import utils from "./util/utils";
 const NS = "z2m:mqtt";
 
 export interface MqttPublishOptions {
-    publishOptions: IClientPublishOptions;
+    clientOptions: IClientPublishOptions;
     baseTopic: string;
     skipLog: boolean;
     skipReceive: boolean;
@@ -33,7 +33,7 @@ export default class Mqtt {
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
         this.defaultPublishOptions = {
-            publishOptions: {},
+            clientOptions: {},
             baseTopic: settings.get().mqtt.base_topic,
             skipLog: false,
             skipReceive: true,
@@ -141,7 +141,7 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "offline"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true}});
+        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true}});
         this.eventBus.removeListeners(this);
         logger.info("Disconnecting from MQTT server");
         await this.client?.endAsync();
@@ -160,7 +160,7 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "online"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {publishOptions: {retain: true}});
+        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true}});
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
@@ -196,7 +196,7 @@ export default class Mqtt {
             this.publishedTopics.add(topic);
         }
 
-        if (finalOptions.publishOptions.retain) {
+        if (finalOptions.clientOptions.retain) {
             if (payload) {
                 this.retainedMessages[topic] = {payload, options: finalOptions, topic: topic.substring(finalOptions.baseTopic.length + 1)};
             } else {
@@ -219,13 +219,13 @@ export default class Mqtt {
             logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
-        let publishOptions: IClientPublishOptions = finalOptions.publishOptions;
+        let clientOptions: IClientPublishOptions = finalOptions.clientOptions;
         if (settings.get().mqtt.force_disable_retain) {
-            publishOptions = {...finalOptions.publishOptions, retain: false};
+            clientOptions = {...finalOptions.clientOptions, retain: false};
         }
 
         try {
-            await this.client.publishAsync(topic, payload, publishOptions);
+            await this.client.publishAsync(topic, payload, clientOptions);
         } catch (error) {
             if (!finalOptions.skipLog) {
                 logger.error(`MQTT server error: ${(error as Error).message}`);
