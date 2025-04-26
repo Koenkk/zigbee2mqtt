@@ -12,6 +12,7 @@ import * as settings from "./util/settings";
 import utils from "./util/utils";
 
 const NS = "z2m:mqtt";
+const DEFAULT_CLIENT_PUBLISH_OPTIONS: IClientPublishOptions = {qos: 0 as const, retain: false};
 
 export interface MqttPublishOptions {
     publishOptions: IClientPublishOptions;
@@ -183,15 +184,13 @@ export default class Mqtt {
     }
 
     async publish(topic: string, payload: string, options: Partial<MqttPublishOptions> = {}): Promise<void> {
-        const finalOptions = {...this.defaultPublishOptions, ...options};
-
         if (topic.includes("+") || topic.includes("#")) {
             // https://github.com/Koenkk/zigbee2mqtt/issues/26939#issuecomment-2772309646
             logger.error(`Topic '${topic}' includes wildcard characters, skipping publish.`);
             return;
         }
 
-        const defaultOptions = {qos: 0 as const, retain: false};
+        const finalOptions = {...this.defaultPublishOptions, ...options};
         topic = `${finalOptions.baseTopic}/${topic}`;
 
         if (finalOptions.skipReceive) {
@@ -221,7 +220,7 @@ export default class Mqtt {
             logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
-        const publishOptions: IClientPublishOptions = {...defaultOptions, ...finalOptions.publishOptions};
+        const publishOptions: IClientPublishOptions = {...DEFAULT_CLIENT_PUBLISH_OPTIONS, ...finalOptions.publishOptions};
 
         if (settings.get().mqtt.force_disable_retain) {
             publishOptions.retain = false;

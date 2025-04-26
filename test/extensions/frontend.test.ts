@@ -2,7 +2,7 @@ import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {type EventHandler, flushPromises} from "../mocks/utils";
-import {devices} from "../mocks/zigbeeHerdsman";
+import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import path from "node:path";
 
@@ -224,7 +224,7 @@ describe("Extension: Frontend", () => {
         await controller.stop();
     });
 
-    it("Websocket interaction", async () => {
+    it("onlythis Websocket interaction", async () => {
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         mockWSClient.readyState = "open";
@@ -270,6 +270,13 @@ describe("Extension: Frontend", () => {
                 topic: "bulb_color",
                 payload: {state: "ON"},
             }),
+        );
+
+        // Should publish bridge messages
+        await mockZHEvents.deviceJoined({device: devices.bulb});
+        await flushPromises();
+        expect(mockWSClient.send).toHaveBeenCalledWith(
+            stringify({payload: {data: {friendly_name: "bulb", ieee_address: "0x000b57fffec6a5b2"}, type: "device_joined"}, topic: "bridge/event"}),
         );
 
         // Should send JSON state event when `output: attribute`
