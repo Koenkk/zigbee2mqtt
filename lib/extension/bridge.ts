@@ -58,14 +58,13 @@ export default class Bridge extends Extension {
 
     override async start(): Promise<void> {
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
-        const baseTopic = settings.get().mqtt.base_topic;
 
         const bridgeLogging = (message: string, level: string, namespace: string): void => {
             const payload = stringify({message, level, namespace});
 
             if (payload !== this.lastBridgeLoggingPayload) {
                 this.lastBridgeLoggingPayload = payload;
-                void this.mqtt.publish("bridge/logging", payload, {baseTopic, skipLog: true});
+                void this.mqtt.publish("bridge/logging", payload, {skipLog: true});
             }
         };
 

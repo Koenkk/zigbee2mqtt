@@ -224,7 +224,7 @@ export class Frontend extends Extension {
 
         if ("topic" in data) {
             // MQTTMessagePublished
-            if (data.options.meta.isEntityState) {
+            if (data.options.meta.isEntityState || !data.topic.startsWith(`${this.mqttBaseTopic}/`)) {
                 // Don't send entity state to frontend on `MQTTMessagePublished` event, this is handled by
                 // `PublishEntityState` instead. Reason for this is to skip attribute messages when `output` is
                 // set to `attribute` or `attribute_and_json`, we only want to send JSON entity states to the
