@@ -1,6 +1,6 @@
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
-import {mockMQTTPublishAsync, events as mockMQTTEvents} from "../mocks/mqtt";
+import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {type EventHandler, flushPromises} from "../mocks/utils";
 import {devices} from "../mocks/zigbeeHerdsman";
 

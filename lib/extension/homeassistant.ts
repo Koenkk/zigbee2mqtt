@@ -1689,7 +1689,11 @@ export class HomeAssistant extends Extension {
             if (!discoveredMessage || discoveredMessage.payload !== payloadStr || !discoveredMessage.published) {
                 discovered.messages[topic] = {payload: payloadStr, published: publish};
                 if (publish) {
-                    await this.mqtt.publish(topic, payloadStr, {publishOptions: {retain: true, qos: 1}, baseTopic: this.discoveryTopic, skipReceive: false});
+                    await this.mqtt.publish(topic, payloadStr, {
+                        publishOptions: {retain: true, qos: 1},
+                        baseTopic: this.discoveryTopic,
+                        skipReceive: false,
+                    });
                 }
             } else {
                 logger.debug(`Skipping discovery of '${topic}', already discovered`);
@@ -1921,7 +1925,11 @@ export class HomeAssistant extends Extension {
             origin: this.discoveryOrigin,
         };
 
-        await this.mqtt.publish(topic, stringify(payload), {publishOptions: {retain: true, qos: 1}, baseTopic: this.discoveryTopic, skipReceive: false});
+        await this.mqtt.publish(topic, stringify(payload), {
+            publishOptions: {retain: true, qos: 1},
+            baseTopic: this.discoveryTopic,
+            skipReceive: false,
+        });
         discovered.triggers.add(discoveredKey);
     }
 

@@ -6,10 +6,10 @@ import type TypeExtension from "../extension/extension";
 import type TypeDevice from "../model/device";
 import type TypeGroup from "../model/group";
 import type TypeMqtt from "../mqtt";
+import type {MqttPublishOptions} from "../mqtt";
 import type TypeState from "../state";
 import type {LogLevel} from "../util/settings";
 import type TypeZigbee from "../zigbee";
-import type {MqttPublishOptions} from "../mqtt";
 
 declare global {
     // Define some class types as global
