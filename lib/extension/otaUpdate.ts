@@ -19,7 +19,8 @@ import utils from "../util/utils";
 import Extension from "./extension";
 
 type UpdateState = "updating" | "idle" | "available" | "scheduled";
-interface UpdatePayload {
+
+export interface UpdatePayload {
     update: {
         progress?: number;
         remaining?: number;

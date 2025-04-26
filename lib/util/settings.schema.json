@@ -853,7 +853,7 @@
                 "icon": {
                     "type": "string",
                     "title": "Icon",
-                    "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) or a path to a local file inside the `device_icons` directory."
+                    "description": "The user-defined device icon for the frontend. It can be a full URL link to an image (e.g. https://SOME.SITE/MODEL123.jpg) or a path to a local file inside the `device_icons` directory (e.g. device_icons/MODEL123.png)."
                 },
                 "homeassistant": {
                     "type": ["object", "null"],
