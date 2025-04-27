@@ -301,7 +301,7 @@ export interface Zigbee2MQTTAPI {
         state: "online" | "offline";
     };
 
-    "bridge/definition": {
+    "bridge/definitions": {
         clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>;
         custom_clusters: Record<string, CustomClusters>;
     };
