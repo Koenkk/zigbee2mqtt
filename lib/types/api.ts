@@ -673,7 +673,7 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/group/add": {
         friendly_name: string;
-        id: string;
+        id?: string;
     };
 
     "bridge/response/group/add": {
