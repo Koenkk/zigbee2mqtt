@@ -800,7 +800,7 @@ export default class Bridge extends Extension {
     }
 
     async publishDefinitions(): Promise<void> {
-        const data: Zigbee2MQTTAPI["bridge/definition"] = {
+        const data: Zigbee2MQTTAPI["bridge/definitions"] = {
             clusters: Zcl.Clusters,
             custom_clusters: {},
         };
