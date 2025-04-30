@@ -199,12 +199,7 @@ export interface Zigbee2MQTTDeviceEndpointBinding {
     target: Zigbee2MQTTDeviceEndpointBindingTarget;
 }
 
-export interface Zigbee2MQTTDeviceEndpointBindingTarget {
-    type: string;
-    endpoint?: number;
-    ieee_address?: string;
-    id?: number;
-}
+export type Zigbee2MQTTDeviceEndpointBindingTarget = {type: "endpoint"; ieee_address: string; endpoint: number} | {type: "group"; id: number};
 
 export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     cluster: string;

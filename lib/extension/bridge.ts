@@ -734,8 +734,8 @@ export default class Bridge extends Extension {
 
                 for (const bind of endpoint.binds) {
                     const target = utils.isZHEndpoint(bind.target)
-                        ? {type: "endpoint", ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
-                        : {type: "group", id: bind.target.groupID};
+                        ? {type: "endpoint" as const, ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
+                        : {type: "group" as const, id: bind.target.groupID};
                     data.bindings.push({cluster: bind.cluster.name, target});
                 }
 
