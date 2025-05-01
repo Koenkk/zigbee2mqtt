@@ -199,12 +199,7 @@ export interface Zigbee2MQTTDeviceEndpointBinding {
     target: Zigbee2MQTTDeviceEndpointBindingTarget;
 }
 
-export interface Zigbee2MQTTDeviceEndpointBindingTarget {
-    type: string;
-    endpoint?: number;
-    ieee_address?: string;
-    id?: number;
-}
+export type Zigbee2MQTTDeviceEndpointBindingTarget = {type: "endpoint"; ieee_address: string; endpoint: number} | {type: "group"; id: number};
 
 export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     cluster: string;
@@ -301,7 +296,7 @@ export interface Zigbee2MQTTAPI {
         state: "online" | "offline";
     };
 
-    "bridge/definition": {
+    "bridge/definitions": {
         clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>;
         custom_clusters: Record<string, CustomClusters>;
     };
@@ -673,7 +668,7 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/group/add": {
         friendly_name: string;
-        id: string;
+        id?: string;
     };
 
     "bridge/response/group/add": {
@@ -843,6 +838,9 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/ota_update/check/downgrade"
     | "bridge/request/device/ota_update/update"
     | "bridge/request/device/ota_update/update/downgrade"
+    | "bridge/request/device/ota_update/schedule"
+    | "bridge/request/device/ota_update/schedule/downgrade"
+    | "bridge/request/device/ota_update/unschedule"
     | "bridge/request/device/interview"
     | "bridge/request/device/generate_external_definition"
     | "bridge/request/device/options"
