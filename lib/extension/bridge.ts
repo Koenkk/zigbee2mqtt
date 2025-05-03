@@ -128,7 +128,7 @@ export default class Bridge extends Extension {
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {publishOptions: {retain: false, qos: 0}});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
             await this.publishDevices();
@@ -136,7 +136,7 @@ export default class Bridge extends Extension {
 
             const payload: Zigbee2MQTTAPI["bridge/event"] = {type: "device_leave", data: {ieee_address: data.ieeeAddr, friendly_name: data.name}};
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {publishOptions: {retain: false, qos: 0}});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, async () => {
             await this.publishDevices();
@@ -164,7 +164,7 @@ export default class Bridge extends Extension {
                 };
             }
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {publishOptions: {retain: false, qos: 0}});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceAnnounce(this, async (data) => {
             await this.publishDevices();
@@ -174,7 +174,7 @@ export default class Bridge extends Extension {
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {publishOptions: {retain: false, qos: 0}});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
 
         await this.publishInfo();
@@ -572,7 +572,7 @@ export default class Bridge extends Extension {
         settings.changeFriendlyName(from, to);
 
         // Clear retained messages
-        await this.mqtt.publish(oldFriendlyName, "", {publishOptions: {retain: true}});
+        await this.mqtt.publish(oldFriendlyName, "", {clientOptions: {retain: true}});
 
         this.eventBus.emitEntityRenamed({entity: entity, homeAssisantRename, from: oldFriendlyName, to});
 
@@ -641,7 +641,7 @@ export default class Bridge extends Extension {
             this.state.remove(entity.ID);
 
             // Clear any retained messages
-            await this.mqtt.publish(friendlyName, "", {publishOptions: {retain: true}});
+            await this.mqtt.publish(friendlyName, "", {clientOptions: {retain: true}});
 
             logger.info(`Successfully removed ${entityType} '${friendlyName}'${blockForceLog}`);
 
@@ -711,7 +711,7 @@ export default class Bridge extends Extension {
             config_schema: settings.schemaJson,
         };
 
-        await this.mqtt.publish("bridge/info", stringify(payload), {publishOptions: {retain: true, qos: 0}, skipLog: true});
+        await this.mqtt.publish("bridge/info", stringify(payload), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishDevices(): Promise<void> {
@@ -773,7 +773,7 @@ export default class Bridge extends Extension {
             });
         }
 
-        await this.mqtt.publish("bridge/devices", stringify(devices), {publishOptions: {retain: true, qos: 0}, skipLog: true});
+        await this.mqtt.publish("bridge/devices", stringify(devices), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishGroups(): Promise<void> {
@@ -795,7 +795,7 @@ export default class Bridge extends Extension {
             });
         }
 
-        await this.mqtt.publish("bridge/groups", stringify(groups), {publishOptions: {retain: true, qos: 0}, skipLog: true});
+        await this.mqtt.publish("bridge/groups", stringify(groups), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishDefinitions(): Promise<void> {
@@ -808,7 +808,7 @@ export default class Bridge extends Extension {
             data.custom_clusters[device.ieeeAddr] = device.customClusters;
         }
 
-        await this.mqtt.publish("bridge/definitions", stringify(data), {publishOptions: {retain: true, qos: 0}, skipLog: true});
+        await this.mqtt.publish("bridge/definitions", stringify(data), {clientOptions: {retain: true}, skipLog: true});
     }
 
     getDefinitionPayload(device: Device): Zigbee2MQTTDevice["definition"] | undefined {

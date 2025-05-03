@@ -224,7 +224,7 @@ describe("Extension: Frontend", () => {
         await controller.stop();
     });
 
-    it("onlythis Websocket interaction", async () => {
+    it("Websocket interaction", async () => {
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         mockWSClient.readyState = "open";
