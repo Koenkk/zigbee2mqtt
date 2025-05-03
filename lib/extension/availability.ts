@@ -206,7 +206,7 @@ export default class Availability extends Extension {
 
         this.eventBus.onEntityRenamed(this, async (data) => {
             if (utils.isAvailabilityEnabledForEntity(data.entity, settings.get())) {
-                await this.mqtt.publish(`${data.from}/availability`, "", {retain: true, qos: 1});
+                await this.mqtt.publish(`${data.from}/availability`, "", {clientOptions: {retain: true, qos: 1}});
                 await this.publishAvailability(data.entity, false, true);
             }
         });
@@ -265,7 +265,7 @@ export default class Availability extends Extension {
         const topic = `${entity.name}/availability`;
         const payload: Zigbee2MQTTAPI["{friendlyName}/availability"] = {state: available ? "online" : "offline"};
         this.lastPublishedAvailabilities.set(entity.ID, available);
-        await this.mqtt.publish(topic, JSON.stringify(payload), {retain: true, qos: 1});
+        await this.mqtt.publish(topic, JSON.stringify(payload), {clientOptions: {retain: true, qos: 1}});
 
         if (!skipGroups && entity.isDevice()) {
             for (const group of this.zigbee.groupsIterator()) {

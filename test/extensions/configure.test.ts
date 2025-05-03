@@ -158,7 +158,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {id: "remote"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -168,7 +168,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Device 'not_existing_device' does not exist"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -179,7 +179,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Failed to configure (Bind timeout after 10s)"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -189,7 +189,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -199,7 +199,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 

@@ -143,9 +143,9 @@ describe("Extension: OTAUpdate", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
     });
 
     it("handles when OTA update fails", async () => {
@@ -161,7 +161,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/update",
             stringify({data: {}, status: "error", error: "Update of 'bulb' failed (Update failed)"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -178,7 +178,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/update",
             stringify({data: {}, status: "error", error: "Update of 'bulb' failed (No image currently available)"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -192,7 +192,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {id: "bulb", update_available: false}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         mockMQTTPublishAsync.mockClear();
@@ -205,7 +205,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {id: "bulb", update_available: true}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
         isUpdateAvailableSpy.mockResolvedValueOnce({available: false, currentFileVersion: 10, otaFileVersion: 10});
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check/downgrade", "bulb");
@@ -216,7 +216,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {id: "bulb", update_available: false}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         // @ts-expect-error private
@@ -234,7 +234,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {id: "bulb", update_available: true}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         device.definition = originalDefinition;
@@ -254,7 +254,7 @@ describe("Extension: OTAUpdate", () => {
                 status: "error",
                 error: `Failed to check if update available for 'bulb' (RF signals disturbed because of dogs barking)`,
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -264,7 +264,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {}, status: "error", error: `Device 'not_existing_deviceooo' does not exist`}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -274,7 +274,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
             stringify({data: {}, status: "error", error: `Device 'dimmer_wall_switch' does not support OTA updates`}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -318,7 +318,7 @@ describe("Extension: OTAUpdate", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 `zigbee2mqtt/bridge/response/device/ota_update/${type.replace("/downgrade", "")}`,
                 stringify({data: {}, status: "error", error: `Update or check for update already in progress for 'bulb'`}),
-                {retain: false, qos: 0},
+                {},
             );
         },
     );
@@ -332,7 +332,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/update",
             stringify({data: {id: "bulb", from: undefined, to: undefined}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -485,7 +485,7 @@ describe("Extension: OTAUpdate", () => {
             2,
             "zigbee2mqtt/bridge/response/device/ota_update/schedule",
             stringify({data: {id: "bulb"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         const data = {imageType: 12382};
@@ -519,7 +519,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({update: {state: "idle", installed_version: 2, latest_version: 2}}),
             {retain: true, qos: 0},
         );
-        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(6, "zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(6, "zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
     });
 
     it("schedules and cancels an update when no image available", async () => {
@@ -536,7 +536,7 @@ describe("Extension: OTAUpdate", () => {
             2,
             "zigbee2mqtt/bridge/response/device/ota_update/schedule",
             stringify({data: {id: "bulb"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         const data = {imageType: 12382};
@@ -575,7 +575,7 @@ describe("Extension: OTAUpdate", () => {
             2,
             "zigbee2mqtt/bridge/response/device/ota_update/schedule",
             stringify({data: {id: "bulb"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         const data = {imageType: 12382};
@@ -619,7 +619,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({update: {state: "idle", installed_version: 2, latest_version: 2}}),
             {retain: true, qos: 0},
         );
-        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(7, "zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(7, "zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
     });
 
     it("overwrites current schedule on re-schedule", async () => {
@@ -638,7 +638,7 @@ describe("Extension: OTAUpdate", () => {
                 2,
                 "zigbee2mqtt/bridge/response/device/ota_update/schedule",
                 stringify({data: {id: "bulb"}, status: "ok"}),
-                {retain: false, qos: 0},
+                {},
             );
 
             mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${overwriteType}`, "bulb");
@@ -652,7 +652,7 @@ describe("Extension: OTAUpdate", () => {
                 4,
                 "zigbee2mqtt/bridge/response/device/ota_update/schedule",
                 stringify({data: {id: "bulb"}, status: "ok"}),
-                {retain: false, qos: 0},
+                {},
             );
         }
     });
@@ -669,7 +669,7 @@ describe("Extension: OTAUpdate", () => {
             2,
             "zigbee2mqtt/bridge/response/device/ota_update/schedule",
             stringify({data: {id: "bulb"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
 
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/unschedule", "bulb");
@@ -681,7 +681,7 @@ describe("Extension: OTAUpdate", () => {
             4,
             "zigbee2mqtt/bridge/response/device/ota_update/unschedule",
             stringify({data: {id: "bulb"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
