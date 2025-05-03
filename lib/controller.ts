@@ -333,8 +333,8 @@ export class Controller {
             message = newState;
         }
 
-        const options: MakePartialExcept<MqttPublishOptions, "publishOptions" | "meta"> = {
-            publishOptions: {
+        const options: MakePartialExcept<MqttPublishOptions, "clientOptions" | "meta"> = {
+            clientOptions: {
                 retain: utils.getObjectProperty(entity.options, "retain", false),
                 qos: utils.getObjectProperty(entity.options, "qos", 0),
             },
@@ -345,7 +345,7 @@ export class Controller {
         const retention = utils.getObjectProperty<number | false>(entity.options, "retention", false);
 
         if (retention !== false) {
-            options.publishOptions.properties = {messageExpiryInterval: retention};
+            options.clientOptions.properties = {messageExpiryInterval: retention};
         }
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {

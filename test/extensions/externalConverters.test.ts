@@ -100,7 +100,7 @@ describe("Extension: ExternalConverters", () => {
             await controller.start();
             await flushPromises();
 
-            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true, qos: 0});
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
         it("CJS: loads converters", async () => {
@@ -121,7 +121,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
                     {name: "mock-external-converter.js", code: getFileCode("cjs", "mock-external-converter.js")},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, "mock-external-converter-multiple.js");
@@ -191,7 +191,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.mjs", code: getFileCode("mjs", "mock-external-converter-multiple.mjs")},
                     {name: "mock-external-converter.mjs", code: getFileCode("mjs", "mock-external-converter.mjs")},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(1, "mock-external-converter-multiple.mjs");
@@ -263,7 +263,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
                     {name: converterName, code: converterCode},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
 
             converterCode = converterCode.replace('posix.join("external", "converter")', 'posix.join("external", "converter", "edited")');
@@ -285,7 +285,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
                     {name: "mock-external-converter.1.js", code: converterCode},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
             expect(zhcAddExternalDefinitionSpy).toHaveBeenLastCalledWith(
                 expect.objectContaining({
@@ -317,7 +317,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
                     {name: "mock-external-converter.2.js", code: converterCode},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
             expect(zhcAddExternalDefinitionSpy).toHaveBeenLastCalledWith(
                 expect.objectContaining({
@@ -347,7 +347,7 @@ describe("Extension: ExternalConverters", () => {
                     {name: "mock-external-converter-multiple.mjs", code: getFileCode("mjs", "mock-external-converter-multiple.mjs")},
                     {name: "mock-external-converter.mjs", code: getFileCode("mjs", "mock-external-converter.mjs")},
                 ]),
-                {retain: true, qos: 0},
+                {retain: true},
             );
             expect(fs.existsSync(filepath)).toStrictEqual(false);
             expect(fs.existsSync(path.join(mockBasePath, "invalid.mjs.invalid"))).toStrictEqual(true);
@@ -398,7 +398,6 @@ describe("Extension: ExternalConverters", () => {
                 stringify([{name: converterName, code: converterCode}]),
                 {
                     retain: true,
-                    qos: 0,
                 },
             );
 
@@ -417,7 +416,7 @@ describe("Extension: ExternalConverters", () => {
             expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
-            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true, qos: 0});
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
         it("MJS: saves and removes", async () => {
@@ -463,7 +462,6 @@ describe("Extension: ExternalConverters", () => {
                 stringify([{name: converterName, code: converterCode}]),
                 {
                     retain: true,
-                    qos: 0,
                 },
             );
 
@@ -482,7 +480,7 @@ describe("Extension: ExternalConverters", () => {
             expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
-            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true, qos: 0});
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
         it("returns error on invalid code", async () => {
@@ -500,7 +498,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/save",
                 expect.stringContaining(`"error":"${converterName} contains invalid code`),
-                {retain: false, qos: 0},
+                {},
             );
             expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, "utf8");
             expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
@@ -520,7 +518,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/remove",
                 expect.stringContaining("doesn't exists"),
-                {retain: false, qos: 0},
+                {},
             );
             expect(rmSyncSpy).not.toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
@@ -543,10 +541,7 @@ describe("Extension: ExternalConverters", () => {
                 message: {name: converterName, code: converterCode},
             });
 
-            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/response/converter/save", expect.stringContaining(errorMsg), {
-                retain: false,
-                qos: 0,
-            });
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/response/converter/save", expect.stringContaining(errorMsg), {});
             expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, "utf8");
             expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
@@ -579,7 +574,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/remove",
                 stringify({data: {}, status: "error", error: errorMsg}),
-                {retain: false, qos: 0},
+                {},
             );
             expect(rmSyncSpy).not.toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
@@ -596,7 +591,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/save",
                 stringify({data: {}, status: "error", error: "Invalid payload", transaction: 1}),
-                {retain: false, qos: 0},
+                {},
             );
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
@@ -607,7 +602,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/response/converter/remove",
                 stringify({data: {}, status: "error", error: "Invalid payload", transaction: 2}),
-                {retain: false, qos: 0},
+                {},
             );
         });
     });
