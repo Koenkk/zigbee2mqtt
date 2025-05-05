@@ -281,6 +281,25 @@ describe("Extension: Bind", () => {
         );
     });
 
+    it("Should allow to bind to coordinator by ieeeAddr", async () => {
+        const device = devices.remote;
+        const target = devices.coordinator.getEndpoint(1)!;
+        const endpoint = device.getEndpoint(1)!;
+        mockClear(device);
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/bind",
+            stringify({from: "remote", to: devices.coordinator.ieeeAddr, clusters: ["genOnOff"]}),
+        );
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/bind",
+            stringify({data: {from: "remote", from_endpoint: "default", to: "0x00124b00120144ae", clusters: ["genOnOff"], failed: []}, status: "ok"}),
+            {},
+        );
+    });
+
     it("Should log error when there is nothing to bind", async () => {
         const device = devices.bulb_color;
         const endpoint = device.getEndpoint(1)!;
