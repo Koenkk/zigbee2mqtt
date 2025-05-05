@@ -2,7 +2,7 @@ import {exec} from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-import utils from "../lib/util/utils";
+import utils, {assertString} from "../lib/util/utils";
 
 // keep the implementations, just spy
 vi.mock("node:child_process", {spy: true});
@@ -76,6 +76,11 @@ describe("Utils", () => {
         expect(utils.formatDate(date, "ISO_8601_local").toString().endsWith("-01:00")).toBeTruthy();
         getTzOffsetSpy.mockReturnValueOnce(-60);
         expect(utils.formatDate(date, "ISO_8601_local").toString().endsWith("+01:00")).toBeTruthy();
+    });
+
+    it("Assert string", () => {
+        assertString("test", "property");
+        expect(() => assertString(1, "property")).toThrow("property is not a string, got number (1)");
     });
 
     it("Removes null properties from object", () => {
