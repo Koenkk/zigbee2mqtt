@@ -2994,6 +2994,24 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should trim input when renaming device", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/rename", stringify({from: "bulb", to: " bulb_new_name  "}));
+        await flushPromises();
+        expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(settings.getDevice("bulb_new_name")).toStrictEqual({
+            ID: "0x000b57fffec6a5b2",
+            friendly_name: "bulb_new_name",
+            retain: true,
+            description: "this is my bulb",
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/rename",
+            stringify({data: {from: "bulb", to: "bulb_new_name", homeassistant_rename: false}, status: "ok"}),
+            {},
+        );
+    });
+
     it("Shouldnt allow rename device with to not allowed name containing a wildcard", async () => {
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/rename", stringify({from: "bulb", to: "living_room/blinds#"}));

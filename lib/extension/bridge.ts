@@ -19,7 +19,7 @@ import Device from "../model/device";
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
-import utils from "../util/utils";
+import utils, {assertString} from "../util/utils";
 import Extension from "./extension";
 
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
@@ -564,7 +564,8 @@ export default class Bridge extends Extension {
         }
 
         const from = deviceAndHasLast ? this.lastJoinedDeviceIeeeAddr : message.from;
-        const to = message.to;
+        assertString(message.to, "to");
+        const to = message.to.trim();
         const homeAssisantRename = message.homeassistant_rename !== undefined ? message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
         const oldFriendlyName = entity.options.friendly_name;
