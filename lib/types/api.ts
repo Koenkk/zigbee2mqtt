@@ -474,7 +474,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/bind": {
         from: string;
         from_endpoint: string | number | "default";
-        to: string;
+        to: string | number;
         to_endpoint?: string | number;
         clusters?: string[];
         skip_disable_reporting?: boolean;
@@ -483,7 +483,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/response/device/bind": {
         from: string;
         from_endpoint: string | number;
-        to: string;
+        to: string | number;
         to_endpoint: string | number | undefined;
         clusters: string[];
         failed: string[];
@@ -492,7 +492,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/unbind": {
         from: string;
         from_endpoint: string | number | "default";
-        to: string;
+        to: string | number;
         to_endpoint?: string | number;
         clusters?: string[];
         skip_disable_reporting?: boolean;
@@ -501,7 +501,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/response/device/unbind": {
         from: string;
         from_endpoint: string | number;
-        to: string;
+        to: string | number;
         to_endpoint: string | number | undefined;
         clusters: string[];
         failed: string[];

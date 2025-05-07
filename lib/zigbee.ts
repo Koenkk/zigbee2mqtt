@@ -23,8 +23,7 @@ export default class Zigbee {
     private eventBus: EventBus;
     private groupLookup = new Map<number /* group ID */, Group>();
     private deviceLookup = new Map<string /* IEEE address */, Device>();
-    // @ts-expect-error initialized in start
-    private coordinatorIeeeAddr: string;
+    private coordinatorIeeeAddr!: string;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
