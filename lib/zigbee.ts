@@ -23,6 +23,7 @@ export default class Zigbee {
     private eventBus: EventBus;
     private groupLookup = new Map<number /* group ID */, Group>();
     private deviceLookup = new Map<string /* IEEE address */, Device>();
+    private coordinatorIeeeAddr!: string;
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
@@ -73,6 +74,7 @@ export default class Zigbee {
             throw error;
         }
 
+        this.coordinatorIeeeAddr = this.herdsman.getDevicesByType("Coordinator")[0].ieeeAddr;
         await this.resolveDevicesDefinitions();
 
         this.herdsman.on("adapterDisconnected", () => this.eventBus.emitAdapterDisconnected());
@@ -280,8 +282,8 @@ export default class Zigbee {
             return this.resolveDevice(key.ieeeAddr);
         }
 
-        if (typeof key === "string" && key.toLowerCase() === "coordinator") {
-            return this.resolveDevice(this.herdsman.getDevicesByType("Coordinator")[0].ieeeAddr);
+        if (typeof key === "string" && (key.toLowerCase() === "coordinator" || key === this.coordinatorIeeeAddr)) {
+            return this.resolveDevice(this.coordinatorIeeeAddr);
         }
 
         const settingsDevice = settings.getDevice(key.toString());

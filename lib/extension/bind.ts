@@ -198,7 +198,7 @@ interface ParsedMQTTMessage {
     type: "bind" | "unbind";
     sourceKey?: string;
     sourceEndpointKey?: string | number;
-    targetKey?: string;
+    targetKey?: string | number;
     targetEndpointKey?: string | number;
     clusters?: string[];
     skipDisableReporting: boolean;
@@ -242,7 +242,10 @@ export default class Bind extends Extension {
                 return [message, {type, skipDisableReporting}, `Source device '${message.from}' does not exist`];
             }
 
-            const resolvedTarget = message.to === DEFAULT_BIND_GROUP.name ? DEFAULT_BIND_GROUP : this.zigbee.resolveEntity(message.to);
+            const resolvedTarget =
+                message.to === DEFAULT_BIND_GROUP.name || message.to === DEFAULT_BIND_GROUP.ID
+                    ? DEFAULT_BIND_GROUP
+                    : this.zigbee.resolveEntity(message.to);
 
             if (!resolvedTarget) {
                 return [message, {type, skipDisableReporting}, `Target device or group '${message.to}' does not exist`];
