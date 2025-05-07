@@ -22,7 +22,7 @@ jobs:
 
             - uses: actions/setup-node@v4
               with:
-                  node-version: 22
+                  node-version: 24
 
             - uses: googleapis/release-please-action@v4
               id: release
