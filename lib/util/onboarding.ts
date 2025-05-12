@@ -396,8 +396,6 @@ async function startOnboardingServer(): Promise<boolean> {
 
                     req.on("end", () => {
                         const result = parse(body) as unknown as OnboardSettings;
-                        console.log(JSON.stringify(currentSettings));
-                        console.log(JSON.stringify(result));
                         const frontendEnabled = result.frontend_enabled === "on";
                         const updatedSettings: RecursivePartial<Settings> = {
                             mqtt: {
@@ -540,7 +538,9 @@ export async function onboard(): Promise<boolean> {
 
     // use `configuration.yaml` file to detect "brand new install"
     // env allows to re-run onboard even with existing install
-    if (!process.env.Z2M_ONBOARD_NO_SERVER && (process.env.Z2M_ONBOARD_FORCE_RUN || !confExists)) {
+    if (!process.env.Z2M_ONBOARD_NO_SERVER && (process.env.Z2M_ONBOARD_FORCE_RUN || !confExists || settings.get().onboarding)) {
+        settings.setOnboarding(true);
+
         const success = await startOnboardingServer();
 
         if (!success) {

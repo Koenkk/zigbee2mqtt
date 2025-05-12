@@ -69,6 +69,8 @@ export interface Zigbee2MQTTGroupOptions {
 
 export interface Zigbee2MQTTSettings {
     version?: number;
+    /** only used internally during startup, removed on successful Z2M start */
+    onboarding?: true;
     homeassistant: {
         enabled: boolean;
         discovery_topic: string;

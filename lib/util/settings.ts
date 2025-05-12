@@ -179,6 +179,22 @@ export function writeMinimalDefaults(): void {
     loadSettingsWithDefaults();
 }
 
+export function setOnboarding(value: boolean): void {
+    const settings = getPersistedSettings();
+
+    if (value) {
+        if (!settings.onboarding) {
+            settings.onboarding = value;
+
+            write();
+        }
+    } else if (settings.onboarding) {
+        delete settings.onboarding;
+
+        write();
+    }
+}
+
 export function write(): void {
     const settings = getPersistedSettings();
     const toWrite: KeyValue = objectAssignDeep({}, settings);

@@ -163,6 +163,8 @@ export class Controller {
         logger.info("Zigbee2MQTT started!");
 
         this.sdNotify = await initSdNotify();
+
+        settings.setOnboarding(false);
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
