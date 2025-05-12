@@ -87,6 +87,7 @@ describe("Controller", () => {
     });
 
     it("Start controller", async () => {
+        settings.setOnboarding(true);
         settings.set(["advanced", "transmit_power"], 14);
         await controller.start();
         expect(ZHController).toHaveBeenCalledWith({
@@ -121,6 +122,7 @@ describe("Controller", () => {
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({brightness: 255}), {retain: true, qos: 0});
+        expect(settings.get().onboarding).toBeUndefined();
     });
 
     it("Start controller with specific MQTT settings", async () => {
@@ -339,6 +341,16 @@ describe("Controller", () => {
         expect(mockExit).toHaveBeenCalledTimes(1);
     });
 
+    it("Start controller fails after onboarding", async () => {
+        settings.setOnboarding(true);
+        mockZHController.start.mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+        await controller.start();
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(settings.get().onboarding).toStrictEqual(true);
+    });
+
     it("Start controller fails due to MQTT connect error", async () => {
         mockMQTTConnectAsync.mockImplementationOnce(() => {
             throw new Error("addr not found");
@@ -348,6 +360,19 @@ describe("Controller", () => {
         expect(mockLogger.error).toHaveBeenCalledWith("MQTT failed to connect, exiting... (addr not found)");
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
+    });
+
+    it("Start controller fails due to MQTT connect error after onboarding", async () => {
+        settings.setOnboarding(true);
+        mockMQTTConnectAsync.mockImplementationOnce(() => {
+            throw new Error("addr not found");
+        });
+        await controller.start();
+        await flushPromises();
+        expect(mockLogger.error).toHaveBeenCalledWith("MQTT failed to connect, exiting... (addr not found)");
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
+        expect(settings.get().onboarding).toStrictEqual(true);
     });
 
     it("Start controller and stop with restart", async () => {
