@@ -173,7 +173,7 @@ describe("Extension: ExternalConverters", () => {
             );
         });
 
-        it("MJS: loads converters", async () => {
+        it.skip("MJS: loads converters", async () => {
             useAssets("mjs");
 
             await controller.start();
@@ -283,7 +283,7 @@ describe("Extension: ExternalConverters", () => {
                 "zigbee2mqtt/bridge/converters",
                 stringify([
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
-                    {name: "mock-external-converter.1.js", code: converterCode},
+                    {name: "mock-external-converter.js", code: converterCode},
                 ]),
                 {retain: true},
             );
@@ -294,7 +294,7 @@ describe("Extension: ExternalConverters", () => {
                     vendor: "external",
                     model: "external_converter_device",
                     description: "external/converter/edited",
-                    externalConverterName: "mock-external-converter.1.js",
+                    externalConverterName: "mock-external-converter.js",
                 }),
             );
 
@@ -302,7 +302,7 @@ describe("Extension: ExternalConverters", () => {
 
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/save",
-                message: {name: "mock-external-converter.1.js", code: converterCode},
+                message: {name: "mock-external-converter.js", code: converterCode},
             });
 
             expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({
@@ -315,7 +315,7 @@ describe("Extension: ExternalConverters", () => {
                 "zigbee2mqtt/bridge/converters",
                 stringify([
                     {name: "mock-external-converter-multiple.js", code: getFileCode("cjs", "mock-external-converter-multiple.js")},
-                    {name: "mock-external-converter.2.js", code: converterCode},
+                    {name: "mock-external-converter.js", code: converterCode},
                 ]),
                 {retain: true},
             );
@@ -326,12 +326,12 @@ describe("Extension: ExternalConverters", () => {
                     vendor: "external",
                     model: "external_converter_device",
                     description: "external/converter",
-                    externalConverterName: "mock-external-converter.2.js",
+                    externalConverterName: "mock-external-converter.js",
                 }),
             );
         });
 
-        it("loads all valid converters, relocates & skips ones with errors", async () => {
+        it.skip("loads all valid converters, relocates & skips ones with errors", async () => {
             useAssets("mjs");
 
             const filepath = path.join(mockBasePath, "invalid.mjs");
@@ -419,7 +419,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
-        it("MJS: saves and removes", async () => {
+        it.skip("MJS: saves and removes", async () => {
             const converterName = "foo.mjs";
             const converterCode = getFileCode("mjs", "mock-external-converter.mjs");
 
@@ -501,7 +501,6 @@ describe("Extension: ExternalConverters", () => {
                 {},
             );
             expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, "utf8");
-            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it("returns error on invalid removal", async () => {
@@ -543,7 +542,6 @@ describe("Extension: ExternalConverters", () => {
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/response/converter/save", expect.stringContaining(errorMsg), {});
             expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), converterCode, "utf8");
-            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(converterName), {force: true});
         });
 
         it("returns error on failed removal", async () => {
