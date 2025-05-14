@@ -173,7 +173,7 @@ describe("Extension: ExternalConverters", () => {
             );
         });
 
-        it.skip("MJS: loads converters", async () => {
+        it("MJS: loads converters", async () => {
             useAssets("mjs");
 
             await controller.start();
@@ -331,7 +331,7 @@ describe("Extension: ExternalConverters", () => {
             );
         });
 
-        it.skip("loads all valid converters, relocates & skips ones with errors", async () => {
+        it("loads all valid converters, relocates & skips ones with errors", async () => {
             useAssets("mjs");
 
             const filepath = path.join(mockBasePath, "invalid.mjs");
@@ -423,7 +423,7 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
-        it.skip("MJS: saves and removes", async () => {
+        it("MJS: saves and removes", async () => {
             const converterName = "foo.mjs";
             const converterCode = getFileCode("mjs", "mock-external-converter.mjs");
 
