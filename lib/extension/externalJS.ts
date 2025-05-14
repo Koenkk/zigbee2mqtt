@@ -58,7 +58,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 if (fs.existsSync(nodeModulesSymlink)) {
                     fs.unlinkSync(nodeModulesSymlink);
                 }
-                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink);
+                // Type `junction` is required for Windows.
+                // https://github.com/nodejs/node/issues/18518#issuecomment-513866491
+                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink, "junction");
             }
         }
     }
