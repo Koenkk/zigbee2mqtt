@@ -356,6 +356,10 @@ describe("Extension: ExternalConverters", () => {
 
     describe("from MQTT", () => {
         it("CJS: saves and removes", async () => {
+            // Create a dummy 'node_modules' file to test to externalJS.ts recreates the symlink.
+            fs.mkdirSync(mockBasePath);
+            fs.writeFileSync(path.join(mockBasePath, "node_modules"), "");
+
             const converterName = "foo.js";
             const converterCode = getFileCode("cjs", "mock-external-converter.js");
 

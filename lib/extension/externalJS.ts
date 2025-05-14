@@ -19,7 +19,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     protected mqttTopic: string;
     protected requestRegex: RegExp;
     protected basePath: string;
-    private static nodePathConfigured = false;
+    protected nodeModulesSymlinkChecked = false;
 
     constructor(
         zigbee: Zigbee,
@@ -39,18 +39,27 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         this.mqttTopic = mqttTopic;
         this.requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/${mqttTopic}/(save|remove)`);
         this.basePath = data.joinPath(folderName);
-        ExternalJSExtension.configureNodePath();
     }
 
     /**
-     * Configures the NODE_PATH such that externally imported files can resolve dependencies from `node_modules`.
+     * In case the external JS is not in the Z2M install dir (e.g. when `ZIGBEE2MQTT_DATA` is used), the external
+     * JS cannot import from `node_modules`.
+     * To workaround this create a symlink to `node_modules` in the external JS dir.
+     * https://nodejs.org/api/esm.html#no-node_path
      */
-    private static configureNodePath() {
-        if (!ExternalJSExtension.nodePathConfigured) {
-            ExternalJSExtension.nodePathConfigured = true;
+    private createNodeModulesSymlinkIfNecessary() {
+        if (!this.nodeModulesSymlinkChecked) {
+            this.nodeModulesSymlinkChecked = true;
             const nodeModulesPath = path.join(__dirname, "..", "..", "node_modules");
-            process.env.NODE_PATH = `${nodeModulesPath}${process.env.NODE_PATH ? `:${process.env.NODE_PATH}` : ""}`;
-            require("node:module").Module._initPaths();
+            const basePathInZ2mDir = !path.relative(path.join(nodeModulesPath, ".."), this.basePath).startsWith("..");
+            if (!basePathInZ2mDir) {
+                logger.debug(`External JS folder '${this.folderName}' is outside the Z2M install dir, creating a symlink to 'node_modules'`);
+                const nodeModulesSymlink = path.join(this.basePath, "node_modules");
+                if (fs.existsSync(nodeModulesSymlink)) {
+                    fs.unlinkSync(nodeModulesSymlink);
+                }
+                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink);
+            }
         }
     }
 
@@ -152,6 +161,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const filePath = this.getFilePath(name, true);
         try {
             fs.writeFileSync(filePath, code, "utf8");
+            this.createNodeModulesSymlinkIfNecessary();
 
             const mod = await import(this.getImportPath(filePath));
 
@@ -167,6 +177,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private async loadFiles(): Promise<void> {
         for (const extension of this.getFiles()) {
+            this.createNodeModulesSymlinkIfNecessary();
             const filePath = this.getFilePath(extension.name);
 
             try {
