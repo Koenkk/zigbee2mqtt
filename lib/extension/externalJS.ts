@@ -2,6 +2,7 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from "../types/api";
 
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
@@ -51,16 +52,19 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         if (!this.nodeModulesSymlinkChecked) {
             this.nodeModulesSymlinkChecked = true;
             const nodeModulesPath = path.join(__dirname, "..", "..", "node_modules");
-            const basePathInZ2mDir = !path.relative(path.join(nodeModulesPath, ".."), this.basePath).startsWith("..");
+            const z2mDirNormalized = `${path.resolve(path.join(nodeModulesPath, ".."))}${path.sep}`;
+            const basePathNormalized = `${path.resolve(this.basePath)}${path.sep}`;
+            const basePathInZ2mDir = basePathNormalized.startsWith(z2mDirNormalized);
             if (!basePathInZ2mDir) {
                 logger.debug(`External JS folder '${this.folderName}' is outside the Z2M install dir, creating a symlink to 'node_modules'`);
                 const nodeModulesSymlink = path.join(this.basePath, "node_modules");
                 if (fs.existsSync(nodeModulesSymlink)) {
                     fs.unlinkSync(nodeModulesSymlink);
                 }
-                // Type `junction` is required for Windows.
+                // Type `junction` is required on Windows.
                 // https://github.com/nodejs/node/issues/18518#issuecomment-513866491
-                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink, "junction");
+                /* v8 ignore next */
+                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink, os.platform() === "win32" ? "junction" : "dir");
             }
         }
     }
