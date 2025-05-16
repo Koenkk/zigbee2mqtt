@@ -211,6 +211,6 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private getImportPath(filePath: string): string {
         // prevent issues on Windows, add a uuid to bypass Node cache.
-        return `${path.relative(__dirname, filePath).replaceAll("\\", "/")}?${crypto.randomUUID()}`;
+        return `${path.relative(__dirname, filePath).replaceAll("\\", "/")}`;
     }
 }
