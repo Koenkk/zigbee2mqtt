@@ -20,7 +20,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     protected mqttTopic: string;
     protected requestRegex: RegExp;
     protected basePath: string;
-    protected nodeModulesSymlinkChecked = false;
+    protected nodeModulesSymlinked = false;
 
     constructor(
         zigbee: Zigbee,
@@ -48,9 +48,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
      * To workaround this create a symlink to `node_modules` in the external JS dir.
      * https://nodejs.org/api/esm.html#no-node_path
      */
-    private createNodeModulesSymlinkIfNecessary() {
-        if (!this.nodeModulesSymlinkChecked) {
-            this.nodeModulesSymlinkChecked = true;
+    private symlinkNodeModulesIfNecessary() {
+        if (!this.nodeModulesSymlinked) {
+            this.nodeModulesSymlinked = true;
             const nodeModulesPath = path.join(__dirname, "..", "..", "node_modules");
             const z2mDirNormalized = `${path.resolve(path.join(nodeModulesPath, ".."))}${path.sep}`;
             const basePathNormalized = `${path.resolve(this.basePath)}${path.sep}`;
@@ -167,7 +167,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const filePath = this.getFilePath(name, true);
         try {
             fs.writeFileSync(filePath, code, "utf8");
-            this.createNodeModulesSymlinkIfNecessary();
+            this.symlinkNodeModulesIfNecessary();
 
             const mod = await import(this.getImportPath(filePath));
 
@@ -183,7 +183,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     private async loadFiles(): Promise<void> {
         for (const extension of this.getFiles()) {
-            this.createNodeModulesSymlinkIfNecessary();
+            this.symlinkNodeModulesIfNecessary();
             const filePath = this.getFilePath(extension.name);
 
             try {
