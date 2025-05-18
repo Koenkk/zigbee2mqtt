@@ -14,6 +14,7 @@ import utils from "../util/utils";
 import Extension from "./extension";
 
 const SUPPORTED_OPERATIONS = ["save", "remove"];
+const TMP_PREFIX = ".tmp-ed42d4f2-fefa-4c1c-9080-4e82f0b61070-";
 
 export default abstract class ExternalJSExtension<M> extends Extension {
     protected folderName: string;
@@ -91,7 +92,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     protected *getFiles(): Generator<{name: string; code: string}> {
         if (fs.existsSync(this.basePath)) {
             for (const fileName of fs.readdirSync(this.basePath)) {
-                if (fileName.endsWith(".js") || fileName.endsWith(".cjs") || fileName.endsWith(".mjs")) {
+                if (!fileName.startsWith(TMP_PREFIX) && (fileName.endsWith(".js") || fileName.endsWith(".cjs") || fileName.endsWith(".mjs"))) {
                     yield {name: fileName, code: this.getFileCode(fileName)};
                 }
             }
@@ -214,10 +215,13 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const ext = path.extname(file);
         // Create the file in a temp path to bypass node module cache when importing multiple times.
         // Do `replaceAll("\\", "/")` to prevent issues on Windows
-        const tmpFile = path.join(os.tmpdir(), `${path.basename(file, ext)}-${crypto.randomUUID()}${ext}`).replaceAll("\\", "/");
+        const tmpFile = path.join(this.basePath, `${TMP_PREFIX}${path.basename(file, ext)}-${crypto.randomUUID()}${ext}`).replaceAll("\\", "/");
         fs.copyFileSync(file, tmpFile);
-        const mod = await import(tmpFile);
-        fs.rmSync(tmpFile);
-        return mod;
+        try {
+            const mod = await import(tmpFile);
+            return mod;
+        } finally {
+            fs.rmSync(tmpFile);
+        }
     }
 }
