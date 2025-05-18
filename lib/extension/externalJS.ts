@@ -143,7 +143,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         const toBeRemoved = this.getFilePath(name);
 
         if (fs.existsSync(toBeRemoved)) {
-            const mod = await import(this.getImportPath(toBeRemoved));
+            const mod = await this.importFile(toBeRemoved);
 
             await this.removeJS(name, mod.default);
             fs.rmSync(toBeRemoved, {force: true});
@@ -169,7 +169,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             fs.writeFileSync(filePath, code, "utf8");
             this.symlinkNodeModulesIfNecessary();
 
-            const mod = await import(this.getImportPath(filePath));
+            const mod = await this.importFile(filePath);
 
             await this.loadJS(name, mod.default, name);
             logger.info(`${name} loaded. Contents written to '${filePath}'.`);
@@ -187,7 +187,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const filePath = this.getFilePath(extension.name);
 
             try {
-                const mod = await import(this.getImportPath(filePath));
+                const mod = await this.importFile(filePath);
                 await this.loadJS(extension.name, mod.default);
             } catch (error) {
                 // change ext so Z2M doesn't try to load it again and again
@@ -209,8 +209,15 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         });
     }
 
-    private getImportPath(filePath: string): string {
-        // prevent issues on Windows, add a uuid to bypass Node cache.
-        return `${path.relative(__dirname, filePath).replaceAll("\\", "/")}?${crypto.randomUUID()}`;
+    // biome-ignore lint/suspicious/noExplicitAny: dynamic module
+    private async importFile(file: string): Promise<any> {
+        const ext = path.extname(file);
+        // Create the file in a temp path to bypass node module cache when importing multiple times.
+        // Do `replaceAll("\\", "/")` to prevent issues on Windows
+        const tmpFile = path.join(os.tmpdir(), `${path.basename(file, ext)}-${crypto.randomUUID()}${ext}`).replaceAll("\\", "/");
+        fs.copyFileSync(file, tmpFile);
+        const mod = await import(tmpFile);
+        fs.rmSync(tmpFile);
+        return mod;
     }
 }
