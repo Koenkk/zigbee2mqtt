@@ -195,7 +195,7 @@ describe("Extension: ExternalExtensions", () => {
                 "zigbee2mqtt/bridge/extensions",
                 stringify([
                     {name: "example2Extension.js", code: getFileCode("cjs", "example2Extension.js")},
-                    {name: "exampleExtension.1.js", code: extensionCode},
+                    {name: "exampleExtension.js", code: extensionCode},
                 ]),
                 {retain: true},
             );
@@ -207,16 +207,17 @@ describe("Extension: ExternalExtensions", () => {
             mockMQTTPublishAsync.mockClear();
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/extension/save",
-                message: {name: "exampleExtension.1.js", code: extensionCode},
+                message: {name: "exampleExtension.js", code: extensionCode},
             });
 
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/example/extension", "call from stop - edited", {});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/example/extension", "call from start", {});
+            expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/example/extension", "call from start - edited", {});
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bridge/extensions",
                 stringify([
                     {name: "example2Extension.js", code: getFileCode("cjs", "example2Extension.js")},
-                    {name: "exampleExtension.2.js", code: extensionCode},
+                    {name: "exampleExtension.js", code: extensionCode},
                 ]),
                 {retain: true},
             );
@@ -247,6 +248,8 @@ describe("Extension: ExternalExtensions", () => {
                     retain: true,
                 },
             );
+            // Ensure that the .tmp import file is deleted.
+            expect(fs.readdirSync(mockBasePath)).toStrictEqual(["foo.js", "node_modules"]);
 
             //-- REMOVE
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
@@ -312,7 +315,6 @@ describe("Extension: ExternalExtensions", () => {
                 {},
             );
             expect(writeFileSyncSpy).toHaveBeenCalledWith(expect.stringContaining(extensionName), extensionCode, "utf8");
-            expect(rmSyncSpy).toHaveBeenCalledWith(expect.stringContaining(extensionName), {force: true});
         });
 
         it("returns error on invalid removal", async () => {
