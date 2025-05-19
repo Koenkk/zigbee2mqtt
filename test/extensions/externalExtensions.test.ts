@@ -248,6 +248,8 @@ describe("Extension: ExternalExtensions", () => {
                     retain: true,
                 },
             );
+            // Ensure that the .tmp import file is deleted.
+            expect(fs.readdirSync(mockBasePath)).toStrictEqual(["foo.js", "node_modules"]);
 
             //-- REMOVE
             await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({

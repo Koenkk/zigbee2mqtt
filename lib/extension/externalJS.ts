@@ -14,7 +14,7 @@ import utils from "../util/utils";
 import Extension from "./extension";
 
 const SUPPORTED_OPERATIONS = ["save", "remove"];
-const TMP_PREFIX = ".tmp-ed42d4f2-fefa-4c1c-9080-4e82f0b61070-";
+const TMP_PREFIX = ".tmp-ed42d4f2-";
 
 export default abstract class ExternalJSExtension<M> extends Extension {
     protected folderName: string;
@@ -214,11 +214,11 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     private async importFile(file: string): Promise<any> {
         const ext = path.extname(file);
         // Create the file in a temp path to bypass node module cache when importing multiple times.
-        // Do `replaceAll("\\", "/")` to prevent issues on Windows
-        const tmpFile = path.join(this.basePath, `${TMP_PREFIX}${path.basename(file, ext)}-${crypto.randomUUID()}${ext}`).replaceAll("\\", "/");
+        const tmpFile = path.join(this.basePath, `${TMP_PREFIX}${path.basename(file, ext)}-${crypto.randomUUID()}${ext}`);
         fs.copyFileSync(file, tmpFile);
         try {
-            const mod = await import(tmpFile);
+            // Do `replaceAll("\\", "/")` to prevent issues on Windows
+            const mod = await import(tmpFile.replaceAll("\\", "/"));
             return mod;
         } finally {
             fs.rmSync(tmpFile);
