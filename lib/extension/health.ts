@@ -85,7 +85,7 @@ export class Health extends Extension {
             }
         }
 
-        await this.mqtt.publish("bridge/health", JSON.stringify(healthcheck), {retain: true, qos: 0});
+        await this.mqtt.publish("bridge/health", JSON.stringify(healthcheck), {clientOptions: {retain: true, qos: 0}});
     }
 
     #onLastSeenChanged(data: eventdata.LastSeenChanged): void {

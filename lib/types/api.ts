@@ -52,6 +52,7 @@ export interface Zigbee2MQTTDeviceOptions {
     friendly_name: string;
     description?: string;
     qos?: 0 | 1 | 2;
+    health?: boolean;
 }
 
 export interface Zigbee2MQTTGroupOptions {
@@ -181,6 +182,13 @@ export interface Zigbee2MQTTSettings {
         timestamp_format: string;
         output: "json" | "attribute" | "attribute_and_json";
         transmit_power?: number;
+    };
+    health: {
+        enabled: boolean;
+        /** in minutes */
+        interval: number;
+        with_devices: boolean;
+        reset_on_check: boolean;
     };
 }
 
