@@ -1938,7 +1938,7 @@ describe("Extension: HomeAssistant", () => {
         await mockZHEvents.message(payload1);
         await flushPromises();
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/button/action", "single", {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/button/action", "single", expect.any(Object));
         expect(mockMQTTPublishAsync.mock.calls.filter((c) => c[1] === "single")).toHaveLength(1);
     });
 
@@ -2019,15 +2019,12 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/U202DST600ZB/l2",
             stringify({state: "ON", brightness: 20, effect: null, power_on_behavior: null}),
-            {qos: 0, retain: false},
+            {},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/U202DST600ZB/l1",
             stringify({state: null, effect: null, power_on_behavior: null}),
-            {
-                qos: 0,
-                retain: false,
-            },
+            {},
         );
     });
 

@@ -87,6 +87,7 @@ describe("Controller", () => {
     });
 
     it("Start controller", async () => {
+        settings.setOnboarding(true);
         settings.set(["advanced", "transmit_power"], 14);
         await controller.start();
         expect(ZHController).toHaveBeenCalledWith({
@@ -121,6 +122,7 @@ describe("Controller", () => {
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({brightness: 255}), {retain: true, qos: 0});
+        expect(settings.get().onboarding).toBeUndefined();
     });
 
     it("Start controller with specific MQTT settings", async () => {
@@ -339,6 +341,16 @@ describe("Controller", () => {
         expect(mockExit).toHaveBeenCalledTimes(1);
     });
 
+    it("Start controller fails after onboarding", async () => {
+        settings.setOnboarding(true);
+        mockZHController.start.mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+        await controller.start();
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(settings.get().onboarding).toStrictEqual(true);
+    });
+
     it("Start controller fails due to MQTT connect error", async () => {
         mockMQTTConnectAsync.mockImplementationOnce(() => {
             throw new Error("addr not found");
@@ -348,6 +360,19 @@ describe("Controller", () => {
         expect(mockLogger.error).toHaveBeenCalledWith("MQTT failed to connect, exiting... (addr not found)");
         expect(mockExit).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledWith(1, false);
+    });
+
+    it("Start controller fails due to MQTT connect error after onboarding", async () => {
+        settings.setOnboarding(true);
+        mockMQTTConnectAsync.mockImplementationOnce(() => {
+            throw new Error("addr not found");
+        });
+        await controller.start();
+        await flushPromises();
+        expect(mockLogger.error).toHaveBeenCalledWith("MQTT failed to connect, exiting... (addr not found)");
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(1, false);
+        expect(settings.get().onboarding).toStrictEqual(true);
     });
 
     it("Start controller and stop with restart", async () => {
@@ -559,7 +584,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_joined", data: {friendly_name: "bulb", ieee_address: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -621,7 +646,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_joined", data: {friendly_name: "bulb", ieee_address: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -634,7 +659,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_interview", data: {friendly_name: "bulb", status: "started", ieee_address: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -647,7 +672,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_interview", data: {friendly_name: "bulb", status: "failed", ieee_address: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -670,7 +695,7 @@ describe("Controller", () => {
         expect(parsedMessage.data.definition.description).toStrictEqual("TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm");
         expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
         expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
-        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
+        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({});
     });
 
     it("On zigbee deviceInterview successful not supported", async () => {
@@ -692,7 +717,7 @@ describe("Controller", () => {
         expect(parsedMessage.data.definition.description).toStrictEqual("Automatically generated definition");
         expect(parsedMessage.data.definition.exposes).toStrictEqual(expect.any(Array));
         expect(parsedMessage.data.definition.options).toStrictEqual(expect.any(Array));
-        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({retain: false, qos: 0});
+        expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({});
     });
 
     it("On zigbee event device announce", async () => {
@@ -705,7 +730,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_announce", data: {friendly_name: "bulb", ieee_address: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -721,7 +746,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_leave", data: {ieee_address: device.ieeeAddr, friendly_name: device.ieeeAddr}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -736,7 +761,7 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_leave", data: {ieee_address: device.ieeeAddr, friendly_name: "bulb"}}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -1041,7 +1066,7 @@ describe("Controller", () => {
         await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(retainedMessages);
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
     });
 
     it("Should not republish retained messages on MQTT initial connect when retained message are sent", async () => {
@@ -1063,7 +1088,7 @@ describe("Controller", () => {
         await controller.mqtt.publish("fo", "bar", {retain: true});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/fo", "bar", {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/fo", "bar", {retain: false});
     });
 
     it("Should publish last seen changes", async () => {

@@ -967,20 +967,18 @@ describe("Extension: Publish", () => {
         const payload = {state: "ON", brightness: 20, color_temp: 200, transition: 20};
         await mockMQTTEvents.message("zigbee2mqtt/bulb/set", stringify(payload));
         await flushPromises();
-        expect(endpoint.command).toHaveBeenCalledTimes(3);
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
         expect(endpoint.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {}]);
-        expect(endpoint.command.mock.calls[1]).toEqual(["genLevelCtrl", "stop", {}, {}]); // unfreeze
-        expect(endpoint.command.mock.calls[2]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
+        expect(endpoint.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 200, transtime: 200}, {}]);
     });
 
     it("Should use transition only once when setting brightness and color temperature for group which contains TRADFRI", async () => {
         const group = groups.group_with_tradfri;
         await mockMQTTEvents.message("zigbee2mqtt/group_with_tradfri/set", stringify({state: "ON", transition: 60, brightness: 20, color_temp: 400}));
         await flushPromises();
-        expect(group.command).toHaveBeenCalledTimes(3);
+        expect(group.command).toHaveBeenCalledTimes(2);
         expect(group.command.mock.calls[0]).toEqual(["genLevelCtrl", "moveToLevelWithOnOff", {level: 20, transtime: 0}, {}]);
-        expect(group.command.mock.calls[1]).toEqual(["genLevelCtrl", "stop", {}, {}]); // unfreeze
-        expect(group.command.mock.calls[2]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 400, transtime: 600}, {}]);
+        expect(group.command.mock.calls[1]).toEqual(["lightingColorCtrl", "moveToColorTemp", {colortemp: 400, transtime: 600}, {}]);
     });
 
     it("Message transition should overrule options transition", async () => {
@@ -1601,8 +1599,8 @@ describe("Extension: Publish", () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genScenes", "store", {groupid: 15071, sceneid: 1}, {});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), {retain: true});
 
         await mockMQTTEvents.message("zigbee2mqtt/bulb_color_2/set", stringify({state: "ON", brightness: 250, color_temp: 20}));
         await mockMQTTEvents.message("zigbee2mqtt/bulb_2/set", stringify({state: "ON", brightness: 110}));

@@ -1,5 +1,3 @@
-import type {IClientPublishOptions} from "mqtt";
-
 import type Extension from "./extension/extension";
 import type {Zigbee2MQTTAPI} from "./types/api";
 
@@ -23,7 +21,7 @@ import ExtensionOnEvent from "./extension/onEvent";
 import ExtensionOTAUpdate from "./extension/otaUpdate";
 import ExtensionPublish from "./extension/publish";
 import ExtensionReceive from "./extension/receive";
-import Mqtt from "./mqtt";
+import Mqtt, {type MqttPublishOptions} from "./mqtt";
 import State from "./state";
 import logger from "./util/logger";
 import {initSdNotify} from "./util/sd-notify";
@@ -171,6 +169,8 @@ export class Controller {
         logger.info("Zigbee2MQTT started!");
 
         this.sdNotify = await initSdNotify();
+
+        settings.setOnboarding(false);
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -341,14 +341,19 @@ export class Controller {
             message = newState;
         }
 
-        const options: IClientPublishOptions = {
-            retain: utils.getObjectProperty(entity.options, "retain", false),
-            qos: utils.getObjectProperty(entity.options, "qos", 0),
+        const options: MakePartialExcept<MqttPublishOptions, "clientOptions" | "meta"> = {
+            clientOptions: {
+                retain: utils.getObjectProperty(entity.options, "retain", false),
+                qos: utils.getObjectProperty(entity.options, "qos", 0),
+            },
+            meta: {
+                isEntityState: true,
+            },
         };
         const retention = utils.getObjectProperty<number | false>(entity.options, "retention", false);
 
         if (retention !== false) {
-            options.properties = {messageExpiryInterval: retention};
+            options.clientOptions.properties = {messageExpiryInterval: retention};
         }
 
         if (entity.isDevice() && settings.get().mqtt.include_device_information) {
@@ -405,7 +410,7 @@ export class Controller {
         this.eventBus.emitPublishEntityState({entity, message, stateChangeReason, payload});
     }
 
-    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: IClientPublishOptions): Promise<void> {
+    async iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: Partial<MqttPublishOptions>): Promise<void> {
         for (const [key, value] of Object.entries(payload)) {
             let subPayload = value;
             let message = null;

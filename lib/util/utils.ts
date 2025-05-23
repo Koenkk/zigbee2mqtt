@@ -340,6 +340,12 @@ export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
     return expose.type === "light";
 }
 
+export function assertString(value: unknown, property: string): asserts value is string {
+    if (typeof value !== "string") {
+        throw new Error(`${property} is not a string, got ${typeof value} (${value})`);
+    }
+}
+
 function getScenes(entity: zh.Endpoint | zh.Group): Zigbee2MQTTScene[] {
     const scenes: {[id: number]: Zigbee2MQTTScene} = {};
     const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;

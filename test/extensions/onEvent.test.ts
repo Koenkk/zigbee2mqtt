@@ -18,7 +18,7 @@ import * as settings from "../../lib/util/settings";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
-returnDevices.push(devices.bulb.ieeeAddr, devices.LIVOLO.ieeeAddr);
+returnDevices.push(devices.bulb.ieeeAddr, devices.LIVOLO.ieeeAddr, devices.coordinator.ieeeAddr);
 
 describe("Extension: OnEvent", () => {
     let controller: Controller;

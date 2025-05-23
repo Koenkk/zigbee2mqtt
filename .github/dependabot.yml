@@ -11,3 +11,13 @@ updates:
               update-types:
                   - minor
                   - patch
+    - package-ecosystem: docker
+      directory: /
+      schedule:
+        interval: weekly
+      target-branch: dev
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+        interval: weekly
+      target-branch: dev

@@ -67,6 +67,7 @@ const SETTINGS_MINIMAL_DEFAULTS = {
     homeassistant: {
         enabled: settings.defaults.homeassistant!.enabled,
     },
+    onboarding: true,
 };
 
 const SAMPLE_SETTINGS_INIT = {
@@ -123,6 +124,7 @@ const SAMPLE_SETTINGS_SAVE = {
     homeassistant: {
         enabled: true,
     },
+    onboarding: true,
 };
 
 const SAMPLE_SETTINGS_SAVE_PARAMS = {
@@ -441,10 +443,34 @@ describe("Onboarding", () => {
         expect(postHtml).toContain("You can close this page");
     });
 
-    it("rerun onboard via ENV and sets given settings", async () => {
+    it("reruns onboard via ENV and sets given settings", async () => {
         // data.removeConfiguration();
 
         process.env.Z2M_ONBOARD_FORCE_RUN = "1";
+
+        let p;
+        const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runOnboarding(SAMPLE_SETTINGS_SAVE_PARAMS, false, false));
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
+        expect(getHtml).toContain("No device found");
+        expect(getHtml).toContain("generate_network");
+        expect(postHtml).toContain('<a href="http://localhost:8080/">');
+    });
+
+    it("reruns onboard on failed start", async () => {
+        // data.removeConfiguration();
+        settings.setOnboarding(true);
 
         let p;
         const [getHtml, postHtml] = await new Promise<[string, string]>((resolve, reject) => {
@@ -579,7 +605,7 @@ describe("Onboarding", () => {
         });
 
         await expect(p).resolves.toStrictEqual(false);
-        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_INIT);
+        expect(data.read()).toStrictEqual(Object.assign({}, SAMPLE_SETTINGS_INIT, {onboarding: true}));
         expect(getHtml).toContain("No device found");
         expect(postHtml).toContain("adapter must be equal to one of the allowed values");
     });
@@ -622,11 +648,14 @@ describe("Onboarding", () => {
         const p = onboard();
 
         await expect(p).resolves.toStrictEqual(true);
-        expect(data.read()).toStrictEqual(
-            Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
-                mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
-            }),
-        );
+
+        const expected = Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
+            mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+        });
+        // @ts-expect-error mock
+        delete expected.onboarding;
+
+        expect(data.read()).toStrictEqual(expected);
     });
 
     it("handles configuring onboarding with config ENV overrides", async () => {

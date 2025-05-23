@@ -18,11 +18,7 @@
         "ignore": [],
         "rules": {
             "correctness": {
-                "noUnusedImports": "error",
-                "noUnusedVariables": {
-                    "level": "warn",
-                    "fix": "none"
-                }
+                "noUnusedImports": "error"
             },
             "style": {
                 "noParameterAssign": "off",

@@ -36,6 +36,14 @@ else
     fi
 fi
 
+echo "Resetting local changes to package.json and pnpm-lock.yaml..."
+git checkout --quiet -- package.json pnpm-lock.yaml || true
+
+if ! command -v pnpm >/dev/null 2>&1; then
+    echo "pnpm not found, preparing with Corepack..."
+    corepack prepare pnpm@latest --activate
+fi
+
 echo "Updating..."
 git pull --no-rebase
 

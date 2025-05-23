@@ -13,12 +13,13 @@ import Transport from "winston-transport";
 
 import {Zcl} from "zigbee-herdsman";
 import * as zhc from "zigbee-herdsman-converters";
+import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 
 import Device from "../model/device";
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
-import utils from "../util/utils";
+import utils, {assertString} from "../util/utils";
 import Extension from "./extension";
 
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
@@ -59,14 +60,13 @@ export default class Bridge extends Extension {
 
     override async start(): Promise<void> {
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
-        const baseTopic = settings.get().mqtt.base_topic;
 
         const bridgeLogging = (message: string, level: string, namespace: string): void => {
             const payload = stringify({message, level, namespace});
 
             if (payload !== this.lastBridgeLoggingPayload) {
                 this.lastBridgeLoggingPayload = payload;
-                void this.mqtt.publish("bridge/logging", payload, {}, baseTopic, true);
+                void this.mqtt.publish("bridge/logging", payload, {skipLog: true});
             }
         };
 
@@ -139,7 +139,7 @@ export default class Bridge extends Extension {
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
             await this.publishDevices();
@@ -147,7 +147,7 @@ export default class Bridge extends Extension {
 
             const payload: Zigbee2MQTTAPI["bridge/event"] = {type: "device_leave", data: {ieee_address: data.ieeeAddr, friendly_name: data.name}};
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, async () => {
             await this.publishDevices();
@@ -175,7 +175,7 @@ export default class Bridge extends Extension {
                 };
             }
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceAnnounce(this, async (data) => {
             await this.publishDevices();
@@ -185,7 +185,7 @@ export default class Bridge extends Extension {
                 data: {friendly_name: data.device.name, ieee_address: data.device.ieeeAddr},
             };
 
-            await this.mqtt.publish("bridge/event", stringify(payload), {retain: false, qos: 0});
+            await this.mqtt.publish("bridge/event", stringify(payload));
         });
 
         await this.publishInfo();
@@ -575,7 +575,8 @@ export default class Bridge extends Extension {
         }
 
         const from = deviceAndHasLast ? this.lastJoinedDeviceIeeeAddr : message.from;
-        const to = message.to;
+        assertString(message.to, "to");
+        const to = message.to.trim();
         const homeAssisantRename = message.homeassistant_rename !== undefined ? message.homeassistant_rename : false;
         const entity = this.getEntity(entityType, from);
         const oldFriendlyName = entity.options.friendly_name;
@@ -583,7 +584,7 @@ export default class Bridge extends Extension {
         settings.changeFriendlyName(from, to);
 
         // Clear retained messages
-        await this.mqtt.publish(oldFriendlyName, "", {retain: true});
+        await this.mqtt.publish(oldFriendlyName, "", {clientOptions: {retain: true}});
 
         this.eventBus.emitEntityRenamed({entity: entity, homeAssisantRename, from: oldFriendlyName, to});
 
@@ -652,7 +653,7 @@ export default class Bridge extends Extension {
             this.state.remove(entity.ID);
 
             // Clear any retained messages
-            await this.mqtt.publish(friendlyName, "", {retain: true});
+            await this.mqtt.publish(friendlyName, "", {clientOptions: {retain: true}});
 
             logger.info(`Successfully removed ${entityType} '${friendlyName}'${blockForceLog}`);
 
@@ -724,7 +725,7 @@ export default class Bridge extends Extension {
             config_schema: settings.schemaJson,
         };
 
-        await this.mqtt.publish("bridge/info", stringify(payload), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/info", stringify(payload), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishDevices(): Promise<void> {
@@ -746,8 +747,8 @@ export default class Bridge extends Extension {
 
                 for (const bind of endpoint.binds) {
                     const target = utils.isZHEndpoint(bind.target)
-                        ? {type: "endpoint", ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
-                        : {type: "group", id: bind.target.groupID};
+                        ? {type: "endpoint" as const, ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
+                        : {type: "group" as const, id: bind.target.groupID};
                     data.bindings.push({cluster: bind.cluster.name, target});
                 }
 
@@ -777,14 +778,16 @@ export default class Bridge extends Extension {
                 software_build_id: device.zh.softwareBuildID,
                 date_code: device.zh.dateCode,
                 model_id: device.zh.modelID,
-                interviewing: device.zh.interviewing,
-                interview_completed: device.zh.interviewCompleted,
+                /** @deprecated interviewing and interview_completed are superceded by interview_state */
+                interviewing: device.zh.interviewState === InterviewState.InProgress,
+                interview_completed: device.zh.interviewState === InterviewState.Successful,
+                interview_state: device.zh.interviewState,
                 manufacturer: device.zh.manufacturerName,
                 endpoints,
             });
         }
 
-        await this.mqtt.publish("bridge/devices", stringify(devices), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/devices", stringify(devices), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishGroups(): Promise<void> {
@@ -806,11 +809,11 @@ export default class Bridge extends Extension {
             });
         }
 
-        await this.mqtt.publish("bridge/groups", stringify(groups), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/groups", stringify(groups), {clientOptions: {retain: true}, skipLog: true});
     }
 
     async publishDefinitions(): Promise<void> {
-        const data: Zigbee2MQTTAPI["bridge/definition"] = {
+        const data: Zigbee2MQTTAPI["bridge/definitions"] = {
             clusters: Zcl.Clusters,
             custom_clusters: {},
         };
@@ -819,7 +822,7 @@ export default class Bridge extends Extension {
             data.custom_clusters[device.ieeeAddr] = device.customClusters;
         }
 
-        await this.mqtt.publish("bridge/definitions", stringify(data), {retain: true, qos: 0}, settings.get().mqtt.base_topic, true);
+        await this.mqtt.publish("bridge/definitions", stringify(data), {clientOptions: {retain: true}, skipLog: true});
     }
 
     getDefinitionPayload(device: Device): Zigbee2MQTTDevice["definition"] | undefined {

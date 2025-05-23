@@ -108,10 +108,10 @@ describe("Extension: Bind", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         // Teardown
         target.binds = originalTargetBinds;
@@ -125,7 +125,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -184,10 +184,10 @@ describe("Extension: Bind", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         // Teardown
         target.binds = originalTargetBinds;
@@ -254,10 +254,10 @@ describe("Extension: Bind", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         // Teardown
         target.configuredReportings = originalTargetCR;
@@ -277,7 +277,26 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {from: "remote", from_endpoint: "default", to: "bulb_color", clusters: ["genOnOff"], failed: []}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
+        );
+    });
+
+    it("Should allow to bind to coordinator by ieeeAddr", async () => {
+        const device = devices.remote;
+        const target = devices.coordinator.getEndpoint(1)!;
+        const endpoint = device.getEndpoint(1)!;
+        mockClear(device);
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/bind",
+            stringify({from: "remote", to: devices.coordinator.ieeeAddr, clusters: ["genOnOff"]}),
+        );
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(1);
+        expect(endpoint.bind).toHaveBeenCalledWith("genOnOff", target);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/bind",
+            stringify({data: {from: "remote", from_endpoint: "default", to: "0x00124b00120144ae", clusters: ["genOnOff"], failed: []}, status: "ok"}),
+            {},
         );
     });
 
@@ -292,7 +311,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Nothing to bind"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -344,7 +363,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "default", to: "bulb_color", clusters: ["genScenes", "genOnOff", "genLevelCtrl"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
 
         // Teardown
@@ -370,7 +389,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "default", to: "Coordinator", clusters: ["genScenes", "genOnOff", "genLevelCtrl"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -401,7 +420,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "default", to: "group_1", clusters: ["genScenes", "genOnOff", "genLevelCtrl"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
 
         // Should configure reporting for device added to group
@@ -437,7 +456,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "default", to: "group_1", clusters: ["genScenes", "genOnOff", "genLevelCtrl"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -514,7 +533,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "default", to: "1", clusters: ["genScenes", "genOnOff", "genLevelCtrl"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -532,7 +551,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Failed to bind"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -554,7 +573,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: "ep2", to: "wall_switch_double", to_endpoint: "right", clusters: ["genOnOff"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -576,7 +595,7 @@ describe("Extension: Bind", () => {
                 data: {from: "remote", from_endpoint: 2, to: "wall_switch_double", to_endpoint: 3, clusters: ["genOnOff"], failed: []},
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -601,7 +620,7 @@ describe("Extension: Bind", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -617,7 +636,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {from: "remote", from_endpoint: "ep2", to: "wall_switch", clusters: ["genOnOff"], failed: []}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -644,7 +663,7 @@ describe("Extension: Bind", () => {
                 },
                 status: "ok",
             }),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -656,7 +675,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Source device 'remote_not_existing' does not exist"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -671,7 +690,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Source device 'remote' does not have endpoint 'not_existing_endpoint'"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -683,7 +702,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Target device or group 'bulb_color_not_existing' does not exist"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -698,7 +717,7 @@ describe("Extension: Bind", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/bind",
             stringify({data: {}, status: "error", error: "Target device 'bulb_color' does not have endpoint 'not_existing_endpoint'"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 

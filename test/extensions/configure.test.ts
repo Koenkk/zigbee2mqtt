@@ -6,6 +6,8 @@ import {type Device, type Endpoint, devices, events as mockZHEvents} from "../mo
 
 import stringify from "json-stable-stringify-without-jsonify";
 
+import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+
 import {Controller} from "../../lib/controller";
 import Configure from "../../lib/extension/configure";
 import * as settings from "../../lib/util/settings";
@@ -156,7 +158,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {id: "remote"}, status: "ok"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -166,7 +168,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Device 'not_existing_device' does not exist"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -177,7 +179,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Failed to configure (Bind timeout after 10s)"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -187,7 +189,7 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
@@ -197,19 +199,19 @@ describe("Extension: Configure", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
-            {retain: false, qos: 0},
+            {},
         );
     });
 
     it("Should not configure when interview not completed", async () => {
         const device = devices.remote;
         delete device.meta.configured;
-        device.interviewCompleted = false;
+        device.interviewState = InterviewState.Pending;
         mockClear(device);
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expectRemoteNotConfigured();
-        device.interviewCompleted = true;
+        device.interviewState = InterviewState.Successful;
     });
 
     it("Should not configure when already configuring", async () => {
