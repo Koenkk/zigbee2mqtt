@@ -1,5 +1,9 @@
 declare module "zigbee2mqtt-frontend" {
-    export function getPath(): string;
+    const frontend: {
+        getPath: () => string;
+    };
+
+    export default frontend;
 }
 
 declare module "http" {

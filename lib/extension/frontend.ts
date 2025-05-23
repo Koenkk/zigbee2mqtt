@@ -16,8 +16,6 @@ import finalhandler from "finalhandler";
 import stringify from "json-stable-stringify-without-jsonify";
 import WebSocket from "ws";
 
-import frontend from "zigbee2mqtt-frontend";
-
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
@@ -29,11 +27,6 @@ import Extension from "./extension";
  */
 export class Frontend extends Extension {
     private mqttBaseTopic: string;
-    private host: string | undefined;
-    private port: number;
-    private sslCert: string | undefined;
-    private sslKey: string | undefined;
-    private authToken: string | undefined;
     private server!: Server;
     private fileServer!: RequestHandler;
     private deviceIconsFileServer!: RequestHandler;
@@ -54,27 +47,22 @@ export class Frontend extends Extension {
 
         const frontendSettings = settings.get().frontend;
         assert(frontendSettings.enabled, `Frontend extension created with setting 'enabled: false'`);
-        this.host = frontendSettings.host;
-        this.port = frontendSettings.port;
-        this.sslCert = frontendSettings.ssl_cert;
-        this.sslKey = frontendSettings.ssl_key;
-        this.authToken = frontendSettings.auth_token;
         this.baseUrl = frontendSettings.base_url;
         this.mqttBaseTopic = settings.get().mqtt.base_topic;
     }
 
-    private isHttpsConfigured(): boolean {
-        if (this.sslCert && this.sslKey) {
-            if (!existsSync(this.sslCert) || !existsSync(this.sslKey)) {
-                logger.error(`defined ssl_cert '${this.sslCert}' or ssl_key '${this.sslKey}' file path does not exists, server won't be secured.`);
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
     override async start(): Promise<void> {
+        const hasSSL = (val: string | undefined, key: string): val is string => {
+            if (val) {
+                if (!existsSync(val)) {
+                    logger.error(`Defined ${key} '${val}' file path does not exists, server won't be secured.`);
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        };
+        const {host, port, ssl_key: sslKey, ssl_cert: sslCert} = settings.get().frontend;
         const options = {
             enableBrotli: true,
             // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
@@ -90,15 +78,15 @@ export class Frontend extends Extension {
                 /* v8 ignore stop */
             },
         };
-        this.fileServer = expressStaticGzip(frontend.getPath(), options);
+        const frontend = (await import(settings.get().frontend.package)) as typeof import("zigbee2mqtt-frontend");
+        this.fileServer = expressStaticGzip(frontend.default.getPath(), options);
         this.deviceIconsFileServer = expressStaticGzip(data.joinPath("device_icons"), options);
         this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
 
         this.wss.on("connection", this.onWebSocketConnection);
 
-        if (this.isHttpsConfigured()) {
-            // biome-ignore lint/style/noNonNullAssertion: valid from `isHttpsConfigured`
-            const serverOptions = {key: readFileSync(this.sslKey!), cert: readFileSync(this.sslCert!)};
+        if (hasSSL(sslKey, "ssl_key") && hasSSL(sslCert, "ssl_cert")) {
+            const serverOptions = {key: readFileSync(sslKey), cert: readFileSync(sslCert)};
             this.server = createSecureServer(serverOptions, this.onRequest);
         } else {
             this.server = createServer(this.onRequest);
@@ -108,15 +96,15 @@ export class Frontend extends Extension {
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
 
-        if (!this.host) {
-            this.server.listen(this.port);
-            logger.info(`Started frontend on port ${this.port}`);
-        } else if (this.host.startsWith("/")) {
-            this.server.listen(this.host);
-            logger.info(`Started frontend on socket ${this.host}`);
+        if (!host) {
+            this.server.listen(port);
+            logger.info(`Started frontend on port ${port}`);
+        } else if (host.startsWith("/")) {
+            this.server.listen(host);
+            logger.info(`Started frontend on socket ${host}`);
         } else {
-            this.server.listen(this.port, this.host);
-            logger.info(`Started frontend on port ${this.host}:${this.port}`);
+            this.server.listen(port, host);
+            logger.info(`Started frontend on port ${host}:${port}`);
         }
     }
 
@@ -162,21 +150,17 @@ export class Frontend extends Extension {
         }
     }
 
-    private authenticate(request: IncomingMessage, cb: (authenticate: boolean) => void): void {
-        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
-        const {query} = parse(request.url!, true);
-        cb(!this.authToken || this.authToken === query.token);
-    }
-
     @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
         this.wss.handleUpgrade(request, socket, head, (ws) => {
-            this.authenticate(request, (isAuthenticated) => {
-                if (isAuthenticated) {
-                    this.wss.emit("connection", ws, request);
-                } else {
-                    ws.close(4401, "Unauthorized");
-                }
-            });
+            // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
+            const {query} = parse(request.url!, true);
+            const authToken = settings.get().frontend.auth_token;
+
+            if (!authToken || authToken === query.token) {
+                this.wss.emit("connection", ws, request);
+            } else {
+                ws.close(4401, "Unauthorized");
+            }
         });
     }
 
