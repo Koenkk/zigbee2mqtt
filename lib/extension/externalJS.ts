@@ -218,6 +218,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         fs.copyFileSync(file, tmpFile);
         try {
             // Do `replaceAll("\\", "/")` to prevent issues on Windows
+            /* v8 ignore next */
             const mod = await import(os.platform() === "win32" ? `file:///${tmpFile.replaceAll("\\", "/")}` : tmpFile);
             return mod;
         } finally {
