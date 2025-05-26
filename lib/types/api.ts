@@ -142,6 +142,7 @@ export interface Zigbee2MQTTSettings {
     };
     frontend: {
         enabled: boolean;
+        package: "zigbee2mqtt-frontend" | "zigbee2mqtt-windfront";
         auth_token?: string;
         host?: string;
         port: number;

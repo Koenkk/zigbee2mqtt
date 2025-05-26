@@ -352,7 +352,7 @@ describe("Extension: Frontend", () => {
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
     });
 
-    it("Authentification", async () => {
+    it("Authentication", async () => {
         const authToken = "sample-secure-token";
         settings.set(["frontend", "auth_token"], authToken);
         controller = new Controller(vi.fn(), vi.fn());
