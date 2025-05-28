@@ -221,7 +221,7 @@ export class Frontend extends Extension {
         } else {
             // PublishEntityState
             topic = data.entity.name;
-            payload = data.payload;
+            payload = data.message;
         }
 
         for (const client of this.wss.clients) {

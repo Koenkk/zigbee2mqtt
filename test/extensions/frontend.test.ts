@@ -230,6 +230,7 @@ describe("Extension: Frontend", () => {
         mockWSClient.readyState = "open";
         mockWS.clients.push(mockWSClient);
         await mockWSEvents.connection(mockWSClient);
+        devices.bulb_color.linkquality = 20;
 
         const allTopics = mockWSClient.send.mock.calls.map(([m]) => JSON.parse(m).topic);
         expect(allTopics).toContain("bridge/devices");
@@ -249,7 +250,7 @@ describe("Extension: Frontend", () => {
                 state: "ON",
                 effect: null,
                 power_on_behavior: null,
-                linkquality: null,
+                linkquality: 20,
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
@@ -268,7 +269,13 @@ describe("Extension: Frontend", () => {
         expect(mockWSClient.send).toHaveBeenCalledWith(
             stringify({
                 topic: "bulb_color",
-                payload: {state: "ON"},
+                payload: {
+                    state: "ON",
+                    power_on_behavior: null,
+                    effect: null,
+                    linkquality: 20,
+                    update: {state: null, installed_version: -1, latest_version: -1},
+                },
             }),
         );
 
@@ -288,7 +295,14 @@ describe("Extension: Frontend", () => {
         expect(mockWSClient.send).toHaveBeenCalledWith(
             stringify({
                 topic: "bulb_color",
-                payload: {state: "ON", brightness: 90},
+                payload: {
+                    state: "ON",
+                    brightness: 90,
+                    power_on_behavior: null,
+                    effect: null,
+                    linkquality: 20,
+                    update: {state: null, installed_version: -1, latest_version: -1},
+                },
             }),
         );
 
