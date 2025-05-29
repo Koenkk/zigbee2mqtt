@@ -60,7 +60,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
@@ -91,7 +90,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
@@ -126,7 +124,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
@@ -155,7 +152,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
@@ -191,7 +187,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
@@ -220,7 +215,6 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            timestamp: expect.stringMatching(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/),
             response_time: expect.stringMatching(/0x[0-9a-z]+/),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
