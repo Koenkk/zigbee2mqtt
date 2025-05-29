@@ -116,7 +116,7 @@ export const defaults = {
     health: {
         enabled: true,
         interval: 10,
-        with_devices: false,
+        include_devices: false,
         reset_on_check: false,
     },
 } satisfies RecursivePartial<Settings>;

@@ -787,12 +787,12 @@
                     "type": "number",
                     "title": "Interval",
                     "description": "Interval between checks in minutes",
-                    "default": 30,
+                    "default": 10,
                     "requiresRestart": true
                 },
-                "with_devices": {
+                "include_devices": {
                     "type": "boolean",
-                    "title": "With devices",
+                    "title": "Include devices",
                     "description": "Also run various checks on devices (like messages per second).",
                     "default": false
                 },

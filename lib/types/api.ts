@@ -188,7 +188,7 @@ export interface Zigbee2MQTTSettings {
         enabled: boolean;
         /** in minutes */
         interval: number;
-        with_devices: boolean;
+        include_devices: boolean;
         reset_on_check: boolean;
     };
 }

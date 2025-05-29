@@ -33,7 +33,7 @@ export class Health extends Extension {
     }
 
     #includeDevice(device?: Device): boolean {
-        return device?.options.health != null ? device.options.health : settings.get().health.with_devices;
+        return device?.options.health != null ? device.options.health : settings.get().health.include_devices;
     }
 
     async #checkHealth(): Promise<void> {
@@ -85,7 +85,7 @@ export class Health extends Extension {
             }
         }
 
-        await this.mqtt.publish("bridge/health", JSON.stringify(healthcheck), {clientOptions: {retain: true, qos: 0}});
+        await this.mqtt.publish("bridge/health", JSON.stringify(healthcheck), {clientOptions: {retain: true, qos: 1}});
     }
 
     #onLastSeenChanged(data: eventdata.LastSeenChanged): void {
