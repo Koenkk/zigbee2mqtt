@@ -907,6 +907,11 @@
                             "description": "Name of the device in Home Assistant"
                         }
                     }
+                },
+                "health": {
+                    "type": "boolean",
+                    "title": "Health",
+                    "description": "Enable health checking"
                 }
             },
             "required": ["friendly_name"]
