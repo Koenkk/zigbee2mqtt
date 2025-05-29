@@ -238,7 +238,7 @@
                     "default": false
                 },
                 "adapter": {
-                    "type": ["string"],
+                    "type": "string",
                     "enum": ["deconz", "zstack", "zigate", "ezsp", "ember", "zboss", "zoh"],
                     "title": "Adapter",
                     "requiresRestart": true,
@@ -384,6 +384,14 @@
                     "description": "Enable frontend",
                     "default": false,
                     "requiresRestart": true
+                },
+                "package": {
+                    "type": "string",
+                    "enum": ["zigbee2mqtt-frontend", "zigbee2mqtt-windfront"],
+                    "title": "Package",
+                    "default": "zigbee2mqtt-frontend",
+                    "requiresRestart": true,
+                    "description": "Package used for the frontend"
                 },
                 "port": {
                     "type": "number",

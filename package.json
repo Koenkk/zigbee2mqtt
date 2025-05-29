@@ -62,8 +62,9 @@
         "winston-transport": "^4.9.0",
         "ws": "^8.18.1",
         "zigbee-herdsman": "4.1.0",
-        "zigbee-herdsman-converters": "23.49.0",
-        "zigbee2mqtt-frontend": "0.9.13"
+        "zigbee-herdsman-converters": "23.51.0",
+        "zigbee2mqtt-frontend": "0.9.13",
+        "zigbee2mqtt-windfront": "^1.0.0"
     },
     "devDependencies": {
         "@biomejs/biome": "^1.9.4",
@@ -72,7 +73,7 @@
         "@types/js-yaml": "^4.0.9",
         "@types/node": "^22.14.1",
         "@types/object-assign-deep": "^0.4.3",
-        "@types/readable-stream": "4.0.18",
+        "@types/readable-stream": "4.0.19",
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
