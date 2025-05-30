@@ -858,7 +858,15 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/group/members/remove_all"
     | "bridge/request/touchlink/factory_reset"
     | "bridge/request/touchlink/scan"
-    | "bridge/request/touchlink/identify";
+    | "bridge/request/touchlink/identify"
+    | "{friendlyNameOrId}/set"
+    | "{friendlyNameOrId}/set/{attribute}"
+    | "{friendlyNameOrId}/{endpoint}/set"
+    | "{friendlyNameOrId}/{endpoint}/set/{attribute}"
+    | "{friendlyNameOrId}/get"
+    | "{friendlyNameOrId}/get/{attribute}"
+    | "{friendlyNameOrId}/{endpoint}/get"
+    | "{friendlyNameOrId}/{endpoint}/get/{attribute}";
 
 export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/permit_join"
