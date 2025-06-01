@@ -1,5 +1,56 @@
 # Changelog
 
+## [2.4.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.3.0...2.4.0) (2025-06-01)
+
+
+### Features
+
+* WindFront new frontend support ([#27489](https://github.com/Koenkk/zigbee2mqtt/issues/27489)) ([1b85968](https://github.com/Koenkk/zigbee2mqtt/commit/1b85968e5e691182305cf334836c069e70a79775))
+
+
+### Bug Fixes
+
+* API missing a few request endpoints ([#27551](https://github.com/Koenkk/zigbee2mqtt/issues/27551)) ([a5e4e9e](https://github.com/Koenkk/zigbee2mqtt/commit/a5e4e9ef61e6f9e3251de43f2c9525d94c13249d))
+* Don't copy external JS to `dist` folder ([#27397](https://github.com/Koenkk/zigbee2mqtt/issues/27397)) ([0ead302](https://github.com/Koenkk/zigbee2mqtt/commit/0ead302c0a01f8fd2356e70c853f7795cb55b1c8))
+* Drop Node 18 support, add 24 ([#27348](https://github.com/Koenkk/zigbee2mqtt/issues/27348)) ([aad87cc](https://github.com/Koenkk/zigbee2mqtt/commit/aad87cc3ec48c664ec58a02fa39c5c23a73db492))
+* Fix bind/unbind by coordinator ieeeAddr not working ([#27333](https://github.com/Koenkk/zigbee2mqtt/issues/27333)) ([d8855b8](https://github.com/Koenkk/zigbee2mqtt/commit/d8855b8e6f1abc63daf6771a9ec07279ebc168d9))
+* Fix import error on Windows (ERR_UNSUPPORTED_ESM_URL_SCHEME) ([#27519](https://github.com/Koenkk/zigbee2mqtt/issues/27519)) ([ed03c40](https://github.com/Koenkk/zigbee2mqtt/commit/ed03c40dad1a8722b24e84f4ed8613b0e37a99ea))
+* HA integration for external sensors Aqara W100 ([#27520](https://github.com/Koenkk/zigbee2mqtt/issues/27520)) ([4bf4563](https://github.com/Koenkk/zigbee2mqtt/commit/4bf45630e28e5534fe68bb4bac6b020701c0e209))
+* **ignore:** bump the minor-patch group across 1 directory with 2 updates ([#27562](https://github.com/Koenkk/zigbee2mqtt/issues/27562)) ([278e3fb](https://github.com/Koenkk/zigbee2mqtt/commit/278e3fb40e84c97ab5dce8147fab7029f5bca168))
+* **ignore:** Cleanup publish options ([#27226](https://github.com/Koenkk/zigbee2mqtt/issues/27226)) ([b7b92da](https://github.com/Koenkk/zigbee2mqtt/commit/b7b92da8ffbaa25ce5927cb6dbf12f9da593a2e0))
+* **ignore:** Fix passive states not updating in frontend ([#27532](https://github.com/Koenkk/zigbee2mqtt/issues/27532)) ([a289f98](https://github.com/Koenkk/zigbee2mqtt/commit/a289f981bf81ef0734561317628f3de2e3b38f40))
+* **ignore:** networkmap typing ([#27566](https://github.com/Koenkk/zigbee2mqtt/issues/27566)) ([621cae2](https://github.com/Koenkk/zigbee2mqtt/commit/621cae2a6398d9eeced00d499bf542a8143de456))
+* **ignore:** update zigbee-herdsman to 4.0.2 ([#27380](https://github.com/Koenkk/zigbee2mqtt/issues/27380)) ([cc3521c](https://github.com/Koenkk/zigbee2mqtt/commit/cc3521c877a2c5048666e27c05f21b5852dceb5c))
+* **ignore:** update zigbee-herdsman to 4.1.0 ([#27462](https://github.com/Koenkk/zigbee2mqtt/issues/27462)) ([3edcfd7](https://github.com/Koenkk/zigbee2mqtt/commit/3edcfd7ff6b5e19ee0ad8780655d911b37b9bcab))
+* **ignore:** update zigbee-herdsman-converters to 23.37.0 ([#27300](https://github.com/Koenkk/zigbee2mqtt/issues/27300)) ([ff823db](https://github.com/Koenkk/zigbee2mqtt/commit/ff823dbaf0b9818be83b0e3ba02073b1afcd439d))
+* **ignore:** update zigbee-herdsman-converters to 23.38.0 ([#27329](https://github.com/Koenkk/zigbee2mqtt/issues/27329)) ([164c322](https://github.com/Koenkk/zigbee2mqtt/commit/164c3222b9dd6cec12ac407145bc8e38985fa7cb))
+* **ignore:** update zigbee-herdsman-converters to 23.39.0 ([#27340](https://github.com/Koenkk/zigbee2mqtt/issues/27340)) ([1d6ba53](https://github.com/Koenkk/zigbee2mqtt/commit/1d6ba5393a1dc5626b6ca539e3ec245cc3d61a56))
+* **ignore:** update zigbee-herdsman-converters to 23.40.0 ([#27347](https://github.com/Koenkk/zigbee2mqtt/issues/27347)) ([7a4f286](https://github.com/Koenkk/zigbee2mqtt/commit/7a4f2869b9836cd9f0e037c324585bdf453e8e8c))
+* **ignore:** update zigbee-herdsman-converters to 23.40.1 ([#27358](https://github.com/Koenkk/zigbee2mqtt/issues/27358)) ([317c9b4](https://github.com/Koenkk/zigbee2mqtt/commit/317c9b4046c4e02a6bad65b1e2cb9f5e59803f24))
+* **ignore:** update zigbee-herdsman-converters to 23.41.0 ([#27371](https://github.com/Koenkk/zigbee2mqtt/issues/27371)) ([f7e5051](https://github.com/Koenkk/zigbee2mqtt/commit/f7e50519e30ca65a396b07d89c3a81b922916ac9))
+* **ignore:** update zigbee-herdsman-converters to 23.42.0 ([#27392](https://github.com/Koenkk/zigbee2mqtt/issues/27392)) ([edcfe32](https://github.com/Koenkk/zigbee2mqtt/commit/edcfe325725aab283753b10f72521cb3f4b0dca4))
+* **ignore:** update zigbee-herdsman-converters to 23.43.0 ([#27394](https://github.com/Koenkk/zigbee2mqtt/issues/27394)) ([e061126](https://github.com/Koenkk/zigbee2mqtt/commit/e0611269f37aedec70ebfe17f75e44cbd2ce619d))
+* **ignore:** update zigbee-herdsman-converters to 23.44.0 ([#27404](https://github.com/Koenkk/zigbee2mqtt/issues/27404)) ([21c9faf](https://github.com/Koenkk/zigbee2mqtt/commit/21c9faffafafbbf6f52f12ecd20bead82bf20777))
+* **ignore:** update zigbee-herdsman-converters to 23.45.0 ([#27422](https://github.com/Koenkk/zigbee2mqtt/issues/27422)) ([8c3252c](https://github.com/Koenkk/zigbee2mqtt/commit/8c3252c2136b6c7e92c5c63ccfbb3af7a943f818))
+* **ignore:** update zigbee-herdsman-converters to 23.46.0 ([#27444](https://github.com/Koenkk/zigbee2mqtt/issues/27444)) ([7449c23](https://github.com/Koenkk/zigbee2mqtt/commit/7449c2357c2b19fa94f6bb111783e723e0a746f5))
+* **ignore:** update zigbee-herdsman-converters to 23.47.0 ([#27463](https://github.com/Koenkk/zigbee2mqtt/issues/27463)) ([693f0d0](https://github.com/Koenkk/zigbee2mqtt/commit/693f0d0a35231b529261fe1652bb6e355d5854fe))
+* **ignore:** update zigbee-herdsman-converters to 23.48.0 ([#27470](https://github.com/Koenkk/zigbee2mqtt/issues/27470)) ([1303340](https://github.com/Koenkk/zigbee2mqtt/commit/1303340aaf1aede9b6f4042d7a3780407a7d42e5))
+* **ignore:** update zigbee-herdsman-converters to 23.49.0 ([#27479](https://github.com/Koenkk/zigbee2mqtt/issues/27479)) ([ea49d1a](https://github.com/Koenkk/zigbee2mqtt/commit/ea49d1ae446a422ebd480b630a51b2e6f8921276))
+* **ignore:** update zigbee-herdsman-converters to 23.50.0 ([#27521](https://github.com/Koenkk/zigbee2mqtt/issues/27521)) ([1960e02](https://github.com/Koenkk/zigbee2mqtt/commit/1960e026d20cefc8c64d0a47e32f0bea075f24f6))
+* **ignore:** update zigbee-herdsman-converters to 23.50.1 ([#27531](https://github.com/Koenkk/zigbee2mqtt/issues/27531)) ([00dda24](https://github.com/Koenkk/zigbee2mqtt/commit/00dda245e49761afe155d0920059893448af8506))
+* **ignore:** update zigbee-herdsman-converters to 23.51.0 ([#27540](https://github.com/Koenkk/zigbee2mqtt/issues/27540)) ([f5920fd](https://github.com/Koenkk/zigbee2mqtt/commit/f5920fd53be777a289fa480cf1ef62bd1701aba3))
+* **ignore:** update zigbee-herdsman-converters to 23.52.0 ([#27559](https://github.com/Koenkk/zigbee2mqtt/issues/27559)) ([6ed18c7](https://github.com/Koenkk/zigbee2mqtt/commit/6ed18c757dd81899d5a8dcf9f912927dfbdde95d))
+* **ignore:** update zigbee-herdsman-converters to 23.52.1 ([#27563](https://github.com/Koenkk/zigbee2mqtt/issues/27563)) ([711b456](https://github.com/Koenkk/zigbee2mqtt/commit/711b456b068ef86c1add5d9cc16770f20a495622))
+* **ignore:** update zigbee-herdsman-converters to 23.53.0 ([#27572](https://github.com/Koenkk/zigbee2mqtt/issues/27572)) ([e0b0248](https://github.com/Koenkk/zigbee2mqtt/commit/e0b02481729916daf8a7ff02ddc61dbb717cc271))
+* **ignore:** update zigbee2mqtt-frontend to 0.9.11 ([#27301](https://github.com/Koenkk/zigbee2mqtt/issues/27301)) ([3cb63aa](https://github.com/Koenkk/zigbee2mqtt/commit/3cb63aa9229a3b4a0f099ce3f8481badf241e202))
+* **ignore:** update zigbee2mqtt-frontend to 0.9.12 ([#27379](https://github.com/Koenkk/zigbee2mqtt/issues/27379)) ([615c53c](https://github.com/Koenkk/zigbee2mqtt/commit/615c53c93c8cda90836d9edf98f54d5e589610b8))
+* **ignore:** update zigbee2mqtt-frontend to 0.9.13 ([#27382](https://github.com/Koenkk/zigbee2mqtt/issues/27382)) ([f656d96](https://github.com/Koenkk/zigbee2mqtt/commit/f656d9629c405d32067ccbbf411b1c5d6255e4ff))
+* **ignore:** update zigbee2mqtt-windfront to 1.0.2 ([#27567](https://github.com/Koenkk/zigbee2mqtt/issues/27567)) ([5e44cf7](https://github.com/Koenkk/zigbee2mqtt/commit/5e44cf77b3a4c664be4b97a95455a39a18bd8632))
+* Improve update script ([#27308](https://github.com/Koenkk/zigbee2mqtt/issues/27308)) ([3cbcc4a](https://github.com/Koenkk/zigbee2mqtt/commit/3cbcc4a0abbe1cb09096d0b989abba48acea8772))
+* Only send JSON state over WebSocket ([#27225](https://github.com/Koenkk/zigbee2mqtt/issues/27225)) ([39e4468](https://github.com/Koenkk/zigbee2mqtt/commit/39e4468308c1909f03ecd068f5c7da23b040f80b))
+* Rerun onboarding if Z2M start failed after previous onboarding ([#27386](https://github.com/Koenkk/zigbee2mqtt/issues/27386)) ([d697c29](https://github.com/Koenkk/zigbee2mqtt/commit/d697c29c7be5e7e49d82d25f355a26875ac383a3))
+* Trim name on rename ([#27332](https://github.com/Koenkk/zigbee2mqtt/issues/27332)) ([69364c9](https://github.com/Koenkk/zigbee2mqtt/commit/69364c958f9f2b7430bfb5a072ffe5267bfcc378))
+
 ## [2.3.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.2.1...2.3.0) (2025-05-01)
 
 
