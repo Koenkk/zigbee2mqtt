@@ -250,7 +250,6 @@ describe("Extension: Frontend", () => {
                 state: "ON",
                 effect: null,
                 power_on_behavior: null,
-                color_options: null,
                 linkquality: 20,
                 update: {state: null, installed_version: -1, latest_version: -1},
             }),
@@ -273,7 +272,6 @@ describe("Extension: Frontend", () => {
                 payload: {
                     state: "ON",
                     power_on_behavior: null,
-                    color_options: null,
                     effect: null,
                     linkquality: 20,
                     update: {state: null, installed_version: -1, latest_version: -1},
@@ -301,7 +299,6 @@ describe("Extension: Frontend", () => {
                     state: "ON",
                     brightness: 90,
                     power_on_behavior: null,
-                    color_options: null,
                     effect: null,
                     linkquality: 20,
                     update: {state: null, installed_version: -1, latest_version: -1},

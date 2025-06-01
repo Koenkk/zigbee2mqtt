@@ -320,9 +320,9 @@ describe("Extension: Bridge", () => {
         );
     });
 
-    it("onlythis Should publish devices on startup", async () => {
+    it("Should publish devices on startup", async () => {
         await resetExtension();
-        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/devices")[1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/devices",
             stringify([
@@ -683,27 +683,6 @@ describe("Extension: Bridge", () => {
                                         property: "color",
                                         type: "composite",
                                     },
-                                    {
-                                        access: 7,
-                                        description: "Configure genLevelCtrl",
-                                        features: [
-                                            {
-                                                access: 7,
-                                                description:
-                                                    'this setting can affect the "on_level", "current_level_startup" or "brightness" setting',
-                                                label: "Execute if off",
-                                                name: "execute_if_off",
-                                                property: "execute_if_off",
-                                                type: "binary",
-                                                value_off: false,
-                                                value_on: true,
-                                            },
-                                        ],
-                                        label: "Level config",
-                                        name: "level_config",
-                                        property: "level_config",
-                                        type: "composite",
-                                    },
                                 ],
                                 type: "light",
                             },
@@ -716,27 +695,6 @@ describe("Extension: Bridge", () => {
                                 property: "power_on_behavior",
                                 type: "enum",
                                 values: ["off", "on", "toggle", "previous"],
-                            },
-                            {
-                                access: 7,
-                                category: "config",
-                                description: "Advanced color behavior",
-                                features: [
-                                    {
-                                        access: 2,
-                                        description: "Controls whether color and color temperature can be set while light is off",
-                                        label: "Execute if off",
-                                        name: "execute_if_off",
-                                        property: "execute_if_off",
-                                        type: "binary",
-                                        value_off: false,
-                                        value_on: true,
-                                    },
-                                ],
-                                label: "Color options",
-                                name: "color_options",
-                                property: "color_options",
-                                type: "composite",
                             },
                             {
                                 access: 2,
