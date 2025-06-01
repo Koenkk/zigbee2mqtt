@@ -247,7 +247,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs, level_config), power_on_behavior, color_options, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
@@ -554,7 +554,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs, level_config), power_on_behavior, color_options, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
@@ -711,7 +711,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs, level_config), power_on_behavior, color_options, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
