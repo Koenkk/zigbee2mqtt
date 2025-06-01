@@ -64,7 +64,7 @@
         "zigbee-herdsman": "4.1.0",
         "zigbee-herdsman-converters": "23.52.1",
         "zigbee2mqtt-frontend": "0.9.13",
-        "zigbee2mqtt-windfront": "^1.0.0"
+        "zigbee2mqtt-windfront": "^1.0.2"
     },
     "devDependencies": {
         "@biomejs/biome": "^1.9.4",
