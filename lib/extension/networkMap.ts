@@ -268,8 +268,7 @@ export default class NetworkMap extends Extension {
                 networkAddress: device.zh.networkAddress,
                 manufacturerName: device.zh.manufacturerName,
                 modelID: device.zh.modelID,
-                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: wrong typing? will be undefined if type=EndDevice?
-                failed: failed.get(device)!,
+                failed: failed.get(device),
                 lastSeen: device.zh.lastSeen,
                 definition,
             });

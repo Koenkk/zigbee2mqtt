@@ -263,7 +263,7 @@ export interface Zigbee2MQTTNetworkMap {
         networkAddress: number;
         manufacturerName: string | undefined;
         modelID: string | undefined;
-        failed: string[];
+        failed?: string[];
         lastSeen: number | undefined;
         definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
