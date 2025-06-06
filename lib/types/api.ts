@@ -229,8 +229,8 @@ export interface Zigbee2MQTTDevice {
     supported: boolean;
     friendly_name: string;
     disabled: boolean;
-    description: string | undefined;
-    definition: Zigbee2MQTTDeviceDefinition | undefined;
+    description?: string;
+    definition?: Zigbee2MQTTDeviceDefinition;
     power_source: zigbeeHerdsman.Models.Device["powerSource"];
     software_build_id: zigbeeHerdsman.Models.Device["softwareBuildID"];
     date_code: zigbeeHerdsman.Models.Device["dateCode"];
@@ -250,7 +250,7 @@ export interface Zigbee2MQTTGroupMember {
 export interface Zigbee2MQTTGroup {
     id: number;
     friendly_name: "default_bind_group" | string;
-    description: string | undefined;
+    description?: string;
     scenes: Zigbee2MQTTScene[];
     members: Zigbee2MQTTGroupMember[];
 }
@@ -261,10 +261,10 @@ export interface Zigbee2MQTTNetworkMap {
         friendlyName: string;
         type: string;
         networkAddress: number;
-        manufacturerName: string | undefined;
-        modelID: string | undefined;
+        manufacturerName?: string;
+        modelID?: string;
         failed?: string[];
-        lastSeen: number | undefined;
+        lastSeen?: number;
         definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
     links: {
