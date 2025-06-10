@@ -112,6 +112,7 @@ describe("Extension: Health", () => {
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color_2});
         await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
         await mockZHEvents.deviceJoined({device: devices.bulb_color});
+        await mockZHEvents.deviceNetworkAddressChanged({device: devices.bulb_color});
         await vi.advanceTimersByTimeAsync(seconds(1));
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
         await vi.advanceTimersByTimeAsync(seconds(1));
@@ -140,6 +141,7 @@ describe("Extension: Health", () => {
                     leave_count: 1,
                     messages: 4,
                     messages_per_sec: 1.3333,
+                    network_address_changes: 1,
                 },
             },
         });
@@ -168,6 +170,7 @@ describe("Extension: Health", () => {
                     leave_count: 1,
                     messages: 4,
                     messages_per_sec: 1.3333,
+                    network_address_changes: 1,
                 },
             },
         });
@@ -203,6 +206,7 @@ describe("Extension: Health", () => {
                     leave_count: 0,
                     messages: 2,
                     messages_per_sec: 0,
+                    network_address_changes: 0,
                 },
             },
         });

@@ -389,7 +389,15 @@ export interface Zigbee2MQTTAPI {
             connected: boolean;
             queued: number;
         };
-        devices?: Record<string /* friendlyName */, {messages: number; messages_per_sec: number; leave_count: number}>;
+        devices?: Record<
+            string /* friendlyName */,
+            {
+                messages: number;
+                messages_per_sec: number;
+                leave_count: number;
+                network_address_changes: number;
+            }
+        >;
     };
 
     "bridge/devices": Zigbee2MQTTDevice[];

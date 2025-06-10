@@ -2,7 +2,7 @@ import * as os from "node:os";
 import * as process from "node:process";
 import type {Zigbee2MQTTAPI} from "../types/api";
 import * as settings from "../util/settings";
-import {minutes} from "../util/utils";
+import utils from "../util/utils";
 import Extension from "./extension";
 
 /** Round with 2 decimals */
@@ -15,6 +15,8 @@ export class Health extends Extension {
     readonly #lastSeenUpdates = new Map<string, {messages: number; first: number; last: number}>();
     /** Mapped by IEEE address */
     readonly #leaveCounts = new Map<string, number>();
+    /** Mapped by IEEE address */
+    readonly #nwkAddressChanges = new Map<string, number>();
 
     #checkTimer: NodeJS.Timeout | undefined;
 
@@ -23,8 +25,9 @@ export class Health extends Extension {
 
         this.eventBus.onLastSeenChanged(this, this.#onLastSeenChanged.bind(this));
         this.eventBus.onDeviceLeave(this, this.#onDeviceLeave.bind(this));
+        this.eventBus.onDeviceNetworkAddressChanged(this, this.#onDeviceNetworkAddressChanged.bind(this));
 
-        this.#checkTimer = setInterval(this.#checkHealth.bind(this), minutes(settings.get().health.interval));
+        this.#checkTimer = setInterval(this.#checkHealth.bind(this), utils.minutes(settings.get().health.interval));
     }
 
     override async stop(): Promise<void> {
@@ -55,7 +58,7 @@ export class Health extends Extension {
             mqtt: this.mqtt.stats,
         };
 
-        if (this.#lastSeenUpdates.size > 0 || this.#leaveCounts.size > 0) {
+        if (this.#lastSeenUpdates.size > 0 || this.#leaveCounts.size > 0 || this.#nwkAddressChanges.size > 0) {
             healthcheck.devices = {};
 
             for (const device of this.zigbee.devicesIterator(
@@ -75,12 +78,14 @@ export class Health extends Extension {
                     messages,
                     messages_per_sec: mps,
                     leave_count: this.#leaveCounts.get(device.ieeeAddr) ?? 0,
+                    network_address_changes: this.#nwkAddressChanges.get(device.ieeeAddr) ?? 0,
                 };
             }
 
             if (settings.get().health.reset_on_check) {
                 this.#lastSeenUpdates.clear();
                 this.#leaveCounts.clear();
+                this.#nwkAddressChanges.clear();
             }
         }
 
@@ -110,5 +115,13 @@ export class Health extends Extension {
         }
 
         this.#leaveCounts.set(data.ieeeAddr, (this.#leaveCounts.get(data.ieeeAddr) ?? 0) + 1);
+    }
+
+    #onDeviceNetworkAddressChanged(data: eventdata.DeviceNetworkAddressChanged): void {
+        if (!this.#includeDevice(data.device)) {
+            return;
+        }
+
+        this.#nwkAddressChanges.set(data.device.ieeeAddr, (this.#nwkAddressChanges.get(data.device.ieeeAddr) ?? 0) + 1);
     }
 }
