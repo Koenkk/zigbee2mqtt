@@ -4,7 +4,7 @@
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
-    "packageManager": "pnpm@10.4.1",
+    "packageManager": "pnpm@10.12.1",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
