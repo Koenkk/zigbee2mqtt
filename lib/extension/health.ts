@@ -10,13 +10,15 @@ const round2 = (n: number): number => Math.round(n * 100.0) / 100.0;
 /** Round with 4 decimals */
 const round4 = (n: number): number => Math.round(n * 10000.0) / 10000.0;
 
+type DeviceHealth = {
+    lastSeenUpdates?: {messages: number; first: number; last: number};
+    leaveCounts: number;
+    networkAddressChanges: number;
+};
+
 export class Health extends Extension {
     /** Mapped by IEEE address */
-    readonly #lastSeenUpdates = new Map<string, {messages: number; first: number; last: number}>();
-    /** Mapped by IEEE address */
-    readonly #leaveCounts = new Map<string, number>();
-    /** Mapped by IEEE address */
-    readonly #nwkAddressChanges = new Map<string, number>();
+    readonly #devices = new Map<string, DeviceHealth>();
 
     #checkTimer: NodeJS.Timeout | undefined;
 
@@ -58,34 +60,29 @@ export class Health extends Extension {
             mqtt: this.mqtt.stats,
         };
 
-        if (this.#lastSeenUpdates.size > 0 || this.#leaveCounts.size > 0 || this.#nwkAddressChanges.size > 0) {
+        if (this.#devices.size > 0) {
             healthcheck.devices = {};
 
-            for (const device of this.zigbee.devicesIterator(
-                (zhDevice) => this.#lastSeenUpdates.has(zhDevice.ieeeAddr) || this.#leaveCounts.has(zhDevice.ieeeAddr),
-            )) {
-                const lastSeenUpdate = this.#lastSeenUpdates.get(device.ieeeAddr);
+            for (const [ieeeAddr, device] of this.#devices) {
                 let messages = 0;
                 let mps = 0;
 
-                if (lastSeenUpdate) {
-                    const timeDiff = lastSeenUpdate.last - lastSeenUpdate.first;
-                    messages = lastSeenUpdate.messages;
+                if (device.lastSeenUpdates) {
+                    const timeDiff = device.lastSeenUpdates.last - device.lastSeenUpdates.first;
+                    messages = device.lastSeenUpdates.messages;
                     mps = timeDiff > 0 ? round4(messages / (timeDiff / 1000.0)) : 0;
                 }
 
-                healthcheck.devices[device.name] = {
+                healthcheck.devices[ieeeAddr] = {
                     messages,
                     messages_per_sec: mps,
-                    leave_count: this.#leaveCounts.get(device.ieeeAddr) ?? 0,
-                    network_address_changes: this.#nwkAddressChanges.get(device.ieeeAddr) ?? 0,
+                    leave_count: device.leaveCounts,
+                    network_address_changes: device.networkAddressChanges,
                 };
             }
 
             if (settings.get().health.reset_on_check) {
-                this.#lastSeenUpdates.clear();
-                this.#leaveCounts.clear();
-                this.#nwkAddressChanges.clear();
+                this.#devices.clear();
             }
         }
 
@@ -97,15 +94,19 @@ export class Health extends Extension {
             return;
         }
 
-        const lastSeenUpdate = this.#lastSeenUpdates.get(data.device.ieeeAddr);
+        const device = this.#devices.get(data.device.ieeeAddr);
 
-        if (lastSeenUpdate) {
-            lastSeenUpdate.messages += 1;
-            lastSeenUpdate.last = Date.now();
+        if (device?.lastSeenUpdates) {
+            device.lastSeenUpdates.messages += 1;
+            device.lastSeenUpdates.last = Date.now();
         } else {
             const now = Date.now();
 
-            this.#lastSeenUpdates.set(data.device.ieeeAddr, {messages: 1, first: now, last: now});
+            this.#devices.set(data.device.ieeeAddr, {
+                lastSeenUpdates: {messages: 1, first: now, last: now},
+                leaveCounts: 0,
+                networkAddressChanges: 0,
+            });
         }
     }
 
@@ -114,7 +115,13 @@ export class Health extends Extension {
             return;
         }
 
-        this.#leaveCounts.set(data.ieeeAddr, (this.#leaveCounts.get(data.ieeeAddr) ?? 0) + 1);
+        const device = this.#devices.get(data.ieeeAddr);
+
+        if (device) {
+            device.leaveCounts += 1;
+        } else {
+            this.#devices.set(data.ieeeAddr, {leaveCounts: 1, networkAddressChanges: 0});
+        }
     }
 
     #onDeviceNetworkAddressChanged(data: eventdata.DeviceNetworkAddressChanged): void {
@@ -122,6 +129,12 @@ export class Health extends Extension {
             return;
         }
 
-        this.#nwkAddressChanges.set(data.device.ieeeAddr, (this.#nwkAddressChanges.get(data.device.ieeeAddr) ?? 0) + 1);
+        const device = this.#devices.get(data.device.ieeeAddr);
+
+        if (device) {
+            device.networkAddressChanges += 1;
+        } else {
+            this.#devices.set(data.device.ieeeAddr, {leaveCounts: 0, networkAddressChanges: 1});
+        }
     }
 }

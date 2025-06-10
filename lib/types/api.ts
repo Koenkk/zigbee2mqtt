@@ -390,7 +390,7 @@ export interface Zigbee2MQTTAPI {
             queued: number;
         };
         devices?: Record<
-            string /* friendlyName */,
+            string /* ieee */,
             {
                 messages: number;
                 messages_per_sec: number;
