@@ -78,7 +78,7 @@
                         },
                         "backoff": {
                             "type": "boolean",
-                            "title": "Enabled",
+                            "title": "Backoff",
                             "description": "Enable timeout backoff on failed availability pings (x1.5, x3, x6, x12...)",
                             "default": true
                         },

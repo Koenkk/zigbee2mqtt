@@ -5,6 +5,8 @@ updates:
       schedule:
           interval: weekly
       target-branch: dev
+      commit-message:
+        prefix: fix(ignore)
       groups:
           minor-patch:
               applies-to: version-updates

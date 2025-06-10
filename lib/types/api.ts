@@ -237,8 +237,8 @@ export interface Zigbee2MQTTDevice {
     supported: boolean;
     friendly_name: string;
     disabled: boolean;
-    description: string | undefined;
-    definition: Zigbee2MQTTDeviceDefinition | undefined;
+    description?: string;
+    definition?: Zigbee2MQTTDeviceDefinition;
     power_source: zigbeeHerdsman.Models.Device["powerSource"];
     software_build_id: zigbeeHerdsman.Models.Device["softwareBuildID"];
     date_code: zigbeeHerdsman.Models.Device["dateCode"];
@@ -258,7 +258,7 @@ export interface Zigbee2MQTTGroupMember {
 export interface Zigbee2MQTTGroup {
     id: number;
     friendly_name: "default_bind_group" | string;
-    description: string | undefined;
+    description?: string;
     scenes: Zigbee2MQTTScene[];
     members: Zigbee2MQTTGroupMember[];
 }
@@ -269,10 +269,10 @@ export interface Zigbee2MQTTNetworkMap {
         friendlyName: string;
         type: string;
         networkAddress: number;
-        manufacturerName: string | undefined;
-        modelID: string | undefined;
-        failed: string[];
-        lastSeen: number | undefined;
+        manufacturerName?: string;
+        modelID?: string;
+        failed?: string[];
+        lastSeen?: number;
         definition?: {model: string; vendor: string; supports: string; description: string};
     }[];
     links: {
@@ -895,7 +895,15 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/group/members/remove_all"
     | "bridge/request/touchlink/factory_reset"
     | "bridge/request/touchlink/scan"
-    | "bridge/request/touchlink/identify";
+    | "bridge/request/touchlink/identify"
+    | "{friendlyNameOrId}/set"
+    | "{friendlyNameOrId}/set/{attribute}"
+    | "{friendlyNameOrId}/{endpoint}/set"
+    | "{friendlyNameOrId}/{endpoint}/set/{attribute}"
+    | "{friendlyNameOrId}/get"
+    | "{friendlyNameOrId}/get/{attribute}"
+    | "{friendlyNameOrId}/{endpoint}/get"
+    | "{friendlyNameOrId}/{endpoint}/get/{attribute}";
 
 export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/permit_join"
