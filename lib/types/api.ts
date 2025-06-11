@@ -185,10 +185,8 @@ export interface Zigbee2MQTTSettings {
         transmit_power?: number;
     };
     health: {
-        enabled: boolean;
         /** in minutes */
         interval: number;
-        include_devices: boolean;
         reset_on_check: boolean;
     };
 }
