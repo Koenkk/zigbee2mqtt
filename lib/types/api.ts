@@ -388,8 +388,10 @@ export interface Zigbee2MQTTAPI {
         mqtt: {
             connected: boolean;
             queued: number;
+            received: number;
+            published: number;
         };
-        devices?: Record<
+        devices: Record<
             string /* ieee */,
             {
                 messages: number;

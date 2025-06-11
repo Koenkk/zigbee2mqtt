@@ -114,9 +114,7 @@ describe("Extension: Bridge", () => {
                 commit: version.commitHash,
                 config: {
                     health: {
-                        enabled: true,
                         interval: 10,
-                        include_devices: false,
                         reset_on_check: false,
                     },
                     advanced: {

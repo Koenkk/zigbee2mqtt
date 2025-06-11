@@ -114,9 +114,7 @@ export const defaults = {
         output: "json",
     },
     health: {
-        enabled: true,
         interval: 10,
-        include_devices: false,
         reset_on_check: false,
     },
 } satisfies RecursivePartial<Settings>;

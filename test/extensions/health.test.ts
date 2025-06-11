@@ -1,11 +1,11 @@
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
-import {mockMQTTPublishAsync} from "../mocks/mqtt";
+import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import {Controller} from "../../lib/controller";
-import {Health} from "../../lib/extension/health";
+import Health from "../../lib/extension/health";
 import * as settings from "../../lib/util/settings";
 import {minutes, seconds} from "../../lib/util/utils";
 
@@ -16,15 +16,16 @@ returnDevices.push(devices.bulb_color.ieeeAddr, devices.bulb_color_2.ieeeAddr, d
 describe("Extension: Health", () => {
     let controller: Controller;
 
+    const getExtension = (): Health => controller.getExtension("Health") as Health;
+
     const resetExtension = async (): Promise<void> => {
-        await controller.removeExtension(controller.getExtension("Health")!);
+        await controller.removeExtension(getExtension());
         await controller.addExtension(new Health(...controller.extensionArgs));
     };
 
     beforeAll(async () => {
         vi.useFakeTimers();
         settings.reRead();
-        settings.set(["health"], {enabled: true});
 
         controller = new Controller(vi.fn(), vi.fn());
 
@@ -35,12 +36,13 @@ describe("Extension: Health", () => {
     beforeEach(() => {
         data.writeDefaultConfiguration();
         settings.reRead();
-        settings.set(["health"], {enabled: true});
         settings.set(["devices", devices.bulb_color_2.ieeeAddr, "health"], false);
 
         for (const mock of mocksClear) {
             mock.mockClear();
         }
+
+        getExtension().clearStats();
     });
 
     afterEach(async () => {});
@@ -52,11 +54,22 @@ describe("Extension: Health", () => {
     });
 
     it("checks health at default interval", async () => {
-        mockLogger.debug.mockImplementation(console.log);
         await resetExtension();
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color_2});
+        await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
+        await mockZHEvents.deviceJoined({device: devices.bulb_color});
+        await mockZHEvents.deviceNetworkAddressChanged({device: devices.bulb_color});
+        await vi.advanceTimersByTimeAsync(seconds(1));
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await vi.advanceTimersByTimeAsync(seconds(1));
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await vi.advanceTimersByTimeAsync(seconds(1));
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+        await mockMQTTEvents.message("zigbee2mqtt/mock", "mocked");
         await vi.advanceTimersByTimeAsync(minutes(11));
 
-        const calls = mockMQTTPublishAsync.mock.calls.filter((call) => call[0] === "zigbee2mqtt/bridge/health");
+        let calls = mockMQTTPublishAsync.mock.calls.filter((call) => call[0] === "zigbee2mqtt/bridge/health");
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
@@ -70,6 +83,60 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 28,
+                received: 1,
+            },
+            devices: {
+                [devices.bulb_color.ieeeAddr]: {
+                    leave_count: 1,
+                    messages: 4,
+                    messages_per_sec: 1.3333,
+                    network_address_changes: 1,
+                },
+                [devices.bulb_color_2.ieeeAddr]: {
+                    leave_count: 0,
+                    messages: 1,
+                    messages_per_sec: 0,
+                    network_address_changes: 0,
+                },
+            },
+        });
+        expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.message("zigbee2mqtt/mock2", "mocked2");
+        await vi.advanceTimersByTimeAsync(minutes(11));
+
+        calls = mockMQTTPublishAsync.mock.calls.filter((call) => call[0] === "zigbee2mqtt/bridge/health");
+
+        expect(calls.length).toStrictEqual(1);
+        expect(JSON.parse(calls[0][1])).toStrictEqual({
+            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            os: {
+                load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
+                memory_used_mb: expect.any(Number),
+                memory_percent: expect.any(Number),
+            },
+            process: {uptime_sec: expect.any(Number), memory_used_mb: expect.any(Number), memory_percent: expect.any(Number)},
+            mqtt: {
+                connected: true,
+                queued: 0,
+                published: 29,
+                received: 2,
+            },
+            devices: {
+                [devices.bulb_color.ieeeAddr]: {
+                    leave_count: 1,
+                    messages: 4,
+                    messages_per_sec: 1.3333,
+                    network_address_changes: 1,
+                },
+                [devices.bulb_color_2.ieeeAddr]: {
+                    leave_count: 0,
+                    messages: 1,
+                    messages_per_sec: 0,
+                    network_address_changes: 0,
+                },
             },
         });
         expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
@@ -100,85 +167,15 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 0,
+                received: 0,
             },
-        });
-        expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
-    });
-
-    it("checks health with devices", async () => {
-        settings.set(["health", "include_devices"], true);
-        await resetExtension();
-        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
-        await mockZHEvents.lastSeenChanged({device: devices.bulb_color_2});
-        await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
-        await mockZHEvents.deviceJoined({device: devices.bulb_color});
-        await mockZHEvents.deviceNetworkAddressChanged({device: devices.bulb_color});
-        await vi.advanceTimersByTimeAsync(seconds(1));
-        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
-        await vi.advanceTimersByTimeAsync(seconds(1));
-        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
-        await vi.advanceTimersByTimeAsync(seconds(1));
-        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
-        await vi.advanceTimersByTimeAsync(minutes(11));
-
-        let calls = mockMQTTPublishAsync.mock.calls.filter((call) => call[0] === "zigbee2mqtt/bridge/health");
-
-        expect(calls.length).toStrictEqual(1);
-        expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
-            os: {
-                load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
-                memory_used_mb: expect.any(Number),
-                memory_percent: expect.any(Number),
-            },
-            process: {uptime_sec: expect.any(Number), memory_used_mb: expect.any(Number), memory_percent: expect.any(Number)},
-            mqtt: {
-                connected: true,
-                queued: 0,
-            },
-            devices: {
-                [devices.bulb_color.ieeeAddr]: {
-                    leave_count: 1,
-                    messages: 4,
-                    messages_per_sec: 1.3333,
-                    network_address_changes: 1,
-                },
-            },
-        });
-        expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
-
-        mockMQTTPublishAsync.mockClear();
-        await vi.advanceTimersByTimeAsync(minutes(11));
-
-        calls = mockMQTTPublishAsync.mock.calls.filter((call) => call[0] === "zigbee2mqtt/bridge/health");
-
-        expect(calls.length).toStrictEqual(1);
-        expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
-            os: {
-                load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
-                memory_used_mb: expect.any(Number),
-                memory_percent: expect.any(Number),
-            },
-            process: {uptime_sec: expect.any(Number), memory_used_mb: expect.any(Number), memory_percent: expect.any(Number)},
-            mqtt: {
-                connected: true,
-                queued: 0,
-            },
-            devices: {
-                [devices.bulb_color.ieeeAddr]: {
-                    leave_count: 1,
-                    messages: 4,
-                    messages_per_sec: 1.3333,
-                    network_address_changes: 1,
-                },
-            },
+            devices: {},
         });
         expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
     });
 
     it("init device health from leave", async () => {
-        settings.set(["health", "include_devices"], true);
         await resetExtension();
         await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
         await mockZHEvents.deviceJoined({device: devices.bulb_color});
@@ -198,6 +195,8 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 8,
+                received: 0,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
@@ -212,7 +211,6 @@ describe("Extension: Health", () => {
     });
 
     it("init device health from network address change", async () => {
-        settings.set(["health", "include_devices"], true);
         await resetExtension();
         await mockZHEvents.deviceNetworkAddressChanged({device: devices.bulb_color});
         await vi.advanceTimersByTimeAsync(minutes(11));
@@ -231,6 +229,8 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 1,
+                received: 0,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
@@ -245,7 +245,6 @@ describe("Extension: Health", () => {
     });
 
     it("checks health then resets possible stats", async () => {
-        settings.set(["health", "include_devices"], true);
         settings.set(["health", "reset_on_check"], true);
         await resetExtension();
         await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
@@ -267,11 +266,19 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 0,
+                received: 0,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
                     leave_count: 0,
                     messages: 2,
+                    messages_per_sec: 0,
+                    network_address_changes: 0,
+                },
+                [devices.bulb_color_2.ieeeAddr]: {
+                    leave_count: 0,
+                    messages: 1,
                     messages_per_sec: 0,
                     network_address_changes: 0,
                 },
@@ -296,7 +303,10 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
+                published: 1,
+                received: 0,
             },
+            devices: {},
         });
         expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
     });
