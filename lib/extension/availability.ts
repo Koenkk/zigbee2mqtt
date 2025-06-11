@@ -76,7 +76,7 @@ export default class Availability extends Extension {
         if (entity.isDevice()) {
             const lastSeen = entity.zh.lastSeen ?? /* v8 ignore next */ 0;
 
-            return Date.now() - lastSeen < this.getTimeout(entity) + this.getMaxJitter(entity);
+            return Date.now() - lastSeen < this.getTimeout(entity);
         }
 
         for (const memberDevice of entity.membersDevices()) {
