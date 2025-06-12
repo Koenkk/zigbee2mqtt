@@ -371,7 +371,8 @@ export interface Zigbee2MQTTAPI {
     };
 
     "bridge/health": {
-        response_time: string;
+        /** time of message, msec from epoch, UTC */
+        response_time: number;
         os: {
             load_average: number[];
             memory_used_mb: number;

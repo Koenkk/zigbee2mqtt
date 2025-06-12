@@ -35,7 +35,7 @@ export default class Health extends Extension {
         const sysMemFreeKb = os.freemem() / 1024;
         const procMemUsedKb = process.memoryUsage().rss / 1024;
         const healthcheck: Zigbee2MQTTAPI["bridge/health"] = {
-            response_time: `0x${process.hrtime.bigint().toString(16)}`, // can be passed back to BigInt ctor on other end to diff
+            response_time: Date.now(),
             os: {
                 load_average: os.loadavg(), // will be [0,0,0] on Windows (not supported)
                 memory_used_mb: round2((sysMemTotalKb - sysMemFreeKb) / 1024),

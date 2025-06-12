@@ -73,7 +73,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -111,7 +111,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -157,7 +157,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -185,7 +185,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -219,7 +219,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -256,7 +256,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
@@ -293,7 +293,7 @@ describe("Extension: Health", () => {
 
         expect(calls.length).toStrictEqual(1);
         expect(JSON.parse(calls[0][1])).toStrictEqual({
-            response_time: expect.stringMatching(/0x[0-9a-z]+/),
+            response_time: expect.any(Number),
             os: {
                 load_average: [expect.any(Number), expect.any(Number), expect.any(Number)],
                 memory_used_mb: expect.any(Number),
