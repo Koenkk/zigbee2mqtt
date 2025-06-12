@@ -596,7 +596,7 @@ export function addGroup(name: string, id?: string): GroupOptions {
         settings.groups = {};
     }
 
-    if (id == null) {
+    if (id == null || id === "") {
         // look for free ID
         id = "1";
 

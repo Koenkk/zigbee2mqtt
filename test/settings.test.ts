@@ -506,7 +506,7 @@ describe("Settings", () => {
     it("Should read groups", () => {
         const content = {
             groups: {
-                1: {
+                "1": {
                     friendly_name: "123",
                 },
             },
@@ -515,18 +515,17 @@ describe("Settings", () => {
         write(configurationFile, content);
 
         const group = settings.getGroup("1");
-        const expected = {
+
+        expect(group).toStrictEqual({
             ID: 1,
             friendly_name: "123",
-        };
-
-        expect(group).toStrictEqual(expected);
+        });
     });
 
     it("Throw if removing non-existing group", () => {
         const content = {
             groups: {
-                1: {
+                "1": {
                     friendly_name: "123",
                 },
             },
@@ -543,7 +542,7 @@ describe("Settings", () => {
         };
 
         const contentGroups = {
-            1: {
+            "1": {
                 friendly_name: "123",
             },
         };
@@ -552,12 +551,11 @@ describe("Settings", () => {
         write(groupsFile, contentGroups);
 
         const group = settings.getGroup("1");
-        const expected = {
+
+        expect(group).toStrictEqual({
             ID: 1,
             friendly_name: "123",
-        };
-
-        expect(group).toStrictEqual(expected);
+        });
     });
 
     it("Combine everything! groups and devices from separate file :)", () => {
@@ -567,9 +565,8 @@ describe("Settings", () => {
         };
 
         const contentGroups = {
-            1: {
+            "1": {
                 friendly_name: "123",
-                devices: [],
             },
         };
         write(configurationFile, contentConfiguration);
@@ -586,44 +583,48 @@ describe("Settings", () => {
 
         expect(read(configurationFile)).toStrictEqual(expectedConfiguration);
 
-        const expectedDevice = {
+        expect(read(devicesFile)).toStrictEqual({
             "0x1234": {
                 friendly_name: "0x1234",
             },
-        };
-
-        expect(read(devicesFile)).toStrictEqual(expectedDevice);
+        });
 
         const group = settings.getGroup("1");
-        const expectedGroup = {
+
+        expect(group).toStrictEqual({
             ID: 1,
             friendly_name: "123",
-            devices: [],
-        };
-
-        expect(group).toStrictEqual(expectedGroup);
+        });
 
         expect(read(configurationFile)).toStrictEqual(expectedConfiguration);
 
-        const expectedDevice2 = {
+        expect(settings.getDevice("0x1234")).toStrictEqual({
             ID: "0x1234",
             friendly_name: "0x1234",
-        };
-
-        expect(settings.getDevice("0x1234")).toStrictEqual(expectedDevice2);
+        });
     });
 
     it("Should add groups", () => {
         write(configurationFile, {});
 
         settings.addGroup("test123");
-        const expected = {
-            1: {
+
+        expect(settings.get().groups).toStrictEqual({
+            "1": {
                 friendly_name: "test123",
             },
-        };
+        });
 
-        expect(settings.get().groups).toStrictEqual(expected);
+        settings.addGroup("test456", "");
+
+        expect(settings.get().groups).toStrictEqual({
+            "1": {
+                friendly_name: "test123",
+            },
+            "2": {
+                friendly_name: "test456",
+            },
+        });
     });
 
     it("Should allow username without password", () => {
@@ -650,7 +651,7 @@ describe("Settings", () => {
 
         settings.addGroup("test123", "123");
         const expected = {
-            123: {
+            "123": {
                 friendly_name: "test123",
             },
         };
@@ -682,7 +683,7 @@ describe("Settings", () => {
             settings.addGroup("test123");
         }).toThrow(`friendly_name 'test123' is already in use`);
         const expected = {
-            1: {
+            "1": {
                 friendly_name: "test123",
             },
         };
@@ -698,7 +699,7 @@ describe("Settings", () => {
             settings.addGroup("test_id_123", "123");
         }).toThrow(new Error("Group ID '123' is already in use"));
         const expected = {
-            123: {
+            "123": {
                 friendly_name: "test123",
             },
         };
@@ -835,7 +836,7 @@ describe("Settings", () => {
         write(configurationFile, {
             ...minimalConfig,
             devices: {"0x0017880104e45519": {friendly_name: "myname", retain: false}},
-            groups: {1: {friendly_name: "myname", retain: false}},
+            groups: {"1": {friendly_name: "myname", retain: false}},
         });
 
         settings.reRead();
