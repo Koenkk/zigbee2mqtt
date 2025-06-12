@@ -52,7 +52,6 @@ export interface Zigbee2MQTTDeviceOptions {
     friendly_name: string;
     description?: string;
     qos?: 0 | 1 | 2;
-    health?: boolean;
 }
 
 export interface Zigbee2MQTTGroupOptions {
