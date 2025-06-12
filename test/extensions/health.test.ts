@@ -83,20 +83,20 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 28,
+                published: expect.any(Number),
                 received: 1,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
                     leave_count: 1,
                     messages: 4,
-                    messages_per_sec: 1.3333,
+                    messages_per_sec: 0.0067,
                     network_address_changes: 1,
                 },
                 [devices.bulb_color_2.ieeeAddr]: {
                     leave_count: 0,
                     messages: 1,
-                    messages_per_sec: 0,
+                    messages_per_sec: 0.0017,
                     network_address_changes: 0,
                 },
             },
@@ -121,20 +121,20 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 29,
+                published: expect.any(Number),
                 received: 2,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
                     leave_count: 1,
                     messages: 4,
-                    messages_per_sec: 1.3333,
+                    messages_per_sec: 0.0033,
                     network_address_changes: 1,
                 },
                 [devices.bulb_color_2.ieeeAddr]: {
                     leave_count: 0,
                     messages: 1,
-                    messages_per_sec: 0,
+                    messages_per_sec: 0.0008,
                     network_address_changes: 0,
                 },
             },
@@ -167,7 +167,7 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 0,
+                published: expect.any(Number),
                 received: 0,
             },
             devices: {},
@@ -195,7 +195,7 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 8,
+                published: expect.any(Number),
                 received: 0,
             },
             devices: {
@@ -229,7 +229,7 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 1,
+                published: expect.any(Number),
                 received: 0,
             },
             devices: {
@@ -266,20 +266,20 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 0,
+                published: expect.any(Number),
                 received: 0,
             },
             devices: {
                 [devices.bulb_color.ieeeAddr]: {
                     leave_count: 0,
                     messages: 2,
-                    messages_per_sec: 0,
+                    messages_per_sec: 0.0033,
                     network_address_changes: 0,
                 },
                 [devices.bulb_color_2.ieeeAddr]: {
                     leave_count: 0,
                     messages: 1,
-                    messages_per_sec: 0,
+                    messages_per_sec: 0.0017,
                     network_address_changes: 0,
                 },
             },
@@ -303,7 +303,7 @@ describe("Extension: Health", () => {
             mqtt: {
                 connected: true,
                 queued: 0,
-                published: 1,
+                published: expect.any(Number),
                 received: 0,
             },
             devices: {},

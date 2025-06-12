@@ -55,7 +55,7 @@ export default class Health extends Extension {
             let mps = 0;
 
             if (device.lastSeenChanges) {
-                const timeDiff = device.lastSeenChanges.last - device.lastSeenChanges.first;
+                const timeDiff = Date.now() - device.lastSeenChanges.first;
                 messages = device.lastSeenChanges.messages;
                 mps = timeDiff > 0 ? round4(messages / (timeDiff / 1000.0)) : 0;
             }

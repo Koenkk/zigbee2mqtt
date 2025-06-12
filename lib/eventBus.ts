@@ -38,7 +38,7 @@ type Stats = {
     devices: Map<
         string, // IEEE address
         {
-            lastSeenChanges?: {messages: number; first: number; last: number};
+            lastSeenChanges?: {messages: number; first: number};
             leaveCounts: number;
             networkAddressChanges: number;
         }
@@ -93,12 +93,9 @@ export default class EventBus {
 
         if (device?.lastSeenChanges) {
             device.lastSeenChanges.messages += 1;
-            device.lastSeenChanges.last = Date.now();
         } else {
-            const now = Date.now();
-
             this.stats.devices.set(data.device.ieeeAddr, {
-                lastSeenChanges: {messages: 1, first: now, last: now},
+                lastSeenChanges: {messages: 1, first: Date.now()},
                 leaveCounts: 0,
                 networkAddressChanges: 0,
             });
