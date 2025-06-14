@@ -31,12 +31,17 @@ jobs:
             - name: Install dependencies
               run: pnpm i --frozen-lockfile
             
-            - name: 'release: Publish to npm'
+            - name: 'dev: Publish to dev-dist'
               # if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |-
-                pnpm publish --no-git-checks --tag alpha.1
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                pnpm run build
+                git switch --force-create dev-dist
+                git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                git config --local user.name "github-actions[bot]"
+                git add --force ./dist
+                git commit -m "dev-dist"
+                git push --force --set-upstream origin dev-dist
+
 
 
 
