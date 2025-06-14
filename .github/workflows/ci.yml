@@ -28,15 +28,16 @@ jobs:
                   node-version: 24
                   registry-url: https://registry.npmjs.org/
                   cache: pnpm
-
+            - name: Install dependencies
+              run: pnpm i --frozen-lockfile
+            
             - name: 'release: Publish to npm'
               # if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-    #         - name: Install dependencies
-    #           run: pnpm i --frozen-lockfile
+
 
     #         - name: Check
     #           run: pnpm run check
