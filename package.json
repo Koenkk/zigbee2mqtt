@@ -1,14 +1,11 @@
 {
-    "name": "zigbee2mqtt",
+    "name": "@Koenkk/zigbee2mqtt",
     "version": "2.4.0-dev",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
     "packageManager": "pnpm@10.12.1",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
-    },
+    "repository": "https://github.com/Koenkk/zigbee2mqtt.git",
     "publishConfig": {
         "registry": "https://npm.pkg.github.com/"
     },

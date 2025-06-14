@@ -33,9 +33,10 @@ jobs:
             
             - name: 'release: Publish to npm'
               # if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              run: pnpm publish --no-git-checks --tag alpha.1
+              run: |-
+                pnpm publish --no-git-checks --tag alpha.1
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 
