@@ -9,6 +9,9 @@
         "type": "git",
         "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
     },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
+    },
     "engines": {
         "node": "^20 || ^22 || ^24"
     },
@@ -83,7 +86,8 @@
     },
     "pnpm": {
         "overrides": {
-            "zigbee-herdsman": "$zigbee-herdsman"
+            "zigbee-herdsman": "4.1.1",
+            "zigbee-herdsman-converters": "link:../zigbee-herdsman-converters"
         },
         "onlyBuiltDependencies": [
             "@biomejs/biome",
