@@ -53,6 +53,7 @@ typings/
 
 # Build cache
 tsconfig.tsbuildinfo
+tsconfig.types.tsbuildinfo
 
 # Optional REPL history
 .node_repl_history

@@ -69,19 +69,19 @@ jobs:
               with:
                   version: latest
 
-            - name: dev - Docker build and push
-              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: docker/Dockerfile
-                  platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
-                  tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
-                  push: true
-                  build-args: |
-                      COMMIT=${{ github.sha }}
-                      VERSION=dev
-                      DATE=${{ github.event.repository.updated_at }}
+            # - name: dev: Docker build and push
+            #   if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+            #   uses: docker/build-push-action@v6
+            #   with:
+            #       context: .
+            #       file: docker/Dockerfile
+            #       platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
+            #       tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
+            #       push: true
+            #       build-args: |
+            #           COMMIT=${{ github.sha }}
+            #           VERSION=dev
+            #           DATE=${{ github.event.repository.updated_at }}
 
             - name: release - Docker meta
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -109,6 +109,19 @@ jobs:
                       COMMIT=${{ github.sha }}
                       VERSION=${{ github.ref_name }}
                       DATE=${{ github.event.repository.updated_at }}
+
+            - name: 'dev: Publish zigbee2mqtt-types to npm'
+              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              run: |-
+                version=$(cat package.json | jq -r .version)
+                count=$(($(pnpm view zigbee2mqtt-types --json | jq -r .versions | grep $version | wc -l)+1))
+                jq --indent 4 ".name = \"zigbee2mqtt-types\" | .version = \"$version.$count\"" package.json > package.json.tmp
+                mv package.json.tmp package.json
+                pnpm run build:types
+                pnpm publish --no-git-checks --ignore-scripts --access public
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: true
 
             - name: 'release: Publish to npm'
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'

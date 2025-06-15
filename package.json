@@ -23,6 +23,7 @@
     ],
     "scripts": {
         "build": "tsc && node index.js writehash",
+        "build:types": "pnpm run clean && tsc --project tsconfig.types.json",
         "build:watch": "tsc --watch",
         "check": "biome check",
         "check:w": "biome check --write",
