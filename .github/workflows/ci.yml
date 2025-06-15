@@ -118,7 +118,7 @@ jobs:
                 jq --indent 4 ".name = \"zigbee2mqtt-types\" | .version = \"$version.$count\"" package.json > package.json.tmp
                 mv package.json.tmp package.json
                 pnpm run build:types
-                pnpm publish --no-git-checks --ignore-scripts --access public
+                pnpm publish --no-git-checks --ignore-scripts --tag alpha
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
                   NPM_CONFIG_PROVENANCE: true
