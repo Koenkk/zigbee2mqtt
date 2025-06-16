@@ -30,6 +30,20 @@ export default class Mqtt {
     private defaultPublishOptions: MqttPublishOptions;
     public retainedMessages: {[s: string]: {topic: string; payload: string; options: MqttPublishOptions}} = {};
 
+    get info() {
+        return {
+            version: this.client.options.protocolVersion,
+            server: `${this.client.options.protocol}://${this.client.options.host}:${this.client.options.port}`,
+        };
+    }
+
+    get stats() {
+        return {
+            connected: this.isConnected(),
+            queued: this.client.queue.length,
+        };
+    }
+
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
         this.defaultPublishOptions = {

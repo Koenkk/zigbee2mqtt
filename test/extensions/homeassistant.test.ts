@@ -1564,7 +1564,8 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/health", expect.any(String), expect.any(Object));
     });
 
     it("Shouldnt send all status when home assistant comes online with different topic", async () => {
@@ -1577,7 +1578,8 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/health", expect.any(String), expect.any(Object));
     });
 
     it("Should discover devices with availability", async () => {
@@ -2456,7 +2458,8 @@ describe("Extension: HomeAssistant", () => {
             stringify(payload),
             {retain: true, qos: 1},
         );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(6);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(7);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/health", expect.any(String), expect.any(Object));
     });
 
     it("Should not clear bridge entities unnecessarily", async () => {

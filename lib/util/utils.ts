@@ -279,9 +279,9 @@ function isZHGroup(obj: unknown): obj is zh.Group {
     return obj?.constructor.name.toLowerCase() === "group";
 }
 
-const hours = (hours: number): number => 1000 * 60 * 60 * hours;
-const minutes = (minutes: number): number => 1000 * 60 * minutes;
-const seconds = (seconds: number): number => 1000 * seconds;
+export const hours = (hours: number): number => 1000 * 60 * 60 * hours;
+export const minutes = (minutes: number): number => 1000 * 60 * minutes;
+export const seconds = (seconds: number): number => 1000 * seconds;
 
 async function publishLastSeen(
     data: eventdata.LastSeenChanged,

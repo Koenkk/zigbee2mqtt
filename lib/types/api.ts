@@ -183,6 +183,11 @@ export interface Zigbee2MQTTSettings {
         output: "json" | "attribute" | "attribute_and_json";
         transmit_power?: number;
     };
+    health: {
+        /** in minutes */
+        interval: number;
+        reset_on_check: boolean;
+    };
 }
 
 export interface Zigbee2MQTTScene {
@@ -330,6 +335,16 @@ export interface Zigbee2MQTTAPI {
           };
 
     "bridge/info": {
+        os: {
+            version: string;
+            node_version: string;
+            cpus: string;
+            memory_mb: number;
+        };
+        mqtt: {
+            version: number | undefined;
+            server: string;
+        };
         version: string;
         commit: string | undefined;
         zigbee_herdsman_converters: {version: string};
@@ -353,6 +368,36 @@ export interface Zigbee2MQTTAPI {
         restart_required: boolean;
         config: Zigbee2MQTTSettings;
         config_schema: typeof schemaJson;
+    };
+
+    "bridge/health": {
+        /** time of message, msec from epoch, UTC */
+        response_time: number;
+        os: {
+            load_average: number[];
+            memory_used_mb: number;
+            memory_percent: number;
+        };
+        process: {
+            uptime_sec: number;
+            memory_used_mb: number;
+            memory_percent: number;
+        };
+        mqtt: {
+            connected: boolean;
+            queued: number;
+            received: number;
+            published: number;
+        };
+        devices: Record<
+            string /* ieee */,
+            {
+                messages: number;
+                messages_per_sec: number;
+                leave_count: number;
+                network_address_changes: number;
+            }
+        >;
     };
 
     "bridge/devices": Zigbee2MQTTDevice[];

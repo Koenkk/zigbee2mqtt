@@ -183,10 +183,11 @@ describe("Extension: Receive", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
         vi.runOnlyPendingTimers();
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/weather_sensor");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 1, retain: false});
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
     it("Should debounce and retain messages when set via device_options", async () => {
@@ -229,10 +230,11 @@ describe("Extension: Receive", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
         vi.runOnlyPendingTimers();
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/weather_sensor");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 1, retain: true});
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
     it("Should debounce messages only with the same payload values for provided debounce_ignore keys", async () => {
@@ -281,8 +283,9 @@ describe("Extension: Receive", () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.08, pressure: 2});
         vi.runOnlyPendingTimers();
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({temperature: 0.07, pressure: 2, humidity: 0.03});
+        expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
     it("Should NOT publish old messages from State cache during debouncing", async () => {
@@ -322,9 +325,10 @@ describe("Extension: Receive", () => {
         vi.runOnlyPendingTimers();
 
         // Test that only one MQTT is sent out and test its values.
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1 + 1 /* "bridge/health" */);
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/weather_sensor");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({temperature: 0.08, humidity: 0.01, pressure: 2});
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/bridge/health");
 
         // Send another Zigbee message...
         await mockZHEvents.message({
@@ -343,12 +347,14 @@ describe("Extension: Receive", () => {
         vi.runOnlyPendingTimers();
 
         // Total of 3 messages should have triggered.
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(5);
 
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/bridge/health");
         // Test that message pushed by asynchronous message contains NEW measurement and not old.
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
-        // Test that messages after debouncing contains NEW measurement and not old.
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[2][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
+        // Test that messages after debouncing contains NEW measurement and not old.
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[3][1])).toStrictEqual({temperature: 0.09, humidity: 0.01, pressure: 2});
+        expect(mockMQTTPublishAsync.mock.calls[4][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
     it("Should throttle multiple messages from spamming devices", async () => {
@@ -439,9 +445,10 @@ describe("Extension: Receive", () => {
         await mockMQTTEvents.message("zigbee2mqtt/bulb/set", stringify({state: "ON"}));
         await flushPromises();
         vi.runOnlyPendingTimers();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2 + 1);
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({state: "ON"});
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON"});
+        expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
     it("Should handle a zigbee message with 1 precision", async () => {

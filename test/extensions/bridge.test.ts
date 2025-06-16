@@ -41,6 +41,19 @@ const mocksClear = [
 
 const deviceIconsDir = path.join(data.mockDir, "device_icons");
 
+vi.mock("node:os", async (importOriginal) => ({
+    ...(await importOriginal()),
+    version: vi.fn(() => "Linux"),
+    release: vi.fn(() => "0.0.1"),
+    arch: vi.fn(() => "x64"),
+    cpus: vi.fn(() => [{model: "Intel Core i7-9999"}]),
+    totalmem: vi.fn(() => 10485760),
+}));
+vi.mock("node:process", async (importOriginal) => ({
+    ...(await importOriginal()),
+    version: "v1.2.3",
+}));
+
 describe("Extension: Bridge", () => {
     let controller: Controller;
     let mockRestart: Mock;
@@ -94,12 +107,16 @@ describe("Extension: Bridge", () => {
         const zhVersion = await utils.getDependencyVersion("zigbee-herdsman");
         const zhcVersion = await utils.getDependencyVersion("zigbee-herdsman-converters");
         const directory = settings.get().advanced.log_directory;
-        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/info')![1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/info")![1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/info",
             stringify({
                 commit: version.commitHash,
                 config: {
+                    health: {
+                        interval: 10,
+                        reset_on_check: false,
+                    },
                     advanced: {
                         adapter_concurrent: undefined,
                         adapter_delay: undefined,
@@ -315,6 +332,16 @@ describe("Extension: Bridge", () => {
                 version: version.version,
                 zigbee_herdsman: zhVersion,
                 zigbee_herdsman_converters: zhcVersion,
+                os: {
+                    version: "Linux - 0.0.1 - x64",
+                    node_version: "v1.2.3",
+                    cpus: "Intel Core i7-9999 (x1)",
+                    memory_mb: 10,
+                },
+                mqtt: {
+                    server: "mqtt://localhost:1883",
+                    version: 5,
+                },
             }),
             {retain: true},
         );

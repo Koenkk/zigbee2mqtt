@@ -25,6 +25,13 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
         events[type] = handler;
     }),
     stream: {setMaxListeners: vi.fn()},
+    options: {
+        protocolVersion: 5,
+        protocol: "mqtt",
+        host: "localhost",
+        port: 1883,
+    },
+    queue: [],
 }));
 
 vi.mock("mqtt", () => ({

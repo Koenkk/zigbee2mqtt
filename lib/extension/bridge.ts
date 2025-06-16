@@ -25,6 +25,8 @@ import Extension from "./extension";
 const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
 
 export default class Bridge extends Extension {
+    // set on `start`
+    #osInfo!: Zigbee2MQTTAPI["bridge/info"]["os"];
     private zigbee2mqttVersion!: {commitHash?: string; version: string};
     private zigbeeHerdsmanVersion!: {version: string};
     private zigbeeHerdsmanConvertersVersion!: {version: string};
@@ -92,6 +94,15 @@ export default class Bridge extends Extension {
 
         logger.addTransport(this.logTransport);
 
+        const os = await import("node:os");
+        const process = await import("node:process");
+        const logicalCpuCores = os.cpus();
+        this.#osInfo = {
+            version: `${os.version()} - ${os.release()} - ${os.arch()}`,
+            node_version: process.version,
+            cpus: `${[...new Set(logicalCpuCores.map((cpu) => cpu.model))].join(" | ")} (x${logicalCpuCores.length})`,
+            memory_mb: Math.round(os.totalmem() / 1024 / 1024),
+        };
         this.zigbee2mqttVersion = await utils.getZigbee2MQTTVersion();
         this.zigbeeHerdsmanVersion = await utils.getDependencyVersion("zigbee-herdsman");
         this.zigbeeHerdsmanConvertersVersion = await utils.getDependencyVersion("zigbee-herdsman-converters");
@@ -691,6 +702,8 @@ export default class Bridge extends Extension {
 
         const networkParams = await this.zigbee.getNetworkParameters();
         const payload: Zigbee2MQTTAPI["bridge/info"] = {
+            os: this.#osInfo,
+            mqtt: this.mqtt.info,
             version: this.zigbee2mqttVersion.version,
             commit: this.zigbee2mqttVersion.commitHash,
             zigbee_herdsman_converters: this.zigbeeHerdsmanConvertersVersion,
