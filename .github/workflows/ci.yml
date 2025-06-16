@@ -69,19 +69,31 @@ jobs:
               with:
                   version: latest
 
-            - name: dev - Docker build and push
-              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: docker/Dockerfile
-                  platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
-                  tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
-                  push: true
-                  build-args: |
-                      COMMIT=${{ github.sha }}
-                      VERSION=dev
-                      DATE=${{ github.event.repository.updated_at }}
+            # - name: dev - Docker build and push
+            #   if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+            #   uses: docker/build-push-action@v6
+            #   with:
+            #       context: .
+            #       file: docker/Dockerfile
+            #       platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
+            #       tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
+            #       push: true
+            #       build-args: |
+            #           COMMIT=${{ github.sha }}
+            #           VERSION=dev
+            #           DATE=${{ github.event.repository.updated_at }}
+
+            - name: dev - Publish types
+              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              run: |
+                git fetch --unshallow
+                git switch --force-create types
+                git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                git config --local user.name "github-actions[bot]"
+                git reset
+                git add --force ./dist package.json
+                git commit -m "Update" || echo 'Nothing to commit'
+                git push --force --set-upstream origin types
 
             - name: release - Docker meta
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
