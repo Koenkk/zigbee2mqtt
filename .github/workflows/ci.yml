@@ -16,13 +16,13 @@ jobs:
             id-token: write
         steps:
             - uses: actions/checkout@v4
-              # if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               with:
                   # Required for `release: merge dev -> master and promote dev`
                   token: ${{ secrets.GH_TOKEN }}
 
-            # - uses: actions/checkout@v4
-            #   if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
+            - uses: actions/checkout@v4
+              if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
 
             - uses: pnpm/action-setup@v4
 
@@ -72,22 +72,22 @@ jobs:
               with:
                   version: latest
 
-            # - name: dev - Docker build and push
-            #   if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-            #   uses: docker/build-push-action@v6
-            #   with:
-            #       context: .
-            #       file: docker/Dockerfile
-            #       platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
-            #       tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
-            #       push: true
-            #       build-args: |
-            #           COMMIT=${{ github.sha }}
-            #           VERSION=dev
-            #           DATE=${{ github.event.repository.updated_at }}
+            - name: dev - Docker build and push
+              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: docker/Dockerfile
+                  platforms: linux/arm64/v8,linux/amd64,linux/arm/v6,linux/arm/v7,linux/riscv64,linux/386
+                  tags: koenkk/zigbee2mqtt:latest-dev,ghcr.io/koenkk/zigbee2mqtt:latest-dev
+                  push: true
+                  build-args: |
+                      COMMIT=${{ github.sha }}
+                      VERSION=dev
+                      DATE=${{ github.event.repository.updated_at }}
 
             - name: dev - Publish types
-              # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
+              if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
                 pnpm run build:types
                 temp_dir=$(mktemp -d)
