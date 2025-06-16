@@ -13,13 +13,13 @@ jobs:
             id-token: write
         steps:
             - uses: actions/checkout@v4
-              if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
+              # if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               with:
                   # Required for `release: merge dev -> master and promote dev`
                   token: ${{ secrets.GH_TOKEN }}
 
-            - uses: actions/checkout@v4
-              if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
+            # - uses: actions/checkout@v4
+            #   if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
 
             - uses: pnpm/action-setup@v4
 
@@ -86,6 +86,7 @@ jobs:
             - name: dev - Publish types
               # if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
+                pnpm run build:types
                 git fetch --unshallow
                 git switch --force-create types
                 git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
