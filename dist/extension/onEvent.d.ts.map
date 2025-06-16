@@ -1,0 +1,1 @@
+{"version":3,"file":"onEvent.d.ts","sourceRoot":"","sources":["../../lib/extension/onEvent.ts"],"names":[],"mappings":"AAGA,OAAO,SAAS,MAAM,aAAa,CAAC;AAEpC;;GAEG;AACH,MAAM,CAAC,OAAO,OAAO,OAAQ,SAAQ,SAAS;IAE3B,KAAK,IAAI,OAAO,CAAC,IAAI,CAAC;IAwCtB,IAAI,IAAI,OAAO,CAAC,IAAI,CAAC;YAQtB,WAAW;CAe5B"}
