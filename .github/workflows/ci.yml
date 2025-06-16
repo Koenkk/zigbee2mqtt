@@ -92,6 +92,7 @@ jobs:
                 pnpm run build:types
                 temp_dir=$(mktemp -d)
                 cp -R package.json LICENSE dist $temp_dir
+                git fetch --unshallow
                 git checkout dev-types
                 rm -rf *
                 cp -R $temp_dir/* .
