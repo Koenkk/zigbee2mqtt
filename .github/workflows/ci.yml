@@ -99,7 +99,7 @@ jobs:
                 git add -A
                 git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git config --local user.name "github-actions[bot]"
-                git commit -m "Update" || echo 'Nothing to commit'
+                git commit -m "$GITHUB_SHA" || echo 'Nothing to commit'
                 git push --force --set-upstream origin dev-types
 
             - name: release - Docker meta
