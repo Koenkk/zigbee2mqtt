@@ -1,7 +1,7 @@
-import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
-import type {Base} from "zigbee-herdsman-converters/lib/exposes";
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
+import type {Base} from "zigbee-herdsman-converters/lib/exposes";
 
 export type * as ZSpec from "zigbee-herdsman/dist/zspec";
 export type * as Zcl from "zigbee-herdsman/dist/zspec/zcl";

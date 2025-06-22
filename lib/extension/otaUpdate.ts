@@ -1,17 +1,12 @@
-import type {Ota} from "zigbee-herdsman-converters";
-
-import type {Zigbee2MQTTAPI} from "../types/api";
-
 import assert from "node:assert";
 import path from "node:path";
-
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
-
 import {Zcl} from "zigbee-herdsman";
+import type {Ota} from "zigbee-herdsman-converters";
 import {ota} from "zigbee-herdsman-converters";
-
 import Device from "../model/device";
+import type {Zigbee2MQTTAPI} from "../types/api";
 import dataDir from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";

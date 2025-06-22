@@ -1,7 +1,6 @@
-import type Extension from "./extension";
-
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import type Extension from "./extension";
 import ExternalJSExtension from "./externalJS";
 
 type TModule = new (...args: ConstructorParameters<typeof Extension>) => Extension;

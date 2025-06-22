@@ -1,15 +1,11 @@
-import type * as zhc from "zigbee-herdsman-converters";
-
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
-
 import assert from "node:assert";
-
 import bind from "bind-decorator";
 import equals from "fast-deep-equal/es6";
 import stringify from "json-stable-stringify-without-jsonify";
-
+import type * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import Group from "../model/group";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import utils, {isLightExpose} from "../util/utils";
