@@ -106,7 +106,7 @@ export default class Device {
     }
 
     endpointName(endpoint: zh.Endpoint): string | undefined {
-        let epName;
+        let epName: string | undefined;
 
         if (this.definition?.endpoint) {
             const mapping = this.definition?.endpoint(this.zh);

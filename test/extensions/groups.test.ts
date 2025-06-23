@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -5,9 +6,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, groups, events as mockZHEvents, resetGroupMembers, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import stringify from "json-stable-stringify-without-jsonify";
-
 import * as zhcGlobalStore from "zigbee-herdsman-converters/lib/store";
-
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 

@@ -832,8 +832,8 @@ export default class Bridge extends Extension {
 
         if (icon) {
             /* v8 ignore next */
-            icon = icon.replace("${zigbeeModel}", utils.sanitizeImageParameter(device.zh.modelID ?? ""));
-            icon = icon.replace("${model}", utils.sanitizeImageParameter(device.definition.model));
+            icon = icon.replace("$zigbeeModel", utils.sanitizeImageParameter(device.zh.modelID ?? ""));
+            icon = icon.replace("$model", utils.sanitizeImageParameter(device.definition.model));
         }
 
         const payload: Zigbee2MQTTDevice["definition"] = {

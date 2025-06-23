@@ -1,19 +1,17 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
+import type {Device as ZhDevice} from "../mocks/zigbeeHerdsman";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import type {MockInstance} from "vitest";
-import type {OnEvent as DefinitionOnEvent} from "zigbee-herdsman-converters/lib/types";
-
-import type Device from "../../lib/model/device";
-import type {Device as ZhDevice} from "../mocks/zigbeeHerdsman";
-
 import * as zhc from "zigbee-herdsman-converters";
-
+import type {OnEvent as DefinitionOnEvent} from "zigbee-herdsman-converters/lib/types";
 import {Controller} from "../../lib/controller";
 import OnEvent from "../../lib/extension/onEvent";
+import type Device from "../../lib/model/device";
 import * as settings from "../../lib/util/settings";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];

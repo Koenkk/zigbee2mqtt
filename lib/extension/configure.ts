@@ -56,7 +56,7 @@ export default class Configure extends Extension {
         }
     }
 
-    override async start(): Promise<void> {
+    override start(): Promise<void> {
         setImmediate(async () => {
             // Only configure routers on startup, end devices are likely sleeping and
             // will reconfigure once they send a message
@@ -79,6 +79,8 @@ export default class Configure extends Extension {
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, "zigbee_event"));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onReconfigure(this, this.onReconfigure);
+
+        return Promise.resolve();
     }
 
     private async configure(

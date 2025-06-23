@@ -18,4 +18,5 @@ function _testReload(): void {
     dataPath = setPath();
 }
 
+// biome-ignore lint/style/useNamingConvention: test
 export default {joinPath, getPath, _testReload};

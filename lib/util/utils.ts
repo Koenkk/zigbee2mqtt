@@ -84,7 +84,6 @@ function formatDate(time: number, type: "ISO_8601" | "ISO_8601_local" | "epoch" 
 
 function objectIsEmpty(object: object): boolean {
     // much faster than checking `Object.keys(object).length`
-    // biome-ignore lint/style/useNamingConvention: bad detection
     for (const _k in object) return false;
     return true;
 }

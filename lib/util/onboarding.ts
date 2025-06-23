@@ -498,7 +498,7 @@ async function startFailureServer(errors: string): Promise<void> {
     let server: ReturnType<typeof createServer> | undefined;
 
     await new Promise<void>((resolve) => {
-        server = createServer(async (req, res) => {
+        server = createServer((req, res) => {
             if (req.method === "POST") {
                 res.end(() => {
                     resolve();
