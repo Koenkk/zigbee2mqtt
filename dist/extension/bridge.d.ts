@@ -1,6 +1,6 @@
+import Device from "../model/device";
 import type Group from "../model/group";
 import type { Zigbee2MQTTDevice, Zigbee2MQTTResponse } from "../types/api";
-import Device from "../model/device";
 import Extension from "./extension";
 export default class Bridge extends Extension {
     #private;

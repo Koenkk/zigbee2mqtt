@@ -25,7 +25,7 @@
         "build": "tsc && node index.js writehash",
         "build:types": "pnpm run clean && tsc --project tsconfig.types.json && cp lib/util/settings.schema.json dist/util",
         "build:watch": "tsc --watch",
-        "check": "biome check",
+        "check": "biome check --error-on-warnings",
         "check:w": "biome check --write",
         "start": "node index.js",
         "test": "vitest run --config ./test/vitest.config.mts",
@@ -68,7 +68,7 @@
         "zigbee2mqtt-windfront": "^1.1.0"
     },
     "devDependencies": {
-        "@biomejs/biome": "^1.9.4",
+        "@biomejs/biome": "^2.0.5",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
