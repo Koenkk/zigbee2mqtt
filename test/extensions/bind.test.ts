@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockDebounce} from "../mocks/debounce";
 import {mockLogger} from "../mocks/logger";
@@ -6,7 +7,6 @@ import {flushPromises} from "../mocks/utils";
 import {type Device, devices, groups, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import stringify from "json-stable-stringify-without-jsonify";
-
 import {Controller} from "../../lib/controller";
 import Bind from "../../lib/extension/bind";
 import * as settings from "../../lib/util/settings";

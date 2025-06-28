@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.0.5/schema.json",
     "vcs": {
         "enabled": true,
         "clientKind": "git",
@@ -12,10 +12,10 @@
         "bracketSpacing": false
     },
     "files": {
-        "ignore": ["package.json"]
+        "includes": ["**", "!package.json"]
     },
     "linter": {
-        "ignore": [],
+        "includes": ["**"],
         "rules": {
             "correctness": {
                 "noUnusedImports": "error"
@@ -55,7 +55,16 @@
                             }
                         ]
                     }
-                }
+                },
+                "useAsConstAssertion": "error",
+                "useDefaultParameterLast": "error",
+                "useEnumInitializers": "error",
+                "useSelfClosingElements": "error",
+                "useSingleVarDeclarator": "error",
+                "noUnusedTemplateLiteral": "error",
+                "useNumberNamespace": "error",
+                "noInferrableTypes": "error",
+                "noUselessElse": "error"
             },
             "performance": {
                 "noDelete": "off"
@@ -68,7 +77,7 @@
     },
     "overrides": [
         {
-            "include": ["test/**"],
+            "includes": ["test/**"],
             "linter": {
                 "rules": {
                     "style": {

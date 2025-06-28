@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -5,11 +6,9 @@ import {type EventHandler, flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import path from "node:path";
-
 import stringify from "json-stable-stringify-without-jsonify";
 import type {Mock} from "vitest";
 import ws from "ws";
-
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 
@@ -23,7 +22,6 @@ const mockHTTP = {
     close: vi.fn<(cb: (err?: Error) => void) => void>((cb) => cb()),
 };
 
-let mockHTTPSOnRequest: (request: {url: string}, response: number) => void;
 const mockHTTPSEvents: Record<string, EventHandler> = {};
 const mockHTTPS = {
     listen: vi.fn(),
@@ -56,7 +54,7 @@ const mockWS = {
     handleUpgrade: vi.fn().mockImplementation((_request, _socket, _head, cb) => {
         cb(mockWSocket);
     }),
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    // biome-ignore lint/suspicious/noExplicitAny: ignore
     emit: vi.fn<(eventName: string, ...args: any[]) => void>(),
     close: vi.fn<(code?: number, data?: string | Buffer) => void>(),
 };
@@ -76,10 +74,7 @@ vi.mock("node:http", () => ({
 }));
 
 vi.mock("node:https", () => ({
-    createServer: vi.fn().mockImplementation((onRequest) => {
-        mockHTTPSOnRequest = onRequest;
-        return mockHTTPS;
-    }),
+    createServer: vi.fn().mockImplementation(() => mockHTTPS),
     Agent: vi.fn(),
 }));
 

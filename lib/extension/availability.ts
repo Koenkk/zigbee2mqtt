@@ -1,11 +1,8 @@
-import type * as zhc from "zigbee-herdsman-converters";
-
-import type {Zigbee2MQTTAPI} from "../types/api";
-
 import assert from "node:assert";
-
 import bind from "bind-decorator";
 import debounce from "debounce";
+import type * as zhc from "zigbee-herdsman-converters";
+import type {Zigbee2MQTTAPI} from "../types/api";
 
 import logger from "../util/logger";
 import * as settings from "../util/settings";

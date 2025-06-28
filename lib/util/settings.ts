@@ -1,6 +1,5 @@
-import type {ValidateFunction} from "ajv";
-
 import path from "node:path";
+import type {ValidateFunction} from "ajv";
 
 import Ajv from "ajv";
 import objectAssignDeep from "object-assign-deep";

@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
 import {mockLogger} from "../mocks/logger";
@@ -5,14 +6,11 @@ import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
-import type {Mock} from "vitest";
-
 import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
-
 import stringify from "json-stable-stringify-without-jsonify";
-
+import type {Mock} from "vitest";
 import {Controller} from "../../lib/controller";
 import Bridge from "../../lib/extension/bridge";
 import * as settings from "../../lib/util/settings";
@@ -3966,7 +3964,7 @@ describe("Extension: Bridge", () => {
         );
     });
 
-    it("Icon link handling", async () => {
+    it("Icon link handling", () => {
         const bridge = controller.getExtension("Bridge")! as Bridge;
         expect(bridge).toBeDefined();
 
@@ -3997,14 +3995,14 @@ describe("Extension: Bridge", () => {
         expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe(svg_icon);
 
-        definition.icon = "_${model}_";
+        definition.icon = "_$model_";
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
         expect(payload.icon).not.toBeUndefined();
         expect(payload.icon).toBe("_lumi.plug_");
 
-        definition.icon = "_${model}_${zigbeeModel}_";
+        definition.icon = "_$model_$zigbeeModel_";
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);
@@ -4020,7 +4018,7 @@ describe("Extension: Bridge", () => {
 
         device.modelID = "?._Z\\NC+Z02*LM";
         definition.model = "&&&&*+";
-        definition.icon = "_${model}_${zigbeeModel}_";
+        definition.icon = "_$model_$zigbeeModel_";
         // @ts-expect-error bare minimum mock
         payload = bridge.getDefinitionPayload({...device, zh: device, definition, exposes: () => definition.exposes, options: {}});
         assert(payload);

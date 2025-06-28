@@ -1,21 +1,18 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {mockMQTTEndAsync, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
-import {devices, mockController as mockZHController, returnDevices} from "../mocks/zigbeeHerdsman";
-
-import type Device from "../../lib/model/device";
 import type {Device as ZhDevice} from "../mocks/zigbeeHerdsman";
+import {devices, mockController as mockZHController, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import fs from "node:fs";
 import path from "node:path";
-
 import stringify from "json-stable-stringify-without-jsonify";
-
 import * as zhc from "zigbee-herdsman-converters";
-
 import {Controller} from "../../lib/controller";
 import ExternalConverters from "../../lib/extension/externalConverters";
+import type Device from "../../lib/model/device";
 import * as settings from "../../lib/util/settings";
 
 const BASE_DIR = "external_converters";

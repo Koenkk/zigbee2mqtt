@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "./mocks/data";
 import {mockLogger} from "./mocks/logger";
 import {
@@ -9,23 +10,19 @@ import {
     mockMQTTUnsubscribeAsync,
 } from "./mocks/mqtt";
 import {flushPromises} from "./mocks/utils";
-import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from "./mocks/zigbeeHerdsman";
-
-import type {Mock, MockInstance} from "vitest";
-
-import type Device from "../lib/model/device";
 import type {Device as ZhDevice} from "./mocks/zigbeeHerdsman";
+import {devices, mockController as mockZHController, events as mockZHEvents, returnDevices} from "./mocks/zigbeeHerdsman";
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-
 import stringify from "json-stable-stringify-without-jsonify";
 import tmp from "tmp";
 
+import type {Mock, MockInstance} from "vitest";
 import {Controller as ZHController} from "zigbee-herdsman";
-
 import {Controller} from "../lib/controller";
+import type Device from "../lib/model/device";
 import * as settings from "../lib/util/settings";
 
 const LOG_MQTT_NS = "z2m:mqtt";

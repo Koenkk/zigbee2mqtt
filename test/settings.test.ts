@@ -925,7 +925,7 @@ describe("Settings", () => {
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
-    it("Configuration shouldnt be valid when duplicate friendly_name are used", async () => {
+    it("Configuration shouldnt be valid when duplicate friendly_name are used", () => {
         write(configurationFile, {
             devices: {
                 "0x0017880104e45519": {friendly_name: "myname", retain: false},
@@ -940,7 +940,7 @@ describe("Settings", () => {
         }).toThrowError(`friendly_name 'myname' is already in use`);
     });
 
-    it("Should throw when removing device which doesnt exist", async () => {
+    it("Should throw when removing device which doesnt exist", () => {
         write(configurationFile, {
             devices: {
                 "0x0017880104e45519": {friendly_name: "myname", retain: false},

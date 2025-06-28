@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import {mockLogger} from "./mocks/logger";
 
 import {initSdNotify} from "../lib/util/sd-notify";

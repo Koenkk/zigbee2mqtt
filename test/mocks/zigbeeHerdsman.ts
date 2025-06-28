@@ -1,7 +1,6 @@
+import assert from "node:assert";
 import type {Mock} from "vitest";
 import type {AdapterTypes} from "zigbee-herdsman";
-
-import assert from "node:assert";
 
 import {Zcl} from "zigbee-herdsman";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";

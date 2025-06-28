@@ -1,6 +1,5 @@
-import type {UnixDgramSocket} from "unix-dgram";
-
 import {platform} from "node:os";
+import type {UnixDgramSocket} from "unix-dgram";
 
 import logger from "./logger";
 

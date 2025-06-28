@@ -1,11 +1,9 @@
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from "../types/api";
-
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse} from "../types/api";
 
 import data from "../util/data";
 import logger from "../util/logger";

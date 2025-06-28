@@ -1,15 +1,13 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "./mocks/data";
-
-import type {MockInstance} from "vitest";
 
 import fs from "node:fs";
 import {platform} from "node:os";
 import path from "node:path";
-
 import {rimrafSync} from "rimraf";
 import tmp from "tmp";
+import type {MockInstance} from "vitest";
 import Transport from "winston-transport";
-
 import logger from "../lib/util/logger";
 import * as settings from "../lib/util/settings";
 

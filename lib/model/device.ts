@@ -1,10 +1,8 @@
-import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
-
 import assert from "node:assert";
-
-import * as zhc from "zigbee-herdsman-converters";
-import {Numeric, access} from "zigbee-herdsman-converters";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import * as zhc from "zigbee-herdsman-converters";
+import {access, Numeric} from "zigbee-herdsman-converters";
 
 import * as settings from "../util/settings";
 
@@ -108,7 +106,7 @@ export default class Device {
     }
 
     endpointName(endpoint: zh.Endpoint): string | undefined {
-        let epName = undefined;
+        let epName: string | undefined;
 
         if (this.definition?.endpoint) {
             const mapping = this.definition?.endpoint(this.zh);

@@ -1,11 +1,10 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "./mocks/data";
-
-import type {IncomingMessage, OutgoingHttpHeader, OutgoingHttpHeaders, RequestListener, Server, ServerResponse} from "node:http";
 
 import {rmSync} from "node:fs";
 
+import type {IncomingMessage, OutgoingHttpHeader, OutgoingHttpHeaders, RequestListener, Server, ServerResponse} from "node:http";
 import type {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
-
 import {onboard} from "../lib/util/onboarding";
 import * as settings from "../lib/util/settings";
 
@@ -188,10 +187,10 @@ describe("Onboarding", () => {
         expectWriteMinimal: boolean,
         expectFailure: boolean,
     ): Promise<[getHtml: string, postHtml: string]> => {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: ignore
         const reqDataListener = vi.fn<(chunk: any) => void>();
         const reqEndListener = vi.fn<() => void>();
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: ignore
         const resEnd = vi.fn<(chunk: any | (() => void), cb?: () => void) => ServerResponse<IncomingMessage>>(
             // @ts-expect-error return not used
             (chunk, cb) => {
@@ -299,7 +298,7 @@ describe("Onboarding", () => {
     };
 
     const runFailure = async (): Promise<string> => {
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: ignore
         const resEnd = vi.fn<(chunk: any | (() => void), cb?: () => void) => ServerResponse<IncomingMessage>>(
             // @ts-expect-error return not used
             (chunk, cb) => {

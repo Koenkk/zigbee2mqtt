@@ -1,15 +1,12 @@
-import type * as zhc from "zigbee-herdsman-converters";
-
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from "../types/api";
-
 import assert from "node:assert";
 import {exec} from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-
 import equals from "fast-deep-equal/es6";
 import humanizeDuration from "humanize-duration";
+import type * as zhc from "zigbee-herdsman-converters";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from "../types/api";
 
 import data from "./data";
 
@@ -87,7 +84,6 @@ function formatDate(time: number, type: "ISO_8601" | "ISO_8601_local" | "epoch" 
 
 function objectIsEmpty(object: object): boolean {
     // much faster than checking `Object.keys(object).length`
-    // biome-ignore lint/style/useNamingConvention: bad detection
     for (const _k in object) return false;
     return true;
 }

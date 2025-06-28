@@ -1,3 +1,4 @@
+// biome-ignore assist/source/organizeImports: import mocks first
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -7,9 +8,7 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 
 import fs from "node:fs";
 import path from "node:path";
-
 import stringify from "json-stable-stringify-without-jsonify";
-
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 
