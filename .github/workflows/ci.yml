@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - dev-types
+  pull_request:
 
 permissions:
     contents: write
