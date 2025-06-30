@@ -151,6 +151,7 @@ export interface Zigbee2MQTTSettings {
         ssl_cert?: string;
         ssl_key?: string;
         notification_filter?: string[];
+        external_serving: boolean;
     };
     devices: {[s: string]: Zigbee2MQTTDeviceOptions};
     groups: {[s: string]: Omit<Zigbee2MQTTGroupOptions, "ID">};

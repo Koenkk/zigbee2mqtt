@@ -446,6 +446,13 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "external_serving": {
+                    "type": "boolean",
+                    "title": "External serving",
+                    "description": "If true, frontend is not internally served (this requires you to serve one externally).",
+                    "default": false,
+                    "requiresRestart": true
                 }
             },
             "required": []

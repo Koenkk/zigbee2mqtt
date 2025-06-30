@@ -45,6 +45,7 @@ export const defaults = {
         package: "zigbee2mqtt-frontend",
         port: 8080,
         base_url: "/",
+        external_serving: false,
     },
     mqtt: {
         base_topic: "zigbee2mqtt",
