@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    tags:        
+      - '**' 
     branches-ignore:
       - dev-types
   pull_request:
