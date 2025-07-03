@@ -33,13 +33,14 @@ export default class Health extends Extension {
     async #checkHealth(): Promise<void> {
         const sysMemTotalKb = os.totalmem() / 1024;
         const sysMemFreeKb = os.freemem() / 1024;
+        const sysMemUsedKb = sysMemTotalKb - sysMemFreeKb;
         const procMemUsedKb = process.memoryUsage().rss / 1024;
         const healthcheck: Zigbee2MQTTAPI["bridge/health"] = {
             response_time: Date.now(),
             os: {
                 load_average: os.loadavg(), // will be [0,0,0] on Windows (not supported)
-                memory_used_mb: round2((sysMemTotalKb - sysMemFreeKb) / 1024),
-                memory_percent: round4((sysMemFreeKb / sysMemTotalKb) * 100.0),
+                memory_used_mb: round2(sysMemUsedKb / 1024),
+                memory_percent: round4((sysMemUsedKb / sysMemTotalKb) * 100.0),
             },
             process: {
                 uptime_sec: Math.floor(process.uptime()),
