@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.5.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.5.1...2.5.2) (2025-07-04)
+
+
+### Bug Fixes
+
+* erroneous Health OS memory percent calculation ([#27892](https://github.com/Koenkk/zigbee2mqtt/issues/27892)) ([190cfe9](https://github.com/Koenkk/zigbee2mqtt/commit/190cfe99ac62b9dc6db4dc59a4389afda85e8177))
+* **ignore:** update zigbee-herdsman to 4.3.2 ([#27900](https://github.com/Koenkk/zigbee2mqtt/issues/27900)) ([4afdd4e](https://github.com/Koenkk/zigbee2mqtt/commit/4afdd4e89241eddeb27e5f6c1c7b6604ce4a41cb))
+* **ignore:** update zigbee-herdsman to 4.4.0 ([#27906](https://github.com/Koenkk/zigbee2mqtt/issues/27906)) ([e663e86](https://github.com/Koenkk/zigbee2mqtt/commit/e663e86e09cf86078877407e2233447468d66899))
+* **ignore:** update zigbee-herdsman-converters to 23.70.0 ([#27905](https://github.com/Koenkk/zigbee2mqtt/issues/27905)) ([163a15d](https://github.com/Koenkk/zigbee2mqtt/commit/163a15d664432631f100814927647b918563d85b))
+
 ## [2.5.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.5.0...2.5.1) (2025-07-02)
 
 
