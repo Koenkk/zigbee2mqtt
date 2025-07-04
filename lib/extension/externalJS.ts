@@ -196,7 +196,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                     `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT.`,
                 );
                 // biome-ignore lint/style/noNonNullAssertion: always Error
-                logger.debug((error as Error).stack!);
+                logger.error((error as Error).stack!);
             }
         }
     }
