@@ -145,7 +145,7 @@ export class Frontend extends Extension {
             this.wss.close();
         }
 
-        await new Promise((resolve) => this.server?.close(resolve));
+        await new Promise((resolve) => this.server ? this.server.close(resolve) : resolve(undefined));
     }
 
     @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
