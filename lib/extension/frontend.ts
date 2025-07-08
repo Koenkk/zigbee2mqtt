@@ -46,12 +46,14 @@ export class Frontend extends Extension {
     }
 
     override async start(): Promise<void> {
-        this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
-
-        this.wss.on("connection", this.onWebSocketConnection);
-
         if (settings.get().frontend.disable_ui_serving) {
-            logger.info("Frontend UI serving is disabled");
+            const {host, port} = settings.get().frontend;
+            this.wss = new WebSocket.Server({port, host, path: posix.join(this.baseUrl, "api")});
+
+            logger.info(
+                /* v8 ignore next */
+                `Frontend UI serving is disabled. WebSocket at: ${this.wss.options.host ?? "0.0.0.0"}:${this.wss.options.port}${this.wss.options.path}`,
+            );
         } else {
             const {host, port, ssl_key: sslKey, ssl_cert: sslCert} = settings.get().frontend;
             const hasSSL = (val: string | undefined, key: string): val is string => {
@@ -127,7 +129,11 @@ export class Frontend extends Extension {
                 this.server.listen(port, host);
                 logger.info(`Started frontend on port ${host}:${port}`);
             }
+
+            this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
         }
+
+        this.wss.on("connection", this.onWebSocketConnection);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
