@@ -286,7 +286,6 @@ describe("Extension: Bridge", () => {
                         package: "zigbee2mqtt-frontend",
                         port: 8080,
                         base_url: "/",
-                        external_serving: false,
                     },
                     map_options: {
                         graphviz: {

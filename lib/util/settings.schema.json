@@ -447,11 +447,10 @@
                         "type": "string"
                     }
                 },
-                "external_serving": {
-                    "type": "boolean",
-                    "title": "External serving",
-                    "description": "If true, frontend is not internally served (this requires you to serve one externally).",
-                    "default": false,
+                "disable_ui_serving": {
+                    "type": ["boolean", "null"],
+                    "title": "Disable UI serving",
+                    "description": "If true, the frontend UI is not served, only the WebSocket is maintained by Zigbee2MQTT (you are required to serve a standalone UI yourself as needed).",
                     "requiresRestart": true
                 }
             },

@@ -50,13 +50,13 @@ export class Frontend extends Extension {
 
         this.wss.on("connection", this.onWebSocketConnection);
 
-        if (settings.get().frontend.external_serving) {
-            logger.info("Frontend is served externally");
+        if (settings.get().frontend.disable_ui_serving) {
+            logger.info("Frontend UI serving is disabled");
         } else {
             const {host, port, ssl_key: sslKey, ssl_cert: sslCert} = settings.get().frontend;
             const hasSSL = (val: string | undefined, key: string): val is string => {
                 if (val) {
-                    if (!existsSync(val)) {
+                    if (existsSync(val)) {
                         return true;
                     }
 
@@ -145,7 +145,7 @@ export class Frontend extends Extension {
             this.wss.close();
         }
 
-        await new Promise((resolve) => this.server ? this.server.close(resolve) : resolve(undefined));
+        await new Promise((resolve) => (this.server ? this.server.close(resolve) : resolve(undefined)));
     }
 
     @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
