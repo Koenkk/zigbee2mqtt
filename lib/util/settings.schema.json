@@ -249,7 +249,7 @@
                     "title": "Baudrate",
                     "requiresRestart": true,
                     "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-                    "examples": [38400, 57600, 115200]
+                    "examples": [115200, 921600, 460800, 230400, 57600, 38400]
                 },
                 "rtscts": {
                     "type": "boolean",
