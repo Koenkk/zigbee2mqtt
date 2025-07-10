@@ -98,7 +98,7 @@ describe("Extension: HomeAssistant", () => {
 
         for (const baseDefinition of await getZhcBaseDefinitions()) {
             const d = zhc.prepareDefinition(baseDefinition);
-            const exposes = typeof d.exposes === "function" ? d.exposes(undefined, undefined) : d.exposes;
+            const exposes = typeof d.exposes === "function" ? d.exposes({isDummyDevice: true}, {}) : d.exposes;
             const device = {
                 definition: d,
                 isDevice: (): boolean => true,
