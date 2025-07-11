@@ -348,6 +348,7 @@ describe("Extension: ExternalConverters", () => {
             );
             expect(fs.existsSync(filepath)).toStrictEqual(false);
             expect(fs.existsSync(path.join(mockBasePath, "invalid.mjs.invalid"))).toStrictEqual(true);
+            expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Parse failure: Expected ';', '}' or <eof>"));
         });
     });
 

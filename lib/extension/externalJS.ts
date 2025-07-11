@@ -193,7 +193,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 fs.renameSync(filePath, `${filePath}.invalid`);
 
                 logger.error(
-                    `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT.`,
+                    `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT. (${(error as Error).message})`,
                 );
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
