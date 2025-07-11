@@ -165,6 +165,34 @@ describe("Settings", () => {
         writeAndCheck();
     });
 
+    it("Should apply environment variables over invalid sections in configuration.yaml", () => {
+        process.env.ZIGBEE2MQTT_CONFIG_SERIAL_PORT =
+            "/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_48be7a7468d8ed11bfea786ff2c613ac-if00-port0";
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER = "mqtt://core-mosquitto:1883";
+
+        write(configurationFile, {
+            serial: "/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_48be7a7468d8ed11bfea786ff2c613ac-if00-port0",
+        });
+
+        // @ts-expect-error workaround
+        const expected = objectAssignDeep.noMutate({}, settings.testing.defaults);
+        expected.serial.port = "/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_48be7a7468d8ed11bfea786ff2c613ac-if00-port0";
+        expected.mqtt.server = "mqtt://core-mosquitto:1883";
+        expected.devices = {};
+        expected.groups = {};
+
+        const writeAndCheck = (): void => {
+            expect(settings.write()); // trigger writing of ENVs
+            expect(settings.validate()).toStrictEqual([]);
+            expect(settings.get()).toStrictEqual(expected);
+        };
+
+        // Write trice to ensure there are no side effects.
+        writeAndCheck();
+        writeAndCheck();
+        writeAndCheck();
+    });
+
     it("Should apply Home Assistant environment variables", () => {
         // should be kept in sync with envs in https://github.com/zigbee2mqtt/hassio-zigbee2mqtt/blob/master/common/rootfs/docker-entrypoint.sh
         process.env.ZIGBEE2MQTT_CONFIG_FRONTEND_ENABLED = "true";

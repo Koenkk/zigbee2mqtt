@@ -387,7 +387,7 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                     if (envVariable) {
                         const setting = path.reduce((acc, val) => {
                             // @ts-expect-error ignore typing
-                            if (typeof acc[val] !== "object" || acc[val] === null) {
+                            if (typeof acc[val] !== "object" || acc[val] == null) {
                                 // @ts-expect-error ignore typing
                                 acc[val] = {};
                             }
