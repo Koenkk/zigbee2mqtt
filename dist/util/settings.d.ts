@@ -35,6 +35,9 @@ export declare const defaults: {
         include_device_information: false;
         force_disable_retain: false;
         maximum_packet_size: number;
+        keepalive: number;
+        reject_unauthorized: true;
+        version: 4;
     };
     serial: {
         disable_led: false;
@@ -157,6 +160,9 @@ export declare const testing: {
             include_device_information: false;
             force_disable_retain: false;
             maximum_packet_size: number;
+            keepalive: number;
+            reject_unauthorized: true;
+            version: 4;
         };
         serial: {
             disable_led: false;

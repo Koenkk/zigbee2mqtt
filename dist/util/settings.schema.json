@@ -248,8 +248,8 @@
                     "type": "number",
                     "title": "Baudrate",
                     "requiresRestart": true,
-                    "description": "Baud rate speed for serial port, this can be anything firmware support but default is 115200 for Z-Stack and EZSP, 38400 for Deconz, however note that some EZSP firmware need 57600",
-                    "examples": [38400, 57600, 115200]
+                    "description": "Baud rate speed for the serial port. This must match what the firmware on your adapter supports (most commonly 115200).",
+                    "examples": [115200, 921600, 460800, 230400, 57600, 38400]
                 },
                 "rtscts": {
                     "type": "boolean",
@@ -291,13 +291,16 @@
                                     "type": "object",
                                     "properties": {
                                         "enddevice": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#fff8ce"
                                         },
                                         "coordinator": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#e04e5d"
                                         },
                                         "router": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#4ea3e0"
                                         }
                                     }
                                 },
@@ -305,13 +308,16 @@
                                     "type": "object",
                                     "properties": {
                                         "enddevice": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#000000"
                                         },
                                         "coordinator": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#ffffff"
                                         },
                                         "router": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#ffffff"
                                         }
                                     }
                                 },
@@ -319,10 +325,12 @@
                                     "type": "object",
                                     "properties": {
                                         "active": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#009900"
                                         },
                                         "inactive": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "default": "#994444"
                                         }
                                     }
                                 }
@@ -515,7 +523,8 @@
                         "enum": ["console", "file", "syslog"]
                     },
                     "title": "Log output",
-                    "description": "Output location of the log, leave empty to suppress logging"
+                    "description": "Output location of the log, leave empty to suppress logging",
+                    "default": ["console", "file"]
                 },
                 "log_directory": {
                     "type": "string",
@@ -530,7 +539,7 @@
                     "requiresRestart": true,
                     "description": "Log file name, can also contain timestamp",
                     "examples": ["zigbee2mqtt_%TIMESTAMP%.log"],
-                    "default": "log.txt"
+                    "default": "log.log"
                 },
                 "log_level": {
                     "type": "string",
@@ -659,7 +668,8 @@
                     ],
                     "title": "Pan ID",
                     "requiresRestart": true,
-                    "description": "ZigBee pan ID, changing requires re-pairing all devices!"
+                    "description": "ZigBee pan ID, changing requires re-pairing all devices!",
+                    "default": 6754
                 },
                 "ext_pan_id": {
                     "oneOf": [
@@ -677,7 +687,8 @@
                     ],
                     "title": "Ext Pan ID",
                     "requiresRestart": true,
-                    "description": "Zigbee extended pan ID, changing requires re-pairing all devices!"
+                    "description": "Zigbee extended pan ID, changing requires re-pairing all devices!",
+                    "default": [221, 221, 221, 221, 221, 221, 221, 221]
                 },
                 "channel": {
                     "type": "number",
@@ -695,6 +706,7 @@
                     "type": ["number", "null"],
                     "minimum": 1,
                     "maximum": 64,
+                    "default": null,
                     "description": "Adapter concurrency (e.g. 2 for CC2531 or 16 for CC26X2R1) (default: null, uses recommended value)"
                 },
                 "adapter_delay": {
@@ -703,6 +715,7 @@
                     "title": "Adapter delay",
                     "minimum": 0,
                     "maximum": 1000,
+                    "default": null,
                     "description": "Adapter delay"
                 },
                 "cache_state": {
@@ -752,14 +765,16 @@
                     ],
                     "title": "Network key",
                     "requiresRestart": true,
-                    "description": "Network encryption key, changing requires re-pairing all devices!"
+                    "description": "Network encryption key, changing requires re-pairing all devices!",
+                    "default": [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13]
                 },
                 "timestamp_format": {
                     "type": "string",
                     "title": "Timestamp format",
                     "requiresRestart": true,
                     "description": "Log timestamp format",
-                    "examples": ["YYYY-MM-DD HH:mm:ss"]
+                    "default": "YYYY-MM-DD HH:mm:ss",
+                    "examples": ["YYYY-MM-DD HH:mm:ss.SSS"]
                 },
                 "transmit_power": {
                     "type": ["number", "null"],
@@ -773,7 +788,8 @@
                     "type": "string",
                     "enum": ["attribute_and_json", "attribute", "json"],
                     "title": "MQTT output type",
-                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)"
+                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)",
+                    "default": "json"
                 }
             }
         },
@@ -827,7 +843,8 @@
                     "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
                 },
                 "qos": {
-                    "type": "number",
+                    "type": ["number"],
+                    "enum": [0, 1, 2],
                     "title": "QoS",
                     "description": "QoS level for MQTT messages of this device"
                 },
@@ -917,13 +934,16 @@
                     "type": "boolean"
                 },
                 "qos": {
-                    "type": "number"
+                    "type": ["number"],
+                    "enum": [0, 1, 2],
+                    "title": "QoS",
+                    "description": "QoS level for MQTT messages of this group"
                 },
                 "off_state": {
                     "type": ["string"],
                     "enum": ["all_members_off", "last_member_state"],
                     "title": "Group off state",
-                    "default": "auto",
+                    "default": "all_members_off",
                     "requiresRestart": true,
                     "description": "Control when to publish state OFF or CLOSE for a group. 'all_members_off': only publish state OFF/CLOSE when all group members are in state OFF/CLOSE,  'last_member_state': publish state OFF whenever one of its members changes to OFF"
                 },
