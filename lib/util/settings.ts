@@ -52,6 +52,9 @@ export const defaults = {
         force_disable_retain: false,
         // 1MB = roughly 3.5KB per device * 300 devices for `/bridge/devices`
         maximum_packet_size: 1048576,
+        keepalive: 60,
+        reject_unauthorized: true,
+        version: 4,
     },
     serial: {
         disable_led: false,
@@ -294,9 +297,6 @@ export function validate(): string[] {
         names.push(e.friendly_name);
         if ("icon" in e && e.icon && !e.icon.startsWith("http://") && !e.icon.startsWith("https://") && !e.icon.startsWith("device_icons/")) {
             errors.push(`Device icon of '${e.friendly_name}' should start with 'device_icons/', got '${e.icon}'`);
-        }
-        if (e.qos != null && ![0, 1, 2].includes(e.qos)) {
-            errors.push(`QOS for '${e.friendly_name}' not valid, should be 0, 1 or 2 got ${e.qos}`);
         }
     };
 

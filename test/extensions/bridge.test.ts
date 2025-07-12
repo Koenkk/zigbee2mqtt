@@ -309,6 +309,9 @@ describe("Extension: Bridge", () => {
                         force_disable_retain: false,
                         include_device_information: false,
                         maximum_packet_size: 1048576,
+                        keepalive: 60,
+                        reject_unauthorized: true,
+                        version: 4,
                         server: "mqtt://localhost",
                     },
                     ota: {
