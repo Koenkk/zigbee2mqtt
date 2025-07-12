@@ -69,6 +69,12 @@ body:
           placeholder: Add-on on Home Assistant OS on Intel NUC, Plain on Docker container, ...
       validations:
           required: true
+    - type: input
+      id: device
+      attributes:
+          label: Device `database.db` entry
+          description: If the problem is related to a specific device, paste the `database.db` entry here
+          placeholder: '{"id":117,"type":"EndDevice","ieeeAddr":"0x00158d0001d8e1d2","nwkAddr":25887 ...'
     - type: textarea
       id: log
       attributes:
