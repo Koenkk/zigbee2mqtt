@@ -7,7 +7,6 @@ import type {Socket} from "node:net";
 import {posix} from "node:path";
 import {parse} from "node:url";
 import bind from "bind-decorator";
-import type {RequestHandler} from "express-static-gzip";
 import expressStaticGzip from "express-static-gzip";
 import finalhandler from "finalhandler";
 import stringify from "json-stable-stringify-without-jsonify";
@@ -24,9 +23,7 @@ import Extension from "./extension";
  */
 export class Frontend extends Extension {
     private mqttBaseTopic: string;
-    private server!: Server;
-    private fileServer!: RequestHandler;
-    private deviceIconsFileServer!: RequestHandler;
+    private server: Server | undefined;
     private wss!: WebSocket.Server;
     private baseUrl: string;
 
@@ -49,60 +46,97 @@ export class Frontend extends Extension {
     }
 
     override async start(): Promise<void> {
-        const hasSSL = (val: string | undefined, key: string): val is string => {
-            if (val) {
-                if (!existsSync(val)) {
-                    logger.error(`Defined ${key} '${val}' file path does not exists, server won't be secured.`);
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        };
-        const {host, port, ssl_key: sslKey, ssl_cert: sslCert} = settings.get().frontend;
-        const options = {
-            enableBrotli: true,
-            // TODO: https://github.com/Koenkk/zigbee2mqtt/issues/24654 - enable compressed index serving when express-static-gzip is fixed.
-            index: false,
-            serveStatic: {
-                index: "index.html",
-                /* v8 ignore start */
-                setHeaders: (res: ServerResponse, path: string): void => {
-                    if (path.endsWith("index.html")) {
-                        res.setHeader("Cache-Control", "no-store");
+        if (settings.get().frontend.disable_ui_serving) {
+            const {host, port} = settings.get().frontend;
+            this.wss = new WebSocket.Server({port, host, path: posix.join(this.baseUrl, "api")});
+
+            logger.info(
+                /* v8 ignore next */
+                `Frontend UI serving is disabled. WebSocket at: ${this.wss.options.host ?? "0.0.0.0"}:${this.wss.options.port}${this.wss.options.path}`,
+            );
+        } else {
+            const {host, port, ssl_key: sslKey, ssl_cert: sslCert} = settings.get().frontend;
+            const hasSSL = (val: string | undefined, key: string): val is string => {
+                if (val) {
+                    if (existsSync(val)) {
+                        return true;
                     }
+
+                    logger.error(`Defined ${key} '${val}' file path does not exists, server won't be secured.`);
+                }
+
+                return false;
+            };
+            const options: expressStaticGzip.ExpressStaticGzipOptions = {
+                enableBrotli: true,
+                serveStatic: {
+                    /* v8 ignore start */
+                    setHeaders: (res: ServerResponse, path: string): void => {
+                        if (path.endsWith("index.html")) {
+                            res.setHeader("Cache-Control", "no-store");
+                        }
+                    },
+                    /* v8 ignore stop */
                 },
-                /* v8 ignore stop */
-            },
-        };
-        const frontend = (await import(settings.get().frontend.package)) as typeof import("zigbee2mqtt-frontend");
-        this.fileServer = expressStaticGzip(frontend.default.getPath(), options);
-        this.deviceIconsFileServer = expressStaticGzip(data.joinPath("device_icons"), options);
-        this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
+            };
+            const frontend = (await import(settings.get().frontend.package)) as typeof import("zigbee2mqtt-frontend");
+            const fileServer = expressStaticGzip(frontend.default.getPath(), options);
+            const deviceIconsFileServer = expressStaticGzip(data.joinPath("device_icons"), options);
+            const onRequest = (request: IncomingMessage, response: ServerResponse): void => {
+                const next = finalhandler(request, response);
+                // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
+                const newUrl = posix.relative(this.baseUrl, request.url!);
+
+                // The request url is not within the frontend base url, so the relative path starts with '..'
+                if (newUrl.startsWith(".")) {
+                    next();
+
+                    return;
+                }
+
+                // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
+                // This is necessary for the browser to resolve relative assets paths correctly.
+                request.originalUrl = request.url;
+                request.url = `/${newUrl}`;
+                request.path = request.url;
+
+                if (newUrl.startsWith("device_icons/")) {
+                    request.path = request.path.replace("device_icons/", "");
+                    request.url = request.url.replace("/device_icons", "");
+
+                    deviceIconsFileServer(request, response, next);
+                } else {
+                    fileServer(request, response, next);
+                }
+            };
+
+            if (hasSSL(sslKey, "ssl_key") && hasSSL(sslCert, "ssl_cert")) {
+                const serverOptions = {key: readFileSync(sslKey), cert: readFileSync(sslCert)};
+                this.server = createSecureServer(serverOptions, onRequest);
+            } else {
+                this.server = createServer(onRequest);
+            }
+
+            this.server.on("upgrade", this.onUpgrade);
+
+            if (!host) {
+                this.server.listen(port);
+                logger.info(`Started frontend on port ${port}`);
+            } else if (host.startsWith("/")) {
+                this.server.listen(host);
+                logger.info(`Started frontend on socket ${host}`);
+            } else {
+                this.server.listen(port, host);
+                logger.info(`Started frontend on port ${host}:${port}`);
+            }
+
+            this.wss = new WebSocket.Server({noServer: true, path: posix.join(this.baseUrl, "api")});
+        }
 
         this.wss.on("connection", this.onWebSocketConnection);
 
-        if (hasSSL(sslKey, "ssl_key") && hasSSL(sslCert, "ssl_cert")) {
-            const serverOptions = {key: readFileSync(sslKey), cert: readFileSync(sslCert)};
-            this.server = createSecureServer(serverOptions, this.onRequest);
-        } else {
-            this.server = createServer(this.onRequest);
-        }
-
-        this.server.on("upgrade", this.onUpgrade);
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
-
-        if (!host) {
-            this.server.listen(port);
-            logger.info(`Started frontend on port ${port}`);
-        } else if (host.startsWith("/")) {
-            this.server.listen(host);
-            logger.info(`Started frontend on socket ${host}`);
-        } else {
-            this.server.listen(port, host);
-            logger.info(`Started frontend on port ${host}:${port}`);
-        }
     }
 
     override async stop(): Promise<void> {
@@ -117,34 +151,7 @@ export class Frontend extends Extension {
             this.wss.close();
         }
 
-        await new Promise((resolve) => this.server?.close(resolve));
-    }
-
-    @bind private onRequest(request: IncomingMessage, response: ServerResponse): void {
-        const fin = finalhandler(request, response);
-        // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
-        const newUrl = posix.relative(this.baseUrl, request.url!);
-
-        // The request url is not within the frontend base url, so the relative path starts with '..'
-        if (newUrl.startsWith(".")) {
-            fin();
-
-            return;
-        }
-
-        // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
-        // This is necessary for the browser to resolve relative assets paths correctly.
-        request.originalUrl = request.url;
-        request.url = `/${newUrl}`;
-        request.path = request.url;
-
-        if (newUrl.startsWith("device_icons/")) {
-            request.path = request.path.replace("device_icons/", "");
-            request.url = request.url.replace("/device_icons", "");
-            this.deviceIconsFileServer(request, response, fin);
-        } else {
-            this.fileServer(request, response, fin);
-        }
+        await new Promise((resolve) => (this.server ? this.server.close(resolve) : resolve(undefined)));
     }
 
     @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
