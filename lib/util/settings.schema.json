@@ -843,7 +843,8 @@
                     "description": "Sets the MQTT Message Expiry in seconds, Make sure to set mqtt.version to 5"
                 },
                 "qos": {
-                    "type": "number",
+                    "type": ["number"],
+                    "enum": [0, 1, 2],
                     "title": "QoS",
                     "description": "QoS level for MQTT messages of this device"
                 },
@@ -933,13 +934,16 @@
                     "type": "boolean"
                 },
                 "qos": {
-                    "type": "number"
+                    "type": ["number"],
+                    "enum": [0, 1, 2],
+                    "title": "QoS",
+                    "description": "QoS level for MQTT messages of this group"
                 },
                 "off_state": {
                     "type": ["string"],
                     "enum": ["all_members_off", "last_member_state"],
                     "title": "Group off state",
-                    "default": "auto",
+                    "default": "all_members_off",
                     "requiresRestart": true,
                     "description": "Control when to publish state OFF or CLOSE for a group. 'all_members_off': only publish state OFF/CLOSE when all group members are in state OFF/CLOSE,  'last_member_state': publish state OFF whenever one of its members changes to OFF"
                 },

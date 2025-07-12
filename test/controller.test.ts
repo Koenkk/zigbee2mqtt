@@ -112,6 +112,8 @@ describe("Controller", () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith("mqtt://localhost", {
             will: {payload: Buffer.from('{"state":"offline"}'), retain: true, topic: "zigbee2mqtt/bridge/state", qos: 1},
             properties: {maximumPacketSize: 1048576},
+            keepalive: 60,
+            protocolVersion: 4,
         });
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb",
@@ -1045,6 +1047,8 @@ describe("Controller", () => {
         expect(mockMQTTConnectAsync).toHaveBeenCalledTimes(1);
         const expected = {
             will: {payload: Buffer.from('{"state":"offline"}'), retain: false, topic: "zigbee2mqtt/bridge/state", qos: 1},
+            keepalive: 60,
+            protocolVersion: 4,
             properties: {maximumPacketSize: 1048576},
         };
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith("mqtt://localhost", expected);

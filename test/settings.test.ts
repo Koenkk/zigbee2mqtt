@@ -312,6 +312,9 @@ describe("Settings", () => {
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
+            keepalive: 60,
+            reject_unauthorized: true,
+            version: 4,
             force_disable_retain: false,
             password: "mysecretpassword",
             server: "my.mqtt.server",
@@ -357,6 +360,9 @@ describe("Settings", () => {
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
+            keepalive: 60,
+            reject_unauthorized: true,
+            version: 4,
             force_disable_retain: false,
             password: "mysecretpassword",
             server: "my.mqtt.server",
@@ -675,6 +681,9 @@ describe("Settings", () => {
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
+            keepalive: 60,
+            reject_unauthorized: true,
+            version: 4,
             force_disable_retain: false,
             server: "my.mqtt.server",
             user: "myusername",
@@ -865,7 +874,7 @@ describe("Settings", () => {
 
         settings.reRead();
 
-        const error = `QOS for 'myname' not valid, should be 0, 1 or 2 got 3`;
+        const error = "devices/0x0017880104e45519/qos must be equal to one of the allowed values";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
     });
 
