@@ -5,14 +5,11 @@ import Extension from "./extension";
 export declare class Frontend extends Extension {
     private mqttBaseTopic;
     private server;
-    private fileServer;
-    private deviceIconsFileServer;
     private wss;
     private baseUrl;
     constructor(zigbee: Zigbee, mqtt: Mqtt, state: State, publishEntityState: PublishEntityState, eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>, restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>);
     start(): Promise<void>;
     stop(): Promise<void>;
-    private onRequest;
     private onUpgrade;
     private onWebSocketConnection;
     private onMQTTPublishMessageOrEntityState;

@@ -143,6 +143,7 @@ export interface Zigbee2MQTTSettings {
         ssl_cert?: string;
         ssl_key?: string;
         notification_filter?: string[];
+        disable_ui_serving?: boolean;
     };
     devices: {
         [s: string]: Zigbee2MQTTDeviceOptions;
