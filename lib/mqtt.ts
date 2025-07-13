@@ -171,7 +171,7 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "online"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true}});
+        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true, qos: 1}});
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
@@ -217,6 +217,11 @@ export default class Mqtt {
 
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: finalOptions});
 
+        let clientOptions: IClientPublishOptions = finalOptions.clientOptions;
+        if (settings.get().mqtt.force_disable_retain) {
+            clientOptions = {...finalOptions.clientOptions, retain: false};
+        }
+
         if (!this.isConnected()) {
             if (!finalOptions.skipLog) {
                 logger.error("Not connected to MQTT server!");
@@ -227,12 +232,10 @@ export default class Mqtt {
         }
 
         if (!finalOptions.skipLog) {
-            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
-        }
-
-        let clientOptions: IClientPublishOptions = finalOptions.clientOptions;
-        if (settings.get().mqtt.force_disable_retain) {
-            clientOptions = {...finalOptions.clientOptions, retain: false};
+            const retainStr = clientOptions.retain ? "true" : "false";
+            const qosStr = clientOptions.qos != null ? clientOptions.qos : 0;
+            logger.info(() =>
+                `MQTT publish: topic '${topic}', payload '${payload}' [retain: ${retainStr}, qos: ${qosStr}]`, NS);
         }
 
         try {
