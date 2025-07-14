@@ -217,18 +217,17 @@ export default class Mqtt {
 
         this.eventBus.emitMQTTMessagePublished({topic, payload, options: finalOptions});
 
-        let clientOptions: IClientPublishOptions = finalOptions.clientOptions;
-        if (settings.get().mqtt.force_disable_retain) {
-            clientOptions = {...finalOptions.clientOptions, retain: false};
-        }
-
         if (!this.isConnected()) {
             if (!finalOptions.skipLog) {
                 logger.error("Not connected to MQTT server!");
                 logger.error(`Cannot send message: topic: '${topic}', payload: '${payload}`);
             }
-
             return;
+        }
+
+        let clientOptions: IClientPublishOptions = finalOptions.clientOptions;
+        if (settings.get().mqtt.force_disable_retain) {
+            clientOptions = {...finalOptions.clientOptions, retain: false};
         }
 
         if (!finalOptions.skipLog) {
