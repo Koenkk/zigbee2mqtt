@@ -232,9 +232,7 @@ export default class Mqtt {
         }
 
         if (!finalOptions.skipLog) {
-            const retainStr = clientOptions.retain ? "true" : "false";
-            const qosStr = clientOptions.qos != null ? clientOptions.qos : 0;
-            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}' [retain: ${retainStr}, qos: ${qosStr}]`, NS);
+            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}' [retain: ${clientOptions.retain ?? false}, qos: ${clientOptions.qos ?? 0}]`, NS);
         }
 
         try {
