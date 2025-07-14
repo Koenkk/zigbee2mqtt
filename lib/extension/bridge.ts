@@ -631,7 +631,6 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: "device"});
                 settings.removeDevice(entity.ID as string);
             } else {
                 if (force) {
@@ -640,9 +639,10 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
-                this.eventBus.emitEntityRemoved({id: entity.ID, name: friendlyName, type: "group"});
                 settings.removeGroup(entity.ID);
             }
+
+            this.eventBus.emitEntityRemoved({entity, name: friendlyName});
 
             // Remove from state
             this.state.remove(entity.ID);

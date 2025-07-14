@@ -117,12 +117,29 @@ describe("Extension: OnEvent", () => {
         expect(emitExposesAndDevicesChangedSpy).toHaveBeenCalledTimes(1);
         expect(emitExposesAndDevicesChangedSpy).toHaveBeenCalledWith(getZ2MDevice(devices.LIVOLO));
 
+        // Call `stop` when device leaves
         await mockZHEvents.deviceLeave({ieeeAddr: devices.LIVOLO.ieeeAddr});
         await flushPromises();
 
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
         expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
             2,
+            "stop",
+            {},
+            devices.LIVOLO,
+            settings.getDevice(devices.LIVOLO.ieeeAddr),
+            {},
+            {deviceExposesChanged: expect.any(Function)},
+        );
+
+        // Call `stop` when device is removed
+        // @ts-expect-error private
+        controller.eventBus.emitEntityRemoved({entity: getZ2MDevice(devices.LIVOLO)});
+        await flushPromises();
+
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(3);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
+            3,
             "stop",
             {},
             devices.LIVOLO,

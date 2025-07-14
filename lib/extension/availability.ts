@@ -207,7 +207,7 @@ export default class Availability extends Extension {
                 await this.publishAvailability(data.entity, false, true);
             }
         });
-        this.eventBus.onEntityRemoved(this, (data) => data.type === "device" && this.clearTimer(data.id));
+        this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearTimer(data.entity.ID));
         this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);

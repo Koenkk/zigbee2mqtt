@@ -31,6 +31,11 @@ export default class OnEvent extends Extension {
                 await this.callOnEvent(data.device, "stop", {});
             }
         });
+        this.eventBus.onEntityRemoved(this, async (data) => {
+            if (data.entity.isDevice()) {
+                await this.callOnEvent(data.entity, "stop", {});
+            }
+        });
         this.eventBus.onDeviceInterview(this, async (data) => {
             await this.callOnEvent(data.device, "deviceInterview", {});
         });
