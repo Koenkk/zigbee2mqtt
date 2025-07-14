@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 ARG TARGETPLATFORM
 
 FROM alpine:3.22 AS base
@@ -14,17 +12,12 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
 
 # Make and such are needed to compile serialport for riscv64
-# Install pnpm CLI and configure its store directory
-RUN apk add --no-cache make gcc g++ python3 linux-headers npm && \
-    npm install -g pnpm@$(sed -n \
-      's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' \
-      package.json) && \
-    pnpm config set store-dir /root/.local/share/pnpm
-
-# Run installation under a BuildKit cache mount so each arch gets its own store
-RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm \
+# Install pnpm, configure a tmp-based store, then use it under a cache mount so each arch gets its own store
+RUN --mount=type=cache,id=pnpm-store,target=/tmp/pnpm-store \
+    apk add --no-cache make gcc g++ python3 linux-headers npm && \
+    npm install -g pnpm@$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' package.json) && \
+    pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --no-optional && \
-    # strip outdated serialport prebuilds
     rm -rf $(find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d) && \
     pnpm rebuild @serialport/bindings-cpp
 
