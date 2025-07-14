@@ -1,11 +1,10 @@
 import {existsSync, mkdirSync} from "node:fs";
 import {createServer} from "node:http";
 import {parse} from "node:querystring";
-
 import {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
-
 import data from "./data";
 import * as settings from "./settings";
+import {YAMLFileException} from "./yaml";
 
 type OnboardSettings = {
     mqtt_base_topic?: string;
@@ -518,6 +517,27 @@ async function startFailureServer(errors: string): Promise<void> {
     await new Promise((resolve) => server?.close(resolve));
 }
 
+async function onSettingsErrors(errors: string[]): Promise<void> {
+    let pErrors = "";
+
+    console.error("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.error("            READ THIS CAREFULLY\n");
+    console.error("Refusing to start because configuration is not valid, found the following errors:");
+
+    for (const error of errors) {
+        console.error(`- ${error}`);
+
+        pErrors += `<p>- ${escapeHtml(error)}</p>`;
+    }
+
+    console.error("\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration");
+    console.error("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
+
+    if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
+        await startFailureServer(pErrors);
+    }
+}
+
 export async function onboard(): Promise<boolean> {
     if (!existsSync(data.getPath())) {
         mkdirSync(data.getPath(), {recursive: true});
@@ -525,15 +545,38 @@ export async function onboard(): Promise<boolean> {
 
     const confExists = existsSync(data.joinPath("configuration.yaml"));
 
-    if (!confExists) {
-        settings.writeMinimalDefaults();
-    } else {
+    if (confExists) {
+        // initial caching, ensure file is valid yaml first
+        try {
+            settings.getPersistedSettings();
+        } catch (error) {
+            await onSettingsErrors(
+                error instanceof YAMLFileException
+                    ? [`Your configuration file: '${error.file}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`]
+                    : [`${error}`],
+            );
+
+            return false;
+        }
+
         // migrate first
         const {migrateIfNecessary} = await import("./settingsMigration.js");
 
         migrateIfNecessary();
+
+        // make sure existing settings are valid before applying envs
+        const errors = settings.validateNonRequired();
+
+        if (errors.length > 0) {
+            await onSettingsErrors(errors);
+
+            return false;
+        }
+
         // trigger initial writing of `ZIGBEE2MQTT_CONFIG_*` ENVs
         settings.write();
+    } else {
+        settings.writeMinimalDefaults();
     }
 
     // use `configuration.yaml` file to detect "brand new install"
@@ -553,24 +596,7 @@ export async function onboard(): Promise<boolean> {
     const errors = settings.validate();
 
     if (errors.length > 0) {
-        let pErrors = "";
-
-        console.error("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        console.error("            READ THIS CAREFULLY\n");
-        console.error("Refusing to start because configuration is not valid, found the following errors:");
-
-        for (const error of errors) {
-            console.error(`- ${error}`);
-
-            pErrors += `<p>- ${escapeHtml(error)}</p>`;
-        }
-
-        console.error("\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration");
-        console.error("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
-
-        if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
-            await startFailureServer(pErrors);
-        }
+        await onSettingsErrors(errors);
 
         return false;
     }

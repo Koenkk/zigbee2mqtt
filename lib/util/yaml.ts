@@ -21,7 +21,7 @@ export class YAMLFileException extends YAMLException {
 function read(file: string): KeyValue {
     try {
         const result = yaml.load(fs.readFileSync(file, "utf8"));
-        assert(result instanceof Object);
+        assert(result instanceof Object, `The content of ${file} is expected to be an object`);
         return result as KeyValue;
     } catch (error) {
         if (error instanceof YAMLException) {
