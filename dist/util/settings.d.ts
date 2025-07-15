@@ -107,6 +107,7 @@ export declare function writeMinimalDefaults(): void;
 export declare function setOnboarding(value: boolean): void;
 export declare function write(): void;
 export declare function validate(): string[];
+export declare function validateNonRequired(): string[];
 /**
  * Get the settings actually written in the yaml.
  * Env vars are applied on top.
