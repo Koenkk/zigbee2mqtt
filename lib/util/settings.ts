@@ -7,7 +7,7 @@ import objectAssignDeep from "object-assign-deep";
 import data from "./data";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
-import yaml, {YAMLFileException} from "./yaml";
+import yaml from "./yaml";
 
 export {schemaJson};
 // When updating also update:
@@ -260,15 +260,7 @@ export function write(): void {
 }
 
 export function validate(): string[] {
-    try {
-        getPersistedSettings();
-    } catch (error) {
-        if (error instanceof YAMLFileException) {
-            return [`Your YAML file: '${error.file}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`];
-        }
-
-        return [`${error}`];
-    }
+    getPersistedSettings();
 
     if (!ajvSetting(_settings)) {
         // biome-ignore lint/style/noNonNullAssertion: When `ajvSetting()` return false it always has `errors`
@@ -319,6 +311,19 @@ export function validate(): string[] {
     }
 
     return errors;
+}
+
+export function validateNonRequired(): string[] {
+    getPersistedSettings();
+
+    if (!ajvSetting(_settings)) {
+        // biome-ignore lint/style/noNonNullAssertion: When `ajvSetting()` return false it always has `errors`
+        const errors = ajvSetting.errors!.filter((e) => e.keyword !== "required");
+
+        return errors.map((v) => `${v.instancePath.substring(1)} ${v.message}`);
+    }
+
+    return [];
 }
 
 function read(): Partial<Settings> {
@@ -478,12 +483,12 @@ export function apply(settings: Record<string, unknown>, throwOnError = true): b
     const newSettings = objectAssignDeep.noMutate(_settings, settings);
 
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
-    ajvSetting(newSettings);
 
-    if (throwOnError) {
-        const errors = ajvSetting.errors?.filter((e) => e.keyword !== "required");
+    if (!ajvSetting(newSettings) && throwOnError) {
+        // biome-ignore lint/style/noNonNullAssertion: When `ajvSetting()` return false it always has `errors`
+        const errors = ajvSetting.errors!.filter((e) => e.keyword !== "required");
 
-        if (errors?.length) {
+        if (errors.length) {
             const error = errors[0];
             throw new Error(`${error.instancePath.substring(1)} ${error.message}`);
         }

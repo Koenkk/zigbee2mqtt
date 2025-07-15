@@ -847,25 +847,6 @@ describe("Settings", () => {
         expect(settings.get().blocklist).toStrictEqual(["0x123", "0x1234"]);
     });
 
-    it("Should throw error when yaml file is invalid", () => {
-        fs.writeFileSync(
-            configurationFile,
-            `
-             good: 9
-             \t wrong
-        `,
-        );
-
-        settings.testing.clear();
-        const error = `Your YAML file: '${configurationFile}' is invalid (use https://jsonformatter.org/yaml-validator to find and fix the issue)`;
-        expect(settings.validate()).toEqual(expect.arrayContaining([error]));
-    });
-
-    it("Should throw error when yaml file does not exist", () => {
-        settings.testing.clear();
-        expect(settings.validate()[0]).toContain("ENOENT: no such file or directory, open ");
-    });
-
     it("Configuration shouldnt be valid when invalid QOS value is used", () => {
         write(configurationFile, {
             ...minimalConfig,
