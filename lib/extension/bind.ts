@@ -12,7 +12,6 @@ import * as settings from "../util/settings";
 import utils from "../util/utils";
 import Extension from "./extension";
 
-const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
 const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
     "genScenes",
     "genOnOff",
@@ -204,6 +203,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Bind extends Extension {
+    private topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
     private pollDebouncers: {[s: string]: () => void} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -216,7 +216,7 @@ export default class Bind extends Extension {
     private parseMQTTMessage(
         data: eventdata.MQTTMessage,
     ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
-        if (data.topic.match(TOPIC_REGEX)) {
+        if (data.topic.match(this.topicRegex)) {
             const type = data.topic.endsWith("unbind") ? "unbind" : "bind";
             let skipDisableReporting = false;
             const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];

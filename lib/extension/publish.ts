@@ -9,12 +9,12 @@ import * as settings from "../util/settings";
 import utils from "../util/utils";
 import Extension from "./extension";
 
+// TODO: get rid of this, use class member
 let topicGetSetRegex: RegExp;
-// Used by `publish.test.js` to reload regex when changing `mqtt.base_topic`.
+// Used by `publish.test.ts` to reload regex when changing `mqtt.base_topic`.
 export const loadTopicGetSetRegex = (): void => {
     topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge)(.+?)/(get|set)(?:/(.+))?$`);
 };
-loadTopicGetSetRegex();
 
 const STATE_VALUES: ReadonlyArray<string> = ["on", "off", "toggle", "open", "close", "stop", "lock", "unlock"];
 const SCENE_CONVERTER_KEYS: ReadonlyArray<string> = ["scene_store", "scene_add", "scene_remove", "scene_remove_all", "scene_rename"];
@@ -29,6 +29,7 @@ interface ParsedTopic {
 export default class Publish extends Extension {
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
+        loadTopicGetSetRegex();
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
     }
 

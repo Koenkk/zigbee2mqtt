@@ -11,8 +11,6 @@ import * as settings from "../util/settings";
 import utils, {isLightExpose} from "../util/utils";
 import Extension from "./extension";
 
-const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
-
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     state: () => true,
     brightness: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
@@ -38,6 +36,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Groups extends Extension {
+    private topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
     private lastOptimisticState: {[s: string]: KeyValue} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -185,7 +184,7 @@ export default class Groups extends Extension {
     private parseMQTTMessage(
         data: eventdata.MQTTMessage,
     ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
-        const topicRegexMatch = data.topic.match(TOPIC_REGEX);
+        const topicRegexMatch = data.topic.match(this.topicRegex);
 
         if (topicRegexMatch) {
             const type = topicRegexMatch[1] as "remove" | "add" | "remove_all";

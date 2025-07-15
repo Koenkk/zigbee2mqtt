@@ -15,8 +15,7 @@ import utils from "./util/utils";
 const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
 
 export default class Zigbee {
-    // @ts-expect-error initialized in start
-    private herdsman: Controller;
+    private herdsman!: Controller;
     private eventBus: EventBus;
     private groupLookup = new Map<number /* group ID */, Group>();
     private deviceLookup = new Map<string /* IEEE address */, Device>();

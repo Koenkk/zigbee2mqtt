@@ -17,9 +17,8 @@ import * as settings from "../util/settings";
 import utils, {assertString} from "../util/utils";
 import Extension from "./extension";
 
-const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
-
 export default class Bridge extends Extension {
+    private requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
     // set on `start`
     #osInfo!: Zigbee2MQTTAPI["bridge/info"]["os"];
     private zigbee2mqttVersion!: {commitHash?: string; version: string};
@@ -197,7 +196,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const match = data.topic.match(REQUEST_REGEX);
+        const match = data.topic.match(this.requestRegex);
 
         if (!match) {
             return;
