@@ -231,11 +231,7 @@ export default class Mqtt {
         }
 
         if (!finalOptions.skipLog) {
-            logger.info(
-                () =>
-                    `MQTT publish: topic '${topic}', payload '${payload}' [retain: ${clientOptions.retain ?? false}, qos: ${clientOptions.qos ?? 0}]`,
-                NS,
-            );
+            logger.info(() => `MQTT publish: topic '${topic}', payload '${payload}'`, NS);
         }
 
         try {
