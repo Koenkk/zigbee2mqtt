@@ -18,6 +18,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/tmp/pnpm-store \
     npm install -g pnpm@$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' package.json) && \
     pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --no-optional && \
+    # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
     rm -rf $(find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d) && \
     pnpm rebuild @serialport/bindings-cpp
 
@@ -49,4 +50,4 @@ ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD [ "/sbin/tini", "--", "node", "index.js" ]
+CMD [ "/sbin/tini", "--", "node", "index.js"]
