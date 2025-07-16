@@ -3147,7 +3147,6 @@ describe("Extension: Bridge", () => {
     });
 
     it("Should allow interviewing a device by ieeeAddr", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         assert("resolveDefinition" in device);
         device.resolveDefinition = vi.fn();

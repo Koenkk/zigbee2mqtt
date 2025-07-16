@@ -120,11 +120,9 @@ describe("Extension: Configure", () => {
 
     it("Should reconfigure reporting on reconfigure event", async () => {
         expectBulbConfigured();
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         mockClear(device.zh);
         expectBulbNotConfigured();
-        // @ts-expect-error private
         controller.eventBus.emitReconfigure({device});
         await flushPromises();
         expectBulbConfigured();

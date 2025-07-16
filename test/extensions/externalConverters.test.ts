@@ -49,7 +49,6 @@ describe("Extension: ExternalConverters", () => {
     };
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
-        // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };
 
@@ -72,7 +71,6 @@ describe("Extension: ExternalConverters", () => {
 
     beforeEach(async () => {
         zhc.removeExternalDefinitions(); // remove all external converters
-        // @ts-expect-error private - clear cached
         await controller.zigbee.resolveDevicesDefinitions(true);
         for (const mock of mocksClear) mock.mockClear();
         data.writeDefaultConfiguration();

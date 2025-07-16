@@ -44,7 +44,6 @@ describe("Extension: Groups", () => {
         mockMQTTPublishAsync.mockClear();
         groups.gledopto_group.command.mockClear();
         zhcGlobalStore.clear();
-        // @ts-expect-error private
         controller.state.clear();
     });
 
@@ -459,7 +458,6 @@ describe("Extension: Groups", () => {
         await mockMQTTEvents.message("zigbee2mqtt/group_1/set", stringify({state: "ON"}));
         await flushPromises();
         mockMQTTPublishAsync.mockClear();
-        // @ts-expect-error private
         controller.state.clear();
 
         await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "OFF"}));

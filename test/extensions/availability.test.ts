@@ -281,9 +281,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should retrieve device state when it reconnects", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {state: "OFF"});
 
         const endpoint = devices.bulb_color.getEndpoint(1);
