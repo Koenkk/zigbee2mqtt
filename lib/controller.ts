@@ -281,10 +281,8 @@ export class Controller {
         }
     }
 
-    async stop(restart = false): Promise<void> {
+    async stop(restart = false, code = 0): Promise<void> {
         this.sdNotify?.notifyStopping();
-
-        let code = 0;
 
         for (const extension of this.extensions) {
             try {
@@ -320,7 +318,7 @@ export class Controller {
 
     @bind async onZigbeeAdapterDisconnected(): Promise<void> {
         logger.error("Adapter disconnected, stopping");
-        await this.stop();
+        await this.stop(false, 2);
     }
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {

@@ -412,14 +412,13 @@ describe("Controller", () => {
     });
 
     it("Start controller adapter disconnects", async () => {
-        mockZHController.stop.mockRejectedValueOnce("failed");
         await controller.start();
         await mockZHEvents.adapterDisconnected();
         await flushPromises();
         expect(mockMQTTEndAsync).toHaveBeenCalledTimes(1);
         expect(mockZHController.stop).toHaveBeenCalledTimes(1);
         expect(mockExit).toHaveBeenCalledTimes(1);
-        expect(mockExit).toHaveBeenCalledWith(1, false);
+        expect(mockExit).toHaveBeenCalledWith(2, false);
     });
 
     it("does not throw when extension fails to stop on controller stop", async () => {
