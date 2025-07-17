@@ -26,7 +26,7 @@ export interface UpdatePayload {
 }
 
 export default class OTAUpdate extends Extension {
-    private topicRegex = new RegExp(
+    #topicRegex = new RegExp(
         `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade)?`,
         "i",
     );
@@ -251,7 +251,7 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const topicMatch = data.topic.match(this.topicRegex);
+        const topicMatch = data.topic.match(this.#topicRegex);
 
         if (!topicMatch) {
             return;

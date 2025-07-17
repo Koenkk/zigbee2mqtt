@@ -203,7 +203,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Bind extends Extension {
-    private topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
+    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
     private pollDebouncers: {[s: string]: () => void} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -216,7 +216,7 @@ export default class Bind extends Extension {
     private parseMQTTMessage(
         data: eventdata.MQTTMessage,
     ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
-        if (data.topic.match(this.topicRegex)) {
+        if (data.topic.match(this.#topicRegex)) {
             const type = data.topic.endsWith("unbind") ? "unbind" : "bind";
             let skipDisableReporting = false;
             const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
