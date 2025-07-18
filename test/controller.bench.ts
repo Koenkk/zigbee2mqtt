@@ -541,7 +541,6 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
@@ -580,7 +579,6 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
@@ -646,7 +644,6 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
