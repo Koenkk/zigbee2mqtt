@@ -591,7 +591,11 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
                 controller.eventBus.emitDeviceMessage({
                     type: "attributeReport",
-                    device: controller.zigbee.resolveEntity(`0xf1f1f1f1f1f1f1${Math.floor(MANY_DEVICES / 2).toString(16)}`),
+                    device: controller.zigbee.resolveEntity(
+                        `0xf1f1f1f1f1f1f1${Math.floor(MANY_DEVICES / 2)
+                            .toString(16)
+                            .padStart(2, "0")}`,
+                    ),
                     endpoint: ZSpec.HA_ENDPOINT,
                     linkquality: 200,
                     groupID: 0,
