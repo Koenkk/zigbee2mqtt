@@ -583,7 +583,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
             await controller.start();
             await Promise.allSettled(mockedGlobal.setImmediateProms);
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        });
+        }, 60000);
 
         afterAll(async () => {
             await controller.stop();
