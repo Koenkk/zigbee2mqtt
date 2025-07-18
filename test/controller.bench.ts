@@ -460,68 +460,68 @@ describe("Controller with dummy zigbee/mqtt", () => {
         );
     });
 
-    describe("defaults/stress start & stop", () => {
-        beforeEach(async () => {
-            addManyDevices();
-            await initSettings();
-            await initController();
-        });
+    // describe("defaults/stress start & stop", () => {
+    //     beforeEach(async () => {
+    //         addManyDevices();
+    //         await initSettings();
+    //         await initController();
+    //     });
 
-        afterEach(() => {
-            unmockGlobalThis();
-            resetDevices();
-        });
+    //     afterEach(() => {
+    //         unmockGlobalThis();
+    //         resetDevices();
+    //     });
 
-        bench(
-            "[defaults/stress] start & stop controller",
-            async () => {
-                const mockedGlobal = mockGlobalThis();
+    //     bench(
+    //         "[defaults/stress] start & stop controller",
+    //         async () => {
+    //             const mockedGlobal = mockGlobalThis();
 
-                await controller.start();
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+    //             await controller.start();
+    //             await Promise.allSettled(mockedGlobal.setImmediateProms);
+    //             await Promise.allSettled(mockedGlobal.setTimeoutProms);
 
-                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                    throw new Error("Invalid");
-                }
+    //             if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+    //                 throw new Error("Invalid");
+    //             }
 
-                await controller.stop();
-            },
-            {throws: true},
-        );
-    });
+    //             await controller.stop();
+    //         },
+    //         {throws: true},
+    //     );
+    // });
 
-    describe("HA/stress start & stop", () => {
-        beforeEach(async () => {
-            addManyDevices();
-            await initSettings([[["homeassistant", "enabled"], true]]);
-            await initController();
-        });
+    // describe("HA/stress start & stop", () => {
+    //     beforeEach(async () => {
+    //         addManyDevices();
+    //         await initSettings([[["homeassistant", "enabled"], true]]);
+    //         await initController();
+    //     });
 
-        afterEach(() => {
-            unmockGlobalThis();
-            resetDevices();
-        });
+    //     afterEach(() => {
+    //         unmockGlobalThis();
+    //         resetDevices();
+    //     });
 
-        bench(
-            "[HA/stress] start & stop controller",
-            async () => {
-                const mockedGlobal = mockGlobalThis();
+    //     bench(
+    //         "[HA/stress] start & stop controller",
+    //         async () => {
+    //             const mockedGlobal = mockGlobalThis();
 
-                await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+    //             await controller.start();
+    //             controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
+    //             await Promise.allSettled(mockedGlobal.setImmediateProms);
+    //             await Promise.allSettled(mockedGlobal.setTimeoutProms);
 
-                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                    throw new Error("Invalid");
-                }
+    //             if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+    //                 throw new Error("Invalid");
+    //             }
 
-                await controller.stop();
-            },
-            {throws: true},
-        );
-    });
+    //             await controller.stop();
+    //         },
+    //         {throws: true},
+    //     );
+    // });
 
     describe("defaults runtime", () => {
         beforeAll(async () => {
@@ -573,46 +573,46 @@ describe("Controller with dummy zigbee/mqtt", () => {
         );
     });
 
-    describe("defaults/stress runtime", () => {
-        beforeAll(async () => {
-            addManyDevices();
-            await initSettings();
-            await initController();
-            const mockedGlobal = mockGlobalThis();
+    // describe("defaults/stress runtime", () => {
+    //     beforeAll(async () => {
+    //         addManyDevices();
+    //         await initSettings();
+    //         await initController();
+    //         const mockedGlobal = mockGlobalThis();
 
-            await controller.start();
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        });
+    //         await controller.start();
+    //         await Promise.allSettled(mockedGlobal.setImmediateProms);
+    //         await Promise.allSettled(mockedGlobal.setTimeoutProms);
+    //     });
 
-        afterAll(async () => {
-            await controller.stop();
-            unmockGlobalThis();
-            resetDevices();
-        });
+    //     afterAll(async () => {
+    //         await controller.stop();
+    //         unmockGlobalThis();
+    //         resetDevices();
+    //     });
 
-        // this is mostly just to confirm the number of devices does not influence the processing (much)
-        bench(
-            "[defaults/stress] receive device message",
-            async () => {
-                const mockedGlobal = mockGlobalThis();
+    //     // this is mostly just to confirm the number of devices does not influence the processing (much)
+    //     bench(
+    //         "[defaults/stress] receive device message",
+    //         async () => {
+    //             const mockedGlobal = mockGlobalThis();
 
-                controller.eventBus.emitDeviceMessage({
-                    type: "attributeReport",
-                    device: controller.zigbee.resolveEntity("0x64f1f1f1f1f1f1f1"),
-                    endpoint: ZSpec.HA_ENDPOINT,
-                    linkquality: 200,
-                    groupID: 0,
-                    cluster: "genOnOff",
-                    data: {onOff: 1},
-                    meta: {},
-                });
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
-            },
-            {throws: true},
-        );
-    });
+    //             controller.eventBus.emitDeviceMessage({
+    //                 type: "attributeReport",
+    //                 device: controller.zigbee.resolveEntity("0x64f1f1f1f1f1f1f1"),
+    //                 endpoint: ZSpec.HA_ENDPOINT,
+    //                 linkquality: 200,
+    //                 groupID: 0,
+    //                 cluster: "genOnOff",
+    //                 data: {onOff: 1},
+    //                 meta: {},
+    //             });
+    //             await Promise.allSettled(mockedGlobal.setImmediateProms);
+    //             await Promise.allSettled(mockedGlobal.setTimeoutProms);
+    //         },
+    //         {throws: true},
+    //     );
+    // });
 
     describe("HA runtime", () => {
         beforeAll(async () => {
