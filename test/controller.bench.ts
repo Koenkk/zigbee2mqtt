@@ -110,62 +110,52 @@ const ZH_DEVICES: Device[] = [
     createDevice(1, "Router", "0xf1f1f1f1f1f1f1f1", 0x0001, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"),
     createDevice(2, "EndDevice", "0xe2e2e2e2e2e2e2e2", 0x0002, Zcl.ManufacturerCode.TUYA_GLOBAL_INC, "_TYZB01_kvwjujy9", "Battery", "TS0222"),
     createDevice(3, "GreenPower", "0x00000000015d3d3d", 0x0003, undefined, undefined, undefined, "GreenPower_7"),
+    // these have configure, without setTimeout, they hammer really badly (# of fn calls), so, only one of each
+    createDevice(
+        4,
+        "Router",
+        "0xd3d3d3d3d3d3d3d3",
+        0x0004,
+        Zcl.ManufacturerCode.LEDVANCE_GMBH,
+        "LEDVANCE",
+        "Mains (single phase)",
+        "PLUG OUTDOOR EU T",
+    ),
+    createDevice(5, "Router", "0xc4c4c4c4c4c4c4c4", 0x0005, Zcl.ManufacturerCode.INOVELLI, "Inovelli", "Mains (single phase)", "VZM35-SN"),
+    createDevice(
+        6,
+        "Router",
+        "0xb5b5b5b5b5b5b5b5",
+        0x0006,
+        Zcl.ManufacturerCode.SILICON_LABORATORIES,
+        "SMLIGHT",
+        "Mains (single phase)",
+        "SLZB-06Mg24",
+    ),
+    createDevice(
+        7,
+        "Router",
+        "0xa6a6a6a6a6a6a6a6",
+        0x0007,
+        Zcl.ManufacturerCode.TUYA_GLOBAL_INC,
+        "_TZE200_p0gzbqct",
+        "Mains (single phase)",
+        "TS0601",
+    ),
 ];
 const ZH_GROUPS = [createGroup(0, 901)];
 
 const addManyDevices = () => {
-    // these have configure, without setTimeout, they hammer really badly, so, only one of each
-    ZH_DEVICES.push(
-        createDevice(
-            1,
-            "Router",
-            "0xf1f1f1f1f1f1f111",
-            0x1001,
-            Zcl.ManufacturerCode.LEDVANCE_GMBH,
-            "LEDVANCE",
-            "Mains (single phase)",
-            "PLUG OUTDOOR EU T",
-        ),
-    );
-    ZH_DEVICES.push(
-        createDevice(1, "Router", "0xf1f1f1f1f1f1f112", 0x1002, Zcl.ManufacturerCode.INOVELLI, "Inovelli", "Mains (single phase)", "VZM35-SN"),
-    );
+    for (let i = 0; i < 100; i++) {
+        const ieee = `0xf1f1f1f1f1f1f1${i.toString(16)}`;
 
-    for (let i = 0; i < 150; i++) {
-        const ieee = `0x${i.toString(16)}f1f1f1f1f1f1f1`;
-
-        ZH_DEVICES.push(createDevice(1, "Router", ieee, 0x0004 + i, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"));
+        // device without `configure` (too many calls otherwise)
+        ZH_DEVICES.push(createDevice(1, "Router", ieee, 0x0008 + i, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"));
     }
-
-    // these have configure, without setTimeout, they hammer really badly, so, only one of each
-    ZH_DEVICES.push(
-        createDevice(
-            1,
-            "Router",
-            "0xf1f1f1f1f1f1f121",
-            0x2001,
-            Zcl.ManufacturerCode.SILICON_LABORATORIES,
-            "SMLIGHT",
-            "Mains (single phase)",
-            "SLZB-06Mg24",
-        ),
-    );
-    ZH_DEVICES.push(
-        createDevice(
-            1,
-            "Router",
-            "0xf1f1f1f1f1f1f122",
-            0x2002,
-            Zcl.ManufacturerCode.TUYA_GLOBAL_INC,
-            "_TZE200_p0gzbqct",
-            "Mains (single phase)",
-            "TS0601",
-        ),
-    );
 };
 
 const resetDevices = () => {
-    ZH_DEVICES.splice(4);
+    ZH_DEVICES.splice(8);
 };
 
 Device.byIeeeAddr = (ieeeAddr, _includeDeleted) => ZH_DEVICES.find((device) => device.ieeeAddr === ieeeAddr);
