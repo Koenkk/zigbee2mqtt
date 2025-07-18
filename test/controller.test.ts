@@ -412,6 +412,8 @@ describe("Controller", () => {
     });
 
     it("Start controller adapter disconnects", async () => {
+        // Fail to stop extension exit code 1 should not override adapter disconnect exit code 2
+        vi.spyOn(Array.from(controller.extensions)[0], "stop").mockRejectedValueOnce(new Error("failed"));
         await controller.start();
         await mockZHEvents.adapterDisconnected();
         await flushPromises();
