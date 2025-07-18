@@ -144,10 +144,11 @@ const ZH_DEVICES: Device[] = [
     ),
 ];
 const ZH_GROUPS = [createGroup(0, 901)];
+const MANY_DEVICES = 100;
 
 const addManyDevices = () => {
-    for (let i = 0; i < 100; i++) {
-        const ieee = `0xf1f1f1f1f1f1f1${i.toString(16)}`;
+    for (let i = 0; i < MANY_DEVICES; i++) {
+        const ieee = `0xf1f1f1f1f1f1f1${i.toString(16).padStart(2, "0")}`;
 
         // device without `configure` (too many calls otherwise)
         ZH_DEVICES.push(createDevice(1, "Router", ieee, 0x0008 + i, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"));
@@ -590,7 +591,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
                 controller.eventBus.emitDeviceMessage({
                     type: "attributeReport",
-                    device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f164"),
+                    device: controller.zigbee.resolveEntity(`0xf1f1f1f1f1f1f1${Math.floor(MANY_DEVICES / 2).toString(16)}`),
                     endpoint: ZSpec.HA_ENDPOINT,
                     linkquality: 200,
                     groupID: 0,
