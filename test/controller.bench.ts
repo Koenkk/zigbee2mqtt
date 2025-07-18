@@ -450,6 +450,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
         );
     });
 
+    // XXX: these currently take too long to run with codspeed's instrumentation
     // describe("defaults/stress start & stop", () => {
     //     beforeEach(async () => {
     //         addManyDevices();
@@ -589,7 +590,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
                 controller.eventBus.emitDeviceMessage({
                     type: "attributeReport",
-                    device: controller.zigbee.resolveEntity("0x64f1f1f1f1f1f1f1"),
+                    device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f164"),
                     endpoint: ZSpec.HA_ENDPOINT,
                     linkquality: 200,
                     groupID: 0,
