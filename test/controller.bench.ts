@@ -1,6 +1,6 @@
 import {existsSync, mkdirSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
-import {bench, describe} from "vitest";
+import {afterEach, beforeEach, bench, describe} from "vitest";
 import {Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
@@ -401,315 +401,282 @@ const initController = async () => {
 };
 
 describe("Controller with dummy zigbee/mqtt", () => {
-    bench(
-        "[defaults] start/stop controller",
-        async () => {
+    describe("defaults start & stop", () => {
+        beforeEach(async () => {
+            await initSettings();
+            await initController();
+        });
+
+        afterEach(() => {
+            unmockGlobalThis();
+        });
+
+        bench(
+            "[defaults] start & stop controller",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                await controller.start();
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+
+                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                    throw new Error("Invalid");
+                }
+
+                await controller.stop();
+            },
+            {throws: true},
+        );
+    });
+
+    describe("HA start & stop", () => {
+        beforeEach(async () => {
+            await initSettings([[["homeassistant", "enabled"], true]]);
+            await initController();
+        });
+
+        afterEach(() => {
+            unmockGlobalThis();
+        });
+
+        bench(
+            "[HA] start & stop controller",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                await controller.start();
+                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+
+                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                    throw new Error("Invalid");
+                }
+
+                await controller.stop();
+            },
+            {throws: true},
+        );
+    });
+
+    describe("defaults/stress start & stop", () => {
+        beforeEach(async () => {
+            addManyDevices();
+            await initSettings();
+            await initController();
+        });
+
+        afterEach(() => {
+            unmockGlobalThis();
+            resetDevices();
+        });
+
+        bench(
+            "[defaults/stress] start & stop controller",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                await controller.start();
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+
+                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                    throw new Error("Invalid");
+                }
+
+                await controller.stop();
+            },
+            {throws: true},
+        );
+    });
+
+    describe("HA/stress start & stop", () => {
+        beforeEach(async () => {
+            addManyDevices();
+            await initSettings([[["homeassistant", "enabled"], true]]);
+            await initController();
+        });
+
+        afterEach(() => {
+            unmockGlobalThis();
+            resetDevices();
+        });
+
+        bench(
+            "[HA/stress] start & stop controller",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                await controller.start();
+                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+
+                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                    throw new Error("Invalid");
+                }
+
+                await controller.stop();
+            },
+            {throws: true},
+        );
+    });
+
+    describe("defaults runtime", () => {
+        beforeEach(async () => {
+            await initSettings();
+            await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
             await Promise.allSettled(mockedGlobal.setImmediateProms);
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
+        });
 
-            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                throw new Error("Invalid");
-            }
-
+        afterEach(async () => {
             await controller.stop();
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings();
-                await initController();
-            },
-            teardown: () => {
-                unmockGlobalThis();
-            },
-        },
-    );
+            unmockGlobalThis();
+        });
 
-    bench(
-        "[defaults/stress] start/stop controller",
-        async () => {
+        bench(
+            "[defaults] receive device message",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                controller.eventBus.emitDeviceMessage({
+                    type: "attributeReport",
+                    device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f1f1"),
+                    endpoint: ZSpec.HA_ENDPOINT,
+                    linkquality: 200,
+                    groupID: 0,
+                    cluster: "genOnOff",
+                    data: {onOff: 1},
+                    meta: {},
+                });
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            },
+            {throws: true},
+        );
+
+        bench(
+            "[defaults] receive MQTT message",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            },
+            {throws: true},
+        );
+    });
+
+    describe("defaults/stress runtime", () => {
+        beforeEach(async () => {
+            addManyDevices();
+            await initSettings();
+            await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
             await Promise.allSettled(mockedGlobal.setImmediateProms);
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
+        });
 
-            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                throw new Error("Invalid");
-            }
-
+        afterEach(async () => {
             await controller.stop();
-        },
-        {
-            throws: true,
-            setup: async () => {
-                addManyDevices();
-                await initSettings();
-                await initController();
-            },
-            teardown: () => {
-                unmockGlobalThis();
-                resetDevices();
-            },
-        },
-    );
+            unmockGlobalThis();
+            resetDevices();
+        });
 
-    bench(
-        "[HA] start/stop controller",
-        async () => {
+        // this is mostly just to confirm the number of devices does not influence the processing (much)
+        bench(
+            "[defaults/stress] receive device message",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                controller.eventBus.emitDeviceMessage({
+                    type: "attributeReport",
+                    device: controller.zigbee.resolveEntity("0x64f1f1f1f1f1f1f1"),
+                    endpoint: ZSpec.HA_ENDPOINT,
+                    linkquality: 200,
+                    groupID: 0,
+                    cluster: "genOnOff",
+                    data: {onOff: 1},
+                    meta: {},
+                });
+                await Promise.allSettled(mockedGlobal.setImmediateProms);
+                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            },
+            {throws: true},
+        );
+    });
+
+    describe("HA runtime", () => {
+        beforeEach(async () => {
+            await initSettings([[["homeassistant", "enabled"], true]]);
+            await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
             controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
             await Promise.allSettled(mockedGlobal.setImmediateProms);
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
+        });
 
-            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                throw new Error("Invalid");
-            }
-
+        afterEach(async () => {
             await controller.stop();
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings([[["homeassistant", "enabled"], true]]);
-                await initController();
-            },
-            teardown: () => {
-                unmockGlobalThis();
-            },
-        },
-    );
+            unmockGlobalThis();
+        });
 
-    bench(
-        "[HA/stress] start/stop controller",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            await controller.start();
-            controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-
-            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                throw new Error("Invalid");
-            }
-
-            await controller.stop();
-        },
-        {
-            throws: true,
-            setup: async () => {
-                addManyDevices();
-                await initSettings([[["homeassistant", "enabled"], true]]);
-                await initController();
-            },
-            teardown: () => {
-                unmockGlobalThis();
-                resetDevices();
-            },
-        },
-    );
-
-    bench(
-        "[defaults] receive device message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.eventBus.emitDeviceMessage({
-                type: "attributeReport",
-                device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f1f1"),
-                endpoint: ZSpec.HA_ENDPOINT,
-                linkquality: 200,
-                groupID: 0,
-                cluster: "genOnOff",
-                data: {onOff: 1},
-                meta: {},
-            });
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings();
-                await initController();
+        bench(
+            "[HA] receive device message",
+            async () => {
                 const mockedGlobal = mockGlobalThis();
 
-                await controller.start();
+                controller.eventBus.emitDeviceMessage({
+                    type: "attributeReport",
+                    device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f1f1"),
+                    endpoint: ZSpec.HA_ENDPOINT,
+                    linkquality: 200,
+                    groupID: 0,
+                    cluster: "genOnOff",
+                    data: {onOff: 1},
+                    meta: {},
+                });
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-            },
-        },
-    );
+            {throws: true},
+        );
 
-    // this is mostly just to confirm the number of devices does not influence the processing (much)
-    bench(
-        "[defaults/stress] receive device message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.eventBus.emitDeviceMessage({
-                type: "attributeReport",
-                device: controller.zigbee.resolveEntity("0x64f1f1f1f1f1f1f1"),
-                endpoint: ZSpec.HA_ENDPOINT,
-                linkquality: 200,
-                groupID: 0,
-                cluster: "genOnOff",
-                data: {onOff: 1},
-                meta: {},
-            });
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                addManyDevices();
-                await initSettings();
-                await initController();
+        bench(
+            "[HA] receive MQTT message",
+            async () => {
                 const mockedGlobal = mockGlobalThis();
 
-                await controller.start();
+                controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-                resetDevices();
-            },
-        },
-    );
+            {throws: true},
+        );
 
-    bench(
-        "[HA] receive device message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.eventBus.emitDeviceMessage({
-                type: "attributeReport",
-                device: controller.zigbee.resolveEntity("0xf1f1f1f1f1f1f1f1"),
-                endpoint: ZSpec.HA_ENDPOINT,
-                linkquality: 200,
-                groupID: 0,
-                cluster: "genOnOff",
-                data: {onOff: 1},
-                meta: {},
-            });
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings([[["homeassistant", "enabled"], true]]);
-                await initController();
+        bench(
+            "[HA] receive MQTT discovery message",
+            async () => {
                 const mockedGlobal = mockGlobalThis();
 
-                await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
+                controller.mqtt.onMessage(
+                    "homeassistant/sensor/0xe2e2e2e2e2e2e2e2/update/config",
+                    Buffer.from(stringify({availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}]}), "utf8"),
+                );
                 await Promise.allSettled(mockedGlobal.setImmediateProms);
                 await Promise.allSettled(mockedGlobal.setTimeoutProms);
             },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-            },
-        },
-    );
-
-    bench(
-        "[defaults] receive MQTT message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings();
-                await initController();
-                const mockedGlobal = mockGlobalThis();
-
-                await controller.start();
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
-            },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-            },
-        },
-    );
-
-    bench(
-        "[HA] receive MQTT message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings([[["homeassistant", "enabled"], true]]);
-                await initController();
-                const mockedGlobal = mockGlobalThis();
-
-                await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
-            },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-            },
-        },
-    );
-
-    bench(
-        "[HA] receive MQTT discovery message",
-        async () => {
-            const mockedGlobal = mockGlobalThis();
-
-            controller.mqtt.onMessage(
-                "homeassistant/sensor/0xe2e2e2e2e2e2e2e2/update/config",
-                Buffer.from(stringify({availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}]}), "utf8"),
-            );
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
-        },
-        {
-            throws: true,
-            setup: async () => {
-                await initSettings([[["homeassistant", "enabled"], true]]);
-                await initController();
-                const mockedGlobal = mockGlobalThis();
-
-                await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
-            },
-            teardown: async () => {
-                await controller.stop();
-                unmockGlobalThis();
-            },
-        },
-    );
+            {throws: true},
+        );
+    });
 });

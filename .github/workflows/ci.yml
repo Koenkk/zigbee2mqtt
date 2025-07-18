@@ -48,11 +48,11 @@ jobs:
             - name: Test
               run: pnpm run test:coverage
 
-            # - name: Bench
-            #   uses: CodSpeedHQ/action@v3
-            #   with:
-            #     run: pnpm run bench
-            #     token: ${{ secrets.CODSPEED_TOKEN }}
+            - name: Bench
+              uses: CodSpeedHQ/action@v3
+              with:
+                run: pnpm run bench
+                token: ${{ secrets.CODSPEED_TOKEN }}
 
             - name: Log in to the Docker container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
