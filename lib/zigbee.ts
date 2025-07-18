@@ -15,8 +15,7 @@ import utils from "./util/utils";
 const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
 
 export default class Zigbee {
-    // @ts-expect-error initialized in start
-    private herdsman: Controller;
+    private herdsman!: Controller;
     private eventBus: EventBus;
     private groupLookup = new Map<number /* group ID */, Group>();
     private deviceLookup = new Map<string /* IEEE address */, Device>();
@@ -266,12 +265,20 @@ export default class Zigbee {
     }
 
     private resolveGroup(groupID: number): Group | undefined {
-        const group = this.herdsman.getGroupByID(Number(groupID));
-        if (group && !this.groupLookup.has(groupID)) {
-            this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
+        if (!this.groupLookup.has(groupID)) {
+            const group = this.herdsman.getGroupByID(groupID);
+
+            if (group) {
+                this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
+            }
         }
 
-        return this.groupLookup.get(groupID);
+        const group = this.groupLookup.get(groupID);
+
+        if (group) {
+            group.ensureInSettings();
+            return group;
+        }
     }
 
     resolveEntity(key: string | number | zh.Device): Device | Group | undefined {

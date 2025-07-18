@@ -28,10 +28,10 @@ import utils from "./util/utils";
 import Zigbee from "./zigbee";
 
 export class Controller {
-    private eventBus: EventBus;
-    private zigbee: Zigbee;
-    private state: State;
-    private mqtt: Mqtt;
+    public readonly eventBus: EventBus;
+    public readonly zigbee: Zigbee;
+    public readonly state: State;
+    public readonly mqtt: Mqtt;
     private restartCallback: () => Promise<void>;
     private exitCallback: (code: number, restart: boolean) => Promise<void>;
     public readonly extensions: Set<Extension>;

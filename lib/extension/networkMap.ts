@@ -13,7 +13,7 @@ const SUPPORTED_FORMATS = ["raw", "graphviz", "plantuml"];
  * This extension creates a network map
  */
 export default class NetworkMap extends Extension {
-    private topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
+    #topic = `${settings.get().mqtt.base_topic}/bridge/request/networkmap`;
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
@@ -21,7 +21,7 @@ export default class NetworkMap extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if (data.topic === this.topic) {
+        if (data.topic === this.#topic) {
             const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/networkmap"];
 
             try {

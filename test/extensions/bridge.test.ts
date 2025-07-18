@@ -14,7 +14,7 @@ import type {Mock} from "vitest";
 import {Controller} from "../../lib/controller";
 import Bridge from "../../lib/extension/bridge";
 import * as settings from "../../lib/util/settings";
-import utils from "../../lib/util/utils";
+import utils, {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 
 returnDevices.push(devices.coordinator.ieeeAddr);
 returnDevices.push(devices.bulb.ieeeAddr);
@@ -2288,7 +2288,7 @@ describe("Extension: Bridge", () => {
                     scenes: [],
                 },
                 {friendly_name: "gledopto_group", id: 21, members: [{endpoint: 15, ieee_address: "0x0017880104e45724"}], scenes: []},
-                {friendly_name: "default_bind_group", id: 901, members: [], scenes: []},
+                {friendly_name: "default_bind_group", id: DEFAULT_BIND_GROUP_ID, members: [], scenes: []},
                 {
                     friendly_name: "ha_discovery_group",
                     id: 9,
@@ -3147,7 +3147,6 @@ describe("Extension: Bridge", () => {
     });
 
     it("Should allow interviewing a device by ieeeAddr", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         assert("resolveDefinition" in device);
         device.resolveDefinition = vi.fn();

@@ -55,7 +55,6 @@ describe("Extension: HomeAssistant", () => {
     };
 
     const getZ2MEntity = (zhDeviceOrGroup: string | number | ZhDevice): Device | Group => {
-        // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDeviceOrGroup)!;
     };
 
@@ -1464,7 +1463,6 @@ describe("Extension: HomeAssistant", () => {
         assert("ieeeAddr" in device);
         resetDiscoveryPayloads(device.ieeeAddr);
         mockMQTTPublishAsync.mockClear();
-        // @ts-expect-error private
         controller.eventBus.emitEntityOptionsChanged({entity: device, from: {}, to: {test: 123}});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(`homeassistant/light/${device.ID}/light/config`, expect.any(String), expect.any(Object));
@@ -2384,7 +2382,6 @@ describe("Extension: HomeAssistant", () => {
         resetDiscoveryPayloads(device.ieeeAddr);
 
         mockMQTTPublishAsync.mockClear();
-        // @ts-expect-error private
         controller.eventBus.emitScenesChanged({entity: device});
         await flushPromises();
 
@@ -2421,7 +2418,6 @@ describe("Extension: HomeAssistant", () => {
         resetDiscoveryPayloads("9");
 
         mockMQTTPublishAsync.mockClear();
-        // @ts-expect-error private
         controller.eventBus.emitScenesChanged({entity: group});
         await flushPromises();
 
@@ -2483,7 +2479,6 @@ describe("Extension: HomeAssistant", () => {
             availability_mode: "all",
         };
 
-        // @ts-expect-error private
         controller.eventBus.emitMQTTMessage({
             topic: topic,
             message: stringify(payload),

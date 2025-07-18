@@ -24,7 +24,6 @@ describe("Extension: OnEvent", () => {
     let deviceOnEventSpy: MockInstance<DefinitionOnEvent>;
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
-        // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };
 
