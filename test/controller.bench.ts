@@ -105,46 +105,79 @@ const NETWORK_PARAMS = {
     nwkUpdateID: 1,
 };
 const NETWORK_KEY = [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13];
-const ZH_DEVICES: Device[] = [
-    createDevice(0, "Coordinator", COORD_IEEE, ZSpec.COORDINATOR_ADDRESS, Zcl.ManufacturerCode.SILICON_LABORATORIES, undefined, undefined, undefined),
-    createDevice(1, "Router", "0xf1f1f1f1f1f1f1f1", 0x0001, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"),
-    createDevice(2, "EndDevice", "0xe2e2e2e2e2e2e2e2", 0x0002, Zcl.ManufacturerCode.TUYA_GLOBAL_INC, "_TYZB01_kvwjujy9", "Battery", "TS0222"),
-    createDevice(3, "GreenPower", "0x00000000015d3d3d", 0x0003, undefined, undefined, undefined, "GreenPower_7"),
-    // these have configure, without setTimeout, they hammer really badly (# of fn calls), so, only one of each
-    createDevice(
-        4,
-        "Router",
-        "0xd3d3d3d3d3d3d3d3",
-        0x0004,
-        Zcl.ManufacturerCode.LEDVANCE_GMBH,
-        "LEDVANCE",
-        "Mains (single phase)",
-        "PLUG OUTDOOR EU T",
-    ),
-    createDevice(5, "Router", "0xc4c4c4c4c4c4c4c4", 0x0005, Zcl.ManufacturerCode.INOVELLI, "Inovelli", "Mains (single phase)", "VZM35-SN"),
-    createDevice(
-        6,
-        "Router",
-        "0xb5b5b5b5b5b5b5b5",
-        0x0006,
-        Zcl.ManufacturerCode.SILICON_LABORATORIES,
-        "SMLIGHT",
-        "Mains (single phase)",
-        "SLZB-06Mg24",
-    ),
-    createDevice(
-        7,
-        "Router",
-        "0xa6a6a6a6a6a6a6a6",
-        0x0007,
-        Zcl.ManufacturerCode.TUYA_GLOBAL_INC,
-        "_TZE200_p0gzbqct",
-        "Mains (single phase)",
-        "TS0601",
-    ),
-];
-const ZH_GROUPS = [createGroup(0, 901)];
+const ZH_DEVICES: Device[] = [];
+const ZH_GROUPS: Group[] = [];
 const MANY_DEVICES = 100;
+
+const initDevices = () => {
+    ZH_DEVICES.splice(0, ZH_DEVICES.length);
+
+    ZH_DEVICES.push(
+        createDevice(
+            0,
+            "Coordinator",
+            COORD_IEEE,
+            ZSpec.COORDINATOR_ADDRESS,
+            Zcl.ManufacturerCode.SILICON_LABORATORIES,
+            undefined,
+            undefined,
+            undefined,
+        ),
+    );
+    ZH_DEVICES.push(
+        createDevice(1, "Router", "0xf1f1f1f1f1f1f1f1", 0x0001, Zcl.ManufacturerCode.INNR_LIGHTING_BV, "Innr", "Mains (single phase)", "AE 262"),
+    );
+    ZH_DEVICES.push(
+        createDevice(2, "EndDevice", "0xe2e2e2e2e2e2e2e2", 0x0002, Zcl.ManufacturerCode.TUYA_GLOBAL_INC, "_TYZB01_kvwjujy9", "Battery", "TS0222"),
+    );
+    ZH_DEVICES.push(createDevice(3, "GreenPower", "0x00000000015d3d3d", 0x0003, undefined, undefined, undefined, "GreenPower_7"));
+    // these have configure, without setTimeout, they hammer really badly (# of fn calls), so, only one of each
+    ZH_DEVICES.push(
+        createDevice(
+            4,
+            "Router",
+            "0xd3d3d3d3d3d3d3d3",
+            0x0004,
+            Zcl.ManufacturerCode.LEDVANCE_GMBH,
+            "LEDVANCE",
+            "Mains (single phase)",
+            "PLUG OUTDOOR EU T",
+        ),
+    );
+    ZH_DEVICES.push(
+        createDevice(5, "Router", "0xc4c4c4c4c4c4c4c4", 0x0005, Zcl.ManufacturerCode.INOVELLI, "Inovelli", "Mains (single phase)", "VZM35-SN"),
+    );
+    ZH_DEVICES.push(
+        createDevice(
+            6,
+            "Router",
+            "0xb5b5b5b5b5b5b5b5",
+            0x0006,
+            Zcl.ManufacturerCode.SILICON_LABORATORIES,
+            "SMLIGHT",
+            "Mains (single phase)",
+            "SLZB-06Mg24",
+        ),
+    );
+    ZH_DEVICES.push(
+        createDevice(
+            7,
+            "Router",
+            "0xa6a6a6a6a6a6a6a6",
+            0x0007,
+            Zcl.ManufacturerCode.TUYA_GLOBAL_INC,
+            "_TZE200_p0gzbqct",
+            "Mains (single phase)",
+            "TS0601",
+        ),
+    );
+};
+
+const initGroups = () => {
+    ZH_GROUPS.splice(0, ZH_GROUPS.length);
+
+    ZH_GROUPS.push(createGroup(0, 1));
+};
 
 const addManyDevices = () => {
     for (let i = 0; i < MANY_DEVICES; i++) {
@@ -155,9 +188,10 @@ const addManyDevices = () => {
     }
 };
 
-const resetDevices = () => {
-    ZH_DEVICES.splice(8);
-};
+const getMidDeviceIeee = () =>
+    `0xf1f1f1f1f1f1f1${Math.floor(MANY_DEVICES / 2)
+        .toString(16)
+        .padStart(2, "0")}`;
 
 Device.byIeeeAddr = (ieeeAddr, _includeDeleted) => ZH_DEVICES.find((device) => device.ieeeAddr === ieeeAddr);
 Device.byType = (type) => ZH_DEVICES.filter((device) => device.type === type);
@@ -294,10 +328,18 @@ const mockGlobalThis = () => {
 
     return {setImmediateProms, setTimeoutProms};
 };
+
 const unmockGlobalThis = () => {
     globalThis.setImmediate = origSetImmediate;
     globalThis.setTimeout = origSetTimeout;
 };
+
+const settle = async (mockedGlobal: ReturnType<typeof mockGlobalThis>) => {
+    await Promise.allSettled(mockedGlobal.setImmediateProms);
+    await Promise.allSettled(mockedGlobal.setTimeoutProms);
+    await new Promise((resolve) => origSetImmediate(resolve));
+};
+
 const initSettings = async (pathValuePairs?: [string[], string | number | boolean][]) => {
     const settings = await import("../lib/util/settings.js");
 
@@ -376,15 +418,16 @@ const initController = async () => {
         reconnecting: false,
         disconnecting: false,
         disconnected: false,
+        endAsync: async () => {},
+        // @ts-expect-error Z2M does not make use of return
+        publishAsync: async () => {},
     };
     controller.mqtt.connect = async () => {
         // @ts-expect-error private
         await controller.mqtt.onConnect();
     };
-    controller.mqtt.disconnect = async () => {};
     controller.mqtt.subscribe = async () => {};
     controller.mqtt.unsubscribe = async () => {};
-    controller.mqtt.publish = async () => {};
 
     // will be in-memory only
     controller.state.start = () => {};
@@ -394,6 +437,8 @@ const initController = async () => {
 describe("Controller with dummy zigbee/mqtt", () => {
     describe("defaults start & stop", () => {
         beforeEach(async () => {
+            initDevices();
+            initGroups();
             await initSettings();
             await initController();
         });
@@ -408,8 +453,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 await controller.start();
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
 
                 if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
                     throw new Error("Invalid");
@@ -423,6 +467,8 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
     describe("HA start & stop", () => {
         beforeEach(async () => {
+            initDevices();
+            initGroups();
             await initSettings([[["homeassistant", "enabled"], true]]);
             await initController();
         });
@@ -438,8 +484,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
                 await controller.start();
                 controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
 
                 if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
                     throw new Error("Invalid");
@@ -451,79 +496,16 @@ describe("Controller with dummy zigbee/mqtt", () => {
         );
     });
 
-    // XXX: these currently take too long to run with codspeed's instrumentation
-    // describe("defaults/stress start & stop", () => {
-    //     beforeEach(async () => {
-    //         addManyDevices();
-    //         await initSettings();
-    //         await initController();
-    //     });
-
-    //     afterEach(() => {
-    //         unmockGlobalThis();
-    //         resetDevices();
-    //     });
-
-    //     bench(
-    //         "[defaults/stress] start & stop controller",
-    //         async () => {
-    //             const mockedGlobal = mockGlobalThis();
-
-    //             await controller.start();
-    //             await Promise.allSettled(mockedGlobal.setImmediateProms);
-    //             await Promise.allSettled(mockedGlobal.setTimeoutProms);
-
-    //             if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-    //                 throw new Error("Invalid");
-    //             }
-
-    //             await controller.stop();
-    //         },
-    //         {throws: true},
-    //     );
-    // });
-
-    // describe("HA/stress start & stop", () => {
-    //     beforeEach(async () => {
-    //         addManyDevices();
-    //         await initSettings([[["homeassistant", "enabled"], true]]);
-    //         await initController();
-    //     });
-
-    //     afterEach(() => {
-    //         unmockGlobalThis();
-    //         resetDevices();
-    //     });
-
-    //     bench(
-    //         "[HA/stress] start & stop controller",
-    //         async () => {
-    //             const mockedGlobal = mockGlobalThis();
-
-    //             await controller.start();
-    //             controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-    //             await Promise.allSettled(mockedGlobal.setImmediateProms);
-    //             await Promise.allSettled(mockedGlobal.setTimeoutProms);
-
-    //             if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-    //                 throw new Error("Invalid");
-    //             }
-
-    //             await controller.stop();
-    //         },
-    //         {throws: true},
-    //     );
-    // });
-
     describe("defaults runtime", () => {
         beforeAll(async () => {
+            initDevices();
+            initGroups();
             await initSettings();
             await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            await settle(mockedGlobal);
         });
 
         afterAll(async () => {
@@ -546,8 +528,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                     data: {onOff: 1},
                     meta: {},
                 });
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
             },
             {throws: true},
         );
@@ -558,8 +539,30 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
+            },
+            {throws: true},
+        );
+
+        bench(
+            "[defaults] add group member",
+            async () => {
+                const mockedGlobal = mockGlobalThis();
+
+                controller.eventBus.emitMQTTMessage({
+                    topic: "zigbee2mqtt/bridge/request/group/members/add",
+                    message: stringify({
+                        device: "0xf1f1f1f1f1f1f1f1",
+                        group: `${ZH_GROUPS[0].groupID}`,
+                        endpoint: ZSpec.HA_ENDPOINT,
+                    }),
+                });
+
+                await settle(mockedGlobal);
+
+                if (ZH_GROUPS[0].members.length !== 1) {
+                    throw new Error("Invalid state");
+                }
             },
             {throws: true},
         );
@@ -567,20 +570,20 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
     describe("defaults/stress runtime", () => {
         beforeAll(async () => {
+            initDevices();
+            initGroups();
             addManyDevices();
             await initSettings();
             await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            await settle(mockedGlobal);
         }, 60000);
 
         afterAll(async () => {
             await controller.stop();
             unmockGlobalThis();
-            resetDevices();
         });
 
         // this is mostly just to confirm the number of devices does not influence the processing (much)
@@ -591,11 +594,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
                 controller.eventBus.emitDeviceMessage({
                     type: "attributeReport",
-                    device: controller.zigbee.resolveEntity(
-                        `0xf1f1f1f1f1f1f1${Math.floor(MANY_DEVICES / 2)
-                            .toString(16)
-                            .padStart(2, "0")}`,
-                    ),
+                    device: controller.zigbee.resolveEntity(getMidDeviceIeee()),
                     endpoint: ZSpec.HA_ENDPOINT,
                     linkquality: 200,
                     groupID: 0,
@@ -603,8 +602,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                     data: {onOff: 1},
                     meta: {},
                 });
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
             },
             {throws: true},
         );
@@ -612,14 +610,15 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
     describe("HA runtime", () => {
         beforeAll(async () => {
+            initDevices();
+            initGroups();
             await initSettings([[["homeassistant", "enabled"], true]]);
             await initController();
             const mockedGlobal = mockGlobalThis();
 
             await controller.start();
             controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-            await Promise.allSettled(mockedGlobal.setImmediateProms);
-            await Promise.allSettled(mockedGlobal.setTimeoutProms);
+            await settle(mockedGlobal);
         });
 
         afterAll(async () => {
@@ -642,8 +641,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                     data: {onOff: 1},
                     meta: {},
                 });
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
             },
             {throws: true},
         );
@@ -654,8 +652,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 const mockedGlobal = mockGlobalThis();
 
                 controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
             },
             {throws: true},
         );
@@ -669,8 +666,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                     "homeassistant/sensor/0xe2e2e2e2e2e2e2e2/update/config",
                     Buffer.from(stringify({availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}]}), "utf8"),
                 );
-                await Promise.allSettled(mockedGlobal.setImmediateProms);
-                await Promise.allSettled(mockedGlobal.setTimeoutProms);
+                await settle(mockedGlobal);
             },
             {throws: true},
         );
