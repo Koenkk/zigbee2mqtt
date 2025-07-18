@@ -1,5 +1,6 @@
 import type * as zhc from "zigbee-herdsman-converters";
 import type { Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene } from "../types/api";
+export declare const DEFAULT_BIND_GROUP_ID = 901;
 declare function capitalize(s: string): string;
 export declare function getZigbee2MQTTVersion(includeCommitHash?: boolean): Promise<{
     commitHash?: string;

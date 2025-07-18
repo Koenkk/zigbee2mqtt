@@ -10,6 +10,7 @@ export interface UpdatePayload {
     };
 }
 export default class OTAUpdate extends Extension {
+    #private;
     private inProgress;
     private lastChecked;
     private scheduledUpgrades;

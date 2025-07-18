@@ -1,10 +1,13 @@
+import EventBus from "./eventBus";
 import type Extension from "./extension/extension";
-import { type MqttPublishOptions } from "./mqtt";
+import Mqtt, { type MqttPublishOptions } from "./mqtt";
+import State from "./state";
+import Zigbee from "./zigbee";
 export declare class Controller {
-    private eventBus;
-    private zigbee;
-    private state;
-    private mqtt;
+    readonly eventBus: EventBus;
+    readonly zigbee: Zigbee;
+    readonly state: State;
+    readonly mqtt: Mqtt;
     private restartCallback;
     private exitCallback;
     readonly extensions: Set<Extension>;

@@ -4,7 +4,7 @@ import Extension from "./extension";
  * This extension creates a network map
  */
 export default class NetworkMap extends Extension {
-    private topic;
+    #private;
     start(): Promise<void>;
     onMQTTMessage(data: eventdata.MQTTMessage): Promise<void>;
     raw(topology: Zigbee2MQTTNetworkMap): Zigbee2MQTTNetworkMap;

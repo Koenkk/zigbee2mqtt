@@ -1,5 +1,6 @@
 import Extension from "./extension";
 export default class Bind extends Extension {
+    #private;
     private pollDebouncers;
     start(): Promise<void>;
     private parseMQTTMessage;

@@ -6,6 +6,7 @@ export default class Group {
     get options(): GroupOptions;
     get name(): string;
     constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device | undefined);
+    ensureInSettings(): void;
     hasMember(device: Device): boolean;
     membersDevices(): Generator<Device>;
     membersDefinitions(): zhc.Definition[];
