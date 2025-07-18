@@ -524,7 +524,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
     });
 
     describe("defaults runtime", () => {
-        beforeEach(async () => {
+        beforeAll(async () => {
             await initSettings();
             await initController();
             const mockedGlobal = mockGlobalThis();
@@ -534,7 +534,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
         });
 
-        afterEach(async () => {
+        afterAll(async () => {
             await controller.stop();
             unmockGlobalThis();
         });
@@ -574,7 +574,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
     });
 
     describe("defaults/stress runtime", () => {
-        beforeEach(async () => {
+        beforeAll(async () => {
             addManyDevices();
             await initSettings();
             await initController();
@@ -585,7 +585,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
         });
 
-        afterEach(async () => {
+        afterAll(async () => {
             await controller.stop();
             unmockGlobalThis();
             resetDevices();
@@ -615,7 +615,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
     });
 
     describe("HA runtime", () => {
-        beforeEach(async () => {
+        beforeAll(async () => {
             await initSettings([[["homeassistant", "enabled"], true]]);
             await initController();
             const mockedGlobal = mockGlobalThis();
@@ -626,7 +626,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
             await Promise.allSettled(mockedGlobal.setTimeoutProms);
         });
 
-        afterEach(async () => {
+        afterAll(async () => {
             await controller.stop();
             unmockGlobalThis();
         });
