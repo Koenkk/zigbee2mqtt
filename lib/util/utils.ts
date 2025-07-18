@@ -12,6 +12,8 @@ import data from "./data";
 
 const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
 
+export const DEFAULT_BIND_GROUP_ID = 901;
+
 function pad(num: number): string {
     const norm = Math.floor(Math.abs(num));
     return (norm < 10 ? "0" : "") + norm;

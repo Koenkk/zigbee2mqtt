@@ -14,7 +14,7 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTT
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
-import utils, {assertString} from "../util/utils";
+import utils, {assertString, DEFAULT_BIND_GROUP_ID} from "../util/utils";
 import Extension from "./extension";
 
 export default class Bridge extends Extension {
@@ -796,7 +796,7 @@ export default class Bridge extends Extension {
 
             groups.push({
                 id: group.ID,
-                friendly_name: group.ID === 901 ? "default_bind_group" : group.name,
+                friendly_name: group.ID === DEFAULT_BIND_GROUP_ID ? "default_bind_group" : group.name,
                 description: group.options.description,
                 scenes: utils.getScenes(group.zh),
                 members,

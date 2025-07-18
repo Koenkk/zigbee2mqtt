@@ -9,7 +9,7 @@ import Group from "../model/group";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
-import utils from "../util/utils";
+import utils, {DEFAULT_BIND_GROUP_ID} from "../util/utils";
 import Extension from "./extension";
 
 const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
@@ -27,7 +27,7 @@ const ALL_CLUSTER_CANDIDATES: readonly ClusterName[] = [
 ];
 
 // See zigbee-herdsman-converters
-const DEFAULT_BIND_GROUP = {type: "group_number", ID: 901, name: "default_bind_group"};
+const DEFAULT_BIND_GROUP = {type: "group_number", ID: DEFAULT_BIND_GROUP_ID, name: "default_bind_group"};
 const DEFAULT_REPORT_CONFIG = {minimumReportInterval: 5, maximumReportInterval: 3600, reportableChange: 1};
 
 const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemperature: boolean; colorXY: boolean}> => {

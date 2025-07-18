@@ -265,12 +265,20 @@ export default class Zigbee {
     }
 
     private resolveGroup(groupID: number): Group | undefined {
-        const group = this.herdsman.getGroupByID(Number(groupID));
-        if (group && !this.groupLookup.has(groupID)) {
-            this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
+        if (!this.groupLookup.has(groupID)) {
+            const group = this.herdsman.getGroupByID(groupID);
+
+            if (group) {
+                this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
+            }
         }
 
-        return this.groupLookup.get(groupID);
+        const group = this.groupLookup.get(groupID);
+
+        if (group) {
+            group.ensureInSettings();
+            return group;
+        }
     }
 
     resolveEntity(key: string | number | zh.Device): Device | Group | undefined {

@@ -4,7 +4,7 @@ import type {AdapterTypes} from "zigbee-herdsman";
 
 import {Zcl} from "zigbee-herdsman";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
-
+import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 import type {EventHandler} from "./utils";
 
 type ZHConfiguredReporting = {
@@ -505,7 +505,7 @@ export const groups = {
     thermostat_group: new Group(12, [TS0601_thermostat.endpoints[0]]),
     group_with_switch: new Group(14, [ZNCZ02LM.endpoints[0], bulb_2.endpoints[0]]),
     gledopto_group: new Group(21, [GLEDOPTO_2ID.endpoints[3]]),
-    default_bind_group: new Group(901, []),
+    default_bind_group: new Group(DEFAULT_BIND_GROUP_ID, []),
     ha_discovery_group: new Group(9, [bulb_color_2.endpoints[0], bulb_2.endpoints[0], QBKG03LM.endpoints[2]]),
     hue_twilight_group: new Group(19, [hue_twilight.endpoints[1]]),
 };
