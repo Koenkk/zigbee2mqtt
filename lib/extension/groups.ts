@@ -272,7 +272,7 @@ export default class Groups extends Extension {
         try {
             if (type === "add") {
                 assert(resolvedGroup, "`resolvedGroup` is missing");
-                logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
+                logger.info(`Adding endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' to group '${resolvedGroup.name}'`);
                 await resolvedEndpoint.addToGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
                 // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
@@ -280,7 +280,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/add">(parsed.type, raw, respPayload);
             } else if (type === "remove") {
                 assert(resolvedGroup, "`resolvedGroup` is missing");
-                logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
+                logger.info(`Removing endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' from group '${resolvedGroup.name}'`);
                 await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
                 // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
@@ -288,7 +288,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/remove">(parsed.type, raw, respPayload);
             } else {
                 // remove_all
-                logger.info(`Removing '${resolvedDevice.name}' from all groups`);
+                logger.info(`Removing endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' from all groups`);
 
                 for (const group of this.zigbee.groupsIterator((g) => g.members.includes(resolvedEndpoint))) {
                     changedGroups.push(group);
@@ -300,7 +300,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/remove_all">(parsed.type, raw, respPayload);
             }
         } catch (e) {
-            const errorMsg = `Failed to ${type} from group (${(e as Error).message})`;
+            const errorMsg = `Failed to ${type} ${type === "add" ? "to" : "from"} group (${(e as Error).message})`;
             await this.publishResponse(parsed.type, raw, {}, errorMsg);
             // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.debug((e as Error).stack!);

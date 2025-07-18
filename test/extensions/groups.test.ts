@@ -504,7 +504,7 @@ describe("Extension: Groups", () => {
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/group/members/add",
-            stringify({data: {}, status: "error", error: "Failed to add from group (timeout)"}),
+            stringify({data: {}, status: "error", error: "Failed to add to group (timeout)"}),
             {},
         );
     });
@@ -585,6 +585,26 @@ describe("Extension: Groups", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/group/members/remove",
             stringify({data: {device: "bulb_color", endpoint: "default", group: "group_1"}, status: "ok"}),
+            {},
+        );
+    });
+
+    it("Remove from group via MQTT fails", async () => {
+        const device = devices.bulb_color;
+        const endpoint = device.getEndpoint(1)!;
+        const group = groups.group_1;
+        group.members.push(endpoint);
+        endpoint.removeFromGroup.mockImplementationOnce(() => {
+            throw new Error("timeout");
+        });
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/members/remove", stringify({group: "group_1", device: "bulb_color"}));
+        await flushPromises();
+        expect(group.members.length).toStrictEqual(1);
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), expect.any(Object));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/group/members/remove",
+            stringify({data: {}, status: "error", error: "Failed to remove from group (timeout)"}),
             {},
         );
     });
