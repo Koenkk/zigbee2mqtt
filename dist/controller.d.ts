@@ -18,7 +18,7 @@ export declare class Controller {
     removeExtension(extension: Extension): Promise<void>;
     private startExtension;
     private stopExtension;
-    stop(restart?: boolean): Promise<void>;
+    stop(restart?: boolean, code?: number): Promise<void>;
     exit(code: number, restart?: boolean): Promise<void>;
     onZigbeeAdapterDisconnected(): Promise<void>;
     publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void>;
