@@ -191,6 +191,7 @@ export interface Zigbee2MQTTScene {
     name: string;
 }
 export interface Zigbee2MQTTDeviceEndpoint {
+    name?: string;
     bindings: Zigbee2MQTTDeviceEndpointBinding[];
     configured_reportings: Zigbee2MQTTDeviceEndpointConfiguredReporting[];
     clusters: {
