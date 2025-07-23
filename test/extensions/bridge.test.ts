@@ -350,7 +350,7 @@ describe("Extension: Bridge", () => {
 
     it("Should publish devices on startup", async () => {
         await resetExtension();
-        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/devices")[1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/devices",
             stringify([
@@ -923,6 +923,7 @@ describe("Extension: Bridge", () => {
                     disabled: false,
                     endpoints: {
                         "1": {
+                            name: "ep1",
                             bindings: [
                                 {cluster: "genLevelCtrl", target: {endpoint: 1, ieee_address: "0x000b57fffec6a5b3", type: "endpoint"}},
                                 {cluster: "genOnOff", target: {endpoint: 1, ieee_address: "0x000b57fffec6a5b3", type: "endpoint"}},
@@ -934,7 +935,13 @@ describe("Extension: Bridge", () => {
                             configured_reportings: [],
                             scenes: [],
                         },
-                        "2": {bindings: [], clusters: {input: ["genBasic"], output: ["genOta", "genOnOff"]}, configured_reportings: [], scenes: []},
+                        "2": {
+                            name: "ep2",
+                            bindings: [],
+                            clusters: {input: ["genBasic"], output: ["genOta", "genOnOff"]},
+                            configured_reportings: [],
+                            scenes: [],
+                        },
                     },
                     friendly_name: "remote",
                     ieee_address: "0x0017880104e45517",
@@ -1887,42 +1894,49 @@ describe("Extension: Bridge", () => {
                     disabled: false,
                     endpoints: {
                         "10": {
+                            name: "l5",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "11": {
+                            name: "l6",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "12": {
+                            name: "l7",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "5": {
+                            name: "l1",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "7": {
+                            name: "l2",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "8": {
+                            name: "l3",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "9": {
+                            name: "l4",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
