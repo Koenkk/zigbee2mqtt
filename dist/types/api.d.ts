@@ -220,6 +220,7 @@ export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     reportable_change: number;
 }
 export interface Zigbee2MQTTDeviceDefinition {
+    source: "native" | "generated" | "external";
     model: string;
     vendor: string;
     description: string;
