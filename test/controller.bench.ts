@@ -214,18 +214,16 @@ const adapter = {
                 switch (zclFrame.command.ID) {
                     case Foundation.read.ID: {
                         for (const attr of zclFrame.payload) {
-                            try {
-                                const attribute = zclFrame.cluster.getAttribute(attr.attrId);
+                            const attribute = zclFrame.cluster.getAttribute(attr.attrId);
 
-                                if (attribute.type !== Zcl.DataType.NO_DATA && attribute.type < Zcl.DataType.OCTET_STR) {
-                                    payload.push({
-                                        attrId: attr.attrId,
-                                        dataType: attribute.type,
-                                        attrData: 1,
-                                        status: 0,
-                                    });
-                                }
-                            } catch {}
+                            if (attribute && attribute.type !== Zcl.DataType.NO_DATA && attribute.type < Zcl.DataType.OCTET_STR) {
+                                payload.push({
+                                    attrId: attr.attrId,
+                                    dataType: attribute.type,
+                                    attrData: 1,
+                                    status: 0,
+                                });
+                            }
                         }
 
                         const messageContents = Zcl.Frame.create(
