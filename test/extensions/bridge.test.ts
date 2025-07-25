@@ -368,6 +368,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -625,6 +626,7 @@ describe("Extension: Bridge", () => {
                 {
                     date_code: "2019.09",
                     definition: {
+                        source: "native",
                         description: "Hue Go",
                         exposes: [
                             {
@@ -820,6 +822,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Hue dimmer switch",
                         exposes: [
                             {
@@ -956,6 +959,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "generated",
                         description: "Automatically generated definition",
                         exposes: [
                             {
@@ -1050,6 +1054,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Wireless mini switch",
                         exposes: [
                             {
@@ -1160,6 +1165,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Temperature and humidity sensor",
                         exposes: [
                             {
@@ -1302,6 +1308,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Mi smart plug",
                         exposes: [
                             {
@@ -1449,6 +1456,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "zigfred plus smart in-wall switch",
                         exposes: [
                             {
@@ -1957,6 +1965,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -2391,6 +2400,7 @@ describe("Extension: Bridge", () => {
             stringify({
                 data: {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -2626,6 +2636,7 @@ describe("Extension: Bridge", () => {
             stringify({
                 data: {
                     definition: {
+                        source: "generated",
                         description: "Automatically generated definition",
                         exposes: [
                             {

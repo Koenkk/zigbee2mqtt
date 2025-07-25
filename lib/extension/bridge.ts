@@ -837,6 +837,7 @@ export default class Bridge extends Extension {
         }
 
         const payload: Zigbee2MQTTDevice["definition"] = {
+            source: device.definition.externalConverterName ? "external" : device.definition.generated ? "generated" : "native",
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,
