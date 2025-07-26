@@ -1130,6 +1130,7 @@ describe("Extension: Bridge", () => {
                                 name: "device_temperature_calibration",
                                 property: "device_temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                         ],
                         supports_ota: false,
@@ -1239,6 +1240,7 @@ describe("Extension: Bridge", () => {
                                 name: "temperature_calibration",
                                 property: "temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1258,6 +1260,7 @@ describe("Extension: Bridge", () => {
                                 name: "humidity_calibration",
                                 property: "humidity_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1277,6 +1280,7 @@ describe("Extension: Bridge", () => {
                                 name: "pressure_calibration",
                                 property: "pressure_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1388,6 +1392,7 @@ describe("Extension: Bridge", () => {
                                 name: "power_calibration",
                                 property: "power_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1407,6 +1412,7 @@ describe("Extension: Bridge", () => {
                                 name: "energy_calibration",
                                 property: "energy_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1426,6 +1432,7 @@ describe("Extension: Bridge", () => {
                                 name: "device_temperature_calibration",
                                 property: "device_temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
