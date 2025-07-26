@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import {mockLogger} from "./mocks/logger";
 
 import {initSdNotify} from "../lib/util/sd-notify";

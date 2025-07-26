@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockDebounce} from "../mocks/debounce";
 import {mockLogger} from "../mocks/logger";
