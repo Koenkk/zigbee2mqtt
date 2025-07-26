@@ -1,6 +1,6 @@
 import {existsSync, mkdirSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
-import {afterEach, beforeEach, bench, describe} from "vitest";
+import {afterAll, afterEach, beforeAll, beforeEach, bench, describe} from "vitest";
 import {Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
