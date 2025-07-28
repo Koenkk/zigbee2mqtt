@@ -69,11 +69,9 @@ export default class OnEvent extends Extension {
             return;
         }
 
-        if (event.type !== "start" && event.type !== "stop" && !this.#startCalled.has(device.ieeeAddr)) {
+        if (event.type !== "start" && event.type !== "stop" && !this.#startCalled.has(device.ieeeAddr) && device.definition?.onEvent) {
             this.#startCalled.add(device.ieeeAddr);
-            const startEvent: ZhcOnEvent.Event = {type: "start", data: this.#getOnEventBaseData(device)};
-            await onEvent(startEvent);
-            await device.definition?.onEvent?.(startEvent);
+            await device.definition.onEvent({type: "start", data: this.#getOnEventBaseData(device)});
         }
 
         await onEvent(event);
