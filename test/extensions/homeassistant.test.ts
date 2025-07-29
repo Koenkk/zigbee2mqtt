@@ -1179,9 +1179,9 @@ describe("Extension: HomeAssistant", () => {
             command_topic: "zigbee2mqtt/0xa4c138018cf95021/left/set",
             device: {
                 identifiers: ["zigbee2mqtt_0xa4c138018cf95021"],
-                manufacturer: "Lonsonho",
-                model: "Dual curtain/blind module",
-                model_id: "TS130F_dual",
+                manufacturer: "Girier",
+                model: "Dual smart curtain switch",
+                model_id: "TS130F_GIRIER_DUAL",
                 name: "0xa4c138018cf95021",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
@@ -1209,9 +1209,9 @@ describe("Extension: HomeAssistant", () => {
             command_topic: "zigbee2mqtt/0xa4c138018cf95021/right/set",
             device: {
                 identifiers: ["zigbee2mqtt_0xa4c138018cf95021"],
-                manufacturer: "Lonsonho",
-                model: "Dual curtain/blind module",
-                model_id: "TS130F_dual",
+                manufacturer: "Girier",
+                model: "Dual smart curtain switch",
+                model_id: "TS130F_GIRIER_DUAL",
                 name: "0xa4c138018cf95021",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
@@ -1229,6 +1229,8 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
             value_template: '{% if "moving" in value_json and value_json.moving %} {{ value_json.moving }} {% else %} STOP {% endif %}',
         };
+
+        console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/cover/0xa4c138018cf95021/cover_left/config"));
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/cover/0xa4c138018cf95021/cover_left/config", stringify(payload_left), {
             retain: true,
