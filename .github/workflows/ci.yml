@@ -49,7 +49,7 @@ jobs:
               run: pnpm run test:coverage
 
             - name: Bench
-              if: github.ref == 'refs/heads/dev' || github.event_name == 'pull_request'
+              if: github.ref == 'refs/heads/dev' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please-'))
               uses: CodSpeedHQ/action@v3
               with:
                 run: pnpm run bench
