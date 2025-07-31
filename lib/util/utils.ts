@@ -216,6 +216,7 @@ function getAllFiles(path_: string): string[] {
             result.push(...getAllFiles(fileName));
         }
     }
+
     return result;
 }
 
