@@ -204,11 +204,11 @@ function getAllFiles(path_: string): string[] {
     const result = [];
 
     for (const item of fs.readdirSync(path_, {withFileTypes: true})) {
-        const fileName = path.join(path_, item.name);
-
         if (item.isSymbolicLink()) {
             continue;
         }
+
+        const fileName = path.join(path_, item.name);
 
         if (fs.lstatSync(fileName).isFile()) {
             result.push(fileName);
