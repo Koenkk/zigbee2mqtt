@@ -203,7 +203,7 @@ function containsControlCharacter(str: string): boolean {
 function getAllFiles(path_: string): string[] {
     const result = [];
 
-    for (let item of fs.readdirSync(path_, { withFileTypes: true })) {
+    for (const item of fs.readdirSync(path_, {withFileTypes: true})) {
         const fileName = path.join(path_, item.name);
 
         if (item.isSymbolicLink()) {
