@@ -318,7 +318,7 @@ export default class Bridge extends Extension {
         const files = utils
             .getAllFiles(dataPath)
             .map((f) => [f, f.substring(dataPath.length + 1)])
-            .filter((f) => !f[1].startsWith("log") && !f[1].startsWith("external_extensions/node_modules"));
+            .filter((f) => !f[1].startsWith("log"));
         const zip = new JSZip();
 
         for (const f of files) {
