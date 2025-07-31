@@ -9,6 +9,7 @@ import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, ev
 
 import assert from "node:assert";
 import fs from "node:fs";
+import {platform} from "node:os";
 import path from "node:path";
 import stringify from "json-stable-stringify-without-jsonify";
 import type {Mock} from "vitest";
@@ -3841,6 +3842,11 @@ describe("Extension: Bridge", () => {
         fs.writeFileSync(path.join(data.mockDir, "log", "log.log"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "ext_converters", "123"));
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "123", "myfile.js"), "test123");
+        fs.symlinkSync(
+            path.join(data.mockDir, "ext_converters"),
+            path.join(data.mockDir, "ext_converters_sym"),
+            platform() === "win32" ? "junction" : "dir",
+        );
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
         await flushPromises();
