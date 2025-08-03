@@ -15,10 +15,10 @@ COPY package.json pnpm-lock.yaml ./
 # Install pnpm, configure a tmp-based store, then use it under a cache mount so each arch gets its own store
 RUN --mount=type=cache,id=pnpm-store,target=/tmp/pnpm-store \
     apk add --no-cache make gcc g++ python3 linux-headers npm && \
-    npm install -g pnpm@$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' package.json) && \
+    npm install -g $(jq -r '.packageManager' package.json) && \
     pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --no-optional && \
-    # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
+    # force serialport to rebuild on current platform instead of using prebuilds
     rm -rf $(find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d) && \
     pnpm rebuild @serialport/bindings-cpp
 
