@@ -18,10 +18,10 @@ COPY package.json pnpm-lock.yaml ./
 #       saves storage as this node_modules/ is being copied straight to the release stage later.
 RUN --mount=type=cache,id=pnpm-store,target=/tmp/pnpm-store \
     apk add --no-cache make gcc g++ python3 linux-headers npm && \
-    npm install -g $(jq -r '.packageManager' package.json) && \
+    npm install -g pnpm@$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' package.json) && \
     pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --prod --no-optional && \
-    # force serialport to rebuild on current platform instead of using prebuilds
+    # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
     rm -rf $(find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d) && \
     pnpm rebuild @serialport/bindings-cpp
 
