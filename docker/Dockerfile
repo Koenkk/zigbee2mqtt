@@ -17,11 +17,11 @@ COPY package.json pnpm-lock.yaml ./
 #       built artifact (./dist directory) from previous GitHub runner stages.  Omitting devDependencies here
 #       saves storage as this node_modules/ is being copied straight to the release stage later.
 RUN --mount=type=cache,id=pnpm-store,target=/tmp/pnpm-store \
-    apk add --no-cache make gcc g++ python3 linux-headers npm && \
-    npm install -g pnpm@$(sed -n 's/.*"packageManager": "pnpm@\([0-9.]*\)".*/\1/p' package.json) && \
+    apk add --no-cache make gcc g++ python3 linux-headers npm jq && \
+    npm install -g $(jq -r '.packageManager' package.json) && \
     pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --prod --no-optional && \
-    # serialport has outdated prebuilds that appear to fail on some archs, force build on target platform
+    # force serialport to rebuild on current platform instead of using prebuilds
     rm -rf $(find ./node_modules/.pnpm/ -wholename "*/@serialport/bindings-cpp/prebuilds" -type d) && \
     pnpm rebuild @serialport/bindings-cpp
 
