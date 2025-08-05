@@ -4,7 +4,7 @@
         "module": "NodeNext",
         "esModuleInterop": true,
         "target": "ES2022",
-        "lib": ["ES2022"],
+        "lib": ["ES2022", "dom"],
         "strict": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
