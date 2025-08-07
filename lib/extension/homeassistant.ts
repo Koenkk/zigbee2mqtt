@@ -236,9 +236,12 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         device_class: "water",
         state_class: "total_increasing",
     },
-    x_axis: {icon: "mdi:axis-x-arrow"},
-    y_axis: {icon: "mdi:axis-y-arrow"},
-    z_axis: {icon: "mdi:axis-z-arrow"},
+    x: {icon: "mdi:axis-x-arrow", state_class: "measurement"},
+    x_axis: {icon: "mdi:axis-x-arrow", state_class: "measurement"},
+    y: {icon: "mdi:axis-y-arrow", state_class: "measurement"},
+    y_axis: {icon: "mdi:axis-y-arrow", state_class: "measurement"},
+    z: {icon: "mdi:axis-z-arrow", state_class: "measurement"},
+    z_axis: {icon: "mdi:axis-z-arrow", state_class: "measurement"},
 } as const;
 const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     action: {icon: "mdi:gesture-double-tap"},
