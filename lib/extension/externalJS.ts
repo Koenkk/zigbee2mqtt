@@ -57,13 +57,15 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             if (!basePathInZ2mDir) {
                 logger.debug(`External JS folder '${this.folderName}' is outside the Z2M install dir, creating a symlink to 'node_modules'`);
                 const nodeModulesSymlink = path.join(this.basePath, "node_modules");
+                /* v8 ignore start */
                 if (fs.existsSync(nodeModulesSymlink)) {
                     fs.unlinkSync(nodeModulesSymlink);
                 }
+                /* v8 ignore stop */
+
                 // Type `junction` is required on Windows.
                 // https://github.com/nodejs/node/issues/18518#issuecomment-513866491
-                /* v8 ignore next */
-                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink, os.platform() === "win32" ? "junction" : "dir");
+                fs.symlinkSync(nodeModulesPath, nodeModulesSymlink, /* v8 ignore next */ os.platform() === "win32" ? "junction" : "dir");
             }
         }
     }
@@ -73,6 +75,17 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         await this.loadFiles();
         await this.publishExternalJS();
+    }
+
+    override async stop(): Promise<void> {
+        await super.stop();
+
+        // ensure "node_modules" is never followed & included in 3rd-party backup systems
+        const nodeModulesSymlink = path.join(this.basePath, "node_modules");
+
+        if (fs.existsSync(nodeModulesSymlink)) {
+            fs.unlinkSync(nodeModulesSymlink);
+        }
     }
 
     private getFilePath(name: string, mkBasePath = false): string {

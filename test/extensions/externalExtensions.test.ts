@@ -68,10 +68,12 @@ describe("Extension: ExternalExtensions", () => {
     });
 
     afterEach(async () => {
-        fs.rmSync(mockBasePath, {recursive: true, force: true});
-
         await controller?.stop();
         await flushPromises();
+
+        expect(fs.existsSync(path.join(mockBasePath, "node_modules"))).toStrictEqual(false);
+
+        fs.rmSync(mockBasePath, {recursive: true, force: true});
     });
 
     describe("from folder", () => {
