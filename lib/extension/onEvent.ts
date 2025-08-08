@@ -1,4 +1,4 @@
-import {onEvent} from "zigbee-herdsman-converters";
+import {onEvent, type OnEvent as ZhcOnEvent} from "zigbee-herdsman-converters";
 
 import utils from "../util/utils";
 import Extension from "./extension";
@@ -7,42 +7,50 @@ import Extension from "./extension";
  * This extension calls the zigbee-herdsman-converters onEvent.
  */
 export default class OnEvent extends Extension {
+    readonly #startCalled: Set<string> = new Set();
+
+    #getOnEventBaseData(device: Device): ZhcOnEvent.BaseData {
+        const deviceExposesChanged = (): void => this.eventBus.emitExposesAndDevicesChanged(device);
+        const state = this.state.get(device);
+        const options = device.options as KeyValue;
+        return {deviceExposesChanged, device: device.zh, state, options};
+    }
+
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             // don't await, in case of repeated failures this would hold startup
-            this.callOnEvent(device, "start", {}).catch(utils.noop);
+            this.callOnEvent(device, {type: "start", data: this.#getOnEventBaseData(device)}).catch(utils.noop);
         }
 
-        this.eventBus.onDeviceMessage(this, async (data) => {
-            await this.callOnEvent(data.device, "message", {
-                endpoint: data.endpoint,
-                meta: data.meta,
-                cluster: typeof data.cluster === "string" ? data.cluster : /* v8 ignore next */ undefined, // XXX: ZH typing is wrong?
-                type: data.type,
-                data: data.data, // XXX: typing is a bit convoluted: ZHC has `KeyValueAny` here while Z2M has `KeyValue | Array<string | number>`
-            });
-        });
         this.eventBus.onDeviceJoined(this, async (data) => {
-            await this.callOnEvent(data.device, "deviceJoined", {});
+            await this.callOnEvent(data.device, {type: "deviceJoined", data: this.#getOnEventBaseData(data.device)});
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
             if (data.device) {
-                await this.callOnEvent(data.device, "stop", {});
+                await this.callOnEvent(data.device, {type: "stop", data: {ieeeAddr: data.device.ieeeAddr}});
+            }
+        });
+        this.eventBus.onEntityRemoved(this, async (data) => {
+            if (data.entity.isDevice()) {
+                await this.callOnEvent(data.entity, {type: "stop", data: {ieeeAddr: data.entity.ieeeAddr}});
             }
         });
         this.eventBus.onDeviceInterview(this, async (data) => {
-            await this.callOnEvent(data.device, "deviceInterview", {});
+            await this.callOnEvent(data.device, {type: "deviceInterview", data: {...this.#getOnEventBaseData(data.device), status: data.status}});
         });
         this.eventBus.onDeviceAnnounce(this, async (data) => {
-            await this.callOnEvent(data.device, "deviceAnnounce", {});
+            await this.callOnEvent(data.device, {type: "deviceAnnounce", data: this.#getOnEventBaseData(data.device)});
         });
         this.eventBus.onDeviceNetworkAddressChanged(this, async (data) => {
-            await this.callOnEvent(data.device, "deviceNetworkAddressChanged", {});
+            await this.callOnEvent(data.device, {type: "deviceNetworkAddressChanged", data: this.#getOnEventBaseData(data.device)});
         });
         this.eventBus.onEntityOptionsChanged(this, async (data) => {
             if (data.entity.isDevice()) {
-                await this.callOnEvent(data.entity, "deviceOptionsChanged", {});
+                await this.callOnEvent(data.entity, {
+                    type: "deviceOptionsChanged",
+                    data: {...this.#getOnEventBaseData(data.entity), from: data.from, to: data.to},
+                });
                 this.eventBus.emitDevicesChanged();
             }
         });
@@ -52,23 +60,25 @@ export default class OnEvent extends Extension {
         await super.stop();
 
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
-            await this.callOnEvent(device, "stop", {});
+            await this.callOnEvent(device, {type: "stop", data: {ieeeAddr: device.ieeeAddr}});
         }
     }
 
-    private async callOnEvent(device: Device, type: Parameters<typeof onEvent>[0], data: Parameters<typeof onEvent>[1]): Promise<void> {
+    private async callOnEvent(device: Device, event: ZhcOnEvent.Event): Promise<void> {
         if (device.options.disabled) {
             return;
         }
 
-        const state = this.state.get(device);
-        const deviceExposesChanged = (): void => this.eventBus.emitExposesAndDevicesChanged(device);
+        if (event.type !== "start" && event.type !== "stop" && !this.#startCalled.has(device.ieeeAddr) && device.definition?.onEvent) {
+            this.#startCalled.add(device.ieeeAddr);
+            await device.definition.onEvent({type: "start", data: this.#getOnEventBaseData(device)});
+        }
 
-        await onEvent(type, data, device.zh, {deviceExposesChanged});
+        await onEvent(event);
+        await device.definition?.onEvent?.(event);
 
-        if (device.definition?.onEvent) {
-            const options: KeyValue = device.options;
-            await device.definition.onEvent(type, data, device.zh, options, state, {deviceExposesChanged});
+        if (event.type === "stop") {
+            this.#startCalled.delete(device.ieeeAddr);
         }
     }
 }
