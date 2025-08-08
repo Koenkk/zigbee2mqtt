@@ -14,6 +14,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
      */
     private symlinkNodeModulesIfNecessary;
     start(): Promise<void>;
+    stop(): Promise<void>;
     private getFilePath;
     protected getFileCode(name: string): string;
     protected getFiles(): Generator<{
