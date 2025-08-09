@@ -67,6 +67,7 @@
                             "title": "Timeout",
                             "requiresRestart": true,
                             "default": 10,
+                            "minimum": 1,
                             "description": "Time after which an active device will be marked as offline in minutes"
                         },
                         "max_jitter": {
@@ -103,6 +104,7 @@
                             "title": "Timeout",
                             "requiresRestart": true,
                             "default": 1500,
+                            "minimum": 1,
                             "description": "Time after which an passive device will be marked as offline in minutes"
                         }
                     },
@@ -348,7 +350,8 @@
                     "type": "number",
                     "title": "Update check interval",
                     "description": "Your device may request a check for a new firmware update. This value determines how frequently third party servers may actually be contacted to look for firmware updates. The value is set in minutes, and the default is 1 day.",
-                    "default": 1440
+                    "default": 1440,
+                    "minimum": 1
                 },
                 "disable_automatic_update_check": {
                     "type": "boolean",
@@ -560,7 +563,14 @@
                     "title": "Log Namespaced Levels",
                     "description": "Set individual log levels for certain namespaces",
                     "default": {},
-                    "examples": [{"z2m:mqtt": "warning"}, {"zh:ember:uart:ash": "info"}]
+                    "examples": [
+                        {
+                            "z2m:mqtt": "warning"
+                        },
+                        {
+                            "zh:ember:uart:ash": "info"
+                        }
+                    ]
                 },
                 "log_debug_to_mqtt_frontend": {
                     "type": "boolean",
@@ -663,7 +673,9 @@
                         },
                         {
                             "type": "number",
-                            "title": "Pan ID (number)"
+                            "title": "Pan ID (number)",
+                            "minimum": 1,
+                            "maximum": 65534
                         }
                     ],
                     "title": "Pan ID",
@@ -803,6 +815,7 @@
                     "title": "Interval",
                     "description": "Interval between checks in minutes",
                     "default": 10,
+                    "minimum": 1,
                     "requiresRestart": true
                 },
                 "reset_on_check": {
