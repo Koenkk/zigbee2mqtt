@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -67,7 +68,6 @@ describe("Extension: OTAUpdate", () => {
         devices.bulb.mockClear();
         updateSpy.mockClear();
         isUpdateAvailableSpy.mockClear();
-        // @ts-expect-error private
         controller.state.clear();
     });
 
@@ -747,12 +747,9 @@ describe("Extension: OTAUpdate", () => {
     });
 
     it("clear update state on startup", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {update: {progress: 100, remaining: 10, state: "updating"}});
         await resetExtension();
-        // @ts-expect-error private
         expect(controller.state.get(device)).toStrictEqual({update: {state: "available"}});
     });
 });

@@ -1,6 +1,6 @@
 import type * as zhc from "zigbee-herdsman-converters";
-
 import * as settings from "../util/settings";
+import {DEFAULT_BIND_GROUP_ID} from "../util/utils";
 
 export default class Group {
     public zh: zh.Group;
@@ -21,6 +21,12 @@ export default class Group {
     constructor(group: zh.Group, resolveDevice: (ieeeAddr: string) => Device | undefined) {
         this.zh = group;
         this.resolveDevice = resolveDevice;
+    }
+
+    ensureInSettings(): void {
+        if (this.ID !== DEFAULT_BIND_GROUP_ID && !settings.getGroup(this.ID)) {
+            settings.addGroup(this.name, this.ID.toString());
+        }
     }
 
     hasMember(device: Device): boolean {

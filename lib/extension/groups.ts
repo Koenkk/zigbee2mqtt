@@ -11,8 +11,6 @@ import * as settings from "../util/settings";
 import utils, {isLightExpose} from "../util/utils";
 import Extension from "./extension";
 
-const TOPIC_REGEX = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
-
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
     state: () => true,
     brightness: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
@@ -38,6 +36,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Groups extends Extension {
+    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
     private lastOptimisticState: {[s: string]: KeyValue} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -185,7 +184,7 @@ export default class Groups extends Extension {
     private parseMQTTMessage(
         data: eventdata.MQTTMessage,
     ): [raw: KeyValue | undefined, parsed: ParsedMQTTMessage | undefined, error: string | undefined] {
-        const topicRegexMatch = data.topic.match(TOPIC_REGEX);
+        const topicRegexMatch = data.topic.match(this.#topicRegex);
 
         if (topicRegexMatch) {
             const type = topicRegexMatch[1] as "remove" | "add" | "remove_all";
@@ -273,7 +272,7 @@ export default class Groups extends Extension {
         try {
             if (type === "add") {
                 assert(resolvedGroup, "`resolvedGroup` is missing");
-                logger.info(`Adding '${resolvedDevice.name}' to '${resolvedGroup.name}'`);
+                logger.info(`Adding endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' to group '${resolvedGroup.name}'`);
                 await resolvedEndpoint.addToGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
                 // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
@@ -281,7 +280,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/add">(parsed.type, raw, respPayload);
             } else if (type === "remove") {
                 assert(resolvedGroup, "`resolvedGroup` is missing");
-                logger.info(`Removing '${resolvedDevice.name}' from '${resolvedGroup.name}'`);
+                logger.info(`Removing endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' from group '${resolvedGroup.name}'`);
                 await resolvedEndpoint.removeFromGroup(resolvedGroup.zh);
                 changedGroups.push(resolvedGroup);
                 // biome-ignore lint/style/noNonNullAssertion: valid from resolved asserts
@@ -289,7 +288,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/remove">(parsed.type, raw, respPayload);
             } else {
                 // remove_all
-                logger.info(`Removing '${resolvedDevice.name}' from all groups`);
+                logger.info(`Removing endpoint '${resolvedEndpoint.ID}' of device '${resolvedDevice.name}' from all groups`);
 
                 for (const group of this.zigbee.groupsIterator((g) => g.members.includes(resolvedEndpoint))) {
                     changedGroups.push(group);
@@ -301,7 +300,7 @@ export default class Groups extends Extension {
                 await this.publishResponse<"bridge/response/group/members/remove_all">(parsed.type, raw, respPayload);
             }
         } catch (e) {
-            const errorMsg = `Failed to ${type} from group (${(e as Error).message})`;
+            const errorMsg = `Failed to ${type} ${type === "add" ? "to" : "from"} group (${(e as Error).message})`;
             await this.publishResponse(parsed.type, raw, {}, errorMsg);
             // biome-ignore lint/style/noNonNullAssertion: always Error
             logger.debug((e as Error).stack!);

@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockDebounce} from "../mocks/debounce";
 import {mockLogger} from "../mocks/logger";
@@ -10,6 +11,7 @@ import stringify from "json-stable-stringify-without-jsonify";
 import {Controller} from "../../lib/controller";
 import Bind from "../../lib/extension/bind";
 import * as settings from "../../lib/util/settings";
+import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 
 const mocksClear = [
     mockDebounce,
@@ -648,9 +650,9 @@ describe("Extension: Bind", () => {
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/unbind", stringify({from: "remote", to: target}));
         await flushPromises();
         expect(endpoint.unbind).toHaveBeenCalledTimes(3);
-        expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", 901);
-        expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", 901);
-        expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", 901);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genOnOff", DEFAULT_BIND_GROUP_ID);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genLevelCtrl", DEFAULT_BIND_GROUP_ID);
+        expect(endpoint.unbind).toHaveBeenCalledWith("genScenes", DEFAULT_BIND_GROUP_ID);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/unbind",
             stringify({

@@ -1,8 +1,9 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "./mocks/data";
 
-import {rmSync} from "node:fs";
-
+import {rmSync, writeFileSync} from "node:fs";
+import {join} from "node:path";
 import type {IncomingMessage, OutgoingHttpHeader, OutgoingHttpHeaders, RequestListener, Server, ServerResponse} from "node:http";
 import type {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
 import {onboard} from "../lib/util/onboarding";
@@ -752,7 +753,13 @@ describe("Onboarding", () => {
     });
 
     it("handles validation failure", async () => {
-        settings.set(["serial", "adapter"], "emberz");
+        const reReadSpy = vi.spyOn(settings, "reRead");
+
+        // set after onboarding server is done to reach bottom code path
+        reReadSpy.mockImplementationOnce(() => {
+            settings.set(["serial", "adapter"], "emberz");
+            settings.reRead();
+        });
 
         let p;
         const getHtml = await new Promise<string>((resolve, reject) => {
@@ -769,6 +776,88 @@ describe("Onboarding", () => {
 
         await expect(p).resolves.toStrictEqual(false);
         expect(getHtml).toContain("adapter must be equal to one of the allowed values");
+
+        reReadSpy.mockRestore();
+    });
+
+    it("handles non-required validation failure before applying envs", async () => {
+        settings.set(["serial"], "/dev/ttyUSB0");
+
+        let p;
+        const getHtml = await new Promise<string>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runFailure());
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(false);
+        expect(getHtml).toContain("serial must be object");
+    });
+
+    it("handles invalid yaml file", async () => {
+        settings.testing.clear();
+
+        const configFile = join(data.mockDir, "configuration.yaml");
+
+        writeFileSync(
+            configFile,
+            `
+                good: 9
+                \t wrong
+        `,
+        );
+
+        let p;
+        const getHtml = await new Promise<string>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runFailure());
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(false);
+        expect(getHtml).toContain("Your configuration file");
+        expect(getHtml).toContain("is invalid");
+
+        data.removeConfiguration();
+    });
+
+    it("handles error while loading yaml file", async () => {
+        settings.testing.clear();
+
+        const configFile = join(data.mockDir, "configuration.yaml");
+
+        writeFileSync(configFile, "badfile");
+
+        let p;
+        const getHtml = await new Promise<string>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await runFailure());
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(false);
+        expect(getHtml).toContain("AssertionError");
+        expect(getHtml).toContain("expected to be an object");
+
+        data.removeConfiguration();
     });
 
     it("handles creating data path", async () => {

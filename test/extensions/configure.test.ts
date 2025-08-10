@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -120,11 +121,9 @@ describe("Extension: Configure", () => {
 
     it("Should reconfigure reporting on reconfigure event", async () => {
         expectBulbConfigured();
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         mockClear(device.zh);
         expectBulbNotConfigured();
-        // @ts-expect-error private
         controller.eventBus.emitReconfigure({device});
         await flushPromises();
         expectBulbConfigured();

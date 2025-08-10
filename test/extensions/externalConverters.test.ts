@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {mockMQTTEndAsync, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -49,7 +50,6 @@ describe("Extension: ExternalConverters", () => {
     };
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
-        // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };
 
@@ -72,7 +72,6 @@ describe("Extension: ExternalConverters", () => {
 
     beforeEach(async () => {
         zhc.removeExternalDefinitions(); // remove all external converters
-        // @ts-expect-error private - clear cached
         await controller.zigbee.resolveDevicesDefinitions(true);
         for (const mock of mocksClear) mock.mockClear();
         data.writeDefaultConfiguration();
@@ -82,10 +81,12 @@ describe("Extension: ExternalConverters", () => {
     });
 
     afterEach(async () => {
-        fs.rmSync(mockBasePath, {recursive: true, force: true});
-
         await controller?.stop();
         await flushPromises();
+
+        expect(fs.existsSync(path.join(mockBasePath, "node_modules"))).toStrictEqual(false);
+
+        fs.rmSync(mockBasePath, {recursive: true, force: true});
     });
 
     describe("from folder", () => {

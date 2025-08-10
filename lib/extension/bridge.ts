@@ -14,12 +14,11 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTT
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
-import utils, {assertString} from "../util/utils";
+import utils, {assertString, DEFAULT_BIND_GROUP_ID} from "../util/utils";
 import Extension from "./extension";
 
-const REQUEST_REGEX = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
-
 export default class Bridge extends Extension {
+    #requestRegex = new RegExp(`${settings.get().mqtt.base_topic}/bridge/request/(.*)`);
     // set on `start`
     #osInfo!: Zigbee2MQTTAPI["bridge/info"]["os"];
     private zigbee2mqttVersion!: {commitHash?: string; version: string};
@@ -197,7 +196,7 @@ export default class Bridge extends Extension {
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        const match = data.topic.match(REQUEST_REGEX);
+        const match = data.topic.match(this.#requestRegex);
 
         if (!match) {
             return;
@@ -731,6 +730,7 @@ export default class Bridge extends Extension {
 
             for (const endpoint of device.zh.endpoints) {
                 const data: (typeof endpoints)[keyof typeof endpoints] = {
+                    name: device.endpointName(endpoint),
                     scenes: utils.getScenes(endpoint),
                     bindings: [],
                     configured_reportings: [],
@@ -797,7 +797,7 @@ export default class Bridge extends Extension {
 
             groups.push({
                 id: group.ID,
-                friendly_name: group.ID === 901 ? "default_bind_group" : group.name,
+                friendly_name: group.ID === DEFAULT_BIND_GROUP_ID ? "default_bind_group" : group.name,
                 description: group.options.description,
                 scenes: utils.getScenes(group.zh),
                 members,
@@ -837,6 +837,7 @@ export default class Bridge extends Extension {
         }
 
         const payload: Zigbee2MQTTDevice["definition"] = {
+            source: device.definition.externalConverterName ? "external" : device.definition.generated ? "generated" : "native",
             model: device.definition.model,
             vendor: device.definition.vendor,
             description: device.definition.description,

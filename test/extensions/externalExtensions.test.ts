@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {mockMQTTEndAsync, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -67,10 +68,12 @@ describe("Extension: ExternalExtensions", () => {
     });
 
     afterEach(async () => {
-        fs.rmSync(mockBasePath, {recursive: true, force: true});
-
         await controller?.stop();
         await flushPromises();
+
+        expect(fs.existsSync(path.join(mockBasePath, "node_modules"))).toStrictEqual(false);
+
+        fs.rmSync(mockBasePath, {recursive: true, force: true});
     });
 
     describe("from folder", () => {

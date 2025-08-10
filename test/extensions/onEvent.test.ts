@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -24,7 +25,6 @@ describe("Extension: OnEvent", () => {
     let deviceOnEventSpy: MockInstance<ZhcOnEvent.Handler>;
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
-        // @ts-expect-error private
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
     };
 

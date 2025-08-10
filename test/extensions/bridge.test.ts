@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
 import {mockLogger} from "../mocks/logger";
@@ -8,13 +9,14 @@ import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, ev
 
 import assert from "node:assert";
 import fs from "node:fs";
+import {platform} from "node:os";
 import path from "node:path";
 import stringify from "json-stable-stringify-without-jsonify";
 import type {Mock} from "vitest";
 import {Controller} from "../../lib/controller";
 import Bridge from "../../lib/extension/bridge";
 import * as settings from "../../lib/util/settings";
-import utils from "../../lib/util/utils";
+import utils, {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 
 returnDevices.push(devices.coordinator.ieeeAddr);
 returnDevices.push(devices.bulb.ieeeAddr);
@@ -350,7 +352,7 @@ describe("Extension: Bridge", () => {
 
     it("Should publish devices on startup", async () => {
         await resetExtension();
-        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === 'zigbee2mqtt/bridge/devices')[1]);
+        // console.log(mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/devices")[1]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/devices",
             stringify([
@@ -368,6 +370,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -625,6 +628,7 @@ describe("Extension: Bridge", () => {
                 {
                     date_code: "2019.09",
                     definition: {
+                        source: "native",
                         description: "Hue Go",
                         exposes: [
                             {
@@ -820,6 +824,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Hue dimmer switch",
                         exposes: [
                             {
@@ -923,6 +928,7 @@ describe("Extension: Bridge", () => {
                     disabled: false,
                     endpoints: {
                         "1": {
+                            name: "ep1",
                             bindings: [
                                 {cluster: "genLevelCtrl", target: {endpoint: 1, ieee_address: "0x000b57fffec6a5b3", type: "endpoint"}},
                                 {cluster: "genOnOff", target: {endpoint: 1, ieee_address: "0x000b57fffec6a5b3", type: "endpoint"}},
@@ -934,7 +940,13 @@ describe("Extension: Bridge", () => {
                             configured_reportings: [],
                             scenes: [],
                         },
-                        "2": {bindings: [], clusters: {input: ["genBasic"], output: ["genOta", "genOnOff"]}, configured_reportings: [], scenes: []},
+                        "2": {
+                            name: "ep2",
+                            bindings: [],
+                            clusters: {input: ["genBasic"], output: ["genOta", "genOnOff"]},
+                            configured_reportings: [],
+                            scenes: [],
+                        },
                     },
                     friendly_name: "remote",
                     ieee_address: "0x0017880104e45517",
@@ -949,6 +961,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "generated",
                         description: "Automatically generated definition",
                         exposes: [
                             {
@@ -1043,6 +1056,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Wireless mini switch",
                         exposes: [
                             {
@@ -1118,6 +1132,7 @@ describe("Extension: Bridge", () => {
                                 name: "device_temperature_calibration",
                                 property: "device_temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                         ],
                         supports_ota: false,
@@ -1153,6 +1168,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Temperature and humidity sensor",
                         exposes: [
                             {
@@ -1226,6 +1242,7 @@ describe("Extension: Bridge", () => {
                                 name: "temperature_calibration",
                                 property: "temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1245,6 +1262,7 @@ describe("Extension: Bridge", () => {
                                 name: "humidity_calibration",
                                 property: "humidity_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1264,6 +1282,7 @@ describe("Extension: Bridge", () => {
                                 name: "pressure_calibration",
                                 property: "pressure_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1295,6 +1314,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "Mi smart plug",
                         exposes: [
                             {
@@ -1374,6 +1394,7 @@ describe("Extension: Bridge", () => {
                                 name: "power_calibration",
                                 property: "power_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1393,6 +1414,7 @@ describe("Extension: Bridge", () => {
                                 name: "energy_calibration",
                                 property: "energy_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1412,6 +1434,7 @@ describe("Extension: Bridge", () => {
                                 name: "device_temperature_calibration",
                                 property: "device_temperature_calibration",
                                 type: "numeric",
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1442,6 +1465,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "zigfred plus smart in-wall switch",
                         exposes: [
                             {
@@ -1887,42 +1911,49 @@ describe("Extension: Bridge", () => {
                     disabled: false,
                     endpoints: {
                         "10": {
+                            name: "l5",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "11": {
+                            name: "l6",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "12": {
+                            name: "l7",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "5": {
+                            name: "l1",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "7": {
+                            name: "l2",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "8": {
+                            name: "l3",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "9": {
+                            name: "l4",
                             bindings: [],
                             clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
@@ -1943,6 +1974,7 @@ describe("Extension: Bridge", () => {
                 },
                 {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -2288,7 +2320,7 @@ describe("Extension: Bridge", () => {
                     scenes: [],
                 },
                 {friendly_name: "gledopto_group", id: 21, members: [{endpoint: 15, ieee_address: "0x0017880104e45724"}], scenes: []},
-                {friendly_name: "default_bind_group", id: 901, members: [], scenes: []},
+                {friendly_name: "default_bind_group", id: DEFAULT_BIND_GROUP_ID, members: [], scenes: []},
                 {
                     friendly_name: "ha_discovery_group",
                     id: 9,
@@ -2377,6 +2409,7 @@ describe("Extension: Bridge", () => {
             stringify({
                 data: {
                     definition: {
+                        source: "native",
                         description: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                         exposes: [
                             {
@@ -2612,6 +2645,7 @@ describe("Extension: Bridge", () => {
             stringify({
                 data: {
                     definition: {
+                        source: "generated",
                         description: "Automatically generated definition",
                         exposes: [
                             {
@@ -3147,7 +3181,6 @@ describe("Extension: Bridge", () => {
     });
 
     it("Should allow interviewing a device by ieeeAddr", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb)!;
         assert("resolveDefinition" in device);
         device.resolveDefinition = vi.fn();
@@ -3809,6 +3842,11 @@ describe("Extension: Bridge", () => {
         fs.writeFileSync(path.join(data.mockDir, "log", "log.log"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "ext_converters", "123"));
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "123", "myfile.js"), "test123");
+        fs.symlinkSync(
+            path.join(data.mockDir, "ext_converters"),
+            path.join(data.mockDir, "ext_converters_sym"),
+            platform() === "win32" ? "junction" : "dir",
+        );
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
         await flushPromises();

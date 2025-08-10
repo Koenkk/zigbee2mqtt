@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -24,7 +25,6 @@ describe("Extension: Receive", () => {
     });
 
     beforeEach(() => {
-        // @ts-expect-error private
         controller.state.clear();
         data.writeDefaultConfiguration();
         settings.reRead();
@@ -339,7 +339,6 @@ describe("Extension: Receive", () => {
             type: "attributeReport",
             linkquality: 10,
         });
-        // @ts-expect-error private
         const realDevice = controller.zigbee.resolveEntity(device);
 
         // Trigger asynchronous event while device is "debouncing" to trigger Message to be sent out from State cache.

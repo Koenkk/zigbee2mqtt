@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -281,9 +282,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should retrieve device state when it reconnects", async () => {
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {state: "OFF"});
 
         const endpoint = devices.bulb_color.getEndpoint(1);

@@ -1,4 +1,5 @@
 // biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -41,7 +42,6 @@ describe("Extension: Publish", () => {
 
     beforeEach(() => {
         data.writeDefaultConfiguration();
-        // @ts-expect-error private
         controller.state.clear();
         settings.reRead();
         loadTopicGetSetRegex();
@@ -1256,11 +1256,8 @@ describe("Extension: Publish", () => {
 
     it("Home Assistant: should not set state when color temperature is also set and device is already on", async () => {
         settings.set(["homeassistant"], {enabled: true});
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
-        // @ts-expect-error private
         controller.state.remove(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {state: "ON"});
         const endpoint = device.zh.getEndpoint(1)!;
         const payload = {state: "ON", color_temp: 100};
@@ -1275,11 +1272,8 @@ describe("Extension: Publish", () => {
 
     it("Home Assistant: should set state when color temperature is also set and device is off", async () => {
         settings.set(["homeassistant"], {enabled: true});
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
-        // @ts-expect-error private
         controller.state.remove(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {state: "OFF"});
         const endpoint = device.zh.getEndpoint(1)!;
         const payload = {state: "ON", color_temp: 100};
@@ -1298,11 +1292,8 @@ describe("Extension: Publish", () => {
 
     it("Home Assistant: should not set state when color is also set", async () => {
         settings.set(["homeassistant"], {enabled: true});
-        // @ts-expect-error private
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
-        // @ts-expect-error private
         controller.state.remove(devices.bulb_color.ieeeAddr);
-        // @ts-expect-error private
         controller.state.set(device, {state: "ON"});
         const endpoint = device.zh.getEndpoint(1)!;
         const payload = {state: "ON", color: {x: 0.41, y: 0.25}};
