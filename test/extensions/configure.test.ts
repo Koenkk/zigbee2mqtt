@@ -182,11 +182,11 @@ describe("Extension: Configure", () => {
     });
 
     it("Fail to configure via MQTT when device has no configure", async () => {
-        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: "0x0017882104a44559", transaction: 20}));
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: "0x0017882104a44562", transaction: 20}));
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/configure",
-            stringify({data: {}, status: "error", error: "Device 'TS0601_thermostat' cannot be configured", transaction: 20}),
+            stringify({data: {}, status: "error", error: "Device 'TS0601_cover_switch' cannot be configured", transaction: 20}),
             {},
         );
     });

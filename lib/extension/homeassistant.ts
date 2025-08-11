@@ -1221,13 +1221,13 @@ export class HomeAssistant extends Extension {
 
     @bind async onEntityRemoved(data: eventdata.EntityRemoved): Promise<void> {
         logger.debug(`Clearing Home Assistant discovery for '${data.name}'`);
-        const discovered = this.getDiscovered(data.id);
+        const discovered = this.getDiscovered(data.entity.ID);
 
         for (const topic of Object.keys(discovered.messages)) {
             await this.mqtt.publish(topic, "", {clientOptions: {retain: true, qos: 1}, baseTopic: this.discoveryTopic, skipReceive: false});
         }
 
-        delete this.discovered[data.id];
+        delete this.discovered[data.entity.ID];
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {

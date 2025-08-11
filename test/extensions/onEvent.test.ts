@@ -9,7 +9,7 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 
 import type {MockInstance} from "vitest";
 import * as zhc from "zigbee-herdsman-converters";
-import type {OnEvent as DefinitionOnEvent} from "zigbee-herdsman-converters/lib/types";
+import type {OnEvent as ZhcOnEvent} from "zigbee-herdsman-converters/lib/types";
 import {Controller} from "../../lib/controller";
 import OnEvent from "../../lib/extension/onEvent";
 import type Device from "../../lib/model/device";
@@ -22,7 +22,7 @@ returnDevices.push(devices.bulb.ieeeAddr, devices.LIVOLO.ieeeAddr, devices.coord
 describe("Extension: OnEvent", () => {
     let controller: Controller;
     let onEventSpy: MockInstance<typeof zhc.onEvent>;
-    let deviceOnEventSpy: MockInstance<DefinitionOnEvent>;
+    let deviceOnEventSpy: MockInstance<ZhcOnEvent.Handler>;
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
@@ -65,29 +65,26 @@ describe("Extension: OnEvent", () => {
     it("starts & stops", async () => {
         expect(onEventSpy).toHaveBeenCalledTimes(2);
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
-        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
-            1,
-            "start",
-            {},
-            devices.LIVOLO,
-            settings.getDevice(devices.LIVOLO.ieeeAddr),
-            {},
-            {deviceExposesChanged: expect.any(Function)},
-        );
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(1, {
+            type: "start",
+            data: {
+                device: devices.LIVOLO,
+                options: settings.getDevice(devices.LIVOLO.ieeeAddr),
+                state: {},
+                deviceExposesChanged: expect.any(Function),
+            },
+        });
 
         await controller.stop();
 
         expect(onEventSpy).toHaveBeenCalledTimes(4);
         expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
-        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
-            2,
-            "stop",
-            {},
-            devices.LIVOLO,
-            settings.getDevice(devices.LIVOLO.ieeeAddr),
-            {},
-            {deviceExposesChanged: expect.any(Function)},
-        );
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(2, {
+            type: "stop",
+            data: {
+                ieeeAddr: devices.LIVOLO.ieeeAddr,
+            },
+        });
     });
 
     it("calls on device events", async () => {
@@ -95,73 +92,87 @@ describe("Extension: OnEvent", () => {
         await mockZHEvents.deviceAnnounce({device: devices.LIVOLO});
         await flushPromises();
 
-        expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
-        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
-            1,
-            "deviceAnnounce",
-            {},
-            devices.LIVOLO,
-            settings.getDevice(devices.LIVOLO.ieeeAddr),
-            {},
-            {deviceExposesChanged: expect.any(Function)},
-        );
+        // Should always call with 'start' event first
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(1, {
+            type: "start",
+            data: {
+                device: devices.LIVOLO,
+                options: settings.getDevice(devices.LIVOLO.ieeeAddr),
+                state: {},
+                deviceExposesChanged: expect.any(Function),
+            },
+        });
 
+        // Device announce
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(2, {
+            type: "deviceAnnounce",
+            data: {
+                device: devices.LIVOLO,
+                options: settings.getDevice(devices.LIVOLO.ieeeAddr),
+                state: {},
+                deviceExposesChanged: expect.any(Function),
+            },
+        });
+
+        // Check deviceExposesChanged()
         const emitExposesAndDevicesChangedSpy = vi.spyOn(
             // @ts-expect-error protected
             controller.getExtension("OnEvent")!.eventBus,
             "emitExposesAndDevicesChanged",
         );
-
-        deviceOnEventSpy.mock.calls[0][5]!.deviceExposesChanged();
-
+        assert(deviceOnEventSpy.mock.calls[0][0]!.type === "start");
+        deviceOnEventSpy.mock.calls[0][0]!.data.deviceExposesChanged();
         expect(emitExposesAndDevicesChangedSpy).toHaveBeenCalledTimes(1);
         expect(emitExposesAndDevicesChangedSpy).toHaveBeenCalledWith(getZ2MDevice(devices.LIVOLO));
 
+        // Call `stop` when device leaves
         await mockZHEvents.deviceLeave({ieeeAddr: devices.LIVOLO.ieeeAddr});
         await flushPromises();
-
-        expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
-        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(
-            2,
-            "stop",
-            {},
-            devices.LIVOLO,
-            settings.getDevice(devices.LIVOLO.ieeeAddr),
-            {},
-            {deviceExposesChanged: expect.any(Function)},
-        );
-    });
-
-    it("calls on device message", async () => {
-        clearOnEventSpies();
-
-        await mockZHEvents.message({
-            type: "attributeReport",
-            device: devices.LIVOLO,
-            endpoint: devices.LIVOLO.endpoints[0],
-            linkquality: 213,
-            groupID: 0,
-            cluster: "genBasic",
-            data: {zclVersion: 8},
-            meta: {zclTransactionSequenceNumber: 1, manufacturerCode: devices.LIVOLO.manufacturerID},
-        });
-        await flushPromises();
-
-        expect(deviceOnEventSpy).toHaveBeenCalledTimes(1);
-        expect(deviceOnEventSpy).toHaveBeenCalledWith(
-            "message",
-            {
-                type: "attributeReport",
-                endpoint: devices.LIVOLO.endpoints[0],
-                cluster: "genBasic",
-                data: {zclVersion: 8},
-                meta: {zclTransactionSequenceNumber: 1, manufacturerCode: devices.LIVOLO.manufacturerID},
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(3);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(3, {
+            type: "stop",
+            data: {
+                ieeeAddr: devices.LIVOLO.ieeeAddr,
             },
-            devices.LIVOLO,
-            settings.getDevice(devices.LIVOLO.ieeeAddr),
-            {},
-            {deviceExposesChanged: expect.any(Function)},
-        );
+        });
+
+        // Call `stop` when device is removed
+        // @ts-expect-error private
+        controller.eventBus.emitEntityRemoved({entity: getZ2MDevice(devices.LIVOLO)});
+        await flushPromises();
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(4);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(4, {
+            type: "stop",
+            data: {
+                ieeeAddr: devices.LIVOLO.ieeeAddr,
+            },
+        });
+
+        // Device interview, should call with 'start' first as 'stop' was called
+        await mockZHEvents.deviceInterview({device: devices.LIVOLO, status: "started"});
+        await flushPromises();
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(6);
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(5, {
+            type: "start",
+            data: {
+                device: devices.LIVOLO,
+                options: settings.getDevice(devices.LIVOLO.ieeeAddr),
+                state: {},
+                deviceExposesChanged: expect.any(Function),
+            },
+        });
+        expect(deviceOnEventSpy).toHaveBeenNthCalledWith(6, {
+            type: "deviceInterview",
+            data: {
+                device: devices.LIVOLO,
+                options: settings.getDevice(devices.LIVOLO.ieeeAddr),
+                state: {},
+                deviceExposesChanged: expect.any(Function),
+                status: "started",
+            },
+        });
     });
 
     it("does not block startup on failure", async () => {

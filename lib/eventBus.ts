@@ -8,8 +8,8 @@ interface EventBusMap {
     adapterDisconnected: [];
     permitJoinChanged: [data: eventdata.PermitJoinChanged];
     publishAvailability: [];
-    deviceRenamed: [data: eventdata.EntityRenamed];
-    deviceRemoved: [data: eventdata.EntityRemoved];
+    entityRenamed: [data: eventdata.EntityRenamed];
+    entityRemoved: [data: eventdata.EntityRemoved];
     lastSeenChanged: [data: eventdata.LastSeenChanged];
     deviceNetworkAddressChanged: [data: eventdata.DeviceNetworkAddressChanged];
     deviceAnnounce: [data: eventdata.DeviceAnnounce];
@@ -73,17 +73,17 @@ export default class EventBus {
     }
 
     public emitEntityRenamed(data: eventdata.EntityRenamed): void {
-        this.emitter.emit("deviceRenamed", data);
+        this.emitter.emit("entityRenamed", data);
     }
     public onEntityRenamed(key: ListenerKey, callback: (data: eventdata.EntityRenamed) => void): void {
-        this.on("deviceRenamed", callback, key);
+        this.on("entityRenamed", callback, key);
     }
 
     public emitEntityRemoved(data: eventdata.EntityRemoved): void {
-        this.emitter.emit("deviceRemoved", data);
+        this.emitter.emit("entityRemoved", data);
     }
     public onEntityRemoved(key: ListenerKey, callback: (data: eventdata.EntityRemoved) => void): void {
-        this.on("deviceRemoved", callback, key);
+        this.on("entityRemoved", callback, key);
     }
 
     public emitLastSeenChanged(data: eventdata.LastSeenChanged): void {

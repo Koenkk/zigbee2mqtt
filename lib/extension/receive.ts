@@ -136,7 +136,7 @@ export default class Receive extends Extension {
         const publish = async (payload: KeyValue): Promise<void> => {
             assert(data.device.definition);
             const options: KeyValue = data.device.options;
-            zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options);
+            zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options, data.device.zh);
 
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
