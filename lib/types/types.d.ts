@@ -82,7 +82,7 @@ declare global {
             groupID: number; // XXX: should this be `?`
             cluster: string | number;
             data: KeyValue | Array<string | number>;
-            meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl};
+            meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl; rawData: Buffer};
         };
         type ScenesChanged = {entity: Device | Group};
     }
