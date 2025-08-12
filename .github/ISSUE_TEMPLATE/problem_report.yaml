@@ -6,7 +6,7 @@ body:
       attributes:
           value: |
               **IMPORTANT:** Before submitting:
-              - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start.html)
+              - Zigbee2MQTT fails to start? Read [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html)
               - Raspberry Pi users? Make sure to check [this](https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html#raspberry-pi-users-use-a-good-power-supply)
               - You read the [FAQ](https://www.zigbee2mqtt.io/guide/faq/)
               - Are you using an EZSP adapter (e.g. Dongle-E/SkyConnect)? Try the [new driver](https://github.com/Koenkk/zigbee2mqtt/discussions/21462) 
