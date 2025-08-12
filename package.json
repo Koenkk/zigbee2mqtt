@@ -65,7 +65,7 @@
         "ws": "^8.18.1",
         "zigbee-herdsman": "6.0.0",
         "zigbee-herdsman-converters": "25.0.0",
-        "zigbee2mqtt-frontend": "0.9.19",
+        "zigbee2mqtt-frontend": "0.9.20",
         "zigbee2mqtt-windfront": "^1.6.0"
     },
     "devDependencies": {
