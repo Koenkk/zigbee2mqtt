@@ -78,7 +78,7 @@ export declare const defaults: {
         log_output: ("file" | "console")[];
         log_directory: string;
         log_file: string;
-        log_level: "debug" | "info";
+        log_level: "info" | "debug";
         log_namespaced_levels: {};
         log_syslog: {};
         log_debug_to_mqtt_frontend: false;
@@ -204,7 +204,7 @@ export declare const testing: {
             log_output: ("file" | "console")[];
             log_directory: string;
             log_file: string;
-            log_level: "debug" | "info";
+            log_level: "info" | "debug";
             log_namespaced_levels: {};
             log_syslog: {};
             log_debug_to_mqtt_frontend: false;
