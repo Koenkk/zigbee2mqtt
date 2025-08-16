@@ -3,6 +3,7 @@ import bind from "bind-decorator";
 import debounce from "debounce";
 import stringify from "json-stable-stringify-without-jsonify";
 import {Zcl} from "zigbee-herdsman";
+import type {TClusterAttributeKeys} from "zigbee-herdsman/dist/zspec/zcl/definition/clusters-types";
 import type {ClusterName} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import Device from "../model/device";
 import Group from "../model/group";
@@ -43,53 +44,33 @@ const getColorCapabilities = async (endpoint: zh.Endpoint): Promise<{colorTemper
     };
 };
 
-const REPORT_CLUSTERS: Readonly<
-    Partial<
-        Record<
-            ClusterName,
-            Readonly<{
-                attribute: string;
-                minimumReportInterval: number;
-                maximumReportInterval: number;
-                reportableChange: number;
-                condition?: (endpoint: zh.Endpoint) => Promise<boolean>;
-            }>[]
-        >
-    >
-> = {
-    genOnOff: [{attribute: "onOff", ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0}],
-    genLevelCtrl: [{attribute: "currentLevel", ...DEFAULT_REPORT_CONFIG}],
+const REPORT_CLUSTERS = {
+    genOnOff: [{attribute: "onOff" as const, ...DEFAULT_REPORT_CONFIG, minimumReportInterval: 0, reportableChange: 0}],
+    genLevelCtrl: [{attribute: "currentLevel" as const, ...DEFAULT_REPORT_CONFIG}],
     lightingColorCtrl: [
         {
-            attribute: "colorTemperature",
+            attribute: "colorTemperature" as const,
             ...DEFAULT_REPORT_CONFIG,
-            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
+            condition: async (endpoint: zh.Endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorTemperature,
         },
         {
-            attribute: "currentX",
+            attribute: "currentX" as const,
             ...DEFAULT_REPORT_CONFIG,
-            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
+            condition: async (endpoint: zh.Endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
         {
-            attribute: "currentY",
+            attribute: "currentY" as const,
             ...DEFAULT_REPORT_CONFIG,
-            condition: async (endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
+            condition: async (endpoint: zh.Endpoint): Promise<boolean> => (await getColorCapabilities(endpoint)).colorXY,
         },
     ],
     closuresWindowCovering: [
-        {attribute: "currentPositionLiftPercentage", ...DEFAULT_REPORT_CONFIG},
-        {attribute: "currentPositionTiltPercentage", ...DEFAULT_REPORT_CONFIG},
+        {attribute: "currentPositionLiftPercentage" as const, ...DEFAULT_REPORT_CONFIG},
+        {attribute: "currentPositionTiltPercentage" as const, ...DEFAULT_REPORT_CONFIG},
     ],
 };
 
-type PollOnMessage = {
-    cluster: Readonly<Partial<Record<ClusterName, {type: string; data: KeyValue}[]>>>;
-    read: Readonly<{cluster: string; attributes: string[]; attributesForEndpoint?: (endpoint: zh.Endpoint) => Promise<string[]>}>;
-    manufacturerIDs: readonly Zcl.ManufacturerCode[];
-    manufacturerNames: readonly string[];
-}[];
-
-const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
+const POLL_ON_MESSAGE = [
     {
         // On messages that have the cluster and type of below
         cluster: {
@@ -109,7 +90,7 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             genScenes: [{type: "commandRecall", data: {}}],
         },
         // Read the following attributes
-        read: {cluster: "genLevelCtrl", attributes: ["currentLevel"]},
+        read: {cluster: "genLevelCtrl" as const, attributes: ["currentLevel"] as TClusterAttributeKeys<"genLevelCtrl">},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
             Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
@@ -141,7 +122,7 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
                 {type: "commandHueNotification", data: {button: 4}},
             ],
         },
-        read: {cluster: "genOnOff", attributes: ["onOff"]},
+        read: {cluster: "genOnOff" as const, attributes: ["onOff"] as TClusterAttributeKeys<"genOnOff">},
         manufacturerIDs: [
             Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             Zcl.ManufacturerCode.ATMEL,
@@ -157,13 +138,13 @@ const POLL_ON_MESSAGE: Readonly<PollOnMessage> = [
             genScenes: [{type: "commandRecall", data: {}}],
         },
         read: {
-            cluster: "lightingColorCtrl",
-            attributes: [] as string[],
+            cluster: "lightingColorCtrl" as const,
+            attributes: [] as TClusterAttributeKeys<"lightingColorCtrl">,
             // Since not all devices support the same attributes they need to be calculated dynamically
             // depending on the capabilities of the endpoint.
-            attributesForEndpoint: async (endpoint): Promise<string[]> => {
+            attributesForEndpoint: async (endpoint: zh.Endpoint): Promise<TClusterAttributeKeys<"lightingColorCtrl">> => {
                 const supportedAttrs = await getColorCapabilities(endpoint);
-                const readAttrs: string[] = [];
+                const readAttrs: TClusterAttributeKeys<"lightingColorCtrl"> = [];
 
                 if (supportedAttrs.colorXY) {
                     readAttrs.push("currentX", "currentY");
@@ -480,16 +461,15 @@ export default class Bind extends Extension {
                         const items = [];
 
                         // biome-ignore lint/style/noNonNullAssertion: valid from outer `if`
-                        for (const c of REPORT_CLUSTERS[bind.cluster.name as ClusterName]!) {
-                            if (!c.condition || (await c.condition(endpoint))) {
-                                const i = {...c};
-                                delete i.condition;
+                        for (const c of REPORT_CLUSTERS[bind.cluster.name as keyof typeof REPORT_CLUSTERS]!) {
+                            if (!("condition" in c) || !c.condition || (await c.condition(endpoint))) {
+                                const {attribute, minimumReportInterval, maximumReportInterval, reportableChange} = c;
 
-                                items.push(i);
+                                items.push({attribute, minimumReportInterval, maximumReportInterval, reportableChange});
                             }
                         }
 
-                        await endpoint.configureReporting(bind.cluster.name, items);
+                        await endpoint.configureReporting(bind.cluster.name as keyof typeof REPORT_CLUSTERS, items);
                         logger.info(`Successfully setup reporting for '${entity}' cluster '${bind.cluster.name}'`);
                     } catch (error) {
                         logger.warning(`Failed to setup reporting for '${entity}' cluster '${bind.cluster.name}' (${(error as Error).message})`);
@@ -539,16 +519,15 @@ export default class Bind extends Extension {
                     const items = [];
 
                     // biome-ignore lint/style/noNonNullAssertion: valid from loop (pushed to array only if in)
-                    for (const item of REPORT_CLUSTERS[cluster as ClusterName]!) {
-                        if (!item.condition || (await item.condition(endpoint))) {
-                            const i = {...item};
-                            delete i.condition;
+                    for (const item of REPORT_CLUSTERS[cluster as keyof typeof REPORT_CLUSTERS]!) {
+                        if (!("condition" in item) || !item.condition || (await item.condition(endpoint))) {
+                            const {attribute, minimumReportInterval, reportableChange} = item;
 
-                            items.push({...i, maximumReportInterval: 0xffff});
+                            items.push({attribute, minimumReportInterval, maximumReportInterval: 0xffff, reportableChange});
                         }
                     }
 
-                    await endpoint.configureReporting(cluster, items);
+                    await endpoint.configureReporting(cluster as keyof typeof REPORT_CLUSTERS, items);
                     logger.info(`Successfully disabled reporting for '${entity}' cluster '${cluster}'`);
                 } catch (error) {
                     logger.warning(`Failed to disable reporting for '${entity}' cluster '${cluster}' (${(error as Error).message})`);
@@ -569,7 +548,7 @@ export default class Bind extends Extension {
          * When we receive a message from a Hue dimmer we read the brightness from the bulb (if bound).
          */
         const polls = POLL_ON_MESSAGE.filter((p) =>
-            p.cluster[data.cluster as ClusterName]?.some((c) => c.type === data.type && utils.equalsPartial(data.data, c.data)),
+            p.cluster[data.cluster as keyof (typeof p)["cluster"]]?.some((c) => c.type === data.type && utils.equalsPartial(data.data, c.data)),
         );
 
         if (polls.length) {
