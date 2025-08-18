@@ -107,6 +107,11 @@ jobs:
                 git checkout dev-types
                 rm -rf *
                 cp -R $temp_dir/* .
+                # remove unnecessary dependencies
+                KEEP_DEPS='["zigbee-herdsman","zigbee-herdsman-converters"]'
+                tmp_pkg=$(mktemp)
+                jq --indent 4 --argjson keep "$KEEP_DEPS" 'def filterDeps: (. // {}) | with_entries(select(.key as $k | $keep | index($k))); .dependencies |= filterDeps | .devDependencies |= filterDeps | .optionalDependencies |= filterDeps' package.json > "$tmp_pkg"
+                mv "$tmp_pkg" package.json
                 git add -A
                 git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git config --local user.name "github-actions[bot]"
