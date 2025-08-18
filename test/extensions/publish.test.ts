@@ -239,7 +239,7 @@ describe("Extension: Publish", () => {
         expect(endpoint.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [1], datatype: 1, dp: 2}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([1]), datatype: 1, dp: 2}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/TS0601_switch", stringify({state_l2: "ON"}), {retain: false, qos: 0});
@@ -256,19 +256,19 @@ describe("Extension: Publish", () => {
         expect(endpoint.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [0], datatype: 4, dp: 1}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([0]), datatype: 4, dp: 1}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
         expect(endpoint.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [1], datatype: 1, dp: 102}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([1]), datatype: 1, dp: 102}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
         expect(endpoint.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [0], datatype: 1, dp: 101}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([0]), datatype: 1, dp: 101}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -425,7 +425,7 @@ describe("Extension: Publish", () => {
         expect(group.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [1], datatype: 1, dp: 7}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([1]), datatype: 1, dp: 7}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
     });
@@ -1074,7 +1074,7 @@ describe("Extension: Publish", () => {
         expect(endpoint.command.mock.calls[0]).toEqual([
             "lightingColorCtrl",
             "enhancedMoveToHueAndSaturation",
-            {direction: 0, enhancehue: 45510, saturation: 127, transtime: 0},
+            {enhancehue: 45510, saturation: 127, transtime: 0},
             {},
         ]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
@@ -1442,7 +1442,7 @@ describe("Extension: Publish", () => {
         await mockMQTTEvents.message("zigbee2mqtt/roller_shutter/set", stringify({state: "OPEN"}));
         await flushPromises();
         expect(endpoint.command).toHaveBeenCalledTimes(1);
-        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: "255", transtime: 0}, {});
+        expect(endpoint.command).toHaveBeenCalledWith("genLevelCtrl", "moveToLevelWithOnOff", {level: 255, transtime: 0}, {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/roller_shutter");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({position: 100});
@@ -1458,7 +1458,7 @@ describe("Extension: Publish", () => {
         expect(endpoint.command).toHaveBeenCalledWith(
             "manuSpecificTuya",
             "dataRequest",
-            {dpValues: [{data: [1], datatype: 1, dp: 3}], seq: expect.any(Number)},
+            {dpValues: [{data: Buffer.from([1]), datatype: 1, dp: 3}], seq: expect.any(Number)},
             {disableDefaultResponse: true},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
