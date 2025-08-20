@@ -42,7 +42,7 @@ const changelogs = [
 ];
 
 const releaseRe = /## \[(.+)\]/;
-const windfrontChangeRe = /^\* (feat|fix): (.+?)(?: by @([^\s]+) in (https:\/\/github\.com\/Nerivec\/zigbee2mqtt-windfront\/pull\/\d+))?$/gm;
+const windfrontChangeRe = /^\* (feat|fix): (.+?)(?: by @([^\s]+) in (https:\/\/github\.com\/Nerivec\/zigbee2mqtt-windfront\/pull\/(\d+)))?$/gm;
 const changes = {features: [], fixes: [], detect: [], add: [], error: [], frontend: [], windfront: []};
 let context = null;
 const changeRe = [
@@ -73,8 +73,8 @@ for (const changelog of changelogs) {
 
             let match = windfrontChangeRe.exec(release.body);
             while (match !== null) {
-                const [, type, message, user, pr] = match;
-                const entry = `- ${pr} ${type}: ${message} (@${user})`;
+                const [, type, message, user, prLink, prId] = match;
+                const entry = `- [#${prId}](${prLink}) ${type}: ${message} (@${user})`;
                 changes.windfront.push(entry);
                 match = windfrontChangeRe.exec(release.body);
             }
