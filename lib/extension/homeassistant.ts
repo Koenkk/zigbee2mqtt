@@ -81,7 +81,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     noise_detected: {device_class: "sound"},
     occupancy: {device_class: "occupancy"},
     power_outage_memory: {entity_category: "config", icon: "mdi:memory"},
-    presence: {device_class: "presence"},
+    presence: {device_class: "occupancy"},
     setup: {device_class: "running"},
     smoke: {device_class: "smoke"},
     sos: {device_class: "safety"},
