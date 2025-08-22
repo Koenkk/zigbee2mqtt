@@ -640,14 +640,14 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
     const settings = getPersistedSettings();
     delete newOptions.friendly_name;
     delete newOptions.devices;
-    // If Home Assistant name is set to null or empty string, remove it (treat as no override)
+    // biome-ignore lint/style/noNonNullAssertion: If Home Assistant name is set to null or empty string, remove it (treat as no override)
     if (newOptions.homeassistant && typeof newOptions.homeassistant === 'object' && 'name' in newOptions.homeassistant) {
         if (newOptions.homeassistant.name === '' || newOptions.homeassistant.name === null) {
             if (Object.keys(newOptions.homeassistant).length === 1) {
-                // Only 'name' present, remove the whole homeassistant object
+                // biome-ignore lint/style/noNonNullAssertion: Only 'name' present, remove the whole homeassistant object
                 newOptions.homeassistant = null;
             } else {
-                // Remove the 'name' field, keep other overrides if any
+                // biome-ignore lint/style/noNonNullAssertion: Remove the 'name' field, keep other overrides if any
                 delete newOptions.homeassistant.name;
             }
         }
