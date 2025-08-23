@@ -1,9 +1,8 @@
 import path from "node:path";
 import type {ValidateFunction} from "ajv";
-
 import Ajv from "ajv";
 import objectAssignDeep from "object-assign-deep";
-
+import type {Zigbee2MQTTDeviceOptions, Zigbee2MQTTGroupOptions} from "../types/api";
 import data from "./data";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
@@ -636,19 +635,22 @@ export function removeGroup(IDorName: string | number): void {
     write();
 }
 
+/** Handle special case that gets ignored because of `NULLABLE_SETTINGS` */
+function removeNullishHomeAssistantName(entityOptions: Zigbee2MQTTDeviceOptions | Zigbee2MQTTGroupOptions) {
+    if (entityOptions.homeassistant?.name === null || entityOptions.homeassistant?.name === "") {
+        delete entityOptions.homeassistant.name;
+
+        // should be common-enough scenario, so cleanup
+        if (utils.objectIsEmpty(entityOptions.homeassistant)) {
+            delete entityOptions.homeassistant;
+        }
+    }
+}
+
 export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boolean {
     const settings = getPersistedSettings();
     delete newOptions.friendly_name;
     delete newOptions.devices;
-    if (newOptions.homeassistant && typeof newOptions.homeassistant === 'object' && 'name' in newOptions.homeassistant) {
-        if (newOptions.homeassistant.name === '' || newOptions.homeassistant.name === null) {
-            if (Object.keys(newOptions.homeassistant).length === 1) {
-                newOptions.homeassistant = null;
-            } else {
-                delete newOptions.homeassistant.name;
-            }
-        }
-    }
     let validator: ValidateFunction;
     const device = getDevice(IDorName);
 
@@ -657,6 +659,8 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
         const settingsDevice = settings.devices![device.ID];
         objectAssignDeep(settingsDevice, newOptions);
         utils.removeNullPropertiesFromObject(settingsDevice, NULLABLE_SETTINGS);
+        removeNullishHomeAssistantName(settingsDevice);
+
         validator = ajvRestartRequiredDeviceOptions;
     } else {
         const group = getGroup(IDorName);
@@ -666,6 +670,8 @@ export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boo
             const settingsGroup = settings.groups![group.ID];
             objectAssignDeep(settingsGroup, newOptions);
             utils.removeNullPropertiesFromObject(settingsGroup, NULLABLE_SETTINGS);
+            removeNullishHomeAssistantName(settingsGroup);
+
             validator = ajvRestartRequiredGroupOptions;
         } else {
             throw new Error(`Device or group '${IDorName}' does not exist`);
