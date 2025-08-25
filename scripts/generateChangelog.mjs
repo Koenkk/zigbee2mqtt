@@ -74,7 +74,7 @@ for (const changelog of changelogs) {
             let match = windfrontChangeRe.exec(release.body);
             while (match !== null) {
                 const [, type, message, user, prLink, prId] = match;
-                const entry = `- [#${prId}](${prLink}) ${type}: ${message} (@${user})`;
+                const entry = `- ${prId && prLink ? `[#${prId}](${prLink}) ` : ""}${type}: ${message} ${user ? `(@${user.split("[")[0]})` : ""}`;
                 changes.windfront.push(entry);
                 match = windfrontChangeRe.exec(release.body);
             }
