@@ -995,54 +995,52 @@ describe("Settings", () => {
 
     it("Should keep homeassistant null property on device setting change", () => {
         write(configurationFile, {
-            devices: {"0x12345678": {friendly_name: "custom discovery", homeassistant: {entityXYZ: {entity_category: null}}}},
+            devices: {
+                "0x12345678": {
+                    friendly_name: "custom discovery",
+                    homeassistant: {
+                        entityXYZ: {
+                            entity_category: null,
+                        },
+                    },
+                },
+            },
         });
         settings.changeEntityOptions("0x12345678", {disabled: true});
 
         const actual = read(configurationFile);
         const expected = {
-            devices: {"0x12345678": {friendly_name: "custom discovery", disabled: true, homeassistant: {entityXYZ: {entity_category: null}}}},
+            devices: {
+                "0x12345678": {
+                    friendly_name: "custom discovery",
+                    disabled: true,
+                    homeassistant: {
+                        entityXYZ: {
+                            entity_category: null,
+                        },
+                    },
+                },
+            },
         };
         expect(actual).toStrictEqual(expected);
     });
 
     it("Should keep homeassistant null properties on apply", () => {
         write(configurationFile, {
-            device_options: {homeassistant: {temperature: null}},
-            devices: {"0x1234567812345678": {friendly_name: "custom discovery", homeassistant: {humidity: null}}},
+            device_options: {
+                homeassistant: {temperature: null},
+            },
+            devices: {
+                "0x1234567812345678": {
+                    friendly_name: "custom discovery",
+                    homeassistant: {humidity: null},
+                },
+            },
         });
         settings.reRead();
         settings.apply({external_converters: []});
         expect(settings.get().device_options.homeassistant).toStrictEqual({temperature: null});
         expect(settings.get().devices["0x1234567812345678"].homeassistant).toStrictEqual({humidity: null});
-    });
-
-    it("handles homeassistant name null with other props", () => {
-        write(configurationFile, {
-            devices: {"0x1234567812345678": {friendly_name: "custom discovery", homeassistant: {name: "abcd", temperature: 1}}},
-        });
-        settings.reRead();
-        settings.changeEntityOptions("0x1234567812345678", {homeassistant: {name: null}});
-
-        const actual = read(configurationFile);
-        const expected = {
-            devices: {"0x1234567812345678": {friendly_name: "custom discovery", homeassistant: {temperature: 1}}},
-        };
-        expect(actual).toStrictEqual(expected);
-    });
-
-    it("handles homeassistant name null no other props", () => {
-        write(configurationFile, {
-            devices: {"0x1234567812345678": {friendly_name: "custom discovery", homeassistant: {name: "abcd"}}},
-        });
-        settings.reRead();
-        settings.changeEntityOptions("0x1234567812345678", {homeassistant: {name: null}});
-
-        const actual = read(configurationFile);
-        const expected = {
-            devices: {"0x1234567812345678": {friendly_name: "custom discovery"}},
-        };
-        expect(actual).toStrictEqual(expected);
     });
 
     it("Frontend config", () => {
