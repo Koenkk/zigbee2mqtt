@@ -70,7 +70,6 @@
     },
     "devDependencies": {
         "@biomejs/biome": "^2.1.4",
-        "@codspeed/vitest-plugin": "^4.0.1",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",

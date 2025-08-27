@@ -17,7 +17,9 @@ jobs:
     ci:
         runs-on: ubuntu-latest
         permissions:
-            id-token: write
+            id-token: write # for npm publish
+            actions: read # for Nerivec/action-ci-bench
+            pull-requests: write # for Nerivec/action-ci-bench
         steps:
             - uses: actions/checkout@v5
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
@@ -50,10 +52,13 @@ jobs:
 
             - name: Bench
               if: github.ref == 'refs/heads/dev' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please-'))
-              uses: CodSpeedHQ/action@v3
+              uses: Nerivec/action-ci-bench@main
               with:
-                run: pnpm run bench
-                token: ${{ secrets.CODSPEED_TOKEN }}
+                token: ${{ secrets.GITHUB_TOKEN }}
+                compare-against: dev
+                base-cmd: npx vitest bench --run --config ./test/vitest.config.mts --outputJson bench.json
+                compare-cmd: npx vitest bench --run --config ./test/vitest.config.mts --compare bench.json
+                base-result: bench.json
 
             - name: Log in to the Docker container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'

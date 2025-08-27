@@ -1,6 +1,6 @@
 import {existsSync, mkdirSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
-import {afterAll, afterEach, beforeAll, beforeEach, bench, describe} from "vitest";
+import {bench, describe} from "vitest";
 import {Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
@@ -12,6 +12,7 @@ import type {DeviceType} from "zigbee-herdsman/dist/controller/tstype";
 import {Foundation} from "zigbee-herdsman/dist/zspec/zcl/definition/foundation";
 import type {RequestToResponseMap} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import data from "../lib/util/data";
+import {BENCH_OPTIONS} from "./benchOptions";
 
 process.env.ZIGBEE2MQTT_DATA = "data-bench";
 data._testReload();
@@ -433,69 +434,9 @@ const initController = async () => {
 };
 
 describe("Controller with dummy zigbee/mqtt", () => {
-    describe("defaults start & stop", () => {
-        beforeEach(async () => {
-            initDevices();
-            initGroups();
-            await initSettings();
-            await initController();
-        });
-
-        afterEach(() => {
-            unmockGlobalThis();
-        });
-
-        bench(
-            "[defaults] start & stop controller",
-            async () => {
-                const mockedGlobal = mockGlobalThis();
-
-                await controller.start();
-                await settle(mockedGlobal);
-
-                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                    throw new Error("Invalid");
-                }
-
-                await controller.stop();
-            },
-            {throws: true},
-        );
-    });
-
-    describe("HA start & stop", () => {
-        beforeEach(async () => {
-            initDevices();
-            initGroups();
-            await initSettings([[["homeassistant", "enabled"], true]]);
-            await initController();
-        });
-
-        afterEach(() => {
-            unmockGlobalThis();
-        });
-
-        bench(
-            "[HA] start & stop controller",
-            async () => {
-                const mockedGlobal = mockGlobalThis();
-
-                await controller.start();
-                controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
-                await settle(mockedGlobal);
-
-                if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
-                    throw new Error("Invalid");
-                }
-
-                await controller.stop();
-            },
-            {throws: true},
-        );
-    });
-
-    describe("defaults runtime", () => {
-        beforeAll(async () => {
+    bench(
+        "[defaults] start & stop controller",
+        async () => {
             initDevices();
             initGroups();
             await initSettings();
@@ -504,12 +445,56 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
             await controller.start();
             await settle(mockedGlobal);
-        });
 
-        afterAll(async () => {
+            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                throw new Error("Invalid");
+            }
+
             await controller.stop();
             unmockGlobalThis();
-        });
+        },
+        BENCH_OPTIONS,
+    );
+
+    bench(
+        "[HA] start & stop controller",
+        async () => {
+            initDevices();
+            initGroups();
+            await initSettings([[["homeassistant", "enabled"], true]]);
+            await initController();
+            const mockedGlobal = mockGlobalThis();
+
+            await controller.start();
+            controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
+            await settle(mockedGlobal);
+
+            if ((await controller.zigbee.getCoordinatorVersion()).type !== "Dummy") {
+                throw new Error("Invalid");
+            }
+
+            await controller.stop();
+            unmockGlobalThis();
+        },
+        BENCH_OPTIONS,
+    );
+
+    describe("defaults runtime", () => {
+        const setup: NonNullable<Parameters<typeof bench>[2]>["setup"] = async (task, mode) => {
+            BENCH_OPTIONS.setup!(task, mode);
+            initDevices();
+            initGroups();
+            await initSettings();
+            await initController();
+            const mockedGlobal = mockGlobalThis();
+
+            await controller.start();
+            await settle(mockedGlobal);
+        };
+        const teardown = async () => {
+            await controller.stop();
+            unmockGlobalThis();
+        };
 
         bench(
             "[defaults] receive device message",
@@ -528,7 +513,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 });
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
 
         bench(
@@ -539,7 +524,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
 
         bench(
@@ -562,12 +547,13 @@ describe("Controller with dummy zigbee/mqtt", () => {
                     throw new Error("Invalid state");
                 }
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
     });
 
     describe("defaults/stress runtime", () => {
-        beforeAll(async () => {
+        const setup: NonNullable<Parameters<typeof bench>[2]>["setup"] = async (task, mode) => {
+            BENCH_OPTIONS.setup!(task, mode);
             initDevices();
             initGroups();
             addManyDevices();
@@ -577,12 +563,12 @@ describe("Controller with dummy zigbee/mqtt", () => {
 
             await controller.start();
             await settle(mockedGlobal);
-        }, 60000);
+        };
 
-        afterAll(async () => {
+        const teardown = async () => {
             await controller.stop();
             unmockGlobalThis();
-        });
+        };
 
         // this is mostly just to confirm the number of devices does not influence the processing (much)
         bench(
@@ -602,12 +588,13 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 });
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
     });
 
     describe("HA runtime", () => {
-        beforeAll(async () => {
+        const setup: NonNullable<Parameters<typeof bench>[2]>["setup"] = async (task, mode) => {
+            BENCH_OPTIONS.setup!(task, mode);
             initDevices();
             initGroups();
             await initSettings([[["homeassistant", "enabled"], true]]);
@@ -617,12 +604,12 @@ describe("Controller with dummy zigbee/mqtt", () => {
             await controller.start();
             controller.mqtt.onMessage("homeassistant/status", Buffer.from("online", "utf8"));
             await settle(mockedGlobal);
-        });
+        };
 
-        afterAll(async () => {
+        const teardown = async () => {
             await controller.stop();
             unmockGlobalThis();
-        });
+        };
 
         bench(
             "[HA] receive device message",
@@ -641,7 +628,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 });
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
 
         bench(
@@ -652,7 +639,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 controller.mqtt.onMessage("zigbee2mqtt/0xf1f1f1f1f1f1f1f1/set", Buffer.from(`{"state": "OFF"}`, "utf8"));
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
 
         bench(
@@ -666,7 +653,7 @@ describe("Controller with dummy zigbee/mqtt", () => {
                 );
                 await settle(mockedGlobal);
             },
-            {throws: true},
+            {...BENCH_OPTIONS, setup, teardown},
         );
     });
 });
