@@ -9,7 +9,7 @@ Welcome! These instructions help ensure Copilot Coding Agent can efficiently col
   - `src/`: Main source code (device adapters, communication, logic).
   - `test/`: Automated tests.
   - `docs/`: Documentation.
-  - `data/`: Zigbee device definitions.
+  - `data/`: Configuration and database
 
 ## 2. Preferred Practices
 - **Branching:** Use feature branches (`feat/xyz`) for enhancements and `fix/xyz` for bug fixes.
