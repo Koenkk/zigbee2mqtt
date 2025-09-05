@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.6.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.6.1...2.6.2) (2025-09-05)
+
+
+### Bug Fixes
+
+* **ignore:** update zigbee-herdsman to 6.1.0 ([#28460](https://github.com/Koenkk/zigbee2mqtt/issues/28460)) ([06862c7](https://github.com/Koenkk/zigbee2mqtt/commit/06862c72594abf083411cf517c8dfb3db12fd4a9))
+* **ignore:** update zigbee-herdsman-converters to 25.15.0 ([#28462](https://github.com/Koenkk/zigbee2mqtt/issues/28462)) ([3f27f79](https://github.com/Koenkk/zigbee2mqtt/commit/3f27f79d7dabd1951c9c1f2f3dfc24d6bc741edd))
+* **ignore:** update zigbee-herdsman-converters to 25.17.0 ([#28480](https://github.com/Koenkk/zigbee2mqtt/issues/28480)) ([3018e40](https://github.com/Koenkk/zigbee2mqtt/commit/3018e40daef092d74de4eea9e2cb8f174899cd71))
+* **ignore:** update zigbee-herdsman-converters to 25.17.1 ([#28511](https://github.com/Koenkk/zigbee2mqtt/issues/28511)) ([54d729e](https://github.com/Koenkk/zigbee2mqtt/commit/54d729e37a80b0d7a22b67b6223e28685cbf1974))
+* **ignore:** update zigbee2mqtt-windfront to 2.1.0 ([#28471](https://github.com/Koenkk/zigbee2mqtt/issues/28471)) ([e52203a](https://github.com/Koenkk/zigbee2mqtt/commit/e52203a1b8b543820506780981de997e6e7edeff))
+
 ## [2.6.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.6.0...2.6.1) (2025-09-01)
 
 
