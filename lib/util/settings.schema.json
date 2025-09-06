@@ -925,7 +925,7 @@
                     "title": "Home Assistant",
                     "properties": {
                         "name": {
-                            "type": "string",
+                            "type": ["string", "null"],
                             "title": "Home Assistant name",
                             "description": "Name of the device in Home Assistant"
                         }
