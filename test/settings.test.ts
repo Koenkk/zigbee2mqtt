@@ -1047,6 +1047,6 @@ describe("Settings", () => {
         write(configurationFile, {frontend: {enabled: true}});
 
         settings.reRead();
-        expect(settings.get().frontend).toStrictEqual({enabled: true, package: "zigbee2mqtt-frontend", port: 8080, base_url: "/"});
+        expect(settings.get().frontend).toStrictEqual({enabled: true, package: "zigbee2mqtt-windfront", port: 8080, base_url: "/"});
     });
 });
