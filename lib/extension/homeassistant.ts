@@ -1515,6 +1515,11 @@ export class HomeAssistant extends Extension {
             payload.object_id = `${payload.object_id}${payload.object_id_postfix ?? ""}`;
             delete payload.object_id_postfix;
 
+            // Set `default_entity_id`, as of HA 2025.10 this replaces the `object_id`.
+            // For migration purposes we set both for now.
+            // https://github.com/home-assistant/core/pull/151775
+            payload.default_entity_id = `${config.type}.${payload.object_id}`;
+
             // Set unique_id
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
