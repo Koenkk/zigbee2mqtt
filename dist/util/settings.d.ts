@@ -26,7 +26,7 @@ export declare const defaults: {
     };
     frontend: {
         enabled: false;
-        package: "zigbee2mqtt-frontend";
+        package: "zigbee2mqtt-windfront";
         port: number;
         base_url: string;
     };
@@ -152,7 +152,7 @@ export declare const testing: {
         };
         frontend: {
             enabled: false;
-            package: "zigbee2mqtt-frontend";
+            package: "zigbee2mqtt-windfront";
             port: number;
             base_url: string;
         };
