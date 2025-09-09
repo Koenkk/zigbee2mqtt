@@ -86,7 +86,7 @@ vi.mock("express-static-gzip", () => ({
     }),
 }));
 
-vi.mock("zigbee2mqtt-frontend", () => ({
+vi.mock("zigbee2mqtt-windfront", () => ({
     default: {
         getPath: (): string => frontendPath,
     },

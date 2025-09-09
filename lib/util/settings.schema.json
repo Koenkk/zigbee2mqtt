@@ -398,9 +398,9 @@
                 },
                 "package": {
                     "type": "string",
-                    "enum": ["zigbee2mqtt-frontend", "zigbee2mqtt-windfront"],
+                    "enum": ["zigbee2mqtt-windfront", "zigbee2mqtt-frontend"],
                     "title": "Package",
-                    "default": "zigbee2mqtt-frontend",
+                    "default": "zigbee2mqtt-windfront",
                     "requiresRestart": true,
                     "description": "Package used for the frontend"
                 },
