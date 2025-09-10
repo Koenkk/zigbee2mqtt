@@ -1168,4 +1168,14 @@ describe("Controller", () => {
             await controller.enableDisableExtension(false, "Availability");
         }).rejects.toThrow("Built-in extension Availability cannot be disabled at runtime");
     });
+
+    it("should clear group references", async () => {
+        await controller.start();
+
+        const groupOld = controller.zigbee.createGroup(1);
+        await controller.zigbee.removeEntity(groupOld, false);
+        const groupNew = controller.zigbee.createGroup(1);
+        expect(groupOld).not.toBe(groupNew);
+        expect(controller.zigbee.resolveEntity("1")).toBe(groupNew);
+    });
 });
