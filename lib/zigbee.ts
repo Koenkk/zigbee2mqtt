@@ -432,4 +432,25 @@ export default class Zigbee {
     groupByID(id: number): Group | undefined {
         return this.resolveGroup(id);
     }
+
+    async removeEntity(entity: Device | Group, force: boolean): Promise<void> {
+        if (entity instanceof Device) {
+            if (force) {
+                entity.zh.removeFromDatabase();
+            } else {
+                await entity.zh.removeFromNetwork();
+            }
+
+            // Don't remove from `deviceLookup` as zigbee-herdsman keeps the object in memory
+            // i.e. in case the device would re-join, the same object would be used.
+        } else {
+            if (force) {
+                entity.zh.removeFromDatabase();
+            } else {
+                await entity.zh.removeFromNetwork();
+            }
+
+            this.groupLookup.delete(entity.ID);
+        }
+    }
 }
