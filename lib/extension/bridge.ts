@@ -619,14 +619,26 @@ export default class Bridge extends Extension {
         try {
             logger.info(`Removing ${entityType} '${friendlyName}'${blockForceLog}`);
 
-            await this.zigbee.removeEntity(entity, force);
-
             if (entity instanceof Device) {
                 if (block) {
                     settings.blockDevice(entity.ieeeAddr);
                 }
+
+                if (force) {
+                    entity.zh.removeFromDatabase();
+                } else {
+                    await entity.zh.removeFromNetwork();
+                }
+
                 settings.removeDevice(entity.ID as string);
             } else {
+                if (force) {
+                    entity.zh.removeFromDatabase();
+                } else {
+                    await entity.zh.removeFromNetwork();
+                }
+
+                this.zigbee.removeGroupFromLookup(entity.ID);
                 settings.removeGroup(entity.ID);
             }
 
