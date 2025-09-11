@@ -638,6 +638,7 @@ export default class Bridge extends Extension {
                     await entity.zh.removeFromNetwork();
                 }
 
+                this.zigbee.removeGroupFromLookup(entity.ID);
                 settings.removeGroup(entity.ID);
             }
 

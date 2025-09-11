@@ -432,4 +432,8 @@ export default class Zigbee {
     groupByID(id: number): Group | undefined {
         return this.resolveGroup(id);
     }
+
+    removeGroupFromLookup(id: number): void {
+        this.groupLookup.delete(id);
+    }
 }
