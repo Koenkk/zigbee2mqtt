@@ -1,9 +1,7 @@
 import path from "node:path";
 import type {ValidateFunction} from "ajv";
-
 import Ajv from "ajv";
 import objectAssignDeep from "object-assign-deep";
-
 import data from "./data";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
