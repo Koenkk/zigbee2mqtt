@@ -2741,7 +2741,7 @@ describe("Extension: HomeAssistant", () => {
         mockMQTTPublishAsync.mockClear();
         const device = devices["BMCT-SLZ"];
         const data = {deviceMode: 0};
-        const msg = {data, cluster: "boschSpecific", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
+        const msg = {data, cluster: "boschEnergyDevice", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
         resetDiscoveryPayloads("0x18fc26000000cafe");
         await mockZHEvents.message(msg);
         await flushPromises();

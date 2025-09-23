@@ -731,7 +731,7 @@ describe("Extension: Receive", () => {
     it("Should emit DevicesChanged event when a converter announces changed exposes", async () => {
         const device = devices["BMCT-SLZ"];
         const data = {deviceMode: 0};
-        const payload = {data, cluster: "boschSpecific", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
+        const payload = {data, cluster: "boschEnergyDevice", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
         await mockZHEvents.message(payload);
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/bridge/devices");
     });
