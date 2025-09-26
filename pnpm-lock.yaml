@@ -81,8 +81,8 @@ importers:
         specifier: 25.31.0
         version: 25.31.0
       zigbee2mqtt-frontend:
-        specifier: 0.9.20
-        version: 0.9.20
+        specifier: 0.9.21
+        version: 0.9.21
       zigbee2mqtt-windfront:
         specifier: 2.1.0
         version: 2.1.0
@@ -1479,8 +1479,8 @@ packages:
     resolution: {integrity: sha512-mL7s9ic7J85YI7wOG1/QlbRYE3haFzIHqgnM2+xLmjj8CazjhmGjop9TCfuY2JXyDI9ss7bNCLxuI9n6M+TXug==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
-  zigbee2mqtt-frontend@0.9.20:
-    resolution: {integrity: sha512-P+GpOueoqWu7j002MQPuGYj3DFQb3jus88v1+Rude7a88yu1lf75oHwjo0sdp5YTpLDqObGR8sCP5qBF5nmS4Q==}
+  zigbee2mqtt-frontend@0.9.21:
+    resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
   zigbee2mqtt-windfront@2.1.0:
@@ -2790,6 +2790,6 @@ snapshots:
 
   zigbee-on-host@0.1.13: {}
 
-  zigbee2mqtt-frontend@0.9.20: {}
+  zigbee2mqtt-frontend@0.9.21: {}
 
   zigbee2mqtt-windfront@2.1.0: {}
