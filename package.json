@@ -59,28 +59,28 @@
         "semver": "^7.7.1",
         "source-map-support": "^0.5.21",
         "throttleit": "^2.1.0",
-        "winston": "^3.17.0",
+        "winston": "^3.18.2",
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
         "ws": "^8.18.1",
         "zigbee-herdsman": "6.1.5",
         "zigbee-herdsman-converters": "25.35.1",
         "zigbee2mqtt-frontend": "0.9.21",
-        "zigbee2mqtt-windfront": "2.2.0"
+        "zigbee2mqtt-windfront": "2.2.1"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.2.4",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^24.5.2",
+        "@types/node": "^24.6.0",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.21",
         "@types/serve-static": "^1.15.7",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
         "tmp": "^0.2.5",
-        "typescript": "^5.9.2",
+        "typescript": "^5.9.3",
         "vitest": "^3.1.1"
     },
     "pnpm": {
