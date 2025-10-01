@@ -372,6 +372,7 @@ export function formatTimestamp(date: Date, format: string): string {
                 return date.getMilliseconds().toString().padStart(3, "0");
             /* v8 ignore start */
             default:
+                // Can never happen as it's not possible due to the regex
                 return token;
             /* v8 ignore stop */
         }
