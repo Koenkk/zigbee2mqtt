@@ -52,7 +52,6 @@
         "js-yaml": "^4.1.0",
         "json-stable-stringify-without-jsonify": "^1.0.1",
         "jszip": "^3.10.1",
-        "moment": "^2.30.1",
         "mqtt": "^5.14.1",
         "object-assign-deep": "^0.4.0",
         "rimraf": "^6.0.1",

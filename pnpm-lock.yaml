@@ -41,9 +41,6 @@ importers:
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
-      moment:
-        specifier: ^2.30.1
-        version: 2.30.1
       mqtt:
         specifier: ^5.14.1
         version: 5.14.1
@@ -1169,9 +1166,6 @@ packages:
   mixin-deep@2.0.1:
     resolution: {integrity: sha512-imbHQNRglyaplMmjBLL3V5R6Bfq5oM+ivds3SKgc6oRtzErEnBUUc5No11Z2pilkUvl42gJvi285xTNswcKCMA==}
     engines: {node: '>=6'}
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
@@ -2613,8 +2607,6 @@ snapshots:
   minipass@7.1.2: {}
 
   mixin-deep@2.0.1: {}
-
-  moment@2.30.1: {}
 
   mqtt-packet@9.0.2:
     dependencies:

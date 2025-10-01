@@ -2,7 +2,7 @@ import {exec} from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import {describe, expect, it, vi} from "vitest";
-import utils, {assertString} from "../lib/util/utils";
+import utils, {assertString, formatTimestamp} from "../lib/util/utils";
 
 // keep the implementations, just spy
 vi.mock("node:child_process", {spy: true});
@@ -81,6 +81,35 @@ describe("Utils", () => {
     it("Assert string", () => {
         assertString("test", "property");
         expect(() => assertString(1, "property")).toThrow("property is not a string, got number (1)");
+    });
+
+    it.each([
+        [
+            "formats full timestamp",
+            new Date(2024, 0, 2, 3, 4, 5), // 2024-01-02T03:04:05Z
+            "YYYY-MM-DD HH:mm:ss",
+            "2024-01-02 03:04:05",
+        ],
+        [
+            "pads single digit values",
+            new Date(2021, 0, 1, 1, 2, 3), // 2021-01-01T01:02:03Z
+            "YYYY-MM-DD HH:mm:ss",
+            "2021-01-01 01:02:03",
+        ],
+        [
+            "handles custom format",
+            new Date(2023, 9, 5, 14, 30, 45), // 2023-10-05T14:30:45Z
+            "DD/MM/YYYY HH-mm",
+            "05/10/2023 14-30",
+        ],
+        [
+            "keeps unsupported tokens as-is",
+            new Date(2023, 9, 5, 14, 30, 45), // 2023-10-05T14:30:45Z
+            "DD/MM/YYYY HH-ii",
+            "05/10/2023 14-ii",
+        ],
+    ])("formatTimestamp %s", (_desc, date, format, expected) => {
+        expect(formatTimestamp(date, format)).toStrictEqual(expected);
     });
 
     it("Removes null properties from object", () => {

@@ -2,11 +2,10 @@ import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
 
-import moment from "moment";
 import {rimrafSync} from "rimraf";
 import winston from "winston";
-
 import * as settings from "./settings";
+import {formatTimestamp} from "./utils";
 
 const NAMESPACE_SEPARATOR = ":";
 
@@ -31,7 +30,7 @@ class Logger {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
         // Directory to log to
-        const timestamp = moment(Date.now()).format("YYYY-MM-DD.HH-mm-ss");
+        const timestamp = formatTimestamp(new Date(), "YYYY-MM-DD.HH-mm-ss");
         this.directory = settings.get().advanced.log_directory.replace("%TIMESTAMP%", timestamp);
         const logFilename = settings.get().advanced.log_file.replace("%TIMESTAMP%", timestamp);
         this.level = settings.get().advanced.log_level;
@@ -40,7 +39,7 @@ class Logger {
 
         assert(settings.LOG_LEVELS.includes(this.level), `'${this.level}' is not valid log_level, use one of '${settings.LOG_LEVELS.join(", ")}'`);
 
-        const timestampFormat = (): string => moment().format(settings.get().advanced.timestamp_format);
+        const timestampFormat = (): string => formatTimestamp(new Date(), settings.get().advanced.timestamp_format);
 
         this.logger = winston.createLogger({
             level: "debug",
