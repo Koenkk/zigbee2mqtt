@@ -370,8 +370,10 @@ export function formatTimestamp(date: Date, format: string): string {
                 return date.getSeconds().toString().padStart(2, "0");
             case "SSS":
                 return date.getMilliseconds().toString().padStart(3, "0");
+            /* v8 ignore start */
             default:
                 return token;
+            /* v8 ignore stop */
         }
     });
 }
