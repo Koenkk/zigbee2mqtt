@@ -1,3 +1,4 @@
+import {vi} from "vitest";
 import type {DefinitionWithExtend} from "zigbee-herdsman-converters";
 
 export type EventHandler = (...args: unknown[]) => unknown;

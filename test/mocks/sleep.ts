@@ -1,3 +1,4 @@
+import {vi} from "vitest";
 import utils from "../../lib/util/utils";
 
 const spy = vi.spyOn(utils, "sleep");
