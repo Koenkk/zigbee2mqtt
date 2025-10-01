@@ -86,9 +86,9 @@ describe("Utils", () => {
     it.each([
         [
             "formats full timestamp",
-            new Date(2024, 0, 2, 3, 4, 5), // 2024-01-02T03:04:05Z
-            "YYYY-MM-DD HH:mm:ss",
-            "2024-01-02 03:04:05",
+            new Date(2024, 0, 2, 3, 4, 5, 678), // 2024-01-02T03:04:05.678Z
+            "YYYY-MM-DD HH:mm:ss.SSS",
+            "2024-01-02 03:04:05.678",
         ],
         [
             "pads single digit values",
