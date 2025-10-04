@@ -733,7 +733,7 @@ export class HomeAssistant extends Extension {
                             value_template: `{{ value_json.${piCoolingDemand.property} }}`,
                             ...(piCoolingDemand.unit && {unit_of_measurement: piCoolingDemand.unit}),
                             entity_category: "diagnostic",
-                            icon: "mdi:radiator",
+                            icon: "mdi:air-conditioner",
                         },
                     };
 
