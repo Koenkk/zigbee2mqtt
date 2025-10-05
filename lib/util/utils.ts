@@ -351,34 +351,6 @@ export function assertString(value: unknown, property: string): asserts value is
     }
 }
 
-export function formatTimestamp(date: Date, format: string): string {
-    // Previously moment (https://www.npmjs.com/package/moment) was used for formatting timestamps.
-    // To reduce dependencies and size (moment=4.35mb), this was replaced with a simple implementation.
-    return format.replace(/YYYY|MM|DD|HH|mm|ss|SSS/g, (token) => {
-        switch (token) {
-            case "YYYY":
-                return date.getFullYear().toString();
-            case "MM":
-                return (date.getMonth() + 1).toString().padStart(2, "0");
-            case "DD":
-                return date.getDate().toString().padStart(2, "0");
-            case "HH":
-                return date.getHours().toString().padStart(2, "0");
-            case "mm":
-                return date.getMinutes().toString().padStart(2, "0");
-            case "ss":
-                return date.getSeconds().toString().padStart(2, "0");
-            case "SSS":
-                return date.getMilliseconds().toString().padStart(3, "0");
-            /* v8 ignore start */
-            default:
-                // Can never happen as it's not possible due to the regex
-                return token;
-            /* v8 ignore stop */
-        }
-    });
-}
-
 function getScenes(entity: zh.Endpoint | zh.Group): Zigbee2MQTTScene[] {
     const scenes: {[id: number]: Zigbee2MQTTScene} = {};
     const endpoints = isZHEndpoint(entity) ? [entity] : entity.members;

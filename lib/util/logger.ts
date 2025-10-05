@@ -5,7 +5,6 @@ import path from "node:path";
 import {rimrafSync} from "rimraf";
 import winston from "winston";
 import * as settings from "./settings";
-import {formatTimestamp} from "./utils";
 
 const NAMESPACE_SEPARATOR = ":";
 
@@ -30,7 +29,7 @@ class Logger {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
         // Directory to log to
-        const timestamp = formatTimestamp(new Date(), "YYYY-MM-DD.HH-mm-ss");
+        const timestamp = new Date().toISOString().slice(0, 19).replace("T", ".").replace(/:/g, "-");
         this.directory = settings.get().advanced.log_directory.replace("%TIMESTAMP%", timestamp);
         const logFilename = settings.get().advanced.log_file.replace("%TIMESTAMP%", timestamp);
         this.level = settings.get().advanced.log_level;
@@ -39,11 +38,12 @@ class Logger {
 
         assert(settings.LOG_LEVELS.includes(this.level), `'${this.level}' is not valid log_level, use one of '${settings.LOG_LEVELS.join(", ")}'`);
 
-        const timestampFormat = (): string => formatTimestamp(new Date(), settings.get().advanced.timestamp_format);
-
         this.logger = winston.createLogger({
             level: "debug",
-            format: winston.format.combine(winston.format.errors({stack: true}), winston.format.timestamp({format: timestampFormat})),
+            format: winston.format.combine(
+                winston.format.errors({stack: true}),
+                winston.format.timestamp({format: settings.get().advanced.timestamp_format}),
+            ),
             levels: winston.config.syslog.levels,
         });
 
