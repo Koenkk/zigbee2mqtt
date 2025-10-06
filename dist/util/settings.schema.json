@@ -784,7 +784,7 @@
                     "type": "string",
                     "title": "Timestamp format",
                     "requiresRestart": true,
-                    "description": "Log timestamp format",
+                    "description": "Log timestamp format (see https://github.com/taylorhakes/fecha?tab=readme-ov-file#formatting-tokens for all supported tokens)",
                     "default": "YYYY-MM-DD HH:mm:ss",
                     "examples": ["YYYY-MM-DD HH:mm:ss.SSS"]
                 },
