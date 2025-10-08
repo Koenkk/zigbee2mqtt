@@ -6,10 +6,10 @@ body:
     - type: markdown
       attributes:
           value: |
-              Only use this if the device is detected as **supported** and is **fully functional** but has a wrong picture, vendor, model or description.
+            Submit this issue only if your device is detected as **supported** and works **fully**, but displays an incorrect picture, vendor, model, or description.
 
-              IMPORTANT: Before submitting this issue, please read the [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html#fixing-tuya-device-detection) on how to fix this yourself.
-              This is usually takes only 5 minutes to do it yourself.
+            **IMPORTANT**: Before opening this issue, please review the [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html#fixing-tuya-device-detection) for instructions on fixing the device detection yourself.
+            This usually only takes 5 minutes.
     - type: input
       id: link
       attributes:
