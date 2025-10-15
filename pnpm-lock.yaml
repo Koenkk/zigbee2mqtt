@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 6.2.0
+  zigbee-herdsman: 6.3.0
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.3
       zigbee-herdsman:
-        specifier: 6.2.0
-        version: 6.2.0
+        specifier: 6.3.0
+        version: 6.3.0
       zigbee-herdsman-converters:
         specifier: 25.46.0
         version: 25.46.0
@@ -218,6 +218,9 @@ packages:
 
   '@dabh/diagnostics@2.0.8':
     resolution: {integrity: sha512-R4MSXTVnuMzGD7bzHdW2ZhhdPC/igELENcq5IjEverBvq5hn1SXCWcsi6eSsdWP0/Ur+SItRRjAktmdoX/8R/Q==}
+
+  '@date-fns/tz@1.4.1':
+    resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
 
   '@esbuild/aix-ppc64@0.25.5':
     resolution: {integrity: sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==}
@@ -1473,8 +1476,8 @@ packages:
   zigbee-herdsman-converters@25.46.0:
     resolution: {integrity: sha512-R5HZP4O49nLipzGWmZ0eqKOzjMOGTEaWszRcyU3AhEGJKm+Bmeb86ZtuPD0DSSaxIXlzk/J9jsPu+udA/EVZ8g==}
 
-  zigbee-herdsman@6.2.0:
-    resolution: {integrity: sha512-yC+wX4JQmhbeMhQSYLy+ciZMb4BL4ZY63RVnmi8qVLStEHeddUbjwrDlw+xJsC8QZdneOFtKxJHRTJohjmozsA==}
+  zigbee-herdsman@6.3.0:
+    resolution: {integrity: sha512-i99cGZ2pADK7blDCnyu1egO8L0pchDOC30pYf555LNTLiDhBzno7c6+K/Xg6/LsYQ6PrNY7MzGkkj9t0T2Oerw==}
 
   zigbee-on-host@0.1.13:
     resolution: {integrity: sha512-mL7s9ic7J85YI7wOG1/QlbRYE3haFzIHqgnM2+xLmjj8CazjhmGjop9TCfuY2JXyDI9ss7bNCLxuI9n6M+TXug==}
@@ -1554,6 +1557,8 @@ snapshots:
       '@so-ric/colorspace': 1.1.6
       enabled: 2.0.0
       kuler: 2.0.0
+
+  '@date-fns/tz@1.4.1': {}
 
   '@esbuild/aix-ppc64@0.25.5':
     optional: true
@@ -2185,7 +2190,7 @@ snapshots:
   istanbul-lib-source-maps@5.0.6:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      debug: 4.4.1
+      debug: 4.4.3
       istanbul-lib-coverage: 3.2.2
     transitivePeerDependencies:
       - supports-color
@@ -2282,7 +2287,7 @@ snapshots:
   mqtt-packet@9.0.2:
     dependencies:
       bl: 6.1.3
-      debug: 4.4.1
+      debug: 4.4.3
       process-nextick-args: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -2328,7 +2333,7 @@ snapshots:
 
   number-allocator@1.0.14:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3
       js-sdsl: 4.3.0
     transitivePeerDependencies:
       - supports-color
@@ -2611,7 +2616,7 @@ snapshots:
   vite-node@3.2.4(@types/node@24.7.2):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.1
+      debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 6.3.5(@types/node@24.7.2)
@@ -2766,12 +2771,13 @@ snapshots:
       buffer-crc32: 1.0.0
       iconv-lite: 0.7.0
       semver: 7.7.3
-      zigbee-herdsman: 6.2.0
+      zigbee-herdsman: 6.3.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@6.2.0:
+  zigbee-herdsman@6.3.0:
     dependencies:
+      '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
       '@serialport/stream': 13.0.0
