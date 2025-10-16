@@ -329,7 +329,7 @@
 
 * Frontend: support filtering notifications ([#26805](https://github.com/Koenkk/zigbee2mqtt/issues/26805)) ([f872a51](https://github.com/Koenkk/zigbee2mqtt/commit/f872a5180c5618b7d3e7c0d11f1283a454dcbc6b))
 * Onboarding ([#26608](https://github.com/Koenkk/zigbee2mqtt/issues/26608)) ([05d6f08](https://github.com/Koenkk/zigbee2mqtt/commit/05d6f08a0dd6a5097b7d19b8de3b39e37e9a8533))
-* Support ZigBee on Host adapter ([#26742](https://github.com/Koenkk/zigbee2mqtt/issues/26742)) ([92955c0](https://github.com/Koenkk/zigbee2mqtt/commit/92955c02a4de09cbed79249db8bf0e6529423b93))
+* Support Zigbee on Host adapter ([#26742](https://github.com/Koenkk/zigbee2mqtt/issues/26742)) ([92955c0](https://github.com/Koenkk/zigbee2mqtt/commit/92955c02a4de09cbed79249db8bf0e6529423b93))
 * Use dynamic import for external JS ([#26522](https://github.com/Koenkk/zigbee2mqtt/issues/26522)) ([badf107](https://github.com/Koenkk/zigbee2mqtt/commit/badf1079919baa06f160a42c34e9f742a9b584c9))
 
 
