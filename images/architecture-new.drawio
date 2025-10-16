@@ -7,7 +7,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-1" target="AiRs1-JiV6ekzLb-Xg2S-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-76" value="ZigBee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-12" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-76" value="Zigbee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-12" vertex="1" connectable="0">
           <mxGeometry x="0.3" relative="1" as="geometry">
             <mxPoint y="30" as="offset" />
           </mxGeometry>
@@ -18,7 +18,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-2" target="AiRs1-JiV6ekzLb-Xg2S-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-72" value="ZigBee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-10" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-72" value="Zigbee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-10" vertex="1" connectable="0">
           <mxGeometry x="0.3" relative="1" as="geometry">
             <mxPoint y="-30" as="offset" />
           </mxGeometry>
@@ -29,7 +29,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-3" target="AiRs1-JiV6ekzLb-Xg2S-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-73" value="ZigBee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-11" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-73" value="Zigbee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-11" vertex="1" connectable="0">
           <mxGeometry x="-0.1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -42,7 +42,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-70" value="ZigBee Binding" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-68" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-70" value="Zigbee Binding" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-68" vertex="1" connectable="0">
           <mxGeometry x="0.1431" relative="1" as="geometry">
             <mxPoint y="60" as="offset" />
           </mxGeometry>
@@ -50,7 +50,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-69" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-3" target="AiRs1-JiV6ekzLb-Xg2S-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-71" value="ZigBee Binding" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-69" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-71" value="Zigbee Binding" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-69" vertex="1" connectable="0">
           <mxGeometry x="0.0914" relative="1" as="geometry">
             <mxPoint y="10" as="offset" />
           </mxGeometry>
@@ -61,7 +61,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-4" target="AiRs1-JiV6ekzLb-Xg2S-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-75" value="ZigBee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-13" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-75" value="Zigbee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-13" vertex="1" connectable="0">
           <mxGeometry x="-0.1" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -72,7 +72,7 @@
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-5" target="AiRs1-JiV6ekzLb-Xg2S-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-74" value="ZigBee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-14" vertex="1" connectable="0">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-74" value="Zigbee" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="AiRs1-JiV6ekzLb-Xg2S-14" vertex="1" connectable="0">
           <mxGeometry x="0.3" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -88,7 +88,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-6" value="&lt;div&gt;ZigBee&lt;/div&gt;&lt;div&gt;Coordinator&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;(zStack, EmberZNet...)&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=14;aspect=fixed;" parent="1" vertex="1">
+        <mxCell id="AiRs1-JiV6ekzLb-Xg2S-6" value="&lt;div&gt;Zigbee&lt;/div&gt;&lt;div&gt;Coordinator&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 12px;&quot;&gt;(zStack, EmberZNet...)&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=14;aspect=fixed;" parent="1" vertex="1">
           <mxGeometry x="1075" y="375" width="150" height="150" as="geometry" />
         </mxCell>
         <mxCell id="AiRs1-JiV6ekzLb-Xg2S-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="AiRs1-JiV6ekzLb-Xg2S-7" target="AiRs1-JiV6ekzLb-Xg2S-9" edge="1">
