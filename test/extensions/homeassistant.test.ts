@@ -1027,6 +1027,76 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover thermostat devices with read-only PI heating demand", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            default_entity_id: "sensor.thermostat_pi_heating_demand",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45550"],
+                manufacturer: "eCozy",
+                model: "Smart heating thermostat",
+                model_id: "1TST-EU",
+                name: "thermostat",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            entity_category: "diagnostic",
+            icon: "mdi:radiator",
+            name: "PI heating demand",
+            object_id: "thermostat_pi_heating_demand",
+            origin: origin,
+            state_topic: "zigbee2mqtt/thermostat",
+            unique_id: "0x0017880104e45550_pi_heating_demand_zigbee2mqtt",
+            unit_of_measurement: "%",
+            value_template: "{{ value_json.pi_heating_demand }}",
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x0017880104e45550/pi_heating_demand/config", stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+    });
+
+    it("Should discover thermostat devices with writable PI heating demand", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            command_topic: "zigbee2mqtt/bosch_radiator/set/pi_heating_demand",
+            default_entity_id: "number.bosch_radiator_pi_heating_demand",
+            device: {
+                identifiers: ["zigbee2mqtt_0x18fc2600000d7ae2"],
+                manufacturer: "Bosch",
+                model: "Radiator thermostat II",
+                model_id: "BTH-RA",
+                name: "bosch_radiator",
+                sw_version: "3.05.09",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            max: 100,
+            min: 0,
+            name: "PI heating demand",
+            object_id: "bosch_radiator_pi_heating_demand",
+            origin: origin,
+            state_topic: "zigbee2mqtt/bosch_radiator",
+            unique_id: "0x18fc2600000d7ae2_pi_heating_demand_zigbee2mqtt",
+            unit_of_measurement: "%",
+            value_template: "{{ value_json.pi_heating_demand }}",
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x18fc2600000d7ae2/pi_heating_demand/config", stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+    });
+
     it("Should discover Bosch BTH-RA with a compatibility mapping", () => {
         const payload = {
             action_template:
