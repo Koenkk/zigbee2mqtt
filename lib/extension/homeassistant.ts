@@ -736,7 +736,6 @@ export class HomeAssistant extends Extension {
                             },
                         };
                     }
-                    logger.error(`end result: ${JSON.stringify(discoveryEntry)}`, "Z2M.homeassistant");
 
                     discoveryEntries.push(<DiscoveryEntry>discoveryEntry);
                 }
