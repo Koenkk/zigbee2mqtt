@@ -725,6 +725,8 @@ export class HomeAssistant extends Extension {
                                 command_topic: true,
                                 command_topic_prefix: endpoint,
                                 command_topic_postfix: piHeatingDemand.property,
+                                min: piHeatingDemand.value_min,
+                                max: piHeatingDemand.value_max,
                             },
                         };
                     } else {

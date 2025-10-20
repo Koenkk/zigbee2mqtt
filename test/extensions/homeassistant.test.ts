@@ -1080,6 +1080,7 @@ describe("Extension: HomeAssistant", () => {
                 sw_version: "3.05.09",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
+            icon: "mdi:radiator",
             max: 100,
             min: 0,
             name: "PI heating demand",
