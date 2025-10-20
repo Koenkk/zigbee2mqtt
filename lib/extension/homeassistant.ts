@@ -740,6 +740,24 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(<DiscoveryEntry>discoveryEntry);
                 }
 
+                const piCoolingDemand = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "pi_cooling_demand");
+                if (piCoolingDemand) {
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: "sensor",
+                        object_id: endpoint ? /* v8 ignore next */ `${piCoolingDemand.name}_${endpoint}` : `${piCoolingDemand.name}`,
+                        mockProperties: [{property: piCoolingDemand.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* v8 ignore next */ `${piCoolingDemand.label} ${endpoint}` : piCoolingDemand.label,
+                            value_template: `{{ value_json.${piCoolingDemand.property} }}`,
+                            ...(piCoolingDemand.unit && {unit_of_measurement: piCoolingDemand.unit}),
+                            entity_category: "diagnostic",
+                            icon: "mdi:air-conditioner",
+                        },
+                    };
+
+                    discoveryEntries.push(discoveryEntry);
+                }
+
                 discoveryEntries.push(discoveryEntry);
                 break;
             }

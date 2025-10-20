@@ -3,7 +3,6 @@ import {defineConfig} from "vitest/config";
 export default defineConfig({
     plugins: [],
     test: {
-        globals: true,
         onConsoleLog(_log: string, _type: "stdout" | "stderr"): boolean | undefined {
             return false;
         },
