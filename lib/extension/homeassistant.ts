@@ -706,20 +706,32 @@ export class HomeAssistant extends Extension {
 
                 const piHeatingDemand = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "pi_heating_demand");
                 if (piHeatingDemand) {
-                    const discoveryEntry: DiscoveryEntry = {
-                        type: "sensor",
-                        object_id: endpoint ? /* v8 ignore next */ `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
+                    const discoveryEntry: Partial<DiscoveryEntry> = {
+                        object_id: endpoint ? `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
                         mockProperties: [{property: piHeatingDemand.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
+                            name: endpoint ? `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
                             value_template: `{{ value_json.${piHeatingDemand.property} }}`,
                             ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
-                            entity_category: "diagnostic",
                             icon: "mdi:radiator",
                         },
                     };
 
-                    discoveryEntries.push(discoveryEntry);
+                    assert(discoveryEntry.discovery_payload);
+
+                    if (piHeatingDemand.access & ACCESS_SET) {
+                        discoveryEntry.type = "number";
+                        discoveryEntry.discovery_payload.command_topic = true;
+                        discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+                        discoveryEntry.discovery_payload.command_topic_postfix = piHeatingDemand.property;
+                        discoveryEntry.discovery_payload.min = piHeatingDemand.value_min;
+                        discoveryEntry.discovery_payload.max = piHeatingDemand.value_max;
+                    } else {
+                        discoveryEntry.type = "sensor";
+                        discoveryEntry.discovery_payload.entity_category = "diagnostic";
+                    }
+
+                    discoveryEntries.push(<DiscoveryEntry>discoveryEntry);
                 }
 
                 const piCoolingDemand = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "pi_cooling_demand");
