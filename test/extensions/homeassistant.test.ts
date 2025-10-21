@@ -2458,7 +2458,12 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should discover devices with configuration url", async () => {
+    it.each([
+        // Windfront includes the instance ID in the URL.
+        ["zigbee2mqtt-windfront", "http://zigbee.mqtt/#/device/0/0x0017880104e45522/info"],
+        ["zigbee2mqtt-frontend", "http://zigbee.mqtt/#/device/0x0017880104e45522/info"],
+    ])("Should discover devices with configuration url (%s)", async (packageName: string, expectedUrl: string) => {
+        settings.set(["frontend", "package"], packageName);
         settings.set(["frontend", "url"], "http://zigbee.mqtt");
 
         await resetExtension();
@@ -2481,7 +2486,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
-                configuration_url: "http://zigbee.mqtt/#/device/0x0017880104e45522/info",
+                configuration_url: expectedUrl,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
