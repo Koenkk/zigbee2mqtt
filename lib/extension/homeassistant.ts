@@ -717,26 +717,18 @@ export class HomeAssistant extends Extension {
                         },
                     };
 
+                    assert(discoveryEntry.discovery_payload);
+
                     if (piHeatingDemand.access & ACCESS_SET) {
                         discoveryEntry.type = "number";
-                        discoveryEntry.discovery_payload = {
-                            ...discoveryEntry.discovery_payload,
-                            ...{
-                                command_topic: true,
-                                command_topic_prefix: endpoint,
-                                command_topic_postfix: piHeatingDemand.property,
-                                min: piHeatingDemand.value_min,
-                                max: piHeatingDemand.value_max,
-                            },
-                        };
+                        discoveryEntry.discovery_payload.command_topic = true;
+                        discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+                        discoveryEntry.discovery_payload.command_topic_postfix = piHeatingDemand.property;
+                        discoveryEntry.discovery_payload.min = piHeatingDemand.value_min;
+                        discoveryEntry.discovery_payload.max = piHeatingDemand.value_max;
                     } else {
                         discoveryEntry.type = "sensor";
-                        discoveryEntry.discovery_payload = {
-                            ...discoveryEntry.discovery_payload,
-                            ...{
-                                entity_category: "diagnostic",
-                            },
-                        };
+                        discoveryEntry.discovery_payload.entity_category = "diagnostic";
                     }
 
                     discoveryEntries.push(<DiscoveryEntry>discoveryEntry);
