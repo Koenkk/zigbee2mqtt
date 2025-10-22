@@ -1857,6 +1857,10 @@ export class HomeAssistant extends Extension {
         };
 
         const url = settings.get().frontend?.url ?? "";
+        // Since zigbee2mqtt-windfront support multiple instances the configuration URL contains the
+        // instance ID. Since we don't know which instance it is we always point to 0.
+        // https://github.com/Koenkk/zigbee2mqtt/issues/28936
+        const urlEntityPostfix = settings.get().frontend.package === "zigbee2mqtt-windfront" ? "0/" : "";
         if (entity.isDevice()) {
             assert(entity.definition, `Cannot 'getDevicePayload' for unsupported device`);
             payload.model = entity.definition.description;
@@ -1864,11 +1868,11 @@ export class HomeAssistant extends Extension {
             payload.manufacturer = entity.definition.vendor;
             payload.sw_version = entity.zh.softwareBuildID;
             payload.hw_version = entity.zh.hardwareVersion;
-            payload.configuration_url = `${url}/#/device/${entity.ieeeAddr}/info`;
+            payload.configuration_url = `${url}/#/device/${urlEntityPostfix}${entity.ieeeAddr}/info`;
         } else if (entity.isGroup()) {
             payload.model = "Group";
             payload.manufacturer = "Zigbee2MQTT";
-            payload.configuration_url = `${url}/#/group/${entity.ID}`;
+            payload.configuration_url = `${url}/#/group/${urlEntityPostfix}${entity.ID}`;
         } else {
             payload.model = "Bridge";
             payload.manufacturer = "Zigbee2MQTT";
