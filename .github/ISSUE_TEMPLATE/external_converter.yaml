@@ -3,6 +3,10 @@ description: Submit an external converter
 title: '[External Converter]: '
 labels: [external converter]
 body:
+    - type: markdown
+      attributes:
+          value: |
+            **IMPORTANT:** In case the external converter fully works, please consider submitting a [pull request](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_4-create-a-pull-request) instead.
     - type: input
       id: link
       attributes:
