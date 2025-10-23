@@ -1,4 +1,4 @@
-name: New Device Support Issue
+name: New Device Support/External Converter Issue Bot
 
 on:
   issues:
@@ -12,14 +12,16 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Comment on new device support issue
+      - name: Comment on new device support/external converter issue
         uses: actions/github-script@v8
         with:
           script: |
             const issue = context.payload.issue;
+            const newDeviceSupport = issue.title && issue.title.startsWith("[New device support]");
+            const externalConverter = issue.title && issue.title.startsWith("[External Converter]");
 
-            // Only proceed if the issue title starts with "[New device support]"
-            if (!issue.title || !issue.title.startsWith("[New device support]")) {
+            // Only proceed for new device support or external converter issues
+            if (!newDeviceSupport && !externalConverter) {
               return;
             }
 
