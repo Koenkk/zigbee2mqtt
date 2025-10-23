@@ -83,3 +83,11 @@ body:
           placeholder: Click here and drag the file into it or click on "Attach files by.." below
       validations:
           required: false
+    - type: textarea
+      id: notes
+      attributes:
+          label: Notes
+          description: Any additional information or context that might be helpful
+          placeholder: Add any relevant notes or context here
+      validations:
+          required: false

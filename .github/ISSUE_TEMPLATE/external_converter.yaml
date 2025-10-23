@@ -1,16 +1,8 @@
-name: New device support request
-description: Request support for a new device
-title: '[New device support]: '
-labels: [new device support]
+name: External converter
+description: Submit an external converter
+title: '[External Converter]: '
+labels: [external converter]
 body:
-    - type: markdown
-      attributes:
-          value: |
-              **IMPORTANT:** Before submitting:
-              - Make sure this device is not already supported in the dev branch by checking the [dev branch changelog](https://gist.github.com/Koenkk/bfd4c3d1725a2cccacc11d6ba51008ba#new-supported-devices)
-              - Make sure there is no existing issue or PR for this device already, search for your device here: https://github.com/Koenkk/zigbee2mqtt/issues
-              - Follow this [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html)
-              - If you are using the Home Assistant addon and are still on 1.18.1, check the first point of [this](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.19.0)
     - type: input
       id: link
       attributes:
@@ -38,9 +30,8 @@ body:
     - type: textarea
       id: external_definition
       attributes:
-          label: External definition
-          description: See [Creating the external definition](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_2-creating-the-external-definition)
-          render: shell
+          label: External converter
+          description: Code of the external converter, to retrieve in the Z2M frontend go to Settings -> Dev Console -> External Converters
       validations:
           required: true
     - type: textarea
