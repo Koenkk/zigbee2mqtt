@@ -40,7 +40,7 @@ body:
       attributes:
           label: External definition
           description: See [Creating the external definition](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_2-creating-the-external-definition)
-          render: shell
+          render: JavaScript
       validations:
           required: true
     - type: textarea
