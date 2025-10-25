@@ -36,6 +36,7 @@ body:
       attributes:
           label: External converter
           description: Code of the external converter, to retrieve in the Z2M frontend go to Settings -> Dev Console -> External Converters
+          render: JavaScript
       validations:
           required: true
     - type: textarea
