@@ -75,8 +75,8 @@ importers:
         specifier: 6.3.2
         version: 6.3.2
       zigbee-herdsman-converters:
-        specifier: 25.53.0
-        version: 25.53.0
+        specifier: 25.54.0
+        version: 25.54.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -673,10 +673,6 @@ packages:
 
   broker-factory@3.1.9:
     resolution: {integrity: sha512-MzvndyD6EcbkBtX4NXm/HfdO1+cOR5ONNdMCXEKfHpxGdMtuDz7+o+nJf7HMtyPH1sUVf/lEIP+DMluC5PgaBQ==}
-
-  buffer-crc32@1.0.0:
-    resolution: {integrity: sha512-Db1SbgBS/fg/392AblrMJk97KggmvYhr4pB5ZIMTWtaivCPMWLkmb7m21cJvpvgK+J3nsU2CmmixNBZx4vFj/w==}
-    engines: {node: '>=8.0.0'}
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
@@ -1473,8 +1469,9 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@25.53.0:
-    resolution: {integrity: sha512-0pW/fIpU/efP4FHp+LJnQz5zydNGCB8OVXIfhDyhKEgUTKpYeSLjn8Y0vHwP43PvDo87D0I5EN20SQTPJT9vrQ==}
+  zigbee-herdsman-converters@25.54.0:
+    resolution: {integrity: sha512-JMbf24y8quionuMxgfUJMXAoRZdjoXavdf+ohdpDEbV1u1P2fdXpwHLFConAREyT8a38K1V6+UhfGJXDexCY3w==}
+    engines: {node: '>=20.15.0'}
 
   zigbee-herdsman@6.3.2:
     resolution: {integrity: sha512-35qPU1KoADQrgIol/pWulVKRj8jFpuogtPWjisHSlss3dvzlj5yg5wBdw9/qpcDxNShtKMtj1K28io5KMmRsAw==}
@@ -1936,8 +1933,6 @@ snapshots:
       fast-unique-numbers: 9.0.23
       tslib: 2.8.1
       worker-factory: 7.0.45
-
-  buffer-crc32@1.0.0: {}
 
   buffer-from@1.1.2: {}
 
@@ -2766,9 +2761,8 @@ snapshots:
 
   ws@8.18.3: {}
 
-  zigbee-herdsman-converters@25.53.0:
+  zigbee-herdsman-converters@25.54.0:
     dependencies:
-      buffer-crc32: 1.0.0
       iconv-lite: 0.7.0
       semver: 7.7.3
       zigbee-herdsman: 6.3.2
