@@ -96,35 +96,35 @@ jobs:
                       return;
                     }
                 }
-            }
-
-            // Check if zigbee model is already supported.
-            const zigbeeModelRe = /zigbeeModel: \[['"](.+)['"]\]/g;
-            const zigbeeModels = Array.from(issue.body.matchAll(zigbeeModelRe), m => m[1]);
-            if (zigbeeModels.length > 0) {
-              for (const zigbeeModel of zigbeeModels) {
-                const fullMatch = (() => { try { return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' zhc`, {encoding: 'utf8'}); } catch { return undefined; } })();
-                if (fullMatch) {
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issue.number,
-                    body: [
-                      `👋 Hi there! The device with zigbee model \`${zigbeeModel}\` is already supported in the latest dev branch.`,
-                      "See this [guide](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html) on how to update, after updating you can remove your external converter.",
-                      "",
-                      "In case you created the external converter with the goal to extend or fix an issue with the out-of-the-box support, please submit a pull request.",
-                      "For instructions on how to create a pull request see the [docs](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_4-create-a-pull-request).",
-                      "If you need help with the process, feel free to ask here and we'll be happy to assist."
-                    ].join('\n')
-                  });
-                  await github.rest.issues.update({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: issue.number,
-                    state: "closed",
-                  });
-                  return;
+            } else {
+              // Check if zigbee model is already supported.
+              const zigbeeModelRe = /zigbeeModel: \[['"](.+)['"]\]/g;
+              const zigbeeModels = Array.from(issue.body.matchAll(zigbeeModelRe), m => m[1]);
+              if (zigbeeModels.length > 0) {
+                for (const zigbeeModel of zigbeeModels) {
+                  const fullMatch = (() => { try { return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' zhc`, {encoding: 'utf8'}); } catch { return undefined; } })();
+                  if (fullMatch) {
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      body: [
+                        `👋 Hi there! The device with zigbee model \`${zigbeeModel}\` is already supported in the latest dev branch.`,
+                        "See this [guide](https://www.zigbee2mqtt.io/advanced/more/switch-to-dev-branch.html) on how to update, after updating you can remove your external converter.",
+                        "",
+                        "In case you created the external converter with the goal to extend or fix an issue with the out-of-the-box support, please submit a pull request.",
+                        "For instructions on how to create a pull request see the [docs](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_4-create-a-pull-request).",
+                        "If you need help with the process, feel free to ask here and we'll be happy to assist."
+                      ].join('\n')
+                    });
+                    await github.rest.issues.update({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      state: "closed",
+                    });
+                    return;
+                  }
                 }
               }
             }
