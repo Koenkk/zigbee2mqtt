@@ -74,6 +74,10 @@ export default class OnEvent extends Extension {
             await device.definition.onEvent({type: "start", data: this.#getOnEventBaseData(device)});
         }
 
+        if (event.type === "start") {
+            this.#startCalled.add(device.ieeeAddr);
+        }
+
         await onEvent(event);
         await device.definition?.onEvent?.(event);
 
