@@ -69,13 +69,11 @@ export default class OnEvent extends Extension {
             return;
         }
 
-        if (event.type !== "start" && event.type !== "stop" && !this.#startCalled.has(device.ieeeAddr) && device.definition?.onEvent) {
-            this.#startCalled.add(device.ieeeAddr);
-            await device.definition.onEvent({type: "start", data: this.#getOnEventBaseData(device)});
-        }
-
         if (event.type === "start") {
             this.#startCalled.add(device.ieeeAddr);
+        } else if (event.type !== "stop" && !this.#startCalled.has(device.ieeeAddr) && device.definition?.onEvent) {
+            this.#startCalled.add(device.ieeeAddr);
+            await device.definition.onEvent({type: "start", data: this.#getOnEventBaseData(device)});
         }
 
         await onEvent(event);
