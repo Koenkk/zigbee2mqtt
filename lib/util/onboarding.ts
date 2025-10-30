@@ -146,6 +146,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     id="serial_rtscts"
                     name="serial_rtscts"
                     ${currentSettings.serial?.rtscts ? "checked" : ""}
+                    ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS ? "disabled" : ""}>
                     style="margin-bottom: 1rem;">
                 <small>Can be ignored for networked coordinators (TCP).</small>
             </fieldset>
@@ -272,8 +273,13 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                 <a href="https://www.zigbee2mqtt.io/guide/configuration/frontend.html" target="_blank">https://www.zigbee2mqtt.io/guide/configuration/frontend.html</a>
             </small>
             <fieldset ${process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT ? "disabled" : ""}>
-                <label for="homeassistant_enabled" ${process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED ? "disabled" : ""}>
-                    <input type="checkbox" id="homeassistant_enabled" name="homeassistant_enabled" ${currentSettings.homeassistant?.enabled ? "checked" : ""}>
+                <label for="homeassistant_enabled">
+                    <input
+                        type="checkbox"
+                        id="homeassistant_enabled"
+                        name="homeassistant_enabled"
+                        ${currentSettings.homeassistant?.enabled ? "checked" : ""}
+                        ${process.env.ZIGBEE2MQTT_CONFIG_HOMEASSISTANT_ENABLED ? "disabled" : ""}>
                     Home Assistant enabled?
                 </label>
             </fieldset>
