@@ -75,7 +75,7 @@
         "@types/node": "^24.9.1",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.22",
-        "@types/serve-static": "^1.15.10",
+        "@types/serve-static": "^2.2.0",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
         "tmp": "^0.2.5",
