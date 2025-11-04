@@ -1,0 +1,38 @@
+name: Issue Bot
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.issue.labels.*.name, 'new device support') ||
+      contains(github.event.issue.labels.*.name, 'external converter') ||
+      startsWith(github.event.issue.title, '[New device support]') ||
+      startsWith(github.event.issue.title, '[External Converter]')
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            scripts
+          path: z2m
+
+      - uses: actions/checkout@v5
+        with:
+          repository: Koenkk/zigbee-herdsman-converters
+          ref: master
+          fetch-depth: 1
+          path: zhc
+
+      - name: Comment on new device support/external converter issue
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const {newDeviceSupport} = await import("${{ github.workspace }}/z2m/scripts/issueBot.mjs")
+            await newDeviceSupport(github, core, context, "${{ github.workspace }}/zhc")
