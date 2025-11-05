@@ -4,7 +4,7 @@ FROM alpine:3.22 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apk add --no-cache tzdata eudev tini nodejs
+RUN apk add --no-cache tzdata eudev tini nodejs curl
 
 # Dependencies and build
 FROM base AS deps
@@ -51,6 +51,11 @@ RUN mkdir /app/data
 
 ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
+
+RUN curl --version || (echo "curl missing" && exit 1)
+
+HEALTHCHECK --interval=1m --timeout=3s \
+  CMD curl -f http://localhost:8080/ || exit 1
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
