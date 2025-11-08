@@ -1714,6 +1714,12 @@ export class HomeAssistant extends Extension {
                 }
             }
 
+            // Ensure deprecated color_mode field is not present when supported_color_modes is used
+            // This prevents Home Assistant from rejecting the discovery due to conflicting fields
+            if (payload.supported_color_modes && payload.color_mode === true) {
+                delete payload.color_mode;
+            }
+
             const topic = this.getDiscoveryTopic(config, entity);
             const payloadStr = stringify(payload);
             newDiscoveredTopics.add(topic);
