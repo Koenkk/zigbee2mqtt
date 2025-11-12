@@ -47,7 +47,7 @@ const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ["light", "switch", "lock",
 const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ["opening", "open", "forward", "up", "rising"];
 const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ["closing", "close", "backward", "back", "reverse", "down", "declining"];
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ["stopped", "stop", "pause", "paused"];
-const SWITCH_DIFFERENT: ReadonlyArray<string> = ["valve_detection", "window_detection", "auto_lock", "away_mode"];
+const SWITCH_DIFFERENT: ReadonlyArray<string> = ["valve_detection", "window_detection", "auto_lock", "away_mode", "window_open_mode"];
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
     auto_off: {icon: "mdi:flash-auto"},
@@ -103,6 +103,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     water_leak: {device_class: "moisture"},
     window: {device_class: "window"},
     window_detection: {icon: "mdi:window-open-variant"},
+    window_open_mode: {icon: "mdi:window-open-variant"},
     window_open: {device_class: "window"},
 } as const;
 const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
@@ -578,7 +579,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_on = state.value_on;
                     discoveryEntry.object_id = property;
 
-                    if (property === "window_detection") {
+                    if (property === "window_detection" || property === "window_open_mode") {
                         discoveryEntry.discovery_payload.icon = "mdi:window-open-variant";
                     }
                 }
