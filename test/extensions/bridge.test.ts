@@ -545,6 +545,7 @@ describe("Extension: Bridge", () => {
                                 property: "transition",
                                 type: "numeric",
                                 value_min: 0,
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -771,6 +772,7 @@ describe("Extension: Bridge", () => {
                                 property: "transition",
                                 type: "numeric",
                                 value_min: 0,
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -1883,6 +1885,7 @@ describe("Extension: Bridge", () => {
                                 property: "transition",
                                 type: "numeric",
                                 value_min: 0,
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -2149,6 +2152,7 @@ describe("Extension: Bridge", () => {
                                 property: "transition",
                                 type: "numeric",
                                 value_min: 0,
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
@@ -2583,6 +2587,7 @@ describe("Extension: Bridge", () => {
                                 property: "transition",
                                 type: "numeric",
                                 value_min: 0,
+                                value_step: 0.1,
                             },
                             {
                                 access: 2,
