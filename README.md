@@ -106,7 +106,7 @@ Zigbee2MQTT is made up of three modules, each developed in its own Github projec
 
 ### Developing
 
-Zigbee2MQTT uses TypeScript. Therefore after making changes to files in the `lib/` directory you need to recompile Zigbee2MQTT. This can be done by executing `pnpm run build`. For faster development instead of running `pnpm run build` you can run `pnpm run build-watch` in another terminal session, this will recompile as you change files.
+Zigbee2MQTT uses TypeScript. Therefore after making changes to files in the `lib/` directory you need to recompile Zigbee2MQTT. This can be done by executing `pnpm run build`. For faster development instead of running `pnpm run build` you can run `pnpm run build:watch` in another terminal session, this will recompile as you change files.
 
 Before running any of the commands, you'll first need to run `pnpm install --include=dev`.
 Before submitting changes run `pnpm run check:w` then `pnpm run test:coverage`.
