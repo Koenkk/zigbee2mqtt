@@ -3,8 +3,11 @@ import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import type {Events as ZHEvents} from "zigbee-herdsman";
 import {Controller} from "zigbee-herdsman";
+import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
 import type {StartResult} from "zigbee-herdsman/dist/adapter/tstype";
-
+import type {RawPayload} from "zigbee-herdsman/dist/controller/tstype";
+import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import type {GenericZdoResponse} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import Device from "./model/device";
 import Group from "./model/group";
 import data from "./util/data";
@@ -15,7 +18,7 @@ import utils from "./util/utils";
 const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
 
 export default class Zigbee {
-    private herdsman!: Controller;
+    #herdsman!: Controller;
     private eventBus: EventBus;
     private groupLookup = new Map<number /* group ID */, Group>();
     private deviceLookup = new Map<string /* IEEE address */, Device>();
@@ -23,6 +26,10 @@ export default class Zigbee {
 
     constructor(eventBus: EventBus) {
         this.eventBus = eventBus;
+    }
+
+    get zhController() {
+        return this.#herdsman;
     }
 
     async start(): Promise<StartResult> {
@@ -63,37 +70,37 @@ export default class Zigbee {
 
         let startResult: StartResult;
         try {
-            this.herdsman = new Controller(herdsmanSettings);
-            startResult = await this.herdsman.start();
+            this.#herdsman = new Controller(herdsmanSettings);
+            startResult = await this.#herdsman.start();
         } catch (error) {
             logger.error("Error while starting zigbee-herdsman");
             throw error;
         }
 
-        this.coordinatorIeeeAddr = this.herdsman.getDevicesByType("Coordinator")[0].ieeeAddr;
+        this.coordinatorIeeeAddr = this.#herdsman.getDevicesByType("Coordinator")[0].ieeeAddr;
         await this.resolveDevicesDefinitions();
 
-        this.herdsman.on("adapterDisconnected", () => this.eventBus.emitAdapterDisconnected());
-        this.herdsman.on("lastSeenChanged", (data: ZHEvents.LastSeenChangedPayload) => {
+        this.#herdsman.on("adapterDisconnected", () => this.eventBus.emitAdapterDisconnected());
+        this.#herdsman.on("lastSeenChanged", (data: ZHEvents.LastSeenChangedPayload) => {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             this.eventBus.emitLastSeenChanged({device: this.resolveDevice(data.device.ieeeAddr)!, reason: data.reason});
         });
-        this.herdsman.on("permitJoinChanged", (data: ZHEvents.PermitJoinChangedPayload) => {
+        this.#herdsman.on("permitJoinChanged", (data: ZHEvents.PermitJoinChangedPayload) => {
             this.eventBus.emitPermitJoinChanged(data);
         });
-        this.herdsman.on("deviceNetworkAddressChanged", (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
+        this.#herdsman.on("deviceNetworkAddressChanged", (data: ZHEvents.DeviceNetworkAddressChangedPayload) => {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' changed network address`);
             this.eventBus.emitDeviceNetworkAddressChanged({device});
         });
-        this.herdsman.on("deviceAnnounce", (data: ZHEvents.DeviceAnnouncePayload) => {
+        this.#herdsman.on("deviceAnnounce", (data: ZHEvents.DeviceAnnouncePayload) => {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             logger.debug(`Device '${device.name}' announced itself`);
             this.eventBus.emitDeviceAnnounce({device});
         });
-        this.herdsman.on("deviceInterview", async (data: ZHEvents.DeviceInterviewPayload) => {
+        this.#herdsman.on("deviceInterview", async (data: ZHEvents.DeviceInterviewPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
             /* v8 ignore next */ if (!device) return; // Prevent potential race
             await device.resolveDefinition();
@@ -101,19 +108,19 @@ export default class Zigbee {
             this.logDeviceInterview(d);
             this.eventBus.emitDeviceInterview(d);
         });
-        this.herdsman.on("deviceJoined", async (data: ZHEvents.DeviceJoinedPayload) => {
+        this.#herdsman.on("deviceJoined", async (data: ZHEvents.DeviceJoinedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
             /* v8 ignore next */ if (!device) return; // Prevent potential race
             await device.resolveDefinition();
             logger.info(`Device '${device.name}' joined`);
             this.eventBus.emitDeviceJoined({device});
         });
-        this.herdsman.on("deviceLeave", (data: ZHEvents.DeviceLeavePayload) => {
+        this.#herdsman.on("deviceLeave", (data: ZHEvents.DeviceLeavePayload) => {
             const name = settings.getDevice(data.ieeeAddr)?.friendly_name || data.ieeeAddr;
             logger.warning(`Device '${name}' left the network`);
             this.eventBus.emitDeviceLeave({ieeeAddr: data.ieeeAddr, name, device: this.deviceLookup.get(data.ieeeAddr)});
         });
-        this.herdsman.on("message", async (data: ZHEvents.MessagePayload) => {
+        this.#herdsman.on("message", async (data: ZHEvents.MessagePayload) => {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             const device = this.resolveDevice(data.device.ieeeAddr)!;
             await device.resolveDefinition();
@@ -129,7 +136,7 @@ export default class Zigbee {
 
         logger.info(`zigbee-herdsman started (${startResult})`);
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
-        logger.debug(`Zigbee network parameters: ${stringify(await this.herdsman.getNetworkParameters())}`);
+        logger.debug(`Zigbee network parameters: ${stringify(await this.#herdsman.getNetworkParameters())}`);
 
         for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             // If a passlist is used, all other device will be removed from the network.
@@ -198,39 +205,39 @@ export default class Zigbee {
     }
 
     async getCoordinatorVersion(): Promise<zh.CoordinatorVersion> {
-        return await this.herdsman.getCoordinatorVersion();
+        return await this.#herdsman.getCoordinatorVersion();
     }
 
     isStopping(): boolean {
-        return this.herdsman.isStopping();
+        return this.#herdsman.isStopping();
     }
 
     async backup(): Promise<void> {
-        return await this.herdsman.backup();
+        return await this.#herdsman.backup();
     }
 
     async coordinatorCheck(): Promise<{missingRouters: Device[]}> {
-        const check = await this.herdsman.coordinatorCheck();
+        const check = await this.#herdsman.coordinatorCheck();
         // biome-ignore lint/style/noNonNullAssertion: assumed valid
         return {missingRouters: check.missingRouters.map((d) => this.resolveDevice(d.ieeeAddr)!)};
     }
 
     async getNetworkParameters(): Promise<zh.NetworkParameters> {
-        return await this.herdsman.getNetworkParameters();
+        return await this.#herdsman.getNetworkParameters();
     }
 
     async stop(): Promise<void> {
         logger.info("Stopping zigbee-herdsman...");
-        await this.herdsman.stop();
+        await this.#herdsman.stop();
         logger.info("Stopped zigbee-herdsman");
     }
 
     getPermitJoin(): boolean {
-        return this.herdsman.getPermitJoin();
+        return this.#herdsman.getPermitJoin();
     }
 
     getPermitJoinEnd(): number | undefined {
-        return this.herdsman.getPermitJoinEnd();
+        return this.#herdsman.getPermitJoinEnd();
     }
 
     async permitJoin(time: number, device?: Device): Promise<void> {
@@ -240,7 +247,7 @@ export default class Zigbee {
             logger.info("Zigbee: disabling joining new devices.");
         }
 
-        await this.herdsman.permitJoin(time, device?.zh);
+        await this.#herdsman.permitJoin(time, device?.zh);
     }
 
     async resolveDevicesDefinitions(ignoreCache = false): Promise<void> {
@@ -251,7 +258,7 @@ export default class Zigbee {
 
     @bind private resolveDevice(ieeeAddr: string): Device | undefined {
         if (!this.deviceLookup.has(ieeeAddr)) {
-            const device = this.herdsman.getDeviceByIeeeAddr(ieeeAddr);
+            const device = this.#herdsman.getDeviceByIeeeAddr(ieeeAddr);
             if (device) {
                 this.deviceLookup.set(ieeeAddr, new Device(device));
             }
@@ -266,7 +273,7 @@ export default class Zigbee {
 
     private resolveGroup(groupID: number): Group | undefined {
         if (!this.groupLookup.has(groupID)) {
-            const group = this.herdsman.getGroupByID(groupID);
+            const group = this.#herdsman.getGroupByID(groupID);
 
             if (group) {
                 this.groupLookup.set(groupID, new Group(group, this.resolveDevice));
@@ -339,33 +346,33 @@ export default class Zigbee {
     }
 
     firstCoordinatorEndpoint(): zh.Endpoint {
-        return this.herdsman.getDevicesByType("Coordinator")[0].endpoints[0];
+        return this.#herdsman.getDevicesByType("Coordinator")[0].endpoints[0];
     }
 
     *devicesAndGroupsIterator(
         devicePredicate?: (value: zh.Device) => boolean,
         groupPredicate?: (value: zh.Group) => boolean,
     ): Generator<Device | Group> {
-        for (const device of this.herdsman.getDevicesIterator(devicePredicate)) {
+        for (const device of this.#herdsman.getDevicesIterator(devicePredicate)) {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveDevice(device.ieeeAddr)!;
         }
 
-        for (const group of this.herdsman.getGroupsIterator(groupPredicate)) {
+        for (const group of this.#herdsman.getGroupsIterator(groupPredicate)) {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveGroup(group.groupID)!;
         }
     }
 
     *groupsIterator(predicate?: (value: zh.Group) => boolean): Generator<Group> {
-        for (const group of this.herdsman.getGroupsIterator(predicate)) {
+        for (const group of this.#herdsman.getGroupsIterator(predicate)) {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveGroup(group.groupID)!;
         }
     }
 
     *devicesIterator(predicate?: (value: zh.Device) => boolean): Generator<Device> {
-        for (const device of this.herdsman.getDevicesIterator(predicate)) {
+        for (const device of this.#herdsman.getDevicesIterator(predicate)) {
             // biome-ignore lint/style/noNonNullAssertion: assumed valid
             yield this.resolveDevice(device.ieeeAddr)!;
         }
@@ -399,33 +406,37 @@ export default class Zigbee {
     }
 
     async touchlinkFactoryResetFirst(): Promise<boolean> {
-        return await this.herdsman.touchlinkFactoryResetFirst();
+        return await this.#herdsman.touchlink.factoryResetFirst();
     }
 
     async touchlinkFactoryReset(ieeeAddr: string, channel: number): Promise<boolean> {
-        return await this.herdsman.touchlinkFactoryReset(ieeeAddr, channel);
+        return await this.#herdsman.touchlink.factoryReset(ieeeAddr, channel);
     }
 
     async addInstallCode(installCode: string): Promise<void> {
-        await this.herdsman.addInstallCode(installCode);
+        await this.#herdsman.addInstallCode(installCode);
     }
 
     async touchlinkIdentify(ieeeAddr: string, channel: number): Promise<void> {
-        await this.herdsman.touchlinkIdentify(ieeeAddr, channel);
+        await this.#herdsman.touchlink.identify(ieeeAddr, channel);
     }
 
     async touchlinkScan(): Promise<{ieeeAddr: string; channel: number}[]> {
-        return await this.herdsman.touchlinkScan();
+        return await this.#herdsman.touchlink.scan();
+    }
+
+    async sendRaw(rawPayload: RawPayload, customClusters: CustomClusters = {}): Promise<GenericZdoResponse | ZclPayload | undefined> {
+        return await this.#herdsman.sendRaw(rawPayload, customClusters);
     }
 
     createGroup(id: number): Group {
-        this.herdsman.createGroup(id);
+        this.#herdsman.createGroup(id);
         // biome-ignore lint/style/noNonNullAssertion: just created
         return this.resolveGroup(id)!;
     }
 
     deviceByNetworkAddress(networkAddress: number): Device | undefined {
-        const device = this.herdsman.getDeviceByNetworkAddress(networkAddress);
+        const device = this.#herdsman.getDeviceByNetworkAddress(networkAddress);
         return device && this.resolveDevice(device.ieeeAddr);
     }
 
