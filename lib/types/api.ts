@@ -312,8 +312,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/definitions": {
         clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>;
         custom_clusters: Record<string, CustomClusters>;
-        raw_payloads: Record<string, zigbeeHerdsmanConverter.MqttRawPayload>;
-        raw_actions: string[];
+        actions: string[];
     };
 
     "bridge/event":
@@ -825,9 +824,9 @@ export interface Zigbee2MQTTAPI {
         channel: number;
     };
 
-    "bridge/request/raw": zigbeeHerdsmanConverter.MqttRawPayload | {action: string; params?: Record<string, unknown>};
+    "bridge/request/action": {action: string; params?: Record<string, unknown>};
 
-    "bridge/response/raw": GenericZdoResponse | ZclPayload | undefined;
+    "bridge/response/action": GenericZdoResponse | ZclPayload | undefined;
 
     /**
      * entity state response
@@ -915,7 +914,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/touchlink/factory_reset"
     | "bridge/request/touchlink/scan"
     | "bridge/request/touchlink/identify"
-    | "bridge/request/raw"
+    | "bridge/request/action"
     | "{friendlyNameOrId}/set"
     | "{friendlyNameOrId}/set/{attribute}"
     | "{friendlyNameOrId}/{endpoint}/set"
@@ -961,7 +960,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/touchlink/factory_reset"
     | "bridge/response/touchlink/scan"
     | "bridge/response/touchlink/identify"
-    | "bridge/response/raw";
+    | "bridge/response/action";
 
 export type Zigbee2MQTTRequest<T extends Zigbee2MQTTRequestEndpoints> = {
     transaction?: string;

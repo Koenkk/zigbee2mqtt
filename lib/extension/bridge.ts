@@ -7,7 +7,6 @@ import type winston from "winston";
 import Transport from "winston-transport";
 import {Zcl} from "zigbee-herdsman";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
-import type {RawPayload} from "zigbee-herdsman/dist/controller/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import type Group from "../model/group";
@@ -51,7 +50,7 @@ export default class Bridge extends Extension {
         health_check: this.healthCheck,
         coordinator_check: this.coordinatorCheck,
         options: this.bridgeOptions,
-        raw: this.raw,
+        action: this.action,
     };
 
     override async start(): Promise<void> {
@@ -556,50 +555,18 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {id: message.id, source});
     }
 
-    @bind async raw(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/raw">> {
-        if (typeof message !== "object") {
+    @bind async action(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/action">> {
+        if (typeof message !== "object" || !message.action) {
             throw new Error("Invalid payload");
         }
 
-        if (message.action) {
-            const action = zhc.QUICK_ACTIONS[message.action];
+        const action = zhc.ACTIONS[message.action];
 
-            if (action === undefined) {
-                throw new Error("Invalid action");
-            }
-
-            const response = await action(this.zigbee.zhController, message.params ?? {});
-
-            return utils.getResponse(message, response);
+        if (action === undefined) {
+            throw new Error("Invalid action");
         }
 
-        const rawPayload: RawPayload = {
-            ieeeAddress: message.ieee_address,
-            networkAddress: message.network_address,
-            groupId: message.group_id,
-            dstEndpoint: message.dst_endpoint,
-            srcEndpoint: message.src_endpoint,
-            interPan: message.interpan,
-            profileId: message.profile_id,
-            clusterKey: message.cluster_key,
-            zdoParams: message.zdo_params,
-            disableResponse: message.disable_response,
-            timeout: message.timeout,
-        };
-
-        if (message.zcl && typeof message.zcl === "object") {
-            rawPayload.zcl = {
-                frameType: message.zcl.frame_type,
-                direction: message.zcl.direction,
-                disableDefaultResponse: message.zcl.disable_default_response,
-                manufacturerCode: message.zcl.manufacturer_code,
-                tsn: message.zcl.tsn,
-                commandKey: message.zcl.command_key,
-                payload: message.zcl.payload,
-            };
-        }
-
-        const response = await this.zigbee.sendRaw(rawPayload);
+        const response = await action(this.zigbee.zhController, message.params ?? {});
 
         return utils.getResponse(message, response);
     }
@@ -862,8 +829,7 @@ export default class Bridge extends Extension {
         const data: Zigbee2MQTTAPI["bridge/definitions"] = {
             clusters: Zcl.Clusters,
             custom_clusters: {},
-            raw_payloads: zhc.RAW_PAYLOADS,
-            raw_actions: Object.keys(zhc.QUICK_ACTIONS),
+            actions: Object.keys(zhc.ACTIONS),
         };
 
         for (const device of this.zigbee.devicesIterator((d) => !utils.objectIsEmpty(d.customClusters))) {
