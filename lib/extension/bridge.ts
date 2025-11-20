@@ -582,7 +582,7 @@ export default class Bridge extends Extension {
             interPan: message.interpan,
             profileId: message.profile_id,
             clusterKey: message.cluster_key,
-            zdoArgs: message.zdo_args,
+            zdoParams: message.zdo_params,
             disableResponse: message.disable_response,
             timeout: message.timeout,
         };
