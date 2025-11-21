@@ -1,6 +1,6 @@
 {
     "name": "zigbee2mqtt",
-    "version": "2.6.3",
+    "version": "2.6.3-dev",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
@@ -44,7 +44,7 @@
     "dependencies": {
         "ajv": "^8.17.1",
         "bind-decorator": "^1.0.11",
-        "debounce": "^2.2.0",
+        "debounce": "^3.0.0",
         "express-static-gzip": "^3.0.0",
         "fast-deep-equal": "^3.1.3",
         "finalhandler": "^2.1.0",
@@ -62,17 +62,17 @@
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
         "ws": "^8.18.1",
-        "zigbee-herdsman": "6.3.2",
-        "zigbee-herdsman-converters": "25.59.0",
+        "zigbee-herdsman": "6.4.2",
+        "zigbee-herdsman-converters": "25.73.0",
         "zigbee2mqtt-frontend": "0.9.21",
         "zigbee2mqtt-windfront": "2.2.3"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.3.2",
+        "@biomejs/biome": "^2.3.4",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^24.9.2",
+        "@types/node": "^24.10.0",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.22",
         "@types/serve-static": "^2.2.0",
