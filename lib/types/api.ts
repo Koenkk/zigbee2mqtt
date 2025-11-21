@@ -722,6 +722,22 @@ export interface Zigbee2MQTTAPI {
         reportable_change: number;
     };
 
+    "bridge/request/device/read_reporting_config": {
+        id: string;
+        endpoint: string | number;
+        cluster: string | number;
+        configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
+        manufacturerCode?: number;
+    };
+
+    "bridge/response/device/read_reporting_config": {
+        id: string;
+        endpoint: string | number;
+        cluster: string | number;
+        configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
+        manufacturerCode?: number;
+    };
+
     "bridge/request/group/remove": {
         id: string;
         force?: boolean;
@@ -913,6 +929,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/options"
     | "bridge/request/device/rename"
     | "bridge/request/device/configure_reporting"
+    | "bridge/request/device/read_reporting_config"
     | "bridge/request/group/remove"
     | "bridge/request/group/add"
     | "bridge/request/group/rename"
@@ -959,6 +976,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/options"
     | "bridge/response/device/rename"
     | "bridge/response/device/configure_reporting"
+    | "bridge/response/device/read_reporting_config"
     | "bridge/response/group/remove"
     | "bridge/response/group/add"
     | "bridge/response/group/rename"

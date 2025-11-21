@@ -104,6 +104,7 @@ export class Endpoint {
     unbind: Mock;
     save: Mock;
     configureReporting: Mock;
+    readReportingConfig: Mock;
     meta: Record<string, unknown>;
     binds: ZHBind[];
     profileID: number | undefined;
@@ -138,6 +139,7 @@ export class Endpoint {
         this.unbind = vi.fn();
         this.save = vi.fn();
         this.configureReporting = vi.fn();
+        this.readReportingConfig = vi.fn();
         this.meta = meta;
         this.binds = binds;
         this.profileID = profileID;
@@ -218,6 +220,7 @@ export class Endpoint {
         this.unbind.mockClear();
         this.save.mockClear();
         this.configureReporting.mockClear();
+        this.readReportingConfig.mockClear();
         this.addToGroup.mockClear();
         this.removeFromGroup.mockClear();
         this.getClusterAttributeValue.mockClear();
