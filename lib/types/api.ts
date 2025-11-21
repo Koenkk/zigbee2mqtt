@@ -563,12 +563,12 @@ export interface Zigbee2MQTTAPI {
         failed: string[];
     };
 
-    "bridge/request/device/clear_binds": {
+    "bridge/request/device/binds/clear": {
         target: string;
         ieeeList?: Eui64[];
     };
 
-    "bridge/response/device/clear_binds": {
+    "bridge/response/device/binds/clear": {
         target: string;
         ieeeList?: Eui64[];
     };
@@ -914,7 +914,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/options"
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
-    | "bridge/request/device/clear_binds"
+    | "bridge/request/device/binds/clear"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -964,7 +964,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/options"
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
-    | "bridge/response/device/clear_binds"
+    | "bridge/response/device/binds/clear"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"

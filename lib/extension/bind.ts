@@ -184,7 +184,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Bind extends Extension {
-    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind|clear_binds)`);
+    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind|binds/clear)`);
     private pollDebouncers: {[s: string]: () => void} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -276,18 +276,18 @@ export default class Bind extends Extension {
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
-        if (data.topic.endsWith("clear_binds")) {
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/clear_binds"];
+        if (data.topic.endsWith("binds/clear")) {
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/binds/clear"];
 
             if (typeof message !== "object" || typeof message.target !== "string") {
-                await this.publishResponse("clear_binds", message, {}, "Invalid payload");
+                await this.publishResponse("binds/clear", message, {}, "Invalid payload");
                 return;
             }
 
             const target = this.zigbee.resolveEntity(message.target);
 
             if (!(target instanceof Device)) {
-                await this.publishResponse("clear_binds", message, {}, "Invalid target");
+                await this.publishResponse("binds/clear", message, {}, "Invalid target");
                 return;
             }
 
@@ -296,12 +296,12 @@ export default class Bind extends Extension {
 
             await target.zh.clearAllBindings(eui64List);
 
-            const responseData: Zigbee2MQTTAPI["bridge/response/device/clear_binds"] = {
+            const responseData: Zigbee2MQTTAPI["bridge/response/device/binds/clear"] = {
                 target: message.target,
                 ieeeList: eui64List,
             };
 
-            await this.publishResponse("clear_binds", message, responseData);
+            await this.publishResponse("binds/clear", message, responseData);
             this.eventBus.emitDevicesChanged();
             return;
         }
@@ -419,7 +419,7 @@ export default class Bind extends Extension {
     }
 
     private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
-        type: ParsedMQTTMessage["type"] | "clear_binds",
+        type: ParsedMQTTMessage["type"] | "binds/clear",
         request: KeyValue,
         data: Zigbee2MQTTAPI[T],
         error?: string,

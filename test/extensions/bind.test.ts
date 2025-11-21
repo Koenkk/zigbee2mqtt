@@ -800,12 +800,12 @@ describe("Extension: Bind", () => {
         const device = devices.remote;
 
         device.mockClear();
-        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({transaction: "1234", target: "remote"}));
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/clear", stringify({transaction: "1234", target: "remote"}));
         await flushPromises();
 
         expect(device.clearAllBindings).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/clear_binds",
+            "zigbee2mqtt/bridge/response/device/binds/clear",
             stringify({
                 transaction: "1234",
                 data: {
@@ -825,14 +825,14 @@ describe("Extension: Bind", () => {
 
         device.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/clear_binds",
+            "zigbee2mqtt/bridge/request/device/binds/clear",
             stringify({transaction: "1234", target: "remote", ieeeList: [target.ieeeAddr]}),
         );
         await flushPromises();
 
         expect(device.clearAllBindings).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/clear_binds",
+            "zigbee2mqtt/bridge/response/device/binds/clear",
             stringify({
                 transaction: "1234",
                 data: {
@@ -850,12 +850,12 @@ describe("Extension: Bind", () => {
         const device = devices.remote;
 
         device.mockClear();
-        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({targetz: "remote"}));
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/clear", stringify({targetz: "remote"}));
         await flushPromises();
 
         expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/clear_binds",
+            "zigbee2mqtt/bridge/response/device/binds/clear",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
             {},
         );
@@ -865,12 +865,12 @@ describe("Extension: Bind", () => {
         const device = devices.remote;
 
         device.mockClear();
-        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({target: "remotez"}));
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/clear", stringify({target: "remotez"}));
         await flushPromises();
 
         expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/clear_binds",
+            "zigbee2mqtt/bridge/response/device/binds/clear",
             stringify({data: {}, status: "error", error: "Invalid target"}),
             {},
         );
