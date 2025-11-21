@@ -3,11 +3,7 @@ import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import type {Events as ZHEvents} from "zigbee-herdsman";
 import {Controller} from "zigbee-herdsman";
-import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
 import type {StartResult} from "zigbee-herdsman/dist/adapter/tstype";
-import type {RawPayload} from "zigbee-herdsman/dist/controller/tstype";
-import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
-import type {GenericZdoResponse} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import Device from "./model/device";
 import Group from "./model/group";
 import data from "./util/data";
@@ -423,10 +419,6 @@ export default class Zigbee {
 
     async touchlinkScan(): Promise<{ieeeAddr: string; channel: number}[]> {
         return await this.#herdsman.touchlink.scan();
-    }
-
-    async sendRaw(rawPayload: RawPayload, customClusters: CustomClusters = {}): Promise<GenericZdoResponse | ZclPayload | undefined> {
-        return await this.#herdsman.sendRaw(rawPayload, customClusters);
     }
 
     createGroup(id: number): Group {
