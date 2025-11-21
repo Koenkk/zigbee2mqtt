@@ -1,5 +1,6 @@
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import type {RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
 import type {Base} from "zigbee-herdsman-converters/lib/exposes";
 
@@ -278,18 +279,21 @@ export interface Zigbee2MQTTNetworkMap {
     links: {
         source: {ieeeAddr: string; networkAddress: number};
         target: {ieeeAddr: string; networkAddress: number};
-        linkquality: number;
-        depth: number;
-        routes: {
-            destinationAddress: number;
-            status: string;
-            nextHop: number;
-        }[];
-        sourceIeeeAddr: string;
-        targetIeeeAddr: string;
-        sourceNwkAddr: number;
-        lqi: number;
+        deviceType: number;
+        rxOnWhenIdle: number;
         relationship: number;
+        permitJoining: number;
+        depth: number;
+        lqi: number;
+        routes: RoutingTableEntry[];
+        /** @deprecated 3.0 */
+        linkquality: number;
+        /** @deprecated 3.0 */
+        sourceIeeeAddr: string;
+        /** @deprecated 3.0 */
+        targetIeeeAddr: string;
+        /** @deprecated 3.0 */
+        sourceNwkAddr: number;
     }[];
 }
 

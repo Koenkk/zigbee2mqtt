@@ -164,6 +164,9 @@ describe("Extension: NetworkMap", () => {
                 value: {
                     links: [
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 120,
                             lqi: 120,
@@ -176,11 +179,14 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
                             relationship: 2,
-                            routes: [{destinationAddress: 6540, nextHop: 40369, status: "ACTIVE"}],
+                            routes: [{destinationAddress: 6540, nextHopAddress: 40369, status: "ACTIVE", ...ROUTING_BASE_RSP}],
                             source: {ieeeAddr: "0x000b57fffec6a5b2", networkAddress: 40369},
                             sourceIeeeAddr: "0x000b57fffec6a5b2",
                             sourceNwkAddr: 40369,
@@ -188,6 +194,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
@@ -200,6 +209,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 2,
                             linkquality: 110,
                             lqi: 110,
@@ -212,6 +224,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x000b57fffec6a5b2",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 2,
                             linkquality: 100,
                             lqi: 100,
@@ -224,6 +239,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x000b57fffec6a5b2",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 2,
                             linkquality: 130,
                             lqi: 130,
@@ -513,6 +531,9 @@ describe("Extension: NetworkMap", () => {
                 value: {
                     links: [
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 120,
                             lqi: 120,
@@ -525,11 +546,14 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
                             relationship: 2,
-                            routes: [{destinationAddress: 6540, nextHop: 40369, status: "ACTIVE"}],
+                            routes: [{destinationAddress: 6540, nextHopAddress: 40369, status: "ACTIVE", ...ROUTING_BASE_RSP}],
                             source: {ieeeAddr: "0x000b57fffec6a5b2", networkAddress: 40369},
                             sourceIeeeAddr: "0x000b57fffec6a5b2",
                             sourceNwkAddr: 40369,
@@ -537,6 +561,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
@@ -549,6 +576,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 2,
                             linkquality: 130,
                             lqi: 130,
@@ -670,6 +700,9 @@ describe("Extension: NetworkMap", () => {
                 value: {
                     links: [
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 120,
                             lqi: 120,
@@ -682,11 +715,14 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
                             relationship: 2,
-                            routes: [{destinationAddress: 6540, nextHop: 40369, status: "ACTIVE"}],
+                            routes: [{destinationAddress: 6540, nextHopAddress: 40369, status: "ACTIVE", ...ROUTING_BASE_RSP}],
                             source: {ieeeAddr: "0x000b57fffec6a5b2", networkAddress: 40369},
                             sourceIeeeAddr: "0x000b57fffec6a5b2",
                             sourceNwkAddr: 40369,
@@ -694,6 +730,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 1,
                             linkquality: 92,
                             lqi: 92,
@@ -706,6 +745,9 @@ describe("Extension: NetworkMap", () => {
                             targetIeeeAddr: "0x00124b00120144ae",
                         },
                         {
+                            deviceType: 0,
+                            rxOnWhenIdle: 0,
+                            permitJoining: 0,
                             depth: 2,
                             linkquality: 130,
                             lqi: 130,

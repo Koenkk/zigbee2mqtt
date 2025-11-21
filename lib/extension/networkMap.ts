@@ -282,40 +282,41 @@ export default class NetworkMap extends Extension {
                     continue;
                 }
 
+                let neighborEui64 = neighbor.eui64;
+
                 // Some Xiaomi devices return 0x00 as the neighbor ieeeAddr (obviously not correct).
                 // Determine the correct ieeeAddr based on the networkAddress.
-                if (neighbor.eui64 === "0x0000000000000000") {
+                if (neighborEui64 === "0x0000000000000000") {
                     const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.nwkAddress);
 
                     if (neighborDevice) {
-                        neighbor.eui64 = neighborDevice.ieeeAddr as Eui64;
+                        neighborEui64 = neighborDevice.ieeeAddr as Eui64;
                     }
                 }
 
                 const link: Zigbee2MQTTNetworkMap["links"][number] = {
-                    source: {ieeeAddr: neighbor.eui64, networkAddress: neighbor.nwkAddress},
+                    source: {ieeeAddr: neighborEui64, networkAddress: neighbor.nwkAddress},
                     target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
-                    linkquality: neighbor.lqi,
+                    deviceType: neighbor.deviceType,
+                    rxOnWhenIdle: neighbor.rxOnWhenIdle,
+                    relationship: neighbor.relationship,
+                    permitJoining: neighbor.permitJoining,
                     depth: neighbor.depth,
+                    lqi: neighbor.lqi,
                     routes: [],
-                    // DEPRECATED:
-                    sourceIeeeAddr: neighbor.eui64,
+                    // below are @deprecated
+                    sourceIeeeAddr: neighborEui64,
                     targetIeeeAddr: device.ieeeAddr,
                     sourceNwkAddr: neighbor.nwkAddress,
-                    lqi: neighbor.lqi,
-                    relationship: neighbor.relationship,
+                    linkquality: neighbor.lqi,
                 };
 
                 const routingTable = routingTables.get(device);
 
                 if (routingTable) {
                     for (const entry of routingTable) {
-                        if (entry.status === "ACTIVE" && entry.nextHopAddress === neighbor.nwkAddress) {
-                            link.routes.push({
-                                destinationAddress: entry.destinationAddress,
-                                status: entry.status,
-                                nextHop: entry.nextHopAddress,
-                            });
+                        if (entry.nextHopAddress === neighbor.nwkAddress) {
+                            link.routes.push(entry);
                         }
                     }
                 }
