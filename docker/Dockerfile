@@ -52,5 +52,8 @@ RUN mkdir /app/data
 ARG COMMIT
 RUN echo "$COMMIT" > dist/.hash
 
+# Expose the default frontend port (see lib/util/settings.ts defaults.frontend.port)
+EXPOSE 8080
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD [ "/sbin/tini", "--", "node", "index.js"]
