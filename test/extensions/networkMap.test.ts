@@ -1,5 +1,6 @@
 // biome-ignore assist/source/organizeImports: import mocks first
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
+import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
 import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
@@ -25,6 +26,22 @@ returnDevices.push(
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
+const LQI_BASE_RSP = {
+    extendedPanId: [],
+    deviceType: 0,
+    rxOnWhenIdle: 0,
+    reserved1: 0,
+    permitJoining: 0,
+    reserved2: 0,
+};
+
+const ROUTING_BASE_RSP = {
+    memoryConstrained: 0,
+    manyToOne: 0,
+    routeRecordRequired: 0,
+    reserved1: 0,
+};
+
 describe("Extension: NetworkMap", () => {
     let controller: Controller;
 
@@ -39,58 +56,62 @@ describe("Extension: NetworkMap", () => {
          *                    |  -> CC2530_ROUTER -> WXKG02LM_rev1
          *
          */
-        devices.coordinator.lqi.mockResolvedValueOnce({
-            neighbors: [
-                {
-                    ieeeAddr: devices.bulb_color.ieeeAddr,
-                    networkAddress: devices.bulb_color.networkAddress,
-                    relationship: 2,
-                    depth: 1,
-                    linkquality: 120,
-                },
-                {ieeeAddr: devices.bulb.ieeeAddr, networkAddress: devices.bulb.networkAddress, relationship: 2, depth: 1, linkquality: 92},
-                {
-                    ieeeAddr: devices.external_converter_device.ieeeAddr,
-                    networkAddress: devices.external_converter_device.networkAddress,
-                    relationship: 2,
-                    depth: 1,
-                    linkquality: 92,
-                },
-            ],
-        });
-        devices.coordinator.routingTable.mockResolvedValueOnce({
-            table: [{destinationAddress: devices.CC2530_ROUTER.networkAddress, status: "ACTIVE", nextHop: devices.bulb.networkAddress}],
-        });
-        devices.bulb.lqi.mockResolvedValueOnce({
-            neighbors: [
-                {
-                    ieeeAddr: devices.bulb_color.ieeeAddr,
-                    networkAddress: devices.bulb_color.networkAddress,
-                    relationship: 1,
-                    depth: 2,
-                    linkquality: 110,
-                },
-                {
-                    ieeeAddr: devices.CC2530_ROUTER.ieeeAddr,
-                    networkAddress: devices.CC2530_ROUTER.networkAddress,
-                    relationship: 1,
-                    depth: 2,
-                    linkquality: 100,
-                },
-            ],
-        });
-        devices.CC2530_ROUTER.lqi.mockResolvedValueOnce({
-            neighbors: [
-                {ieeeAddr: "0x0000000000000000", networkAddress: devices.WXKG02LM_rev1.networkAddress, relationship: 1, depth: 2, linkquality: 130},
-                {
-                    ieeeAddr: devices.bulb_color.ieeeAddr,
-                    networkAddress: devices.bulb_color.networkAddress,
-                    relationship: 4,
-                    depth: 2,
-                    linkquality: 130,
-                },
-            ],
-        });
+        devices.coordinator.lqi.mockResolvedValueOnce([
+            {
+                eui64: devices.bulb_color.ieeeAddr as Eui64,
+                nwkAddress: devices.bulb_color.networkAddress,
+                relationship: 2,
+                depth: 1,
+                lqi: 120,
+                ...LQI_BASE_RSP,
+            },
+            {eui64: devices.bulb.ieeeAddr as Eui64, nwkAddress: devices.bulb.networkAddress, relationship: 2, depth: 1, lqi: 92, ...LQI_BASE_RSP},
+            {
+                eui64: devices.external_converter_device.ieeeAddr as Eui64,
+                nwkAddress: devices.external_converter_device.networkAddress,
+                relationship: 2,
+                depth: 1,
+                lqi: 92,
+                ...LQI_BASE_RSP,
+            },
+        ]);
+        devices.coordinator.routingTable.mockResolvedValueOnce([
+            {
+                destinationAddress: devices.CC2530_ROUTER.networkAddress,
+                status: "ACTIVE",
+                nextHopAddress: devices.bulb.networkAddress,
+                ...ROUTING_BASE_RSP,
+            },
+        ]);
+        devices.bulb.lqi.mockResolvedValueOnce([
+            {
+                eui64: devices.bulb_color.ieeeAddr as Eui64,
+                nwkAddress: devices.bulb_color.networkAddress,
+                relationship: 1,
+                depth: 2,
+                lqi: 110,
+                ...LQI_BASE_RSP,
+            },
+            {
+                eui64: devices.CC2530_ROUTER.ieeeAddr as Eui64,
+                nwkAddress: devices.CC2530_ROUTER.networkAddress,
+                relationship: 1,
+                depth: 2,
+                lqi: 100,
+                ...LQI_BASE_RSP,
+            },
+        ]);
+        devices.CC2530_ROUTER.lqi.mockResolvedValueOnce([
+            {eui64: "0x0000000000000000", nwkAddress: devices.WXKG02LM_rev1.networkAddress, relationship: 1, depth: 2, lqi: 130, ...LQI_BASE_RSP},
+            {
+                eui64: devices.bulb_color.ieeeAddr as Eui64,
+                nwkAddress: devices.bulb_color.networkAddress,
+                relationship: 4,
+                depth: 2,
+                lqi: 130,
+                ...LQI_BASE_RSP,
+            },
+        ]);
         devices.unsupported_router.lqi.mockRejectedValueOnce("failed").mockRejectedValueOnce("failed");
         devices.unsupported_router.routingTable.mockRejectedValueOnce("failed").mockRejectedValueOnce("failed");
     };

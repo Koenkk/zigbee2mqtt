@@ -1,9 +1,9 @@
 import assert from "node:assert";
-import type {Mock} from "vitest";
+import {type Mock, vi} from "vitest";
 import type {AdapterTypes} from "zigbee-herdsman";
-
 import {Zcl} from "zigbee-herdsman";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+import type {BindingTableEntry, LQITableEntry, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 import type {EventHandler} from "./utils";
 
@@ -247,8 +247,10 @@ export class Device {
     lastSeen: number | undefined;
     isDeleted: boolean;
     linkquality?: number;
-    lqi: Mock;
-    routingTable: Mock;
+    lqi: Mock<() => Promise<LQITableEntry[]>>;
+    routingTable: Mock<() => Promise<RoutingTableEntry[]>>;
+    bindingTable: Mock<() => Promise<BindingTableEntry[]>>;
+    clearAllBindings: Mock<() => Promise<void>>;
 
     constructor(
         type: string,
@@ -285,8 +287,10 @@ export class Device {
         this.manufacturerName = manufacturerName;
         this.lastSeen = 1000;
         this.isDeleted = false;
-        this.lqi = vi.fn(() => ({neighbors: []}));
-        this.routingTable = vi.fn(() => ({table: []}));
+        this.lqi = vi.fn(() => Promise.resolve([] as LQITableEntry[]));
+        this.routingTable = vi.fn(() => Promise.resolve([] as RoutingTableEntry[]));
+        this.bindingTable = vi.fn(() => Promise.resolve([] as BindingTableEntry[]));
+        this.clearAllBindings = vi.fn(() => {});
     }
 
     getEndpoint(ID: number): Endpoint | undefined {
