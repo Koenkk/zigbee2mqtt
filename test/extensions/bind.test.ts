@@ -795,4 +795,84 @@ describe("Extension: Bind", () => {
         // Should only call Hue bulb, not e.g. tradfri
         expect(devices.bulb_2.getEndpoint(1)!.read).toHaveBeenCalledTimes(0);
     });
+
+    it("clears all bindings", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({transaction: "1234", target: "remote"}));
+        await flushPromises();
+
+        expect(device.clearAllBindings).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/clear_binds",
+            stringify({
+                transaction: "1234",
+                data: {
+                    target: "remote",
+                    ieeeList: ["0xffffffffffffffff"],
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("clears targeted bindings", async () => {
+        const device = devices.remote;
+        const target = devices.bulb_color;
+
+        device.mockClear();
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/clear_binds",
+            stringify({transaction: "1234", target: "remote", ieeeList: [target.ieeeAddr]}),
+        );
+        await flushPromises();
+
+        expect(device.clearAllBindings).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/clear_binds",
+            stringify({
+                transaction: "1234",
+                data: {
+                    target: "remote",
+                    ieeeList: [target.ieeeAddr],
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("throw on invalid clears bindings payload", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({targetz: "remote"}));
+        await flushPromises();
+
+        expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/clear_binds",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("throw on invalid clears bindings target", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/clear_binds", stringify({target: "remotez"}));
+        await flushPromises();
+
+        expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/clear_binds",
+            stringify({data: {}, status: "error", error: "Invalid target"}),
+            {},
+        );
+    });
 });

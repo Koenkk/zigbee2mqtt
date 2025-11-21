@@ -1,4 +1,5 @@
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
+import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import type {RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
@@ -562,6 +563,16 @@ export interface Zigbee2MQTTAPI {
         failed: string[];
     };
 
+    "bridge/request/device/clear_binds": {
+        target: string;
+        ieeeList?: Eui64[];
+    };
+
+    "bridge/response/device/clear_binds": {
+        target: string;
+        ieeeList?: Eui64[];
+    };
+
     "bridge/request/device/configure":
         | {
               id: string | number;
@@ -887,6 +898,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/options"
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
+    | "bridge/request/device/clear_binds"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -935,6 +947,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/options"
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
+    | "bridge/response/device/clear_binds"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"

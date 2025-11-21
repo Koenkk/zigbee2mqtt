@@ -184,7 +184,7 @@ interface ParsedMQTTMessage {
 }
 
 export default class Bind extends Extension {
-    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)`);
+    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind|clear_binds)`);
     private pollDebouncers: {[s: string]: () => void} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
@@ -276,6 +276,36 @@ export default class Bind extends Extension {
     }
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
+        if (data.topic.endsWith("clear_binds")) {
+            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/clear_binds"];
+
+            if (typeof message !== "object" || typeof message.target !== "string") {
+                await this.publishResponse("clear_binds", message, {}, "Invalid payload");
+                return;
+            }
+
+            const target = this.zigbee.resolveEntity(message.target);
+
+            if (!(target instanceof Device)) {
+                await this.publishResponse("clear_binds", message, {}, "Invalid target");
+                return;
+            }
+
+            // this list is raw (not resolved) to allow clearing any specific target (not only currently known)
+            const eui64List = message.ieeeList ?? ["0xffffffffffffffff"];
+
+            await target.zh.clearAllBindings(eui64List);
+
+            const responseData: Zigbee2MQTTAPI["bridge/response/device/clear_binds"] = {
+                target: message.target,
+                ieeeList: eui64List,
+            };
+
+            await this.publishResponse("clear_binds", message, responseData);
+            this.eventBus.emitDevicesChanged();
+            return;
+        }
+
         const [raw, parsed, error] = this.parseMQTTMessage(data);
 
         if (!raw || !parsed) {
@@ -389,7 +419,7 @@ export default class Bind extends Extension {
     }
 
     private async publishResponse<T extends Zigbee2MQTTResponseEndpoints>(
-        type: ParsedMQTTMessage["type"],
+        type: ParsedMQTTMessage["type"] | "clear_binds",
         request: KeyValue,
         data: Zigbee2MQTTAPI[T],
         error?: string,
