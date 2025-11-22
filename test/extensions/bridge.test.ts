@@ -3860,7 +3860,7 @@ describe("Extension: Bridge", () => {
         ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "0x000b57fffec6a5b2",
                 endpoint: 1,
@@ -3872,7 +3872,7 @@ describe("Extension: Bridge", () => {
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(1);
         expect(endpoint.readReportingConfig).toHaveBeenCalledWith("genLevelCtrl", [{attribute: "currentLevel"}], {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({
                 data: {
                     id: "0x000b57fffec6a5b2",
@@ -3915,7 +3915,7 @@ describe("Extension: Bridge", () => {
         ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "0x000b57fffec6a5b2",
                 endpoint: "1",
@@ -3927,7 +3927,7 @@ describe("Extension: Bridge", () => {
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(1);
         expect(endpoint.readReportingConfig).toHaveBeenCalledWith("genLevelCtrl", [{attribute: "currentLevel"}], {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({
                 data: {
                     id: "0x000b57fffec6a5b2",
@@ -3970,7 +3970,7 @@ describe("Extension: Bridge", () => {
         ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "0x000b57fffec6a5b2",
                 endpoint: 1,
@@ -3983,7 +3983,7 @@ describe("Extension: Bridge", () => {
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(1);
         expect(endpoint.readReportingConfig).toHaveBeenCalledWith("genLevelCtrl", [{attribute: "currentLevel"}], {manufacturerCode: 0x1234});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({
                 data: {
                     id: "0x000b57fffec6a5b2",
@@ -4015,7 +4015,7 @@ describe("Extension: Bridge", () => {
         endpoint.readReportingConfig.mockClear();
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "bulb",
                 // endpoint: '1',
@@ -4026,7 +4026,7 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
             {},
         );
@@ -4038,7 +4038,7 @@ describe("Extension: Bridge", () => {
         endpoint.readReportingConfig.mockClear();
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "non_existing_device",
                 endpoint: "1",
@@ -4049,7 +4049,7 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({data: {}, status: "error", error: "Device 'non_existing_device' does not exist"}),
             {},
         );
@@ -4061,7 +4061,7 @@ describe("Extension: Bridge", () => {
         endpoint.readReportingConfig.mockClear();
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
-            "zigbee2mqtt/bridge/request/device/read_reporting_config",
+            "zigbee2mqtt/bridge/request/device/reporting/read",
             stringify({
                 id: "0x000b57fffec6a5b2",
                 endpoint: "non_existing_endpoint",
@@ -4072,7 +4072,7 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/read_reporting_config",
+            "zigbee2mqtt/bridge/response/device/reporting/read",
             stringify({data: {}, status: "error", error: "Device '0x000b57fffec6a5b2' does not have endpoint 'non_existing_endpoint'"}),
             {},
         );
