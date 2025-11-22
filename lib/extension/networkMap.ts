@@ -1,7 +1,8 @@
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
+import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
+import type {LQITableEntry, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from "../types/api";
-
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import utils from "../util/utils";
@@ -185,8 +186,8 @@ export default class NetworkMap extends Extension {
 
     async networkScan(includeRoutes: boolean): Promise<Zigbee2MQTTNetworkMap> {
         logger.info(`Starting network scan (includeRoutes '${includeRoutes}')`);
-        const lqis = new Map<Device, zh.LQI>();
-        const routingTables = new Map<Device, zh.RoutingTable>();
+        const lqis = new Map<Device, LQITableEntry[]>();
+        const routingTables = new Map<Device, RoutingTableEntry[]>();
         const failed = new Map<Device, string[]>();
         const requestWithRetry = async <T>(request: () => Promise<T>): Promise<T> => {
             try {
@@ -210,7 +211,7 @@ export default class NetworkMap extends Extension {
             await utils.sleep(1); // sleep 1 second between each scan to reduce stress on network.
 
             try {
-                const result = await requestWithRetry<zh.LQI>(async () => await device.zh.lqi());
+                const result = await requestWithRetry<LQITableEntry[]>(async () => await device.zh.lqi());
                 lqis.set(device, result);
                 logger.debug(`LQI succeeded for '${device.name}'`);
             } catch (error) {
@@ -222,7 +223,7 @@ export default class NetworkMap extends Extension {
 
             if (includeRoutes) {
                 try {
-                    const result = await requestWithRetry<zh.RoutingTable>(async () => await device.zh.routingTable());
+                    const result = await requestWithRetry<RoutingTableEntry[]>(async () => await device.zh.routingTable());
                     routingTables.set(device, result);
                     logger.debug(`Routing table succeeded for '${device.name}'`);
                 } catch (error) {
@@ -274,42 +275,47 @@ export default class NetworkMap extends Extension {
         }
 
         // Add links
-        for (const [device, lqi] of lqis) {
-            for (const neighbor of lqi.neighbors) {
+        for (const [device, table] of lqis) {
+            for (const neighbor of table) {
                 if (neighbor.relationship > 3) {
                     // Relationship is not active, skip it
                     continue;
                 }
 
+                let neighborEui64 = neighbor.eui64;
+
                 // Some Xiaomi devices return 0x00 as the neighbor ieeeAddr (obviously not correct).
                 // Determine the correct ieeeAddr based on the networkAddress.
-                if (neighbor.ieeeAddr === "0x0000000000000000") {
-                    const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.networkAddress);
+                if (neighborEui64 === "0x0000000000000000") {
+                    const neighborDevice = this.zigbee.deviceByNetworkAddress(neighbor.nwkAddress);
 
                     if (neighborDevice) {
-                        neighbor.ieeeAddr = neighborDevice.ieeeAddr;
+                        neighborEui64 = neighborDevice.ieeeAddr as Eui64;
                     }
                 }
 
                 const link: Zigbee2MQTTNetworkMap["links"][number] = {
-                    source: {ieeeAddr: neighbor.ieeeAddr, networkAddress: neighbor.networkAddress},
+                    source: {ieeeAddr: neighborEui64, networkAddress: neighbor.nwkAddress},
                     target: {ieeeAddr: device.ieeeAddr, networkAddress: device.zh.networkAddress},
-                    linkquality: neighbor.linkquality,
-                    depth: neighbor.depth,
-                    routes: [],
-                    // DEPRECATED:
-                    sourceIeeeAddr: neighbor.ieeeAddr,
-                    targetIeeeAddr: device.ieeeAddr,
-                    sourceNwkAddr: neighbor.networkAddress,
-                    lqi: neighbor.linkquality,
+                    deviceType: neighbor.deviceType,
+                    rxOnWhenIdle: neighbor.rxOnWhenIdle,
                     relationship: neighbor.relationship,
+                    permitJoining: neighbor.permitJoining,
+                    depth: neighbor.depth,
+                    lqi: neighbor.lqi,
+                    routes: [],
+                    // below are @deprecated
+                    sourceIeeeAddr: neighborEui64,
+                    targetIeeeAddr: device.ieeeAddr,
+                    sourceNwkAddr: neighbor.nwkAddress,
+                    linkquality: neighbor.lqi,
                 };
 
                 const routingTable = routingTables.get(device);
 
                 if (routingTable) {
-                    for (const entry of routingTable.table) {
-                        if (entry.status === "ACTIVE" && entry.nextHop === neighbor.networkAddress) {
+                    for (const entry of routingTable) {
+                        if (entry.nextHopAddress === neighbor.nwkAddress) {
                             link.routes.push(entry);
                         }
                     }
