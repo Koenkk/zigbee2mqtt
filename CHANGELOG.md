@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.6.4](https://github.com/Koenkk/zigbee2mqtt/compare/2.6.3...2.6.4) (2025-11-22)
+
+
+### Bug Fixes
+
+* Add port 8080 `EXPOSE` to container ([#29754](https://github.com/Koenkk/zigbee2mqtt/issues/29754)) ([4c21b66](https://github.com/Koenkk/zigbee2mqtt/commit/4c21b660794ee3b85c9a9a6d01b0df5ec8bce639))
+* **ignore:** bump @biomejs/biome from 2.3.3 to 2.3.4 in the minor-patch group ([#29571](https://github.com/Koenkk/zigbee2mqtt/issues/29571)) ([517b286](https://github.com/Koenkk/zigbee2mqtt/commit/517b2865835a7c21b4c5ce68018fd30ae45d1a3f))
+* **ignore:** bump debounce from 2.2.0 to 3.0.0 ([#29444](https://github.com/Koenkk/zigbee2mqtt/issues/29444)) ([8099322](https://github.com/Koenkk/zigbee2mqtt/commit/8099322cc2e93e5c1faf355d41485f2c673e0cea))
+* **ignore:** bump the minor-patch group with 2 updates ([#29443](https://github.com/Koenkk/zigbee2mqtt/issues/29443)) ([619b939](https://github.com/Koenkk/zigbee2mqtt/commit/619b939b148394bd6a083c17cc5cf254c8eb3aea))
+* **ignore:** update zigbee-herdsman to 6.3.3 ([#29500](https://github.com/Koenkk/zigbee2mqtt/issues/29500)) ([39c5bc8](https://github.com/Koenkk/zigbee2mqtt/commit/39c5bc8c0446a7ccdffe6f82ae9e7f31f60f20ba))
+* **ignore:** update zigbee-herdsman to 6.4.0 ([#29522](https://github.com/Koenkk/zigbee2mqtt/issues/29522)) ([e788c52](https://github.com/Koenkk/zigbee2mqtt/commit/e788c520a9268498daf0f88d7bedb289546d226e))
+* **ignore:** update zigbee-herdsman to 6.4.1 ([#29595](https://github.com/Koenkk/zigbee2mqtt/issues/29595)) ([61c6ec6](https://github.com/Koenkk/zigbee2mqtt/commit/61c6ec611174529e4c041a56146ba8405cfe9ed8))
+* **ignore:** update zigbee-herdsman to 6.4.2 ([#29683](https://github.com/Koenkk/zigbee2mqtt/issues/29683)) ([53b7eaa](https://github.com/Koenkk/zigbee2mqtt/commit/53b7eaabf0647c8d1edb0de24b89776991af576c))
+* **ignore:** update zigbee-herdsman-converters to 25.60.0 ([#29426](https://github.com/Koenkk/zigbee2mqtt/issues/29426)) ([eeed56e](https://github.com/Koenkk/zigbee2mqtt/commit/eeed56ef2c01dfe67e7a0cd7cafd35ef1876f5b4))
+* **ignore:** update zigbee-herdsman-converters to 25.62.0 ([#29449](https://github.com/Koenkk/zigbee2mqtt/issues/29449)) ([ea1c5a8](https://github.com/Koenkk/zigbee2mqtt/commit/ea1c5a8f4e8537a2f8c59988bb712f62a0adffd7))
+* **ignore:** update zigbee-herdsman-converters to 25.63.0 ([#29482](https://github.com/Koenkk/zigbee2mqtt/issues/29482)) ([5a6a9cf](https://github.com/Koenkk/zigbee2mqtt/commit/5a6a9cf4d2de803a10cd38bc19f3ec256eff5929))
+* **ignore:** update zigbee-herdsman-converters to 25.64.0 ([#29499](https://github.com/Koenkk/zigbee2mqtt/issues/29499)) ([5c4e43f](https://github.com/Koenkk/zigbee2mqtt/commit/5c4e43fd109321ddcfad3a67b60423f0197c51a6))
+* **ignore:** update zigbee-herdsman-converters to 25.65.0 ([#29523](https://github.com/Koenkk/zigbee2mqtt/issues/29523)) ([8822aed](https://github.com/Koenkk/zigbee2mqtt/commit/8822aedb5e254f5be5f6cda0cfe18fc6f69c84d6))
+* **ignore:** update zigbee-herdsman-converters to 25.66.0 ([#29558](https://github.com/Koenkk/zigbee2mqtt/issues/29558)) ([940fff2](https://github.com/Koenkk/zigbee2mqtt/commit/940fff244c39da04d0de5d7e4076359dc6245aed))
+* **ignore:** update zigbee-herdsman-converters to 25.67.0 ([#29572](https://github.com/Koenkk/zigbee2mqtt/issues/29572)) ([4794b3c](https://github.com/Koenkk/zigbee2mqtt/commit/4794b3c81f9e38660f8549995b7f3ef8b4cd4318))
+* **ignore:** update zigbee-herdsman-converters to 25.68.0 ([#29606](https://github.com/Koenkk/zigbee2mqtt/issues/29606)) ([564e9ab](https://github.com/Koenkk/zigbee2mqtt/commit/564e9ab9eb49c3517913917af8b23d4758c6b6c7))
+* **ignore:** update zigbee-herdsman-converters to 25.69.0 ([#29659](https://github.com/Koenkk/zigbee2mqtt/issues/29659)) ([16d0e56](https://github.com/Koenkk/zigbee2mqtt/commit/16d0e5696859e79be4701154dd35f7780e47acae))
+* **ignore:** update zigbee-herdsman-converters to 25.70.0 ([#29684](https://github.com/Koenkk/zigbee2mqtt/issues/29684)) ([73225e2](https://github.com/Koenkk/zigbee2mqtt/commit/73225e2436bb56ff4ed47d787e8a1793fd10998d))
+* **ignore:** update zigbee-herdsman-converters to 25.71.0 ([#29716](https://github.com/Koenkk/zigbee2mqtt/issues/29716)) ([d6bf517](https://github.com/Koenkk/zigbee2mqtt/commit/d6bf5174be905128432e90d54b3c43c2a68e75ac))
+* **ignore:** update zigbee-herdsman-converters to 25.72.0 ([#29735](https://github.com/Koenkk/zigbee2mqtt/issues/29735)) ([7b7b988](https://github.com/Koenkk/zigbee2mqtt/commit/7b7b9889607a6e48001ae3cda5950386c24f5fd6))
+* **ignore:** update zigbee-herdsman-converters to 25.73.0 ([#29752](https://github.com/Koenkk/zigbee2mqtt/issues/29752)) ([be774a4](https://github.com/Koenkk/zigbee2mqtt/commit/be774a4d0d70122ced0f6ca79f49c060a7d2d2cb))
+
 ## [2.6.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.6.2...2.6.3) (2025-11-01)
 
 
