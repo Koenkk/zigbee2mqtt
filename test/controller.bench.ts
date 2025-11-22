@@ -1,7 +1,7 @@
 import {existsSync, mkdirSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
-import {bench, describe} from "vitest";
-import {Zcl, Zdo, ZSpec} from "zigbee-herdsman";
+import {bench, describe, vi} from "vitest";
+import {type Controller, Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
 import {Device, InterviewState} from "zigbee-herdsman/dist/controller/model/device";
@@ -13,6 +13,48 @@ import {Foundation} from "zigbee-herdsman/dist/zspec/zcl/definition/foundation";
 import type {RequestToResponseMap} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import data from "../lib/util/data";
 import {BENCH_OPTIONS} from "./benchOptions";
+
+vi.doMock("zigbee-herdsman", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("zigbee-herdsman")>();
+    class MockHerdsman {
+        on: Controller["on"] = vi.fn();
+        start: Controller["start"] = async () => "resumed" as const;
+        stop: Controller["stop"] = async () => {};
+        isStopping: Controller["isStopping"] = () => false;
+        getCoordinatorVersion: Controller["getCoordinatorVersion"] = async () =>
+            Promise.resolve({
+                type: "Dummy",
+                meta: {revision: "9.9.9"},
+            });
+        getNetworkParameters: Controller["getNetworkParameters"] = async () => Promise.resolve({...NETWORK_PARAMS});
+        getPermitJoin: Controller["getPermitJoin"] = () => false;
+        getPermitJoinEnd: Controller["getPermitJoinEnd"] = () => undefined;
+        getDeviceByIeeeAddr: Controller["getDeviceByIeeeAddr"] = (ieeeAddr) => ZH_DEVICES.find((device) => device.ieeeAddr === ieeeAddr);
+        getGroupByID: Controller["getGroupByID"] = (id) => ZH_GROUPS.find((group) => group.groupID === id);
+        getDevicesByType: Controller["getDevicesByType"] = (type) => ZH_DEVICES.filter((device) => device.type === type);
+        getDeviceByNetworkAddress: Controller["getDeviceByNetworkAddress"] = (networkAddress) =>
+            ZH_DEVICES.find((device) => device.networkAddress === networkAddress);
+        *getDevicesIterator(predicate: ((device: Device) => boolean) | undefined) {
+            for (const device of ZH_DEVICES) {
+                if (!predicate || predicate(device)) {
+                    yield device;
+                }
+            }
+        }
+        *getGroupsIterator(predicate: ((group: Group) => boolean) | undefined) {
+            for (const group of ZH_GROUPS) {
+                if (!predicate || predicate(group)) {
+                    yield group;
+                }
+            }
+        }
+    }
+
+    return {
+        ...actual,
+        Controller: MockHerdsman,
+    };
+});
 
 process.env.ZIGBEE2MQTT_DATA = "data-bench";
 data._testReload();
@@ -364,45 +406,6 @@ const initController = async () => {
         async () => {},
         async () => {},
     );
-
-    controller.zigbee.start = async () => {
-        await controller.zigbee.resolveDevicesDefinitions();
-
-        return "resumed";
-    };
-    controller.zigbee.stop = async () => {
-        await Promise.resolve();
-    };
-    // @ts-expect-error mocking private
-    controller.zigbee.herdsman = {
-        isStopping: () => false,
-        getCoordinatorVersion: async () =>
-            Promise.resolve({
-                type: "Dummy",
-                meta: {revision: "9.9.9"},
-            }),
-        getNetworkParameters: async () => Promise.resolve({...NETWORK_PARAMS}),
-        getPermitJoin: () => false,
-        getPermitJoinEnd: () => undefined,
-        getDeviceByIeeeAddr: (ieeeAddr) => ZH_DEVICES.find((device) => device.ieeeAddr === ieeeAddr),
-        getGroupByID: (id) => ZH_GROUPS.find((group) => group.groupID === id),
-        getDevicesByType: (type) => ZH_DEVICES.filter((device) => device.type === type),
-        getDeviceByNetworkAddress: (networkAddress) => ZH_DEVICES.find((device) => device.networkAddress === networkAddress),
-        *getDevicesIterator(predicate) {
-            for (const device of ZH_DEVICES) {
-                if (!predicate || predicate(device)) {
-                    yield device;
-                }
-            }
-        },
-        *getGroupsIterator(predicate) {
-            for (const group of ZH_GROUPS) {
-                if (!predicate || predicate(group)) {
-                    yield group;
-                }
-            }
-        },
-    };
 
     // all dummies, can trigger `controller.mqtt.onMessage(topic, message)` as needed
     // @ts-expect-error mocking private

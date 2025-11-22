@@ -488,9 +488,7 @@ export default class Bind extends Extension {
 
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
             for (const endpoint of device.zh.endpoints) {
-                for (const bind of endpoint.binds) {
-                    allBinds.push(bind);
-                }
+                allBinds.push(...endpoint.binds);
             }
         }
 

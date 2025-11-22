@@ -607,7 +607,7 @@ export function addGroup(name: string, id?: string): GroupOptions {
         id = "1";
 
         while (settings.groups[id]) {
-            id = (Number.parseInt(id) + 1).toString();
+            id = (Number.parseInt(id, 10) + 1).toString();
         }
     } else {
         // ensure provided ID is not in use

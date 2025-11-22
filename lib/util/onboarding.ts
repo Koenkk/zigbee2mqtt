@@ -488,7 +488,7 @@ async function startOnboardingServer(): Promise<boolean> {
             }
         });
 
-        server.listen(Number.parseInt(serverUrl.port), serverUrl.hostname, () => {
+        server.listen(Number.parseInt(serverUrl.port, 10), serverUrl.hostname, () => {
             console.log(`Onboarding page is available at ${serverUrl.href}`);
         });
     });
@@ -515,7 +515,7 @@ async function startFailureServer(errors: string): Promise<void> {
             }
         });
 
-        server.listen(Number.parseInt(serverUrl.port), serverUrl.hostname, () => {
+        server.listen(Number.parseInt(serverUrl.port, 10), serverUrl.hostname, () => {
             console.error(`Failure page is available at ${serverUrl.href}`);
         });
     });

@@ -1,5 +1,7 @@
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
+import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import type {GenericZdoResponse} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
 import type {Base} from "zigbee-herdsman-converters/lib/exposes";
 
@@ -310,6 +312,7 @@ export interface Zigbee2MQTTAPI {
     "bridge/definitions": {
         clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>;
         custom_clusters: Record<string, CustomClusters>;
+        actions: string[];
     };
 
     "bridge/event":
@@ -821,6 +824,10 @@ export interface Zigbee2MQTTAPI {
         channel: number;
     };
 
+    "bridge/request/action": {action: string; params?: Record<string, unknown>};
+
+    "bridge/response/action": GenericZdoResponse | ZclPayload | undefined;
+
     /**
      * entity state response
      */
@@ -907,6 +914,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/touchlink/factory_reset"
     | "bridge/request/touchlink/scan"
     | "bridge/request/touchlink/identify"
+    | "bridge/request/action"
     | "{friendlyNameOrId}/set"
     | "{friendlyNameOrId}/set/{attribute}"
     | "{friendlyNameOrId}/{endpoint}/set"
@@ -951,7 +959,8 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/group/members/remove_all"
     | "bridge/response/touchlink/factory_reset"
     | "bridge/response/touchlink/scan"
-    | "bridge/response/touchlink/identify";
+    | "bridge/response/touchlink/identify"
+    | "bridge/response/action";
 
 export type Zigbee2MQTTRequest<T extends Zigbee2MQTTRequestEndpoints> = {
     transaction?: string;
