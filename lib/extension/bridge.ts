@@ -537,7 +537,7 @@ export default class Bridge extends Extension {
             throw new Error(`Device '${device.ID}' does not have endpoint '${message.endpoint}'`);
         }
 
-        await endpoint.readReportingConfig(
+        const response = await endpoint.readReportingConfig(
             message.cluster,
             message.configs,
             message.manufacturerCode ? {manufacturerCode: message.manufacturerCode} : {},
@@ -549,7 +549,7 @@ export default class Bridge extends Extension {
             id: message.id,
             endpoint: message.endpoint,
             cluster: message.cluster,
-            configs: message.configs,
+            configs: response,
         };
 
         if (message.manufacturerCode) {

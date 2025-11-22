@@ -734,7 +734,7 @@ export interface Zigbee2MQTTAPI {
         id: string;
         endpoint: string | number;
         cluster: string | number;
-        configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
+        configs: zigbeeHerdsman.Zcl.ClustersTypes.TFoundation["readReportConfigRsp"];
         manufacturerCode?: number;
     };
 

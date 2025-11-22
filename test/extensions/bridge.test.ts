@@ -17,6 +17,7 @@ import {Controller} from "../../lib/controller";
 import Bridge from "../../lib/extension/bridge";
 import * as settings from "../../lib/util/settings";
 import utils, {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
+import {Zcl} from "zigbee-herdsman";
 
 returnDevices.push(devices.coordinator.ieeeAddr);
 returnDevices.push(devices.bulb.ieeeAddr);
@@ -3846,6 +3847,17 @@ describe("Extension: Bridge", () => {
         const endpoint = device.getEndpoint(1)!;
         endpoint.bind.mockClear();
         endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockResolvedValueOnce([
+            {
+                status: Zcl.Status.SUCCESS,
+                direction: Zcl.Direction.CLIENT_TO_SERVER,
+                attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                dataType: Zcl.DataType.UINT8,
+                minRepIntval: 10,
+                maxRepIntval: 60,
+                repChange: 2,
+            },
+        ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
             "zigbee2mqtt/bridge/request/device/read_reporting_config",
@@ -3866,7 +3878,17 @@ describe("Extension: Bridge", () => {
                     id: "0x000b57fffec6a5b2",
                     endpoint: 1,
                     cluster: "genLevelCtrl",
-                    configs: [{attribute: "currentLevel"}],
+                    configs: [
+                        {
+                            status: Zcl.Status.SUCCESS,
+                            direction: Zcl.Direction.CLIENT_TO_SERVER,
+                            attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                            dataType: Zcl.DataType.UINT8,
+                            minRepIntval: 10,
+                            maxRepIntval: 60,
+                            repChange: 2,
+                        },
+                    ],
                 },
                 status: "ok",
             }),
@@ -3880,6 +3902,17 @@ describe("Extension: Bridge", () => {
         const endpoint = device.getEndpoint(1)!;
         endpoint.bind.mockClear();
         endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockResolvedValueOnce([
+            {
+                status: Zcl.Status.SUCCESS,
+                direction: Zcl.Direction.CLIENT_TO_SERVER,
+                attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                dataType: Zcl.DataType.UINT8,
+                minRepIntval: 10,
+                maxRepIntval: 60,
+                repChange: 2,
+            },
+        ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
             "zigbee2mqtt/bridge/request/device/read_reporting_config",
@@ -3900,7 +3933,17 @@ describe("Extension: Bridge", () => {
                     id: "0x000b57fffec6a5b2",
                     endpoint: "1",
                     cluster: "genLevelCtrl",
-                    configs: [{attribute: "currentLevel"}],
+                    configs: [
+                        {
+                            status: Zcl.Status.SUCCESS,
+                            direction: Zcl.Direction.CLIENT_TO_SERVER,
+                            attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                            dataType: Zcl.DataType.UINT8,
+                            minRepIntval: 10,
+                            maxRepIntval: 60,
+                            repChange: 2,
+                        },
+                    ],
                 },
                 status: "ok",
             }),
@@ -3914,6 +3957,17 @@ describe("Extension: Bridge", () => {
         const endpoint = device.getEndpoint(1)!;
         endpoint.bind.mockClear();
         endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockResolvedValueOnce([
+            {
+                status: Zcl.Status.SUCCESS,
+                direction: Zcl.Direction.CLIENT_TO_SERVER,
+                attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                dataType: Zcl.DataType.UINT8,
+                minRepIntval: 10,
+                maxRepIntval: 60,
+                repChange: 2,
+            },
+        ]);
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message(
             "zigbee2mqtt/bridge/request/device/read_reporting_config",
@@ -3935,7 +3989,17 @@ describe("Extension: Bridge", () => {
                     id: "0x000b57fffec6a5b2",
                     endpoint: 1,
                     cluster: "genLevelCtrl",
-                    configs: [{attribute: "currentLevel"}],
+                    configs: [
+                        {
+                            status: Zcl.Status.SUCCESS,
+                            direction: Zcl.Direction.CLIENT_TO_SERVER,
+                            attrId: Zcl.Clusters.genLevelCtrl.attributes.currentLevel.ID,
+                            dataType: Zcl.DataType.UINT8,
+                            minRepIntval: 10,
+                            maxRepIntval: 60,
+                            repChange: 2,
+                        },
+                    ],
                     manufacturerCode: 0x1234,
                 },
                 status: "ok",
