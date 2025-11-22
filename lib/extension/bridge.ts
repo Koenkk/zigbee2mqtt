@@ -32,7 +32,7 @@ export default class Bridge extends Extension {
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<Zigbee2MQTTResponse<Zigbee2MQTTResponseEndpoints>>} = {
         "device/options": this.deviceOptions,
         "device/configure_reporting": this.deviceConfigureReporting,
-        "device/read_reporting_config": this.deviceReadReportingConfig,
+        "device/reporting_config/read": this.deviceReportingConfigRead,
         "device/remove": this.deviceRemove,
         "device/interview": this.deviceInterview,
         "device/generate_external_definition": this.deviceGenerateExternalDefinition,
@@ -519,7 +519,7 @@ export default class Bridge extends Extension {
         });
     }
 
-    @bind async deviceReadReportingConfig(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/read_reporting_config">> {
+    @bind async deviceReportingConfigRead(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting_config/read">> {
         if (
             typeof message !== "object" ||
             message.id === undefined ||
@@ -545,7 +545,7 @@ export default class Bridge extends Extension {
 
         await this.publishDevices();
 
-        const responseData: Zigbee2MQTTAPI["bridge/response/device/read_reporting_config"] = {
+        const responseData: Zigbee2MQTTAPI["bridge/response/device/reporting_config/read"] = {
             id: message.id,
             endpoint: message.endpoint,
             cluster: message.cluster,
