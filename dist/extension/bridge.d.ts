@@ -40,7 +40,8 @@ export default class Bridge extends Extension {
      * Utils
      */
     changeEntityOptions<T extends "device" | "group">(entityType: T, message: KeyValue | string): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/options" : "bridge/response/group/options">>;
-    deviceConfigureReporting(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/configure_reporting">>;
+    deviceReportingConfigure(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/configure">>;
+    deviceReportingRead(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/read">>;
     deviceInterview(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/interview">>;
     deviceGenerateExternalDefinition(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/generate_external_definition">>;
     renameEntity<T extends "device" | "group">(entityType: T, message: string | KeyValue): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/rename" : "bridge/response/group/rename">>;
