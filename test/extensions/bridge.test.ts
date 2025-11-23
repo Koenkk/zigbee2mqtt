@@ -3538,11 +3538,11 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to touchlink factory reset (succeeds)", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkFactoryResetFirst.mockClear();
-        mockZHController.touchlinkFactoryResetFirst.mockReturnValueOnce(true);
+        mockZHController.touchlink.factoryResetFirst.mockClear();
+        mockZHController.touchlink.factoryResetFirst.mockReturnValueOnce(true);
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/factory_reset", "");
         await flushPromises();
-        expect(mockZHController.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
+        expect(mockZHController.touchlink.factoryResetFirst).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/factory_reset",
             stringify({data: {}, status: "ok"}),
@@ -3552,12 +3552,12 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to touchlink factory reset specific device", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkFactoryReset.mockClear();
-        mockZHController.touchlinkFactoryReset.mockReturnValueOnce(true);
+        mockZHController.touchlink.factoryReset.mockClear();
+        mockZHController.touchlink.factoryReset.mockReturnValueOnce(true);
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/factory_reset", stringify({ieee_address: "0x1239", channel: 12}));
         await flushPromises();
-        expect(mockZHController.touchlinkFactoryReset).toHaveBeenCalledTimes(1);
-        expect(mockZHController.touchlinkFactoryReset).toHaveBeenCalledWith("0x1239", 12);
+        expect(mockZHController.touchlink.factoryReset).toHaveBeenCalledTimes(1);
+        expect(mockZHController.touchlink.factoryReset).toHaveBeenCalledWith("0x1239", 12);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/factory_reset",
             stringify({data: {ieee_address: "0x1239", channel: 12}, status: "ok"}),
@@ -3608,11 +3608,11 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to touchlink identify specific device", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkIdentify.mockClear();
+        mockZHController.touchlink.identify.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/identify", stringify({ieee_address: "0x1239", channel: 12}));
         await flushPromises();
-        expect(mockZHController.touchlinkIdentify).toHaveBeenCalledTimes(1);
-        expect(mockZHController.touchlinkIdentify).toHaveBeenCalledWith("0x1239", 12);
+        expect(mockZHController.touchlink.identify).toHaveBeenCalledTimes(1);
+        expect(mockZHController.touchlink.identify).toHaveBeenCalledWith("0x1239", 12);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/identify",
             stringify({data: {ieee_address: "0x1239", channel: 12}, status: "ok"}),
@@ -3622,10 +3622,10 @@ describe("Extension: Bridge", () => {
 
     it("Touchlink identify fails when payload is invalid", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkIdentify.mockClear();
+        mockZHController.touchlink.identify.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/identify", stringify({ieee_address: "0x1239"}));
         await flushPromises();
-        expect(mockZHController.touchlinkIdentify).toHaveBeenCalledTimes(0);
+        expect(mockZHController.touchlink.identify).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/identify",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
@@ -3635,11 +3635,11 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to touchlink factory reset (fails)", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkFactoryResetFirst.mockClear();
-        mockZHController.touchlinkFactoryResetFirst.mockReturnValueOnce(false);
+        mockZHController.touchlink.factoryResetFirst.mockClear();
+        mockZHController.touchlink.factoryResetFirst.mockReturnValueOnce(false);
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/factory_reset", "");
         await flushPromises();
-        expect(mockZHController.touchlinkFactoryResetFirst).toHaveBeenCalledTimes(1);
+        expect(mockZHController.touchlink.factoryResetFirst).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/factory_reset",
             stringify({data: {}, status: "error", error: "Failed to factory reset device through Touchlink"}),
@@ -3649,14 +3649,14 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to touchlink scan", async () => {
         mockMQTTPublishAsync.mockClear();
-        mockZHController.touchlinkScan.mockClear();
-        mockZHController.touchlinkScan.mockReturnValueOnce([
+        mockZHController.touchlink.scan.mockClear();
+        mockZHController.touchlink.scan.mockReturnValueOnce([
             {ieeeAddr: "0x123", channel: 12},
             {ieeeAddr: "0x124", channel: 24},
         ]);
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/touchlink/scan", "");
         await flushPromises();
-        expect(mockZHController.touchlinkScan).toHaveBeenCalledTimes(1);
+        expect(mockZHController.touchlink.scan).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/touchlink/scan",
             stringify({

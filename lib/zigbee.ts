@@ -399,11 +399,11 @@ export default class Zigbee {
     }
 
     async touchlinkFactoryResetFirst(): Promise<boolean> {
-        return await this.herdsman.touchlinkFactoryResetFirst();
+        return await this.herdsman.touchlink.factoryResetFirst();
     }
 
     async touchlinkFactoryReset(ieeeAddr: string, channel: number): Promise<boolean> {
-        return await this.herdsman.touchlinkFactoryReset(ieeeAddr, channel);
+        return await this.herdsman.touchlink.factoryReset(ieeeAddr, channel);
     }
 
     async addInstallCode(installCode: string): Promise<void> {
@@ -411,11 +411,11 @@ export default class Zigbee {
     }
 
     async touchlinkIdentify(ieeeAddr: string, channel: number): Promise<void> {
-        await this.herdsman.touchlinkIdentify(ieeeAddr, channel);
+        await this.herdsman.touchlink.identify(ieeeAddr, channel);
     }
 
     async touchlinkScan(): Promise<{ieeeAddr: string; channel: number}[]> {
-        return await this.herdsman.touchlinkScan();
+        return await this.herdsman.touchlink.scan();
     }
 
     createGroup(id: number): Group {
