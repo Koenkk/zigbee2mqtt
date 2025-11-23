@@ -469,7 +469,7 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID, restart_required: this.restartRequired});
     }
 
-    @bind async deviceReportingConfigure(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/configure_reporting">> {
+    @bind async deviceReportingConfigure(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/configure">> {
         if (
             typeof message !== "object" ||
             message.id === undefined ||

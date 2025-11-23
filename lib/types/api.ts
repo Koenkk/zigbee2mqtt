@@ -701,7 +701,7 @@ export interface Zigbee2MQTTAPI {
         homeassistant_rename: boolean;
     };
 
-    "bridge/request/device/configure_reporting": {
+    "bridge/request/device/reporting/configure": {
         id: string;
         endpoint: string | number;
         cluster: string | number;
@@ -712,7 +712,7 @@ export interface Zigbee2MQTTAPI {
         option: Record<string, unknown>;
     };
 
-    "bridge/response/device/configure_reporting": {
+    "bridge/response/device/reporting/configure": {
         id: string;
         endpoint: string | number;
         cluster: string | number;
@@ -928,7 +928,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/generate_external_definition"
     | "bridge/request/device/options"
     | "bridge/request/device/rename"
-    | "bridge/request/device/configure_reporting"
+    | "bridge/request/device/reporting/configure"
     | "bridge/request/device/reporting/read"
     | "bridge/request/group/remove"
     | "bridge/request/group/add"
@@ -975,7 +975,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/generate_external_definition"
     | "bridge/response/device/options"
     | "bridge/response/device/rename"
-    | "bridge/response/device/configure_reporting"
+    | "bridge/response/device/reporting/configure"
     | "bridge/response/device/reporting/read"
     | "bridge/response/group/remove"
     | "bridge/response/group/add"
