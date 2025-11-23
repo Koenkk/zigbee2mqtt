@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import {execSync} from "node:child_process";
 
 export async function newDeviceSupport(github, _core, context, zhcDir) {
     const issue = context.payload.issue;
@@ -29,7 +29,7 @@ export async function newDeviceSupport(github, _core, context, zhcDir) {
         for (const [fullName, partialName] of tuyaManufacturerNames) {
             const fullMatch = (() => {
                 try {
-                    return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, { encoding: "utf8" });
+                    return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, {encoding: "utf8"});
                 } catch {
                     return undefined;
                 }
@@ -60,7 +60,7 @@ If you need help with the process, feel free to ask here and we'll be happy to a
 
             const partialMatch = (() => {
                 try {
-                    return execSync(`grep -r --include="*.ts" "${partialName}" "${zhcDir}"`, { encoding: "utf8" });
+                    return execSync(`grep -r --include="*.ts" "${partialName}" "${zhcDir}"`, {encoding: "utf8"});
                 } catch {
                     return undefined;
                 }
@@ -95,7 +95,7 @@ Let us know if it works so we can support this device out-of-the-box!`,
             for (const zigbeeModel of zigbeeModels) {
                 const fullMatch = (() => {
                     try {
-                        return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, { encoding: "utf8" });
+                        return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, {encoding: "utf8"});
                     } catch {
                         return undefined;
                     }
@@ -138,10 +138,11 @@ In case all features work, please submit a pull request on this repository so th
 For instructions on how to create a pull request see the [docs](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_4-create-a-pull-request).
 
 If **NOT** all features work, please follow the [How To Support new devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html).
-${tuyaManufacturerNames.length > 0
-                ? "Since this is a Tuya also consider [How To Support new Tuya devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html)."
-                : ""
-            }
+${
+    tuyaManufacturerNames.length > 0
+        ? "Since this is a Tuya also consider [How To Support new Tuya devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html)."
+        : ""
+}
 
 If you need help with the process, feel free to ask here and we'll be happy to assist.`,
     });
