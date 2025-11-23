@@ -1,4 +1,4 @@
-import {execSync} from "node:child_process";
+import { execSync } from "node:child_process";
 
 export async function newDeviceSupport(github, _core, context, zhcDir) {
     const issue = context.payload.issue;
@@ -19,20 +19,23 @@ export async function newDeviceSupport(github, _core, context, zhcDir) {
         }
     }
 
+    const titleAndBody = `${issue.title}\n\n${issue.body ?? ""}`;
+
     // Check if Tuya manufacturer name is already supported.
     const tuyaManufacturerNameRe = /['"](_T\w+_(\w+))['"]/g;
-    const tuyaManufacturerNames = Array.from(issue.body.matchAll(tuyaManufacturerNameRe), (m) => [m[1], m[2]]);
-
+    const tuyaManufacturerNames = Array.from(titleAndBody.matchAll(tuyaManufacturerNameRe), (m) => [m[1], m[2]]);
+    console.log("Found tuyaManufacturerNames", tuyaManufacturerNames);
     if (tuyaManufacturerNames.length > 0) {
         for (const [fullName, partialName] of tuyaManufacturerNames) {
             const fullMatch = (() => {
                 try {
-                    return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, {encoding: "utf8"});
+                    return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, { encoding: "utf8" });
                 } catch {
                     return undefined;
                 }
             })();
 
+            console.log(`Checking full match for '${fullName}', result: '${fullMatch}'`);
             if (fullMatch) {
                 await github.rest.issues.createComment({
                     owner: context.repo.owner,
@@ -57,12 +60,13 @@ If you need help with the process, feel free to ask here and we'll be happy to a
 
             const partialMatch = (() => {
                 try {
-                    return execSync(`grep -r --include="*.ts" "${partialName}" "${zhcDir}"`, {encoding: "utf8"});
+                    return execSync(`grep -r --include="*.ts" "${partialName}" "${zhcDir}"`, { encoding: "utf8" });
                 } catch {
                     return undefined;
                 }
             })();
 
+            console.log(`Checking partial match for '${partialName}', result: '${partialMatch}'`);
             if (partialMatch) {
                 const candidates = Array.from(partialMatch.matchAll(tuyaManufacturerNameRe), (m) => m[1]);
 
@@ -85,13 +89,13 @@ Let us know if it works so we can support this device out-of-the-box!`,
     } else {
         // Check if zigbee model is already supported.
         const zigbeeModelRe = /zigbeeModel: \[['"](.+)['"]\]/g;
-        const zigbeeModels = Array.from(issue.body.matchAll(zigbeeModelRe), (m) => m[1]);
+        const zigbeeModels = Array.from(titleAndBody.matchAll(zigbeeModelRe), (m) => m[1]);
 
         if (zigbeeModels.length > 0) {
             for (const zigbeeModel of zigbeeModels) {
                 const fullMatch = (() => {
                     try {
-                        return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, {encoding: "utf8"});
+                        return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, { encoding: "utf8" });
                     } catch {
                         return undefined;
                     }
@@ -134,11 +138,10 @@ In case all features work, please submit a pull request on this repository so th
 For instructions on how to create a pull request see the [docs](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html#_4-create-a-pull-request).
 
 If **NOT** all features work, please follow the [How To Support new devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/01_support_new_devices.html).
-${
-    tuyaManufacturerNames.length > 0
-        ? "Since this is a Tuya also consider [How To Support new Tuya devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html)."
-        : ""
-}
+${tuyaManufacturerNames.length > 0
+                ? "Since this is a Tuya also consider [How To Support new Tuya devices](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html)."
+                : ""
+            }
 
 If you need help with the process, feel free to ask here and we'll be happy to assist.`,
     });
