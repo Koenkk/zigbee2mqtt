@@ -1,13 +1,15 @@
+import { Controller } from "zigbee-herdsman";
 import type { StartResult } from "zigbee-herdsman/dist/adapter/tstype";
 import Device from "./model/device";
 import Group from "./model/group";
 export default class Zigbee {
-    private herdsman;
+    #private;
     private eventBus;
     private groupLookup;
     private deviceLookup;
     private coordinatorIeeeAddr;
     constructor(eventBus: EventBus);
+    get zhController(): Controller;
     start(): Promise<StartResult>;
     private logDeviceInterview;
     private generateNetworkKey;
