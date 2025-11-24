@@ -53,6 +53,7 @@ export default class Bridge extends Extension {
         health_check: this.healthCheck,
         coordinator_check: this.coordinatorCheck,
         options: this.bridgeOptions,
+        action: this.action,
     };
 
     override async start(): Promise<void> {
@@ -597,6 +598,22 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {id: message.id, source});
     }
 
+    @bind async action(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/action">> {
+        if (typeof message !== "object" || !message.action) {
+            throw new Error("Invalid payload");
+        }
+
+        const action = zhc.ACTIONS[message.action];
+
+        if (action === undefined) {
+            throw new Error("Invalid action");
+        }
+
+        const response = await action(this.zigbee.zhController, message.params ?? {});
+
+        return utils.getResponse(message, response);
+    }
+
     async renameEntity<T extends "device" | "group">(
         entityType: T,
         message: string | KeyValue,
@@ -855,6 +872,7 @@ export default class Bridge extends Extension {
         const data: Zigbee2MQTTAPI["bridge/definitions"] = {
             clusters: Zcl.Clusters,
             custom_clusters: {},
+            actions: Object.keys(zhc.ACTIONS),
         };
 
         for (const device of this.zigbee.devicesIterator((d) => !utils.objectIsEmpty(d.customClusters))) {

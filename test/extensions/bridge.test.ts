@@ -1,5 +1,6 @@
 // biome-ignore assist/source/organizeImports: import mocks first
 import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
+import {Zdo} from "zigbee-herdsman";
 import * as data from "../mocks/data";
 import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
 import {mockLogger} from "../mocks/logger";
@@ -4347,5 +4348,98 @@ describe("Extension: Bridge", () => {
             retain: true,
         });
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/response/device/configure", expect.any(String), {});
+    });
+
+    it("triggers ZHC action by name with params", async () => {
+        mockMQTTPublishAsync.mockClear();
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/action",
+            JSON.stringify({
+                action: "raw",
+                params: {
+                    profileId: Zdo.ZDO_PROFILE_ID,
+                    ieeeAddress: "0xf1f2f3f4f5f6f7f8",
+                    networkAddress: 0x1234,
+                    clusterKey: Zdo.ClusterId.NETWORK_ADDRESS_REQUEST,
+                    zdoParams: ["0xa1a2a3a4a5a6a7a8", false, 0],
+                },
+            }),
+        );
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/action",
+            JSON.stringify({data: [0x00, {assocDevList: [], eui64: "", nwkAddress: 0x1234, startIndex: 0}], status: "ok"}),
+            {},
+        );
+    });
+
+    it("triggers ZHC action by name without params", async () => {
+        mockMQTTPublishAsync.mockClear();
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/action",
+            JSON.stringify({
+                action: "raw",
+            }),
+        );
+        await flushPromises();
+
+        // we're mocking the response, so it's always this as long as the action & payload are valid
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/action",
+            JSON.stringify({data: [0x00, {assocDevList: [], eui64: "", nwkAddress: 0x1234, startIndex: 0}], status: "ok"}),
+            {},
+        );
+    });
+
+    it("throws on invalid action payload", async () => {
+        mockMQTTPublishAsync.mockClear();
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/action",
+            JSON.stringify({
+                params: {
+                    profileId: Zdo.ZDO_PROFILE_ID,
+                    ieeeAddress: "0xf1f2f3f4f5f6f7f8",
+                    networkAddress: 0x1234,
+                    clusterKey: Zdo.ClusterId.NETWORK_ADDRESS_REQUEST,
+                    zdoParams: ["0xa1a2a3a4a5a6a7a8", false, 0],
+                },
+            }),
+        );
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/action",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("throws on invalid action", async () => {
+        mockMQTTPublishAsync.mockClear();
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/action",
+            JSON.stringify({
+                action: "DOES_NOT_EXIST",
+                params: {
+                    profileId: Zdo.ZDO_PROFILE_ID,
+                    ieeeAddress: "0xf1f2f3f4f5f6f7f8",
+                    networkAddress: 0x1234,
+                    clusterKey: Zdo.ClusterId.NETWORK_ADDRESS_REQUEST,
+                    zdoParams: ["0xa1a2a3a4a5a6a7a8", false, 0],
+                },
+            }),
+        );
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/action",
+            stringify({data: {}, status: "error", error: "Invalid action"}),
+            {},
+        );
     });
 });

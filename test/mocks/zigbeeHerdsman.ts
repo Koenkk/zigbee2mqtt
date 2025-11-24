@@ -1145,12 +1145,7 @@ export const mockController = {
     },
     start: vi.fn((): Promise<AdapterTypes.StartResult> => Promise.resolve("reset")),
     stop: vi.fn(),
-    touchlink: {
-        identify: vi.fn(),
-        scan: vi.fn(),
-        factoryReset: vi.fn(),
-        factoryResetFirst: vi.fn(),
-    },
+    touchlink: {identify: vi.fn(), scan: vi.fn(), factoryReset: vi.fn(), factoryResetFirst: vi.fn()},
     addInstallCode: vi.fn(),
     permitJoin: vi.fn(),
     getPermitJoin: vi.fn((): boolean => false),
@@ -1206,6 +1201,9 @@ export const mockController = {
         groups[`group_${groupID}` as keyof typeof groups] = group;
         return group;
     }),
+    sendRaw: vi.fn(async (/*rawPayload: RawPayload, customClusters: CustomClusters = {}*/) =>
+        Promise.resolve([0x00, {nwkAddress: 0x1234, eui64: "", startIndex: 0, assocDevList: []}]),
+    ),
 };
 
 vi.mock("zigbee-herdsman", async (importOriginal) => ({
