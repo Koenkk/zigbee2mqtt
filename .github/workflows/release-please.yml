@@ -31,11 +31,11 @@ jobs:
                   token: ${{secrets.GH_TOKEN}}
 
             # Checkout repos
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   repository: koenkk/zigbee2mqtt
                   path: ./z2m
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               with:
                   repository: koenkk/zigbee2mqtt
                   path: ./z2m-master
