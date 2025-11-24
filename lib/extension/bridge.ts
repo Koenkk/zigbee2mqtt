@@ -31,7 +31,10 @@ export default class Bridge extends Extension {
     private logTransport!: winston.transport;
     private requestLookup: {[key: string]: (message: KeyValue | string) => Promise<Zigbee2MQTTResponse<Zigbee2MQTTResponseEndpoints>>} = {
         "device/options": this.deviceOptions,
-        "device/configure_reporting": this.deviceConfigureReporting,
+        /** @deprecated 3.0 */
+        "device/configure_reporting": this.deviceReportingConfigure,
+        "device/reporting/configure": this.deviceReportingConfigure,
+        "device/reporting/read": this.deviceReportingRead,
         "device/remove": this.deviceRemove,
         "device/interview": this.deviceInterview,
         "device/generate_external_definition": this.deviceGenerateExternalDefinition,
@@ -467,7 +470,7 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID, restart_required: this.restartRequired});
     }
 
-    @bind async deviceConfigureReporting(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/configure_reporting">> {
+    @bind async deviceReportingConfigure(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/configure">> {
         if (
             typeof message !== "object" ||
             message.id === undefined ||
@@ -517,6 +520,46 @@ export default class Bridge extends Extension {
             reportable_change: message.reportable_change,
             attribute: message.attribute,
         });
+    }
+
+    @bind async deviceReportingRead(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/read">> {
+        if (
+            typeof message !== "object" ||
+            message.id === undefined ||
+            message.endpoint === undefined ||
+            message.cluster === undefined ||
+            message.configs === undefined
+        ) {
+            throw new Error("Invalid payload");
+        }
+
+        const device = this.getEntity("device", message.id);
+        const endpoint = device.endpoint(message.endpoint);
+
+        if (!endpoint) {
+            throw new Error(`Device '${device.ID}' does not have endpoint '${message.endpoint}'`);
+        }
+
+        const response = await endpoint.readReportingConfig(
+            message.cluster,
+            message.configs,
+            message.manufacturerCode ? {manufacturerCode: message.manufacturerCode} : {},
+        );
+
+        await this.publishDevices();
+
+        const responseData: Zigbee2MQTTAPI["bridge/response/device/reporting/read"] = {
+            id: message.id,
+            endpoint: message.endpoint,
+            cluster: message.cluster,
+            configs: response,
+        };
+
+        if (message.manufacturerCode) {
+            responseData.manufacturerCode = message.manufacturerCode;
+        }
+
+        return utils.getResponse(message, responseData);
     }
 
     @bind async deviceInterview(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/interview">> {

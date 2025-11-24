@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 6.4.2
+  zigbee-herdsman: 7.0.0
 
 importers:
 
@@ -72,17 +72,17 @@ importers:
         specifier: ^8.18.1
         version: 8.18.3
       zigbee-herdsman:
-        specifier: 6.4.2
-        version: 6.4.2
+        specifier: 7.0.0
+        version: 7.0.0
       zigbee-herdsman-converters:
-        specifier: 25.73.0
-        version: 25.73.0
+        specifier: 25.74.0
+        version: 25.74.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.2.3
-        version: 2.2.3
+        specifier: 2.3.1
+        version: 2.3.1
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.4
@@ -1468,12 +1468,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@25.73.0:
-    resolution: {integrity: sha512-EIrC2sLciY+ZMAByDErLxVKj90iyy7I/1GCNTdK9yxweBqwx7YiVcKhQzY2fkMIc2agU72n549tclxZ+iaJeVA==}
+  zigbee-herdsman-converters@25.74.0:
+    resolution: {integrity: sha512-X4hFAZB47Y2eSr3/0A6kethLz7B6IWHcYC5mIq0KAoqKEcHbvlJ/xqqYPl6eiFVt5Gp6IKsANAzmBMrOXtWirA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@6.4.2:
-    resolution: {integrity: sha512-VX1e+syJVWIxaqI72tmcqH7x0iPNDSM3jP2nej++A4pZ5OrEBACeUmiuNy1/iFexCjsZhT0E0Tc6D2eNjSzhOQ==}
+  zigbee-herdsman@7.0.0:
+    resolution: {integrity: sha512-2qB2/DxWRaUxTfoFNLa7pNV+FR0UJrDoqgbqMKjw9MGe1HjjSyq6lUXN1e9IGJ4Hezx4uKSkYVBr2zDUS+qxsA==}
 
   zigbee-on-host@0.2.2:
     resolution: {integrity: sha512-GixjVXTWDaLAN2650vuafv+KUY0JbwsCg5n8dsarFvCREkQw1B5DbQjbMs2Gz1+aRto2QtKfU7tkdDEa5JtIUg==}
@@ -1483,8 +1483,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.2.3:
-    resolution: {integrity: sha512-DCTmYqTEr5VLHvrtOGym/aKWgU+JolcEiGk5B9C8Hmugb5owwVLyJhdBl2GzIme6/28H5pb+BdxIJcEz0verUg==}
+  zigbee2mqtt-windfront@2.3.1:
+    resolution: {integrity: sha512-7jNjmDX4djCibkZajQLDZZ8JwemV69zwQf6+4Dg1TWw0i/GZ1fXxEN8lhHLa9R/Yq3RbsxlFbdGRLqxvbsozog==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -2754,15 +2754,15 @@ snapshots:
 
   ws@8.18.3: {}
 
-  zigbee-herdsman-converters@25.73.0:
+  zigbee-herdsman-converters@25.74.0:
     dependencies:
       iconv-lite: 0.7.0
       semver: 7.7.3
-      zigbee-herdsman: 6.4.2
+      zigbee-herdsman: 7.0.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@6.4.2:
+  zigbee-herdsman@7.0.0:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
@@ -2781,4 +2781,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.2.3: {}
+  zigbee2mqtt-windfront@2.3.1: {}

@@ -1,7 +1,8 @@
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
+import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
 import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
-import type {GenericZdoResponse} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
+import type {GenericZdoResponse, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
 import type {Base} from "zigbee-herdsman-converters/lib/exposes";
 
@@ -280,18 +281,21 @@ export interface Zigbee2MQTTNetworkMap {
     links: {
         source: {ieeeAddr: string; networkAddress: number};
         target: {ieeeAddr: string; networkAddress: number};
-        linkquality: number;
-        depth: number;
-        routes: {
-            destinationAddress: number;
-            status: string;
-            nextHop: number;
-        }[];
-        sourceIeeeAddr: string;
-        targetIeeeAddr: string;
-        sourceNwkAddr: number;
-        lqi: number;
+        deviceType: number;
+        rxOnWhenIdle: number;
         relationship: number;
+        permitJoining: number;
+        depth: number;
+        lqi: number;
+        routes: RoutingTableEntry[];
+        /** @deprecated 3.0 */
+        linkquality: number;
+        /** @deprecated 3.0 */
+        sourceIeeeAddr: string;
+        /** @deprecated 3.0 */
+        targetIeeeAddr: string;
+        /** @deprecated 3.0 */
+        sourceNwkAddr: number;
     }[];
 }
 
@@ -561,6 +565,16 @@ export interface Zigbee2MQTTAPI {
         failed: string[];
     };
 
+    "bridge/request/device/binds/clear": {
+        target: string;
+        ieeeList?: Eui64[];
+    };
+
+    "bridge/response/device/binds/clear": {
+        target: string;
+        ieeeList?: Eui64[];
+    };
+
     "bridge/request/device/configure":
         | {
               id: string | number;
@@ -689,7 +703,7 @@ export interface Zigbee2MQTTAPI {
         homeassistant_rename: boolean;
     };
 
-    "bridge/request/device/configure_reporting": {
+    "bridge/request/device/reporting/configure": {
         id: string;
         endpoint: string | number;
         cluster: string | number;
@@ -700,7 +714,7 @@ export interface Zigbee2MQTTAPI {
         option: Record<string, unknown>;
     };
 
-    "bridge/response/device/configure_reporting": {
+    "bridge/response/device/reporting/configure": {
         id: string;
         endpoint: string | number;
         cluster: string | number;
@@ -708,6 +722,22 @@ export interface Zigbee2MQTTAPI {
         minimum_report_interval: number;
         maximum_report_interval: number;
         reportable_change: number;
+    };
+
+    "bridge/request/device/reporting/read": {
+        id: string;
+        endpoint: string | number;
+        cluster: string | number;
+        configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
+        manufacturerCode?: number;
+    };
+
+    "bridge/response/device/reporting/read": {
+        id: string;
+        endpoint: string | number;
+        cluster: string | number;
+        configs: zigbeeHerdsman.Zcl.ClustersTypes.TFoundation["readReportConfigRsp"];
+        manufacturerCode?: number;
     };
 
     "bridge/request/group/remove": {
@@ -890,6 +920,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/options"
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
+    | "bridge/request/device/binds/clear"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -903,7 +934,8 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/generate_external_definition"
     | "bridge/request/device/options"
     | "bridge/request/device/rename"
-    | "bridge/request/device/configure_reporting"
+    | "bridge/request/device/reporting/configure"
+    | "bridge/request/device/reporting/read"
     | "bridge/request/group/remove"
     | "bridge/request/group/add"
     | "bridge/request/group/rename"
@@ -939,6 +971,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/options"
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
+    | "bridge/response/device/binds/clear"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"
@@ -949,7 +982,8 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/generate_external_definition"
     | "bridge/response/device/options"
     | "bridge/response/device/rename"
-    | "bridge/response/device/configure_reporting"
+    | "bridge/response/device/reporting/configure"
+    | "bridge/response/device/reporting/read"
     | "bridge/response/group/remove"
     | "bridge/response/group/add"
     | "bridge/response/group/rename"
