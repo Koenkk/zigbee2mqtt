@@ -17,13 +17,13 @@ jobs:
       startsWith(github.event.issue.title, '[New device support]') ||
       startsWith(github.event.issue.title, '[External Converter]')
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           sparse-checkout: |
             scripts
           path: z2m
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           repository: Koenkk/zigbee-herdsman-converters
           ref: master
