@@ -22,13 +22,13 @@ jobs:
             actions: read # for Nerivec/action-ci-bench
             pull-requests: write # for Nerivec/action-ci-bench
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
               with:
                   # Required for `release: merge dev -> master and promote dev`
                   token: ${{ secrets.GH_TOKEN }}
 
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
               if: ((github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push') == false
 
             - uses: pnpm/action-setup@v4
@@ -220,7 +220,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         continue-on-error: true
         steps:
-            - uses: actions/checkout@v5
+            - uses: actions/checkout@v6
 
             - uses: pnpm/action-setup@v4
 

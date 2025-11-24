@@ -276,50 +276,55 @@ describe("Extension: OTAUpdate", () => {
         );
     });
 
-    it.each(["check", "check/downgrade", "update", "update/downgrade", "schedule", "schedule/downgrade", "unschedule"])(
-        "refuses to %s when already in progress",
-        async (type) => {
-            if (type.includes("schedule") || type.includes("check")) {
-                isUpdateAvailableSpy.mockImplementationOnce(async () => {
-                    return await new Promise((resolve) => {
-                        setTimeout(
-                            () =>
-                                resolve({
-                                    available: false,
-                                    currentFileVersion: 1,
-                                    otaFileVersion: 1,
-                                }),
-                            99999,
-                        );
-                    });
+    it.each([
+        "check",
+        "check/downgrade",
+        "update",
+        "update/downgrade",
+        "schedule",
+        "schedule/downgrade",
+        "unschedule",
+    ])("refuses to %s when already in progress", async (type) => {
+        if (type.includes("schedule") || type.includes("check")) {
+            isUpdateAvailableSpy.mockImplementationOnce(async () => {
+                return await new Promise((resolve) => {
+                    setTimeout(
+                        () =>
+                            resolve({
+                                available: false,
+                                currentFileVersion: 1,
+                                otaFileVersion: 1,
+                            }),
+                        99999,
+                    );
                 });
-            } else {
-                updateSpy.mockImplementationOnce(async () => {
-                    return await new Promise((resolve) => {
-                        setTimeout(() => resolve(1), 99999);
-                    });
+            });
+        } else {
+            updateSpy.mockImplementationOnce(async () => {
+                return await new Promise((resolve) => {
+                    setTimeout(() => resolve(1), 99999);
                 });
-            }
+            });
+        }
 
-            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type.includes("schedule") ? "check" : type}`, "bulb");
-            await flushPromises();
-            mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, "bulb");
-            await flushPromises();
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type.includes("schedule") ? "check" : type}`, "bulb");
+        await flushPromises();
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, "bulb");
+        await flushPromises();
 
-            if (type.includes("schedule") || type.includes("check")) {
-                expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(1);
-            } else {
-                expect(updateSpy).toHaveBeenCalledTimes(1);
-            }
+        if (type.includes("schedule") || type.includes("check")) {
+            expect(isUpdateAvailableSpy).toHaveBeenCalledTimes(1);
+        } else {
+            expect(updateSpy).toHaveBeenCalledTimes(1);
+        }
 
-            await vi.runOnlyPendingTimersAsync();
-            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-                `zigbee2mqtt/bridge/response/device/ota_update/${type.replace("/downgrade", "")}`,
-                stringify({data: {}, status: "error", error: `Update or check for update already in progress for 'bulb'`}),
-                {},
-            );
-        },
-    );
+        await vi.runOnlyPendingTimersAsync();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            `zigbee2mqtt/bridge/response/device/ota_update/${type.replace("/downgrade", "")}`,
+            stringify({data: {}, status: "error", error: `Update or check for update already in progress for 'bulb'`}),
+            {},
+        );
+    });
 
     it("does not crash when read modelID before/after OTA update fails", async () => {
         devices.bulb.endpoints[0].read.mockRejectedValueOnce("Failed from").mockRejectedValueOnce("Failed to");
