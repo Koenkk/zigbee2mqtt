@@ -567,12 +567,12 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
 
     "bridge/response/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
 
     "bridge/request/device/configure":

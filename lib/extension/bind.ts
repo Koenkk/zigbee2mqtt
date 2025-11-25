@@ -292,13 +292,13 @@ export default class Bind extends Extension {
             }
 
             // this list is raw (not resolved) to allow clearing any specific target (not only currently known)
-            const eui64List = message.ieeeList ?? ["0xffffffffffffffff"];
+            const eui64List = message.ieee_list ?? ["0xffffffffffffffff"];
 
             await target.zh.clearAllBindings(eui64List);
 
             const responseData: Zigbee2MQTTAPI["bridge/response/device/binds/clear"] = {
                 target: message.target,
-                ieeeList: eui64List,
+                ieee_list: eui64List,
             };
 
             await this.publishResponse("binds/clear", message, responseData);
