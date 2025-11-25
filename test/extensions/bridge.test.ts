@@ -3977,7 +3977,7 @@ describe("Extension: Bridge", () => {
                 endpoint: 1,
                 cluster: "genLevelCtrl",
                 configs: [{attribute: "currentLevel"}],
-                manufacturerCode: 0x1234,
+                manufacturer_code: 0x1234,
             }),
         );
         await flushPromises();
@@ -4001,7 +4001,7 @@ describe("Extension: Bridge", () => {
                             repChange: 2,
                         },
                     ],
-                    manufacturerCode: 0x1234,
+                    manufacturer_code: 0x1234,
                 },
                 status: "ok",
             }),

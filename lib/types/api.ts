@@ -729,7 +729,7 @@ export interface Zigbee2MQTTAPI {
         endpoint: string | number;
         cluster: string | number;
         configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
 
     "bridge/response/device/reporting/read": {
@@ -737,7 +737,7 @@ export interface Zigbee2MQTTAPI {
         endpoint: string | number;
         cluster: string | number;
         configs: zigbeeHerdsman.Zcl.ClustersTypes.TFoundation["readReportConfigRsp"];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
 
     "bridge/request/group/remove": {
