@@ -567,12 +567,12 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
 
     "bridge/response/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
 
     "bridge/request/device/configure":
@@ -729,7 +729,7 @@ export interface Zigbee2MQTTAPI {
         endpoint: string | number;
         cluster: string | number;
         configs: {direction?: number; attribute: string | number | {ID: number; type: number}}[];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
 
     "bridge/response/device/reporting/read": {
@@ -737,7 +737,7 @@ export interface Zigbee2MQTTAPI {
         endpoint: string | number;
         cluster: string | number;
         configs: zigbeeHerdsman.Zcl.ClustersTypes.TFoundation["readReportConfigRsp"];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
 
     "bridge/request/group/remove": {

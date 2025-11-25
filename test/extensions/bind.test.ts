@@ -810,7 +810,7 @@ describe("Extension: Bind", () => {
                 transaction: "1234",
                 data: {
                     target: "remote",
-                    ieeeList: ["0xffffffffffffffff"],
+                    ieee_list: ["0xffffffffffffffff"],
                 },
                 status: "ok",
             }),
@@ -826,7 +826,7 @@ describe("Extension: Bind", () => {
         device.mockClear();
         mockMQTTEvents.message(
             "zigbee2mqtt/bridge/request/device/binds/clear",
-            stringify({transaction: "1234", target: "remote", ieeeList: [target.ieeeAddr]}),
+            stringify({transaction: "1234", target: "remote", ieee_list: [target.ieeeAddr]}),
         );
         await flushPromises();
 
@@ -837,7 +837,7 @@ describe("Extension: Bind", () => {
                 transaction: "1234",
                 data: {
                     target: "remote",
-                    ieeeList: [target.ieeeAddr],
+                    ieee_list: [target.ieeeAddr],
                 },
                 status: "ok",
             }),

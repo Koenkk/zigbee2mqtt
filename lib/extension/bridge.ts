@@ -543,7 +543,7 @@ export default class Bridge extends Extension {
         const response = await endpoint.readReportingConfig(
             message.cluster,
             message.configs,
-            message.manufacturerCode ? {manufacturerCode: message.manufacturerCode} : {},
+            message.manufacturer_code ? {manufacturerCode: message.manufacturer_code} : {},
         );
 
         await this.publishDevices();
@@ -555,8 +555,8 @@ export default class Bridge extends Extension {
             configs: response,
         };
 
-        if (message.manufacturerCode) {
-            responseData.manufacturerCode = message.manufacturerCode;
+        if (message.manufacturer_code) {
+            responseData.manufacturer_code = message.manufacturer_code;
         }
 
         return utils.getResponse(message, responseData);
