@@ -530,11 +530,11 @@ export interface Zigbee2MQTTAPI {
     };
     "bridge/request/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
     "bridge/response/device/binds/clear": {
         target: string;
-        ieeeList?: Eui64[];
+        ieee_list?: Eui64[];
     };
     "bridge/request/device/configure": {
         id: string | number;
@@ -669,14 +669,14 @@ export interface Zigbee2MQTTAPI {
                 type: number;
             };
         }[];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
     "bridge/response/device/reporting/read": {
         id: string;
         endpoint: string | number;
         cluster: string | number;
         configs: zigbeeHerdsman.Zcl.ClustersTypes.TFoundation["readReportConfigRsp"];
-        manufacturerCode?: number;
+        manufacturer_code?: number;
     };
     "bridge/request/group/remove": {
         id: string;
