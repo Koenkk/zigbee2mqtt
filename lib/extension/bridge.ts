@@ -476,10 +476,10 @@ export default class Bridge extends Extension {
             message.id === undefined ||
             message.endpoint === undefined ||
             message.cluster === undefined ||
-            message.maximum_report_interval === undefined ||
-            message.minimum_report_interval === undefined ||
-            message.reportable_change === undefined ||
-            message.attribute === undefined
+            message.attribute === undefined ||
+            typeof message.maximum_report_interval !== "number" ||
+            typeof message.minimum_report_interval !== "number" ||
+            (message.reportable_change !== undefined && typeof message.reportable_change !== "number")
         ) {
             throw new Error("Invalid payload");
         }
