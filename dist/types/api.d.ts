@@ -643,7 +643,7 @@ export interface Zigbee2MQTTAPI {
         };
         minimum_report_interval: number;
         maximum_report_interval: number;
-        reportable_change: number;
+        reportable_change?: number;
         option: Record<string, unknown>;
     };
     "bridge/response/device/reporting/configure": {
@@ -656,7 +656,7 @@ export interface Zigbee2MQTTAPI {
         };
         minimum_report_interval: number;
         maximum_report_interval: number;
-        reportable_change: number;
+        reportable_change?: number;
     };
     "bridge/request/device/reporting/read": {
         id: string;
