@@ -752,6 +752,12 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(discoveryEntry);
                 }
 
+                const currentHumidity = allExposes?.filter(isNumericExpose).find((e) => e.name === "humidity" && e.access === ACCESS_STATE);
+                if (currentHumidity) {
+                    discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json.${currentHumidity.property} }}`;
+                    discoveryEntry.discovery_payload.current_humidity_topic = true;
+                }
+
                 discoveryEntries.push(discoveryEntry);
                 break;
             }
