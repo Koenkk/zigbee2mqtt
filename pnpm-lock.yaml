@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 7.0.1
+  zigbee-herdsman: 7.0.2
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.3
       zigbee-herdsman:
-        specifier: 7.0.1
-        version: 7.0.1
+        specifier: 7.0.2
+        version: 7.0.2
       zigbee-herdsman-converters:
         specifier: 25.80.0
         version: 25.80.0
@@ -1471,11 +1471,11 @@ packages:
     resolution: {integrity: sha512-dJSN/Uo3MkGeSB11Afh1BwIRi64+ig5dxOElGUH7Ac1jbDMLSTx8WSTA52d8VcpXUneM4P5pagPlb/7WjFXMKg==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@7.0.1:
-    resolution: {integrity: sha512-XHfngXqc0G9cUN/YXivbhdNKX2NapxQ38F+ZWboF0VGJ6ZkiMNpGTO9Wnq6DpveBKHpcYJFlMbenDF5IxEW4qQ==}
+  zigbee-herdsman@7.0.2:
+    resolution: {integrity: sha512-oIeFuNFUnxcQWad8SwfB2zY8ww11fWX6BgbWUfj+Tfss13MDaLEj6MPp2x5bq7DGB4JGoFjtxlnqrle3lW5ohA==}
 
-  zigbee-on-host@0.2.2:
-    resolution: {integrity: sha512-GixjVXTWDaLAN2650vuafv+KUY0JbwsCg5n8dsarFvCREkQw1B5DbQjbMs2Gz1+aRto2QtKfU7tkdDEa5JtIUg==}
+  zigbee-on-host@0.2.4:
+    resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
     engines: {node: ^20.19.0 || >=22.12.0}
 
   zigbee2mqtt-frontend@0.9.21:
@@ -2174,7 +2174,7 @@ snapshots:
   istanbul-lib-source-maps@5.0.6:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      debug: 4.4.1
+      debug: 4.4.3
       istanbul-lib-coverage: 3.2.2
     transitivePeerDependencies:
       - supports-color
@@ -2267,7 +2267,7 @@ snapshots:
   mqtt-packet@9.0.2:
     dependencies:
       bl: 6.1.3
-      debug: 4.4.1
+      debug: 4.4.3
       process-nextick-args: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -2313,7 +2313,7 @@ snapshots:
 
   number-allocator@1.0.14:
     dependencies:
-      debug: 4.4.1
+      debug: 4.4.3
       js-sdsl: 4.3.0
     transitivePeerDependencies:
       - supports-color
@@ -2598,7 +2598,7 @@ snapshots:
   vite-node@3.2.4(@types/node@24.10.1):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.1
+      debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 6.3.5(@types/node@24.10.1)
@@ -2752,11 +2752,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.0
       semver: 7.7.3
-      zigbee-herdsman: 7.0.1
+      zigbee-herdsman: 7.0.2
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@7.0.1:
+  zigbee-herdsman@7.0.2:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
@@ -2767,11 +2767,11 @@ snapshots:
       fast-deep-equal: 3.1.3
       mixin-deep: 2.0.1
       slip: 1.0.2
-      zigbee-on-host: 0.2.2
+      zigbee-on-host: 0.2.4
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-on-host@0.2.2: {}
+  zigbee-on-host@0.2.4: {}
 
   zigbee2mqtt-frontend@0.9.21: {}
 
