@@ -42,7 +42,6 @@ const ACTION_PATTERNS: string[] = [
     "^(?<action>brightness_step)(?:_(?<direction>up|down))?$",
 ];
 const ACCESS_STATE = 0b001;
-const ACCESS_STATE_GET = 0b101;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ["light", "switch", "lock", "cover"];
 const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ["opening", "open", "forward", "up", "rising"];
@@ -755,7 +754,7 @@ export class HomeAssistant extends Extension {
 
                 const currentHumidity = allExposes
                     ?.filter(isNumericExpose)
-                    .find((e) => e.name === "humidity" && (e.access === ACCESS_STATE || e.access === ACCESS_STATE_GET));
+                    .find((e) => e.name === "humidity" && e.access & ACCESS_STATE);
                 if (currentHumidity) {
                     discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json.${currentHumidity.property} }}`;
                     discoveryEntry.discovery_payload.current_humidity_topic = true;
