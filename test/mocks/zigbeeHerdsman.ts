@@ -1142,7 +1142,7 @@ export const devices = {
         "0x18fc2600000d7ae3",
         35902,
         4617, // 0x1209,
-        [new Endpoint(1, [0, 3, 4, 32, 513, 516, 2821], [10, 25], "0x18fc2600000d7ae3")],
+        [new Endpoint(1, [0, 3, 513, 516, 1029, 2821], [10, 25], "0x18fc2600000d7ae3")],
         InterviewState.Successful,
         "Mains (single phase)",
         "RBSH-RTH0-ZB-EU",
