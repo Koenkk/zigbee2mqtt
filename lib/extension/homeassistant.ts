@@ -1681,6 +1681,10 @@ export class HomeAssistant extends Extension {
                 payload.action_topic = stateTopic;
             }
 
+            if (payload.current_humidity_topic) {
+                payload.current_humidity_topic = stateTopic;
+            }
+
             // Override configuration with user settings.
             if (entity.options.homeassistant != null) {
                 const add = (obj: KeyValue, ignoreName: boolean): void => {
