@@ -1215,7 +1215,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Room thermostat II 230V",
                 model_id: "BTH-RM230Z",
                 name: "bosch_rm230z",
-                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae"
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             max_temp: "30",
             min_temp: "5",
@@ -1233,7 +1233,7 @@ describe("Extension: HomeAssistant", () => {
             temperature_low_state_template: "{{ value_json.occupied_heating_setpoint }}",
             temperature_low_state_topic: "zigbee2mqtt/bosch_rm230z",
             temperature_unit: "C",
-            unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt"
+            unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/climate/0x18fc2600000d7ae3/climate/config", stringify(payload), {
