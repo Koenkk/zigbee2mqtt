@@ -1197,6 +1197,51 @@ describe("Extension: HomeAssistant", () => {
         overrideSpy.mockRestore();
     });
 
+    it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
+        const payload = {
+            action_template:
+                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json.running_state] }}",
+            action_topic: "zigbee2mqtt/bosch_rm230z",
+            availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
+            current_humidity_template: "{{ value_json.humidity }}",
+            current_humidity_topic: "zigbee2mqtt/bosch_rm230z",
+            current_temperature_template: "{{ value_json.local_temperature }}",
+            current_temperature_topic: "zigbee2mqtt/bosch_rm230z",
+            default_entity_id: "climate.bosch_rm230z",
+            device: {
+                identifiers: ["zigbee2mqtt_0x18fc2600000d7ae3"],
+                manufacturer: "Bosch",
+                model: "Room thermostat II 230V",
+                model_id: "BTH-RM230Z",
+                name: "bosch_rm230z",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            max_temp: "30",
+            min_temp: "5",
+            mode_command_topic: "zigbee2mqtt/bosch_rm230z/set/system_mode",
+            mode_state_template: "{{ value_json.system_mode }}",
+            mode_state_topic: "zigbee2mqtt/bosch_rm230z",
+            modes: ["off", "heat", "cool"],
+            name: null,
+            object_id: "bosch_rm230z",
+            origin,
+            temp_step: 0.5,
+            temperature_high_command_topic: "zigbee2mqtt/bosch_rm230z/set/occupied_cooling_setpoint",
+            temperature_high_state_template: "{{ value_json.occupied_cooling_setpoint }}",
+            temperature_high_state_topic: "zigbee2mqtt/bosch_rm230z",
+            temperature_low_command_topic: "zigbee2mqtt/bosch_rm230z/set/occupied_heating_setpoint",
+            temperature_low_state_template: "{{ value_json.occupied_heating_setpoint }}",
+            temperature_low_state_topic: "zigbee2mqtt/bosch_rm230z",
+            temperature_unit: "C",
+            unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/climate/0x18fc2600000d7ae3/climate/config", stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 

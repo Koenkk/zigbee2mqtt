@@ -1137,6 +1137,20 @@ export const devices = {
         "DC Source",
         "FanBee1",
     ),
+    BTH_RM230Z: new Device(
+        "Router",
+        "0x18fc2600000d7ae3",
+        35902,
+        4617,
+        [new Endpoint(1, [0, 3, 513, 516, 1029, 2821], [10, 25], "0x18fc2600000d7ae3")],
+        InterviewState.Successful,
+        "Mains (single phase)",
+        "RBSH-RTH0-ZB-EU",
+        undefined,
+        undefined,
+        undefined,
+        CUSTOM_CLUSTER_BTHRA,
+    ),
 };
 
 export const mockController = {
