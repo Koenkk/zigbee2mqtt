@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.7.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.7.0...2.7.1) (2025-12-06)
+
+
+### Bug Fixes
+
+* Home Assistant: Accept multiple access levels for `current_humidity` source property ([#29936](https://github.com/Koenkk/zigbee2mqtt/issues/29936)) ([fa99c6d](https://github.com/Koenkk/zigbee2mqtt/commit/fa99c6dcca97d2c8c90136249293dea3d42e0998))
+* Home Assistant: Translate boolean to state topic for `current_humidity_topic` ([#30014](https://github.com/Koenkk/zigbee2mqtt/issues/30014)) ([9ca85df](https://github.com/Koenkk/zigbee2mqtt/commit/9ca85dfac8b0f0421ad0622dfdbe36c8766d22b4))
+* **ignore:** bump finalhandler from 2.1.0 to 2.1.1 in the minor-patch group ([#29920](https://github.com/Koenkk/zigbee2mqtt/issues/29920)) ([ce27ff3](https://github.com/Koenkk/zigbee2mqtt/commit/ce27ff3cbfac204579b38d034e71733e4e4bb18f))
+* **ignore:** update zigbee-herdsman to 7.0.2 ([#29956](https://github.com/Koenkk/zigbee2mqtt/issues/29956)) ([403bd4a](https://github.com/Koenkk/zigbee2mqtt/commit/403bd4a72541bf7342de246b033c5090b186df32))
+* **ignore:** update zigbee-herdsman to 7.0.3 ([#30008](https://github.com/Koenkk/zigbee2mqtt/issues/30008)) ([bae9bb8](https://github.com/Koenkk/zigbee2mqtt/commit/bae9bb8812c81e46d4068b4284e0f9957821f88a))
+* **ignore:** update zigbee-herdsman to 7.0.4 ([#30041](https://github.com/Koenkk/zigbee2mqtt/issues/30041)) ([334fa2a](https://github.com/Koenkk/zigbee2mqtt/commit/334fa2a60d04c66749978b8b8f4b9b5af6c7c7eb))
+* **ignore:** update zigbee-herdsman-converters to 25.81.0 ([#29959](https://github.com/Koenkk/zigbee2mqtt/issues/29959)) ([fd4282b](https://github.com/Koenkk/zigbee2mqtt/commit/fd4282b98d9630f9a98e82f627c12c5920d810b4))
+* **ignore:** update zigbee-herdsman-converters to 25.82.0 ([#29990](https://github.com/Koenkk/zigbee2mqtt/issues/29990)) ([740edd8](https://github.com/Koenkk/zigbee2mqtt/commit/740edd8b58b7d72b7a2a5247f7f6ac8ee99ff0fa))
+* **ignore:** update zigbee-herdsman-converters to 25.83.0 ([#30011](https://github.com/Koenkk/zigbee2mqtt/issues/30011)) ([a7f1345](https://github.com/Koenkk/zigbee2mqtt/commit/a7f1345a9164f6c83cb81688c33511b14646fab8))
+* **ignore:** update zigbee-herdsman-converters to 25.83.1 ([#30050](https://github.com/Koenkk/zigbee2mqtt/issues/30050)) ([9b60353](https://github.com/Koenkk/zigbee2mqtt/commit/9b6035387be6f285fab455f7845baa75f3f722be))
+
 ## [2.7.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.6.3...2.7.0) (2025-12-01)
 
 
