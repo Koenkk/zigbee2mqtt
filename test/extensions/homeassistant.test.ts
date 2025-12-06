@@ -1209,7 +1209,6 @@ describe("Extension: HomeAssistant", () => {
             current_temperature_topic: "zigbee2mqtt/bosch_rm230z",
             default_entity_id: "climate.bosch_rm230z",
             device: {
-                hw_version: 0,
                 identifiers: ["zigbee2mqtt_0x18fc2600000d7ae3"],
                 manufacturer: "Bosch",
                 model: "Room thermostat II 230V",
@@ -1225,6 +1224,7 @@ describe("Extension: HomeAssistant", () => {
             modes: ["off", "heat", "cool"],
             name: null,
             object_id: "bosch_rm230z",
+            origin,
             temp_step: 0.5,
             temperature_high_command_topic: "zigbee2mqtt/bosch_rm230z/set/occupied_cooling_setpoint",
             temperature_high_state_template: "{{ value_json.occupied_cooling_setpoint }}",
