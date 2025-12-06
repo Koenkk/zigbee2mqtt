@@ -164,6 +164,7 @@ describe("Extension: Bridge", () => {
                         "0x0017880104a44559": {friendly_name: "J1_cover"},
                         "0x0017880104e43559": {friendly_name: "U202DST600ZB"},
                         "0x0017880104e44559": {friendly_name: "3157100_thermostat"},
+                        "0x18fc2600000d7ae3": {friendly_name: "bosch_rm230z"},
                         "0x0017880104e45517": {friendly_name: "remote", retain: true},
                         "0x0017880104e45520": {friendly_name: "button", retain: false},
                         "0x0017880104e45521": {
