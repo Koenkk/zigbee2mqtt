@@ -59,7 +59,13 @@ if (fs.existsSync(commitUserFile)) {
 }
 
 const definitions = definitionIndex.default.map((d) => zhc.prepareDefinition(d));
-const whiteLabels = definitions.filter((d) => d.whiteLabel).flatMap((d) => d.whiteLabel);
+const whiteLabels = definitions
+    .filter((d) => d.whiteLabel)
+    .flatMap((d) =>
+        d.whiteLabel.map((wl) => {
+            return {model: wl.model, vendor: wl.vendor ?? d.vendor, description: wl.description ?? d.description};
+        }),
+    );
 const capitalizeFirstChar = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 for (const changelog of changelogs) {
