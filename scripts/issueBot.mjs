@@ -3,10 +3,10 @@ import {execSync} from "node:child_process";
 async function checkDuplicateIssue(github, context, name) {
     // Search for existing issues with the same `name`
     const searchQuery = `repo:${context.repo.owner}/${context.repo.repo} is:issue -is:pr "${name}" label:"new device support","external converter"`;
-    
+
     try {
         const searchResults = await github.rest.search.issuesAndPullRequests({q: searchQuery, per_page: 100});
-        
+
         // Filter out the current issue and return the first duplicate found
         const existingIssues = searchResults.data.items.filter((item) => item.number !== context.payload.issue.number).map((i) => `#${i.number}`);
         if (existingIssues.length > 0) {
@@ -18,20 +18,20 @@ async function checkDuplicateIssue(github, context, name) {
 
 This issue will be closed. Please follow the existing issue for updates.`,
             });
-            
+
             await github.rest.issues.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.issue.number,
                 state: "closed",
             });
-                    
+
             return true;
         }
     } catch (error) {
         console.error(`Error searching for duplicate issues with ${name}:`, error);
     }
-    
+
     return false;
 }
 
