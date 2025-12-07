@@ -1,5 +1,40 @@
 import {execSync} from "node:child_process";
 
+async function checkDuplicateIssue(github, context, name) {
+    // Search for existing issues with the same `name`
+    const searchQuery = `repo:${context.repo.owner}/${context.repo.repo} is:issue -is:pr "${name}" label:"new device support","external converter"`;
+    
+    try {
+        const searchResults = await github.rest.search.issuesAndPullRequests({q: searchQuery, per_page: 100});
+        
+        // Filter out the current issue and return the first duplicate found
+        const existingIssues = searchResults.data.items.filter((item) => item.number !== context.payload.issue.number).map((i) => `#${i.number}`);
+        if (existingIssues.length > 0) {
+            await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body: `👋 Hi there! This issue appears to be a duplicate of ${existingIssues.join(", ")}
+
+This issue will be closed. Please follow the existing issue for updates.`,
+            });
+            
+            await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                state: "closed",
+            });
+                    
+            return true;
+        }
+    } catch (error) {
+        console.error(`Error searching for duplicate issues with ${name}:`, error);
+    }
+    
+    return false;
+}
+
 export async function newDeviceSupport(github, _core, context, zhcDir) {
     const issue = context.payload.issue;
     // Hide previous bot comments
@@ -27,6 +62,7 @@ export async function newDeviceSupport(github, _core, context, zhcDir) {
     console.log("Found tuyaManufacturerNames", tuyaManufacturerNames);
     if (tuyaManufacturerNames.length > 0) {
         for (const [fullName, partialName] of tuyaManufacturerNames) {
+            if (await checkDuplicateIssue(github, context, fullName)) return;
             const fullMatch = (() => {
                 try {
                     return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, {encoding: "utf8"});
@@ -93,6 +129,7 @@ Let us know if it works so we can support this device out-of-the-box!`,
 
         if (zigbeeModels.length > 0) {
             for (const zigbeeModel of zigbeeModels) {
+                if (await checkDuplicateIssue(github, context, fullName)) return;
                 const fullMatch = (() => {
                     try {
                         return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, {encoding: "utf8"});
