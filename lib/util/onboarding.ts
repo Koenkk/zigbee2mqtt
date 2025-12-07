@@ -146,7 +146,7 @@ function generateHtmlForm(currentSettings: RecursivePartial<Settings>, devices: 
                     id="serial_rtscts"
                     name="serial_rtscts"
                     ${currentSettings.serial?.rtscts ? "checked" : ""}
-                    ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS ? "disabled" : ""}>
+                    ${process.env.ZIGBEE2MQTT_CONFIG_SERIAL_RTSCTS ? "disabled" : ""}
                     style="margin-bottom: 1rem;">
                 <small>Can be ignored for networked coordinators (TCP).</small>
             </fieldset>
