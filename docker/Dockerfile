@@ -1,6 +1,6 @@
 ARG TARGETPLATFORM
 
-FROM alpine:3.22 AS base
+FROM alpine:3.23 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
