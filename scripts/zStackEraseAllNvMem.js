@@ -91,4 +91,4 @@ if (processArgs.length !== 1) {
 
 const eraser = new ZStackNvMemEraser(processArgs[0]);
 
-eraser.start();
+void eraser.start();

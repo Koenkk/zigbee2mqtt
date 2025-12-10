@@ -12,7 +12,7 @@
         "bracketSpacing": false
     },
     "files": {
-        "includes": ["**", "!package.json"]
+        "includes": ["**", "!package.json", "!!**/dist", "!!**/coverage"]
     },
     "linter": {
         "includes": ["**"],
@@ -72,6 +72,11 @@
             "suspicious": {
                 "noConstEnum": "off",
                 "useAwait": "error"
+            },
+            "nursery": {
+                "useExhaustiveSwitchCases": "error",
+                "noFloatingPromises": "error",
+                "noMisusedPromises": "error"
             }
         }
     },
