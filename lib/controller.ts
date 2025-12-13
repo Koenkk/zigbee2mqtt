@@ -99,7 +99,7 @@ export class Controller {
         // Start zigbee
         try {
             await this.zigbee.start();
-            // biome-ignore lint/nursery/noMisusedPromises: TODO
+
             this.eventBus.onAdapterDisconnected(this, async () => {
                 logger.error("Adapter disconnected, stopping");
                 await this.stop(false, 2);
