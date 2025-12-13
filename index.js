@@ -174,11 +174,11 @@ async function handleQuit() {
 
 if (require.main === module || require.main.filename.endsWith(`${path.sep}cli.js`)) {
     if (process.argv.length === 3 && process.argv[2] === "writehash") {
-        writeHash();
+        void writeHash();
     } else {
         process.on("SIGINT", handleQuit);
         process.on("SIGTERM", handleQuit);
-        start();
+        void start();
     }
 } else {
     process.on("SIGINT", handleQuit);

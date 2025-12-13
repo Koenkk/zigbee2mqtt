@@ -61,7 +61,7 @@ export default class EventBus {
     public emitAdapterDisconnected(): void {
         this.emitter.emit("adapterDisconnected");
     }
-    public onAdapterDisconnected(key: ListenerKey, callback: () => void): void {
+    public onAdapterDisconnected(key: ListenerKey, callback: () => Promise<void>): void {
         this.on("adapterDisconnected", callback, key);
     }
 
