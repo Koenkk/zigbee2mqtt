@@ -161,9 +161,8 @@ export class Controller {
             }
         }
 
-        // biome-ignore lint/nursery/noMisusedPromises: TODO
-        this.eventBus.onLastSeenChanged(this, async (data) => {
-            await utils.publishLastSeen(data, settings.get(), false, this.publishEntityState);
+        this.eventBus.onLastSeenChanged(this, (data) => {
+            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(() => {});
         });
 
         logger.info("Zigbee2MQTT started!");
