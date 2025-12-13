@@ -20,7 +20,7 @@ export default class EventBus {
     readonly stats: Stats;
     constructor();
     emitAdapterDisconnected(): void;
-    onAdapterDisconnected(key: ListenerKey, callback: () => void): void;
+    onAdapterDisconnected(key: ListenerKey, callback: () => Promise<void>): void;
     emitPermitJoinChanged(data: eventdata.PermitJoinChanged): void;
     onPermitJoinChanged(key: ListenerKey, callback: (data: eventdata.PermitJoinChanged) => void): void;
     emitEntityRenamed(data: eventdata.EntityRenamed): void;

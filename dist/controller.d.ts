@@ -23,7 +23,6 @@ export declare class Controller {
     private stopExtension;
     stop(restart?: boolean, code?: number): Promise<void>;
     exit(code: number, restart?: boolean): Promise<void>;
-    onZigbeeAdapterDisconnected(): Promise<void>;
     publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void>;
     iteratePayloadAttributeOutput(topicRoot: string, payload: KeyValue, options: Partial<MqttPublishOptions>): Promise<void>;
 }
