@@ -99,7 +99,11 @@ export class Controller {
         // Start zigbee
         try {
             await this.zigbee.start();
-            this.eventBus.onAdapterDisconnected(this, this.onZigbeeAdapterDisconnected);
+
+            this.eventBus.onAdapterDisconnected(this, async () => {
+                logger.error("Adapter disconnected, stopping");
+                await this.stop(false, 2);
+            });
         } catch (error) {
             logger.error("Failed to start zigbee-herdsman");
             logger.error(
@@ -157,7 +161,9 @@ export class Controller {
             }
         }
 
-        this.eventBus.onLastSeenChanged(this, (data) => utils.publishLastSeen(data, settings.get(), false, this.publishEntityState));
+        this.eventBus.onLastSeenChanged(this, (data) => {
+            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(() => {});
+        });
 
         logger.info("Zigbee2MQTT started!");
 
@@ -315,11 +321,6 @@ export class Controller {
     async exit(code: number, restart = false): Promise<void> {
         await logger.end();
         return await this.exitCallback(code, restart);
-    }
-
-    @bind async onZigbeeAdapterDisconnected(): Promise<void> {
-        logger.error("Adapter disconnected, stopping");
-        await this.stop(false, 2);
     }
 
     @bind async publishEntityState(entity: Group | Device, payload: KeyValue, stateChangeReason?: StateChangeReason): Promise<void> {
