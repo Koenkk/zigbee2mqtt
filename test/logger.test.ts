@@ -12,6 +12,14 @@ import Transport from "winston-transport";
 import logger from "../lib/util/logger";
 import * as settings from "../lib/util/settings";
 
+vi.mock("rimraf", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("rimraf")>();
+    return {
+        ...actual,
+        rimrafSync: vi.fn(actual.rimrafSync),
+    };
+});
+
 describe("Logger", () => {
     let consoleWriteSpy: MockInstance;
     const dir = tmp.dirSync();
@@ -57,6 +65,24 @@ describe("Logger", () => {
         expect(fs.readdirSync(dir.name).length).toBe(20);
         logger.init();
         expect(fs.readdirSync(dir.name).length).toBe(10);
+    });
+
+    it("Should handle cleanup error", () => {
+        for (const d of fs.readdirSync(dir.name)) {
+            rimrafSync(path.join(dir.name, d));
+        }
+
+        for (let i = 0; i < 20; i++) {
+            fs.mkdirSync(path.join(dir.name, `log_${i}`));
+        }
+
+        vi.mocked(rimrafSync).mockImplementationOnce(() => {
+            throw new Error("EACCES: permission denied");
+        });
+
+        const errorSpy = vi.spyOn(logger, "error");
+        logger.init();
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/Failed to remove old log directory '.*': Error: EACCES: permission denied/));
     });
 
     it("Should cleanup (15 folders setting)", () => {
