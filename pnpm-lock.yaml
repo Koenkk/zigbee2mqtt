@@ -81,8 +81,8 @@ importers:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.4.3
-        version: 2.4.3
+        specifier: 2.5.0
+        version: 2.5.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.8
@@ -103,8 +103,8 @@ importers:
         specifier: ^0.4.3
         version: 0.4.3
       '@types/readable-stream':
-        specifier: 4.0.22
-        version: 4.0.22
+        specifier: 4.0.23
+        version: 4.0.23
       '@types/serve-static':
         specifier: ^2.2.0
         version: 2.2.0
@@ -563,8 +563,8 @@ packages:
   '@types/object-assign-deep@0.4.3':
     resolution: {integrity: sha512-d9Gxaj5j1hzrxJ61EFEg13B4g4FgrT/DYtcDWFXPehR8DF2SUZbVMFtZIs8exkVRiqrqBpdTc/lUUZjncsPpMw==}
 
-  '@types/readable-stream@4.0.22':
-    resolution: {integrity: sha512-/FFhJpfCLAPwAcN3mFycNUa77ddnr8jTgF5VmSNetaemWB2cIlfCA9t0YTM3JAT0wOcv8D4tjPo7pkDhK3EJIg==}
+  '@types/readable-stream@4.0.23':
+    resolution: {integrity: sha512-wwXrtQvbMHxCbBgjHaMGEmImFTQxxpfMOR/ZoQnXxB1woqkUbdLGFDgauo00Py9IudiaqSeiBiulSV9i6XIPig==}
 
   '@types/serve-static@2.2.0':
     resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
@@ -1482,8 +1482,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.4.3:
-    resolution: {integrity: sha512-L7LfEcRlROFSTfupprGPOxTyWvSaa0Ffz+9GWU/pqlN4qkjYXXVGENz1whxKvAujj/yyURMrqYlRj9e8UrAwtQ==}
+  zigbee2mqtt-windfront@2.5.0:
+    resolution: {integrity: sha512-T3nD/J0vg4/saZ8aXIFoUi4W6fZ3ngUGHS67EKcZV2LAeHvJ044u/J2p+UaNpyNDy+Z5WYSsLAGVQrSpRRdEyA==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -1783,7 +1783,7 @@ snapshots:
 
   '@types/object-assign-deep@0.4.3': {}
 
-  '@types/readable-stream@4.0.22':
+  '@types/readable-stream@4.0.23':
     dependencies:
       '@types/node': 24.10.2
 
@@ -1905,7 +1905,7 @@ snapshots:
 
   bl@6.1.3:
     dependencies:
-      '@types/readable-stream': 4.0.22
+      '@types/readable-stream': 4.0.23
       buffer: 6.0.3
       inherits: 2.0.4
       readable-stream: 4.7.0
@@ -2274,7 +2274,7 @@ snapshots:
 
   mqtt@5.14.1:
     dependencies:
-      '@types/readable-stream': 4.0.22
+      '@types/readable-stream': 4.0.23
       '@types/ws': 8.18.1
       commist: 3.2.0
       concat-stream: 2.0.0
@@ -2775,4 +2775,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.4.3: {}
+  zigbee2mqtt-windfront@2.5.0: {}
