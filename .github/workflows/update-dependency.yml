@@ -25,7 +25,7 @@ jobs:
             - run: |
                   pnpm install ${{ github.event.client_payload.package }}@${{ github.event.client_payload.version }} --save-exact
                   pnpm install --no-frozen-lockfile
-            - uses: peter-evans/create-pull-request@v7
+            - uses: peter-evans/create-pull-request@v8
               id: cpr
               with:
                   commit-message: 'fix(ignore): update ${{ github.event.client_payload.package }} to ${{ github.event.client_payload.version }}'
