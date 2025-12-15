@@ -291,6 +291,15 @@ const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     level_config: {entity_category: "diagnostic"},
     programming_mode: {icon: "mdi:calendar-clock"},
     schedule_settings: {icon: "mdi:calendar-clock"},
+    weekly_schedule: {
+        icon: "mdi:calendar-clock",
+        entity_category: "config",
+        value_template:
+            "{% set s = value_json.weekly_schedule %}" +
+            "{% if s %}{{ s.keys() | list | length }} days configured{% else %}Not configured{% endif %}",
+        json_attributes_topic: true,
+        json_attributes_template: `{{ {'schedule': value_json.weekly_schedule} | tojson }}`,
+    },
 } as const;
 
 const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {

@@ -93,6 +93,56 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
     });
 
+    it("Should discover weekly_schedule sensor with json_attributes instead of truncated value", () => {
+        // Create a mock device with weekly_schedule exposed
+        const mockDeviceWithWeeklySchedule = {
+            definition: {
+                model: "TRVZB",
+                vendor: "SONOFF",
+                description: "Test TRV with weekly schedule",
+            },
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            options: {},
+            exposes: (): unknown[] => [
+                {
+                    type: "composite",
+                    property: "weekly_schedule",
+                    name: "weekly_schedule",
+                    features: [
+                        {type: "text", property: "sunday", name: "sunday", access: 7},
+                        {type: "text", property: "monday", name: "monday", access: 7},
+                        {type: "text", property: "tuesday", name: "tuesday", access: 7},
+                        {type: "text", property: "wednesday", name: "wednesday", access: 7},
+                        {type: "text", property: "thursday", name: "thursday", access: 7},
+                        {type: "text", property: "friday", name: "friday", access: 7},
+                        {type: "text", property: "saturday", name: "saturday", access: 7},
+                    ],
+                    access: 7,
+                },
+            ],
+            zh: {endpoints: []},
+        };
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(mockDeviceWithWeeklySchedule);
+        const weeklyScheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
+
+        expect(weeklyScheduleConfig).toBeDefined();
+        expect(weeklyScheduleConfig!.discovery_payload.icon).toBe("mdi:calendar-clock");
+        // Note: entity_category is converted from "config" to "diagnostic" for sensors in HA
+        expect(weeklyScheduleConfig!.discovery_payload.entity_category).toBe("diagnostic");
+
+        // Verify value_template shows a summary, not the raw JSON
+        expect(weeklyScheduleConfig!.discovery_payload.value_template).toContain("days configured");
+        expect(weeklyScheduleConfig!.discovery_payload.value_template).not.toContain("truncate");
+
+        // Verify json_attributes are used
+        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_topic).toBeDefined();
+        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_template).toBeDefined();
+        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_template).toContain("schedule");
+    });
+
     it("Should not have duplicate type/object_ids in a mapping", async () => {
         const duplicated: string[] = [];
 
