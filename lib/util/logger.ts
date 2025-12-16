@@ -240,7 +240,11 @@ class Logger {
 
             for (const dir of directories) {
                 this.debug(`Removing old log directory '${dir.path}'`);
-                rimrafSync(dir.path);
+                try {
+                    rimrafSync(dir.path);
+                } catch (e) {
+                    this.error(`Failed to remove old log directory '${dir.path}': ${e}`);
+                }
             }
         }
     }
