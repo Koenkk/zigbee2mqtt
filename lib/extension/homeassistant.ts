@@ -291,7 +291,7 @@ const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     level_config: {entity_category: "diagnostic"},
     programming_mode: {icon: "mdi:calendar-clock"},
     schedule_settings: {icon: "mdi:calendar-clock"},
-    weekly_schedule: {
+    schedule: {
         icon: "mdi:calendar-clock",
         entity_category: "config",
         value_template:
@@ -1640,6 +1640,10 @@ export class HomeAssistant extends Extension {
 
             if (payload.temperature_high_state_topic) {
                 payload.temperature_high_state_topic = stateTopic;
+            }
+
+            if (payload.json_attributes_topic) {
+                payload.json_attributes_topic = stateTopic;
             }
 
             if (payload.temperature_command_topic) {
