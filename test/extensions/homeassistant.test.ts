@@ -94,38 +94,57 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover weekly_schedule sensor with json_attributes instead of truncated value", () => {
-        // Create a mock device with weekly_schedule exposed
-        const mockDeviceWithWeeklySchedule = {
-            definition: {
-                model: "TRVZB",
-                vendor: "SONOFF",
-                description: "Test TRV with weekly schedule",
-            },
-            isDevice: (): boolean => true,
-            isGroup: (): boolean => false,
-            options: {},
-            exposes: (): unknown[] => [
-                {
-                    type: "composite",
-                    property: "weekly_schedule",
-                    name: "weekly_schedule",
-                    features: [
-                        {type: "text", property: "sunday", name: "sunday", access: 7},
-                        {type: "text", property: "monday", name: "monday", access: 7},
-                        {type: "text", property: "tuesday", name: "tuesday", access: 7},
-                        {type: "text", property: "wednesday", name: "wednesday", access: 7},
-                        {type: "text", property: "thursday", name: "thursday", access: 7},
-                        {type: "text", property: "friday", name: "friday", access: 7},
-                        {type: "text", property: "saturday", name: "saturday", access: 7},
-                    ],
-                    access: 7,
-                },
-            ],
-            zh: {endpoints: []},
-        };
+        // Create a SONOFF TRVZB expose definition with schedule (composite type)
+                const trvzbExposes = [
+                    {
+                        type: "climate",
+                        features: [
+                            {
+                                name: "occupied_heating_setpoint",
+                                property: "occupied_heating_setpoint",
+                                type: "numeric",
+                                access: 7,
+                                value_min: 4,
+                                value_max: 35,
+                                value_step: 0.5,
+                            },
+                            {name: "local_temperature", property: "local_temperature", type: "numeric", access: 5},
+                            {name: "system_mode", property: "system_mode", type: "enum", access: 7, values: ["off", "auto", "heat"]},
+                            {name: "running_state", property: "running_state", type: "enum", access: 5, values: ["idle", "heat"]},
+                        ],
+                    },
+                    {
+                        type: "composite",
+                        name: "schedule",
+                        property: "weekly_schedule",
+                        label: "Schedule",
+                        access: 3,
+                        category: "config",
+                        features: [
+                            {name: "sunday", property: "sunday", type: "text", access: 3},
+                            {name: "monday", property: "monday", type: "text", access: 3},
+                            {name: "tuesday", property: "tuesday", type: "text", access: 3},
+                            {name: "wednesday", property: "wednesday", type: "text", access: 3},
+                            {name: "thursday", property: "thursday", type: "text", access: 3},
+                            {name: "friday", property: "friday", type: "text", access: 3},
+                            {name: "saturday", property: "saturday", type: "text", access: 3},
+                        ],
+                    },
+                ];
+
+                // Create a mock device with TRVZB exposes
+                const mockDevice = {
+                    definition: {vendor: "SONOFF", model: "TRVZB"},
+                    isDevice: () => true,
+                    isGroup: () => false,
+                    options: {ID: "0x1234567890abcdef"},
+                    exposes: () => trvzbExposes,
+                    zh: {endpoints: []},
+                    name: "test_trvzb",
+                };
 
         // @ts-expect-error private
-        const configs = extension.getConfigs(mockDeviceWithWeeklySchedule);
+        const configs = extension.getConfigs(mockDevice);
         const weeklyScheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
 
         expect(weeklyScheduleConfig).toBeDefined();
@@ -165,7 +184,7 @@ describe("Extension: HomeAssistant", () => {
             },
             {
                 type: "composite",
-                name: "schedule", // This is the key - "schedule", not "weekly_schedule"
+                name: "schedule",
                 property: "weekly_schedule",
                 label: "Schedule",
                 access: 3,
@@ -197,7 +216,7 @@ describe("Extension: HomeAssistant", () => {
         const configs = extension.getConfigs(mockDevice);
 
         // Find the schedule sensor config
-        const scheduleConfig = configs.find((c) => c.object_id === "schedule" || c.object_id === "weekly_schedule");
+        const scheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
 
         expect(scheduleConfig).toBeDefined();
         expect(scheduleConfig.type).toBe("sensor");
