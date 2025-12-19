@@ -291,15 +291,6 @@ const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     level_config: {entity_category: "diagnostic"},
     programming_mode: {icon: "mdi:calendar-clock"},
     schedule_settings: {icon: "mdi:calendar-clock"},
-    schedule: {
-        icon: "mdi:calendar-clock",
-        entity_category: "config",
-        value_template:
-            "{% set s = value_json.weekly_schedule %}" +
-            "{% if s %}{{ s.keys() | list | length }} days configured{% else %}Not configured{% endif %}",
-        json_attributes_topic: true,
-        json_attributes_template: `{{ {'schedule': value_json.weekly_schedule} | tojson }}`,
-    },
 } as const;
 
 const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
@@ -1199,6 +1190,35 @@ export class HomeAssistant extends Extension {
             case "composite":
             case "list": {
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
+
+                // Special handling for SONOFF TRVZB weekly schedule: create individual sensors per day
+                if (
+                    firstExposeTyped.type === "composite" &&
+                    firstExposeTyped.name === "schedule" &&
+                    firstExposeTyped.property === "weekly_schedule" &&
+                    definition?.vendor === "SONOFF" &&
+                    definition?.model === "TRVZB"
+                ) {
+                    const compositeExpose = firstExposeTyped as zhc.Composite;
+                    for (const feature of compositeExpose.features) {
+                        if (feature.type === "text" && feature.access & ACCESS_STATE) {
+                            const dayName = feature.name.charAt(0).toUpperCase() + feature.name.slice(1);
+                            discoveryEntries.push({
+                                type: "sensor",
+                                object_id: `${compositeExpose.property}_${feature.property}`,
+                                mockProperties: [{property: compositeExpose.property, value: null}],
+                                discovery_payload: {
+                                    name: endpoint ? `Schedule ${dayName} ${endpoint}` : `Schedule ${dayName}`,
+                                    value_template: `{{ value_json.${compositeExpose.property}.${feature.property} | default('', True) }}`,
+                                    icon: "mdi:calendar-clock",
+                                    entity_category: "diagnostic",
+                                },
+                            });
+                        }
+                    }
+                    break;
+                }
+
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
                     discoveryEntries.push({
                         type: "text",

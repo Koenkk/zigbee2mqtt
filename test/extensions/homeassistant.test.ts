@@ -93,7 +93,7 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
     });
 
-    it("Should discover weekly_schedule sensor with json_attributes instead of truncated value", () => {
+    it("Should discover SONOFF TRVZB weekly_schedule as individual sensors per day", () => {
         // Create a SONOFF TRVZB expose definition with schedule (composite type)
         const trvzbExposes = [
             {
@@ -145,43 +145,70 @@ describe("Extension: HomeAssistant", () => {
 
         // @ts-expect-error private
         const configs = extension.getConfigs(mockDevice);
-        const weeklyScheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
 
-        expect(weeklyScheduleConfig).toBeDefined();
-        expect(weeklyScheduleConfig!.discovery_payload.icon).toBe("mdi:calendar-clock");
-        // Note: entity_category is converted from "config" to "diagnostic" for sensors in HA
-        expect(weeklyScheduleConfig!.discovery_payload.entity_category).toBe("diagnostic");
+        // Should NOT have a single weekly_schedule sensor
+        const singleScheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
+        expect(singleScheduleConfig).toBeUndefined();
 
-        // Verify value_template shows a summary, not the raw JSON
-        expect(weeklyScheduleConfig!.discovery_payload.value_template).toContain("days configured");
-        expect(weeklyScheduleConfig!.discovery_payload.value_template).not.toContain("truncate");
-
-        // Verify json_attributes are used
-        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_topic).toBeDefined();
-        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_template).toBeDefined();
-        expect(weeklyScheduleConfig!.discovery_payload.json_attributes_template).toContain("schedule");
+        // Should have 7 individual day sensors
+        const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        for (const day of days) {
+            const dayConfig = configs.find((c) => c.object_id === `weekly_schedule_${day}`);
+            expect(dayConfig).toBeDefined();
+            expect(dayConfig!.type).toBe("sensor");
+            expect(dayConfig!.discovery_payload.icon).toBe("mdi:calendar-clock");
+            expect(dayConfig!.discovery_payload.entity_category).toBe("diagnostic");
+            expect(dayConfig!.discovery_payload.name).toBe(`Schedule ${day.charAt(0).toUpperCase() + day.slice(1)}`);
+            expect(dayConfig!.discovery_payload.value_template).toBe(`{{ value_json.weekly_schedule.${day} | default('', True) }}`);
+            // Should NOT use json_attributes
+            expect(dayConfig!.discovery_payload.json_attributes_topic).toBeUndefined();
+            expect(dayConfig!.discovery_payload.json_attributes_template).toBeUndefined();
+        }
     });
 
-    it("Should discover SONOFF TRVZB schedule sensor with json_attributes", () => {
-        // Create a SONOFF TRVZB expose definition with schedule (composite type)
-        const trvzbExposes = [
+    it("Should NOT apply TRVZB schedule handling to other devices", () => {
+        // Create a non-TRVZB device with similar schedule expose
+        const otherDeviceExposes = [
             {
-                type: "climate",
+                type: "composite",
+                name: "schedule",
+                property: "weekly_schedule",
+                label: "Schedule",
+                access: 1, // Only STATE access
+                category: "config",
                 features: [
-                    {
-                        name: "occupied_heating_setpoint",
-                        property: "occupied_heating_setpoint",
-                        type: "numeric",
-                        access: 7,
-                        value_min: 4,
-                        value_max: 35,
-                        value_step: 0.5,
-                    },
-                    {name: "local_temperature", property: "local_temperature", type: "numeric", access: 5},
-                    {name: "system_mode", property: "system_mode", type: "enum", access: 7, values: ["off", "auto", "heat"]},
-                    {name: "running_state", property: "running_state", type: "enum", access: 5, values: ["idle", "heat"]},
+                    {name: "sunday", property: "sunday", type: "text", access: 1},
+                    {name: "monday", property: "monday", type: "text", access: 1},
                 ],
             },
+        ];
+
+        // Create a mock device with different vendor/model
+        const mockDevice = {
+            definition: {vendor: "OTHER_VENDOR", model: "OTHER_MODEL"},
+            isDevice: () => true,
+            isGroup: () => false,
+            options: {ID: "0x1234567890abcdef"},
+            exposes: () => otherDeviceExposes,
+            zh: {endpoints: []},
+            name: "test_other",
+        };
+
+        // @ts-expect-error private method
+        const configs = extension.getConfigs(mockDevice);
+
+        // Should have a single weekly_schedule sensor (default behavior)
+        const scheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
+        expect(scheduleConfig).toBeDefined();
+        expect(scheduleConfig!.type).toBe("sensor");
+
+        // Should NOT have individual day sensors
+        const sundayConfig = configs.find((c) => c.object_id === "weekly_schedule_sunday");
+        expect(sundayConfig).toBeUndefined();
+    });
+
+    it("Should handle TRVZB schedule with endpoint suffix", () => {
+        const trvzbExposes = [
             {
                 type: "composite",
                 name: "schedule",
@@ -189,19 +216,11 @@ describe("Extension: HomeAssistant", () => {
                 label: "Schedule",
                 access: 3,
                 category: "config",
-                features: [
-                    {name: "sunday", property: "sunday", type: "text", access: 3},
-                    {name: "monday", property: "monday", type: "text", access: 3},
-                    {name: "tuesday", property: "tuesday", type: "text", access: 3},
-                    {name: "wednesday", property: "wednesday", type: "text", access: 3},
-                    {name: "thursday", property: "thursday", type: "text", access: 3},
-                    {name: "friday", property: "friday", type: "text", access: 3},
-                    {name: "saturday", property: "saturday", type: "text", access: 3},
-                ],
+                endpoint: "l1", // Has endpoint
+                features: [{name: "sunday", property: "sunday", type: "text", access: 3}],
             },
         ];
 
-        // Create a mock device with TRVZB exposes
         const mockDevice = {
             definition: {vendor: "SONOFF", model: "TRVZB"},
             isDevice: () => true,
@@ -212,23 +231,13 @@ describe("Extension: HomeAssistant", () => {
             name: "test_trvzb",
         };
 
-        // @ts-expect-error private method
+        // @ts-expect-error private
         const configs = extension.getConfigs(mockDevice);
+        const sundayConfig = configs.find((c) => c.object_id === "weekly_schedule_sunday");
 
-        // Find the schedule sensor config
-        const scheduleConfig = configs.find((c) => c.object_id === "weekly_schedule");
-
-        expect(scheduleConfig).toBeDefined();
-        expect(scheduleConfig.type).toBe("sensor");
-        expect(scheduleConfig.discovery_payload.icon).toBe("mdi:calendar-clock");
-        expect(scheduleConfig.discovery_payload.value_template).toContain("days configured");
-        expect(scheduleConfig.discovery_payload.value_template).not.toContain("truncate");
-
-        // Most importantly: verify json_attributes_topic is set to true (will be converted to actual topic)
-        expect(scheduleConfig.discovery_payload.json_attributes_topic).toBe(true);
-        expect(scheduleConfig.discovery_payload.json_attributes_template).toBeDefined();
-        expect(scheduleConfig.discovery_payload.json_attributes_template).toContain("schedule");
-        expect(scheduleConfig.discovery_payload.json_attributes_template).toContain("weekly_schedule");
+        expect(sundayConfig).toBeDefined();
+        // Name should include endpoint
+        expect(sundayConfig!.discovery_payload.name).toBe("Schedule Sunday l1");
     });
 
     it("Should not have duplicate type/object_ids in a mapping", async () => {
