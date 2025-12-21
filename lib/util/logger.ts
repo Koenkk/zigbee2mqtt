@@ -9,27 +9,20 @@ import * as settings from "./settings";
 const NAMESPACE_SEPARATOR = ":";
 
 class Logger {
-    // @ts-expect-error initalized in `init`
-    private level: settings.LogLevel;
-    // @ts-expect-error initalized in `init`
-    private output: string[];
-    // @ts-expect-error initalized in `init`
-    private directory: string;
-    // @ts-expect-error initalized in `init`
-    private logger: winston.Logger;
-    // @ts-expect-error initalized in `init`
-    private fileTransport: winston.transports.FileTransportInstance;
+    private level!: settings.LogLevel;
+    private output!: string[];
+    private directory!: string;
+    private logger!: winston.Logger;
+    private fileTransport: winston.transports.FileTransportInstance | undefined;
     private debugNamespaceIgnoreRegex?: RegExp;
-    // @ts-expect-error initalized in `init`
-    private namespacedLevels: Record<string, settings.LogLevel>;
-    // @ts-expect-error initalized in `init`
-    private cachedNamespacedLevels: Record<string, settings.LogLevel>;
+    private namespacedLevels!: Record<string, settings.LogLevel>;
+    private cachedNamespacedLevels!: Record<string, settings.LogLevel>;
 
     public init(): void {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
-        // Directory to log to
-        const timestamp = new Date().toISOString().slice(0, 19).replace("T", ".").replace(/:/g, "-");
+        // NOTE: Sweden uses ISO standard, hence, this works for our purpose (equiv of toISOString with proper tz)
+        const timestamp = new Date().toLocaleString("sv-SE").slice(0, 19).replace(" ", ".").replaceAll(":", "-");
         this.directory = settings.get().advanced.log_directory.replace("%TIMESTAMP%", timestamp);
         const logFilename = settings.get().advanced.log_file.replace("%TIMESTAMP%", timestamp);
         this.level = settings.get().advanced.log_level;
@@ -266,7 +259,10 @@ class Logger {
                     // @ts-expect-error workaround
                     this.fileTransport.on("open", () => this.fileTransport._dest.on("finish", resolve));
                 }
-                this.fileTransport.end();
+
+                if (this.fileTransport) {
+                    this.fileTransport.end();
+                }
             });
         }
     }
