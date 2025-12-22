@@ -72,7 +72,7 @@
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^24.10.2",
+        "@types/node": "^25.0.3",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.23",
         "@types/serve-static": "^2.2.0",
