@@ -21,8 +21,13 @@ class Logger {
     public init(): void {
         // What transports to enable
         this.output = settings.get().advanced.log_output;
-        // NOTE: Sweden uses ISO standard, hence, this works for our purpose (equiv of toISOString with proper tz)
-        const timestamp = new Date().toLocaleString("sv-SE").slice(0, 19).replace(" ", ".").replaceAll(":", "-");
+        const date = new Date();
+        // offset UTC by current timezone, ISO keeps "Z" (UTC) which is then wrong but we strip it
+        const timestamp = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 19)
+            .replace("T", ".")
+            .replaceAll(":", "-");
         this.directory = settings.get().advanced.log_directory.replace("%TIMESTAMP%", timestamp);
         const logFilename = settings.get().advanced.log_file.replace("%TIMESTAMP%", timestamp);
         this.level = settings.get().advanced.log_level;
