@@ -51,6 +51,7 @@ describe("Logger", () => {
     it("Create log directory", () => {
         const dirs = fs.readdirSync(dir.name);
         expect(dirs.length).toBe(1);
+        expect(dirs[0]).toMatch(/^[0-9]{4}-[0-9]{2}-[0-9]{2}\.[0-9]{2}-[0-9]{2}-[0-9]{2}$/);
     });
 
     it("Should cleanup (default setting)", () => {
