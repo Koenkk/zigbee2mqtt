@@ -5,6 +5,7 @@ import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {type Device, devices, type Endpoint, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
+import * as zhc from "zigbee-herdsman-converters";
 
 import stringify from "json-stable-stringify-without-jsonify";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
@@ -42,7 +43,7 @@ describe("Extension: Configure", () => {
         const endpoint2 = device.getEndpoint(2)!;
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
         expect(endpoint2.write).toHaveBeenCalledWith("genBasic", {49: {type: 25, value: 11}}, {disableDefaultResponse: true, manufacturerCode: 4107});
-        expect(device.meta.configured).toBe(332242049);
+        expect(device.meta.configured).toBe(0);
     };
 
     const expectBulbConfigured = (): void => {
@@ -145,6 +146,43 @@ describe("Extension: Configure", () => {
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expectBulbConfigured();
+    });
+
+    it("Should re-configure when configureKey of the defintion changes to the non-default value of 0", async () => {
+        // Device is initially configured (definition has uses default configureKey of 0)
+        const device = devices.bulb;
+        expectBulbConfigured();
+
+        // Nothing happens when receiving a Zigbee message
+        mockClear(device);
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        expectBulbNotConfigured();
+
+        // Simulate that the definition configureKey changes
+        vi.spyOn(zhc, "getConfigureKey").mockReturnValueOnce(1);
+
+        // Now it should re-configure upon receiving a Zigbee message
+        mockClear(device);
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        expectBulbConfigured();
+    });
+
+    it("Should NOT re-configure when configureKey of the defintion is 0", async () => {
+        // This test the migration from the old configureKey (hash of the configure function) to the new configureKey system.
+        // See commment in `configure.ts` -> `shouldReconfigure` for more details.
+
+        // Device is initially configured (definition has uses default configureKey of 0)
+        const device = devices.bulb;
+        expectBulbConfigured();
+        device.meta.configured = 1321;
+
+        // Nothing happens when receiving a Zigbee message
+        mockClear(device);
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        expectBulbNotConfigured();
     });
 
     it("Should allow to configure via MQTT", async () => {
