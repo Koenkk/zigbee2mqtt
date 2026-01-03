@@ -1219,10 +1219,10 @@ describe("Extension: HomeAssistant", () => {
             max_temp: "30",
             min_temp: "5",
             mode_command_topic: "zigbee2mqtt/bosch_rm230z/set",
-            mode_command_template:
-                "{% set values = { 'auto':'schedule','heat':'manual','cool':'manual','off':'pause'} %}{% if value == \"heat\" or value == \"cool\" %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
             mode_state_template:
                 "{% set values = {'schedule':'auto','manual':'heat','pause':'off'} %}{% set value = value_json.operating_mode %}{% if value == \"manual\" %}{{ value_json.system_mode }}{% else %}{{ values[value] if value in values.keys() else 'off' }}{% endif %}",
+            mode_command_template:
+                "{% set values = { 'auto':'schedule','heat':'manual','cool':'manual','off':'pause'} %}{% if value == \"heat\" or value == \"cool\" %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
             mode_state_topic: "zigbee2mqtt/bosch_rm230z",
             modes: ["off", "heat", "cool", "auto"],
             name: null,
