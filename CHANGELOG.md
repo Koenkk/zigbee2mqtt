@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.7.2...2.7.3) (2026-01-03)
+
+
+### Bug Fixes
+
+* **ignore:** update zigbee-herdsman to 8.0.2 ([#30480](https://github.com/Koenkk/zigbee2mqtt/issues/30480)) ([1147cf1](https://github.com/Koenkk/zigbee2mqtt/commit/1147cf16dd62dce5863a93983835c46e8e92e95d))
+
 ## [2.7.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.7.1...2.7.2) (2026-01-01)
 
 
