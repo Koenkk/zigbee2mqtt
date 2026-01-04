@@ -202,14 +202,14 @@ export default abstract class ExternalJSExtension<M> extends Extension {
                 const mod = await this.importFile(filePath);
                 await this.loadJS(extension.name, mod.default);
             } catch (error) {
-                // change ext so Z2M doesn't try to load it again and again
-                fs.renameSync(filePath, `${filePath}.invalid`);
-
                 logger.error(
                     `Invalid external ${this.mqttTopic} '${extension.name}' was ignored and renamed to prevent interference with Zigbee2MQTT. (${(error as Error).message})`,
                 );
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
+
+                // change ext so Z2M doesn't try to load it again and again
+                fs.renameSync(filePath, `${filePath}.invalid`);
             }
         }
     }
