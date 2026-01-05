@@ -82,6 +82,7 @@ export const defaults = {
     ota: {
         update_check_interval: 24 * 60,
         disable_automatic_update_check: false,
+        image_block_request_timeout: 150000,
         image_block_response_delay: 250,
         default_maximum_data_size: 50,
     },

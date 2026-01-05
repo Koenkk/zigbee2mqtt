@@ -366,6 +366,15 @@
                     "description": "Location of override OTA index file",
                     "examples": ["index.json"]
                 },
+                "image_block_request_timeout": {
+                    "type": "number",
+                    "title": "Image block request timeout",
+                    "description": "Timeout (in milliseconds) during OTA updates. You can increase this value if your device is requesting blocks too slowly.",
+                    "default": 150000,
+                    "minimum": 10000,
+                    "maximum": 2147483647,
+                    "requiresRestart": true
+                },
                 "image_block_response_delay": {
                     "type": "number",
                     "title": "Image block response delay",
@@ -930,6 +939,12 @@
                             "description": "Name of the device in Home Assistant"
                         }
                     }
+                },
+                "disable_automatic_update_check": {
+                    "type": "boolean",
+                    "title": "Disable automatic update check",
+                    "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
+                    "default": false
                 }
             },
             "required": ["friendly_name"]

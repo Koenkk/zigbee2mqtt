@@ -3,7 +3,7 @@ import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 import {access, Numeric} from "zigbee-herdsman-converters";
-
+import logger from "../util/logger";
 import * as settings from "../util/settings";
 
 const LINKQUALITY = new Numeric("linkquality", access.STATE)
@@ -41,6 +41,12 @@ export default class Device {
     get otaExtraMetas(): zhc.Ota.ExtraMetas {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
+    get hasScheduledOta(): boolean {
+        return this.zh.scheduledOta !== undefined;
+    }
+    get hasCustomScheduledOta(): boolean {
+        return this.zh.scheduledOta?.url !== undefined;
+    }
     get interviewed(): boolean {
         return this.zh.interviewState === InterviewState.Successful || this.zh.interviewState === InterviewState.Failed;
     }
@@ -67,6 +73,22 @@ export default class Device {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
         }
+    }
+
+    async reInterview(eventBus: EventBus): Promise<void> {
+        logger.info(`Interviewing '${this.name}'`);
+
+        try {
+            await this.zh.interview(true);
+            logger.info(`Successfully interviewed '${this.name}'`);
+        } catch (error) {
+            throw new Error(`interview of '${this.name}' (${this.ieeeAddr}) failed: ${error}`, {cause: error});
+        }
+
+        // A re-interview can for example result in a different modelId, therefore reconsider the definition.
+        await this.resolveDefinition(true);
+        eventBus.emitDevicesChanged();
+        eventBus.emitExposesChanged({device: this});
     }
 
     ensureInSettings(): void {

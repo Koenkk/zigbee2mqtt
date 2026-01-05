@@ -1,10 +1,9 @@
 import assert from "node:assert";
-import path from "node:path";
+import {writeFileSync} from "node:fs";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
-import {Zcl} from "zigbee-herdsman";
-import type {Ota} from "zigbee-herdsman-converters";
-import {ota} from "zigbee-herdsman-converters";
+import {setOtaConfiguration, Zcl} from "zigbee-herdsman";
+import type {OtaDataSettings, OtaSource, OtaUpdateAvailableResult} from "zigbee-herdsman/dist/controller/tstype";
 import Device from "../model/device";
 import type {Zigbee2MQTTAPI} from "../types/api";
 import dataDir from "../util/data";
@@ -22,7 +21,24 @@ export interface UpdatePayload {
         state: UpdateState;
         installed_version: number | null;
         latest_version: number | null;
+        latest_source: string | null;
+        latest_release_notes: string | null;
     };
+}
+
+/**
+ * Write to `dataDir` and return created path
+ */
+function writeFirmwareHexToDataDir(hex: string, fileName: string | undefined, deviceIeee: string): string {
+    if (!fileName) {
+        fileName = `${deviceIeee}_${Date.now()}`;
+    }
+
+    const filePath = dataDir.joinPath(fileName);
+
+    writeFileSync(Buffer.from(hex, "hex"), filePath);
+
+    return filePath;
 }
 
 export default class OTAUpdate extends Extension {
@@ -30,10 +46,9 @@ export default class OTAUpdate extends Extension {
         `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade)?`,
         "i",
     );
-    private inProgress = new Set<string>();
-    private lastChecked = new Map<string, number>();
-    private scheduledUpgrades = new Set<string>();
-    private scheduledDowngrades = new Set<string>();
+    #defaultDataSettings!: OtaDataSettings;
+    #inProgress = new Set<string>();
+    #lastChecked = new Map<string, number>();
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
@@ -41,35 +56,34 @@ export default class OTAUpdate extends Extension {
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
 
         const otaSettings = settings.get().ota;
-        // Let OTA module know if the override index file is provided
-        let overrideIndexLocation = otaSettings.zigbee_ota_override_index_location;
+        this.#defaultDataSettings = {
+            // fallbacks are only to satisfy typing, should always be defined from settings defaults
+            requestTimeout: otaSettings.image_block_request_timeout ?? 150000,
+            responseDelay: otaSettings.image_block_response_delay ?? 250,
+            baseSize: otaSettings.default_maximum_data_size ?? 50,
+        };
 
-        // If the file name is not a full path, then treat it as a relative to the data directory
-        if (overrideIndexLocation && !ota.isValidUrl(overrideIndexLocation) && !path.isAbsolute(overrideIndexLocation)) {
-            overrideIndexLocation = dataDir.joinPath(overrideIndexLocation);
-        }
-
-        // In order to support local firmware files we need to let zigbeeOTA know where the data directory is
-        ota.setConfiguration({
-            dataDir: dataDir.getPath(),
-            overrideIndexLocation,
-            // TODO: implement me
-            imageBlockResponseDelay: otaSettings.image_block_response_delay,
-            defaultMaximumDataSize: otaSettings.default_maximum_data_size,
-        });
+        setOtaConfiguration(dataDir.getPath(), otaSettings.zigbee_ota_override_index_location);
 
         // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state, remove them.
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
-            this.removeProgressAndRemainingFromState(device);
+            this.#removeProgressAndRemainingFromState(device);
 
             // Reset update state, e.g. when Z2M restarted during update.
             if (this.state.get(device).update?.state === "updating") {
+                // TODO: should use idle instead?
                 this.state.get(device).update.state = "available";
             }
         }
     }
 
-    private removeProgressAndRemainingFromState(device: Device): void {
+    // mostly intended for testing
+    clearState(): void {
+        this.#inProgress.clear();
+        this.#lastChecked.clear();
+    }
+
+    #removeProgressAndRemainingFromState(device: Device): void {
         const deviceState = this.state.get(device);
 
         if (deviceState.update) {
@@ -79,7 +93,7 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
-        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition || this.inProgress.has(data.device.ieeeAddr)) {
+        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition || this.#inProgress.has(data.device.ieeeAddr)) {
             return;
         }
 
@@ -91,115 +105,77 @@ export default class OTAUpdate extends Extension {
 
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
-        if (data.device.definition.ota) {
-            if (this.scheduledUpgrades.has(data.device.ieeeAddr) || this.scheduledDowngrades.has(data.device.ieeeAddr)) {
-                this.inProgress.add(data.device.ieeeAddr);
+        if (data.device.hasScheduledOta) {
+            // allow custom source to override check for definition `ota`
+            if (data.device.hasCustomScheduledOta || data.device.definition.ota) {
+                this.#inProgress.add(data.device.ieeeAddr);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
 
                 try {
-                    const fileVersion = await ota.update(
-                        data.device.zh,
-                        data.device.otaExtraMetas,
-                        this.scheduledDowngrades.has(data.device.ieeeAddr),
-                        async (progress, remaining) => {
-                            let msg = `Update of '${data.device.name}' at ${progress.toFixed(2)}%`;
-
-                            if (remaining) {
-                                msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
-                            }
-
-                            logger.info(msg);
-
-                            await this.publishEntityState(
-                                data.device,
-                                this.getEntityPublishPayload(data.device, "updating", progress, remaining ?? undefined),
-                            );
-                        },
-                        data.data as Ota.ImageInfo,
-                        data.meta.zclTransactionSequenceNumber,
-                    );
-
-                    // remove right away on update success or no image in case any of the below calls fail
-                    this.scheduledUpgrades.delete(data.device.ieeeAddr);
-                    this.scheduledDowngrades.delete(data.device.ieeeAddr);
-
-                    if (fileVersion === undefined) {
-                        logger.info(`No image currently available for '${data.device.name}'. Unscheduling.`);
-
-                        // XXX: superfluous?
-                        this.removeProgressAndRemainingFromState(data.device);
-                        await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, "idle"));
-                        this.inProgress.delete(data.device.ieeeAddr);
-
-                        return;
-                    }
-
-                    logger.info(`Finished update of '${data.device.name}'`);
-
-                    this.removeProgressAndRemainingFromState(data.device);
-                    await this.publishEntityState(
+                    const [, toVersion] = await this.#update(
+                        undefined, // uses internally registered schedule
                         data.device,
-                        this.getEntityPublishPayload(data.device, {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion}),
+                        data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
+                        data.meta.zclTransactionSequenceNumber,
+                        data.endpoint,
                     );
 
-                    const firmwareTo = await this.readSoftwareBuildIDAndDateCode(data.device);
-
-                    logger.info(() => `Device '${data.device.name}' was updated to '${stringify(firmwareTo)}'`);
-
-                    /**
-                     * Re-configure after reading software build ID and date code, some devices use a
-                     * custom attribute for this (e.g. Develco SMSZB-120)
-                     */
-                    this.eventBus.emitReconfigure({device: data.device});
-                    this.eventBus.emitDevicesChanged();
+                    if (toVersion === undefined) {
+                        logger.info(`No OTA image currently available for '${data.device.name}'. Unscheduled.`);
+                    }
                 } catch (e) {
-                    logger.debug(`Update of '${data.device.name}' failed (${e}). Retry scheduled for next request.`);
+                    logger.debug(`OTA update of '${data.device.name}' failed (${e}). Retry scheduled for next request.`);
 
-                    this.removeProgressAndRemainingFromState(data.device);
-                    await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, "scheduled"));
+                    this.#removeProgressAndRemainingFromState(data.device);
+                    await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, "scheduled"));
                 }
 
-                this.inProgress.delete(data.device.ieeeAddr);
+                this.#inProgress.delete(data.device.ieeeAddr);
 
                 return; // we're done
             }
+        }
 
-            if (!settings.get().ota.disable_automatic_update_check) {
+        if (data.device.definition.ota) {
+            if (!data.device.options.disable_automatic_update_check && !settings.get().ota.disable_automatic_update_check) {
                 // When a device does a next image request, it will usually do it a few times after each other
                 // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
                 // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
                 const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-                const deviceLastChecked = this.lastChecked.get(data.device.ieeeAddr);
+                const deviceLastChecked = this.#lastChecked.get(data.device.ieeeAddr);
                 const check = deviceLastChecked !== undefined ? Date.now() - deviceLastChecked > updateCheckInterval : true;
 
                 if (!check) {
                     return;
                 }
 
-                this.inProgress.add(data.device.ieeeAddr);
-                this.lastChecked.set(data.device.ieeeAddr, Date.now());
-                let availableResult: Ota.UpdateAvailableResult | undefined;
+                this.#inProgress.add(data.device.ieeeAddr);
+                this.#lastChecked.set(data.device.ieeeAddr, Date.now());
+                let availableResult: OtaUpdateAvailableResult | undefined;
 
                 try {
-                    // never use 'previous' when responding to device request
-                    availableResult = await ota.isUpdateAvailable(data.device.zh, data.device.otaExtraMetas, data.data as Ota.ImageInfo, false);
+                    // auto-check defaults to zigbee-OTA + potential local index, and never `downgrade`
+                    availableResult = await data.device.zh.checkOta(
+                        {downgrade: false},
+                        data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
+                        data.device.otaExtraMetas,
+                        data.endpoint,
+                    );
                 } catch (error) {
-                    logger.debug(`Failed to check if update available for '${data.device.name}' (${error})`);
+                    logger.debug(`Failed to check if OTA update available for '${data.device.name}' (${error})`);
                 }
 
-                await this.publishEntityState(data.device, this.getEntityPublishPayload(data.device, availableResult ?? "idle"));
+                await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, availableResult ?? "idle"));
 
                 if (availableResult?.available) {
-                    const message = `Update available for '${data.device.name}'`;
-                    logger.info(message);
+                    logger.info(`OTA update available for '${data.device.name}'`);
                 }
             }
         }
 
         // Respond to stop the client from requesting OTAs
-        const endpoint = data.device.zh.endpoints.find((e) => e.supportsOutputCluster("genOta")) || data.endpoint;
-        await endpoint.commandResponse(
+        await data.endpoint.commandResponse(
             "genOta",
             "queryNextImageResponse",
             {status: Zcl.Status.NO_IMAGE_AVAILABLE},
@@ -207,47 +183,53 @@ export default class OTAUpdate extends Extension {
             data.meta.zclTransactionSequenceNumber,
         );
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
-        this.inProgress.delete(data.device.ieeeAddr);
+        this.#inProgress.delete(data.device.ieeeAddr);
     }
 
-    private async readSoftwareBuildIDAndDateCode(
+    async #readSoftwareBuildIDAndDateCode(
         device: Device,
         sendPolicy?: "immediate",
     ): Promise<{softwareBuildID: string; dateCode: string} | undefined> {
         try {
             const endpoint = device.zh.endpoints.find((e) => e.supportsInputCluster("genBasic"));
             assert(endpoint);
+
             const result = await endpoint.read("genBasic", ["dateCode", "swBuildId"], {sendPolicy});
+
             return {softwareBuildID: result.swBuildId, dateCode: result.dateCode};
         } catch {
             return undefined;
         }
     }
 
-    private getEntityPublishPayload(
-        device: Device,
-        state: Ota.UpdateAvailableResult | UpdateState,
-        progress?: number,
-        remaining?: number,
-    ): UpdatePayload {
-        const deviceUpdateState = this.state.get(device).update;
-        const payload: UpdatePayload = {
-            update: {
-                state: typeof state === "string" ? state : state.available ? "available" : "idle",
-                installed_version: typeof state === "string" ? deviceUpdateState?.installed_version : state.currentFileVersion,
-                latest_version: typeof state === "string" ? deviceUpdateState?.latest_version : state.otaFileVersion,
-            },
-        };
+    #getEntityPublishPayload(device: Device, state: OtaUpdateAvailableResult | UpdateState, progress?: number, remaining?: number): UpdatePayload {
+        const deviceUpdateState = this.state.get(device).update as UpdatePayload["update"];
+        const update: UpdatePayload["update"] =
+            typeof state === "string"
+                ? {
+                      state,
+                      installed_version: deviceUpdateState?.installed_version,
+                      latest_version: deviceUpdateState?.latest_version,
+                      latest_source: deviceUpdateState?.latest_source,
+                      latest_release_notes: deviceUpdateState?.latest_release_notes,
+                  }
+                : {
+                      state: state.available === 0 ? "idle" : "available",
+                      installed_version: state.current.fileVersion,
+                      latest_version: state.availableMeta?.fileVersion ?? state.current.fileVersion,
+                      latest_source: state.availableMeta?.url || null,
+                      latest_release_notes: state.availableMeta?.releaseNotes || null,
+                  };
 
         if (progress !== undefined) {
-            payload.update.progress = progress;
+            update.progress = progress;
         }
 
         if (remaining !== undefined) {
-            payload.update.remaining = Math.round(remaining);
+            update.remaining = Math.round(remaining);
         }
 
-        return payload;
+        return {update};
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -265,7 +247,14 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/unschedule"];
-        const ID = (typeof message === "object" && message.id !== undefined ? message.id : message) as string;
+        // TODO: deprecated 3.0 should remove string payload, enforce object
+        const messageObject = typeof message === "object";
+
+        if (messageObject) {
+            assert(message.id, "Invalid payload");
+        }
+
+        const ID = (messageObject ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1] as "check" | "update" | "schedule" | "unschedule";
         const downgrade = topicMatch[2] === "downgrade";
@@ -274,34 +263,54 @@ export default class OTAUpdate extends Extension {
 
         if (!(device instanceof Device)) {
             error = `Device '${ID}' does not exist`;
-        } else if (!device.definition || !device.definition.ota) {
-            error = `Device '${device.name}' does not support OTA updates`;
-        } else if (this.inProgress.has(device.ieeeAddr)) {
+        } else if (this.#inProgress.has(device.ieeeAddr)) {
             // also guards against scheduling while check/update op in progress that could result in undesired OTA state
-            error = `Update or check for update already in progress for '${device.name}'`;
+            error = `OTA update or check for update already in progress for '${device.name}'`;
         } else {
             switch (type) {
                 case "check": {
-                    this.inProgress.add(device.ieeeAddr);
+                    this.#inProgress.add(device.ieeeAddr);
 
-                    logger.info(`Checking if update available for '${device.name}'`);
+                    const source: OtaSource = {downgrade};
+
+                    if (messageObject) {
+                        const payload = message as
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/check"]
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/check/downgrade"];
+
+                        if (payload.url) {
+                            source.url = payload.url;
+                        } else if (!device.definition || !device.definition.ota) {
+                            error = `Device '${device.name}' does not support OTA updates`;
+                            break;
+                        }
+                    } else if (!device.definition || !device.definition.ota) {
+                        error = `Device '${device.name}' does not support OTA updates`;
+                        break;
+                    }
+
+                    logger.info(`Checking if OTA update available for '${device.name}'`);
 
                     try {
-                        const availableResult = await ota.isUpdateAvailable(device.zh, device.otaExtraMetas, undefined, downgrade);
+                        const availableResult = await device.zh.checkOta(source, undefined, device.otaExtraMetas);
 
-                        logger.info(`${availableResult.available ? "Update" : "No update"} available for '${device.name}'`);
+                        logger.info(`${availableResult.available ? "" : "No "}OTA update available for '${device.name}'`);
 
-                        await this.publishEntityState(device, this.getEntityPublishPayload(device, availableResult));
-                        this.lastChecked.set(device.ieeeAddr, Date.now());
+                        await this.publishEntityState(device, this.#getEntityPublishPayload(device, availableResult));
+                        this.#lastChecked.set(device.ieeeAddr, Date.now());
 
+                        const available = availableResult.available !== 0;
                         const response = utils.getResponse<"bridge/response/device/ota_update/check">(message, {
                             id: ID,
-                            update_available: availableResult.available,
+                            update_available: available,
+                            source: availableResult.availableMeta?.url,
+                            release_notes: availableResult.availableMeta?.releaseNotes,
+                            downgrade: available ? availableResult.available === 1 : undefined,
                         });
 
                         await this.mqtt.publish("bridge/response/device/ota_update/check", stringify(response));
                     } catch (e) {
-                        error = `Failed to check if update available for '${device.name}' (${(e as Error).message})`;
+                        error = `Failed to check if OTA update available for '${device.name}' (${(e as Error).message})`;
                         errorStack = (e as Error).stack;
                     }
 
@@ -309,94 +318,103 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case "update": {
-                    this.inProgress.add(device.ieeeAddr);
+                    this.#inProgress.add(device.ieeeAddr);
 
-                    if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled by manual update`);
-                    } else if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled by manual update`);
-                    }
+                    const source: OtaSource = {downgrade};
+                    const dataSettings: OtaDataSettings = {...this.#defaultDataSettings};
 
-                    logger.info(`Updating '${device.name}' to ${downgrade ? "previous" : "latest"} firmware`);
+                    if (messageObject) {
+                        const payload = message as
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/update"]
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/update/downgrade"];
 
-                    try {
-                        const firmwareFrom = await this.readSoftwareBuildIDAndDateCode(device, "immediate");
-                        const fileVersion = await ota.update(device.zh, device.otaExtraMetas, downgrade, async (progress, remaining) => {
-                            let msg = `Update of '${device.name}' at ${progress.toFixed(2)}%`;
-
-                            if (remaining) {
-                                msg += `, ≈ ${Math.round(remaining / 60)} minutes remaining`;
-                            }
-
-                            logger.info(msg);
-
-                            await this.publishEntityState(device, this.getEntityPublishPayload(device, "updating", progress, remaining ?? undefined));
-                        });
-
-                        if (fileVersion === undefined) {
-                            throw new Error("No image currently available");
+                        if (payload.hex) {
+                            // write to `dataDir` and pass created path as source URL
+                            source.url = writeFirmwareHexToDataDir(payload.hex, payload.fileName, device.ieeeAddr);
+                        } else if (payload.url) {
+                            source.url = payload.url;
+                        } else if (!device.definition || !device.definition.ota) {
+                            error = `Device '${device.name}' does not support OTA updates`;
+                            break;
                         }
 
-                        logger.info(`Finished update of '${device.name}'`);
-                        this.removeProgressAndRemainingFromState(device);
-                        await this.publishEntityState(
-                            device,
-                            this.getEntityPublishPayload(device, {available: false, currentFileVersion: fileVersion, otaFileVersion: fileVersion}),
-                        );
+                        if (payload.image_block_request_timeout) {
+                            dataSettings.requestTimeout = payload.image_block_request_timeout;
+                        }
 
-                        const firmwareTo = await this.readSoftwareBuildIDAndDateCode(device);
+                        if (payload.image_block_response_delay) {
+                            dataSettings.responseDelay = payload.image_block_response_delay;
+                        }
 
-                        logger.info(() => `Device '${device.name}' was updated from '${stringify(firmwareFrom)}' to '${stringify(firmwareTo)}'`);
+                        if (payload.default_maximum_data_size) {
+                            dataSettings.baseSize = payload.default_maximum_data_size;
+                        }
+                    } else if (!device.definition || !device.definition.ota) {
+                        error = `Device '${device.name}' does not support OTA updates`;
+                        break;
+                    }
 
-                        /**
-                         * Re-configure after reading software build ID and date code, some devices use a
-                         * custom attribute for this (e.g. Develco SMSZB-120)
-                         */
-                        this.eventBus.emitReconfigure({device});
-                        this.eventBus.emitDevicesChanged();
+                    logger.info(`OTA updating '${device.name}' to ${downgrade ? "previous" : "latest"} firmware`);
 
+                    try {
+                        const firmwareFrom = await this.#readSoftwareBuildIDAndDateCode(device, "immediate");
+                        const [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined);
+
+                        if (toVersion === undefined) {
+                            error = `Update of '${device.name}' failed (No image currently available)`;
+                            break;
+                        }
+
+                        const firmwareTo = await this.#readSoftwareBuildIDAndDateCode(device);
                         const response = utils.getResponse<"bridge/response/device/ota_update/update">(message, {
                             id: ID,
-                            from: firmwareFrom ? {software_build_id: firmwareFrom.softwareBuildID, date_code: firmwareFrom.dateCode} : undefined,
-                            to: firmwareTo ? {software_build_id: firmwareTo.softwareBuildID, date_code: firmwareTo.dateCode} : undefined,
+                            from: {
+                                file_version: fromVersion,
+                                software_build_id: firmwareFrom?.softwareBuildID,
+                                date_code: firmwareFrom?.dateCode,
+                            },
+                            to: {file_version: toVersion, software_build_id: firmwareTo?.softwareBuildID, date_code: firmwareTo?.dateCode},
                         });
 
                         await this.mqtt.publish("bridge/response/device/ota_update/update", stringify(response));
                     } catch (e) {
-                        logger.debug(`Update of '${device.name}' failed (${e})`);
-                        error = `Update of '${device.name}' failed (${(e as Error).message})`;
+                        logger.debug(`OTA update of '${device.name}' failed (${e})`);
+                        error = `OTA update of '${device.name}' failed (${(e as Error).message})`;
                         errorStack = (e as Error).stack;
 
-                        this.removeProgressAndRemainingFromState(device);
-                        await this.publishEntityState(device, this.getEntityPublishPayload(device, "available"));
+                        this.#removeProgressAndRemainingFromState(device);
+                        await this.publishEntityState(device, this.#getEntityPublishPayload(device, "available"));
                     }
 
                     break;
                 }
 
                 case "schedule": {
-                    // ensure only one type scheduled by deleting from the other if necessary
-                    if (downgrade) {
-                        if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
-                            logger.info(`Previously scheduled '${device.name}' upgrade was cancelled in favor of new downgrade request`);
-                        }
+                    const source: OtaSource = {downgrade};
 
-                        this.scheduledDowngrades.add(device.ieeeAddr);
-                    } else {
-                        if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
-                            logger.info(`Previously scheduled '${device.name}' downgrade was cancelled in favor of new upgrade request`);
-                        }
+                    if (messageObject) {
+                        const payload = message as
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule"]
+                            | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"];
 
-                        this.scheduledUpgrades.add(device.ieeeAddr);
+                        if (payload.hex) {
+                            // write to `dataDir` and pass created path as source URL
+                            source.url = writeFirmwareHexToDataDir(payload.hex, payload.fileName, device.ieeeAddr);
+                        } else if (payload.url) {
+                            source.url = payload.url;
+                        } else if (!device.definition || !device.definition.ota) {
+                            error = `Device '${device.name}' does not support OTA updates`;
+                            break;
+                        }
+                    } else if (!device.definition || !device.definition.ota) {
+                        error = `Device '${device.name}' does not support OTA updates`;
+                        break;
                     }
 
-                    logger.info(`Scheduled '${device.name}' to ${downgrade ? "downgrade" : "upgrade"} firmware on next request from device`);
+                    device.zh.scheduleOta(source);
+                    await this.publishEntityState(device, this.#getEntityPublishPayload(device, "scheduled"));
 
-                    await this.publishEntityState(device, this.getEntityPublishPayload(device, "scheduled", undefined, undefined));
-
-                    const response = utils.getResponse<"bridge/response/device/ota_update/schedule">(message, {
-                        id: ID,
-                    });
+                    const response = utils.getResponse<"bridge/response/device/ota_update/schedule">(message, {id: ID, url: source.url});
 
                     await this.mqtt.publish("bridge/response/device/ota_update/schedule", stringify(response));
 
@@ -404,13 +422,8 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case "unschedule": {
-                    if (this.scheduledUpgrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' upgrade was cancelled`);
-                    } else if (this.scheduledDowngrades.delete(device.ieeeAddr)) {
-                        logger.info(`Previously scheduled '${device.name}' downgrade was cancelled`);
-                    }
-
-                    await this.publishEntityState(device, this.getEntityPublishPayload(device, "idle", undefined, undefined));
+                    device.zh.unscheduleOta();
+                    await this.publishEntityState(device, this.#getEntityPublishPayload(device, "idle"));
 
                     const response = utils.getResponse<"bridge/response/device/ota_update/unschedule">(message, {
                         id: ID,
@@ -422,7 +435,7 @@ export default class OTAUpdate extends Extension {
                 }
             }
 
-            this.inProgress.delete(device.ieeeAddr);
+            this.#inProgress.delete(device.ieeeAddr);
         }
 
         if (error) {
@@ -435,5 +448,45 @@ export default class OTAUpdate extends Extension {
                 logger.debug(errorStack);
             }
         }
+    }
+
+    async #update(
+        source: OtaSource | undefined,
+        device: Device,
+        requestPayload: Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest"> | undefined,
+        requestTsn: number | undefined,
+        endpoint?: zh.Endpoint,
+    ): Promise<[from: number, to: number | undefined]> {
+        const dataSettings: OtaDataSettings = {...this.#defaultDataSettings};
+        const [from, to] = await device.zh.updateOta(
+            source,
+            requestPayload,
+            requestTsn,
+            device.otaExtraMetas,
+            async (progress, remaining) => {
+                await this.publishEntityState(device, this.#getEntityPublishPayload(device, "updating", progress, remaining));
+            },
+            dataSettings,
+            endpoint,
+        );
+
+        if (to === undefined) {
+            this.#removeProgressAndRemainingFromState(device);
+            await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: 0, current: from}));
+
+            return [from.fileVersion, undefined];
+        }
+
+        logger.info(`Finished update of '${device.name}'`);
+
+        this.#removeProgressAndRemainingFromState(device);
+        await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: 0, current: to}));
+
+        logger.info(() => `Device '${device.name}' was OTA updated from '${from.fileVersion}' to '${to.fileVersion}'`);
+
+        // OTA update can bring new features & co
+        await device.reInterview(this.eventBus);
+
+        return [from.fileVersion, to.fileVersion];
     }
 }
