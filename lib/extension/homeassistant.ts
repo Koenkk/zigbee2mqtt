@@ -178,6 +178,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         icon: "mdi:signal",
         state_class: "measurement",
     },
+    load_estimate: {state_class: "measurement"},
     local_temperature: {device_class: "temperature", state_class: "measurement"},
     max_range: {entity_category: "config", icon: "mdi:signal-distance-variant"},
     max_temperature: {entity_category: "config", icon: "mdi:thermometer-high"},
