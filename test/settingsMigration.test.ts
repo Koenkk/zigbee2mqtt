@@ -916,4 +916,59 @@ describe("Settings Migration", () => {
             expect(migrationNotesContent).toContain("[SPECIAL] Device icons are now saved as images.");
         });
     });
+
+    describe("Migrates v4 to v5", () => {
+        const BASE_CONFIG = {
+            version: 4,
+            mqtt: {
+                server: "mqtt://localhost",
+            },
+        };
+        const DEFAULT_STATE: Record<string, unknown> = {
+            "0x000b57fffec6a5b2": {
+                state: "ON",
+                brightness: 50,
+                color_temp: 370,
+                linkquality: 99,
+            },
+            "0x0017880104e45517": {
+                brightness: 255,
+                update: {state: "idle"},
+            },
+            1: {
+                state: "ON",
+                update: {state: "available", installed_version: 1, latest_version: 2},
+            },
+        };
+
+        beforeEach(() => {
+            settings.testing.CURRENT_VERSION = 5; // stop update after this version
+            data.writeDefaultConfiguration(BASE_CONFIG);
+            data.writeDefaultState(DEFAULT_STATE);
+            settings.reRead();
+        });
+
+        it("Update", () => {
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 5;
+
+            expect(settings.getPersistedSettings()).toStrictEqual(beforeSettings);
+            expect(data.readState()).toStrictEqual(DEFAULT_STATE);
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+            expect(migratedSettings).toStrictEqual(afterSettings);
+
+            // @ts-expect-error workaround
+            const migratedState = objectAssignDeep.noMutate({}, DEFAULT_STATE);
+            delete (migratedState["0x0017880104e45517"] as Record<string, unknown>).update;
+            delete (migratedState[1] as Record<string, unknown>).update;
+
+            expect(data.readState()).toStrictEqual(migratedState);
+        });
+    });
 });

@@ -10,7 +10,7 @@ import yaml from "./yaml";
 export {schemaJson};
 // When updating also update:
 // - https://github.com/Koenkk/zigbee2mqtt/blob/dev/data/configuration.example.yaml#L2
-export const CURRENT_VERSION = 4;
+export const CURRENT_VERSION = 5;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ["error", "warning", "info", "debug"] as const;
 export type LogLevel = "error" | "warning" | "info" | "debug";
