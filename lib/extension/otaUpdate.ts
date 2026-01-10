@@ -329,8 +329,10 @@ export default class OTAUpdate extends Extension {
                             | Zigbee2MQTTAPI["bridge/request/device/ota_update/update/downgrade"];
 
                         if (payload.hex) {
+                            assert(payload.hex.data);
+
                             // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex, payload.fileName, device.ieeeAddr);
+                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition || !device.definition.ota) {
@@ -398,8 +400,10 @@ export default class OTAUpdate extends Extension {
                             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"];
 
                         if (payload.hex) {
+                            assert(payload.hex.data);
+
                             // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex, payload.fileName, device.ieeeAddr);
+                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition || !device.definition.ota) {

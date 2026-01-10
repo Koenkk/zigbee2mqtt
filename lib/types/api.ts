@@ -622,10 +622,11 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/ota_update/update": {
         id: string;
         url?: string;
-        /** full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`) */
-        hex?: string;
-        /** used in conjunction with `hex` */
-        fileName?: string;
+        /**
+         * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
+         * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
+         */
+        hex?: {data: string; file_name?: string};
         image_block_request_timeout?: number;
         image_block_response_delay?: number;
         /** may be overridden internally to match specific device needs */
@@ -635,10 +636,11 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/ota_update/update/downgrade": {
         id: string;
         url?: string;
-        /** full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`) */
-        hex?: string;
-        /** used in conjunction with `hex` */
-        fileName?: string;
+        /**
+         * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
+         * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
+         */
+        hex?: {data: string; file_name?: string};
         image_block_request_timeout?: number;
         image_block_response_delay?: number;
         /** may be overridden internally to match specific device needs */
@@ -666,19 +668,21 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/ota_update/schedule": {
         id: string;
         url?: string;
-        /** full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`) */
-        hex?: string;
-        /** used in conjunction with `hex` */
-        fileName?: string;
+        /**
+         * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
+         * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
+         */
+        hex?: {data: string; file_name?: string};
     };
 
     "bridge/request/device/ota_update/schedule/downgrade": {
         id: string;
         url?: string;
-        /** full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`) */
-        hex?: string;
-        /** used in conjunction with `hex` */
-        fileName?: string;
+        /**
+         * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
+         * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
+         */
+        hex?: {data: string; file_name?: string};
     };
 
     "bridge/response/device/ota_update/schedule": {
