@@ -27,6 +27,7 @@ describe("Extension: HomeAssistant", () => {
     let version: string;
     let z2m_version: string;
     let extension: HomeAssistant;
+    let previousGroupHomeassistant: KeyValueAny | null = null;
     const origin = {name: "Zigbee2MQTT", sw: "", url: "https://www.zigbee2mqtt.io"};
 
     const resetExtension = async (runTimers = true): Promise<void> => {
@@ -129,6 +130,8 @@ describe("Extension: HomeAssistant", () => {
 
     it("Should discover devices and groups", async () => {
         settings.set(["homeassistant", "experimental_event_entities"], true);
+        previousGroupHomeassistant = settings.get().groups["9"]?.homeassistant ?? null;
+        settings.set(["groups", "9", "homeassistant"], {name: "HA Discovery Group", icon: "mdi:lightbulb-group"});
         await resetExtension();
 
         let payload;
@@ -140,12 +143,13 @@ describe("Extension: HomeAssistant", () => {
             command_topic: "zigbee2mqtt/ha_discovery_group/set",
             device: {
                 identifiers: ["zigbee2mqtt_1221051039810110150109113116116_9"],
-                name: "ha_discovery_group",
+                name: "HA Discovery Group",
                 sw_version: version,
                 model: "Group",
                 manufacturer: "Zigbee2MQTT",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
+            icon: "mdi:lightbulb-group",
             max_mireds: 454,
             min_mireds: 250,
             name: null,
@@ -209,12 +213,13 @@ describe("Extension: HomeAssistant", () => {
             command_topic: "zigbee2mqtt/ha_discovery_group/set",
             device: {
                 identifiers: ["zigbee2mqtt_1221051039810110150109113116116_9"],
-                name: "ha_discovery_group",
+                name: "HA Discovery Group",
                 sw_version: version,
                 model: "Group",
                 manufacturer: "Zigbee2MQTT",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
+            icon: "mdi:lightbulb-group",
             name: null,
             payload_off: "OFF",
             payload_on: "ON",
@@ -666,6 +671,9 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+
+        settings.set(["groups", "9", "homeassistant"], previousGroupHomeassistant);
+        await resetExtension();
     });
 
     it("Should discover devices with overridden user configuration", async () => {
