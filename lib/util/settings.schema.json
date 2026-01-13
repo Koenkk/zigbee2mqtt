@@ -965,6 +965,22 @@
                     "items": {
                         "type": "string"
                     }
+                },
+                "homeassistant": {
+                    "type": ["object", "null"],
+                    "title": "Home Assistant",
+                    "properties": {
+                        "name": {
+                            "type": ["string", "null"],
+                            "title": "Home Assistant name",
+                            "description": "Name of the group in Home Assistant"
+                        },
+                        "icon": {
+                            "type": ["string", "null"],
+                            "title": "Home Assistant icon",
+                            "description": "Icon of the group in Home Assistant"
+                        }
+                    }
                 }
             },
             "required": ["friendly_name"]
