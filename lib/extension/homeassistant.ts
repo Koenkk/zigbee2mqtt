@@ -1066,6 +1066,11 @@ export class HomeAssistant extends Extension {
                     key = "voc_parts";
                 }
 
+                // Home Assistant requires device_class and state_class for gas counters
+                if (firstExpose.name === "gas" && firstExpose.unit && ["ppb", "ppm"].includes(firstExpose.unit)) {
+                    Object.assign(extraAttrs, {device_class: "gas", state_class: "total_increasing"});
+                }
+
                 const discoveryEntry: DiscoveryEntry = {
                     type: "sensor",
                     object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
