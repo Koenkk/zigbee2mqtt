@@ -1067,7 +1067,7 @@ export class HomeAssistant extends Extension {
                 }
 
                 // Home Assistant requires device_class and state_class for gas counters
-                if (firstExpose.name === "gas" && firstExpose.unit && ["ppb", "ppm"].includes(firstExpose.unit)) {
+                if (firstExpose.name === "gas" && firstExpose.unit && ["m³"].includes(firstExpose.unit)) {
                     Object.assign(extraAttrs, {device_class: "gas", state_class: "total_increasing"});
                 }
 
