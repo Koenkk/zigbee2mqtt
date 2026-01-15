@@ -488,7 +488,13 @@ export default class OTAUpdate extends Extension {
 
         logger.info(() => `Device '${device.name}' was OTA updated from '${from.fileVersion}' to '${to.fileVersion}'`);
 
-        // OTA update can bring new features & co
+        // OTA update can bring new features & co, force full re-interview and re-configure, same as a "device joined"
+        if (device.zh.meta.configured !== undefined) {
+            delete device.zh.meta.configured;
+
+            device.zh.save();
+        }
+
         await device.reInterview(this.eventBus);
 
         return [from.fileVersion, to.fileVersion];
