@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 8.0.2
+  zigbee-herdsman: 8.0.3
 
 importers:
 
@@ -72,11 +72,11 @@ importers:
         specifier: ^8.19.0
         version: 8.19.0
       zigbee-herdsman:
-        specifier: 8.0.2
-        version: 8.0.2
+        specifier: 8.0.3
+        version: 8.0.3
       zigbee-herdsman-converters:
-        specifier: 25.105.0
-        version: 25.105.0
+        specifier: 25.106.0
+        version: 25.106.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -896,8 +896,8 @@ packages:
   humanize-duration@3.33.2:
     resolution: {integrity: sha512-K7Ny/ULO1hDm2nnhvAY+SJV1skxFb61fd073SG1IWJl+D44ULrruCuTyjHKjBVVcSuTlnY99DKtgEG39CM5QOQ==}
 
-  iconv-lite@0.7.1:
-    resolution: {integrity: sha512-2Tth85cXwGFHfvRgZWszZSvdo+0Xsqmw8k8ZwxScfcBneNUraK+dxRxRm24nszx80Y0TVio8kKLt5sLE7ZCLlw==}
+  iconv-lite@0.7.2:
+    resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
     engines: {node: '>=0.10.0'}
 
   ieee754@1.2.1:
@@ -1467,12 +1467,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@25.105.0:
-    resolution: {integrity: sha512-npiROU+jaGKz25PSNhbF4Ap1ITqLut53Usqt/OHAtI/T8ROIOXsv+2JSGydebbZGnklCq8P7Y2rvesBU/lzkfA==}
+  zigbee-herdsman-converters@25.106.0:
+    resolution: {integrity: sha512-zGdqqsVbSQnkbH8CasiNKd52HoTC6BMt2G4163+Z/iTzbXkNGJebJA+s7yPjETHBA66h8ZbLfEPELaCgdOStkA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@8.0.2:
-    resolution: {integrity: sha512-EGY9mQuZPwJ2pXunaGXfAVabwZ8bLTm6LLSr42GNM5D8ITN4VAPTSxLcUfA5TOqB0oPW3zGUbgs9MoBosRqP4Q==}
+  zigbee-herdsman@8.0.3:
+    resolution: {integrity: sha512-2ZtBlKywGVmkAF6zBE3NU3EZjeSKCj7J2UaKFMPLBiZbCO4KFWVR695ScMVVdGkXsG8FZrDhLcUoFMvyvE1Oyw==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2143,7 +2143,7 @@ snapshots:
 
   humanize-duration@3.33.2: {}
 
-  iconv-lite@0.7.1:
+  iconv-lite@0.7.2:
     dependencies:
       safer-buffer: 2.1.2
 
@@ -2748,15 +2748,15 @@ snapshots:
 
   ws@8.19.0: {}
 
-  zigbee-herdsman-converters@25.105.0:
+  zigbee-herdsman-converters@25.106.0:
     dependencies:
-      iconv-lite: 0.7.1
+      iconv-lite: 0.7.2
       semver: 7.7.3
-      zigbee-herdsman: 8.0.2
+      zigbee-herdsman: 8.0.3
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@8.0.2:
+  zigbee-herdsman@8.0.3:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
