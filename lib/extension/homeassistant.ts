@@ -1515,9 +1515,6 @@ export class HomeAssistant extends Extension {
 
         for (const config of this.getConfigs(entity)) {
             const payload = {...config.discovery_payload};
-            if (entity.isGroup() && typeof entity.options.homeassistant?.icon === "string" && payload.icon == null) {
-                payload.icon = entity.options.homeassistant.icon;
-            }
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
             if (payload.state_topic_postfix) {
