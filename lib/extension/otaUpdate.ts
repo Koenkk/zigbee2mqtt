@@ -1,5 +1,6 @@
 import assert from "node:assert";
-import {writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, writeFileSync} from "node:fs";
+import {join} from "node:path";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import {setOtaConfiguration, Zcl} from "zigbee-herdsman";
@@ -34,7 +35,13 @@ function writeFirmwareHexToDataDir(hex: string, fileName: string | undefined, de
         fileName = `${deviceIeee}_${Date.now()}`;
     }
 
-    const filePath = dataDir.joinPath(fileName);
+    const baseDir = dataDir.joinPath("ota");
+
+    if (!existsSync(baseDir)) {
+        mkdirSync(baseDir, {recursive: true});
+    }
+
+    const filePath = join(baseDir, fileName);
 
     writeFileSync(Buffer.from(hex, "hex"), filePath);
 
