@@ -53,7 +53,6 @@ export default class OTAUpdate extends Extension {
         `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade)?`,
         "i",
     );
-    #defaultDataSettings!: OtaDataSettings;
     #inProgress = new Set<string>();
     #lastChecked = new Map<string, number>();
 
@@ -62,15 +61,7 @@ export default class OTAUpdate extends Extension {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
 
-        const otaSettings = settings.get().ota;
-        this.#defaultDataSettings = {
-            // fallbacks are only to satisfy typing, should always be defined from settings defaults
-            requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
-            responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
-            baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
-        };
-
-        setOtaConfiguration(dataDir.getPath(), otaSettings.zigbee_ota_override_index_location);
+        setOtaConfiguration(dataDir.getPath(), settings.get().ota.zigbee_ota_override_index_location);
 
         // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state, remove them.
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -120,12 +111,18 @@ export default class OTAUpdate extends Extension {
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
 
                 try {
+                    const otaSettings = settings.get().ota;
                     const [, toVersion] = await this.#update(
                         undefined, // uses internally registered schedule
                         data.device,
                         data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
                         data.meta.zclTransactionSequenceNumber,
-                        this.#defaultDataSettings,
+                        {
+                            // fallbacks are only to satisfy typing, should always be defined from settings defaults
+                            requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
+                            responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
+                            baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
+                        },
                         data.endpoint,
                     );
 
@@ -328,8 +325,14 @@ export default class OTAUpdate extends Extension {
                 case "update": {
                     this.#inProgress.add(device.ieeeAddr);
 
+                    const otaSettings = settings.get().ota;
                     const source: OtaSource = {downgrade};
-                    const dataSettings: OtaDataSettings = {...this.#defaultDataSettings}; // copy
+                    const dataSettings: OtaDataSettings = {
+                        // fallbacks are only to satisfy typing, should always be defined from settings defaults
+                        requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
+                        responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
+                        baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
+                    };
 
                     if (messageObject) {
                         const payload = message as
@@ -468,6 +471,8 @@ export default class OTAUpdate extends Extension {
 
     /**
      * Do the bulk of the update work (hand over to zigbee-herdsman, then re-interview).
+     *
+     * `dataSettings` object may be mutated by zigbee-herdsman to fit request (e.g. known manuf quirk)
      */
     async #update(
         source: OtaSource | undefined,
@@ -485,7 +490,7 @@ export default class OTAUpdate extends Extension {
             async (progress, remaining) => {
                 await this.publishEntityState(device, this.#getEntityPublishPayload(device, "updating", progress, remaining));
             },
-            {...dataSettings}, // ensure copy, may be modified by zigbee-herdsman internally to fit request (e.g. known manuf quirks)
+            dataSettings,
             endpoint,
         );
 
