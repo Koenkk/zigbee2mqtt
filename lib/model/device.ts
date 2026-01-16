@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+import type {OtaExtraMetas} from "zigbee-herdsman/dist/controller/tstype";
 import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 import {access, Numeric} from "zigbee-herdsman-converters";
@@ -38,7 +39,7 @@ export default class Device {
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
     }
-    get otaExtraMetas(): zhc.Ota.ExtraMetas {
+    get otaExtraMetas(): OtaExtraMetas {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
     get hasScheduledOta(): boolean {
