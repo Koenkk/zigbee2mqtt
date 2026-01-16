@@ -1,12 +1,13 @@
 // biome-ignore assist/source/organizeImports: import mocks first
-import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it} from "vitest";
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import * as data from "./mocks/data";
 
-import {existsSync, readFileSync, rmSync} from "node:fs";
+import {existsSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import objectAssignDeep from "object-assign-deep";
 import mockedData from "../lib/util/data";
 import * as settings from "../lib/util/settings";
 import * as settingsMigration from "../lib/util/settingsMigration";
+import path from "node:path";
 
 describe("Settings Migration", () => {
     beforeAll(() => {});
@@ -969,6 +970,26 @@ describe("Settings Migration", () => {
             delete (migratedState[1] as Record<string, unknown>).update;
 
             expect(data.readState()).toStrictEqual(migratedState);
+        });
+
+        it("handles errors gracefully", () => {
+            const consoleErrorSpy = vi.spyOn(console, "error");
+            writeFileSync(path.join(data.mockDir, "state.json"), "notjson", "utf8");
+
+            // @ts-expect-error workaround
+            const beforeSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            // @ts-expect-error workaround
+            const afterSettings = objectAssignDeep.noMutate({}, settings.getPersistedSettings());
+            afterSettings.version = 5;
+
+            expect(settings.getPersistedSettings()).toStrictEqual(beforeSettings);
+
+            settingsMigration.migrateIfNecessary();
+
+            const migratedSettings = settings.getPersistedSettings();
+            expect(migratedSettings).toStrictEqual(afterSettings);
+            expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to write state"));
+            expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("is not valid JSON"));
         });
     });
 });
