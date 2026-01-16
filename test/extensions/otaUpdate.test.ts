@@ -7,6 +7,8 @@ import * as mockSleep from "../mocks/sleep";
 import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
+import {join} from "node:path";
+import {existsSync, readFileSync, rmSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
 import {Controller} from "../../lib/controller";
 import OTAUpdate from "../../lib/extension/otaUpdate";
@@ -14,8 +16,6 @@ import * as settings from "../../lib/util/settings";
 import type {OtaDataSettings, ZigbeeOtaImageMeta} from "zigbee-herdsman/dist/controller/tstype";
 import * as zh from "zigbee-herdsman";
 import type {TClusterCommandPayload} from "zigbee-herdsman/dist/zspec/zcl/definition/clusters-types";
-
-const mocksClear = [mockMQTTPublishAsync, devices.bulb.save, mockLogger.info];
 
 const DEFAULT_CONFIG: OtaDataSettings = {
     requestTimeout: 150000,
@@ -61,6 +61,7 @@ describe("Extension: OTAUpdate", () => {
         await controller?.stop();
         await flushPromises();
         vi.useRealTimers();
+        rmSync(data.mockDir, {force: true, recursive: true});
     });
 
     beforeEach(() => {
@@ -68,11 +69,13 @@ describe("Extension: OTAUpdate", () => {
         const extension = controller.getExtension("OTAUpdate")! as OTAUpdate;
         extension.clearState();
 
-        for (const mock of mocksClear) {
-            mock.mockClear();
-        }
-
+        mockMQTTPublishAsync.mockClear();
+        mockLogger.info.mockClear();
+        mockLogger.error.mockClear();
+        devices.HGZB04D.mockClear();
+        devices.SV01.mockClear();
         devices.bulb.mockClear();
+        devices.bulb_color.mockClear();
         controller.state.clear();
     });
 
@@ -114,7 +117,7 @@ describe("Extension: OTAUpdate", () => {
         mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, stringify({id: "bulb"}));
         await flushPromises();
         const fromSwBuildId = 10 + (downgrade ? -1 : +1);
-        const toSwBuildId = 10 + (downgrade ? -2 : +2);
+        const toSwBuildId = 10 + (downgrade ? -4 : +4); // 2x from `#readSoftwareBuildIDAndDateCode` + 2x from ZHC `light.ts > configure`
         const fromDateCode = `201901${fromSwBuildId}`;
         const toDateCode = `201901${toSwBuildId}`;
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
@@ -134,11 +137,11 @@ describe("Extension: OTAUpdate", () => {
         expect(infoCalls[3]).toStrictEqual(`Finished update of 'bulb'`);
         expect(infoCalls[5]).toStrictEqual(`Device 'bulb' was OTA updated from '1' to '90'`);
         expect(infoCalls[6]).toStrictEqual(`Interviewing 'bulb'`);
-        expect(infoCalls[7]).toStrictEqual(`Successfully interviewed 'bulb'`);
+        expect(infoCalls[7]).toStrictEqual(`Configuring 'bulb'`);
+        expect(infoCalls[9]).toStrictEqual(`Successfully interviewed 'bulb'`);
+        expect(infoCalls[10]).toStrictEqual(`Successfully configured 'bulb'`);
 
-        // TODO: not called?
-        // expect(devices.bulb.save).toHaveBeenCalledTimes(1);
-
+        expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith("genBasic", ["dateCode", "swBuildId"], {sendPolicy: "immediate"});
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith("genBasic", ["dateCode", "swBuildId"], {sendPolicy: undefined});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -171,7 +174,329 @@ describe("Extension: OTAUpdate", () => {
             }),
             {},
         );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("re-interviews and re-configured after successful update", async () => {
+        devices.bulb.meta.configured = 123;
+
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.save).toHaveBeenCalledTimes(2);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+
+        delete devices.bulb.meta.configured;
+    });
+
+    it("updates with url payload", async () => {
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/ota_update/update",
+            stringify({id: "bulb", url: "https://example.com/myremote.ota"}),
+        );
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.updateOta).toHaveBeenNthCalledWith(
+            1,
+            {url: "https://example.com/myremote.ota", downgrade: false},
+            undefined,
+            undefined,
+            {},
+            expect.any(Function),
+            {baseSize: 50, requestTimeout: 150000, responseDelay: 250},
+            undefined,
+        );
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("updates with hex payload", async () => {
+        const now = 123401234;
+        vi.setSystemTime(now);
+        const genFileName = `${devices.bulb.ieeeAddr}_${now}`;
+        const saveFilePath = join(data.mockDir, "ota", genFileName);
+
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb", hex: {data: "010203"}}));
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.updateOta).toHaveBeenNthCalledWith(
+            1,
+            {url: saveFilePath, downgrade: false},
+            undefined,
+            undefined,
+            {},
+            expect.any(Function),
+            {baseSize: 50, requestTimeout: 150000, responseDelay: 250},
+            undefined,
+        );
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+        expect(existsSync(saveFilePath)).toStrictEqual(true);
+        expect(readFileSync(saveFilePath)).toStrictEqual(Buffer.from([0x01, 0x02, 0x03]));
+    });
+
+    it("updates with hex and file name payload", async () => {
+        const saveFilePath = join(data.mockDir, "ota", "my.ota");
+
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/ota_update/update",
+            stringify({id: "bulb", hex: {data: "010203", file_name: "my.ota"}}),
+        );
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.updateOta).toHaveBeenNthCalledWith(
+            1,
+            {url: saveFilePath, downgrade: false},
+            undefined,
+            undefined,
+            {},
+            expect.any(Function),
+            {baseSize: 50, requestTimeout: 150000, responseDelay: 250},
+            undefined,
+        );
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+        expect(existsSync(saveFilePath)).toStrictEqual(true);
+        expect(readFileSync(saveFilePath)).toStrictEqual(Buffer.from([0x01, 0x02, 0x03]));
+    });
+
+    it("updates with override data settings", async () => {
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/ota_update/update",
+            stringify({id: "bulb", image_block_request_timeout: 200000, image_block_response_delay: 50, default_maximum_data_size: 64}),
+        );
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.updateOta).toHaveBeenNthCalledWith(
+            1,
+            {downgrade: false},
+            undefined,
+            undefined,
+            {},
+            expect.any(Function),
+            {baseSize: 64, requestTimeout: 200000, responseDelay: 50},
+            undefined,
+        );
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/definitions", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("schedules with hex payload", async () => {
+        const now = 123401234;
+        vi.setSystemTime(now);
+        const genFileName = `${devices.bulb.ieeeAddr}_${now}`;
+        const saveFilePath = join(data.mockDir, "ota", genFileName);
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/schedule", stringify({id: "bulb", hex: {data: "010203"}}));
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.scheduleOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.scheduleOta).toHaveBeenNthCalledWith(1, {url: saveFilePath, downgrade: false});
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, "zigbee2mqtt/bulb", stringify({update: {state: "scheduled"}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            "zigbee2mqtt/bridge/response/device/ota_update/schedule",
+            stringify({data: {id: "bulb", url: saveFilePath}, status: "ok"}),
+            {},
+        );
+        expect(devices.bulb.scheduledOta).toStrictEqual({url: saveFilePath, downgrade: false});
+        expect(existsSync(saveFilePath)).toStrictEqual(true);
+        expect(readFileSync(saveFilePath)).toStrictEqual(Buffer.from([0x01, 0x02, 0x03]));
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/unschedule", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, "zigbee2mqtt/bulb", stringify({update: {state: "idle"}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            4,
+            "zigbee2mqtt/bridge/response/device/ota_update/unschedule",
+            stringify({data: {id: "bulb"}, status: "ok"}),
+            {},
+        );
+        expect(devices.bulb.scheduledOta).toStrictEqual(undefined);
+        expect(existsSync(saveFilePath)).toStrictEqual(false);
+    });
+
+    it("schedules with hex and file name payload", async () => {
+        const saveFilePath = join(data.mockDir, "ota", "my.ota");
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/ota_update/schedule",
+            stringify({id: "bulb", hex: {data: "010203", file_name: "my.ota"}}),
+        );
+        await flushPromises();
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.scheduleOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.scheduleOta).toHaveBeenNthCalledWith(1, {url: saveFilePath, downgrade: false});
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, "zigbee2mqtt/bulb", stringify({update: {state: "scheduled"}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            "zigbee2mqtt/bridge/response/device/ota_update/schedule",
+            stringify({data: {id: "bulb", url: saveFilePath}, status: "ok"}),
+            {},
+        );
+        expect(devices.bulb.scheduledOta).toStrictEqual({url: saveFilePath, downgrade: false});
+        expect(existsSync(saveFilePath)).toStrictEqual(true);
+        expect(readFileSync(saveFilePath)).toStrictEqual(Buffer.from([0x01, 0x02, 0x03]));
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/unschedule", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(3, "zigbee2mqtt/bulb", stringify({update: {state: "idle"}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            4,
+            "zigbee2mqtt/bridge/response/device/ota_update/unschedule",
+            stringify({data: {id: "bulb"}, status: "ok"}),
+            {},
+        );
+        expect(devices.bulb.scheduledOta).toStrictEqual(undefined);
+        expect(existsSync(saveFilePath)).toStrictEqual(false);
     });
 
     it("handles when OTA update fails", async () => {
@@ -306,11 +631,11 @@ describe("Extension: OTAUpdate", () => {
         );
     });
 
-    it("does not check for OTA when device does not support it", async () => {
-        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check", stringify({id: "dimmer_wall_switch"}));
+    it.each(["check", "update", "schedule"])("does not OTA %s when device does not support it", async (api) => {
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${api}`, stringify({id: "dimmer_wall_switch"}));
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/bridge/response/device/ota_update/check",
+            `zigbee2mqtt/bridge/response/device/ota_update/${api}`,
             stringify({data: {}, status: "error", error: `Device 'dimmer_wall_switch' does not support OTA updates`}),
             {},
         );
@@ -400,7 +725,11 @@ describe("Extension: OTAUpdate", () => {
     });
 
     it("does not crash when read modelID before/after OTA update fails", async () => {
-        devices.bulb.endpoints[0].read.mockRejectedValueOnce("Failed from").mockRejectedValueOnce("Failed to");
+        devices.bulb.endpoints[0].read
+            .mockRejectedValueOnce("Failed from")
+            .mockResolvedValueOnce({}) // configure
+            .mockRejectedValueOnce("Failed to")
+            .mockResolvedValueOnce({}); // configure
         devices.bulb.updateOta.mockResolvedValueOnce([
             {...DEFAULT_CURRENT, fileVersion: 1},
             {...DEFAULT_CURRENT, fileVersion: 2},
@@ -944,5 +1273,31 @@ describe("Extension: OTAUpdate", () => {
         controller.state.set(device, {update: {progress: 100, remaining: 10, state: "updating"}});
         await resetExtension();
         expect(controller.state.get(device)).toStrictEqual({update: {state: "available"}});
+    });
+
+    it("[DEPRECATED] handles message as device id string", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/schedule", "bulb");
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(1, "zigbee2mqtt/bulb", stringify({update: {state: "scheduled"}}), {
+            retain: true,
+            qos: 0,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
+            2,
+            "zigbee2mqtt/bridge/response/device/ota_update/schedule",
+            stringify({data: {id: "bulb"}, status: "ok"}),
+            {},
+        );
+    });
+
+    it.each(["check", "update", "schedule"])("[DEPRECATED] does not OTA %s when device does not support it", async (api) => {
+        mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${api}`, "dimmer_wall_switch");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            `zigbee2mqtt/bridge/response/device/ota_update/${api}`,
+            stringify({data: {}, status: "error", error: `Device 'dimmer_wall_switch' does not support OTA updates`}),
+            {},
+        );
     });
 });

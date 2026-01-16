@@ -42,12 +42,6 @@ export default class Device {
     get otaExtraMetas(): OtaExtraMetas {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
-    get hasScheduledOta(): boolean {
-        return this.zh.scheduledOta !== undefined;
-    }
-    get hasCustomScheduledOta(): boolean {
-        return this.zh.scheduledOta?.url !== undefined;
-    }
     get interviewed(): boolean {
         return this.zh.interviewState === InterviewState.Successful || this.zh.interviewState === InterviewState.Failed;
     }
@@ -77,19 +71,20 @@ export default class Device {
     }
 
     async reInterview(eventBus: EventBus): Promise<void> {
+        // logic follows that of receiving `deviceInterview` event from ZH layer
         logger.info(`Interviewing '${this.name}'`);
+        eventBus.emitDeviceInterview({status: "started", device: this});
 
         try {
             await this.zh.interview(true);
+            // A re-interview can for example result in a different modelId, therefore reconsider the definition.
+            await this.resolveDefinition(true);
             logger.info(`Successfully interviewed '${this.name}'`);
+            eventBus.emitDeviceInterview({status: "successful", device: this});
         } catch (error) {
-            throw new Error(`interview of '${this.name}' (${this.ieeeAddr}) failed: ${error}`, {cause: error});
+            eventBus.emitDeviceInterview({status: "failed", device: this});
+            throw new Error(`Interview of '${this.name}' (${this.ieeeAddr}) failed: ${error}`);
         }
-
-        // A re-interview can for example result in a different modelId, therefore reconsider the definition.
-        await this.resolveDefinition(true);
-        eventBus.emitDevicesChanged();
-        eventBus.emitExposesChanged({device: this});
     }
 
     ensureInSettings(): void {

@@ -3264,7 +3264,7 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/interview",
-            stringify({data: {}, status: "error", error: "interview of 'bulb' (0x000b57fffec6a5b2) failed: Error: something went wrong"}),
+            stringify({data: {}, status: "error", error: "Interview of 'bulb' (0x000b57fffec6a5b2) failed: Error: something went wrong"}),
             {},
         );
     });

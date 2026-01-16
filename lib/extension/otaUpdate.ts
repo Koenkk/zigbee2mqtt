@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import {existsSync, mkdirSync, writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
@@ -43,7 +43,7 @@ function writeFirmwareHexToDataDir(hex: string, fileName: string | undefined, de
 
     const filePath = join(baseDir, fileName);
 
-    writeFileSync(Buffer.from(hex, "hex"), filePath);
+    writeFileSync(filePath, Buffer.from(hex, "hex"));
 
     return filePath;
 }
@@ -65,9 +65,9 @@ export default class OTAUpdate extends Extension {
         const otaSettings = settings.get().ota;
         this.#defaultDataSettings = {
             // fallbacks are only to satisfy typing, should always be defined from settings defaults
-            requestTimeout: otaSettings.image_block_request_timeout ?? 150000,
-            responseDelay: otaSettings.image_block_response_delay ?? 250,
-            baseSize: otaSettings.default_maximum_data_size ?? 50,
+            requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
+            responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
+            baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
         };
 
         setOtaConfiguration(dataDir.getPath(), otaSettings.zigbee_ota_override_index_location);
@@ -112,9 +112,9 @@ export default class OTAUpdate extends Extension {
 
         logger.debug(`Device '${data.device.name}' requested OTA`);
 
-        if (data.device.hasScheduledOta) {
+        if (data.device.zh.scheduledOta) {
             // allow custom source to override check for definition `ota`
-            if (data.device.hasCustomScheduledOta || data.device.definition.ota) {
+            if (data.device.zh.scheduledOta?.url !== undefined || data.device.definition.ota) {
                 this.#inProgress.add(data.device.ieeeAddr);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
@@ -125,6 +125,7 @@ export default class OTAUpdate extends Extension {
                         data.device,
                         data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
                         data.meta.zclTransactionSequenceNumber,
+                        this.#defaultDataSettings,
                         data.endpoint,
                     );
 
@@ -328,7 +329,7 @@ export default class OTAUpdate extends Extension {
                     this.#inProgress.add(device.ieeeAddr);
 
                     const source: OtaSource = {downgrade};
-                    const dataSettings: OtaDataSettings = {...this.#defaultDataSettings};
+                    const dataSettings: OtaDataSettings = {...this.#defaultDataSettings}; // copy
 
                     if (messageObject) {
                         const payload = message as
@@ -367,7 +368,7 @@ export default class OTAUpdate extends Extension {
 
                     try {
                         const firmwareFrom = await this.#readSoftwareBuildIDAndDateCode(device, "immediate");
-                        const [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined);
+                        const [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
 
                         if (toVersion === undefined) {
                             error = `Update of '${device.name}' failed (No image currently available)`;
@@ -433,6 +434,10 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case "unschedule": {
+                    if (device.zh.scheduledOta?.url?.startsWith(dataDir.joinPath("ota"))) {
+                        rmSync(device.zh.scheduledOta.url, {force: true});
+                    }
+
                     device.zh.unscheduleOta();
                     await this.publishEntityState(device, this.#getEntityPublishPayload(device, "idle"));
 
@@ -461,14 +466,17 @@ export default class OTAUpdate extends Extension {
         }
     }
 
+    /**
+     * Do the bulk of the update work (hand over to zigbee-herdsman, then re-interview).
+     */
     async #update(
         source: OtaSource | undefined,
         device: Device,
         requestPayload: Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest"> | undefined,
         requestTsn: number | undefined,
+        dataSettings: OtaDataSettings,
         endpoint?: zh.Endpoint,
     ): Promise<[from: number, to: number | undefined]> {
-        const dataSettings: OtaDataSettings = {...this.#defaultDataSettings};
         const [from, to] = await device.zh.updateOta(
             source,
             requestPayload,
@@ -477,7 +485,7 @@ export default class OTAUpdate extends Extension {
             async (progress, remaining) => {
                 await this.publishEntityState(device, this.#getEntityPublishPayload(device, "updating", progress, remaining));
             },
-            dataSettings,
+            {...dataSettings}, // ensure copy, may be modified by zigbee-herdsman internally to fit request (e.g. known manuf quirks)
             endpoint,
         );
 
