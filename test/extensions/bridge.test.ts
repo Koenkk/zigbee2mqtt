@@ -4086,6 +4086,8 @@ describe("Extension: Bridge", () => {
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "afile.js"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "log"));
         fs.writeFileSync(path.join(data.mockDir, "log", "log.log"), "test123");
+        fs.mkdirSync(path.join(data.mockDir, "ota"));
+        fs.writeFileSync(path.join(data.mockDir, "ota", "my.ota"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "ext_converters", "123"));
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "123", "myfile.js"), "test123");
         fs.symlinkSync(

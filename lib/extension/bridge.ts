@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import JSZip from "jszip";
@@ -319,14 +320,18 @@ export default class Bridge extends Extension {
     @bind async backup(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/backup">> {
         await this.zigbee.backup();
         const dataPath = data.getPath();
-        const files = utils
-            .getAllFiles(dataPath)
-            .map((f) => [f, f.substring(dataPath.length + 1)])
-            .filter((f) => !f[1].startsWith("log"));
+        const files = utils.getAllFiles(dataPath);
         const zip = new JSZip();
+        const logDir = `log${path.sep}`;
+        const otaDir = `ota${path.sep}`;
 
         for (const f of files) {
-            zip.file(f[1], fs.readFileSync(f[0]));
+            const name = f.slice(dataPath.length + 1);
+
+            // XXX: `log` could technically be something else depending on `log_directory` setting
+            if (!name.startsWith(logDir) && !name.startsWith(otaDir)) {
+                zip.file(name, fs.readFileSync(f));
+            }
         }
 
         const base64Zip = await zip.generateAsync({type: "base64"});
