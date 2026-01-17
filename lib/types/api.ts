@@ -51,18 +51,10 @@ export interface Zigbee2MQTTDeviceOptions {
     filtered_cache?: string[];
     filtered_optimistic?: string[];
     icon?: string;
-    homeassistant?: Zigbee2MQTTHomeAssistantOptions | null;
+    homeassistant?: KeyValue;
     friendly_name: string;
     description?: string;
     qos?: 0 | 1 | 2;
-}
-
-export interface Zigbee2MQTTHomeAssistantOptions {
-    name?: string;
-    icon?: string;
-    // Allow per-entity overrides keyed by object_id (e.g. "switch", "light_2", etc.).
-    // biome-ignore lint/suspicious/noExplicitAny: API
-    [s: string]: any;
 }
 
 export interface Zigbee2MQTTGroupOptions {
@@ -72,7 +64,7 @@ export interface Zigbee2MQTTGroupOptions {
     filtered_attributes?: string[];
     filtered_cache?: string[];
     filtered_optimistic?: string[];
-    homeassistant?: Zigbee2MQTTHomeAssistantOptions | null;
+    homeassistant?: KeyValue;
     friendly_name: string;
     description?: string;
     qos?: 0 | 1 | 2;

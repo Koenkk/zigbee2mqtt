@@ -27,7 +27,6 @@ describe("Extension: HomeAssistant", () => {
     let version: string;
     let z2m_version: string;
     let extension: HomeAssistant;
-    let previousGroupHomeassistant: KeyValueAny | null = null;
     const origin = {name: "Zigbee2MQTT", sw: "", url: "https://www.zigbee2mqtt.io"};
 
     const resetExtension = async (runTimers = true): Promise<void> => {
@@ -130,7 +129,6 @@ describe("Extension: HomeAssistant", () => {
 
     it("Should discover devices and groups", async () => {
         settings.set(["homeassistant", "experimental_event_entities"], true);
-        previousGroupHomeassistant = settings.get().groups["9"]?.homeassistant ?? null;
         settings.set(["groups", "9", "homeassistant"], {name: "HA Discovery Group", icon: "mdi:lightbulb-group"});
         await resetExtension();
 
@@ -671,9 +669,6 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
-
-        settings.set(["groups", "9", "homeassistant"], previousGroupHomeassistant);
-        await resetExtension();
     });
 
     it("Should discover devices with overridden user configuration", async () => {
