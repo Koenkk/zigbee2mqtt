@@ -50,6 +50,10 @@ const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ["stopped", "stop", "pause",
 const SWITCH_DIFFERENT: ReadonlyArray<string> = ["valve_detection", "window_detection", "auto_lock", "away_mode"];
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
+    Area1Occupancy: {device_class: "occupancy"},
+    Area2Occupancy: {device_class: "occupancy"},
+    Area3Occupancy: {device_class: "occupancy"},
+    Area4Occupancy: {device_class: "occupancy"},
     auto_off: {icon: "mdi:flash-auto"},
     battery_low: {entity_category: "diagnostic", device_class: "battery"},
     button_lock: {entity_category: "config", icon: "mdi:lock"},
