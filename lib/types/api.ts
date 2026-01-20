@@ -602,13 +602,13 @@ export interface Zigbee2MQTTAPI {
     "bridge/request/device/ota_update/check": {
         id: string;
         /** expected to point to an index json if provided */
-        url?: string;
+        url?: string | null;
     };
 
     "bridge/request/device/ota_update/check/downgrade": {
         id: string;
         /** expected to point to an index json if provided */
-        url?: string;
+        url?: string | null;
     };
 
     "bridge/response/device/ota_update/check": {
@@ -621,30 +621,30 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/device/ota_update/update": {
         id: string;
-        url?: string;
+        url?: string | null;
         /**
          * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
          * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
          */
-        hex?: {data: string; file_name?: string};
-        image_block_request_timeout?: number;
-        image_block_response_delay?: number;
+        hex?: {data: string; file_name?: string} | null;
+        image_block_request_timeout?: number | null;
+        image_block_response_delay?: number | null;
         /** may be overridden internally to match specific device needs */
-        default_maximum_data_size?: number;
+        default_maximum_data_size?: number | null;
     };
 
     "bridge/request/device/ota_update/update/downgrade": {
         id: string;
-        url?: string;
+        url?: string | null;
         /**
          * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
          * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
          */
-        hex?: {data: string; file_name?: string};
-        image_block_request_timeout?: number;
-        image_block_response_delay?: number;
+        hex?: {data: string; file_name?: string} | null;
+        image_block_request_timeout?: number | null;
+        image_block_response_delay?: number | null;
         /** may be overridden internally to match specific device needs */
-        default_maximum_data_size?: number;
+        default_maximum_data_size?: number | null;
     };
 
     "bridge/response/device/ota_update/update": {
@@ -667,22 +667,22 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/request/device/ota_update/schedule": {
         id: string;
-        url?: string;
+        url?: string | null;
         /**
          * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
          * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
          */
-        hex?: {data: string; file_name?: string};
+        hex?: {data: string; file_name?: string} | null;
     };
 
     "bridge/request/device/ota_update/schedule/downgrade": {
         id: string;
-        url?: string;
+        url?: string | null;
         /**
          * Full firmware file in hex form (expected compatible with `Buffer.from(hex, "hex")`)
          * If file name supplied, will be used instead of <ieee_utc> to store firmware in data dir.
          */
-        hex?: {data: string; file_name?: string};
+        hex?: {data: string; file_name?: string} | null;
     };
 
     "bridge/response/device/ota_update/schedule": {
