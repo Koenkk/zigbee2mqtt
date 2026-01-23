@@ -1272,7 +1272,7 @@ describe("Extension: OTAUpdate", () => {
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         controller.state.set(device, {update: {progress: 100, remaining: 10, state: "updating"}});
         await resetExtension();
-        expect(controller.state.get(device)).toStrictEqual({update: {state: "available"}});
+        expect(controller.state.get(device)).toStrictEqual({update: {state: "idle"}});
     });
 
     it("[DEPRECATED] handles message as device id string", async () => {

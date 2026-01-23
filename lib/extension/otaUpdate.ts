@@ -69,8 +69,7 @@ export default class OTAUpdate extends Extension {
 
             // Reset update state, e.g. when Z2M restarted during update.
             if (this.state.get(device).update?.state === "updating") {
-                // TODO: should use idle instead?
-                this.state.get(device).update.state = "available";
+                this.state.get(device).update.state = "idle";
             }
         }
     }
