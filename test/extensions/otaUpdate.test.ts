@@ -64,10 +64,12 @@ describe("Extension: OTAUpdate", () => {
         rmSync(data.mockDir, {force: true, recursive: true});
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
         zh.setOtaConfiguration(data.mockDir, undefined);
         const extension = controller.getExtension("OTAUpdate")! as OTAUpdate;
         extension.clearState();
+
+        await vi.advanceTimersByTimeAsync(10000); // go past the init routines
 
         mockMQTTPublishAsync.mockClear();
         mockLogger.info.mockClear();
@@ -116,8 +118,10 @@ describe("Extension: OTAUpdate", () => {
 
         mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${type}`, stringify({id: "bulb"}));
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
+
         const fromSwBuildId = 10 + (downgrade ? -1 : +1);
-        const toSwBuildId = 10 + (downgrade ? -4 : +4); // 2x from `#readSoftwareBuildIDAndDateCode` + 2x from ZHC `light.ts > configure`
+        const toSwBuildId = 10 + (downgrade ? -2 : +2); // 2x from `#readSoftwareBuildIDAndDateCode`
         const fromDateCode = `201901${fromSwBuildId}`;
         const toDateCode = `201901${toSwBuildId}`;
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
@@ -136,10 +140,10 @@ describe("Extension: OTAUpdate", () => {
         expect(infoCalls[0]).toStrictEqual(`OTA updating 'bulb' to ${downgrade ? "previous" : "latest"} firmware`);
         expect(infoCalls[3]).toStrictEqual(`Finished update of 'bulb'`);
         expect(infoCalls[5]).toStrictEqual(`Device 'bulb' was OTA updated from '1' to '90'`);
-        expect(infoCalls[6]).toStrictEqual(`Interviewing 'bulb'`);
-        expect(infoCalls[7]).toStrictEqual(`Configuring 'bulb'`);
-        expect(infoCalls[9]).toStrictEqual(`Successfully interviewed 'bulb'`);
-        expect(infoCalls[10]).toStrictEqual(`Successfully configured 'bulb'`);
+        expect(infoCalls[7]).toStrictEqual(`Interviewing 'bulb'`);
+        expect(infoCalls[8]).toStrictEqual(`Configuring 'bulb'`);
+        expect(infoCalls[10]).toStrictEqual(`Successfully interviewed 'bulb'`);
+        expect(infoCalls[11]).toStrictEqual(`Successfully configured 'bulb'`);
 
         expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith("genBasic", ["dateCode", "swBuildId"], {sendPolicy: "immediate"});
@@ -179,7 +183,7 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
     });
 
-    it("re-interviews and re-configured after successful update", async () => {
+    it("re-interviews and re-configures after successful update", async () => {
         devices.bulb.meta.configured = 123;
 
         devices.bulb.updateOta.mockImplementationOnce(
@@ -199,6 +203,7 @@ describe("Extension: OTAUpdate", () => {
 
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
@@ -215,6 +220,44 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         delete devices.bulb.meta.configured;
+    });
+
+    it("handles re-interview failure post-update", async () => {
+        devices.bulb.meta.configured = 123;
+
+        devices.bulb.interview.mockRejectedValueOnce(new Error("dragons"));
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, _onProgress, _dataSettings, _endpoint) => {
+                return await Promise.resolve([
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 1,
+                    },
+                    {
+                        ...DEFAULT_CURRENT,
+                        fileVersion: 2,
+                    },
+                ]);
+            },
+        );
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
+
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.save).toHaveBeenCalledTimes(2);
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "idle", installed_version: 2, latest_version: 2, latest_release_notes: null, latest_source: null}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockLogger.error).toHaveBeenCalledWith(
+            `Interview of 'bulb' (${devices.bulb.ieeeAddr}) failed: Error: dragons. Re-try manually after some time.`,
+        );
     });
 
     it("updates with url payload", async () => {
@@ -238,6 +281,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({id: "bulb", url: "https://example.com/myremote.ota"}),
         );
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
@@ -286,6 +330,7 @@ describe("Extension: OTAUpdate", () => {
 
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb", hex: {data: "010203"}}));
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
@@ -336,6 +381,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({id: "bulb", hex: {data: "010203", file_name: "my.ota"}}),
         );
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
@@ -384,6 +430,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({id: "bulb", image_block_request_timeout: 200000, image_block_response_delay: 50, default_maximum_data_size: 64}),
         );
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(0);
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
@@ -939,6 +986,7 @@ describe("Extension: OTAUpdate", () => {
 
         await mockZHEvents.message(payload);
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(1);
 
@@ -1071,6 +1119,7 @@ describe("Extension: OTAUpdate", () => {
 
         await mockZHEvents.message(payload);
         await flushPromises();
+        await vi.advanceTimersByTimeAsync(5100);
 
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(

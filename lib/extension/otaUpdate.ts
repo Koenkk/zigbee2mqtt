@@ -514,7 +514,11 @@ export default class OTAUpdate extends Extension {
             device.zh.save();
         }
 
-        await device.reInterview(this.eventBus);
+        setTimeout(() => {
+            device.reInterview(this.eventBus).catch((error) => {
+                logger.error(`${error.message}. Re-try manually after some time.`);
+            });
+        }, 5000);
 
         return [from.fileVersion, to.fileVersion];
     }
