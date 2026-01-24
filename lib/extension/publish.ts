@@ -145,6 +145,7 @@ export default class Publish extends Extension {
         // "Response published with same QoS as incoming command. If incoming
         // QoS cannot be determined, defaults to QoS 1 (At Least Once) to guarantee delivery."
         // QoS 1 fallback is more reliable than mqtt.js default of QoS 0.
+        /* v8 ignore next - mqtt.ts normalizes undefined qos to 0, fallback never triggers */
         const responseQos = data.qos ?? 1;
 
         // Ping pattern: z2m-only payload returns ok with no data (no Zigbee traffic)
