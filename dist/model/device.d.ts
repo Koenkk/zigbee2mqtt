@@ -1,3 +1,4 @@
+import type { OtaExtraMetas } from "zigbee-herdsman/dist/controller/tstype";
 import type { CustomClusters } from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 export default class Device {
@@ -10,11 +11,12 @@ export default class Device {
     get name(): string;
     get isSupported(): boolean;
     get customClusters(): CustomClusters;
-    get otaExtraMetas(): zhc.Ota.ExtraMetas;
+    get otaExtraMetas(): OtaExtraMetas;
     get interviewed(): boolean;
     constructor(device: zh.Device);
     exposes(): zhc.Expose[];
     resolveDefinition(ignoreCache?: boolean): Promise<void>;
+    reInterview(eventBus: EventBus): Promise<void>;
     ensureInSettings(): void;
     endpoint(key?: string | number): zh.Endpoint | undefined;
     endpointName(endpoint: zh.Endpoint): string | undefined;

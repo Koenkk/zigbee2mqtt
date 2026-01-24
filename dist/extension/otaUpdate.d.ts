@@ -7,19 +7,15 @@ export interface UpdatePayload {
         state: UpdateState;
         installed_version: number | null;
         latest_version: number | null;
+        latest_source: string | null;
+        latest_release_notes: string | null;
     };
 }
 export default class OTAUpdate extends Extension {
     #private;
-    private inProgress;
-    private lastChecked;
-    private scheduledUpgrades;
-    private scheduledDowngrades;
     start(): Promise<void>;
-    private removeProgressAndRemainingFromState;
+    clearState(): void;
     private onZigbeeEvent;
-    private readSoftwareBuildIDAndDateCode;
-    private getEntityPublishPayload;
     onMQTTMessage(data: eventdata.MQTTMessage): Promise<void>;
 }
 export {};

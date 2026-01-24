@@ -1,6 +1,6 @@
 import schemaJson from "./settings.schema.json";
 export { schemaJson };
-export declare const CURRENT_VERSION = 4;
+export declare const CURRENT_VERSION = 5;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export declare const LOG_LEVELS: readonly string[];
 export type LogLevel = "error" | "warning" | "info" | "debug";
@@ -67,6 +67,7 @@ export declare const defaults: {
     ota: {
         update_check_interval: number;
         disable_automatic_update_check: false;
+        image_block_request_timeout: number;
         image_block_response_delay: number;
         default_maximum_data_size: number;
     };
@@ -193,6 +194,7 @@ export declare const testing: {
         ota: {
             update_check_interval: number;
             disable_automatic_update_check: false;
+            image_block_request_timeout: number;
             image_block_response_delay: number;
             default_maximum_data_size: number;
         };
