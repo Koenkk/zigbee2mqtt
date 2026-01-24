@@ -696,9 +696,8 @@ export class HomeAssistant extends Extension {
                             command_topic: true,
                             command_topic_prefix: endpoint,
                             command_topic_postfix: tempCalibration.property,
-                            device_class: "temperature",
+                            device_class: "temperature_delta",
                             entity_category: "config",
-                            icon: "mdi:math-compass",
                             ...(tempCalibration.unit && {unit_of_measurement: tempCalibration.unit}),
                         },
                     };
