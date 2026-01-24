@@ -174,7 +174,15 @@ export class Frontend extends Extension {
             if (!isBinary && data) {
                 const message = data.toString();
                 const {topic, payload} = JSON.parse(message);
-                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                // WebSocket messages don't have MQTT QoS semantics, use QoS 0
+                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)), {
+                    cmd: "publish",
+                    qos: 0,
+                    dup: false,
+                    retain: false,
+                    topic: `${this.mqttBaseTopic}/${topic}`,
+                    payload: stringify(payload),
+                });
             }
         });
 

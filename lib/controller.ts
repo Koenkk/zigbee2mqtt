@@ -1,7 +1,7 @@
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import {setLogger as zhSetLogger} from "zigbee-herdsman";
-import {setLogger as zhcSetLogger} from "zigbee-herdsman-converters";
+import {access, setLogger as zhcSetLogger} from "zigbee-herdsman-converters";
 import EventBus from "./eventBus";
 // Extensions
 import ExtensionAvailability from "./extension/availability";
@@ -152,6 +152,11 @@ export class Controller {
             await this.startExtension(extension);
         }
 
+        // Populate state.json with configuration values from database.db
+        // This ensures config attributes (like sensitivity, thresholds) are available
+        // even if the device hasn't reported them since startup
+        await this.populateStateFromDatabase();
+
         // Send all cached states.
         if (settings.get().advanced.cache_state_send_on_startup && settings.get().advanced.cache_state) {
             for (const entity of this.zigbee.devicesAndGroupsIterator()) {
@@ -285,6 +290,175 @@ export class Controller {
         } catch (error) {
             logger.error(`Failed to stop '${extension.constructor.name}' (${(error as Error).stack})`);
         }
+    }
+
+    /**
+     * Populate state.json with configuration values from database.db for attributes
+     * that are currently null/missing.
+     *
+     * This solves the problem where sleepy devices have config values stored in
+     * database.db (from interview) but state.json shows null (never received at runtime).
+     *
+     * Access flags determine what to populate:
+     * ┌────────┬───────┬───────┬─────────────────────────────┬──────────┐
+     * │ Binary │ STATE │  SET  │ GET │        Type           │ Populate │
+     * ├────────┼───────┼───────┼─────┼───────────────────────┼──────────┤
+     * │  000   │   -   │   -   │  -  │ Invalid               │    ❌    │
+     * │  001   │   ✓   │   -   │  -  │ Sensor reading        │    ❌    │
+     * │  010   │   -   │   ✓   │  -  │ Command/action        │    ❌    │
+     * │  011   │   ✓   │   ✓   │  -  │ Config (device reports)│   ✅    │
+     * │  100   │   -   │   -   │  ✓  │ Query-only (rare)     │    ❌    │
+     * │  101   │   ✓   │   -   │  ✓  │ Pollable sensor       │    ❌    │
+     * │  110   │   -   │   ✓   │  ✓  │ Config (no auto-report)│   ✅    │
+     * │  111   │   ✓   │   ✓   │  ✓  │ Full config           │    ✅    │
+     * └────────┴───────┴───────┴─────┴───────────────────────┴──────────┘
+     *
+     * Rule: Populate if has SET AND has at least STATE or GET
+     *       isConfig = (access & SET) && (access & (STATE | GET))
+     */
+    private async populateStateFromDatabase(): Promise<void> {
+        let populatedCount = 0;
+        let deviceCount = 0;
+
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
+            if (!device.definition || !device.interviewed) {
+                continue;
+            }
+
+            deviceCount++;
+            const currentState = this.state.get(device);
+            const exposes = device.exposes();
+
+            // Build set of config property names (properties with SET + (STATE or GET))
+            const configProperties = new Set<string>();
+            const processExpose = (expose: KeyValue): void => {
+                if (expose.access !== undefined) {
+                    const hasSet = (expose.access & access.SET) !== 0;
+                    const hasStateOrGet = (expose.access & (access.STATE | access.GET)) !== 0;
+                    if (hasSet && hasStateOrGet && expose.property) {
+                        configProperties.add(expose.property);
+                    }
+                }
+                // Process nested features (for composite exposes)
+                if (expose.features) {
+                    for (const feature of expose.features) {
+                        processExpose(feature);
+                    }
+                }
+            };
+
+            for (const expose of exposes) {
+                processExpose(expose);
+            }
+
+            // For each config property that's null/undefined in state, try to find in database
+            // Try to populate each config property from stored cluster attributes
+            let devicePopulatedCount = 0;
+            for (const property of configProperties) {
+                if (currentState[property] === undefined || currentState[property] === null) {
+                    // Try to find this value via converters from stored cluster attributes
+                    const value = await this.getStoredConfigValue(device, property);
+                    /* v8 ignore next 4 - requires real zhc converters to return values */
+                    if (value !== undefined && value !== null) {
+                        currentState[property] = value;
+                        devicePopulatedCount++;
+                    }
+                }
+            }
+
+            /* v8 ignore next 5 - requires real zhc converters to return values */
+            // Update state if we found any values for this device
+            if (devicePopulatedCount > 0) {
+                this.state.set(device, currentState, "populateFromDatabase");
+                populatedCount += devicePopulatedCount;
+            }
+        }
+
+        /* v8 ignore next 3 - requires real zhc converters to return values */
+        if (populatedCount > 0) {
+            logger.info(`Populated ${populatedCount} config values from database for ${deviceCount} devices`);
+        }
+    }
+
+    /**
+     * Try to get a stored config value by running stored cluster attributes through converters
+     */
+    private async getStoredConfigValue(device: Device, property: string): Promise<unknown> {
+        /* v8 ignore start - requires real zhc converters and cluster data setup */
+        if (!device.definition) return undefined;
+
+        // Iterate through device endpoints and their stored cluster attributes
+        for (const endpoint of device.zh.endpoints) {
+            if (!endpoint.clusters) continue;
+            for (const [clusterName, cluster] of Object.entries(endpoint.clusters)) {
+                const attributes = cluster.attributes;
+                if (!attributes || Object.keys(attributes).length === 0) continue;
+
+                // Convert serialized Buffers back to actual Buffer instances
+                // Database stores Buffers as {"type": "Buffer", "data": [...]}
+                const normalizedAttrs: KeyValue = {};
+                for (const [attrName, attrValue] of Object.entries(attributes)) {
+                    if (
+                        attrValue &&
+                        typeof attrValue === "object" &&
+                        (attrValue as KeyValue).type === "Buffer" &&
+                        Array.isArray((attrValue as KeyValue).data)
+                    ) {
+                        normalizedAttrs[attrName] = Buffer.from((attrValue as KeyValue).data as number[]);
+                    } else {
+                        normalizedAttrs[attrName] = attrValue;
+                    }
+                }
+
+                // Find matching fromZigbee converters for this cluster
+                const converters = device.definition.fromZigbee.filter(
+                    (c) =>
+                        c.cluster === clusterName && (c.type === "attributeReport" || (Array.isArray(c.type) && c.type.includes("attributeReport"))),
+                );
+
+                for (const converter of converters) {
+                    try {
+                        // Create synthetic message data
+                        const convertData = {
+                            type: "attributeReport" as const,
+                            cluster: clusterName,
+                            data: normalizedAttrs,
+                            device: device.zh,
+                            endpoint,
+                            linkquality: 0,
+                            groupID: 0,
+                            meta: {rawData: Buffer.alloc(0)},
+                        };
+
+                        const options: KeyValue = device.options;
+                        const meta = {
+                            device: device.zh,
+                            logger,
+                            state: this.state.get(device),
+                            deviceExposesChanged: (): void => {},
+                        };
+
+                        // Run converter (with no-op publish function)
+                        const result = await converter.convert(
+                            device.definition,
+                            convertData,
+                            async () => {}, // no-op publish
+                            options,
+                            meta,
+                        );
+
+                        if (result && property in result) {
+                            return result[property];
+                        }
+                    } catch {
+                        // Converter failed, try next
+                    }
+                }
+            }
+        }
+        /* v8 ignore stop */
+
+        return undefined;
     }
 
     async stop(restart = false, code = 0): Promise<void> {

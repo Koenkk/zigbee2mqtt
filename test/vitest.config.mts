@@ -11,7 +11,7 @@ export default defineConfig({
             provider: "v8",
             include: ["lib/**"],
             extension: [".ts"],
-            // exclude: [],
+            exclude: ["lib/types/**"],
             clean: true,
             cleanOnRerun: true,
             reportsDirectory: "coverage",

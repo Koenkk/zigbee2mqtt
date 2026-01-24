@@ -1014,3 +1014,76 @@ export type Zigbee2MQTTResponseError = {
 };
 
 export type Zigbee2MQTTResponse<T extends Zigbee2MQTTResponseEndpoints> = Zigbee2MQTTResponseOK<T> | Zigbee2MQTTResponseError;
+
+/**
+ * Operation type for command responses.
+ */
+export type CommandResponseType = "set" | "get";
+
+/**
+ * Status of a command response.
+ * - 'ok': All attributes written/read successfully
+ * - 'partial': Some attributes succeeded, others failed (ZCL Write Attributes Response)
+ * - 'error': Command failed completely (timeout, no route, device offline)
+ * - 'pending': Command queued for sleepy device (sendWhenActive)
+ */
+export type CommandResponseStatus = "ok" | "partial" | "error" | "pending";
+
+/**
+ * Normalized error codes for command failures.
+ * - 'TIMEOUT': Command timed out waiting for response
+ * - 'NO_ROUTE': No route to device (device unreachable)
+ * - 'ZCL_ERROR': ZCL-level error (invalid attribute, unsupported, etc.)
+ * - 'UNKNOWN': Unclassified error
+ */
+export type CommandResponseErrorCode = "TIMEOUT" | "NO_ROUTE" | "ZCL_ERROR" | "UNKNOWN";
+
+/**
+ * Error details for failed commands.
+ */
+export type CommandResponseError = {
+    /** Normalized error code for automation parsing */
+    code?: CommandResponseErrorCode;
+    /** Raw error message from zigbee-herdsman */
+    message: string;
+    /** Specific ZCL status number (e.g., 134 for UNSUPPORTED_ATTRIBUTE) */
+    zcl_status?: number;
+};
+
+/**
+ * Z2M transport metadata for command responses.
+ * Namespaced to avoid collision with device attributes.
+ */
+export type CommandResponseZ2M = {
+    /** The ID provided in the request (echoed back for correlation) */
+    request_id: string;
+    /** TRUE = Gateway finished processing this request. Clients should stop spinners. */
+    final: boolean;
+    /** Time in milliseconds from command receipt to response. Useful for latency monitoring. */
+    elapsed_ms?: number;
+    /** 'unicast' for single device, 'multicast' for group commands */
+    transmission_type?: "unicast" | "multicast";
+    /** Number of devices in group (groups only) */
+    member_count?: number;
+};
+
+/**
+ * Response to a command with z2m.request_id.
+ * Published to `[device]/response` topic.
+ */
+export type CommandResponse = {
+    /** The operation type that triggered this response */
+    type: CommandResponseType;
+    /** Result status of the command */
+    status: CommandResponseStatus;
+    /** Friendly name of the target device or group */
+    target: string;
+    /** Successful attribute values (flat object for easy state merging) */
+    data?: Record<string, unknown>;
+    /** Map of failed attribute names to error messages */
+    failed?: Record<string, string>;
+    /** Global error details (present when status is 'error') */
+    error?: CommandResponseError;
+    /** Z2M transport metadata */
+    z2m: CommandResponseZ2M;
+};

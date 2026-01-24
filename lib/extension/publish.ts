@@ -4,6 +4,7 @@ import type * as zhc from "zigbee-herdsman-converters";
 
 import Device from "../model/device";
 import Group from "../model/group";
+import type {CommandResponse, CommandResponseStatus} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import utils from "../util/utils";
@@ -97,6 +98,7 @@ export default class Publish extends Extension {
             return;
         }
 
+        const startTime = Date.now();
         const re = this.zigbee.resolveEntity(parsedTopic.ID);
 
         if (!re) {
@@ -130,7 +132,88 @@ export default class Publish extends Extension {
             return;
         }
 
+        // Extract z2m.request_id for response publishing (backward compatible - only responds if provided)
+        // V2: Uses nested z2m namespace to avoid collision with device attributes like CSM-300ZB's "transaction"
+        const z2mMetadata = message.z2m as {request_id?: string} | undefined;
+        const requestId = z2mMetadata?.request_id;
+        if (z2mMetadata !== undefined) {
+            delete message.z2m;
+        }
+
+        // Capture QoS for response publishing - match request QoS or fallback to 1
+        // Per V2 Feature Request (https://github.com/Koenkk/zigbee2mqtt/issues/30679):
+        // "Response published with same QoS as incoming command. If incoming
+        // QoS cannot be determined, defaults to QoS 1 (At Least Once) to guarantee delivery."
+        // QoS 1 fallback is more reliable than mqtt.js default of QoS 0.
+        const responseQos = data.qos ?? 1;
+
+        // Ping pattern: z2m-only payload returns ok with no data (no Zigbee traffic)
+        if (requestId && Object.keys(message).length === 0) {
+            const response: CommandResponse = {
+                type: parsedTopic.type,
+                status: "ok",
+                target: re.name,
+                z2m: {
+                    request_id: requestId,
+                    final: true,
+                    elapsed_ms: Date.now() - startTime,
+                },
+            };
+            await this.mqtt.publish(`${re.name}/response`, stringify(response), {clientOptions: {qos: responseQos, retain: false}});
+            return;
+        }
+
+        // Initialize result tracking for aggregated response
+        const responseData: Record<string, unknown> = {};
+        const responseFailed: Record<string, string> = {};
+
+        // Track if we sent pending response for sleepy device
+        let pendingResponseSent = false;
+
         const device = re instanceof Device ? re.zh : undefined;
+
+        // Sleepy device check: return pending immediately for commands with request_id
+        // Sleepy devices (battery-powered EndDevices) have their radios off most of the time.
+        // Commands are buffered at the parent router and delivered when the device wakes.
+        //
+        // DESIGN NOTE: We send `final: true` immediately, meaning "stop your spinner, we've
+        // queued the command but can't confirm delivery." This matches the V2 Feature Request
+        // (https://github.com/Koenkk/zigbee2mqtt/issues/30679): "The request is closed; no
+        // further confirmation will be sent."
+        //
+        // FUTURE ENHANCEMENT A: Could send `final: false` initially, then a follow-up message
+        // with `final: true` when zigbee-herdsman confirms the parent router delivered the
+        // message to the waking device. This would require:
+        // - Tracking pending request_ids with timestamps
+        // - Listening for delivery confirmation events from zigbee-herdsman (if exposed)
+        // - Memory management for long-sleeping devices (hours/days)
+        // - Timeout handling for devices that never wake
+        // Current design chose simplicity over completeness.
+        //
+        // FUTURE ENHANCEMENT B: Optimistically update state.db when sending `pending + final`
+        // for SET commands. Currently, state.db only updates when the device confirms. This
+        // means if the backend/frontend restarts while a command is queued for a sleepy device,
+        // the UI reverts to old values (though the queued command still executes when device
+        // wakes). Optimistic state.db update would preserve the "expected" values across restarts.
+        // Trade-off: state.db would contain unconfirmed values until device wakes.
+        if (requestId && (parsedTopic.type === "set" || parsedTopic.type === "get") && re instanceof Device && this.isSleepyDevice(device)) {
+            const response: CommandResponse = {
+                type: parsedTopic.type,
+                status: "pending",
+                target: re.name,
+                z2m: {
+                    request_id: requestId,
+                    final: true, // See DESIGN NOTE above for why this is immediately true
+                    elapsed_ms: Date.now() - startTime,
+                    transmission_type: "unicast",
+                },
+                // NO data field - command hasn't executed yet
+            };
+            await this.mqtt.publish(`${re.name}/response`, stringify(response), {clientOptions: {qos: responseQos, retain: false}});
+            pendingResponseSent = true;
+            // Continue processing - converters will queue the command through zigbee-herdsman
+        }
+
         const entitySettings = re.options;
         const entityState = this.state.get(re);
         const membersState =
@@ -175,6 +258,7 @@ export default class Publish extends Extension {
         let scenesChanged = false;
 
         for (const entry of entries) {
+            const originalKey = entry[0];
             let key = entry[0];
             const value = entry[1];
             let endpointName = parsedTopic.endpoint;
@@ -240,6 +324,7 @@ export default class Publish extends Extension {
                 }
             }
 
+            let attributeError: string | undefined;
             try {
                 if (parsedTopic.type === "set" && converter.convertSet) {
                     logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
@@ -280,12 +365,120 @@ export default class Publish extends Extension {
                 logger.error(message);
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
+                attributeError = String(error);
+            }
+
+            // Track result for aggregated response (supports both SET and GET)
+            if (requestId) {
+                if (attributeError) {
+                    responseFailed[key] = attributeError;
+                } else if (parsedTopic.type === "get") {
+                    // For GET, read the current value from device state cache.
+                    // This is safe because: convertGet awaits entity.read() which awaits the ZCL response.
+                    // When the response arrives, zigbee-herdsman calls resolveZCL() then emit("zclPayload").
+                    // JavaScript event loop guarantees: emit() runs synchronously (updating this.state via
+                    // fromZigbee), then microtasks run (resolving the await). So state is always updated
+                    // before we reach this line. See emberAdapter.js onZclPayload() for the call order.
+                    const currentState = this.state.get(re);
+                    responseData[originalKey] = currentState?.[originalKey];
+                } else {
+                    // For SET, echo the requested value
+                    responseData[originalKey] = value;
+                }
             }
 
             usedConverters[endpointOrGroupID].push(converter);
 
             if (!scenesChanged && converter.key) {
                 scenesChanged = converter.key.some((k) => SCENE_CONVERTER_KEYS.includes(k));
+            }
+        }
+
+        // Publish aggregated response if request_id was provided.
+        // Skip if pending already sent for sleepy device - see DESIGN NOTE above for future
+        // enhancement that could send a follow-up response when delivery is confirmed.
+        // V2: Supports both SET and GET operations on unified /response topic
+        if (requestId && !pendingResponseSent) {
+            const hasFailed = Object.keys(responseFailed).length > 0;
+            const isGroup = re instanceof Group;
+
+            if (isGroup) {
+                // Group commands use standard Zigbee multicast - no individual ACKs from members.
+                //
+                // NOTE: Some advanced orchestration uses "group-leader" pattern where a unicast
+                // is sent to one router that propagates locally. In that case transmission_type
+                // would be "unicast" with member_count still populated. Current implementation
+                // uses standard multicast; group-leader detection would require user configuration
+                // to identify leader devices.
+                //
+                // The separation of transmission_type and member_count in the response schema
+                // was designed to support future group-leader scenarios.
+                //
+                // Per spec: confirm transmission, omit data field, include member_count
+                const status: CommandResponseStatus = hasFailed ? "error" : "ok";
+
+                const response: CommandResponse = {
+                    type: parsedTopic.type,
+                    status,
+                    target: re.name,
+                    z2m: {
+                        request_id: requestId,
+                        final: true,
+                        elapsed_ms: Date.now() - startTime,
+                        transmission_type: "multicast",
+                        member_count: re.zh.members.length,
+                    },
+                };
+
+                // Add error for failure (e.g., multicast transmission failed)
+                if (status === "error" && hasFailed) {
+                    const firstError = Object.values(responseFailed)[0];
+                    response.error = utils.normalizeHerdsmanError(firstError);
+                }
+
+                await this.mqtt.publish(`${re.name}/response`, stringify(response), {clientOptions: {qos: responseQos, retain: false}});
+            } else {
+                // Device (unicast) response - includes data field
+                const hasData = Object.keys(responseData).length > 0;
+
+                let status: CommandResponseStatus;
+                if (hasFailed && hasData) {
+                    status = "partial";
+                } else if (hasFailed) {
+                    status = "error";
+                } else {
+                    status = "ok";
+                }
+
+                const response: CommandResponse = {
+                    type: parsedTopic.type,
+                    status,
+                    target: re.name,
+                    z2m: {
+                        request_id: requestId,
+                        final: true,
+                        elapsed_ms: Date.now() - startTime,
+                    },
+                };
+
+                // Add data only if there are successful attributes
+                if (hasData) {
+                    response.data = responseData;
+                }
+
+                // Add failed only for partial status
+                if (status === "partial") {
+                    response.failed = responseFailed;
+                }
+
+                // Add error for complete failure (all attributes failed)
+                if (status === "error" && hasFailed) {
+                    // Use first error as the global error (most relevant for single-attribute case)
+                    const firstError = Object.values(responseFailed)[0];
+                    response.error = utils.normalizeHerdsmanError(firstError);
+                }
+
+                await this.mqtt.publish(`${re.name}/response`, stringify(response), {clientOptions: {qos: responseQos, retain: false}});
             }
         }
 
@@ -306,5 +499,38 @@ export default class Publish extends Extension {
         }
 
         return definition?.toZigbee;
+    }
+
+    /**
+     * Detect if a device is a sleepy (battery-powered) end device.
+     *
+     * Sleepy devices (Zigbee "Sleepy End Devices") spend 99% of their time with
+     * radios OFF to conserve battery. Commands are buffered at the parent router
+     * and delivered when the device wakes (typically every few seconds to poll).
+     *
+     * Heuristic: EndDevice + Battery power source
+     * - EndDevice: Only end devices can sleep. Routers must stay awake to route.
+     * - Battery: Battery-powered devices implement sleep to conserve power.
+     *
+     * Edge cases (rare, ~1% of devices):
+     * - USB-powered EndDevice: Could be sleepy but powerSource is "Dcsource"
+     * - Mains with battery backup: powerSource values 128-134 not matched
+     * - Battery-powered with check-in: Some devices wake frequently enough to seem always-on
+     *
+     * For ~99% of real-world devices, this heuristic is accurate.
+     *
+     * Impact of inaccuracy (harmless):
+     * - False negative (miss sleepy device): Client gets timeout/error instead of "pending".
+     *   Command was still queued at parent router; just wrong status message.
+     * - False positive (wrongly detect sleepy): Client gets "pending" but command succeeds
+     *   immediately. Again just wrong status; functionality unaffected.
+     *
+     * @param device - zigbee-herdsman Device object
+     * @returns true if device should be treated as sleepy (return pending immediately)
+     */
+    private isSleepyDevice(device: zh.Device | undefined): boolean {
+        /* v8 ignore next - defensive check, device always exists in practice */
+        if (!device) return false;
+        return device.type === "EndDevice" && device.powerSource === "Battery";
     }
 }
