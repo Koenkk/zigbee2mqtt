@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 8.1.0
+  zigbee-herdsman: 9.0.1
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.19.0
         version: 8.19.0
       zigbee-herdsman:
-        specifier: 8.1.0
-        version: 8.1.0
+        specifier: 9.0.1
+        version: 9.0.1
       zigbee-herdsman-converters:
         specifier: 25.112.0
         version: 25.112.0
@@ -1018,10 +1018,6 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mixin-deep@2.0.1:
-    resolution: {integrity: sha512-imbHQNRglyaplMmjBLL3V5R6Bfq5oM+ivds3SKgc6oRtzErEnBUUc5No11Z2pilkUvl42gJvi285xTNswcKCMA==}
-    engines: {node: '>=6'}
-
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
 
@@ -1471,8 +1467,8 @@ packages:
     resolution: {integrity: sha512-k3dw5id+cjmaVnij/NbY1JbZ5cq8aUmoHcf4uRa/zLnvmV5deg3qfy95hBmQyljd303uQ+yxkOL3YovxAT0dPg==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@8.1.0:
-    resolution: {integrity: sha512-HuJVoTcGLnU0XflAQFRjMemiI5vLf6+BDdGAunMLMyxmJDwmnMvfLQYfw4ShwNfm3sMqPM/Knp64fKhx4UIqAQ==}
+  zigbee-herdsman@9.0.1:
+    resolution: {integrity: sha512-gjHbSxLJqMguGHSJLd6dCntVVSesAGzSoQ1uGs7VW7KoYhQsOLsTtux7/y8yF9oqXpZ3kArMUtAIrdkVDbPoOQ==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2262,8 +2258,6 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mixin-deep@2.0.1: {}
-
   mqtt-packet@9.0.2:
     dependencies:
       bl: 6.1.3
@@ -2752,11 +2746,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.7.3
-      zigbee-herdsman: 8.1.0
+      zigbee-herdsman: 9.0.1
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@8.1.0:
+  zigbee-herdsman@9.0.1:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
@@ -2765,7 +2759,6 @@ snapshots:
       bonjour-service: 1.3.0
       debounce: 3.0.0
       fast-deep-equal: 3.1.3
-      mixin-deep: 2.0.1
       slip: 1.0.2
       zigbee-on-host: 0.2.4
     transitivePeerDependencies:
