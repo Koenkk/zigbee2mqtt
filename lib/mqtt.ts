@@ -179,7 +179,7 @@ export default class Mqtt {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
             logger.debug(() => `Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
-            this.eventBus.emitMQTTMessage({topic, message: message.toString(), qos: packet.qos});
+            this.eventBus.emitMQTTMessage({topic, message: message.toString(), qos: packet?.qos ?? 0});
         }
 
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {

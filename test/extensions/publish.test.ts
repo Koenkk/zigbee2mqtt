@@ -2700,10 +2700,11 @@ describe("Extension: Publish", () => {
             expect(typeof publishOptions.qos).toBe("number");
         });
 
-        it("Should default response QoS to 1 when request QoS is undefined", async () => {
+        it("Should default response QoS to 0 when request packet has no QoS", async () => {
             mockMQTTPublishAsync.mockClear();
 
-            // Use _noQos flag to simulate missing QoS (tests fallback to 1)
+            // Use _noQos flag to simulate missing QoS in MQTT packet
+            // mqtt.ts normalizes undefined packet.qos to 0 for safety
             await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "ON", z2m: {request_id: "qos-default"}}), {_noQos: true});
             await flushPromises();
 
@@ -2711,7 +2712,7 @@ describe("Extension: Publish", () => {
             expect(responseCalls.length).toBe(1);
 
             const publishOptions = responseCalls[0][2];
-            expect(publishOptions.qos).toBe(1); // Falls back to 1 per spec
+            expect(publishOptions.qos).toBe(0); // mqtt.ts defaults undefined to 0
         });
 
         it("Should set retain to false for response messages", async () => {
