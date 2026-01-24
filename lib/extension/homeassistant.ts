@@ -427,6 +427,7 @@ export class HomeAssistant extends Extension {
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         this.eventBus.onDeviceAnnounce(this, this.onZigbeeEvent);
         this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
+        // TODO: this is triggering for any `data.status`?
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         this.eventBus.onScenesChanged(this, this.onScenesChanged);

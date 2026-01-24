@@ -10,7 +10,7 @@ import yaml from "./yaml";
 export {schemaJson};
 // When updating also update:
 // - https://github.com/Koenkk/zigbee2mqtt/blob/dev/data/configuration.example.yaml#L2
-export const CURRENT_VERSION = 4;
+export const CURRENT_VERSION = 5;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ["error", "warning", "info", "debug"] as const;
 export type LogLevel = "error" | "warning" | "info" | "debug";
@@ -82,6 +82,7 @@ export const defaults = {
     ota: {
         update_check_interval: 24 * 60,
         disable_automatic_update_check: false,
+        image_block_request_timeout: 150000,
         image_block_response_delay: 250,
         default_maximum_data_size: 50,
     },
