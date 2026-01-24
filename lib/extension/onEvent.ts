@@ -37,6 +37,8 @@ export default class OnEvent extends Extension {
             }
         });
         this.eventBus.onDeviceInterview(this, async (data) => {
+            // TODO: this is triggering for any `data.status`, any use outside `successful`?
+            //       ZHC definition would skip from `device.definition?` but OnEvent from ZHC index wouldn't => triple triggering?
             await this.callOnEvent(data.device, {type: "deviceInterview", data: {...this.#getOnEventBaseData(data.device), status: data.status}});
         });
         this.eventBus.onDeviceAnnounce(this, async (data) => {

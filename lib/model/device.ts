@@ -1,9 +1,10 @@
 import assert from "node:assert";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
+import type {OtaExtraMetas} from "zigbee-herdsman/dist/controller/tstype";
 import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 import {access, Numeric} from "zigbee-herdsman-converters";
-
+import logger from "../util/logger";
 import * as settings from "../util/settings";
 
 const LINKQUALITY = new Numeric("linkquality", access.STATE)
@@ -38,7 +39,7 @@ export default class Device {
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
     }
-    get otaExtraMetas(): zhc.Ota.ExtraMetas {
+    get otaExtraMetas(): OtaExtraMetas {
         return typeof this.definition?.ota === "object" ? this.definition.ota : {};
     }
     get interviewed(): boolean {
@@ -66,6 +67,23 @@ export default class Device {
         if (this.interviewed && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
+        }
+    }
+
+    async reInterview(eventBus: EventBus): Promise<void> {
+        // logic follows that of receiving `deviceInterview` event from ZH layer
+        logger.info(`Interviewing '${this.name}'`);
+        eventBus.emitDeviceInterview({status: "started", device: this});
+
+        try {
+            await this.zh.interview(true);
+            // A re-interview can for example result in a different modelId, therefore reconsider the definition.
+            await this.resolveDefinition(true);
+            logger.info(`Successfully interviewed '${this.name}'`);
+            eventBus.emitDeviceInterview({status: "successful", device: this});
+        } catch (error) {
+            eventBus.emitDeviceInterview({status: "failed", device: this});
+            throw new Error(`Interview of '${this.name}' (${this.ieeeAddr}) failed: ${error}`);
         }
     }
 

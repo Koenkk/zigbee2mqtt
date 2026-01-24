@@ -75,6 +75,7 @@ export default class Configure extends Extension {
 
             await this.configure(data.device, "zigbee_event");
         });
+        // TODO: this is triggering for any `data.status`, but should only for `successful`? (relies on `device.definition?` early-return?)
         this.eventBus.onDeviceInterview(this, (data) => this.configure(data.device, "zigbee_event"));
         this.eventBus.onLastSeenChanged(this, (data) => this.configure(data.device, "zigbee_event"));
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
