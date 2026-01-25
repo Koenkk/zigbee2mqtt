@@ -50,10 +50,10 @@ const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ["stopped", "stop", "pause",
 const SWITCH_DIFFERENT: ReadonlyArray<string> = ["valve_detection", "window_detection", "auto_lock", "away_mode"];
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
-    Area1Occupancy: {device_class: "occupancy"},
-    Area2Occupancy: {device_class: "occupancy"},
-    Area3Occupancy: {device_class: "occupancy"},
-    Area4Occupancy: {device_class: "occupancy"},
+    area1Occupancy: {device_class: "occupancy"},
+    area2Occupancy: {device_class: "occupancy"},
+    area3Occupancy: {device_class: "occupancy"},
+    area4Occupancy: {device_class: "occupancy"},
     auto_off: {icon: "mdi:flash-auto"},
     battery_low: {entity_category: "diagnostic", device_class: "battery"},
     button_lock: {entity_category: "config", icon: "mdi:lock"},
@@ -427,6 +427,7 @@ export class HomeAssistant extends Extension {
         this.eventBus.onGroupMembersChanged(this, this.onGroupMembersChanged);
         this.eventBus.onDeviceAnnounce(this, this.onZigbeeEvent);
         this.eventBus.onDeviceJoined(this, this.onZigbeeEvent);
+        // TODO: this is triggering for any `data.status`?
         this.eventBus.onDeviceInterview(this, this.onZigbeeEvent);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
         this.eventBus.onScenesChanged(this, this.onScenesChanged);
@@ -696,9 +697,8 @@ export class HomeAssistant extends Extension {
                             command_topic: true,
                             command_topic_prefix: endpoint,
                             command_topic_postfix: tempCalibration.property,
-                            device_class: "temperature",
+                            device_class: "temperature_delta",
                             entity_category: "config",
-                            icon: "mdi:math-compass",
                             ...(tempCalibration.unit && {unit_of_measurement: tempCalibration.unit}),
                         },
                     };

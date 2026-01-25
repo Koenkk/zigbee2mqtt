@@ -1,5 +1,5 @@
+import {vi} from "vitest";
 import type Transport from "winston-transport";
-
 import type {LogLevel} from "../../lib/util/settings";
 
 let level: LogLevel = "info";

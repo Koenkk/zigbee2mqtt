@@ -1,5 +1,4 @@
-import {copyFileSync, writeFileSync} from "node:fs";
-
+import {copyFileSync, existsSync, readFileSync, writeFileSync} from "node:fs";
 import data from "./data";
 import * as settings from "./settings";
 import utils from "./utils";
@@ -29,7 +28,7 @@ interface SettingsCustomHandler extends Omit<SettingsMigration, "path"> {
     execute: (currentSettings: Partial<Settings>) => [validPath: boolean, previousValue: unknown, changed: boolean];
 }
 
-const SUPPORTED_VERSIONS: Settings["version"][] = [undefined, 2, 3, settings.CURRENT_VERSION];
+const SUPPORTED_VERSIONS: Settings["version"][] = [undefined, 2, 3, 4, settings.CURRENT_VERSION];
 
 function backupSettings(version: number): void {
     const filePath = data.joinPath("configuration.yaml");
@@ -481,6 +480,58 @@ function migrateToFour(
     });
 }
 
+function migrateToFive(
+    _currentSettings: Partial<Settings>,
+    transfers: SettingsTransfer[],
+    changes: SettingsChange[],
+    additions: SettingsAdd[],
+    removals: SettingsRemove[],
+    customHandlers: SettingsCustomHandler[],
+): void {
+    transfers.push();
+    changes.push({
+        path: ["version"],
+        note: "Migrated settings to version 5",
+        newValue: 5,
+    });
+    additions.push();
+    removals.push();
+
+    const resetOtaStates = (_currentSettings: Partial<Settings>): ReturnType<SettingsCustomHandler["execute"]> => {
+        const filePath = data.joinPath("state.json");
+
+        if (existsSync(filePath)) {
+            try {
+                const stateFile = readFileSync(filePath, "utf8");
+                const stateObj = JSON.parse(stateFile) as KeyValue;
+
+                for (const key in stateObj) {
+                    const entry = stateObj[key];
+
+                    if (entry.update) {
+                        delete entry.update;
+                    }
+                }
+
+                writeFileSync(filePath, JSON.stringify(stateObj), "utf8");
+
+                // hack, this does not actually affect settings, we just want to ensure the migration note triggers
+                return [true, undefined, true];
+            } catch (error) {
+                console.error(`Failed to write state to '${filePath}' (${error})`);
+            }
+        }
+
+        return [false, undefined, false];
+    };
+
+    customHandlers.push({
+        note: "Reset all cached OTA states due to internal changes.",
+        noteIf: () => true,
+        execute: (currentSettings) => resetOtaStates(currentSettings),
+    });
+}
+
 /**
  * Order of execution:
  * - Transfer
@@ -533,6 +584,10 @@ export function migrateIfNecessary(): void {
             migrationNotesFileName = "migration-3-to-4.log";
 
             migrateToFour(currentSettings, transfers, changes, additions, removals, customHandlers);
+        } else if (currentSettings.version === 4) {
+            migrationNotesFileName = "migration-4-to-5.log";
+
+            migrateToFive(currentSettings, transfers, changes, additions, removals, customHandlers);
         }
 
         for (const transfer of transfers) {

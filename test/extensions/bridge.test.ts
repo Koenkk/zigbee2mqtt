@@ -322,6 +322,7 @@ describe("Extension: Bridge", () => {
                     ota: {
                         default_maximum_data_size: 50,
                         disable_automatic_update_check: false,
+                        image_block_request_timeout: 150000,
                         image_block_response_delay: 250,
                         update_check_interval: 1440,
                     },
@@ -3263,7 +3264,7 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/interview",
-            stringify({data: {}, status: "error", error: "interview of 'bulb' (0x000b57fffec6a5b2) failed: Error: something went wrong"}),
+            stringify({data: {}, status: "error", error: "Interview of 'bulb' (0x000b57fffec6a5b2) failed: Error: something went wrong"}),
             {},
         );
     });
@@ -4085,6 +4086,8 @@ describe("Extension: Bridge", () => {
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "afile.js"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "log"));
         fs.writeFileSync(path.join(data.mockDir, "log", "log.log"), "test123");
+        fs.mkdirSync(path.join(data.mockDir, "ota"));
+        fs.writeFileSync(path.join(data.mockDir, "ota", "my.ota"), "test123");
         fs.mkdirSync(path.join(data.mockDir, "ext_converters", "123"));
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "123", "myfile.js"), "test123");
         fs.symlinkSync(

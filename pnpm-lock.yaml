@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 8.1.0
+  zigbee-herdsman: 9.0.1
 
 importers:
 
@@ -72,21 +72,21 @@ importers:
         specifier: ^8.19.0
         version: 8.19.0
       zigbee-herdsman:
-        specifier: 8.1.0
-        version: 8.1.0
+        specifier: 9.0.1
+        version: 9.0.1
       zigbee-herdsman-converters:
-        specifier: 25.111.0
-        version: 25.111.0
+        specifier: 25.114.0
+        version: 25.114.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.6.2
-        version: 2.6.2
+        specifier: 2.7.0
+        version: 2.7.0
     devDependencies:
       '@biomejs/biome':
-        specifier: ^2.3.11
-        version: 2.3.11
+        specifier: ^2.3.12
+        version: 2.3.12
       '@types/finalhandler':
         specifier: ^1.2.3
         version: 1.2.4
@@ -159,55 +159,55 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@biomejs/biome@2.3.11':
-    resolution: {integrity: sha512-/zt+6qazBWguPG6+eWmiELqO+9jRsMZ/DBU3lfuU2ngtIQYzymocHhKiZRyrbra4aCOoyTg/BmY+6WH5mv9xmQ==}
+  '@biomejs/biome@2.3.12':
+    resolution: {integrity: sha512-AR7h4aSlAvXj7TAajW/V12BOw2EiS0AqZWV5dGozf4nlLoUF/ifvD0+YgKSskT0ylA6dY1A8AwgP8kZ6yaCQnA==}
     engines: {node: '>=14.21.3'}
     hasBin: true
 
-  '@biomejs/cli-darwin-arm64@2.3.11':
-    resolution: {integrity: sha512-/uXXkBcPKVQY7rc9Ys2CrlirBJYbpESEDme7RKiBD6MmqR2w3j0+ZZXRIL2xiaNPsIMMNhP1YnA+jRRxoOAFrA==}
+  '@biomejs/cli-darwin-arm64@2.3.12':
+    resolution: {integrity: sha512-cO6fn+KiMBemva6EARDLQBxeyvLzgidaFRJi8G7OeRqz54kWK0E+uSjgFaiHlc3DZYoa0+1UFE8mDxozpc9ieg==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [darwin]
 
-  '@biomejs/cli-darwin-x64@2.3.11':
-    resolution: {integrity: sha512-fh7nnvbweDPm2xEmFjfmq7zSUiox88plgdHF9OIW4i99WnXrAC3o2P3ag9judoUMv8FCSUnlwJCM1B64nO5Fbg==}
+  '@biomejs/cli-darwin-x64@2.3.12':
+    resolution: {integrity: sha512-/fiF/qmudKwSdvmSrSe/gOTkW77mHHkH8Iy7YC2rmpLuk27kbaUOPa7kPiH5l+3lJzTUfU/t6x1OuIq/7SGtxg==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [darwin]
 
-  '@biomejs/cli-linux-arm64-musl@2.3.11':
-    resolution: {integrity: sha512-XPSQ+XIPZMLaZ6zveQdwNjbX+QdROEd1zPgMwD47zvHV+tCGB88VH+aynyGxAHdzL+Tm/+DtKST5SECs4iwCLg==}
+  '@biomejs/cli-linux-arm64-musl@2.3.12':
+    resolution: {integrity: sha512-aqkeSf7IH+wkzFpKeDVPSXy9uDjxtLpYA6yzkYsY+tVjwFFirSuajHDI3ul8en90XNs1NA0n8kgBrjwRi5JeyA==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-arm64@2.3.11':
-    resolution: {integrity: sha512-l4xkGa9E7Uc0/05qU2lMYfN1H+fzzkHgaJoy98wO+b/7Gl78srbCRRgwYSW+BTLixTBrM6Ede5NSBwt7rd/i6g==}
+  '@biomejs/cli-linux-arm64@2.3.12':
+    resolution: {integrity: sha512-nbOsuQROa3DLla5vvsTZg+T5WVPGi9/vYxETm9BOuLHBJN3oWQIg3MIkE2OfL18df1ZtNkqXkH6Yg9mdTPem7A==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64-musl@2.3.11':
-    resolution: {integrity: sha512-vU7a8wLs5C9yJ4CB8a44r12aXYb8yYgBn+WeyzbMjaCMklzCv1oXr8x+VEyWodgJt9bDmhiaW/I0RHbn7rsNmw==}
+  '@biomejs/cli-linux-x64-musl@2.3.12':
+    resolution: {integrity: sha512-kVGWtupRRsOjvw47YFkk5mLiAdpCPMWBo1jOwAzh+juDpUb2sWarIp+iq+CPL1Wt0LLZnYtP7hH5kD6fskcxmg==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64@2.3.11':
-    resolution: {integrity: sha512-/1s9V/H3cSe0r0Mv/Z8JryF5x9ywRxywomqZVLHAoa/uN0eY7F8gEngWKNS5vbbN/BsfpCG5yeBT5ENh50Frxg==}
+  '@biomejs/cli-linux-x64@2.3.12':
+    resolution: {integrity: sha512-CQtqrJ+qEEI8tgRSTjjzk6wJAwfH3wQlkIGsM5dlecfRZaoT+XCms/mf7G4kWNexrke6mnkRzNy6w8ebV177ow==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-win32-arm64@2.3.11':
-    resolution: {integrity: sha512-PZQ6ElCOnkYapSsysiTy0+fYX+agXPlWugh6+eQ6uPKI3vKAqNp6TnMhoM3oY2NltSB89hz59o8xIfOdyhi9Iw==}
+  '@biomejs/cli-win32-arm64@2.3.12':
+    resolution: {integrity: sha512-Re4I7UnOoyE4kHMqpgtG6UvSBGBbbtvsOvBROgCCoH7EgANN6plSQhvo2W7OCITvTp7gD6oZOyZy72lUdXjqZg==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [win32]
 
-  '@biomejs/cli-win32-x64@2.3.11':
-    resolution: {integrity: sha512-43VrG813EW+b5+YbDbz31uUsheX+qFKCpXeY9kfdAx+ww3naKxeVkTD9zLIWxUPfJquANMHrmW3wbe/037G0Qg==}
+  '@biomejs/cli-win32-x64@2.3.12':
+    resolution: {integrity: sha512-qqGVWqNNek0KikwPZlOIoxtXgsNGsX+rgdEzgw82Re8nF02W+E2WokaQhpF5TdBh/D/RQ3TLppH+otp6ztN0lw==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
@@ -1018,10 +1018,6 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mixin-deep@2.0.1:
-    resolution: {integrity: sha512-imbHQNRglyaplMmjBLL3V5R6Bfq5oM+ivds3SKgc6oRtzErEnBUUc5No11Z2pilkUvl42gJvi285xTNswcKCMA==}
-    engines: {node: '>=6'}
-
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
 
@@ -1467,12 +1463,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@25.111.0:
-    resolution: {integrity: sha512-drhweAoz1YK1EIQQ3Cpo4C0IKmmlu1Gjwk7JK7RPkUm0Yip5oAHY1XFxszgg9/YXwOgmcTYv52EMo7akWXy1DA==}
+  zigbee-herdsman-converters@25.114.0:
+    resolution: {integrity: sha512-Do0t/jFRyn5uufWfpANSmmHM+0/ner1Aymo5liof+lrIQMztwgixM9Pxl6tOK46kMejJbPgRiWwP4tLxZPvk5g==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@8.1.0:
-    resolution: {integrity: sha512-HuJVoTcGLnU0XflAQFRjMemiI5vLf6+BDdGAunMLMyxmJDwmnMvfLQYfw4ShwNfm3sMqPM/Knp64fKhx4UIqAQ==}
+  zigbee-herdsman@9.0.1:
+    resolution: {integrity: sha512-gjHbSxLJqMguGHSJLd6dCntVVSesAGzSoQ1uGs7VW7KoYhQsOLsTtux7/y8yF9oqXpZ3kArMUtAIrdkVDbPoOQ==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -1482,8 +1478,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.6.2:
-    resolution: {integrity: sha512-WymwIUskBJo+71DBn9bHenqCw5bEk5HZ5YucjrPGp6Ju4cYyDaQHFAKEOHR0gQRWy/1m0Inl+Rcl5JpINmMkzw==}
+  zigbee2mqtt-windfront@2.7.0:
+    resolution: {integrity: sha512-2Sm6+mgdaF4sqI+R2cVZ9Vj/6tGt0iJZ8Rt363O5XvB4KB28ij4hk7f7lsJrilqni+NCj+2PrBi/S29rQwlX1w==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -1510,39 +1506,39 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@biomejs/biome@2.3.11':
+  '@biomejs/biome@2.3.12':
     optionalDependencies:
-      '@biomejs/cli-darwin-arm64': 2.3.11
-      '@biomejs/cli-darwin-x64': 2.3.11
-      '@biomejs/cli-linux-arm64': 2.3.11
-      '@biomejs/cli-linux-arm64-musl': 2.3.11
-      '@biomejs/cli-linux-x64': 2.3.11
-      '@biomejs/cli-linux-x64-musl': 2.3.11
-      '@biomejs/cli-win32-arm64': 2.3.11
-      '@biomejs/cli-win32-x64': 2.3.11
+      '@biomejs/cli-darwin-arm64': 2.3.12
+      '@biomejs/cli-darwin-x64': 2.3.12
+      '@biomejs/cli-linux-arm64': 2.3.12
+      '@biomejs/cli-linux-arm64-musl': 2.3.12
+      '@biomejs/cli-linux-x64': 2.3.12
+      '@biomejs/cli-linux-x64-musl': 2.3.12
+      '@biomejs/cli-win32-arm64': 2.3.12
+      '@biomejs/cli-win32-x64': 2.3.12
 
-  '@biomejs/cli-darwin-arm64@2.3.11':
+  '@biomejs/cli-darwin-arm64@2.3.12':
     optional: true
 
-  '@biomejs/cli-darwin-x64@2.3.11':
+  '@biomejs/cli-darwin-x64@2.3.12':
     optional: true
 
-  '@biomejs/cli-linux-arm64-musl@2.3.11':
+  '@biomejs/cli-linux-arm64-musl@2.3.12':
     optional: true
 
-  '@biomejs/cli-linux-arm64@2.3.11':
+  '@biomejs/cli-linux-arm64@2.3.12':
     optional: true
 
-  '@biomejs/cli-linux-x64-musl@2.3.11':
+  '@biomejs/cli-linux-x64-musl@2.3.12':
     optional: true
 
-  '@biomejs/cli-linux-x64@2.3.11':
+  '@biomejs/cli-linux-x64@2.3.12':
     optional: true
 
-  '@biomejs/cli-win32-arm64@2.3.11':
+  '@biomejs/cli-win32-arm64@2.3.12':
     optional: true
 
-  '@biomejs/cli-win32-x64@2.3.11':
+  '@biomejs/cli-win32-x64@2.3.12':
     optional: true
 
   '@colors/colors@1.6.0': {}
@@ -2262,8 +2258,6 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mixin-deep@2.0.1: {}
-
   mqtt-packet@9.0.2:
     dependencies:
       bl: 6.1.3
@@ -2748,15 +2742,15 @@ snapshots:
 
   ws@8.19.0: {}
 
-  zigbee-herdsman-converters@25.111.0:
+  zigbee-herdsman-converters@25.114.0:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.7.3
-      zigbee-herdsman: 8.1.0
+      zigbee-herdsman: 9.0.1
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@8.1.0:
+  zigbee-herdsman@9.0.1:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
@@ -2765,7 +2759,6 @@ snapshots:
       bonjour-service: 1.3.0
       debounce: 3.0.0
       fast-deep-equal: 3.1.3
-      mixin-deep: 2.0.1
       slip: 1.0.2
       zigbee-on-host: 0.2.4
     transitivePeerDependencies:
@@ -2775,4 +2768,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.6.2: {}
+  zigbee2mqtt-windfront@2.7.0: {}
