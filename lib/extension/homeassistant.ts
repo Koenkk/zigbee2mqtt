@@ -759,6 +759,25 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(discoveryEntry);
                 }
 
+                const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
+                const localTemperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
+                if (temperature && !temperatureSensor && !localTemperatureSensor) {
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: "sensor",
+                        object_id: endpoint ? `${temperature.name}_${endpoint}` : `${temperature.name}`,
+                        mockProperties: [{property: temperature.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${temperature.label} ${endpoint}` : temperature.label,
+                            value_template: `{{ value_json.${temperature.property} }}`,
+                            device_class: "temperature",
+                            state_class: "measurement",
+                            ...(temperature.unit && {unit_of_measurement: temperature.unit}),
+                        },
+                    };
+
+                    discoveryEntries.push(discoveryEntry);
+                }
+
                 const currentHumidity = allExposes?.filter(isNumericExpose).find((e) => e.name === "humidity" && e.access & ACCESS_STATE);
                 if (currentHumidity) {
                     discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json.${currentHumidity.property} }}`;
