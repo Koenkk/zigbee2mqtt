@@ -369,10 +369,10 @@ describe("Extension: NetworkMap", () => {
         mock();
         const z2mDevice = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const originalDef = z2mDevice.definition;
-            z2mDevice.definition = {
-              ...originalDef,
-              description: `${originalDef.description} 6"`,
-            };
+        z2mDevice.definition = {
+            ...originalDef,
+            description: `${originalDef.description} 6"`,
+        };
 
         try {
             const device = devices.bulb_color;
