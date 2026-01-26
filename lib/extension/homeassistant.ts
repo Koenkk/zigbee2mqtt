@@ -759,19 +759,20 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(discoveryEntry);
                 }
 
+                const localTemperature = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "local_temperature");
                 const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
                 const localTemperatureSensor = allExposes
                     ?.filter(isNumericExpose)
                     .find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
-                if (temperature && !temperatureSensor && !localTemperatureSensor) {
+                if (localTemperature && !temperatureSensor && !localTemperatureSensor) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
-                        object_id: endpoint ? `${temperature.name}_${endpoint}` : `${temperature.name}`,
-                        mockProperties: [{property: temperature.property, value: null}],
+                        object_id: endpoint ? `${localTemperature.name}_${endpoint}` : `${localTemperature.name}`,
+                        mockProperties: [{property: localTemperature.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${temperature.label} ${endpoint}` : temperature.label,
-                            value_template: `{{ value_json.${temperature.property} }}`,
-                            ...(temperature.unit && {unit_of_measurement: temperature.unit}),
+                            name: endpoint ? `${localTemperature.label} ${endpoint}` : localTemperature.label,
+                            value_template: `{{ value_json.${localTemperature.property} }}`,
+                            ...(localTemperature.unit && {unit_of_measurement: localTemperature.unit}),
                             device_class: "temperature",
                             state_class: "measurement",
                         },
