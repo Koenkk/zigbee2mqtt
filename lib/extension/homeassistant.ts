@@ -760,7 +760,9 @@ export class HomeAssistant extends Extension {
                 }
 
                 const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
-                const localTemperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
+                const localTemperatureSensor = allExposes
+                    ?.filter(isNumericExpose)
+                    .find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
                 if (temperature && !temperatureSensor && !localTemperatureSensor) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
@@ -769,9 +771,9 @@ export class HomeAssistant extends Extension {
                         discovery_payload: {
                             name: endpoint ? `${temperature.label} ${endpoint}` : temperature.label,
                             value_template: `{{ value_json.${temperature.property} }}`,
+                            ...(temperature.unit && {unit_of_measurement: temperature.unit}),
                             device_class: "temperature",
                             state_class: "measurement",
-                            ...(temperature.unit && {unit_of_measurement: temperature.unit}),
                         },
                     };
 
