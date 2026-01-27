@@ -585,7 +585,7 @@ describe("Extension: OTAUpdate", () => {
     });
 
     it("is able to check if OTA update is available", async () => {
-        devices.bulb.checkOta.mockResolvedValueOnce({available: 0, current: {...DEFAULT_CURRENT, fileVersion: 10}});
+        devices.bulb.checkOta.mockResolvedValueOnce({available: false, current: {...DEFAULT_CURRENT, fileVersion: 10}});
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check", stringify({id: "bulb"}));
         await flushPromises();
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1);
@@ -593,13 +593,13 @@ describe("Extension: OTAUpdate", () => {
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
-            stringify({data: {id: "bulb", update_available: false}, status: "ok"}),
+            stringify({data: {id: "bulb", update_available: false, downgrade: false}, status: "ok"}),
             {},
         );
 
         mockMQTTPublishAsync.mockClear();
         devices.bulb.checkOta.mockResolvedValueOnce({
-            available: -1,
+            available: true,
             current: {...DEFAULT_CURRENT, fileVersion: 10},
             availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 12},
         });
@@ -613,7 +613,7 @@ describe("Extension: OTAUpdate", () => {
             stringify({data: {id: "bulb", update_available: true, downgrade: false, source: "https://example.com/my.ota"}, status: "ok"}),
             {},
         );
-        devices.bulb.checkOta.mockResolvedValueOnce({available: 0, current: {...DEFAULT_CURRENT, fileVersion: 10}});
+        devices.bulb.checkOta.mockResolvedValueOnce({available: false, current: {...DEFAULT_CURRENT, fileVersion: 10}});
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check/downgrade", stringify({id: "bulb"}));
         await flushPromises();
         expect(devices.bulb.checkOta).toHaveBeenCalledTimes(3);
@@ -621,7 +621,7 @@ describe("Extension: OTAUpdate", () => {
         expect(devices.bulb.updateOta).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/ota_update/check",
-            stringify({data: {id: "bulb", update_available: false}, status: "ok"}),
+            stringify({data: {id: "bulb", update_available: false, downgrade: true}, status: "ok"}),
             {},
         );
 
@@ -632,7 +632,7 @@ describe("Extension: OTAUpdate", () => {
 
         mockMQTTPublishAsync.mockClear();
         devices.bulb.checkOta.mockResolvedValueOnce({
-            available: 1,
+            available: true,
             current: {...DEFAULT_CURRENT, fileVersion: 10},
             availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 8},
         });
@@ -690,7 +690,7 @@ describe("Extension: OTAUpdate", () => {
 
     it("allows check OTA with custom URL even when device does not support it", async () => {
         devices.HGZB04D.checkOta.mockResolvedValueOnce({
-            available: -1,
+            available: true,
             current: {...DEFAULT_CURRENT, fileVersion: 10},
             availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 14, releaseNotes: "New features"},
         });
@@ -730,7 +730,7 @@ describe("Extension: OTAUpdate", () => {
                     setTimeout(
                         () =>
                             resolve({
-                                available: 0,
+                                available: false,
                                 current: {...DEFAULT_CURRENT, fileVersion: 1},
                             }),
                         99999,
@@ -794,7 +794,7 @@ describe("Extension: OTAUpdate", () => {
     it("checks for update when device requests it", async () => {
         const data = {imageType: 12382, manufacturerCode: 2134, fileVersion: 33};
         devices.bulb.checkOta.mockResolvedValueOnce({
-            available: -1,
+            available: true,
             current: {...DEFAULT_CURRENT, ...data},
             availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 34},
         });
@@ -864,7 +864,7 @@ describe("Extension: OTAUpdate", () => {
     it("checks for update when device requests it and it is not available", async () => {
         const data = {imageType: 12382, manufacturerCode: 2134, fileVersion: 33};
         devices.bulb.checkOta.mockResolvedValueOnce({
-            available: 0,
+            available: false,
             current: {...DEFAULT_CURRENT, ...data},
             availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 33},
         });
