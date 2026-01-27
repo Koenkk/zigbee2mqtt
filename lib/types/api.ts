@@ -614,9 +614,9 @@ export interface Zigbee2MQTTAPI {
     "bridge/response/device/ota_update/check": {
         id: string;
         update_available: boolean;
+        downgrade?: boolean;
         source?: string;
         release_notes?: string;
-        downgrade?: boolean;
     };
 
     "bridge/request/device/ota_update/update": {
