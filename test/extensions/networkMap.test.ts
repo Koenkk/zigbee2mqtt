@@ -367,23 +367,34 @@ describe("Extension: NetworkMap", () => {
 
     it("Output graphviz networkmap", async () => {
         mock();
-        const device = devices.bulb_color;
-        device.lastSeen = undefined;
-        const endpoint = device.getEndpoint(1);
-        const data = {modelID: "test"};
-        const payload = {data, cluster: "genOnOff", device, endpoint, type: "readResponse", linkquality: 10};
-        await mockZHEvents.message(payload);
-        mockMQTTEvents.message("zigbee2mqtt/bridge/request/networkmap", stringify({type: "graphviz", routes: true}));
-        await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/bridge/response/networkmap");
+        const z2mDevice = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const originalDef = z2mDevice.definition;
+        z2mDevice.definition = {
+            ...originalDef,
+            description: `${originalDef.description} 6"`,
+        };
+
+        try {
+            const device = devices.bulb_color;
+            device.lastSeen = undefined;
+            const endpoint = device.getEndpoint(1);
+            const data = {modelID: "test"};
+            const payload = {data, cluster: "genOnOff", device, endpoint, type: "readResponse", linkquality: 10};
+            await mockZHEvents.message(payload);
+            mockMQTTEvents.message("zigbee2mqtt/bridge/request/networkmap", stringify({type: "graphviz", routes: true}));
+            await flushPromises();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+            expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/bridge/response/networkmap");
+        } finally {
+            z2mDevice.definition = originalDef;
+        }
 
         const expected = `digraph G {
             node[shape=record];
               "0x00124b00120144ae" [style="bold, filled", fillcolor="#e04e5d", fontcolor="#ffffff", label="{Coordinator|0x00124b00120144ae (0x0000)|0 seconds ago}"];
               "0x000b57fffec6a5b2" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb|0x000b57fffec6a5b2 (0x9db1)|IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (LED1545G12)|9 seconds ago}"];
               "0x000b57fffec6a5b2" -> "0x00124b00120144ae" [penwidth=2, weight=1, color="#009900", label="92 (routes: 0x198c)"]
-              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go (7146060PH)|unknown}"];
+              "0x000b57fffec6a5b3" [style="rounded, filled", fillcolor="#4ea3e0", fontcolor="#ffffff", label="{bulb_color|0x000b57fffec6a5b3 (0x9dcf)|Philips Hue Go 6\\" (7146060PH)|unknown}"];
               "0x000b57fffec6a5b3" -> "0x00124b00120144ae" [penwidth=0.5, weight=0, color="#994444", label="120"]
               "0x000b57fffec6a5b3" -> "0x000b57fffec6a5b2" [penwidth=0.5, weight=0, color="#994444", label="110"]
               "0x0017880104e45521" [style="rounded, dashed, filled", fillcolor="#fff8ce", fontcolor="#000000", label="{button_double_key|0x0017880104e45521 (0x198a)|Aqara Wireless remote switch (double rocker), 2016 model (WXKG02LM_rev1)|9 seconds ago}"];
