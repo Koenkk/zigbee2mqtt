@@ -218,7 +218,7 @@ export default class OTAUpdate extends Extension {
                       latest_release_notes: deviceUpdateState?.latest_release_notes,
                   }
                 : {
-                      state: state.available === 0 ? "idle" : "available",
+                      state: state.available ? "available" : "idle",
                       installed_version: state.current.fileVersion,
                       latest_version: state.availableMeta?.fileVersion ?? state.current.fileVersion,
                       latest_source: state.availableMeta?.url || null,
@@ -303,13 +303,12 @@ export default class OTAUpdate extends Extension {
                         await this.publishEntityState(device, this.#getEntityPublishPayload(device, availableResult));
                         this.#lastChecked.set(device.ieeeAddr, Date.now());
 
-                        const available = availableResult.available !== 0;
                         const response = utils.getResponse<"bridge/response/device/ota_update/check">(message, {
                             id: ID,
-                            update_available: available,
+                            update_available: availableResult.available,
+                            downgrade: source.downgrade,
                             source: availableResult.availableMeta?.url,
                             release_notes: availableResult.availableMeta?.releaseNotes,
-                            downgrade: available ? availableResult.available === 1 : undefined,
                         });
 
                         await this.mqtt.publish("bridge/response/device/ota_update/check", stringify(response));
@@ -495,7 +494,7 @@ export default class OTAUpdate extends Extension {
 
         if (to === undefined) {
             this.#removeProgressAndRemainingFromState(device);
-            await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: 0, current: from}));
+            await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: false, current: from}));
 
             return [from.fileVersion, undefined];
         }
@@ -503,7 +502,7 @@ export default class OTAUpdate extends Extension {
         logger.info(`Finished update of '${device.name}'`);
 
         this.#removeProgressAndRemainingFromState(device);
-        await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: 0, current: to}));
+        await this.publishEntityState(device, this.#getEntityPublishPayload(device, {available: false, current: to}));
 
         logger.info(() => `Device '${device.name}' was OTA updated from '${from.fileVersion}' to '${to.fileVersion}'`);
 
