@@ -1268,7 +1268,6 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0x18fc2600000d7ae3_local_temperature_zigbee2mqtt",
             unit_of_measurement: "°C",
             value_template: "{{ value_json.local_temperature }}",
-            unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x18fc2600000d7ae3/local_temperature/config", stringify(payload), {
