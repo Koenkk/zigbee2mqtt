@@ -759,6 +759,28 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(discoveryEntry);
                 }
 
+                const localTemperature = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "local_temperature");
+                const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
+                const localTemperatureSensor = allExposes
+                    ?.filter(isNumericExpose)
+                    .find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
+                if (localTemperature && !temperatureSensor && !localTemperatureSensor) {
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: "sensor",
+                        object_id: endpoint ? `${localTemperature.name}_${endpoint}` : `${localTemperature.name}`,
+                        mockProperties: [{property: localTemperature.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? `${localTemperature.label} ${endpoint}` : localTemperature.label,
+                            value_template: `{{ value_json.${localTemperature.property} }}`,
+                            ...(localTemperature.unit && {unit_of_measurement: localTemperature.unit}),
+                            device_class: "temperature",
+                            state_class: "measurement",
+                        },
+                    };
+
+                    discoveryEntries.push(discoveryEntry);
+                }
+
                 const currentHumidity = allExposes?.filter(isNumericExpose).find((e) => e.name === "humidity" && e.access & ACCESS_STATE);
                 if (currentHumidity) {
                     discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json.${currentHumidity.property} }}`;
