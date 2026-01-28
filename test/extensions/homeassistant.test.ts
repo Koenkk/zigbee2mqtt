@@ -1248,6 +1248,35 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover seperate temperature sensor for thermostat", () => {
+        const payload = {
+            availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
+            default_entity_id: "sensor.bosch_rm230z_local_temperature",
+            device: {
+                identifiers: ["zigbee2mqtt_0x18fc2600000d7ae3"],
+                manufacturer: "Bosch",
+                model: "Room thermostat II 230V",
+                model_id: "BTH-RM230Z",
+                name: "bosch_rm230z",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            device_class: "temperature",
+            object_id: "bosch_rm230z_local_temperature",
+            origin,
+            state_class: "measurement",
+            state_topic: "zigbee2mqtt/bosch_rm230z",
+            unique_id: "0x18fc2600000d7ae3_local_temperature_zigbee2mqtt",
+            unit_of_measurement: "°C",
+            value_template: "{{ value_json.local_temperature }}",
+            unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x18fc2600000d7ae3/local_temperature/config", stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 
