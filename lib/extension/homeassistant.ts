@@ -226,6 +226,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     smoke_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
     soil_moisture: {device_class: "moisture", state_class: "measurement"},
     temperature: {device_class: "temperature", state_class: "measurement"},
+    temperature_probe: {device_class: "temperature", state_class: "measurement"},
     temperature_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     temperature_max: {entity_category: "config", icon: "mdi:thermometer-plus"},
     temperature_min: {entity_category: "config", icon: "mdi:thermometer-minus"},
