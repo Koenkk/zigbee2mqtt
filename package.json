@@ -52,7 +52,7 @@
         "js-yaml": "^4.1.0",
         "json-stable-stringify-without-jsonify": "^1.0.1",
         "jszip": "^3.10.1",
-        "mqtt": "^5.14.1",
+        "mqtt": "^5.15.0",
         "object-assign-deep": "^0.4.0",
         "rimraf": "^6.1.2",
         "semver": "^7.7.3",
