@@ -143,7 +143,7 @@ describe("Extension: OTAUpdate", () => {
         expect(infoCalls[7]).toStrictEqual(`Interviewing 'bulb'`);
         expect(infoCalls[8]).toStrictEqual(`Configuring 'bulb'`);
         expect(infoCalls[10]).toStrictEqual(`Successfully interviewed 'bulb'`);
-        expect(infoCalls[11]).toStrictEqual(`Successfully configured 'bulb'`);
+        expect(infoCalls[11]).toStrictEqual(`Successfully configured 'bulb' (version 0.0.0)`);
 
         expect(devices.bulb.save).toHaveBeenCalledTimes(1);
         expect(devices.bulb.endpoints[0].read).toHaveBeenCalledWith("genBasic", ["dateCode", "swBuildId"], {sendPolicy: "immediate"});

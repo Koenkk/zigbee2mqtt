@@ -94,7 +94,7 @@ export default class Configure extends Extension {
             return;
         }
 
-        const configureKey = zhc.getConfigureKey(device.definition);
+        const definitionVersion = device.definition.version;
         if (!force) {
             if (device.options.disabled || !device.interviewed) {
                 return;
@@ -103,14 +103,11 @@ export default class Configure extends Extension {
             const shouldReconfigure =
                 // Should always reconfigure when not configured before
                 device.zh.meta?.configured === undefined ||
-                // Or should reconfigure when configureKey is not the default one (0) and differs from last configured configureKey
-                // In older z2m versions the stored configureKey (meta.configured) was the hash of the configure function.
-                // Since we don't want to reconfigure all devices, we don't re-configure when a device has the default configureKey of 0.
-                (configureKey !== 0 && device.zh.meta?.configured !== configureKey);
-            if (!shouldReconfigure) return;
-
-            // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
-            if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
+                // Or should reconfigure when definition.version is not '0.0.0' and differs from last `meta.configured`.
+                // In older Z2M versions the stored `meta.configured` was the hash of the configure function.
+                // Since we don't want to reconfigure all devices, we don't re-configure when the definition has the default version of '0.0.0'.
+                (definitionVersion !== "0.0.0" && device.zh.meta?.configured !== definitionVersion);
+            if (!shouldReconfigure) {
                 return;
             }
         }
@@ -128,8 +125,8 @@ export default class Configure extends Extension {
         logger.info(`Configuring '${device.name}'`);
         try {
             await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
-            logger.info(`Successfully configured '${device.name}'`);
-            device.zh.meta.configured = configureKey;
+            logger.info(`Successfully configured '${device.name}' (version ${definitionVersion})`);
+            device.zh.meta.configured = definitionVersion;
             device.zh.save();
             this.eventBus.emitDevicesChanged();
         } catch (error) {

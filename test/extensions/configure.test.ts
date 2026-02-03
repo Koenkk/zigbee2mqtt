@@ -4,14 +4,15 @@ import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
-import {type Device, devices, type Endpoint, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
-import * as zhc from "zigbee-herdsman-converters";
+import {devices, type Endpoint, events as mockZHEvents, type Device as ZhDevice} from "../mocks/zigbeeHerdsman";
 
 import stringify from "json-stable-stringify-without-jsonify";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import {Controller} from "../../lib/controller";
+import Device from "../../lib/model/device";
 import Configure from "../../lib/extension/configure";
 import * as settings from "../../lib/util/settings";
+import assert from "node:assert";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
@@ -24,7 +25,7 @@ describe("Extension: Configure", () => {
         await controller.addExtension(new Configure(...controller.extensionArgs));
     };
 
-    const mockClear = (device: Device): void => {
+    const mockClear = (device: ZhDevice): void => {
         for (const endpoint of device.endpoints) {
             endpoint.read.mockClear();
             endpoint.write.mockClear();
@@ -43,7 +44,7 @@ describe("Extension: Configure", () => {
         const endpoint2 = device.getEndpoint(2)!;
         expect(endpoint2.write).toHaveBeenCalledTimes(1);
         expect(endpoint2.write).toHaveBeenCalledWith("genBasic", {49: {type: 25, value: 11}}, {disableDefaultResponse: true, manufacturerCode: 4107});
-        expect(device.meta.configured).toBe(0);
+        expect(device.meta.configured).toBe("0.0.0");
     };
 
     const expectBulbConfigured = (): void => {
@@ -148,7 +149,7 @@ describe("Extension: Configure", () => {
         expectBulbConfigured();
     });
 
-    it("Should re-configure when configureKey of the defintion changes to the non-default value of 0", async () => {
+    it("Should re-configure when the version of the defintion changes to the non-default value of 0.0.0", async () => {
         // Device is initially configured (definition has uses default configureKey of 0)
         const device = devices.bulb;
         expectBulbConfigured();
@@ -160,17 +161,25 @@ describe("Extension: Configure", () => {
         expectBulbNotConfigured();
 
         // Simulate that the definition configureKey changes
-        vi.spyOn(zhc, "getConfigureKey").mockReturnValueOnce(1);
+        const resolvedEntity = controller.zigbee.resolveEntity(device);
+        assert(resolvedEntity instanceof Device);
+        assert(resolvedEntity.definition?.version === "0.0.0");
 
-        // Now it should re-configure upon receiving a Zigbee message
-        mockClear(device);
-        await mockZHEvents.lastSeenChanged({device});
-        await flushPromises();
-        expectBulbConfigured();
+        try {
+            resolvedEntity.definition.version = "0.0.1";
+
+            // Now it should re-configure upon receiving a Zigbee message
+            mockClear(device);
+            await mockZHEvents.lastSeenChanged({device});
+            await flushPromises();
+            expectBulbConfigured();
+        } finally {
+            resolvedEntity.definition.version = "0.0.0";
+        }
     });
 
     it("Should NOT re-configure when configureKey of the defintion is 0", async () => {
-        // This test the migration from the old configureKey (hash of the configure function) to the new configureKey system.
+        // This test the migration from the old configureKey (hash of the configure function) to the new definitionVersion system.
         // See commment in `configure.ts` -> `shouldReconfigure` for more details.
 
         // Device is initially configured (definition has uses default configureKey of 0)
