@@ -149,8 +149,8 @@ describe("Extension: Configure", () => {
         expectBulbConfigured();
     });
 
-    it("Should re-configure when the version of the defintion changes to the non-default value of 0.0.0", async () => {
-        // Device is initially configured (definition has uses default configureKey of 0)
+    it("Should re-configure when the version of the definition changes to a different value than the default (0.0.0)", async () => {
+        // Device is initially configured (definition has uses default version of 0.0.0)
         const device = devices.bulb;
         expectBulbConfigured();
 
@@ -160,12 +160,13 @@ describe("Extension: Configure", () => {
         await flushPromises();
         expectBulbNotConfigured();
 
-        // Simulate that the definition configureKey changes
+        // Simulate that the definition version changes
         const resolvedEntity = controller.zigbee.resolveEntity(device);
-        assert(resolvedEntity instanceof Device);
-        assert(resolvedEntity.definition?.version === "0.0.0");
+        assert(resolvedEntity instanceof Device && resolvedEntity.definition);
+        assert(resolvedEntity.definition.version === "0.0.0");
 
         try {
+            // Change the version to a different value
             resolvedEntity.definition.version = "0.0.1";
 
             // Now it should re-configure upon receiving a Zigbee message
@@ -178,11 +179,11 @@ describe("Extension: Configure", () => {
         }
     });
 
-    it("Should NOT re-configure when configureKey of the defintion is 0", async () => {
-        // This test the migration from the old configureKey (hash of the configure function) to the new definitionVersion system.
+    it("Should NOT re-configure when version of the definition is 0.0.0", async () => {
+        // This test the migration from the old configureKey (hash of the configure function) to the new definition version system.
         // See commment in `configure.ts` -> `shouldReconfigure` for more details.
 
-        // Device is initially configured (definition has uses default configureKey of 0)
+        // Device is initially configured (definition has uses default version of 0.0.0)
         const device = devices.bulb;
         expectBulbConfigured();
         device.meta.configured = 1321;
