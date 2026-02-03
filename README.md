@@ -48,7 +48,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Home Assistant](https://www.home-assistant.io/)
 
-<img align="left" height="75px" width="75px" src="https://user-images.githubusercontent.com/7738048/40914297-49e6e560-6800-11e8-8904-36cce896e5a8.png">
+<a href="https://www.home-assistant.io/"><img align="left" src="https://avatars.githubusercontent.com/u/13844975?s=75" style="padding-right: 20px;" alt="Home Assistant"></a>
 
 <br clear="right">
 
@@ -58,7 +58,7 @@ Zigbee2MQTT integrates well with (almost) every home automation solution because
 
 ### [Homey](https://homey.app/)
 
-<img align="left" height="75px" width="75px" src="https://etc.athom.com/logo/white/256.png">
+<a href="https://homey.app/"><img align="left" src="https://avatars.githubusercontent.com/u/8502422?s=75" style="padding-right: 20px;" alt="Homey"></a>
 
 <br clear="right">
 
@@ -68,7 +68,7 @@ Integration implemented in the [Homey App](https://homey.app/nl-nl/app/com.gruij
 
 ### [Domoticz](https://www.domoticz.com/)
 
-<img align="left" height="75px" width="75px" src="https://user-images.githubusercontent.com/2734836/47615848-b8dd8700-dabd-11e8-9d77-175002dd8987.png">
+<a href="https://www.domoticz.com/"><img align="left" src="https://avatars.githubusercontent.com/u/6067010?s=75" style="padding-right: 20px;" alt="Domoticz"></a>
 
 <br clear="right">
 
@@ -78,7 +78,7 @@ Integration implemented in Domoticz ([documentation](https://www.domoticz.com/wi
 
 ### [Gladys Assistant](https://gladysassistant.com/)
 
-<img align="left" height="75px" width="75px" src="./images/gladys-assistant-logo.jpg">
+<a href="https://gladysassistant.com/"><img align="left" src="https://avatars.githubusercontent.com/u/7365162?s=75" style="padding-right: 20px;" alt="Gladys Assistant"></a>
 
 <br clear="right">
 
@@ -86,13 +86,13 @@ Integration implemented natively in Gladys Assistant ([documentation](https://gl
 
 <br clear="both">
 
-### [IoBroker](https://www.iobroker.net/)
+### [ioBroker](https://www.iobroker.net/)
 
-<img align="left" height="75px" width="75px" src="https://forum.iobroker.net/assets/uploads/system/site-logo.png">
+<a href="https://www.iobroker.net/"><img align="left" src="https://avatars.githubusercontent.com/u/7231148?s=75" style="padding-right: 20px;" alt="ioBroker"></a>
 
 <br clear="right">
 
-Integration implemented in IoBroker ([documentation](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)).
+Integration implemented in ioBroker ([documentation](https://github.com/o0shojo0o/ioBroker.zigbee2mqtt)).
 
 <br clear="both">
 
