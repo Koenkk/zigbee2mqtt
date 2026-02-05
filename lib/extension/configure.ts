@@ -100,6 +100,11 @@ export default class Configure extends Extension {
                 return;
             }
 
+            // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
+            if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
+                return;
+            }
+
             const shouldReconfigure =
                 // Should always reconfigure when not configured before
                 device.zh.meta?.configured === undefined ||
