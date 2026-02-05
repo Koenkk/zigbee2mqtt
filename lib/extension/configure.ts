@@ -1,6 +1,5 @@
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
-import * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import type {Zigbee2MQTTAPI} from "../types/api";
 import logger from "../util/logger";
@@ -94,17 +93,25 @@ export default class Configure extends Extension {
             return;
         }
 
+        const definitionVersion = device.definition.version;
         if (!force) {
             if (device.options.disabled || !device.interviewed) {
                 return;
             }
 
-            if (device.zh.meta?.configured !== undefined) {
+            // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
+            if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
                 return;
             }
 
-            // Only configure end devices when it is active, otherwise it will likely fails as they are sleeping.
-            if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
+            const shouldReconfigure =
+                // Should always reconfigure when not configured before
+                device.zh.meta?.configured === undefined ||
+                // Or should reconfigure when definition.version is not '0.0.0' and differs from last `meta.configured`.
+                // In older Z2M versions the stored `meta.configured` was the hash of the configure function.
+                // Since we don't want to reconfigure all devices, we don't re-configure when the definition has the default version of '0.0.0'.
+                (definitionVersion !== "0.0.0" && device.zh.meta?.configured !== definitionVersion);
+            if (!shouldReconfigure) {
                 return;
             }
         }
@@ -122,8 +129,8 @@ export default class Configure extends Extension {
         logger.info(`Configuring '${device.name}'`);
         try {
             await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
-            logger.info(`Successfully configured '${device.name}'`);
-            device.zh.meta.configured = zhc.getConfigureKey(device.definition);
+            logger.info(`Successfully configured '${device.name}' (definition v${definitionVersion})`);
+            device.zh.meta.configured = definitionVersion;
             device.zh.save();
             this.eventBus.emitDevicesChanged();
         } catch (error) {
