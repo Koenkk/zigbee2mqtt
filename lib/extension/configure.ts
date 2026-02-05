@@ -125,7 +125,7 @@ export default class Configure extends Extension {
         logger.info(`Configuring '${device.name}'`);
         try {
             await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
-            logger.info(`Successfully configured '${device.name}' (version ${definitionVersion})`);
+            logger.info(`Successfully configured '${device.name}' (definition v${definitionVersion})`);
             device.zh.meta.configured = definitionVersion;
             device.zh.save();
             this.eventBus.emitDevicesChanged();
