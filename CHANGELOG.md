@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.8.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.8.0...2.8.1) (2026-02-06)
+
+
+### Bug Fixes
+
+* Home Assistant: add `measurement` `state_class` to `_count` entities ([#30978](https://github.com/Koenkk/zigbee2mqtt/issues/30978)) ([d475aa5](https://github.com/Koenkk/zigbee2mqtt/commit/d475aa5be5caa85a5dc3f0883dc40b2bcddc09b2))
+* Home Assistant: discover `temperature_probe` as `temperature` `device_class` https://github.com/Koenkk/zigbee2mqtt/issues/30862 ([8d8d37e](https://github.com/Koenkk/zigbee2mqtt/commit/8d8d37e3888cbfa4899831874ee9df6e306ddb52))
+* **ignore:** bump mqtt from 5.14.1 to 5.15.0 in the minor-patch group ([#30918](https://github.com/Koenkk/zigbee2mqtt/issues/30918)) ([4b03910](https://github.com/Koenkk/zigbee2mqtt/commit/4b039103c0a9bd32458011dbc2e7bea0e609d0c7))
+* **ignore:** Changes for new ZHC `definition.version` ([#30402](https://github.com/Koenkk/zigbee2mqtt/issues/30402)) ([b71461e](https://github.com/Koenkk/zigbee2mqtt/commit/b71461e03cd8ceea5365f4c0b2e794e34341325e))
+* **ignore:** update zigbee-herdsman to 9.0.3 ([#30960](https://github.com/Koenkk/zigbee2mqtt/issues/30960)) ([30d311e](https://github.com/Koenkk/zigbee2mqtt/commit/30d311e8494c00e6ade7759a0a2bfdc9ab79022d))
+* **ignore:** update zigbee-herdsman-converters to 25.121.0 ([#30898](https://github.com/Koenkk/zigbee2mqtt/issues/30898)) ([09d010e](https://github.com/Koenkk/zigbee2mqtt/commit/09d010ea067446d26b6c77411aac78d045dbc6ea))
+* **ignore:** update zigbee-herdsman-converters to 25.122.0 ([#30935](https://github.com/Koenkk/zigbee2mqtt/issues/30935)) ([402ed60](https://github.com/Koenkk/zigbee2mqtt/commit/402ed6094eedb40ecdb841b4b1f7d29d59afc89c))
+* **ignore:** update zigbee-herdsman-converters to 26.0.0 ([6cce05a](https://github.com/Koenkk/zigbee2mqtt/commit/6cce05a5141089e24211d85d1d77d09f8d2b36f0))
+* **ignore:** update zigbee-herdsman-converters to 26.1.0 ([#30981](https://github.com/Koenkk/zigbee2mqtt/issues/30981)) ([f1156db](https://github.com/Koenkk/zigbee2mqtt/commit/f1156db227bf937354d6ab4e70d6da59307dedad))
+
 ## [2.8.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.7.2...2.8.0) (2026-02-01)
 
 
