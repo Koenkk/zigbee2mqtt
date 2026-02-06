@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import bind from "bind-decorator";
-import type {IClientOptions, IClientPublishOptions, MqttClient} from "mqtt";
+import type {IClientOptions, IClientPublishOptions, IPublishPacket, MqttClient} from "mqtt";
 import {connectAsync} from "mqtt";
 import type {Zigbee2MQTTAPI} from "./types/api";
 
@@ -175,11 +175,11 @@ export default class Mqtt {
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
-    @bind public onMessage(topic: string, message: Buffer): void {
+    @bind public onMessage(topic: string, message: Buffer, packet: IPublishPacket): void {
         // Since we subscribe to zigbee2mqtt/# we also receive the message we send ourselves, skip these.
         if (!this.publishedTopics.has(topic)) {
             logger.debug(() => `Received MQTT message on '${topic}' with data '${message.toString()}'`, NS);
-            this.eventBus.emitMQTTMessage({topic, message: message.toString()});
+            this.eventBus.emitMQTTMessage({topic, message: message.toString(), qos: packet?.qos ?? 0});
         }
 
         if (this.republishRetainedTimer && topic === `${settings.get().mqtt.base_topic}/bridge/info`) {
