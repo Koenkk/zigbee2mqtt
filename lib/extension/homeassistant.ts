@@ -1220,6 +1220,61 @@ export class HomeAssistant extends Extension {
             case "composite":
             case "list": {
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
+
+                // Warning composite → HA siren entity
+                if (firstExposeTyped.type === "composite" && firstExposeTyped.name === "warning" && firstExposeTyped.access & ACCESS_SET) {
+                    const warningExpose = firstExpose as zhc.Composite;
+                    const modeFeature = warningExpose.features.filter(isEnumExpose).find((f) => f.name === "mode");
+                    const levelFeature = warningExpose.features.filter(isEnumExpose).find((f) => f.name === "level");
+                    const durationFeature = warningExpose.features.filter(isNumericExpose).find((f) => f.name === "duration");
+
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: "siren",
+                        object_id: endpoint ? /* v8 ignore next */ `siren_${endpoint}` : "siren",
+                        mockProperties: [{property: warningExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* v8 ignore next */ utils.capitalize(endpoint) : null,
+                            command_topic: true,
+                            command_topic_prefix: endpoint,
+                            state_topic: false,
+                            optimistic: true,
+                        },
+                    };
+
+                    if (modeFeature) {
+                        const tones = modeFeature.values.filter((v) => v !== "stop");
+                        if (tones.length) {
+                            discoveryEntry.discovery_payload.available_tones = tones;
+                        }
+                    }
+
+                    if (levelFeature) {
+                        discoveryEntry.discovery_payload.support_volume_set = true;
+                    }
+
+                    if (durationFeature) {
+                        discoveryEntry.discovery_payload.support_duration = true;
+                    }
+
+                    const levelTemplate =
+                        "{% if volume_level is defined %}" +
+                        "{% if volume_level | float <= 0.25 %}low" +
+                        "{% elif volume_level | float <= 0.5 %}medium" +
+                        "{% elif volume_level | float <= 0.75 %}high" +
+                        "{% else %}very_high{% endif %}" +
+                        "{% else %}medium{% endif %}";
+
+                    discoveryEntry.discovery_payload.command_template =
+                        `{"warning": {"mode": "{{ tone | default('emergency') }}", ` +
+                        `"level": "${levelTemplate}", ` +
+                        `"duration": {{ duration | default(10) }}}}`;
+
+                    discoveryEntry.discovery_payload.command_off_template = '{"warning": {"mode": "stop"}}';
+
+                    discoveryEntries.push(discoveryEntry);
+                    break;
+                }
+
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
                     discoveryEntries.push({
                         type: "text",
