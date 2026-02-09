@@ -142,11 +142,7 @@ class Logger {
     }
 
     public getDebugNamespaceIgnore(): string {
-        return (
-            this.debugNamespaceIgnoreRegex
-                ?.toString()
-                .slice(1, -1) /* remove slashes */ ?? ""
-        );
+        return this.debugNamespaceIgnoreRegex?.toString().slice(1, -1) /* remove slashes */ ?? "";
     }
 
     public setDebugNamespaceIgnore(value: string): void {
