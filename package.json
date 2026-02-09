@@ -55,7 +55,7 @@
         "mqtt": "^5.15.0",
         "object-assign-deep": "^0.4.0",
         "rimraf": "^6.1.2",
-        "semver": "^7.7.3",
+        "semver": "^7.7.4",
         "source-map-support": "^0.5.21",
         "throttleit": "^2.1.0",
         "winston": "^3.19.0",
@@ -68,11 +68,11 @@
         "zigbee2mqtt-windfront": "2.8.1"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.3.13",
+        "@biomejs/biome": "^2.3.14",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
-        "@types/node": "^24.10.9",
+        "@types/node": "^24.10.12",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.23",
         "@types/serve-static": "^2.2.0",
