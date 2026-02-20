@@ -12,7 +12,7 @@ import Extension from "./extension";
  */
 export default class Configure extends Extension {
     private configuring = new Set();
-    private attempts: {[s: string]: number} = {};
+    private attempts = new Map<string, number>();
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
 
     @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
@@ -94,6 +94,7 @@ export default class Configure extends Extension {
         }
 
         const definitionVersion = device.definition.version;
+
         if (!force) {
             if (device.options.disabled || !device.interviewed) {
                 return;
@@ -116,27 +117,32 @@ export default class Configure extends Extension {
             }
         }
 
-        if (this.configuring.has(device.ieeeAddr) || (this.attempts[device.ieeeAddr] >= 3 && !force)) {
+        if (this.configuring.has(device.ieeeAddr)) {
+            return;
+        }
+
+        const attempts = this.attempts.get(device.ieeeAddr) ?? 0;
+
+        if (attempts >= 3 && !force) {
             return;
         }
 
         this.configuring.add(device.ieeeAddr);
 
-        if (this.attempts[device.ieeeAddr] === undefined) {
-            this.attempts[device.ieeeAddr] = 0;
-        }
-
         logger.info(`Configuring '${device.name}'`);
+
         try {
             await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
+            this.attempts.delete(device.ieeeAddr);
             logger.info(`Successfully configured '${device.name}' (definition v${definitionVersion})`);
             device.zh.meta.configured = definitionVersion;
             device.zh.save();
             this.eventBus.emitDevicesChanged();
         } catch (error) {
-            this.attempts[device.ieeeAddr]++;
-            const attempt = this.attempts[device.ieeeAddr];
-            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${(error as Error).stack})`;
+            const newAttempts = attempts + 1;
+            this.attempts.set(device.ieeeAddr, newAttempts);
+
+            const msg = `Failed to configure '${device.name}', attempt ${newAttempts} (${(error as Error).stack})`;
             logger.error(msg);
 
             if (throwError) {

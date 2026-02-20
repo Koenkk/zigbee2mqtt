@@ -27,10 +27,7 @@ describe("Extension: Configure", () => {
 
     const mockClear = (device: ZhDevice): void => {
         for (const endpoint of device.endpoints) {
-            endpoint.read.mockClear();
-            endpoint.write.mockClear();
-            endpoint.configureReporting.mockClear();
-            endpoint.bind.mockClear();
+            endpoint.mockClear();
         }
     };
 
@@ -275,27 +272,68 @@ describe("Extension: Configure", () => {
     });
 
     it("Should configure max 3 times when fails", async () => {
-        // @ts-expect-error private
-        (controller.getExtension("Configure")! as Configure).attempts = {};
         const device = devices.remote;
         delete device.meta.configured;
         const endpoint = device.getEndpoint(1)!;
         mockClear(device);
-        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA1"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA2"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA3"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
-        endpoint.bind.mockRejectedValueOnce(new Error("BLA"));
         await mockZHEvents.lastSeenChanged({device});
         await flushPromises();
         expect(endpoint.bind).toHaveBeenCalledTimes(3);
+    });
+
+    it("successfully configures after couple fails", async () => {
+        const device = devices.remote;
+        delete device.meta.configured;
+        const endpoint = device.getEndpoint(1)!;
+        mockClear(device);
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA1"));
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA2"));
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(2 /* fails */ + 2 /* definition */);
+    });
+
+    it("successfully configures with force after fails", async () => {
+        const device = devices.remote;
+        delete device.meta.configured;
+        const endpoint = device.getEndpoint(1)!;
+        mockClear(device);
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA1"));
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA2"));
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA3"));
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        await mockZHEvents.lastSeenChanged({device});
+        await flushPromises();
+        expect(endpoint.bind).toHaveBeenCalledTimes(3);
+
+        endpoint.bind.mockRejectedValueOnce(new Error("BLA4"));
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: device.ieeeAddr}));
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: device.ieeeAddr}));
+        await flushPromises();
+
+        expect(endpoint.bind).toHaveBeenCalledTimes(4 /* fails */ + 2 /* definition */);
     });
 });
