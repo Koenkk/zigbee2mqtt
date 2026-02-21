@@ -1,5 +1,5 @@
 import type {IClientPublishOptions} from "mqtt";
-
+import {vi} from "vitest";
 import type {EventHandler} from "./utils";
 
 export const events: Record<string, EventHandler> = {};

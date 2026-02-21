@@ -152,7 +152,11 @@ export default class Mqtt {
 
         const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "offline"};
 
-        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true}});
+        // prevent undesirable error when receiving SIGTERM/SIGINT during startup
+        if (this.client) {
+            await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true}});
+        }
+
         this.eventBus.removeListeners(this);
         logger.info("Disconnecting from MQTT server");
         await this.client?.endAsync();
@@ -194,6 +198,7 @@ export default class Mqtt {
     }
 
     async publish(topic: string, payload: string, options: Partial<MqttPublishOptions> = {}): Promise<void> {
+        // TODO: add `options.validateTopic: boolean` to bypass these checks when topic is "controlled"
         if (topic.includes("+") || topic.includes("#")) {
             // https://github.com/Koenkk/zigbee2mqtt/issues/26939#issuecomment-2772309646
             logger.error(`Topic '${topic}' includes wildcard characters, skipping publish.`);

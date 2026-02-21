@@ -61,8 +61,11 @@ export default class OnEvent extends Extension {
     override async stop(): Promise<void> {
         await super.stop();
 
-        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
-            await this.callOnEvent(device, {type: "stop", data: {ieeeAddr: device.ieeeAddr}});
+        // ensure properly started, else this throws undesired errors (e.g. SIGINT during startup)
+        if (this.zigbee.zhController !== undefined) {
+            for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
+                await this.callOnEvent(device, {type: "stop", data: {ieeeAddr: device.ieeeAddr}});
+            }
         }
     }
 

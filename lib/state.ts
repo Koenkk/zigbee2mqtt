@@ -51,11 +51,14 @@ class State {
     }
 
     stop(): void {
-        // Remove any invalid states (ie when the device has left the network) when the system is stopped
-        for (const [key] of this.state) {
-            if (typeof key === "string" && key.startsWith("0x") && !this.zigbee.resolveEntity(key)) {
-                // string key = ieeeAddr
-                this.state.delete(key);
+        // ensure properly started, else this throws undesired errors (e.g. SIGINT during startup)
+        if (this.zigbee.zhController !== undefined) {
+            // Remove any invalid states (ie when the device has left the network) when the system is stopped
+            for (const [key] of this.state) {
+                if (typeof key === "string" && key.startsWith("0x") && !this.zigbee.resolveEntity(key)) {
+                    // string key = ieeeAddr
+                    this.state.delete(key);
+                }
             }
         }
 

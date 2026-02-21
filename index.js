@@ -1,20 +1,17 @@
-const semver = require("semver");
-const engines = require("./package.json").engines;
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const {exec} = require("node:child_process");
 require("source-map-support").install();
 
+/** @type {import("./dist/controller").Controller | undefined} */
 let controller;
 let stopping = false;
-const watchdog = process.env.Z2M_WATCHDOG != null;
 let watchdogCount = 0;
 let unsolicitedStop = false;
 // csv in minutes, default: 1min, 5min, 15min, 30min, 60min
 let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
-if (watchdog && process.env.Z2M_WATCHDOG !== "default") {
+if (process.env.Z2M_WATCHDOG != null && process.env.Z2M_WATCHDOG !== "default") {
     if (/^\d+(.\d+)?(,\d+(.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
         watchdogDelays = process.env.Z2M_WATCHDOG.split(",").map((v) => Number.parseFloat(v) * 60000);
     } else {
@@ -25,6 +22,7 @@ if (watchdog && process.env.Z2M_WATCHDOG !== "default") {
 
 const hashFile = path.join(__dirname, "dist", ".hash");
 
+/** @type {(code: number) => Promise<void>} */
 async function triggerWatchdog(code) {
     const delay = watchdogDelays[watchdogCount];
     watchdogCount += 1;
@@ -41,14 +39,16 @@ async function triggerWatchdog(code) {
     }
 }
 
+/** @type {() => Promise<void>} */
 async function restart() {
     await stop(true);
     await start();
 }
 
+/** @type {(code: number, restart?: boolean) => Promise<void>} */
 async function exit(code, restart = false) {
     if (!restart) {
-        if (watchdog && unsolicitedStop) {
+        if (process.env.Z2M_WATCHDOG != null && unsolicitedStop) {
             await triggerWatchdog(code);
         } else {
             process.exit(code);
@@ -56,6 +56,7 @@ async function exit(code, restart = false) {
     }
 }
 
+/** @type {() => Promise<string>} */
 async function currentHash() {
     return await new Promise((resolve) => {
         exec("git rev-parse --short=8 HEAD", (error, stdout) => {
@@ -70,20 +71,23 @@ async function currentHash() {
     });
 }
 
+/** @type {() => Promise<void>} */
 async function writeHash() {
     const hash = await currentHash();
 
     fs.writeFileSync(hashFile, hash);
 }
 
+/** @type {(reason: "initial build" | "hash changed") => Promise<void>} */
 async function build(reason) {
     process.stdout.write(`Building Zigbee2MQTT... (${reason})`);
+    const {totalmem} = await import("node:os");
 
     return await new Promise((resolve, reject) => {
         const env = {...process.env};
         const mb600 = 629145600;
 
-        if (mb600 > os.totalmem() && !env.NODE_OPTIONS) {
+        if (mb600 > totalmem() && !env.NODE_OPTIONS) {
             // Prevent OOM on tsc compile for system with low memory
             // https://github.com/Koenkk/zigbee2mqtt/issues/12034
             env.NODE_OPTIONS = "--max_old_space_size=256";
@@ -107,6 +111,7 @@ async function build(reason) {
     });
 }
 
+/** @type {() => Promise<void>} */
 async function checkDist() {
     if (!fs.existsSync(hashFile)) {
         await build("initial build");
@@ -120,20 +125,22 @@ async function checkDist() {
     }
 }
 
+/** @type {() => Promise<void>} */
 async function start() {
-    console.log(`Starting Zigbee2MQTT ${watchdog ? `with watchdog (${watchdogDelays})` : "without watchdog"}.`);
+    console.log(`Starting Zigbee2MQTT ${process.env.Z2M_WATCHDOG != null ? `with watchdog (${watchdogDelays})` : "without watchdog"}.`);
     await checkDist();
 
     // gc
     {
-        const version = engines.node;
+        const packageJSON = (await import("./package.json", {with: {type: "json"}})).default;
+        const version = packageJSON.engines.node;
+        const {satisfies} = await import("semver");
 
-        if (!semver.satisfies(process.version, version)) {
+        if (!satisfies(process.version, version)) {
             console.log(`\t\tZigbee2MQTT requires node version ${version}, you are running ${process.version}!\n`);
         }
 
-        const {onboard} = require("./dist/util/onboarding");
-
+        const {onboard} = await import("./dist/util/onboarding.js");
         const success = await onboard();
 
         if (!success) {
@@ -143,7 +150,7 @@ async function start() {
         }
     }
 
-    const {Controller} = require("./dist/controller");
+    const {Controller} = await import("./dist/controller.js");
     controller = new Controller(restart, exit);
 
     await controller.start();
@@ -153,26 +160,28 @@ async function start() {
     watchdogCount = 0; // reset
 }
 
-async function stop(restart) {
+/** @type {(restart: boolean, signal?: NodeJS.Signals) => Promise<void>} */
+async function stop(restart, signal = undefined) {
     // `handleQuit` or `restart` never unsolicited
     unsolicitedStop = false;
 
-    await controller.stop(restart);
+    await controller?.stop(restart, undefined, signal);
 }
 
-async function handleQuit() {
+/** @type {(signal: NodeJS.Signals) => Promise<void>} */
+async function handleQuit(signal) {
     if (!stopping) {
         if (controller) {
             stopping = true;
 
-            await stop(false);
+            await stop(false, signal);
         } else {
             process.exit(0);
         }
     }
 }
 
-if (require.main === module || require.main.filename.endsWith(`${path.sep}cli.js`)) {
+if (require.main === module || require.main?.filename.endsWith(`${path.sep}cli.js`)) {
     if (process.argv.length === 3 && process.argv[2] === "writehash") {
         void writeHash();
     } else {

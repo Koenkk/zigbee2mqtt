@@ -28,6 +28,8 @@ import utils from "./util/utils";
 import Zigbee from "./zigbee";
 
 export class Controller {
+    /** Allows canceling in-progress startup sequence if necessary. Signal can be passed to long-running ops as necessary for finer control. */
+    #startAbortController: AbortController | undefined;
     public readonly eventBus: EventBus;
     public readonly zigbee: Zigbee;
     public readonly state: State;
@@ -79,6 +81,9 @@ export class Controller {
     }
 
     async start(): Promise<void> {
+        this.#startAbortController = new AbortController();
+        const abortSignal = this.#startAbortController.signal;
+
         if (settings.get().frontend.enabled) {
             const {Frontend} = await import("./extension/frontend.js");
 
@@ -93,17 +98,24 @@ export class Controller {
 
         this.state.start();
 
+        if (abortSignal.aborted) {
+            logger.info(`Zigbee2MQTT start aborted, reason=${abortSignal.reason}`);
+            return;
+        }
+
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
 
         // Start zigbee
         try {
-            await this.zigbee.start();
+            const started = await this.zigbee.start(abortSignal);
 
-            this.eventBus.onAdapterDisconnected(this, async () => {
-                logger.error("Adapter disconnected, stopping");
-                await this.stop(false, 2);
-            });
+            if (started) {
+                this.eventBus.onAdapterDisconnected(this, async () => {
+                    logger.error("Adapter disconnected, stopping");
+                    await this.stop(false, 2);
+                });
+            }
         } catch (error) {
             logger.error("Failed to start zigbee-herdsman");
             logger.error(
@@ -120,6 +132,11 @@ export class Controller {
             /* v8 ignore stop */
 
             return await this.exit(1);
+        }
+
+        if (abortSignal.aborted) {
+            logger.info(`Zigbee2MQTT start aborted, reason=${abortSignal.reason}`);
+            return;
         }
 
         // Log zigbee clients on startup
@@ -147,9 +164,19 @@ export class Controller {
             return await this.exit(1);
         }
 
+        if (abortSignal.aborted) {
+            logger.info(`Zigbee2MQTT start aborted, reason=${abortSignal.reason}`);
+            return;
+        }
+
         // copy current Set of extensions to ignore possible external extensions added while looping
         for (const extension of new Set(this.extensions)) {
             await this.startExtension(extension);
+
+            if (abortSignal.aborted) {
+                logger.info(`Zigbee2MQTT start aborted, reason=${abortSignal.reason}`);
+                return;
+            }
         }
 
         // Send all cached states.
@@ -157,6 +184,11 @@ export class Controller {
             for (const entity of this.zigbee.devicesAndGroupsIterator()) {
                 if (this.state.exists(entity)) {
                     await this.publishEntityState(entity, this.state.get(entity), "publishCached");
+
+                    if (abortSignal.aborted) {
+                        logger.info(`Zigbee2MQTT start aborted, reason=${abortSignal.reason}`);
+                        return;
+                    }
                 }
             }
         }
@@ -170,6 +202,8 @@ export class Controller {
         this.sdNotify = await initSdNotify();
 
         settings.setOnboarding(false);
+
+        this.#startAbortController = undefined; // gc
     }
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
@@ -287,7 +321,10 @@ export class Controller {
         }
     }
 
-    async stop(restart = false, code = 0): Promise<void> {
+    async stop(restart = false, code = 0, signal: NodeJS.Signals | undefined = undefined): Promise<void> {
+        logger.info(`Stopping Zigbee2MQTT (restart=${restart}, code=${code}, signal=${signal})`);
+
+        this.#startAbortController?.abort(signal ?? "STOPABORT");
         this.sdNotify?.notifyStopping();
 
         let localCode = 0;

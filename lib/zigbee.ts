@@ -28,7 +28,7 @@ export default class Zigbee {
         return this.#herdsman;
     }
 
-    async start(): Promise<StartResult> {
+    async start(abortSignal: AbortSignal): Promise<boolean> {
         const infoHerdsman = await utils.getDependencyVersion("zigbee-herdsman");
         logger.info(`Starting zigbee-herdsman (${infoHerdsman.version})`);
         const panId = settings.get().advanced.pan_id;
@@ -67,14 +67,23 @@ export default class Zigbee {
         let startResult: StartResult;
         try {
             this.#herdsman = new Controller(herdsmanSettings);
+            // TODO: pass abortSignal
             startResult = await this.#herdsman.start();
         } catch (error) {
             logger.error("Error while starting zigbee-herdsman");
             throw error;
         }
 
+        if (abortSignal.aborted) {
+            return false;
+        }
+
         this.coordinatorIeeeAddr = this.#herdsman.getDevicesByType("Coordinator")[0].ieeeAddr;
-        await this.resolveDevicesDefinitions();
+        await this.resolveDevicesDefinitions(false, abortSignal);
+
+        if (abortSignal.aborted) {
+            return false;
+        }
 
         this.#herdsman.on("adapterDisconnected", () => this.eventBus.emitAdapterDisconnected());
         this.#herdsman.on("lastSeenChanged", (data: ZHEvents.LastSeenChangedPayload) => {
@@ -134,30 +143,49 @@ export default class Zigbee {
         logger.info(`Coordinator firmware version: '${stringify(await this.getCoordinatorVersion())}'`);
         logger.debug(`Zigbee network parameters: ${stringify(await this.#herdsman.getNetworkParameters())}`);
 
-        for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
-            // If a passlist is used, all other device will be removed from the network.
-            const passlist = settings.get().passlist;
-            const blocklist = settings.get().blocklist;
-            const remove = async (device: Device): Promise<void> => {
-                try {
-                    await device.zh.removeFromNetwork();
-                } catch (error) {
-                    logger.error(`Failed to remove '${device.ieeeAddr}' (${(error as Error).message})`);
-                }
-            };
+        if (abortSignal.aborted) {
+            return false;
+        }
 
-            if (passlist.length > 0) {
+        const remove = async (device: Device): Promise<void> => {
+            try {
+                await device.zh.removeFromNetwork();
+            } catch (error) {
+                logger.error(`Failed to remove '${device.ieeeAddr}' (${(error as Error).message})`);
+            }
+        };
+        // If a passlist is used, all other device will be removed from the network.
+        const passlist = settings.get().passlist;
+
+        if (passlist.length > 0) {
+            for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
                 if (!passlist.includes(device.ieeeAddr)) {
-                    logger.warning(`Device not on passlist currently connected (${device.ieeeAddr}), removing...`);
+                    logger.warning(`Device not on passlist currently on the network (${device.ieeeAddr}), removing...`);
                     await remove(device);
+
+                    if (abortSignal.aborted) {
+                        return false;
+                    }
                 }
-            } else if (blocklist.includes(device.ieeeAddr)) {
-                logger.warning(`Device on blocklist currently connected (${device.ieeeAddr}), removing...`);
-                await remove(device);
+            }
+        } else {
+            for (const ieee of settings.get().blocklist) {
+                const device = this.resolveDevice(ieee);
+
+                if (device) {
+                    logger.warning(`Device on blocklist currently on the network (${device.ieeeAddr}), removing...`);
+                    await remove(device);
+
+                    if (abortSignal.aborted) {
+                        return false;
+                    }
+                } else {
+                    logger.debug(`Ignoring blocklist device ${ieee}, not currently on the network`);
+                }
             }
         }
 
-        return startResult;
+        return true;
     }
 
     private logDeviceInterview(data: eventdata.DeviceInterview): void {
@@ -224,7 +252,7 @@ export default class Zigbee {
 
     async stop(): Promise<void> {
         logger.info("Stopping zigbee-herdsman...");
-        await this.#herdsman.stop();
+        await this.#herdsman?.stop(); // could be undefined if this is called during startup (abort)
         logger.info("Stopped zigbee-herdsman");
     }
 
@@ -246,9 +274,13 @@ export default class Zigbee {
         await this.#herdsman.permitJoin(time, device?.zh);
     }
 
-    async resolveDevicesDefinitions(ignoreCache = false): Promise<void> {
+    async resolveDevicesDefinitions(ignoreCache = false, abortSignal: AbortSignal | undefined = undefined): Promise<void> {
         for (const device of this.devicesIterator(utils.deviceNotCoordinator)) {
             await device.resolveDefinition(ignoreCache);
+
+            if (abortSignal?.aborted) {
+                return;
+            }
         }
     }
 
