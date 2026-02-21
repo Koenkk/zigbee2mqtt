@@ -567,7 +567,7 @@ describe("Controller", () => {
 
         it("without signal during MQTT connect", async () => {
             mqttConnectSpy.mockImplementationOnce(async () => {
-                await controller.stop(undefined, undefined, "SIGINT");
+                await controller.stop();
             });
 
             await controller.start();
