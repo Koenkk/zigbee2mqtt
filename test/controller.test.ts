@@ -54,6 +54,7 @@ const mocksClear = [
 describe("Controller", () => {
     let controller: Controller;
     let mockExit: Mock;
+    let stopAfter = true;
 
     const getZ2MDevice = (zhDevice: string | number | ZhDevice): Device => {
         return controller.zigbee.resolveEntity(zhDevice)! as Device;
@@ -64,6 +65,7 @@ describe("Controller", () => {
     });
 
     beforeEach(() => {
+        stopAfter = true;
         returnDevices.splice(0);
         mockExit = vi.fn();
         data.writeDefaultConfiguration();
@@ -79,7 +81,10 @@ describe("Controller", () => {
     });
 
     afterEach(async () => {
-        await controller?.stop();
+        if (stopAfter) {
+            await controller?.stop();
+        }
+
         await flushPromises();
     });
 
@@ -431,15 +436,10 @@ describe("Controller", () => {
             extensionStopSpy = vi.spyOn(firstExt, "stop");
             mqttDisconnectSpy = vi.spyOn(controller.mqtt, "disconnect");
             mqttPublishSpy = vi.spyOn(controller.mqtt, "publish");
-
-            mockLogger.info.mockImplementation(console.log);
-            mockLogger.warning.mockImplementation(console.log);
-            mockLogger.error.mockImplementation(console.log);
         });
 
         afterEach(() => {
-            // @ts-expect-error prevent dupe `stop` trigger with higher afterEach for easier test debug
-            controller = undefined;
+            stopAfter = false;
             stateStartSpy.mockRestore();
             zigbeeStartSpy.mockRestore();
             mqttConnectSpy.mockRestore();
