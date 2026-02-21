@@ -173,6 +173,10 @@ export default class Zigbee {
                 const device = this.resolveDevice(ieee);
 
                 if (device) {
+                    if (device.zh.type === "Coordinator") {
+                        continue;
+                    }
+
                     logger.warning(`Device on blocklist currently on the network (${device.ieeeAddr}), removing...`);
                     await remove(device);
 

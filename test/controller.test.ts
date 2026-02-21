@@ -328,11 +328,12 @@ describe("Controller", () => {
     });
 
     it("Should remove device on blocklist on startup", async () => {
-        settings.set(["blocklist"], [devices.bulb_color.ieeeAddr, "0x9998889998889990"]);
+        settings.set(["blocklist"], [devices.bulb_color.ieeeAddr, "0x9998889998889990", "0x00124b00120144ae"]);
         await controller.start();
         await flushPromises();
         expect(devices.bulb_color.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(devices.bulb.removeFromNetwork).toHaveBeenCalledTimes(0);
+        expect(devices.coordinator.removeFromNetwork).toHaveBeenCalledTimes(0);
         const debugCalls = mockLogger.debug.mock.calls.map((c) => (typeof c[0] === "string" ? c[0] : c[0]()));
         expect(debugCalls.find((v) => v === "Ignoring blocklist device 0x9998889998889990, not currently on the network")).toBeDefined();
     });
