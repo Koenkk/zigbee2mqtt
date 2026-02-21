@@ -11,7 +11,7 @@ import Extension from "./extension";
  * This extension calls the zigbee-herdsman-converters definition configure() method
  */
 export default class Configure extends Extension {
-    private configuring = new Set();
+    private configuring = new Set<string>();
     private attempts = new Map<string, number>();
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
 
