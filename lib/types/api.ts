@@ -32,6 +32,33 @@ import type {LogLevel, schemaJson} from "../util/settings";
 // biome-ignore lint/suspicious/noExplicitAny: API
 type KeyValue = Record<string, any>;
 
+export interface OnboardInitData {
+    page: "form";
+    settings: Zigbee2MQTTSettings;
+    settingsSchema: typeof schemaJson;
+    devices: {
+        name: string;
+        path: Zigbee2MQTTSettings["serial"]["port"];
+        adapter?: Zigbee2MQTTSettings["serial"]["adapter"];
+        baudRate?: Zigbee2MQTTSettings["serial"]["baudrate"];
+        rtscts?: Zigbee2MQTTSettings["serial"]["rtscts"];
+    }[];
+}
+
+export interface OnboardDoneData {
+    page: "done";
+    frontendUrl: string | null;
+}
+
+export interface OnboardFailureData {
+    page: "failure";
+    errors: string[];
+}
+
+export type OnboardData = OnboardInitData | OnboardDoneData | OnboardFailureData;
+
+export type OnboardSubmitResponse = {success: true; frontendUrl: string | null} | {success: false; error: string};
+
 export interface Zigbee2MQTTDeviceOptions {
     disabled?: boolean;
     retention?: number;
