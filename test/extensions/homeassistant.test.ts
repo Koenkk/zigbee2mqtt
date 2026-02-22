@@ -944,6 +944,45 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover siren (HS2WD-E)", () => {
+        const payload = {
+            available_tones: ["emergency"],
+            support_duration: true,
+            optimistic: true,
+            command_topic: "zigbee2mqtt/siren/set",
+            command_template:
+                '{"warning": {"mode": "{{ tone | default(\'emergency\') }}", ' +
+                '"level": "' +
+                "{% if volume_level is defined %}" +
+                "{% if volume_level | float <= 0.25 %}low" +
+                "{% elif volume_level | float <= 0.5 %}medium" +
+                "{% elif volume_level | float <= 0.75 %}high" +
+                "{% else %}very_high{% endif %}" +
+                '{% else %}medium{% endif %}", ' +
+                '"duration": {{ duration | default(10) }}}}',
+            command_off_template: '{"warning": {"mode": "stop"}}',
+            name: null,
+            object_id: "siren",
+            default_entity_id: "siren.siren",
+            unique_id: "0x0017880104e45549_siren_zigbee2mqtt",
+            origin: origin,
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45549"],
+                name: "siren",
+                model: "Smart siren",
+                model_id: "HS2WD-E",
+                manufacturer: "Heiman",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/siren/0x0017880104e45549/siren/config", stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+    });
+
     it("Should discover devices with speed-controlled fan", () => {
         const payload = {
             state_topic: "zigbee2mqtt/fanbee",
