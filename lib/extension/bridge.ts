@@ -247,7 +247,7 @@ export default class Bridge extends Extension {
 
         // Apply some settings on-the-fly.
         if (newSettings.homeassistant) {
-            await this.enableDisableExtension(settings.get().homeassistant.enabled, "HomeAssistant");
+            await this.enableDisableExtension(settings.get().homeassistant.enabled, "HomeAssistant", {disableBeforeEnable: true});
         }
 
         if (newSettings.advanced?.log_level != null) {

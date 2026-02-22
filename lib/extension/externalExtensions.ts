@@ -12,7 +12,7 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>,
         restartCallback: () => Promise<void>,
         addExtension: (extension: Extension) => Promise<void>,
     ) {
@@ -31,13 +31,13 @@ export default class ExternalExtensions extends ExternalJSExtension<TModule> {
     }
 
     protected async removeJS(_name: string, mod: TModule): Promise<void> {
-        await this.enableDisableExtension(false, mod.name);
+        await this.enableDisableExtension(false, mod.name, {});
     }
 
     protected async loadJS(name: string, mod: TModule, newName?: string): Promise<void> {
         try {
             // stop if already started
-            await this.enableDisableExtension(false, mod.name);
+            await this.enableDisableExtension(false, mod.name, {});
             await this.addExtension(
                 new mod(
                     this.zigbee,

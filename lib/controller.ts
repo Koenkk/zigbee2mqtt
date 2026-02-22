@@ -172,8 +172,16 @@ export class Controller {
         settings.setOnboarding(false);
     }
 
-    @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
+    @bind async enableDisableExtension(enable: boolean, name: string, options: {disableBeforeEnable?: boolean} = {}): Promise<void> {
+        const {disableBeforeEnable = false} = options;
         if (enable) {
+            if (disableBeforeEnable) {
+                const extension = this.getExtension(name);
+                if (extension) {
+                    await this.removeExtension(extension);
+                }
+            }
+
             switch (name) {
                 case "Frontend": {
                     if (!settings.get().frontend.enabled) {

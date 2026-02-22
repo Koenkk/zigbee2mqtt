@@ -4132,6 +4132,15 @@ describe("Extension: Bridge", () => {
             stringify({data: {restart_required: true}, status: "ok"}),
             {},
         );
+
+        // Change an option
+        await mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/options",
+            stringify({options: {homeassistant: {enabled: true, experimental_event_entities: true}}}),
+        );
+        // @ts-expect-error - private property
+        await vi.waitUntil(() => controller.getExtension("HomeAssistant")?.experimentalEventEntities === true);
+
         // revert
         await mockMQTTEvents.message("zigbee2mqtt/bridge/request/options", stringify({options: {homeassistant: {enabled: false}}}));
         await vi.waitUntil(() => controller.getExtension("HomeAssistant") === undefined);

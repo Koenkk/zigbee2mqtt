@@ -14,7 +14,7 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
+        enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>,
         restartCallback: () => Promise<void>,
         addExtension: (extension: Extension) => Promise<void>,
     ) {
