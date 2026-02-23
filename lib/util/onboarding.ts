@@ -70,11 +70,7 @@ async function startOnboardingServer(): Promise<boolean> {
     const currentSettings = settings.get();
     const serverUrl = getServerUrl();
     let server: ReturnType<typeof createServer> | undefined;
-    const fileServer = expressStaticGzip(
-        // TODO: tempfix: windfront<>z2m typing dep
-        ((await import("zigbee2mqtt-windfront")).default as unknown as {getOnboardingPath: () => string}).getOnboardingPath(),
-        FILE_SERVER_OPTIONS,
-    );
+    const fileServer = expressStaticGzip((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), FILE_SERVER_OPTIONS);
 
     const success = await new Promise<boolean>((resolve) => {
         server = createServer(async (req, res) => {
@@ -221,11 +217,7 @@ async function startOnboardingServer(): Promise<boolean> {
 async function startFailureServer(errors: string[]): Promise<void> {
     const serverUrl = getServerUrl();
     let server: ReturnType<typeof createServer> | undefined;
-    const fileServer = expressStaticGzip(
-        // TODO: tempfix: windfront<>z2m typing dep
-        ((await import("zigbee2mqtt-windfront")).default as unknown as {getOnboardingPath: () => string}).getOnboardingPath(),
-        FILE_SERVER_OPTIONS,
-    );
+    const fileServer = expressStaticGzip((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), FILE_SERVER_OPTIONS);
 
     await new Promise<void>((resolve) => {
         server = createServer((req, res) => {

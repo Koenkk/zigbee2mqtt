@@ -81,8 +81,8 @@ importers:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.8.1
-        version: 2.8.1
+        specifier: 2.9.0
+        version: 2.9.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.4
@@ -1487,8 +1487,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.8.1:
-    resolution: {integrity: sha512-9zFZzWERV2whmfwJVOjajKkCMWTk+drfiwr9MzRj4X4p536OUUWyEXB2ob8/N69GRkuFaVMXgRiY7iSZ4YWB+Q==}
+  zigbee2mqtt-windfront@2.9.0:
+    resolution: {integrity: sha512-HY7hoyDGeFQbqCajLohPcS+aCzLzgbgJpPLYsdA4/8CrRifI75oULWo69XQcHWYw8qaxpsFzst599XlMtWN+sA==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -2785,4 +2785,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.8.1: {}
+  zigbee2mqtt-windfront@2.9.0: {}
