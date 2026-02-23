@@ -14,7 +14,6 @@ export const CURRENT_VERSION = 5;
 /** NOTE: by order of priority, lower index is lower level (more important) */
 export const LOG_LEVELS: readonly string[] = ["error", "warning", "info", "debug"] as const;
 export type LogLevel = "error" | "warning" | "info" | "debug";
-
 const CONFIG_FILE_PATH = data.joinPath("configuration.yaml");
 const NULLABLE_SETTINGS = ["homeassistant"];
 const ajvSetting = new Ajv({allErrors: true}).addKeyword("requiresRestart").compile(schemaJson);
@@ -208,6 +207,10 @@ export function write(): void {
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
 
+    // Apply environment variables before the secret-reference preservation loop so that env var values
+    // are correctly routed to the secret file and the !secret reference is preserved in configuration.yaml.
+    applyEnvironmentVariables(toWrite);
+
     // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
     for (const [ns, key] of [
         ["mqtt", "server"],
@@ -248,8 +251,6 @@ export function write(): void {
 
     writeDevicesOrGroups("devices");
     writeDevicesOrGroups("groups");
-
-    applyEnvironmentVariables(toWrite);
 
     yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
