@@ -207,11 +207,10 @@ export function write(): void {
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
 
-    // Apply environment variables before the secret-reference preservation loop so that env var values
-    // are correctly routed to the secret file and the !secret reference is preserved in configuration.yaml.
-    applyEnvironmentVariables(toWrite);
-
     // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
+    // Skip preservation when an environment variable explicitly overrides the key with a plain value
+    // (i.e. the env var is set and is not itself a !secret reference), so the env var value is written
+    // directly to configuration.yaml rather than being silently routed to the secret file.
     for (const [ns, key] of [
         ["mqtt", "server"],
         ["mqtt", "user"],
@@ -222,8 +221,14 @@ export function write(): void {
         if (actual[ns]?.[key]) {
             const ref = parseValueRef(actual[ns][key]);
             if (ref) {
-                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[ns][key]);
-                toWrite[ns][key] = actual[ns][key];
+                const envVarName = `ZIGBEE2MQTT_CONFIG_${ns}_${key}`.toUpperCase();
+                const envVar = process.env[envVarName];
+                // Only preserve the !secret reference if there is no plain env var override.
+                // If the env var is itself a !secret reference, still route it to the secret file.
+                if (!envVar || parseValueRef(envVar)) {
+                    yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[ns][key]);
+                    toWrite[ns][key] = actual[ns][key];
+                }
             }
         }
     }
@@ -251,6 +256,8 @@ export function write(): void {
 
     writeDevicesOrGroups("devices");
     writeDevicesOrGroups("groups");
+
+    applyEnvironmentVariables(toWrite);
 
     yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
