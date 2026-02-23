@@ -86,6 +86,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     occupancy: {device_class: "occupancy"},
     power_outage_memory: {entity_category: "config", icon: "mdi:memory"},
     presence: {device_class: "occupancy"},
+    rain_status: {device_class: "moisture", icon: "mdi:weather-pouring"},
     setup: {device_class: "running"},
     smoke: {device_class: "smoke"},
     sos: {device_class: "safety"},
@@ -118,6 +119,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     alarm_temperature_min: {device_class: "temperature", entity_category: "config", icon: "mdi:thermometer-low"},
     angle: {icon: "angle-acute"},
     angle_axis: {icon: "angle-acute"},
+    apparent_temperature: {device_class: "temperature", icon: "mdi:thermometer-lines", state_class: "measurement"},
     aqi: {device_class: "aqi", state_class: "measurement"},
     auto_relock_time: {entity_category: "config", icon: "mdi:timer"},
     away_preset_days: {entity_category: "config", icon: "mdi:timer"},
@@ -152,19 +154,23 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         entity_category: "diagnostic",
         state_class: "measurement",
     },
+    dew_point: {device_class: "temperature", icon: "mdi:thermometer-water", state_class: "measurement"},
     distance: {device_class: "distance", state_class: "measurement"},
     duration: {entity_category: "config", icon: "mdi:timer"},
     eco2: {device_class: "volatile_organic_compounds_parts", state_class: "measurement"},
     eco_temperature: {entity_category: "config", icon: "mdi:thermometer"},
     energy: {device_class: "energy", state_class: "total_increasing"},
     external_temperature_input: {device_class: "temperature", icon: "mdi:thermometer"},
-    external_temperature: {device_class: "temperature", icon: "mdi:thermometer"},
-    external_humidity: {device_class: "humidity", icon: "mdi:water-percent"},
+    external_temperature: {device_class: "temperature", icon: "mdi:thermometer", state_class: "measurement"},
+    external_humidity: {device_class: "humidity", icon: "mdi:water-percent", state_class: "measurement"},
     formaldehyd: {state_class: "measurement"},
     flow: {device_class: "volume_flow_rate", state_class: "measurement"},
     gas: {device_class: "gas", state_class: "total_increasing", icon: "mdi:meter-gas"},
     gas_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
+    gust_speed: {device_class: "wind_speed", icon: "mdi:weather-windy-variant", state_class: "measurement"},
     hcho: {icon: "mdi:air-filter", state_class: "measurement"},
+    heat_stress: {icon: "mdi:weather-sunny-alert", state_class: "measurement"},
+    humidex: {device_class: "temperature", icon: "mdi:thermometer-alert", state_class: "measurement"},
     humidity: {device_class: "humidity", state_class: "measurement"},
     humidity_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     humidity_max: {entity_category: "config", icon: "mdi:water-percent"},
@@ -196,7 +202,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     noise: {device_class: "sound_pressure", state_class: "measurement"},
     noise_detect_level: {icon: "mdi:volume-equal"},
     noise_timeout: {icon: "mdi:timer"},
-    occupancy_level: {icon: "mdi:motion-sensor"},
+    occupancy_level: {icon: "mdi:motion-sensor", state_class: "measurement"},
     occupancy_sensitivity: {entity_category: "config", icon: "mdi:motion-sensor"},
     occupancy_timeout: {entity_category: "config", icon: "mdi:timer"},
     overload_protection: {icon: "mdi:flash"},
@@ -208,10 +214,13 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     power_phase_b: {device_class: "power", state_class: "measurement"},
     power_phase_c: {device_class: "power", state_class: "measurement"},
     power_factor: {device_class: "power_factor", enabled_by_default: false, entity_category: "diagnostic", state_class: "measurement"},
-    power_outage_count: {icon: "mdi:counter", enabled_by_default: false},
+    power_outage_count: {icon: "mdi:counter", enabled_by_default: false, state_class: "measurement"},
+    precipitation: {device_class: "precipitation", icon: "mdi:weather-rainy", state_class: "total_increasing"},
     precision: {entity_category: "config", icon: "mdi:decimal-comma-increase"},
     pressure: {device_class: "atmospheric_pressure", state_class: "measurement"},
+    pressure_trend: {icon: "mdi:trending-up", state_class: "measurement"},
     presence_timeout: {entity_category: "config", icon: "mdi:timer"},
+    rain_rate: {device_class: "precipitation_intensity", icon: "mdi:weather-pouring", state_class: "measurement"},
     reporting_time: {entity_category: "config", icon: "mdi:clock-time-one-outline"},
     requested_brightness_level: {
         enabled_by_default: false,
@@ -226,12 +235,14 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     smoke_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
     soil_moisture: {device_class: "moisture", state_class: "measurement"},
     temperature: {device_class: "temperature", state_class: "measurement"},
+    temperature_probe: {device_class: "temperature", state_class: "measurement"},
     temperature_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     temperature_max: {entity_category: "config", icon: "mdi:thermometer-plus"},
     temperature_min: {entity_category: "config", icon: "mdi:thermometer-minus"},
     temperature_offset: {icon: "mdi:thermometer-lines"},
     transition: {entity_category: "config", icon: "mdi:transition"},
-    trigger_count: {icon: "mdi:counter", enabled_by_default: false},
+    trigger_count: {icon: "mdi:counter", enabled_by_default: false, state_class: "measurement"},
+    uv_index: {icon: "mdi:white-balance-sunny", state_class: "measurement"},
     voc: {device_class: "volatile_organic_compounds", state_class: "measurement"},
     voc_index: {state_class: "measurement", icon: "mdi:molecule"},
     voc_parts: {device_class: "volatile_organic_compounds_parts", state_class: "measurement"},
@@ -243,6 +254,9 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         device_class: "water",
         state_class: "total_increasing",
     },
+    wind_chill: {device_class: "temperature", icon: "mdi:snowflake-thermometer", state_class: "measurement"},
+    wind_direction: {icon: "mdi:compass-outline", state_class: "measurement"},
+    wind_speed: {device_class: "wind_speed", icon: "mdi:weather-windy", state_class: "measurement"},
     x: {icon: "mdi:axis-x-arrow", state_class: "measurement"},
     x_axis: {icon: "mdi:axis-x-arrow", state_class: "measurement"},
     y: {icon: "mdi:axis-y-arrow", state_class: "measurement"},
@@ -290,6 +304,7 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     thermostat_unit: {entity_category: "config", icon: "mdi:thermometer"},
     update: {device_class: "update"},
     volume: {entity_category: "config", icon: "mdi: volume-high"},
+    weather_condition: {icon: "mdi:weather-partly-cloudy"},
     week: {entity_category: "config", icon: "mdi:calendar-clock"},
 } as const;
 const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
@@ -1219,6 +1234,61 @@ export class HomeAssistant extends Extension {
             case "composite":
             case "list": {
                 const firstExposeTyped = firstExpose as zhc.Text | zhc.Composite | zhc.List;
+
+                // Warning composite → HA siren entity
+                if (firstExposeTyped.type === "composite" && firstExposeTyped.name === "warning" && firstExposeTyped.access & ACCESS_SET) {
+                    const warningExpose = firstExpose as zhc.Composite;
+                    const modeFeature = warningExpose.features.filter(isEnumExpose).find((f) => f.name === "mode");
+                    const levelFeature = warningExpose.features.filter(isEnumExpose).find((f) => f.name === "level");
+                    const durationFeature = warningExpose.features.filter(isNumericExpose).find((f) => f.name === "duration");
+
+                    const discoveryEntry: DiscoveryEntry = {
+                        type: "siren",
+                        object_id: endpoint ? /* v8 ignore next */ `siren_${endpoint}` : "siren",
+                        mockProperties: [{property: warningExpose.property, value: null}],
+                        discovery_payload: {
+                            name: endpoint ? /* v8 ignore next */ utils.capitalize(endpoint) : null,
+                            command_topic: true,
+                            command_topic_prefix: endpoint,
+                            state_topic: false,
+                            optimistic: true,
+                        },
+                    };
+
+                    if (modeFeature) {
+                        const tones = modeFeature.values.filter((v) => v !== "stop");
+                        if (tones.length) {
+                            discoveryEntry.discovery_payload.available_tones = tones;
+                        }
+                    }
+
+                    if (levelFeature) {
+                        discoveryEntry.discovery_payload.support_volume_set = true;
+                    }
+
+                    if (durationFeature) {
+                        discoveryEntry.discovery_payload.support_duration = true;
+                    }
+
+                    const levelTemplate =
+                        "{% if volume_level is defined %}" +
+                        "{% if volume_level | float <= 0.25 %}low" +
+                        "{% elif volume_level | float <= 0.5 %}medium" +
+                        "{% elif volume_level | float <= 0.75 %}high" +
+                        "{% else %}very_high{% endif %}" +
+                        "{% else %}medium{% endif %}";
+
+                    discoveryEntry.discovery_payload.command_template =
+                        `{"warning": {"mode": "{{ tone | default('emergency') }}", ` +
+                        `"level": "${levelTemplate}", ` +
+                        `"duration": {{ duration | default(10) }}}}`;
+
+                    discoveryEntry.discovery_payload.command_off_template = '{"warning": {"mode": "stop"}}';
+
+                    discoveryEntries.push(discoveryEntry);
+                    break;
+                }
+
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
                     discoveryEntries.push({
                         type: "text",

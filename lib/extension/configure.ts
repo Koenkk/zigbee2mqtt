@@ -1,6 +1,5 @@
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
-import * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import type {Zigbee2MQTTAPI} from "../types/api";
 import logger from "../util/logger";
@@ -12,8 +11,8 @@ import Extension from "./extension";
  * This extension calls the zigbee-herdsman-converters definition configure() method
  */
 export default class Configure extends Extension {
-    private configuring = new Set();
-    private attempts: {[s: string]: number} = {};
+    private configuring = new Set<string>();
+    private attempts = new Map<string, number>();
     private topic = `${settings.get().mqtt.base_topic}/bridge/request/device/configure`;
 
     @bind private async onReconfigure(data: eventdata.Reconfigure): Promise<void> {
@@ -94,12 +93,10 @@ export default class Configure extends Extension {
             return;
         }
 
+        const definitionVersion = device.definition.version;
+
         if (!force) {
             if (device.options.disabled || !device.interviewed) {
-                return;
-            }
-
-            if (device.zh.meta?.configured !== undefined) {
                 return;
             }
 
@@ -107,29 +104,45 @@ export default class Configure extends Extension {
             if (device.zh.type === "EndDevice" && event !== "zigbee_event") {
                 return;
             }
+
+            const shouldReconfigure =
+                // Should always reconfigure when not configured before
+                device.zh.meta?.configured === undefined ||
+                // Or should reconfigure when definition.version is not '0.0.0' and differs from last `meta.configured`.
+                // In older Z2M versions the stored `meta.configured` was the hash of the configure function.
+                // Since we don't want to reconfigure all devices, we don't re-configure when the definition has the default version of '0.0.0'.
+                (definitionVersion !== "0.0.0" && device.zh.meta?.configured !== definitionVersion);
+            if (!shouldReconfigure) {
+                return;
+            }
         }
 
-        if (this.configuring.has(device.ieeeAddr) || (this.attempts[device.ieeeAddr] >= 3 && !force)) {
+        if (this.configuring.has(device.ieeeAddr)) {
+            return;
+        }
+
+        const attempts = this.attempts.get(device.ieeeAddr) ?? 0;
+
+        if (attempts >= 3 && !force) {
             return;
         }
 
         this.configuring.add(device.ieeeAddr);
 
-        if (this.attempts[device.ieeeAddr] === undefined) {
-            this.attempts[device.ieeeAddr] = 0;
-        }
-
         logger.info(`Configuring '${device.name}'`);
+
         try {
             await device.definition.configure(device.zh, this.zigbee.firstCoordinatorEndpoint(), device.definition);
-            logger.info(`Successfully configured '${device.name}'`);
-            device.zh.meta.configured = zhc.getConfigureKey(device.definition);
+            this.attempts.delete(device.ieeeAddr);
+            logger.info(`Successfully configured '${device.name}' (definition v${definitionVersion})`);
+            device.zh.meta.configured = definitionVersion;
             device.zh.save();
             this.eventBus.emitDevicesChanged();
         } catch (error) {
-            this.attempts[device.ieeeAddr]++;
-            const attempt = this.attempts[device.ieeeAddr];
-            const msg = `Failed to configure '${device.name}', attempt ${attempt} (${(error as Error).stack})`;
+            const newAttempts = attempts + 1;
+            this.attempts.set(device.ieeeAddr, newAttempts);
+
+            const msg = `Failed to configure '${device.name}', attempt ${newAttempts} (${(error as Error).stack})`;
             logger.error(msg);
 
             if (throwError) {
