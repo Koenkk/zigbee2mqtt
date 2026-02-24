@@ -3015,10 +3015,6 @@ describe("Extension: HomeAssistant", () => {
             await controller.enableDisableExtension(false, "HomeAssistant");
         }).rejects.toThrow("Tried to disable HomeAssistant extension enabled in settings");
 
-        await expect(async () => {
-            await controller.enableDisableExtension(true, "HomeAssistant");
-        }).rejects.toThrow("Extension with name HomeAssistant already present");
-
         settings.set(["homeassistant", "enabled"], false);
 
         await expect(async () => {

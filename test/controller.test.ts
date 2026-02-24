@@ -25,6 +25,7 @@ import {Controller as ZHController} from "zigbee-herdsman";
 import {Controller} from "../lib/controller";
 import type Device from "../lib/model/device";
 import * as settings from "../lib/util/settings";
+import Frontend from "../lib/extension/frontend";
 
 const LOG_MQTT_NS = "z2m:mqtt";
 
@@ -1167,5 +1168,13 @@ describe("Controller", () => {
         await expect(async () => {
             await controller.enableDisableExtension(false, "Availability");
         }).rejects.toThrow("Built-in extension Availability cannot be disabled at runtime");
+    });
+
+    it("throws error when adding extension twice", async () => {
+        settings.set(["frontend", "enabled"], true);
+        await controller.start();
+        await expect(async () => {
+            await controller.addExtension(new Frontend(...controller.extensionArgs));
+        }).rejects.toThrow("Extension with name Frontend already present");
     });
 });

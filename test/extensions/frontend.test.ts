@@ -478,10 +478,6 @@ describe("Extension: Frontend", () => {
 
         await controller.enableDisableExtension(true, "Frontend");
 
-        await expect(async () => {
-            await controller.enableDisableExtension(true, "Frontend");
-        }).rejects.toThrow("Extension with name Frontend already present");
-
         settings.set(["frontend", "enabled"], false);
         await controller.enableDisableExtension(false, "Frontend");
 
