@@ -33,7 +33,7 @@ export class Frontend extends Extension {
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => Promise<void>,
         addExtension: (extension: Extension) => Promise<void>,
     ) {

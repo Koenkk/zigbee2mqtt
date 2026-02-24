@@ -27,7 +27,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => Promise<void>,
         addExtension: (extension: Extension) => Promise<void>,
         mqttTopic: string,

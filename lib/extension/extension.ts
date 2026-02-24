@@ -4,7 +4,7 @@ abstract class Extension {
     protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
-    protected enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>;
+    protected enableDisableExtension: (enable: boolean, name: string) => Promise<void>;
     protected restartCallback: () => Promise<void>;
     protected addExtension: (extension: Extension) => Promise<void>;
 
@@ -26,7 +26,7 @@ abstract class Extension {
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,
-        enableDisableExtension: (enable: boolean, name: string, options: {disableBeforeEnable?: boolean}) => Promise<void>,
+        enableDisableExtension: (enable: boolean, name: string) => Promise<void>,
         restartCallback: () => Promise<void>,
         addExtension: (extension: Extension) => Promise<void>,
     ) {

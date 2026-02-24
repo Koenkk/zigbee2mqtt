@@ -172,14 +172,11 @@ export class Controller {
         settings.setOnboarding(false);
     }
 
-    @bind async enableDisableExtension(enable: boolean, name: string, options: {disableBeforeEnable?: boolean} = {}): Promise<void> {
-        const {disableBeforeEnable = false} = options;
+    @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
         if (enable) {
-            if (disableBeforeEnable) {
-                const extension = this.getExtension(name);
-                if (extension) {
-                    await this.removeExtension(extension);
-                }
+            const extension = this.getExtension(name);
+            if (extension) {
+                await this.removeExtension(extension);
             }
 
             switch (name) {
