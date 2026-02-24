@@ -67,15 +67,10 @@ export default class Zigbee {
         let startResult: StartResult;
         try {
             this.#herdsman = new Controller(herdsmanSettings);
-            // TODO: pass abortSignal
-            startResult = await this.#herdsman.start();
+            startResult = await this.#herdsman.start(abortSignal);
         } catch (error) {
             logger.error("Error while starting zigbee-herdsman");
             throw error;
-        }
-
-        if (abortSignal.aborted) {
-            return false;
         }
 
         this.coordinatorIeeeAddr = this.#herdsman.getDevicesByType("Coordinator")[0].ieeeAddr;

@@ -1192,7 +1192,11 @@ export const mockController = {
     on: (type: string, handler: EventHandler): void => {
         events[type] = handler;
     },
-    start: vi.fn((): Promise<AdapterTypes.StartResult> => Promise.resolve("reset")),
+    start: vi.fn(async (abortSignal?: AbortSignal): Promise<AdapterTypes.StartResult> => {
+        abortSignal?.throwIfAborted();
+
+        return await Promise.resolve("reset");
+    }),
     stop: vi.fn(),
     touchlink: {identify: vi.fn(), scan: vi.fn(), factoryReset: vi.fn(), factoryResetFirst: vi.fn()},
     addInstallCode: vi.fn(),

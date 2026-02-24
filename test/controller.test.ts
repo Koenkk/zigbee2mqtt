@@ -584,8 +584,9 @@ describe("Controller", () => {
         });
 
         it("during ZH Controller start", async () => {
-            mockZHController.start.mockImplementationOnce(async () => {
-                await controller.stop(undefined, undefined, "SIGINT");
+            mockZHController.start.mockImplementationOnce(async (abortSignal) => {
+                void controller.stop(undefined, undefined, "SIGINT");
+                abortSignal?.throwIfAborted();
 
                 return await Promise.resolve("resumed");
             });

@@ -117,21 +117,24 @@ export class Controller {
                 });
             }
         } catch (error) {
-            logger.error("Failed to start zigbee-herdsman");
-            logger.error(
-                "Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions",
-            );
-            logger.error("Exiting...");
-            // biome-ignore lint/style/noNonNullAssertion: always Error
-            logger.error((error as Error).stack!);
+            // skip if aborted by `stop`
+            if (error !== "SIGINT" && error !== "SIGTERM" && error !== "STOPABORT") {
+                logger.error("Failed to start zigbee-herdsman");
+                logger.error(
+                    "Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions",
+                );
+                logger.error("Exiting...");
+                // biome-ignore lint/style/noNonNullAssertion: always Error
+                logger.error((error as Error).stack!);
 
-            /* v8 ignore start */
-            if ((error as Error).message.includes("USB adapter discovery error (No valid USB adapter found)")) {
-                logger.error("If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364");
+                /* v8 ignore start */
+                if ((error as Error).message.includes("USB adapter discovery error (No valid USB adapter found)")) {
+                    logger.error("If this happens after updating to Zigbee2MQTT 2.0.0, see https://github.com/Koenkk/zigbee2mqtt/discussions/24364");
+                }
+                /* v8 ignore stop */
+
+                return await this.exit(1);
             }
-            /* v8 ignore stop */
-
-            return await this.exit(1);
         }
 
         if (abortSignal.aborted) {
