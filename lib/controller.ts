@@ -211,10 +211,7 @@ export class Controller {
 
     @bind async enableDisableExtension(enable: boolean, name: string): Promise<void> {
         if (enable) {
-            const extension = this.getExtension(name);
-            if (extension) {
-                await this.removeExtension(extension);
-            }
+            let extension: Extension;
 
             switch (name) {
                 case "Frontend": {
@@ -226,7 +223,7 @@ export class Controller {
                     /* v8 ignore start */
                     const {Frontend} = await import("./extension/frontend.js");
 
-                    await this.addExtension(new Frontend(...this.extensionArgs));
+                    extension = new Frontend(...this.extensionArgs);
 
                     break;
                     /* v8 ignore stop */
@@ -238,7 +235,7 @@ export class Controller {
 
                     const {HomeAssistant} = await import("./extension/homeassistant.js");
 
-                    await this.addExtension(new HomeAssistant(...this.extensionArgs));
+                    extension = new HomeAssistant(...this.extensionArgs);
 
                     break;
                 }
@@ -248,6 +245,12 @@ export class Controller {
                     );
                 }
             }
+
+            const existingExtension = this.getExtension(name);
+            if (existingExtension) {
+                await this.removeExtension(existingExtension);
+            }
+            await this.extensions.add(extension);
         } else {
             switch (name) {
                 case "Frontend": {
