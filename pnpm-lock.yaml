@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 9.0.7
+  zigbee-herdsman: 9.0.8
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.19.0
         version: 8.19.0
       zigbee-herdsman:
-        specifier: 9.0.7
-        version: 9.0.7
+        specifier: 9.0.8
+        version: 9.0.8
       zigbee-herdsman-converters:
         specifier: 26.11.0
         version: 26.11.0
@@ -1476,8 +1476,8 @@ packages:
     resolution: {integrity: sha512-j8eYfgp0XJRKWLs/zBv3CUmmZ+YMw6XxTpfgUAI/7rDu3zY74O1dmxfRj4gqiHXcWgXlexmpE+8qjohfBH+3JA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@9.0.7:
-    resolution: {integrity: sha512-N11/r45ZvKZXmJ2nWjlf8pOKITM4zSsyvRlHYh01lwcS51V5tYNuq0zJUfmPgNsmFdwJ00ZKyPGGY2lI5Z8ViQ==}
+  zigbee-herdsman@9.0.8:
+    resolution: {integrity: sha512-UsmTdrp/VeGs+rm81D1/XyTsHY59ZRCyhRdUicFZg0bdUrgTgO2trIJzWEaKl7qGIuTRIXXsQoxpaUp2CacURg==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2183,7 +2183,7 @@ snapshots:
   istanbul-lib-source-maps@5.0.6:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      debug: 4.4.1
+      debug: 4.4.3
       istanbul-lib-coverage: 3.2.2
     transitivePeerDependencies:
       - supports-color
@@ -2763,11 +2763,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.7.4
-      zigbee-herdsman: 9.0.7
+      zigbee-herdsman: 9.0.8
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@9.0.7:
+  zigbee-herdsman@9.0.8:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
