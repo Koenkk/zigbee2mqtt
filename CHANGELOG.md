@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.9.0...2.9.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* Fix onboarding ([#31228](https://github.com/Koenkk/zigbee2mqtt/issues/31228)) ([7f0a9aa](https://github.com/Koenkk/zigbee2mqtt/commit/7f0a9aa2a30ab79c182d8ea9e875339e9031fdbd))
+
 ## [2.9.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.8.0...2.9.0) (2026-03-01)
 
 
