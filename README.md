@@ -96,6 +96,16 @@ Integration implemented in ioBroker ([documentation](https://github.com/o0shojo0
 
 <br clear="both">
 
+### [jeha](https://github.com/vpetersson/jeha)
+
+<a href="https://github.com/vpetersson/jeha"><img align="left" src="https://raw.githubusercontent.com/vpetersson/jeha/master/logo.png" width="75" height="75" style="padding-right: 20px;" alt="jeha"></a>
+
+<br clear="right">
+
+JEHA (Just Enough Home Automation) is a fast, opinionated light automation daemon for Zigbee2MQTT written in Rust. Circadian rhythms, motion-activated lights, night mode, scenes, all with sensible defaults. Docker image under 10MB ([documentation](https://github.com/vpetersson/jeha)).
+
+<br clear="both">
+
 ## Architecture
 
 ![Architecture](images/architecture-new.png)
