@@ -91,7 +91,7 @@ jobs:
 
             - name: dev - Docker build and push
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: docker/Dockerfile
@@ -139,7 +139,7 @@ jobs:
 
             - name: release - Docker build and push
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              uses: docker/build-push-action@v6
+              uses: docker/build-push-action@v7
               with:
                   context: .
                   file: docker/Dockerfile
