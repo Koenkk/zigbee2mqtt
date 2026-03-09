@@ -259,6 +259,7 @@ export interface Zigbee2MQTTDeviceDefinition {
     exposes: zigbeeHerdsmanConverter.Expose[];
     supports_ota: boolean;
     options: zigbeeHerdsmanConverter.Option[];
+    version: `0.0.${number}`;
     icon: string;
 }
 
