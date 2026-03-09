@@ -900,6 +900,7 @@ export default class Bridge extends Extension {
             exposes: device.exposes(),
             supports_ota: !!device.definition.ota,
             options: device.definition.options ?? [],
+            version: device.definition.version,
             icon,
         };
 
