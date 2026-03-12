@@ -126,7 +126,7 @@ jobs:
 
             - name: release - Docker meta
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
-              uses: docker/metadata-action@v5
+              uses: docker/metadata-action@v6
               id: meta
               with:
                   images: |
