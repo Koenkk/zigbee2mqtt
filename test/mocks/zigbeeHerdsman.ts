@@ -27,6 +27,7 @@ type ZHBind = {
 
 const CLUSTERS = {
     genBasic: Zcl.Clusters.genBasic.ID,
+    genGroups: Zcl.Clusters.genGroups.ID,
     genOta: Zcl.Clusters.genOta.ID,
     genScenes: Zcl.Clusters.genScenes.ID,
     genOnOff: Zcl.Clusters.genOnOff.ID,
@@ -133,7 +134,17 @@ export class Endpoint {
         this.ID = ID;
         this.inputClusters = inputClusters;
         this.outputClusters = outputClusters;
-        this.command = vi.fn();
+        this.command = vi.fn(async (cluster: string, command: string) => {
+            if (cluster === "genGroups" && command === "getMembership") {
+                const grouplist: number[] = [];
+                for (const key in groups) {
+                    if (groups[key as keyof typeof groups].members.includes(this)) {
+                        grouplist.push(groups[key as keyof typeof groups].groupID);
+                    }
+                }
+                return {capacity: 255, groupcount: grouplist.length, grouplist};
+            }
+        });
         this.commandResponse = vi.fn();
         this.read = vi.fn();
         this.write = vi.fn();
@@ -159,7 +170,6 @@ export class Endpoint {
                 group.members.splice(index, 1);
             }
         });
-
         this.getClusterAttributeValue = vi.fn((cluster: string, value: string) =>
             !(cluster in this.clusterValues) ? undefined : this.clusterValues[cluster][value],
         );

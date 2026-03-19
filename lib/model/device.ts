@@ -4,6 +4,7 @@ import type {OtaExtraMetas} from "zigbee-herdsman/dist/controller/tstype";
 import type {CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 import {access, Numeric} from "zigbee-herdsman-converters";
+import type {Zigbee2MQTTDriftItem} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 
@@ -17,6 +18,7 @@ const LINKQUALITY = new Numeric("linkquality", access.STATE)
 export default class Device {
     public zh: zh.Device;
     public definition?: zhc.Definition;
+    public drift?: Zigbee2MQTTDriftItem[];
     private _definitionModelID?: string;
 
     get ieeeAddr(): string {

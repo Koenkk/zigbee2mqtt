@@ -113,6 +113,10 @@ export const defaults = {
         network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
         timestamp_format: "YYYY-MM-DD HH:mm:ss",
         output: "json",
+        group_bind_cooldown: 0,
+        group_bind_unexpected: "report",
+        group_bind_missing: "report",
+        group_bind_throttle: 2,
     },
     health: {
         interval: 10,
@@ -126,6 +130,13 @@ let _settingsWithDefaults: Settings | undefined;
 function loadSettingsWithDefaults(): void {
     if (!_settings) {
         _settings = read();
+    }
+
+    // Migrate group_bind_remove_unexpected (boolean) to group_bind_unexpected (string enum)
+    if (_settings.advanced && "group_bind_remove_unexpected" in _settings.advanced) {
+        const advanced = _settings.advanced as KeyValue;
+        advanced.group_bind_unexpected = advanced.group_bind_remove_unexpected ? "enforce" : "accept";
+        delete advanced.group_bind_remove_unexpected;
     }
 
     _settingsWithDefaults = objectAssignDeep({}, defaults, getPersistedSettings()) as Settings;
@@ -633,6 +644,74 @@ export function removeGroup(IDorName: string | number): void {
     // biome-ignore lint/style/noNonNullAssertion: throwing above if not valid
     delete settings.groups![groupID];
     write();
+}
+
+export function addBinding(deviceKey: string, cluster: string, to: string | number, toEndpoint?: number, fromEndpoint?: number): void {
+    const device = getDeviceThrowIfNotExists(deviceKey);
+    const settings = getPersistedSettings();
+    // biome-ignore lint/style/noNonNullAssertion: valid from above
+    const deviceSettings = settings.devices![device.ID];
+
+    if (!deviceSettings.binds) {
+        deviceSettings.binds = [];
+    }
+
+    if (!deviceSettings.binds.find((b) => b.cluster === cluster && b.to === to && b.to_endpoint === toEndpoint && b.from_endpoint === fromEndpoint)) {
+        deviceSettings.binds.push({cluster, to, to_endpoint: toEndpoint, from_endpoint: fromEndpoint});
+        write();
+    }
+}
+
+export function removeBinding(deviceKey: string, cluster: string, to: string | number, toEndpoint?: number): void {
+    const device = getDeviceThrowIfNotExists(deviceKey);
+    const settings = getPersistedSettings();
+    // biome-ignore lint/style/noNonNullAssertion: valid from above
+    const deviceSettings = settings.devices![device.ID];
+
+    if (deviceSettings.binds) {
+        const index = deviceSettings.binds.findIndex((b) => b.cluster === cluster && b.to === to && b.to_endpoint === toEndpoint);
+        if (index !== -1) {
+            deviceSettings.binds.splice(index, 1);
+            if (deviceSettings.binds.length === 0) {
+                delete deviceSettings.binds;
+            }
+            write();
+        }
+    }
+}
+
+export function addGroupMember(deviceKey: string, groupKey: string | number): void {
+    const device = getDeviceThrowIfNotExists(deviceKey);
+    const settings = getPersistedSettings();
+    // biome-ignore lint/style/noNonNullAssertion: valid from above
+    const deviceSettings = settings.devices![device.ID];
+
+    if (!deviceSettings.groups) {
+        deviceSettings.groups = [];
+    }
+
+    if (!deviceSettings.groups.includes(groupKey)) {
+        deviceSettings.groups.push(groupKey);
+        write();
+    }
+}
+
+export function removeGroupMember(deviceKey: string, groupKey: string | number): void {
+    const device = getDeviceThrowIfNotExists(deviceKey);
+    const settings = getPersistedSettings();
+    // biome-ignore lint/style/noNonNullAssertion: valid from above
+    const deviceSettings = settings.devices![device.ID];
+
+    if (deviceSettings.groups) {
+        const index = deviceSettings.groups.indexOf(groupKey);
+        if (index !== -1) {
+            deviceSettings.groups.splice(index, 1);
+            if (deviceSettings.groups.length === 0) {
+                delete deviceSettings.groups;
+            }
+            write();
+        }
+    }
 }
 
 export function changeEntityOptions(IDorName: string, newOptions: KeyValue): boolean {

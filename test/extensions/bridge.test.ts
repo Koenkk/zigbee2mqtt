@@ -128,6 +128,10 @@ describe("Extension: Bridge", () => {
                         channel: 11,
                         elapsed: false,
                         ext_pan_id: [221, 221, 221, 221, 221, 221, 221, 221],
+                        group_bind_cooldown: 0,
+                        group_bind_unexpected: "report",
+                        group_bind_missing: "report",
+                        group_bind_throttle: 2,
                         last_seen: "disable",
                         log_debug_namespace_ignore: "",
                         log_debug_to_mqtt_frontend: false,
@@ -605,7 +609,7 @@ describe("Extension: Bridge", () => {
                         "1": {
                             bindings: [],
                             clusters: {
-                                input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
+                                input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
                                 output: ["genScenes", "genOta"],
                             },
                             configured_reportings: [
@@ -861,7 +865,7 @@ describe("Extension: Bridge", () => {
                         "1": {
                             bindings: [],
                             clusters: {
-                                input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
+                                input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
                                 output: ["genScenes", "genOta"],
                             },
                             configured_reportings: [],
@@ -1979,49 +1983,49 @@ describe("Extension: Bridge", () => {
                         "10": {
                             name: "l5",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "11": {
                             name: "l6",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "12": {
                             name: "l7",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "closuresWindowCovering"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "closuresWindowCovering"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "5": {
                             name: "l1",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "7": {
                             name: "l2",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "8": {
                             name: "l3",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
                         "9": {
                             name: "l4",
                             bindings: [],
-                            clusters: {input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
+                            clusters: {input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl"], output: []},
                             configured_reportings: [],
                             scenes: [],
                         },
@@ -2270,7 +2274,7 @@ describe("Extension: Bridge", () => {
                         "1": {
                             bindings: [],
                             clusters: {
-                                input: ["genBasic", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
+                                input: ["genBasic", "genGroups", "genScenes", "genOnOff", "genLevelCtrl", "lightingColorCtrl"],
                                 output: ["genScenes", "genOta"],
                             },
                             configured_reportings: [],

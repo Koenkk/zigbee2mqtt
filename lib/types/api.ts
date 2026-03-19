@@ -83,6 +83,13 @@ export interface Zigbee2MQTTDeviceOptions {
     description?: string;
     qos?: 0 | 1 | 2;
     disable_automatic_update_check?: boolean;
+    groups?: (string | number)[];
+    binds?: {
+        cluster: string;
+        to: string | number;
+        to_endpoint?: number;
+        from_endpoint?: number;
+    }[];
 }
 
 export interface Zigbee2MQTTGroupOptions {
@@ -215,6 +222,10 @@ export interface Zigbee2MQTTSettings {
         timestamp_format: string;
         output: "json" | "attribute" | "attribute_and_json";
         transmit_power?: number;
+        group_bind_cooldown?: number;
+        group_bind_unexpected?: 'report' | 'accept' | 'enforce';
+        group_bind_missing?: 'report' | 'accept' | 'enforce';
+        group_bind_throttle?: number;
     };
     health: {
         /** in minutes */
@@ -263,6 +274,19 @@ export interface Zigbee2MQTTDeviceDefinition {
     icon: string;
 }
 
+export interface Zigbee2MQTTDriftItem {
+    type: 'group' | 'bind';
+    direction: 'unexpected_on_device' | 'missing_from_device';
+    endpoint: number;
+    // For groups:
+    group_id?: number;
+    group_name?: string;
+    // For binds:
+    cluster?: string;
+    target?: string | number;
+    target_endpoint?: number;
+}
+
 export interface Zigbee2MQTTDevice {
     ieee_address: zigbeeHerdsman.Models.Device["ieeeAddr"];
     type: zigbeeHerdsman.Models.Device["type"];
@@ -281,6 +305,7 @@ export interface Zigbee2MQTTDevice {
     interview_state: zigbeeHerdsman.Models.Device["interviewState"];
     manufacturer: zigbeeHerdsman.Models.Device["manufacturerName"];
     endpoints: Record<number, Zigbee2MQTTDeviceEndpoint>;
+    drift?: Zigbee2MQTTDriftItem[];
 }
 
 export interface Zigbee2MQTTGroupMember {
@@ -327,6 +352,19 @@ export interface Zigbee2MQTTNetworkMap {
         /** @deprecated 3.0 */
         sourceNwkAddr: number;
     }[];
+}
+
+export interface Zigbee2MQTTGroupBindEnforcementStats {
+    status: 'idle' | 'polling';
+    last_poll_completed?: string;
+    last_poll_duration_sec?: number;
+    poll_interval_min: number;
+    devices_checked: number;
+    devices_skipped: number;
+    groups_validated: number;
+    binds_validated: number;
+    drift_items_found: number;
+    errors: number;
 }
 
 /**
@@ -439,6 +477,8 @@ export interface Zigbee2MQTTAPI {
             }
         >;
     };
+
+    "bridge/group_bind_enforcement": Zigbee2MQTTGroupBindEnforcementStats;
 
     "bridge/devices": Zigbee2MQTTDevice[];
 
@@ -603,6 +643,19 @@ export interface Zigbee2MQTTAPI {
     "bridge/response/device/binds/clear": {
         target: string;
         ieee_list?: Eui64[];
+    };
+
+    "bridge/request/device/drift/resolve": {
+        id: string;
+        action: 'accept' | 'enforce';
+        items?: Zigbee2MQTTDriftItem[];
+    };
+
+    "bridge/response/device/drift/resolve": {
+        id: string;
+        action: 'accept' | 'enforce';
+        resolved: number;
+        failed: number;
     };
 
     "bridge/request/device/configure":
@@ -993,6 +1046,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
     | "bridge/request/device/binds/clear"
+    | "bridge/request/device/drift/resolve"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -1044,6 +1098,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
     | "bridge/response/device/binds/clear"
+    | "bridge/response/device/drift/resolve"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"

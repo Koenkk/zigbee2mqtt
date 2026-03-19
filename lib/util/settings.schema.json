@@ -808,6 +808,34 @@
                     "title": "MQTT output type",
                     "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)",
                     "default": "json"
+                },
+                "group_bind_cooldown": {
+                    "type": "number",
+                    "title": "Group/Bind Enforcement cooldown",
+                    "description": "Minutes to wait between group/bind enforcement polls (0 to disable)",
+                    "default": 0,
+                    "minimum": 0
+                },
+                "group_bind_unexpected": {
+                    "type": "string",
+                    "enum": ["report", "accept", "enforce"],
+                    "title": "Group/Bind Enforcement unexpected items",
+                    "description": "What to do when a group/binding exists on a device but not in config. 'report' = record as drift for user resolution, 'accept' = add to config, 'enforce' = remove from device.",
+                    "default": "report"
+                },
+                "group_bind_missing": {
+                    "type": "string",
+                    "enum": ["report", "accept", "enforce"],
+                    "title": "Group/Bind Enforcement missing items",
+                    "description": "What to do when a group/binding is in config but missing from device. 'report' = record as drift for user resolution, 'accept' = remove from config, 'enforce' = push to device.",
+                    "default": "report"
+                },
+                "group_bind_throttle": {
+                    "type": "number",
+                    "title": "Group/Bind Enforcement per-device throttle",
+                    "description": "Seconds to wait between polling each device during group/bind enforcement. Higher values reduce network load on large networks.",
+                    "default": 2,
+                    "minimum": 0
                 }
             }
         },

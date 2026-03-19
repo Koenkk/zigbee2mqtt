@@ -11,7 +11,7 @@ import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import type Group from "../model/group";
-import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from "../types/api";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTDriftItem, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
@@ -36,6 +36,7 @@ export default class Bridge extends Extension {
         "device/configure_reporting": this.deviceReportingConfigure,
         "device/reporting/configure": this.deviceReportingConfigure,
         "device/reporting/read": this.deviceReportingRead,
+        "device/drift/resolve": this.deviceDriftResolve,
         "device/remove": this.deviceRemove,
         "device/interview": this.deviceInterview,
         "device/generate_external_definition": this.deviceGenerateExternalDefinition,
@@ -231,6 +232,115 @@ export default class Bridge extends Extension {
 
     @bind async deviceOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/device/options">> {
         return await this.changeEntityOptions("device", message);
+    }
+
+    @bind async deviceDriftResolve(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/device/drift/resolve">> {
+        if (typeof message !== "object" || message.id === undefined || message.action === undefined) {
+            throw new Error("Invalid payload");
+        }
+
+        const action = message.action as "accept" | "enforce";
+        if (action !== "accept" && action !== "enforce") {
+            throw new Error("Invalid action, must be 'accept' or 'enforce'");
+        }
+
+        const device = this.getEntity("device", message.id);
+        if (!device.drift || device.drift.length === 0) {
+            return utils.getResponse(message, {id: message.id, action, resolved: 0, failed: 0});
+        }
+
+        const itemsToResolve: Zigbee2MQTTDriftItem[] = message.items ?? device.drift;
+        let resolved = 0;
+        let failed = 0;
+
+        for (const item of itemsToResolve) {
+            try {
+                await this.resolveDriftItem(device, item, action);
+                resolved++;
+            } catch (error) {
+                logger.error(`Failed to resolve drift item for '${device.name}': ${(error as Error).message}`);
+                failed++;
+            }
+        }
+
+        // Remove resolved items from device drift
+        if (message.items) {
+            device.drift = device.drift.filter(
+                (d) => !itemsToResolve.some((i) => i.type === d.type && i.direction === d.direction && i.endpoint === d.endpoint
+                    && i.group_id === d.group_id && i.cluster === d.cluster && i.target === d.target && i.target_endpoint === d.target_endpoint),
+            );
+        } else {
+            device.drift = undefined;
+        }
+
+        if (device.drift?.length === 0) {
+            device.drift = undefined;
+        }
+
+        this.eventBus.emitDevicesChanged();
+
+        return utils.getResponse(message, {id: message.id, action, resolved, failed});
+    }
+
+    private async resolveDriftItem(device: Device, item: Zigbee2MQTTDriftItem, action: "accept" | "enforce"): Promise<void> {
+        if (item.type === "group") {
+            const endpoint = device.zh.getEndpoint(item.endpoint);
+            if (!endpoint) throw new Error(`Endpoint ${item.endpoint} not found`);
+
+            const group = item.group_id != null ? this.zigbee.groupByID(item.group_id) : undefined;
+
+            if (item.direction === "unexpected_on_device") {
+                if (action === "accept") {
+                    // Add to config
+                    const groupKey = group ? group.name : item.group_id!;
+                    settings.addGroupMember(device.ieeeAddr, groupKey);
+                } else {
+                    // Remove from device
+                    if (group) await endpoint.removeFromGroup(group.zh);
+                }
+            } else {
+                // missing_from_device
+                if (action === "accept") {
+                    // Remove from config
+                    const groupKey = group ? group.name : item.group_id!;
+                    settings.removeGroupMember(device.ieeeAddr, groupKey);
+                } else {
+                    // Push to device
+                    if (group) await endpoint.addToGroup(group.zh);
+                }
+            }
+        } else {
+            // bind
+            const endpoint = device.zh.getEndpoint(item.endpoint);
+            if (!endpoint) throw new Error(`Endpoint ${item.endpoint} not found`);
+
+            if (item.direction === "unexpected_on_device") {
+                if (action === "accept") {
+                    // Add to config
+                    settings.addBinding(device.ieeeAddr, item.cluster!, item.target!, item.target_endpoint, item.endpoint);
+                } else {
+                    // Remove from device
+                    const targetEntity = this.zigbee.resolveEntity(item.target!.toString());
+                    if (!targetEntity) throw new Error(`Target '${item.target}' not found`);
+                    const target = targetEntity instanceof Device ? targetEntity.endpoint(item.target_endpoint) : targetEntity.zh;
+                    if (!target) throw new Error(`Target endpoint not found`);
+                    await endpoint.unbind(item.cluster!, target);
+                }
+            } else {
+                // missing_from_device
+                if (action === "accept") {
+                    // Remove from config
+                    settings.removeBinding(device.ieeeAddr, item.cluster!, item.target!, item.target_endpoint);
+                } else {
+                    // Push to device
+                    const targetEntity = this.zigbee.resolveEntity(item.target!.toString());
+                    if (!targetEntity) throw new Error(`Target '${item.target}' not found`);
+                    const target = targetEntity instanceof Device ? targetEntity.endpoint(item.target_endpoint) : targetEntity.zh;
+                    if (!target) throw new Error(`Target endpoint not found`);
+                    await endpoint.bind(item.cluster!, target);
+                }
+            }
+        }
     }
 
     @bind async groupOptions(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/group/options">> {
@@ -815,7 +925,7 @@ export default class Bridge extends Extension {
                 endpoints[endpoint.ID] = data;
             }
 
-            devices.push({
+            const devicePayload: Zigbee2MQTTDevice = {
                 ieee_address: device.ieeeAddr,
                 type: device.zh.type,
                 network_address: device.zh.networkAddress,
@@ -834,7 +944,13 @@ export default class Bridge extends Extension {
                 interview_state: device.zh.interviewState,
                 manufacturer: device.zh.manufacturerName,
                 endpoints,
-            });
+            };
+
+            if (device.drift) {
+                devicePayload.drift = device.drift;
+            }
+
+            devices.push(devicePayload);
         }
 
         await this.mqtt.publish("bridge/devices", stringify(devices), {clientOptions: {retain: true}, skipLog: true});
