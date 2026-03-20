@@ -112,7 +112,7 @@ describe("Controller", () => {
         expect(mockLogger.info).toHaveBeenCalledWith(
             "bulb (0x000b57fffec6a5b2): LED1545G12 - IKEA TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm (Router)",
         );
-        expect(mockLogger.info).toHaveBeenCalledWith("remote (0x0017880104e45517): 324131092621 - Philips Hue dimmer switch (EndDevice)");
+        expect(mockLogger.info).toHaveBeenCalledWith("remote (0x0017880104e45517): 324131092621 - Philips Hue dimmer switch gen 1 (EndDevice)");
         expect(mockLogger.info).toHaveBeenCalledWith("0x0017880104e45518 (0x0017880104e45518): Not supported (EndDevice)");
         expect(mockMQTTConnectAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTTConnectAsync).toHaveBeenCalledWith("mqtt://localhost", {
