@@ -833,7 +833,7 @@ describe("Extension: Bridge", () => {
                 {
                     definition: {
                         source: "native",
-                        description: "Hue dimmer switch",
+                        description: "Hue dimmer switch gen 1",
                         exposes: [
                             {
                                 access: 1,
