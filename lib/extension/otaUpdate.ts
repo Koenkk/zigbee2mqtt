@@ -65,7 +65,6 @@ export default class OTAUpdate extends Extension {
         string,
         {
             payload: Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">;
-            tsn: number;
             endpoint: zh.Endpoint;
             ts: number;
         }
@@ -214,7 +213,6 @@ export default class OTAUpdate extends Extension {
                     // avoiding the imageNotify race condition on multi-MCU devices.
                     this.#pendingAvailableRequests.set(inProgressKey, {
                         payload: data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
-                        tsn: data.meta.zclTransactionSequenceNumber!,
                         endpoint: data.endpoint,
                         ts: Date.now(),
                     });
@@ -576,7 +574,7 @@ export default class OTAUpdate extends Extension {
         // This ensures sibling MCUs (same device, different imageType) are rechecked on their
         // next queryNextImageRequest instead of being silently ignored for up to 24 hours.
         for (const key of [...this.#lastChecked.keys()]) {
-            if (key === device.ieeeAddr || key.startsWith(device.ieeeAddr + "_")) {
+            if (key === device.ieeeAddr || key.startsWith(`${device.ieeeAddr}_`)) {
                 this.#lastChecked.delete(key);
             }
         }
