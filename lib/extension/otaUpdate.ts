@@ -574,7 +574,7 @@ export default class OTAUpdate extends Extension {
         // This ensures sibling MCUs (same device, different imageType) are rechecked on their
         // next queryNextImageRequest instead of being silently ignored for up to 24 hours.
         for (const key of [...this.#lastChecked.keys()]) {
-            if (key === device.ieeeAddr || key.startsWith(`${device.ieeeAddr}_`)) {
+            if (key.startsWith(`${device.ieeeAddr}_`)) {
                 this.#lastChecked.delete(key);
             }
         }

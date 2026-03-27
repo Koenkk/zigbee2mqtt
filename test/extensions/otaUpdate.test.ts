@@ -1396,6 +1396,11 @@ describe("Extension: OTAUpdate", () => {
         const checkAPromise = mockZHEvents.message(payloadA);
         await flushPromises();
 
+        // Send payloadA again — same imageType must be blocked by #inProgress
+        await mockZHEvents.message(payloadA);
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1); // still 1 — duplicate blocked
+
         // While A is in progress, trigger imageType B — should NOT be blocked
         await mockZHEvents.message(payloadB);
         await flushPromises();
