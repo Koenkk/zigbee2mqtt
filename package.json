@@ -52,7 +52,7 @@
         "js-yaml": "^4.1.0",
         "json-stable-stringify-without-jsonify": "^1.0.1",
         "jszip": "^3.10.1",
-        "mqtt": "^5.15.0",
+        "mqtt": "^5.15.1",
         "object-assign-deep": "^0.4.0",
         "rimraf": "^6.1.3",
         "semver": "^7.7.4",
@@ -65,10 +65,10 @@
         "zigbee-herdsman": "10.0.4",
         "zigbee-herdsman-converters": "26.26.0",
         "zigbee2mqtt-frontend": "0.9.21",
-        "zigbee2mqtt-windfront": "2.10.1"
+        "zigbee2mqtt-windfront": "2.11.0"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.4.8",
+        "@biomejs/biome": "^2.4.10",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
