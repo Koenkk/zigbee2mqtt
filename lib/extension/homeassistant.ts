@@ -1867,11 +1867,11 @@ export class HomeAssistant extends Extension {
             try {
                 message = JSON.parse(data.message);
                 const baseTopic = `${settings.get().mqtt.base_topic}/`;
-                if (isDeviceAutomation && (!message.topic || !message.topic.startsWith(baseTopic))) {
+                if (isDeviceAutomation && !message.topic?.startsWith(baseTopic)) {
                     return;
                 }
 
-                if (!isDeviceAutomation && (!message.availability || !message.availability[0].topic.startsWith(baseTopic))) {
+                if (!isDeviceAutomation && !message.availability?.[0].topic.startsWith(baseTopic)) {
                     return;
                 }
             } catch {

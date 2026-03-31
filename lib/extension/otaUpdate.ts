@@ -284,11 +284,11 @@ export default class OTAUpdate extends Extension {
 
                         if (payload.url) {
                             source.url = payload.url;
-                        } else if (!device.definition || !device.definition.ota) {
+                        } else if (!device.definition?.ota) {
                             error = `Device '${device.name}' does not support OTA updates`;
                             break;
                         }
-                    } else if (!device.definition || !device.definition.ota) {
+                    } else if (!device.definition?.ota) {
                         error = `Device '${device.name}' does not support OTA updates`;
                         break;
                     }
@@ -344,7 +344,7 @@ export default class OTAUpdate extends Extension {
                             source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
                         } else if (payload.url) {
                             source.url = payload.url;
-                        } else if (!device.definition || !device.definition.ota) {
+                        } else if (!device.definition?.ota) {
                             error = `Device '${device.name}' does not support OTA updates`;
                             break;
                         }
@@ -360,7 +360,7 @@ export default class OTAUpdate extends Extension {
                         if (payload.default_maximum_data_size) {
                             dataSettings.baseSize = payload.default_maximum_data_size;
                         }
-                    } else if (!device.definition || !device.definition.ota) {
+                    } else if (!device.definition?.ota) {
                         error = `Device '${device.name}' does not support OTA updates`;
                         break;
                     }
@@ -415,11 +415,11 @@ export default class OTAUpdate extends Extension {
                             source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
                         } else if (payload.url) {
                             source.url = payload.url;
-                        } else if (!device.definition || !device.definition.ota) {
+                        } else if (!device.definition?.ota) {
                             error = `Device '${device.name}' does not support OTA updates`;
                             break;
                         }
-                    } else if (!device.definition || !device.definition.ota) {
+                    } else if (!device.definition?.ota) {
                         error = `Device '${device.name}' does not support OTA updates`;
                         break;
                     }
