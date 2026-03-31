@@ -1,7 +1,7 @@
 import type * as zigbeeHerdsman from "zigbee-herdsman/dist";
 import type {ZclPayload} from "zigbee-herdsman/dist/adapter/events";
 import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
-import type {ClusterDefinition, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
+import type {Cluster, ClusterName, CustomClusters} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import type {GenericZdoResponse, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type * as zigbeeHerdsmanConverter from "zigbee-herdsman-converters";
 import type {Base} from "zigbee-herdsman-converters/lib/exposes";
@@ -259,6 +259,7 @@ export interface Zigbee2MQTTDeviceDefinition {
     exposes: zigbeeHerdsmanConverter.Expose[];
     supports_ota: boolean;
     options: zigbeeHerdsmanConverter.Option[];
+    version: `0.0.${number}`;
     icon: string;
 }
 
@@ -343,7 +344,7 @@ export interface Zigbee2MQTTAPI {
     };
 
     "bridge/definitions": {
-        clusters: Readonly<Record<ClusterName, Readonly<ClusterDefinition>>>;
+        clusters: Readonly<Record<ClusterName, Cluster>>;
         custom_clusters: Record<string, CustomClusters>;
         actions: string[];
     };

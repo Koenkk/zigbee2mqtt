@@ -597,6 +597,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "IKEA",
+                        version: "0.0.0",
                     },
                     description: "this is my bulb",
                     disabled: false,
@@ -802,6 +803,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "Philips",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -831,7 +833,7 @@ describe("Extension: Bridge", () => {
                 {
                     definition: {
                         source: "native",
-                        description: "Hue dimmer switch",
+                        description: "Hue dimmer switch gen 1",
                         exposes: [
                             {
                                 access: 1,
@@ -930,6 +932,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "Philips",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -1038,6 +1041,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: false,
                         vendor: "notSupportedMfg",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -1143,6 +1147,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: false,
                         vendor: "Aqara",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -1304,6 +1309,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: false,
                         vendor: "Aqara",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {"1": {bindings: [], clusters: {input: ["genBasic"], output: []}, configured_reportings: [], scenes: []}},
@@ -1455,6 +1461,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "Xiaomi",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {"1": {bindings: [], clusters: {input: ["genBasic", "genOnOff"], output: []}, configured_reportings: [], scenes: []}},
@@ -1914,6 +1921,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: false,
                         vendor: "Siglis",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -2204,6 +2212,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "IKEA",
+                        version: "0.0.0",
                     },
                     disabled: false,
                     endpoints: {
@@ -2639,6 +2648,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: true,
                         vendor: "IKEA",
+                        version: "0.0.0",
                     },
                     friendly_name: "bulb",
                     ieee_address: "0x000b57fffec6a5b2",
@@ -2725,6 +2735,7 @@ describe("Extension: Bridge", () => {
                         ],
                         supports_ota: false,
                         vendor: "notSupportedMfg",
+                        version: "0.0.0",
                     },
                     friendly_name: "0x0017880104e45518",
                     ieee_address: "0x0017880104e45518",
