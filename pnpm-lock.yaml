@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.0.4
+  zigbee-herdsman: 10.0.5
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.20.0
         version: 8.20.0
       zigbee-herdsman:
-        specifier: 10.0.4
-        version: 10.0.4
+        specifier: 10.0.5
+        version: 10.0.5
       zigbee-herdsman-converters:
         specifier: 26.26.0
         version: 26.26.0
@@ -1476,8 +1476,8 @@ packages:
     resolution: {integrity: sha512-HpZguRu5ljPv4v9HhejhIQIyGyVMvGAq1knjIyDfS59IRfaEvgrn3+HD56LX8eCVXu1G2CG565q42fRKOkFuMw==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.0.4:
-    resolution: {integrity: sha512-RC8bJx3eKbuvI1d6FCzIQBXqCtNebAkOmbBozArmJ1kMXJamL3vK4JEkFU0f0JG2t4F0MN7VfJJR/6QJwxlpag==}
+  zigbee-herdsman@10.0.5:
+    resolution: {integrity: sha512-zCXpvzTxQ9pkuYpMV6PVb6gX8AUGpl99ut80Q96bWCqXKHNnkbn1wwrpdaXuvGhoWVB8En9hp8ZnipbF9sODEw==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2609,7 +2609,7 @@ snapshots:
   vite-node@3.2.4(@types/node@24.12.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.1
+      debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 6.3.5(@types/node@24.12.0)
@@ -2763,11 +2763,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.7.4
-      zigbee-herdsman: 10.0.4
+      zigbee-herdsman: 10.0.5
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.0.4:
+  zigbee-herdsman@10.0.5:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
