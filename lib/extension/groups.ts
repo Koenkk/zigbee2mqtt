@@ -168,7 +168,7 @@ export default class Groups extends Extension {
                     endpointNames &&
                     endpointNames.length >= member.ID &&
                     device.definition?.meta?.multiEndpoint &&
-                    (!device.definition.meta.multiEndpointSkip || !device.definition.meta.multiEndpointSkip.includes("state"))
+                    !device.definition.meta.multiEndpointSkip?.includes("state")
                         ? `state_${endpointNames[member.ID - 1]}`
                         : "state";
 

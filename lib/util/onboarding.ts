@@ -109,7 +109,7 @@ async function startOnboardingServer(): Promise<boolean> {
                             const redirect =
                                 !process.env.Z2M_ONBOARD_NO_REDIRECT &&
                                 appliedSettings.frontend.enabled &&
-                                (!appliedSettings.frontend.host || !appliedSettings.frontend.host.startsWith("/"));
+                                !appliedSettings.frontend.host?.startsWith("/");
                             const protocol = appliedSettings.frontend.ssl_cert && appliedSettings.frontend.ssl_key ? "https" : "http";
                             const frontendUrl = redirect
                                 ? `${protocol}://${appliedSettings.frontend.host ?? "localhost"}:${appliedSettings.frontend.port}${appliedSettings.frontend.base_url}`

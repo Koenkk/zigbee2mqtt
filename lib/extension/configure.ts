@@ -38,7 +38,7 @@ export default class Configure extends Extension {
 
                 if (!device || !(device instanceof Device)) {
                     error = `Device '${ID}' does not exist`;
-                } else if (!device.definition || !device.definition.configure) {
+                } else if (!device.definition?.configure) {
                     error = `Device '${device.name}' cannot be configured`;
                 } else {
                     try {
