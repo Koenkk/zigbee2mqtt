@@ -343,7 +343,7 @@ describe("Onboarding", () => {
         await vi.advanceTimersByTimeAsync(100); // flush
 
         expect(resSetHeader).toHaveBeenNthCalledWith(1, "Content-Type", "application/json");
-        expect(resWriteHead).toHaveBeenNthCalledWith(1, 200);
+        expect(resWriteHead).toHaveBeenNthCalledWith(1, 500);
         expect(resEnd).toHaveBeenCalledTimes(1);
 
         mockHttpListener(
@@ -361,6 +361,7 @@ describe("Onboarding", () => {
         );
         await responsePromise;
 
+        expect(resWriteHead).toHaveBeenNthCalledWith(2, 500);
         expect(resEnd).toHaveBeenCalledTimes(2);
 
         const serverUrl = new URL(process.env.Z2M_ONBOARD_URL ?? "http://0.0.0.0:8080");
@@ -506,7 +507,7 @@ describe("Onboarding", () => {
         return JSON.parse(resEnd.mock.calls[0][0]) as OnboardSubmitResponse;
     };
 
-    const requestUnhandledRoute = async (url: string): Promise<void> => {
+    const requestUnhandledRoute = async (url: string): Promise<{statusCode: number}> => {
         let resolveResponse: () => void = () => {};
         const responsePromise = new Promise<void>((resolve) => {
             resolveResponse = resolve;
@@ -520,6 +521,12 @@ describe("Onboarding", () => {
 
             resolveResponse();
         });
+        const res = {
+            end: resEnd,
+            setHeader: vi.fn(),
+            writeHead: vi.fn(),
+            statusCode: 200,
+        };
 
         mockHttpListener(
             {
@@ -528,14 +535,11 @@ describe("Onboarding", () => {
                 // @ts-expect-error return not used
                 on: () => {},
             },
-            {
-                end: resEnd,
-                setHeader: vi.fn(),
-                writeHead: vi.fn(),
-            },
+            res,
         );
 
         await responsePromise;
+        return res;
     };
 
     const createZipRestore = (): Awaited<ReturnType<typeof JSZip.loadAsync>> => {
@@ -836,6 +840,40 @@ describe("Onboarding", () => {
         await expect(p).resolves.toStrictEqual(false);
         expect(mockFinalhandler).toHaveBeenCalled();
         expect(mockStaticFileServer).toHaveBeenCalled();
+    });
+
+    it("serves failure page routes with HTTP 500", async () => {
+        settings.testing.clear();
+
+        const configFile = join(data.mockDir, "configuration.yaml");
+
+        writeFileSync(
+            configFile,
+            `
+                good: 9
+                \t wrong
+        `,
+        );
+
+        let p;
+        await new Promise<void>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    expect((await requestUnhandledRoute("/")).statusCode).toBe(500);
+                    expect((await requestUnhandledRoute("/index.html")).statusCode).toBe(500);
+                    await runFailure();
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(false);
+
+        data.removeConfiguration();
     });
 
     it("returns false when onboarding server emits an error", async () => {
