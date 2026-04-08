@@ -26,12 +26,6 @@ export class PrometheusExporter extends Extension {
     #deviceLinkQuality!: client.Gauge;
     #deviceInfo!: client.Gauge;
 
-    // Histogram
-    #messageProcessingDuration!: client.Histogram;
-
-    // Pending message timestamps for latency tracking: ieeeAddr -> receive time (ms)
-    readonly #pendingMessages = new Map<string, number>();
-
     override async start(): Promise<void> {
         await super.start();
 
@@ -116,14 +110,6 @@ export class PrometheusExporter extends Extension {
             registers: [this.#registry],
         });
 
-        this.#messageProcessingDuration = new client.Histogram({
-            name: "zigbee2mqtt_message_processing_duration_seconds",
-            help: "Time from Zigbee message receipt to MQTT entity state publish",
-            labelNames: ["ieee_address", "friendly_name"],
-            buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
-            registers: [this.#registry],
-        });
-
         // Pre-populate device_info for all known devices
         for (const device of this.zigbee.devicesIterator()) {
             this.#setDeviceInfo(device.ieeeAddr, device.name, device.zh.modelID, device.definition?.vendor, device.zh.type, device.zh.powerSource);
@@ -136,9 +122,6 @@ export class PrometheusExporter extends Extension {
 
             this.#deviceMessagesReceived.inc({ieee_address: ieeeAddr, friendly_name: friendlyName});
             this.#deviceLinkQuality.set({ieee_address: ieeeAddr, friendly_name: friendlyName}, data.linkquality);
-
-            // Record arrival time for latency tracking (overwrite if already pending — debounce/throttle may merge)
-            this.#pendingMessages.set(ieeeAddr, Date.now());
         });
 
         this.eventBus.onDeviceMessageFailed(this, (data) => {
@@ -147,21 +130,6 @@ export class PrometheusExporter extends Extension {
                 friendly_name: data.device.name,
                 reason: data.reason,
             });
-        });
-
-        this.eventBus.onPublishEntityState(this, (data) => {
-            if (!data.entity.isDevice()) return;
-            const ieeeAddr = data.entity.ieeeAddr;
-            const pendingTime = this.#pendingMessages.get(ieeeAddr);
-
-            if (pendingTime !== undefined) {
-                const durationSeconds = (Date.now() - pendingTime) / 1000;
-                this.#messageProcessingDuration.observe(
-                    {ieee_address: ieeeAddr, friendly_name: data.entity.name},
-                    durationSeconds,
-                );
-                this.#pendingMessages.delete(ieeeAddr);
-            }
         });
 
         this.eventBus.onMQTTMessagePublished(this, () => {
@@ -224,7 +192,6 @@ export class PrometheusExporter extends Extension {
         this.#deviceAnnounces.remove(base);
         this.#deviceNetworkAddressChanges.remove(base);
         this.#deviceLinkQuality.remove(base);
-        this.#messageProcessingDuration.remove(base);
         this.#deviceInfo.remove({
             ...base,
             model_id: entity.zh.modelID ?? "",
@@ -232,7 +199,6 @@ export class PrometheusExporter extends Extension {
             type: entity.zh.type,
             power_source: entity.zh.powerSource ?? "",
         });
-        this.#pendingMessages.delete(ieeeAddr);
     }
 
     #setDeviceInfo(ieeeAddr: string, friendlyName: string, modelId: string | undefined, vendor: string | undefined, type: string, powerSource: string | undefined): void {
