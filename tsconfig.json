@@ -11,7 +11,6 @@
         "declaration": true,
         "declarationMap": true,
         "outDir": "dist",
-        "baseUrl": ".",
         "rootDir": "lib",
         "inlineSourceMap": true,
         "resolveJsonModule": true,
