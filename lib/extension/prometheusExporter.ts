@@ -36,6 +36,7 @@ export class PrometheusExporter extends Extension {
         await super.start();
 
         this.#registry = new client.Registry();
+        client.collectDefaultMetrics({register: this.#registry});
 
         this.#buildInfo = new client.Gauge({
             name: "zigbee2mqtt_build_info",
