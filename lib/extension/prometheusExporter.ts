@@ -1,11 +1,11 @@
 import type {IncomingMessage, Server, ServerResponse} from "node:http";
 import {createServer} from "node:http";
 import * as client from "prom-client";
-import * as settings from "../util/settings";
+import type Device from "../model/device";
 import logger from "../util/logger";
-import Extension from "./extension";
-import Device from "../model/device";
+import * as settings from "../util/settings";
 import {getZigbee2MQTTVersion} from "../util/utils";
+import Extension from "./extension";
 
 export class PrometheusExporter extends Extension {
     #server: Server | undefined;
@@ -144,7 +144,14 @@ export class PrometheusExporter extends Extension {
             const ieeeAddr = data.device.ieeeAddr;
             const friendlyName = data.device.name;
             this.#deviceJoins.inc({ieee_address: ieeeAddr, friendly_name: friendlyName});
-            this.#setDeviceInfo(ieeeAddr, friendlyName, data.device.zh.modelID, data.device.definition?.vendor, data.device.zh.type, data.device.zh.powerSource);
+            this.#setDeviceInfo(
+                ieeeAddr,
+                friendlyName,
+                data.device.zh.modelID,
+                data.device.definition?.vendor,
+                data.device.zh.type,
+                data.device.zh.powerSource,
+            );
         });
 
         this.eventBus.onDeviceLeave(this, (data) => {
@@ -178,7 +185,7 @@ export class PrometheusExporter extends Extension {
     }
 
     override async stop(): Promise<void> {
-        await new Promise((resolve) => (this.#server ? this.#server!.close(resolve) : resolve(undefined)));
+        await new Promise((resolve) => (this.#server ? this.#server?.close(resolve) : resolve(undefined)));
         await super.stop();
     }
 
@@ -201,7 +208,14 @@ export class PrometheusExporter extends Extension {
         });
     }
 
-    #setDeviceInfo(ieeeAddr: string, friendlyName: string, modelId: string | undefined, vendor: string | undefined, type: string, powerSource: string | undefined): void {
+    #setDeviceInfo(
+        ieeeAddr: string,
+        friendlyName: string,
+        modelId: string | undefined,
+        vendor: string | undefined,
+        type: string,
+        powerSource: string | undefined,
+    ): void {
         this.#deviceInfo.set(
             {
                 ieee_address: ieeeAddr,

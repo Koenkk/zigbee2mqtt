@@ -8,7 +8,7 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 import type {EventHandler} from "../mocks/utils";
 import {Controller} from "../../lib/controller";
 import {PrometheusExporter} from "../../lib/extension/prometheusExporter";
-import Device from "../../lib/model/device";
+import type Device from "../../lib/model/device";
 import * as settings from "../../lib/util/settings";
 
 const TEST_PORT = 9143;
@@ -100,9 +100,7 @@ describe("Extension: PrometheusExporter", () => {
     it("pre-populates device_info gauge for known devices", async () => {
         const metrics = await getMetrics();
 
-        expect(metrics).toMatch(
-            new RegExp(`zigbee2mqtt_device_info\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`),
-        );
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_info\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
     });
 
     it("increments device message counter on Zigbee message", async () => {
@@ -118,9 +116,7 @@ describe("Extension: PrometheusExporter", () => {
 
         const metrics = await getMetrics();
         expect(metrics).toMatch(
-            new RegExp(
-                `zigbee2mqtt_device_messages_received_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`,
-            ),
+            new RegExp(`zigbee2mqtt_device_messages_received_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`),
         );
     });
 
@@ -136,11 +132,7 @@ describe("Extension: PrometheusExporter", () => {
         await flushPromises();
 
         const metrics = await getMetrics();
-        expect(metrics).toMatch(
-            new RegExp(
-                `zigbee2mqtt_device_link_quality\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 200`,
-            ),
-        );
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_link_quality\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 200`));
     });
 
     it("increments join counter on device joined", async () => {
@@ -148,11 +140,7 @@ describe("Extension: PrometheusExporter", () => {
         await flushPromises();
 
         const metrics = await getMetrics();
-        expect(metrics).toMatch(
-            new RegExp(
-                `zigbee2mqtt_device_joins_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`,
-            ),
-        );
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_joins_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
     });
 
     it("increments leave counter on device leave", async () => {
@@ -168,11 +156,7 @@ describe("Extension: PrometheusExporter", () => {
         await flushPromises();
 
         const metrics = await getMetrics();
-        expect(metrics).toMatch(
-            new RegExp(
-                `zigbee2mqtt_device_announces_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`,
-            ),
-        );
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_announces_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
     });
 
     it("increments failed message counter with no_converter reason", async () => {
