@@ -184,4 +184,34 @@ describe("Extension: PrometheusExporter", () => {
             ),
         );
     });
+
+    it("increments network address change counter on device network address changed", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceNetworkAddressChanged({device});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(`zigbee2mqtt_device_network_address_changes_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`),
+        );
+    });
+
+    it("removes device metrics on entity removed", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitEntityRemoved({entity: device, name: device.name});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).not.toMatch(new RegExp(`ieee_address="${devices.bulb_color.ieeeAddr}"`));
+    });
+
+    it("starts and listens on configured host and port when host is set", async () => {
+        settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT, host: "127.0.0.1"});
+        await resetExtension();
+
+        expect(mockHTTP.listen).toHaveBeenCalledWith(TEST_PORT, "127.0.0.1");
+        expect(mockLogger.info).toHaveBeenCalledWith(`Prometheus exporter listening on 127.0.0.1:${TEST_PORT}`);
+
+        settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT});
+    });
 });
