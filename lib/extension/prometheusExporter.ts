@@ -13,6 +13,7 @@ export class PrometheusExporter extends Extension {
 
     // Counters
     #deviceMessagesReceived!: client.Counter;
+    #deviceMessagesFailed!: client.Counter;
     #mqttPublished!: client.Counter;
     #mqttReceived!: client.Counter;
     #deviceJoins!: client.Counter;
@@ -50,6 +51,13 @@ export class PrometheusExporter extends Extension {
             name: "zigbee2mqtt_device_messages_received_total",
             help: "Total number of Zigbee messages received from a device",
             labelNames: ["ieee_address", "friendly_name"],
+            registers: [this.#registry],
+        });
+
+        this.#deviceMessagesFailed = new client.Counter({
+            name: "zigbee2mqtt_device_messages_failed_total",
+            help: "Total number of Zigbee messages that failed processing",
+            labelNames: ["ieee_address", "friendly_name", "reason"],
             registers: [this.#registry],
         });
 
@@ -132,6 +140,14 @@ export class PrometheusExporter extends Extension {
             this.#pendingMessages.set(ieeeAddr, Date.now());
         });
 
+        this.eventBus.onDeviceMessageFailed(this, (data) => {
+            this.#deviceMessagesFailed.inc({
+                ieee_address: data.device.ieeeAddr,
+                friendly_name: data.device.name,
+                reason: data.reason,
+            });
+        });
+
         this.eventBus.onPublishEntityState(this, (data) => {
             if (!data.entity.isDevice()) return;
             const ieeeAddr = data.entity.ieeeAddr;
@@ -200,6 +216,8 @@ export class PrometheusExporter extends Extension {
     #removeDeviceMetrics(ieeeAddr: string, friendlyName: string, entity: Device): void {
         const base = {ieee_address: ieeeAddr, friendly_name: friendlyName};
         this.#deviceMessagesReceived.remove(base);
+        this.#deviceMessagesFailed.remove({...base, reason: "no_converter"});
+        this.#deviceMessagesFailed.remove({...base, reason: "converter_error"});
         this.#deviceJoins.remove(base);
         this.#deviceLeaves.remove(base);
         this.#deviceAnnounces.remove(base);

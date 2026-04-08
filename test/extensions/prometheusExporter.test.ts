@@ -8,6 +8,7 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 import type {EventHandler} from "../mocks/utils";
 import {Controller} from "../../lib/controller";
 import {PrometheusExporter} from "../../lib/extension/prometheusExporter";
+import Device from "../../lib/model/device";
 import * as settings from "../../lib/util/settings";
 
 const TEST_PORT = 9143;
@@ -170,6 +171,32 @@ describe("Extension: PrometheusExporter", () => {
         expect(metrics).toMatch(
             new RegExp(
                 `zigbee2mqtt_device_announces_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`,
+            ),
+        );
+    });
+
+    it("increments failed message counter with no_converter reason", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceMessageFailed({device, reason: "no_converter"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(
+                `zigbee2mqtt_device_messages_failed_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*reason="no_converter"[^}]*\\} 1`,
+            ),
+        );
+    });
+
+    it("increments failed message counter with converter_error reason", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceMessageFailed({device, reason: "converter_error"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(
+                `zigbee2mqtt_device_messages_failed_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*reason="converter_error"[^}]*\\} 1`,
             ),
         );
     });

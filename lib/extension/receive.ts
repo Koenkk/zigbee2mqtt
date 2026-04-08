@@ -124,6 +124,7 @@ export default class Receive extends Extension {
                 `No converter available for '${data.device.definition.model}' with ` +
                     `cluster '${data.cluster}' and type '${data.type}' and data '${stringify(data.data)}'`,
             );
+            this.eventBus.emitDeviceMessageFailed({device: data.device, reason: "no_converter"});
             await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
             return;
         }
@@ -177,6 +178,7 @@ export default class Receive extends Extension {
                 logger.error(`Exception while calling fromZigbee converter: ${(error as Error).message}}`);
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
+                this.eventBus.emitDeviceMessageFailed({device: data.device, reason: "converter_error"});
             }
             /* v8 ignore stop */
         }
