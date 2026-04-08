@@ -118,6 +118,10 @@ export const defaults = {
         interval: 10,
         reset_on_check: false,
     },
+    prometheus_exporter: {
+        enabled: false,
+        port: 9142,
+    },
 } satisfies RecursivePartial<Settings>;
 
 let _settings: Partial<Settings> | undefined;
