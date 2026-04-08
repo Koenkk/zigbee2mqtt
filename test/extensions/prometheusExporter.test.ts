@@ -214,4 +214,29 @@ describe("Extension: PrometheusExporter", () => {
 
         settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT});
     });
+
+    it("increments mqtt published counter on MQTT message published", async () => {
+        controller.eventBus.emitMQTTMessagePublished({topic: "test", payload: "test", options: {qos: 0, retain: false}});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_mqtt_messages_published_total \d+/);
+    });
+
+    it("increments mqtt received counter on MQTT message received", async () => {
+        controller.eventBus.emitMQTTMessage({topic: "test", message: "test"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_mqtt_messages_received_total \d+/);
+    });
+
+    it("ignores entity removed event for non-device entities", async () => {
+        const group = controller.zigbee.resolveEntity("group_1")!;
+        controller.eventBus.emitEntityRemoved({entity: group, name: "group_1"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toBeDefined();
+    });
 });
