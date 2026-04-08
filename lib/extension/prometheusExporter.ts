@@ -40,7 +40,7 @@ export class PrometheusExporter extends Extension {
         });
 
         const {version, commitHash} = await getZigbee2MQTTVersion();
-        this.#buildInfo.set({version, commit_hash: commitHash ?? "unknown"}, 1);
+        this.#buildInfo.set({version, commit_hash: commitHash ?? /* v8 ignore next */ "unknown"}, 1);
 
         this.#deviceMessagesReceived = new client.Counter({
             name: "zigbee2mqtt_device_messages_received_total",
@@ -201,10 +201,10 @@ export class PrometheusExporter extends Extension {
         this.#deviceLinkQuality.remove(base);
         this.#deviceInfo.remove({
             ...base,
-            model_id: entity.zh.modelID ?? "",
-            vendor: entity.definition?.vendor ?? "",
+            model_id: entity.zh.modelID ?? /* v8 ignore next */ "",
+            vendor: entity.definition?.vendor ?? /* v8 ignore next */ "",
             type: entity.zh.type,
-            power_source: entity.zh.powerSource ?? "",
+            power_source: entity.zh.powerSource ?? /* v8 ignore next */ "",
         });
     }
 
@@ -230,7 +230,7 @@ export class PrometheusExporter extends Extension {
     }
 
     async #onRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const url = req.url ?? "/";
+        const url = req.url ?? /* v8 ignore next */ "/";
 
         if (url === "/metrics") {
             const metrics = await this.#registry.metrics();
