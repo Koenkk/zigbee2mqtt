@@ -1658,6 +1658,32 @@ export class HomeAssistant extends Extension {
             // Set unique_id
             payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
 
+            // Add group member unique_ids for Home Assistant entity grouping
+            // https://www.home-assistant.io/integrations/mqtt#grouping-entities
+            if (isGroup) {
+                const groupMembers: {name: string; uniqueId: string}[] = [];
+                const mqttBaseTopic = settings.get().mqtt.base_topic;
+
+                for (const member of entity.zh.members) {
+                    const device = this.zigbee.resolveEntity(member.getDevice());
+                    /* v8 ignore next */
+                    if (!device?.isDevice() || !device.definition) continue;
+
+                    const endpointName = device.endpointName(member);
+                    const expectedObjectId = endpointName ? `${config.object_id}_${endpointName}` : config.object_id;
+
+                    for (const dc of this.getConfigs(device)) {
+                        if (dc.type !== config.type || dc.object_id !== expectedObjectId) continue;
+                        groupMembers.push({name: device.name, uniqueId: `${device.options.ID}_${dc.object_id}_${mqttBaseTopic}`});
+                        break;
+                    }
+                }
+
+                if (groupMembers.length > 0) {
+                    payload.group = groupMembers.sort((a, b) => a.name.localeCompare(b.name)).map((m) => m.uniqueId);
+                }
+            }
+
             // Attributes for device registry and origin
             payload.device = devicePayload;
             payload.origin = this.discoveryOrigin;
