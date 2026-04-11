@@ -384,6 +384,7 @@ export class HomeAssistant extends Extension {
     private discoveryTopic: string;
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = /(.*)\/(.*)\/(.*)\/config/;
+    private deviceConfigLookup = new Map<string, Set<string>>();
     private statusTopic: string;
     private legacyActionSensor: boolean;
     private experimentalEventEntities: boolean;
@@ -1363,6 +1364,7 @@ export class HomeAssistant extends Extension {
         }
 
         delete this.discovered[data.entity.ID];
+        this.deviceConfigLookup.delete(`${data.entity.ID}`);
     }
 
     @bind async onGroupMembersChanged(data: eventdata.GroupMembersChanged): Promise<void> {
@@ -1610,7 +1612,17 @@ export class HomeAssistant extends Extension {
         const lastDiscoveredTopics = Object.keys(discovered.messages);
         const newDiscoveredTopics = new Set<string>();
 
-        for (const config of this.getConfigs(entity)) {
+        const configs = this.getConfigs(entity);
+
+        if (isDevice) {
+            const configSet = new Set<string>();
+            for (const c of configs) {
+                configSet.add(`${c.type}:${c.object_id}`);
+            }
+            this.deviceConfigLookup.set(`${entity.options.ID}`, configSet);
+        }
+
+        for (const config of configs) {
             const payload = {...config.discovery_payload};
             const baseTopic = `${settings.get().mqtt.base_topic}/${entity.name}`;
             let stateTopic = baseTopic;
@@ -1671,11 +1683,10 @@ export class HomeAssistant extends Extension {
 
                     const endpointName = device.endpointName(member);
                     const expectedObjectId = endpointName ? `${config.object_id}_${endpointName}` : config.object_id;
+                    const deviceConfigs = this.deviceConfigLookup.get(`${device.options.ID}`);
 
-                    for (const dc of this.getConfigs(device)) {
-                        if (dc.type !== config.type || dc.object_id !== expectedObjectId) continue;
-                        groupMembers.push({name: device.name, uniqueId: `${device.options.ID}_${dc.object_id}_${mqttBaseTopic}`});
-                        break;
+                    if (deviceConfigs?.has(`${config.type}:${expectedObjectId}`)) {
+                        groupMembers.push({name: device.name, uniqueId: `${device.options.ID}_${expectedObjectId}_${mqttBaseTopic}`});
                     }
                 }
 
