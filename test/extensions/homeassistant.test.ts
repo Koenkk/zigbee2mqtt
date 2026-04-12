@@ -2211,9 +2211,7 @@ describe("Extension: HomeAssistant", () => {
         await controller.publishEntityState(device, {notificationComplete: "LED_1"});
         await flushPromises();
 
-        expect(
-            mockMQTTPublishAsync.mock.calls.some((c) => c[0].includes("device_automation") && c[0].includes("notificationComplete")),
-        ).toBe(false);
+        expect(mockMQTTPublishAsync.mock.calls.some((c) => c[0].includes("device_automation") && c[0].includes("notificationComplete"))).toBe(false);
     });
 
     it("Should not discover device_automation when disabled", async () => {
