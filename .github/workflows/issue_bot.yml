@@ -31,7 +31,7 @@ jobs:
           path: zhc
 
       - name: Comment on new device support/external converter issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const {newDeviceSupport} = await import("${{ github.workspace }}/z2m/scripts/issueBot.mjs")
