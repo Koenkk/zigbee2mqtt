@@ -461,10 +461,15 @@ export class HomeAssistant extends Extension {
         const discoverWait = 5;
         // Discover with `published = false`, this will populate `this.discovered` without publishing the discoveries.
         // This is needed for clearing outdated entries in `this.onMQTTMessage()`
+        // Discover devices before groups to populate `this.groupMemberLookup` for group discovery.
         await this.discover(this.bridge, false);
 
-        for (const e of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
-            await this.discover(e, false);
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
+            await this.discover(device, false);
+        }
+
+        for (const group of this.zigbee.groupsIterator()) {
+            await this.discover(group, false);
         }
 
         logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`);
@@ -1660,11 +1665,13 @@ export class HomeAssistant extends Extension {
 
             if (config.endpoint) {
                 assert(entity.isDevice());
-                const key = `${config.endpoint.deviceIeeeAddress}_${config.endpoint.ID}_${config.type}`;
-                this.groupMemberLookup.set(key, uniqueId);
+                const memberKey = `${config.endpoint.deviceIeeeAddress}_${config.endpoint.ID}_${config.type}`;
+                this.groupMemberLookup.set(memberKey, uniqueId);
             }
 
             // Add group member unique_ids for Home Assistant entity grouping
+            // This assumes that `discover()` already has been called for all devices, since it depends on the
+            // `groupMemberLookup` being populated.
             // https://www.home-assistant.io/integrations/mqtt#grouping-entities
             if (isGroup) {
                 const memberIds: string[] = [];
