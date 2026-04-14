@@ -103,6 +103,7 @@ describe("Extension: HomeAssistant", () => {
                 definition: d,
                 isDevice: (): boolean => true,
                 isGroup: (): boolean => false,
+                endpoint: () => undefined,
                 options: {},
                 exposes: (): unknown[] => exposes,
                 zh: {endpoints: []},
@@ -124,7 +125,7 @@ describe("Extension: HomeAssistant", () => {
             }
         }
 
-        expect(duplicated).toHaveLength(0);
+        expect(duplicated).toStrictEqual([]);
     });
 
     it("Should discover devices and groups", async () => {
@@ -170,7 +171,7 @@ describe("Extension: HomeAssistant", () => {
             object_id: "ha_discovery_group",
             default_entity_id: "light.ha_discovery_group",
             unique_id: "9_light_zigbee2mqtt",
-            group: ["0x000b57fffec6a5b7_light_zigbee2mqtt", "0x000b57fffec6a5b4_light_zigbee2mqtt"],
+            group: ["0x000b57fffec6a5b4_light_zigbee2mqtt", "0x000b57fffec6a5b7_light_zigbee2mqtt"],
             origin: origin,
         };
 
@@ -1974,7 +1975,7 @@ describe("Extension: HomeAssistant", () => {
             object_id: "ha_discovery_group_new",
             default_entity_id: "light.ha_discovery_group_new",
             unique_id: "9_light_zigbee2mqtt",
-            group: ["0x000b57fffec6a5b7_light_zigbee2mqtt", "0x000b57fffec6a5b4_light_zigbee2mqtt"],
+            group: ["0x000b57fffec6a5b4_light_zigbee2mqtt", "0x000b57fffec6a5b7_light_zigbee2mqtt"],
             origin: origin,
         };
 
@@ -2444,7 +2445,7 @@ describe("Extension: HomeAssistant", () => {
             object_id: "ha_discovery_group",
             default_entity_id: "light.ha_discovery_group",
             unique_id: "9_light_zigbee2mqtt",
-            group: ["0x000b57fffec6a5b7_light_zigbee2mqtt", "0x000b57fffec6a5b4_light_zigbee2mqtt"],
+            group: ["0x000b57fffec6a5b4_light_zigbee2mqtt", "0x000b57fffec6a5b7_light_zigbee2mqtt"],
             origin: origin,
         };
 
@@ -2490,7 +2491,7 @@ describe("Extension: HomeAssistant", () => {
             object_id: "ha_discovery_group",
             default_entity_id: "light.ha_discovery_group",
             unique_id: "9_light_zigbee2mqtt",
-            group: ["0x000b57fffec6a5b7_light_zigbee2mqtt", "0x000b57fffec6a5b4_light_zigbee2mqtt"],
+            group: ["0x000b57fffec6a5b4_light_zigbee2mqtt", "0x000b57fffec6a5b7_light_zigbee2mqtt"],
             origin: origin,
         };
 
