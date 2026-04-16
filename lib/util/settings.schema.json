@@ -800,7 +800,7 @@
                     "requiresRestart": true,
                     "minimum": -128,
                     "maximum": 127,
-                    "description": "Transmit power of adapter, only available for Z-Stack (CC253*/CC2652/CC1352) adapters, CC2652 = 5dbm, CC1352 max is = 20dbm (5dbm default)"
+                    "description": "Transmit power of adapter, in dBm (max is often 20, refer to chip specifications)"
                 },
                 "output": {
                     "type": "string",
